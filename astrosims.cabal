@@ -1,0 +1,41 @@
+name:           astrosims
+version:        0.1
+description:    Astronomy simulation catalog repository
+author:         Dylan Simon
+maintainer:     dylan@dylex.net
+copyright:      2018 Dylan Simon, Flatiron Institute
+license:        Apache-2.0
+build-type:     Simple
+cabal-version:  >= 1.10
+
+executable astrosims
+  main-is: Main.hs
+  other-modules:
+    JSON
+    Global
+    ES.Types
+    ES
+    CSV
+  hs-source-dirs: .
+  default-language: Haskell2010
+  ghc-options: -Wall -threaded
+  build-depends:
+      base >= 4.7 && < 5
+    , aeson
+    , array
+    , attoparsec
+    , blaze-html
+    , bytestring
+    , filepath
+    , http-client
+    , http-types
+    , mime-types
+    , mtl
+    , network-uri
+    , text
+    , unordered-containers
+    , vector
+    , wai
+    , waimwork
+    , warp
+    , web-inv-route

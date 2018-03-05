@@ -1,0 +1,53 @@
+settings:
+  index:
+    number_of_shards: 8
+    number_of_replicas: 0
+    refresh_interval: -1
+mappings:
+  group:
+    dynamic: strict
+    properties:
+      simulation: {type: keyword}
+      snapshot: {type: short}
+      time: {type: float}
+      redshift: {type: float}
+
+      BHMass: {type: float}
+      BHMdot: {type: float}
+      CM_x: {type: float}
+      CM_y: {type: float}
+      CM_z: {type: float}
+      FirstSub: {type: integer}
+      GasMetallicity: {type: float}
+      Len: {type: integer}
+      LenType_gas: {type: integer}
+      LenType_dm: {type: integer}
+      LenType_unused: {type: integer}
+      LenType_tracers: {type: integer}
+      LenType_stars: {type: integer}
+      LenType_bh: {type: integer}
+      Mass: {type: float}
+      MassType_gas: {type: float}
+      MassType_dm: {type: float}
+      MassType_unused: {type: float}
+      MassType_tracers: {type: float}
+      MassType_stars: {type: float}
+      MassType_bh: {type: float}
+      Nsubs: {type: integer}
+      Pos_x: {type: float}
+      Pos_y: {type: float}
+      Pos_z: {type: float}
+      SFR: {type: float}
+      StarMetallicity: {type: float}
+      Vel_x: {type: float}
+      Vel_y: {type: float}
+      Vel_z: {type: float}
+      WindMass: {type: float}
+      M_Crit200: {type: float}
+      M_Crit500: {type: float}
+      M_Mean200: {type: float}
+      M_TopHat200: {type: float}
+      R_Crit200: {type: float}
+      R_Crit500: {type: float}
+      R_Mean200: {type: float}
+      R_TopHat200: {type: float}

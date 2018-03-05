@@ -1,0 +1,6 @@
+http {
+  port = 8092
+}
+elasticsearch {
+  server = "http://127.0.0.1:9200/"
+}

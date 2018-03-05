@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "module": "system",
+    "target": "es2015",
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "sourceMap": true,
+    "alwaysStrict": true,
+    "strictNullChecks": true
+  },
+  "files": [
+    "main.ts"
+  ]
+}

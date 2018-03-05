@@ -1,0 +1,15 @@
+resolver: lts-10.7
+packages:
+- '.'
+- location:
+    git: git://github.com/dylex/waimwork
+    commit: 55e3367f01935f00162a7695ab6ac35f49504a87
+  extra-dep: true
+- location:
+    git: git://github.com/dylex/web-inv-route
+    commit: dc79476721f87aad5885e121814b989c4d798ef1
+  extra-dep: true
+flags:
+  web-inv-route:
+    snap: false
+    happstack: false
