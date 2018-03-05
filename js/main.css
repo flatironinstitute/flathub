@@ -2,3 +2,8 @@ div#download {
   float: right;
   text-align: right;
 }
+button.remove {
+  padding: 0px;
+  border-width: 1px;
+  margin: 1px;
+}
