@@ -16,6 +16,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
+import qualified Data.Map.Strict as Map
 import           Data.Maybe (fromMaybe)
 import           Data.Monoid ((<>))
 import           Data.String (IsString)
@@ -24,9 +25,9 @@ import qualified Data.Text.Encoding as TE
 import           Data.Tuple (swap)
 import qualified Data.Vector as V
 import qualified Network.HTTP.Client as HTTP
-import           Network.HTTP.Types.Header (hContentType)
+import           Network.HTTP.Types.Header (hContentType, hCacheControl)
 import           Network.HTTP.Types.Status (ok200, badRequest400)
-import           Network.Mime (defaultMimeLookup)
+import qualified Network.Mime as Mime
 import qualified Network.Wai as Wai
 import qualified System.FilePath as FP
 import qualified Text.Blaze.Html5 as H
@@ -36,7 +37,6 @@ import qualified Waimwork.Blaze as H
 import qualified Waimwork.Config as C
 import           Waimwork.Response (response, okResponse)
 import           Waimwork.Result (result)
-import           Waimwork.Static (staticFileResponse)
 import           Waimwork.Warp (runWaimwork)
 import qualified Web.Route.Invertible as R
 import           Web.Route.Invertible.URI (routeActionURI)
@@ -59,10 +59,10 @@ staticURI p = H.routeActionValue static p mempty
 html :: H.Markup -> Wai.Response
 html h = okResponse [] $ H.docTypeHtml $ do
   H.head $ do
-    H.script H.! HA.src (staticURI ["jspm_packages", "system.src.js"]) $ mempty
-    H.script H.! HA.src (staticURI ["jspm.config.js"]) $ mempty
-    H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css"
-      H.! HA.href (staticURI ["jspm_packages", "npm", "datatables.net-dt@1.10.16", "css", "jquery.dataTables.css"])
+    forM_ [["jspm_packages", "system.src.js"], ["jspm.config.js"]] $ \src ->
+      H.script H.! HA.src (staticURI src) $ mempty
+    forM_ [["jspm_packages", "npm", "datatables.net-dt@1.10.16", "css", "jquery.dataTables.css"], ["main.css"]] $ \src ->
+      H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
   H.body h
 
 top :: Route ()
@@ -82,12 +82,16 @@ instance R.Parameter R.PathString FilePathComponent where
     return $ FilePathComponent s
   renderParameter (FilePathComponent s) = R.renderParameter s
 
+getMimeType :: Mime.FileName -> Mime.MimeType
+getMimeType = Mime.mimeByExt (Map.insert "ts" "text/typescript" Mime.defaultMimeMap) Mime.defaultMimeType
+
 static :: Route [FilePathComponent]
-static = getPath ("js" R.*< R.manyI R.parameter) $ \paths req -> do
+static = getPath ("js" R.*< R.manyI R.parameter) $ \paths _ -> do
   let path = FP.joinPath ("js" : map componentFilePath paths)
-  liftIO $ staticFileResponse req
-    [ (hContentType, defaultMimeLookup (T.pack path))
-    ] path
+  return $ Wai.responseFile ok200
+    [ (hContentType, getMimeType (T.pack path))
+    , (hCacheControl, "public, max-age=" <> (if length paths == 1 then "10, must-revalidate" else "1000000"))
+    ] path Nothing
 
 fixedFields :: Simulation -> [T.Text]
 fixedFields IllustrisGroup = ["simulation", "snapshot"]
@@ -101,9 +105,13 @@ simulation = getPath R.parameter $ \sim _ -> do
   idx <- askIndex sim
   let 
     (qmeth, quri) = routeActionURI catalog sim
+    (_, csvuri) = routeActionURI catalogCSV sim
     cat = J.pairs $
          "name" J..= show sim
-      <> "query" `JE.pair` J.pairs ("method" J..= (BSC.unpack <$> R.fromMethod qmeth) <> "uri" J..= show quri)
+      <> "query" `JE.pair` J.pairs
+        (  "method" J..= (BSC.unpack <$> R.fromMethod qmeth)
+        <> "uri" J..= show quri
+        <> "csv" J..= show csvuri)
       <> "props" J..= ES.indexMapping idx
       <> "fixed" J..= fixedFields sim
   return $ html $ do

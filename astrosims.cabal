@@ -26,6 +26,7 @@ executable astrosims
     , attoparsec
     , blaze-html
     , bytestring
+    , containers
     , filepath
     , http-client
     , http-types

@@ -31,11 +31,10 @@ interface Filter {
   update_aggs: (aggs: Dict<any>) => void;
 }
 
-let TCat: DataTables.Api|null = null;
-let Catalog: Catalog = (<any>window).Catalog;
-let Filters: Array<Filter>;
-
-let Update_aggs: number = 0;
+var TCat: DataTables.Api|null = null;
+const Catalog: Catalog = (<any>window).Catalog;
+const Filters: Array<Filter> = [];
+var Update_aggs: number = 0;
 
 function select_options(select: HTMLSelectElement, options: string[]) {
   $(select).empty();
@@ -48,14 +47,19 @@ function select_options(select: HTMLSelectElement, options: string[]) {
   }
 }
 
+function set_download(query: Dict<string>) {
+  let a = document.getElementById('download.csv');
+  if (!a)
+    a = $('#download').html('download as <a id="download.csv">csv</a>').children('a')[0];
+  a.href = Catalog.query.csv + '?' + $.param(query);
+}
+
 function ajax(data: any, callback: ((data: any) => void), opts: any) {
+  const aggs: string[] = [];
   const query: any = {
-    offset: data.start,
-    limit: data.length,
     sort: data.order.map((o: any) => {
-      return (o.dir == "asc" ? '+' : '-') + data.columns[o.column].data;
-    }).join(','),
-    aggs: []
+      return (o.dir == "asc" ? '' : '-') + data.columns[o.column].data;
+    }).join(',')
   };
   for (let fi = 0; fi < Filters.length; fi++) {
     const filt = Filters[fi];
@@ -63,9 +67,13 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
       if (filt.query != null)
         query[filt.name] = typeof filt.query == 'object' ? filt.query.lb+','+filt.query.ub : filt.query;
     } else {
-      query.aggs.push(filt.name);
+      aggs.push(filt.name);
     }
   }
+  set_download(query);
+  query.offset = data.start;
+  query.limit = data.length;
+  query.aggs = aggs.join(',');
   $.ajax({
     method: Catalog.query.method,
     url: Catalog.query.uri,
@@ -120,7 +128,7 @@ function add_filter(name: string) {
         name: name,
         query: undefined,
         update_aggs: (aggs: any) => {
-          select_options(select, aggs.terms.buckets.map((b: any) => b.key));
+          select_options(select, aggs.buckets.map((b: any) => b.key));
           select.value = '';
         }
       };
@@ -153,16 +161,15 @@ function add_filter(name: string) {
       let ub = <HTMLInputElement>document.createElement('input');
       ub.name = name+".ub";
       lb.type = ub.type = "number";
-      if (isint)
-        lb.step = ub.step = <any>1;
+      lb.step = ub.step = isint ? <any>1 : "any";
       let avg = document.createElement('span');
       let filt: Filter = {
         name: name,
         query: undefined,
         update_aggs: (aggs: any) => {
-          lb.defaultValue = lb.value = lb.min = ub.min = aggs.stats.min;
-          ub.defaultValue = ub.value = lb.max = ub.max = aggs.stats.max;
-          avg.textContent = aggs.stats.avg;
+          lb.defaultValue = lb.value = lb.min = ub.min = aggs.min;
+          ub.defaultValue = ub.value = lb.max = ub.max = aggs.max;
+          avg.textContent = aggs.avg;
         }
       };
       let next = Filters.push(filt);
@@ -171,7 +178,13 @@ function add_filter(name: string) {
           return;
         let lbv = lb.valueAsNumber;
         let ubv = ub.valueAsNumber;
-        filt.query = {lb:lbv,ub:ubv};
+        if (lbv == ubv)
+          filt.query = lbv;
+        else
+          filt.query = {
+            lb:isFinite(lbv) ? lbv : '',
+            ub:isFinite(ubv) ? ubv : ''
+          };
         Update_aggs = Math.min(Update_aggs, next);
         TCat.column(name).search(lbv+" TO "+ubv).draw();
       };
@@ -211,6 +224,8 @@ function init() {
     ajax: ajax,
     columns: cols,
     scrollX: true,
+    pageLength: 50,
+    dom: 'l<"#download">rtip',
   });
 }
 

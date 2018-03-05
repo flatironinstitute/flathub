@@ -78,7 +78,10 @@ queryIndex idx maps q =
   where
   term (f, a, Nothing) = "term" `JE.pair` JE.pairs (f `JE.pair` bsc a)
   term (f, a, Just b) = "range" `JE.pair` JE.pairs (f `JE.pair` JE.pairs
-    ("gte" `JE.pair` bsc a <> "lte" `JE.pair` bsc b))
+    (bound "gte" a <> bound "lte" b))
+  bound t a
+    | BS.null a = mempty
+    | otherwise = t `JE.pair` bsc a
   agg (Just (FieldInfo Text)) = "terms"
   agg (Just (FieldInfo Keyword)) = "terms"
   agg _ = "stats"
