@@ -35,12 +35,14 @@ data Simulation
   = IllustrisGroup
   -- | IllustrisSubGroup
   | Neutrino
+  | GAEA
   deriving (Eq, Enum, Bounded, Ord, Ix)
 
 instance Show Simulation where
   show IllustrisGroup    = "illustris"
   -- show IllustrisSubGroup = "illustris_sub"
   show Neutrino          = "neutrino"
+  show GAEA              = "gaea"
 
 instance Read Simulation where
   readPrec = do
@@ -49,6 +51,7 @@ instance Read Simulation where
       "illustris"      -> return IllustrisGroup
       -- "illustris_sub"  -> return IllustrisSubGroup
       "neutrino"       -> return Neutrino
+      "gaea"           -> return GAEA
       _ -> fail "Unknown simulation"
 
 instance R.Parameter R.PathString Simulation where

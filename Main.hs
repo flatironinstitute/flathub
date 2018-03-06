@@ -96,6 +96,7 @@ static = getPath ("js" R.*< R.manyI R.parameter) $ \paths _ -> do
 fixedFields :: Simulation -> [T.Text]
 fixedFields IllustrisGroup = ["simulation", "snapshot"]
 fixedFields Neutrino = ["simulation", "instance", "snapshot"]
+fixedFields GAEA = []
 
 askIndex :: Simulation -> M ES.Index
 askIndex sim = asks $ (! sim) . globalIndices
