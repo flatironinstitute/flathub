@@ -12,6 +12,7 @@ executable astrosims
   main-is: Main.hs
   other-modules:
     JSON
+    Schema
     Global
     ES.Types
     ES
@@ -28,6 +29,7 @@ executable astrosims
     , bytestring
     , containers
     , filepath
+    , hashable
     , http-client
     , http-types
     , mime-types
@@ -40,3 +42,4 @@ executable astrosims
     , waimwork
     , warp
     , web-inv-route
+    , yaml

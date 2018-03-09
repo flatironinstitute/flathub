@@ -1,0 +1,218 @@
+illustris:
+  title: Illustris
+  index: illustris
+  mapping: group
+  fields:
+    - name: simulation
+      type: keyword
+      top: true
+      descr: e.g. 'Illustris-1' or 'Illustris-2-Dark'.
+    - name: snapshot
+      type: short
+      top: true
+      descr: snapshot number
+    - name: time
+      type: float
+      descr: Scalefactor of the snapshot corresponding to this group catalog.
+      disp: false
+    - name: redshift
+      type: float
+      descr: Redshift of the snapshot corresponding to this group catalog.
+
+    - name: BHMass
+      type: float
+    - name: BHMdot
+      type: float
+    - name: CM_x
+      type: float
+    - name: CM_y
+      type: float
+    - name: CM_z
+      type: float
+    - name: FirstSub
+      type: integer
+    - name: GasMetallicity
+      type: float
+    - name: Len
+      type: integer
+    - name: LenType_gas
+      type: integer
+    - name: LenType_dm
+      type: integer
+    - name: LenType_unused
+      type: integer
+    - name: LenType_tracers
+      type: integer
+    - name: LenType_stars
+      type: integer
+    - name: LenType_bh
+      type: integer
+    - name: Mass
+      type: float
+    - name: MassType_gas
+      type: float
+    - name: MassType_dm
+      type: float
+    - name: MassType_unused
+      type: float
+    - name: MassType_tracers
+      type: float
+    - name: MassType_stars
+      type: float
+    - name: MassType_bh
+      type: float
+    - name: Nsubs
+      type: integer
+    - name: Pos_x
+      type: float
+    - name: Pos_y
+      type: float
+    - name: Pos_z
+      type: float
+    - name: SFR
+      type: float
+    - name: StarMetallicity
+      type: float
+    - name: Vel_x
+      type: float
+    - name: Vel_y
+      type: float
+    - name: Vel_z
+      type: float
+    - name: WindMass
+      type: float
+    - name: M_Crit200
+      type: float
+    - name: M_Crit500
+      type: float
+    - name: M_Mean200
+      type: float
+    - name: M_TopHat200
+      type: float
+    - name: R_Crit200
+      type: float
+    - name: R_Crit500
+      type: float
+    - name: R_Mean200
+      type: float
+    - name: R_TopHat200
+      type: float
+neutrino:
+  title: Neutrino
+  index: neutrino
+  fields:
+    - name: simulation
+      type: keyword
+      top: true
+    - name: snapshot
+      type: short
+      top: true
+    - name: time
+      type: half_float
+      disp: false
+    - name: redshift
+      type: half_float
+    - name: instance
+      type: byte
+      top: true
+    - name: Mnu
+      type: half_float
+
+    - name: Len
+      type: integer
+    - name: Offset
+      type: integer
+    - name: Mass
+      type: float
+    - name: Pos_x
+      type: float
+    - name: Pos_y
+      type: float
+    - name: Pos_z
+      type: float
+    - name: Vel_x
+      type: float
+    - name: Vel_y
+      type: float
+    - name: Vel_z
+      type: float
+    - name: LenType_gas
+      type: float
+    - name: LenType_dm
+      type: float
+    - name: LenType_unused
+      type: float
+    - name: LenType_tracers
+      type: float
+    - name: LenType_stars
+      type: float
+    - name: LenType_bh
+      type: float
+    - name: MassType_gas
+      type: float
+    - name: MassType_dm
+      type: float
+    - name: MassType_unused
+      type: float
+    - name: MassType_tracers
+      type: float
+    - name: MassType_stars
+      type: float
+    - name: MassType_bh
+      type: float
+gaea:
+  title: GAEA
+  index: gaea
+  fields:
+    - name: CentralMvir
+      type: float
+    - name: ColdGas
+      type: float
+    - name: GalID
+      type: long
+    - name: GasDiskRadius
+      type: float
+    - name: GasSpin_x
+      type: float
+    - name: GasSpin_y
+      type: float
+    - name: GasSpin_z
+      type: float
+    - name: HI
+      type: float
+    - name: MMSubID
+      type: long
+    - name: Mvir
+      type: float
+    - name: PPos_x
+      type: double
+    - name: PPos_y
+      type: double
+    - name: Pos_x
+      type: double
+    - name: Pos_y
+      type: double
+    - name: Pos_z
+      type: double
+    - name: Rvir
+      type: float
+    - name: StellarDiskRadius
+      type: float
+    - name: StellarMass
+      type: float
+    - name: Type
+      type: integer
+    - name: Vel_x
+      type: double
+    - name: Vel_y
+      type: double
+    - name: Vel_z
+      type: double
+    - name: Vmax
+      type: float
+    - name: Vvir
+      type: float
+    - name: z
+      type: double
+    - name: z_pos
+      type: double

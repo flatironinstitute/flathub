@@ -18,7 +18,7 @@ import qualified Data.Attoparsec.ByteString as AP
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.HashMap.Strict as HM
-import           Data.List (intercalate)
+import           Data.List (intercalate, find)
 import           Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Vector as V
@@ -29,6 +29,7 @@ import qualified Network.URI as URI
 import qualified Waimwork.Config as C
 
 import ES.Types
+import Schema
 import Global
 
 initServer :: C.Config -> IO Server
@@ -56,13 +57,13 @@ elasticSearch meth url body = do
     }
   parse r = AP.parseWith (HTTP.responseBody r) J.json BS.empty
 
-getIndices :: [String] -> M (KeyMap Index)
+getIndices :: [String] -> M J.Value
 getIndices idx = elasticSearch GET [if null idx then "_all" else intercalate "," idx] Nothing
 
-queryIndex :: String -> Index -> Query -> M J.Value
-queryIndex idx maps q =
+queryIndex :: Catalog -> Query -> M J.Value
+queryIndex cat q =
   clean <$> elasticSearch GET
-    [idx, T.unpack $ mappingName maps, "_search"]
+    [T.unpack $ catalogIndex cat, T.unpack $ catalogMapping cat, "_search"]
     (Just $ JE.pairs $
        "from" J..= queryOffset q
     <> "size" J..= queryLimit q
@@ -73,7 +74,7 @@ queryIndex idx maps q =
       ("bool" `JE.pair` JE.pairs
         ("filter" `JE.pair` JE.list (JE.pairs . term) (queryFilter q)))
     <> "aggs" `JE.pair` JE.pairs (foldMap
-      (\f -> f `JE.pair` JE.pairs (agg (HM.lookup f $ indexMapping maps) `JE.pair` JE.pairs ("field" J..= f)))
+      (\f -> f `JE.pair` JE.pairs (agg (fieldType <$> find ((f ==) . fieldName) (catalogFields cat)) `JE.pair` JE.pairs ("field" J..= f)))
       (queryAggs q)))
   where
   term (f, a, Nothing) = "term" `JE.pair` JE.pairs (f `JE.pair` bsc a)
@@ -82,8 +83,8 @@ queryIndex idx maps q =
   bound t a
     | BS.null a = mempty
     | otherwise = t `JE.pair` bsc a
-  agg (Just (FieldInfo Text)) = "terms"
-  agg (Just (FieldInfo Keyword)) = "terms"
+  agg (Just Text) = "terms"
+  agg (Just Keyword) = "terms"
   agg _ = "stats"
   bsc = JE.string . BSC.unpack
   clean = mapObject $ HM.mapMaybeWithKey cleanTop

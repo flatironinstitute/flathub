@@ -2,22 +2,15 @@
 
 module ES.Types
   ( Server(..)
-  , KeyMap
   , Type(..)
-  , FieldName
-  , FieldInfo(..)
-  , Index(..)
   , Query(..)
   ) where
 
 import qualified Data.Aeson as J
 import qualified Data.ByteString as BS
-import qualified Data.HashMap.Strict as HM
 import qualified Data.Text as T
 import qualified Network.HTTP.Client as HTTP
 import           Text.Read (readPrec, Lexeme(Ident), lexP, readEither)
-
-import JSON
 
 data Server = Server
   { serverRequest :: !HTTP.Request
@@ -79,53 +72,12 @@ instance J.ToJSON Type where
 instance J.FromJSON Type where
   parseJSON = J.withText "ES type" $ either fail return . readEither . T.unpack
 
-type FieldName = T.Text
-
-type KeyMap = HM.HashMap FieldName
-
-data FieldInfo = FieldInfo
-  { fieldType :: !Type
-  }
-
-instance J.ToJSON FieldInfo where
-  toJSON (FieldInfo t) = J.object
-    [ "type" J..= t
-    ]
-  toEncoding (FieldInfo t) = J.pairs
-    ( "type" J..= t
-    )
-
-instance J.FromJSON FieldInfo where
-  parseJSON = J.withObject "field" $ \o -> FieldInfo
-    <$> (o J..: "type")
-
-data Index = Index
-  { mappingName :: !FieldName
-  , indexMapping :: KeyMap FieldInfo
-  }
-
-instance J.ToJSON Index where
-  toJSON (Index name mapping) = J.object
-    [ "mappings" J..= J.object
-      [ name J..= J.object
-        [ "dynamic" J..= J.String "strict"
-        , "properties" J..= mapping
-        ]
-      ]
-    ]
-
-instance J.FromJSON Index where
-  parseJSON = J.withObject "index" $ parseJSONField "mappings" $
-    J.withObject "mappings" $ \ml -> case HM.toList ml of
-      [(n, m)] -> Index n <$> J.withObject "mapping" (J..: "properties") m
-      _ -> fail "multiple ES mappings"
-
 data Query = Query
   { queryOffset, queryLimit :: Word
-  , querySort :: [(FieldName, Bool)]
-  , queryFields :: [FieldName]
-  , queryFilter :: [(FieldName, BS.ByteString, Maybe BS.ByteString)]
-  , queryAggs :: [FieldName]
+  , querySort :: [(T.Text, Bool)]
+  , queryFields :: [T.Text]
+  , queryFilter :: [(T.Text, BS.ByteString, Maybe BS.ByteString)]
+  , queryAggs :: [T.Text]
   }
 
 instance Monoid Query where

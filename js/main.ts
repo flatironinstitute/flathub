@@ -11,16 +11,20 @@ function assert(x: any): void {
 
 type Dict<T> = { [name: string]: T };
 
-type Properties = Dict<{
-  type: string
-}>;
+type Field = {
+  name: string,
+  type: string,
+  title: string,
+  descr: string,
+  top: boolean,
+  disp: boolean
+};
 
 type Catalog = {
-  name: string,
+  title: string,
   query: {method: string, uri: string, csv: string},
-  fixed: string[],
+  fields: Field[],
   count?: number,
-  props: Properties
 };
 
 type Query = undefined|string|number|{lb:string|number, ub:string|number};
@@ -36,16 +40,13 @@ const Catalog: Catalog = (<any>window).Catalog;
 const Filters: Array<Filter> = [];
 var Update_aggs: number = 0;
 
-function select_options(select: HTMLSelectElement, options: string[], info: string[] = []) {
+function select_options(select: HTMLSelectElement, options: string[]|Dict<string>) {
   $(select).empty();
   select.appendChild(document.createElement('option'));
-  for (let i = 0; i < options.length; i++) {
-    let v = options[i];options[i];options[i];options[i];
+  for (let i in options) {
     let opt = document.createElement('option');
-    opt.setAttribute('value', v);
-    opt.textContent = v;
-    if (info[i])
-      opt.textContent += ' (' + info[i] + ')';
+    opt.setAttribute('value', i);
+    opt.textContent = (<any>options)[i];
     select.appendChild(opt);
   }
 }
@@ -118,12 +119,12 @@ function add_filt_row(name: string, ...nodes: Array<JQuery.htmlString | JQuery.T
   }
 }
 
-function add_filter(name: string) {
-  if (!TCat || Filters.some((f) => f.name == name))
+function add_filter(field: Field) {
+  if (!TCat || Filters.some((f) => f.name == field.name))
     return;
   let isint: boolean = false;
   const filt: Filter = {
-    name: name,
+    name: field.name,
     query: undefined,
   };
   const update = () => {
@@ -138,17 +139,20 @@ function add_filter(name: string) {
       let i = Filters.indexOf(filt);
       if (i < 0) return;
       Filters.splice(i, 1);
-      $('tr#filt-'+name).remove();
+      $('tr#filt-'+field.name).remove();
       Update_aggs = i;
-      TCat.column(name).search('').draw();
+      TCat.column(field.name).search('').draw();
     }),
-    name);
-  switch (Catalog.props[name].type) {
+    field.name);
+  switch (field.type) {
     case 'keyword': {
       let select = document.createElement('select');
-      select.name = name;
+      select.name = field.name;
       filt.update_aggs = (aggs: any) => {
-        select_options(select, aggs.buckets.map((b: any) => b.key), aggs.buckets.map((b: any) => b.doc_count));
+        let opts: Dict<string> = {};
+        for (let b of aggs.buckets)
+          opts[b.key] = b.key + ' (' + b.doc_count + ')';
+        select_options(select, opts);
         select.value = '';
       };
       let onchange = function () {
@@ -159,10 +163,10 @@ function add_filter(name: string) {
         else
           filt.query = undefined;
         update();
-        TCat.column(name).visible(!val).search(val).draw();
+        TCat.column(field.name).visible(!val).search(val).draw();
       };
       select.onchange = onchange;
-      add_filt_row(name, label, select);
+      add_filt_row(field.name, label, select);
       break;
     }
     case 'byte':
@@ -173,9 +177,9 @@ function add_filter(name: string) {
     case 'float':
     case 'double': {
       let lb = <HTMLInputElement>document.createElement('input');
-      lb.name = name+".lb";
+      lb.name = field.name+".lb";
       let ub = <HTMLInputElement>document.createElement('input');
-      ub.name = name+".ub";
+      ub.name = field.name+".ub";
       lb.type = ub.type = "number";
       lb.step = ub.step = isint ? <any>1 : "any";
       let avg = document.createElement('span');
@@ -196,10 +200,10 @@ function add_filter(name: string) {
             ub:isFinite(ubv) ? ubv : ''
           };
         update();
-        TCat.column(name).search(lbv+" TO "+ubv).draw();
+        TCat.column(field.name).search(lbv+" TO "+ubv).draw();
       };
       lb.onchange = ub.onchange = onchange;
-      add_filt_row(name, label,
+      add_filt_row(field.name, label,
         $('<span>').append(lb).append(' &ndash; ').append(ub),
         $('<span><em>M</em> = </span>').append(avg));
       break;
@@ -208,24 +212,25 @@ function add_filter(name: string) {
       return;
   }
   Filters.push(filt);
-  TCat.column(name).search('').draw();
+  TCat.column(field.name).search('').draw();
 }
 
 function init() {
   let cols = [];
   let addfilt = <HTMLSelectElement>document.createElement('select');
-  select_options(addfilt, Object.keys(Catalog.props));
+  select_options(addfilt, Catalog.fields.map((f) => f.name));
   add_filt_row('', addfilt);
-  for (let p in Catalog.props) {
+  for (let f of Catalog.fields)
     cols.push({
-      data: p,
-      name: p,
-      title: p,
+      data: f.name,
+      name: f.name,
+      title: f.title,
+      visible: f.disp,
+      type: ["byte","short","integer","half_float","float","double"].includes(f.type) ? "num" : "string",
       defaultContent: "",
     });
-  }
   addfilt.onchange = function () {
-    add_filter(addfilt.value);
+    add_filter(Catalog.fields[<number>addfilt.value]);
   };
   Update_aggs = 0;
   TCat = $('table#tcat').DataTable({
@@ -236,8 +241,9 @@ function init() {
     pageLength: 50,
     dom: 'l<"#download">rtip',
   });
-  if (Catalog.fixed)
-    Catalog.fixed.forEach(add_filter);
+  for (let f of Catalog.fields)
+    if (f.top)
+      add_filter(f);
 }
 
 $(() => {

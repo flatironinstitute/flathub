@@ -4,14 +4,13 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE ViewPatterns #-}
 
-import           Control.Arrow (first)
+import           Control.Exception (throwIO)
 import           Control.Monad (forM_, guard, unless, when)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (ask, asks)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
-import           Data.Array ((!), array, range)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import           Data.Foldable (fold)
@@ -22,8 +21,8 @@ import           Data.Monoid ((<>))
 import           Data.String (IsString)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
-import           Data.Tuple (swap)
 import qualified Data.Vector as V
+import qualified Data.Yaml as YAML
 import qualified Network.HTTP.Client as HTTP
 import           Network.HTTP.Types.Header (hContentType, hCacheControl)
 import           Network.HTTP.Types.Status (ok200, badRequest400)
@@ -43,6 +42,7 @@ import           Web.Route.Invertible.URI (routeActionURI)
 import           Web.Route.Invertible.Wai (routeWaiError)
 
 import qualified ES
+import Schema
 import Global
 import JSON
 import CSV
@@ -93,35 +93,29 @@ static = getPath ("js" R.*< R.manyI R.parameter) $ \paths _ -> do
     , (hCacheControl, "public, max-age=" <> (if length paths == 1 then "10, must-revalidate" else "1000000"))
     ] path Nothing
 
-fixedFields :: Simulation -> [T.Text]
-fixedFields IllustrisGroup = ["simulation", "snapshot"]
-fixedFields Neutrino = ["simulation", "instance", "snapshot"]
-fixedFields GAEA = []
-
-askIndex :: Simulation -> M ES.Index
-askIndex sim = asks $ (! sim) . globalIndices
+askCatalog :: Simulation -> M Catalog
+askCatalog sim = asks $ (HM.! sim) . globalCatalogs
 
 simulation :: Route Simulation
 simulation = getPath R.parameter $ \sim _ -> do
-  idx <- askIndex sim
+  cat <- askCatalog sim
   let 
     (qmeth, quri) = routeActionURI catalog sim
     (_, csvuri) = routeActionURI catalogCSV sim
-    cat = J.pairs $
-         "name" J..= show sim
+    jcat = J.pairs $
+         "title" J..= catalogTitle cat
       <> "query" `JE.pair` J.pairs
         (  "method" J..= (BSC.unpack <$> R.fromMethod qmeth)
         <> "uri" J..= show quri
         <> "csv" J..= show csvuri)
-      <> "props" J..= ES.indexMapping idx
-      <> "fixed" J..= fixedFields sim
+      <> "fields" J..= catalogFields cat
   return $ html $ do
     H.h2 $ H.string $ show sim
     H.table H.! HA.id "filt" $ mempty
     H.table H.! HA.id "tcat" H.! HA.class_ "compact" $ mempty
     H.script $ do
-      "Catalog = "
-      H.unsafeBuilder $ J.fromEncoding cat
+      "Catalog="
+      H.unsafeBuilder $ J.fromEncoding jcat
       ";System.import('main')"
 
 parseQuery :: Wai.Request -> ES.Query
@@ -143,24 +137,24 @@ chunkSize = 100
 
 catalog :: Route Simulation
 catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do
-  idx <- askIndex sim
+  cat <- askCatalog sim
   let query = parseQuery req
   when (ES.queryLimit query > chunkSize) $ result $ response badRequest400 [] ("limit too large" :: String)
-  res <- ES.queryIndex (show sim) idx query
+  res <- ES.queryIndex cat query
   return $ okResponse [(hContentType, "application/json")] res
 
 catalogCSV :: Route Simulation
 catalogCSV = getPath (R.parameter R.>* "csv") $ \sim req -> do
-  idx <- askIndex sim
+  cat <- askCatalog sim
   let query = parseQuery req
-      fields = if null (ES.queryFields query) then HM.keys (ES.indexMapping idx) else ES.queryFields query
+      fields = if null (ES.queryFields query) then map fieldName $ catalogFields cat else ES.queryFields query
       parse = J.withObject "query" $ parseJSONField "hits" $
         J.withObject "hits" $ parseJSONField "hits" $
           J.withArray "hits" $ V.mapM $ J.withObject "hit" $ \d ->
             return $ csvJSONRow $ map (\f -> HM.lookupDefault J.Null f d) fields
       loop send q = do
         let q' = q{ ES.queryLimit = min chunkSize (ES.queryLimit q) }
-        res <- ES.queryIndex (show sim) idx q'
+        res <- ES.queryIndex cat q'
         csv <- either fail return $ J.parseEither parse res
         unless (null csv) $ do
           () <- liftIO $ send $ fold csv
@@ -187,18 +181,20 @@ routes = R.routes
 main :: IO ()
 main = do
   conf <- C.load "config"
+  catalogs <- either throwIO return =<< YAML.decodeFileEither (fromMaybe "catalogs.yml" $ conf C.! "catalogs")
   httpmgr <- HTTP.newManager HTTP.defaultManagerSettings
   es <- ES.initServer (conf C.! "elasticsearch")
-  let simrange = (minBound, maxBound)
-      global' = Global
+  let global = Global
         { globalConfig = conf
         , globalHTTP = httpmgr
         , globalES = es
-        , globalIndices = array (swap simrange) []
+        , globalCatalogs = catalogs
         }
-  indices <- runGlobal global' $ ES.getIndices $ map show (range simrange)
-  let global = global'
-        { globalIndices = array simrange $ map (first $ read . T.unpack) $ HM.toList indices
-        }
+  -- check catalogs against es
+  indices <- runGlobal global $ ES.getIndices $ map (T.unpack . catalogIndex) $ HM.elems catalogs
+  either
+    (fail . ("ES index mismatch: " ++))
+    return
+    $ J.parseEither (checkESIndices $ HM.elems catalogs) indices
   runWaimwork conf $ runGlobal global
     . routeWaiError (\s h _ -> return $ response s h ()) routes

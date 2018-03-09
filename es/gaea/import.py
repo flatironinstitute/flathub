@@ -10,11 +10,11 @@ import os
 argp = argparse.ArgumentParser(description="gaea catalog elastic search import")
 argp.add_argument('-I', '--index', default='gaea', help="Index name")
 argp.add_argument('-T', '--type', default='catalog', help="Type name")
-argp.add_argument('-o', '--offset', default=0, help="Initial starting offset in first file")
+argp.add_argument('-o', '--offset', type=int, default=0, help="Initial starting offset in first file")
 argp.add_argument('file', nargs='+', help="Simulation files")
 args = argp.parse_args()
 
-es = elasticsearch.Elasticsearch()
+es = elasticsearch.Elasticsearch(timeout=120)
 
 mapping = es.indices.get_mapping(index=args.index, doc_type=args.type)[args.index]['mappings'][args.type]['properties']
 
@@ -52,7 +52,7 @@ def generate():
             if args.offset > count:
                 args.offset -= count
                 continue
-            for i in xrange(args.offset, keys[0][1].shape[0]):
+            for i in xrange(args.offset, count):
                 doc['_id'] = baseid + str(i)
                 for n, v in keys:
                     doc[n] = v[i].item()
