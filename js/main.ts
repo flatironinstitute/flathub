@@ -1,6 +1,5 @@
 import $ from "jquery";
 import "datatables.net";
-System.import('datatables.net').then(jq => jq());
 
 function assert(x: null|undefined): never;
 function assert(x: object): void;
@@ -120,7 +119,10 @@ function add_filt_row(name: string, ...nodes: Array<JQuery.htmlString | JQuery.T
 }
 
 function add_filter(field: Field) {
-  if (!TCat || Filters.some((f) => f.name == field.name))
+  if (!field || !TCat)
+    return;
+  const tcol = TCat.column(field.name+':name').visible(true);
+  if (Filters.some((f) => f.name == field.name))
     return;
   let isint: boolean = false;
   const filt: Filter = {
@@ -141,7 +143,7 @@ function add_filter(field: Field) {
       Filters.splice(i, 1);
       $('tr#filt-'+field.name).remove();
       Update_aggs = i;
-      TCat.column(field.name).search('').draw();
+      tcol.search('').draw();
     }),
     field.name);
   switch (field.type) {
@@ -156,14 +158,13 @@ function add_filter(field: Field) {
         select.value = '';
       };
       let onchange = function () {
-        if (!TCat) return;
         let val = select.value;
         if (val)
           filt.query = val;
         else
           filt.query = undefined;
         update();
-        TCat.column(field.name).visible(!val).search(val).draw();
+        tcol.search(val).visible(!val).draw();
       };
       select.onchange = onchange;
       add_filt_row(field.name, label, select);
@@ -189,7 +190,6 @@ function add_filter(field: Field) {
         avg.textContent = aggs.avg;
       };
       let onchange = function () {
-        if (!TCat) return;
         let lbv = lb.valueAsNumber;
         let ubv = ub.valueAsNumber;
         if (lbv == ubv)
@@ -200,7 +200,7 @@ function add_filter(field: Field) {
             ub:isFinite(ubv) ? ubv : ''
           };
         update();
-        TCat.column(field.name).search(lbv+" TO "+ubv).draw();
+        tcol.search(lbv+" TO "+ubv).visible(lbv==ubv).draw();
       };
       lb.onchange = ub.onchange = onchange;
       add_filt_row(field.name, label,
@@ -212,40 +212,39 @@ function add_filter(field: Field) {
       return;
   }
   Filters.push(filt);
-  TCat.column(field.name).search('').draw();
+  tcol.search('').draw();
 }
 
 function init() {
-  let cols = [];
   let addfilt = <HTMLSelectElement>document.createElement('select');
   select_options(addfilt, Catalog.fields.map((f) => f.name));
   add_filt_row('', addfilt);
-  for (let f of Catalog.fields)
-    cols.push({
-      data: f.name,
-      name: f.name,
-      title: f.title,
-      visible: f.disp,
-      type: ["byte","short","integer","half_float","float","double"].includes(f.type) ? "num" : "string",
-      defaultContent: "",
-    });
   addfilt.onchange = function () {
-    add_filter(Catalog.fields[<number>addfilt.value]);
+    add_filter(Catalog.fields[<any>addfilt.value]);
   };
   Update_aggs = 0;
   TCat = $('table#tcat').DataTable({
     serverSide: true,
     ajax: ajax,
-    columns: cols,
     scrollX: true,
     pageLength: 50,
     dom: 'l<"#download">rtip',
+  });
+  window.TCat = TCat;
+  new (<any>$.fn.dataTable).ColReorder(TCat);
+  $('.hide').on('click', function (event) {
+    if (TCat)
+      TCat.column(this.id.substr(5)+':name').visible(false);
+    event.stopPropagation();
   });
   for (let f of Catalog.fields)
     if (f.top)
       add_filter(f);
 }
 
-$(() => {
-  init();
+System.import("datatables.net-colreorder").then(jq => {
+  jq();
+  $(() => {
+    init();
+  });
 });

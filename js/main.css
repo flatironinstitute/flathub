@@ -7,3 +7,9 @@ button.remove {
   border-width: 1px;
   margin: 1px;
 }
+span.hide {
+  float: left;
+}
+th {
+  white-space: nowrap;
+}

@@ -49,6 +49,7 @@ SystemJS.config({
     "constants": "npm:jspm-nodelibs-constants@0.2.1",
     "crypto": "npm:jspm-nodelibs-crypto@0.2.1",
     "datatables.net": "npm:datatables.net@1.10.16",
+    "datatables.net-colreorder": "npm:datatables.net-colreorder@1.4.1",
     "datatables.net-dt": "npm:datatables.net-dt@1.10.16",
     "events": "npm:jspm-nodelibs-events@0.2.2",
     "fs": "npm:jspm-nodelibs-fs@0.2.1",
@@ -388,6 +389,12 @@ SystemJS.config({
     "npm:source-map-support@0.5.3": {
       "map": {
         "source-map": "npm:source-map@0.6.1"
+      }
+    },
+    "npm:datatables.net-colreorder@1.4.1": {
+      "map": {
+        "jquery": "npm:jquery@3.3.1",
+        "datatables.net": "npm:datatables.net@1.10.16"
       }
     }
   }

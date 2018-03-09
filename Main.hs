@@ -29,10 +29,10 @@ import           Network.HTTP.Types.Status (ok200, badRequest400)
 import qualified Network.Mime as Mime
 import qualified Network.Wai as Wai
 import qualified System.FilePath as FP
-import qualified Text.Blaze.Html5 as H
+import qualified Text.Blaze.Html5 as H hiding (text, textValue)
 import qualified Text.Blaze.Html5.Attributes as HA
 import           Text.Read (readMaybe)
-import qualified Waimwork.Blaze as H
+import qualified Waimwork.Blaze as H hiding ((!?))
 import qualified Waimwork.Config as C
 import           Waimwork.Response (response, okResponse)
 import           Waimwork.Result (result)
@@ -112,11 +112,32 @@ simulation = getPath R.parameter $ \sim _ -> do
   return $ html $ do
     H.h2 $ H.string $ show sim
     H.table H.! HA.id "filt" $ mempty
-    H.table H.! HA.id "tcat" H.! HA.class_ "compact" $ mempty
+    H.table H.! HA.id "tcat" H.! HA.class_ "compact" $ H.thead $ do
+      H.tr $
+        forM_ (catalogFields cat) $ \f ->
+          H.th
+              H.! H.dataAttribute "data" (H.textValue $ fieldName f)
+              H.! H.dataAttribute "name" (H.textValue $ fieldName f) 
+              H.! H.dataAttribute "type" (dtype $ fieldType f)
+              H.!? (not (fieldDisp f), H.dataAttribute "visible" "false")
+              H.! H.dataAttribute "default-content" mempty $ do
+            H.span H.! HA.id ("hide-" <> H.textValue (fieldName f)) H.! HA.class_ "hide" $ H.preEscapedString "&times;"
+            H.span H.! HA.title (H.textValue $ fieldDescr f) $ H.text $ fieldTitle f
     H.script $ do
       "Catalog="
       H.unsafeBuilder $ J.fromEncoding jcat
       ";System.import('main')"
+  where
+  dtype ES.Long = "num"
+  dtype ES.Integer = "num"
+  dtype ES.Short = "num"
+  dtype ES.Byte = "num"
+  dtype ES.Double = "num"
+  dtype ES.Float = "num"
+  dtype ES.HalfFloat = "num"
+  dtype (ES.ScaledFloat _) = "num"
+  dtype ES.Date = "date"
+  dtype _ = "string"
 
 parseQuery :: Wai.Request -> ES.Query
 parseQuery = foldMap parseQueryItem . Wai.queryString where
@@ -133,7 +154,7 @@ parseQuery = foldMap parseQueryItem . Wai.queryString where
     (a, b) = BSC.break (',' ==) $ fromMaybe BS.empty s
 
 chunkSize :: Word
-chunkSize = 100
+chunkSize = 1024
 
 catalog :: Route Simulation
 catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do
