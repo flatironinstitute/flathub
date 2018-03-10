@@ -6,41 +6,240 @@ illustris:
     - name: simulation
       type: keyword
       top: true
-      descr: e.g. 'Illustris-1' or 'Illustris-2-Dark'.
+      descr: "e.g. 'Illustris-1' or 'Illustris-2-Dark'."
     - name: snapshot
       type: short
+      title: 'snap'
       top: true
-      descr: snapshot number
+      descr: 'snapshot number'
     - name: time
       type: float
-      descr: Scalefactor of the snapshot corresponding to this group catalog.
+      descr: 'Scalefactor of the snapshot corresponding to this group catalog.'
       disp: false
     - name: redshift
       type: float
-      descr: Redshift of the snapshot corresponding to this group catalog.
+      descr: 'Redshift of the snapshot corresponding to this group catalog.'
 
     - name: BHMass
       type: float
+      units: '$ 10^{10} M_\odot / h $'
+      descr: 'Sum of the BH_Mass field of all blackholes (type 5) in this group.'
     - name: BHMdot
       type: float
+      title: '$\dot{M}_{\rm BH}'
+      units: '$(10^{10} M_\odot/h) / (0.978Gyr/h)$'
+      descr: 'Sum of the BH_Mdot field of all blackholes (type 5) in this group.'
     - name: CM_x
       type: float
+      title: '${\rm CM}_x$'
+      units: '$ ckpc/h $'
+      descr: 'Center of mass of the group, computed as the sum of the mass weighted relative coordinates of all particles/cells in the group, of all types. Comoving coordinate. (Available only for the Illustris-3 run)'
+    - name: CM_y
+      type: float
+      title: '${\rm CM}_y$'
+    - name: CM_z
+      type: float
+      title: '${\rm CM}_z$'
+    - name: FirstSub
+      type: integer
+      descr: 'Index into the <code>Subhalo</code> table of the first/primary/most massive Subfind group within this FoF group. Note: This value is signed (or should be interpreted as signed)! In this case, a value of -1 indicates that this FoF group has no subhalos.'
+    - name: GasMetallicity
+      type: float
+      descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of all gas cells in this FOF group.'
+    - name: Len
+      type: integer
+      title: '$N_{\rm part}$'
+      descr: 'Integer counter of the total number of particles/cells of all types in this group.'
+    - name: LenType_gas
+      type: integer
+      title: '$N_{\rm gas}$'
+      descr: 'Integer counter of the total number of particles/cells, split into the six different types, in this group. Note: Wind phase cells are counted as stars (type 4) for GroupLenType.'
+    - name: LenType_dm
+      type: integer
+      title: '$N_{\rm DM}$'
+    - name: LenType_unused
+      type: integer
+      disp: false
+    - name: LenType_tracers
+      type: integer
+    - name: LenType_stars
+      type: integer
+      title: '$N_{\rm stars}$'
+    - name: LenType_bh
+      type: integer
+      title: '$N_{\rm BH}$'
+    - name: Mass
+      type: float
+      title: '$M_{\rm tot}$'
+      units: '$ 10^{10} M_\odot / h $'
+      descr: 'Sum of the individual masses of every particle/cell, of all types, in this group.'
+    - name: MassType_gas
+      type: float
+      title: '$M_{\rm gas}$'
+      units: '$ 10^{10} M_\odot / h $'
+      descr: 'Sum of the individual masses of every particle/cell, split into the six different types, in this group. Note: Wind phase cells are counted as gas (type 0) for GroupMassType.'
+    - name: MassType_dm
+      type: float
+      title: '$M_{\rm DM}$'
+    - name: MassType_unused
+      type: float
+      disp: false
+    - name: MassType_tracers
+      type: float
+    - name: MassType_stars
+      type: float
+      title: '$M_{\star}$'
+    - name: MassType_bh
+      type: float
+      title: '$M_{\rm BH}$'
+    - name: Nsubs
+      type: integer
+      descr: 'Count of the total number of Subfind groups within this FoF group.'
+    - name: Pos_x
+      type: float
+      title: '$x$'
+      units: '$ ckpc/h $'
+      descr: 'Spatial position within the periodic box of the maximum bound particle. Comoving coordinate.'
+    - name: Pos_y
+      type: float
+      title: '$y$'
+    - name: Pos_z
+      type: float
+      title: '$z$'
+    - name: SFR
+      type: float
+      units: '$ M_\odot / yr $'
+      descr: 'Sum of the individual star formation rates of all gas cells in this group.'
+    - name: StarMetallicity
+      type: float
+      descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of all star particles in this FOF group.'
+    - name: Vel_x
+      type: float
+      title: '$v_x$'
+      units: '$ km/s/a $'
+      descr: 'Velocity of the group, computed as the sum of the mass weighted velocities of all particles/cells in this group, of all types. The peculiar velocity is obtained by multiplying this value by $1/a.$'
+    - name: Vel_y
+      type: float
+      title: '$v_y$'
+    - name: Vel_z
+      type: float
+      title: '$v_z$'
+    - name: WindMass
+      type: float
+      units: '$ 10^{10} M_\odot / h $'
+      descr: 'Sum of the individual masses of all wind phase gas cells (type 4, BirthTime <= 0) in this group.'
+    - name: M_Crit200
+      type: float
+      units: '$ 10^{10} M_\odot / h $'
+      descr: 'Total Mass of this group enclosed in a sphere whose mean density is 200 times the critical density of the Universe, at the time the halo is considered.  '
+      disp: false
+    - name: M_Crit500
+      type: float
+      units: '$ 10^{10} M_\odot / h $'
+      descr: 'Total Mass of this group enclosed in a sphere whose mean density is 500 times the critical density of the Universe, at the time the halo is considered. '
+      disp: false
+    - name: M_Mean200
+      type: float
+      units: '$ 10^{10} M_\odot / h $'
+      descr: 'Total Mass of this group enclosed in a sphere whose mean density is 200 times the mean density of the Universe, at the time the halo is considered. '
+      disp: false
+    - name: M_TopHat200
+      type: float
+      units: '$ 10^{10} M_\odot / h $'
+      descr: 'Total Mass of this group enclosed in a sphere whose mean density is $\Delta_c$ times the critical density of the Universe, at the time the halo is considered. $\Delta_c$ derives from the solution of the collapse of a spherical top-hat perturbation (fitting formula from <a href="http://adsabs.harvard.edu/abs/1998ApJ...495...80B">Bryan+ 1998</a>). The subscript 200 can be ignored.'
+      disp: false
+    - name: R_Crit200
+      type: float
+      units: '$ ckpc/h $'
+      descr: 'Comoving Radius of a sphere centered at the GroupPos of this Group whose mean density is 200 times the critical density of the Universe, at the time the halo is considered.'
+      disp: false
+    - name: R_Crit500
+      type: float
+      units: '$ ckpc/h $'
+      descr: 'Comoving Radius of a sphere centered at the GroupPos of this Group whose mean density is 500 times the critical density of the Universe, at the time the halo is considered.'
+      disp: false
+    - name: R_Mean200
+      type: float
+      units: '$ ckpc/h $'
+      descr: 'Comoving Radius of a sphere centered at the GroupPos of this Group whose mean density is 200 times the mean density of the Universe, at the time the halo is considered.'
+      disp: false
+    - name: R_TopHat200
+      type: float
+      units: '$ ckpc/h $'
+      descr: 'Comoving Radius of a sphere centered at the GroupPos of this Group whose mean density is $\Delta_c$ times the critical density of the Universe, at the time the halo is considered.'
+      disp: false
+illustris_sub:
+  title: Illustris Subfind
+  index: illustris_sub
+  mapping: subhalo
+  fields:
+    - name: BHMass
+      type: float
+      units: '$ 10^{10} M_\odot/h $'
+      descr: 'Sum of the masses of all blackholes in this subhalo.'
+    - name: BHMdot
+      type: float
+      units: '$(10^{10} M_\odot/h) / (0.978Gyr/h)$'
+      descr: 'Sum of the instantaneous accretion rates $\dot{M}$ of all blackholes in this subhalo.'
+    - name: CM_x
+      type: float
+      units: '$ ckpc/h $'
+      descr: 'Comoving center of mass of the Subhalo, computed as the sum of the mass weighted relative coordinates of all particles/cells in the Subhalo, of all types.'
     - name: CM_y
       type: float
     - name: CM_z
       type: float
-    - name: FirstSub
-      type: integer
     - name: GasMetallicity
       type: float
+      descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of the gas cells bound to this Subhalo, but restricted to cells within <b>twice</b> the stellar half mass radius.'
+    - name: GasMetallicityHalfRad
+      type: float
+      descr: 'Same as SubhaloGasMetallicity, but restricted to cells within the stellar half mass radius.'
+    - name: GasMetallicityMaxRad
+      type: float
+      descr: 'Same as SubhaloGasMetallicity, but restricted to cells within the radius of $V_{max}$.'
+    - name: GasMetallicitySfr
+      type: float
+      descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of the gas cells bound to this Subhalo, but restricted to cells which are star forming.'
+    - name: GasMetallicitySfrWeighted
+      type: float
+      descr: 'Same as SubhaloGasMetallicitySfr, but weighted by the cell star-formation rate rather than the cell mass.'
+    - name: GrNr
+      type: integer
+      descr: 'Index into the Group table of the FOF host/parent of this Subhalo.'
+    - name: HalfmassRad
+      type: float
+      units: '$ ckpc/h $'
+      descr: 'Comoving radius containing half of the total mass (SubhaloMass) of this Subhalo.'
+    - name: HalfmassRadType_gas
+      type: float
+      units: '$ ckpc/h $'
+      descr: 'Comoving radius containing half of the mass of this Subhalo split by Type (SubhaloMassType).'
+    - name: HalfmassRadType_dm
+      type: float
+    - name: HalfmassRadType_unused
+      type: float
+      disp: false
+    - name: HalfmassRadType_tracers
+      type: float
+    - name: HalfmassRadType_stars
+      type: float
+    - name: HalfmassRadType_bh
+      type: float
+    - name: IDMostbound
+      type: long
+      descr: 'The ID of the particle with the smallest binding energy (could be any type).'
     - name: Len
       type: integer
+      descr: 'Total number of member particle/cells in this Subhalo, of all types.'
     - name: LenType_gas
       type: integer
+      descr: 'Total number of member particle/cells in this Subhalo, separated by type.'
     - name: LenType_dm
       type: integer
     - name: LenType_unused
       type: integer
+      disp: false
     - name: LenType_tracers
       type: integer
     - name: LenType_stars
@@ -49,54 +248,176 @@ illustris:
       type: integer
     - name: Mass
       type: float
+      units: '$ 10^{10} M_\odot/h $'
+      descr: 'Total mass of all member particle/cells which are bound to this Subhalo, of all types. Particle/cells bound to subhaloes of this Subhalo are NOT accounted for.'
+    - name: MassInHalfRad
+      type: float
+      units: '$ 10^{10} M_\odot/h $'
+      descr: 'Sum of masses of all particles/cells within the stellar half mass radius.'
+    - name: MassInHalfRadType_gas
+      type: float
+      units: '$ 10^{10} M_\odot/h $'
+      descr: 'Sum of masses of all particles/cells (split by type) within the stellar half mass radius.'
+    - name: MassInHalfRadType_dm
+      type: float
+    - name: MassInHalfRadType_unused
+      type: float
+      disp: false
+    - name: MassInHalfRadType_tracers
+      type: float
+    - name: MassInHalfRadType_stars
+      type: float
+    - name: MassInHalfRadType_bh
+      type: float
+    - name: MassInMaxRad
+      type: float
+      units: '$ 10^{10} M_\odot/h $'
+      descr: 'Sum of masses of all particles/cells within the radius of $V_{max}$.'
+    - name: MassInMaxRadType_gas
+      type: float
+      units: '$ 10^{10} M_\odot/h $'
+      descr: 'Sum of masses of all particles/cells (split by type) within the radius of $V_{max}$.'
+    - name: MassInMaxRadType_dm
+      type: float
+    - name: MassInMaxRadType_unused
+      type: float
+      disp: false
+    - name: MassInMaxRadType_tracers
+      type: float
+    - name: MassInMaxRadType_stars
+      type: float
+    - name: MassInMaxRadType_bh
+      type: float
+    - name: MassInRad
+      type: float
+      units: '$ 10^{10} M_\odot/h $'
+      descr: 'Sum of masses of all particles/cells within <b>twice</b> the stellar half mass radius.'
+    - name: MassInRadType_gas
+      type: float
+      units: '$ 10^{10} M_\odot/h $'
+      descr: 'Sum of masses of all particles/cells (split by type) within <b>twice</b> the stellar half mass radius.'
+    - name: MassInRadType_dm
+      type: float
+    - name: MassInRadType_unused
+      type: float
+      disp: false
+    - name: MassInRadType_tracers
+      type: float
+    - name: MassInRadType_stars
+      type: float
+    - name: MassInRadType_bh
+      type: float
     - name: MassType_gas
       type: float
+      units: '$ 10^{10} M_\odot/h $'
+      descr: 'Total mass of all member particle/cells which are bound to this Subhalo, separated by type. Particle/cells bound to subhaloes of this Subhalo are NOT accounted for. Note: Wind phase cells are counted as gas (type 0) for SubhaloMassType.'
     - name: MassType_dm
       type: float
     - name: MassType_unused
       type: float
+      disp: false
     - name: MassType_tracers
       type: float
     - name: MassType_stars
       type: float
     - name: MassType_bh
       type: float
-    - name: Nsubs
+    - name: Parent
       type: integer
+      descr: 'Index into the Subhalo table of the unique SUBF host/parent of this Subhalo. This index is local to the group (i.e. 2 indicates the third most massive subhalo of the parent halo of this subhalo, not the third most massive of the whole snapshot). The values are often zero for all subhalos of a group, indicating that there is no resolved hierarchical structure in that group, beyond the primary subhalo having as direct children all of the secondary subhalos.'
     - name: Pos_x
       type: float
+      units: '$ ckpc/h $'
+      descr: 'Spatial position within the periodic box of the maximum bound particle. Comoving coordinate.'
     - name: Pos_y
       type: float
     - name: Pos_z
       type: float
     - name: SFR
       type: float
+      units: '$ M_\odot / yr $'
+      descr: 'Sum of the individual star formation rates of all gas cells in this subhalo.'
+    - name: SFRinHalfRad
+      type: float
+      units: '$ M_\odot / yr $'
+      descr: 'Same as SubhaloSFR, but restricted to cells within the stellar half mass radius.'
+    - name: SFRinMaxRad
+      type: float
+      units: '$ M_\odot / yr $'
+      descr: 'Same as SubhaloSFR, but restricted to cells within the radius of $V_{max}$.'
+    - name: SFRinRad
+      type: float
+      units: '$ M_\odot / yr $'
+      descr: 'Same as SubhaloSFR, but restricted to cells within <b>twice</b> the stellar half mass radius.'
+    - name: Spin_x
+      type: float
+      units: '$ (kpc/h) (km/s) $'
+      descr: 'Total spin per axis, computed for each as the mass weighted sum of the relative coordinate times relative velocity of all member particles/cells.'
+    - name: Spin_y
+      type: float
+    - name: Spin_z
+      type: float
     - name: StarMetallicity
       type: float
+      units: '-'
+      descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of the star particles bound to this Subhalo, but restricted to stars within <b>twice</b> the stellar half mass radius.'
+    - name: StarMetallicityHalfRad
+      type: float
+      descr: 'Same as SubhaloStarMetallicity, but restricted to stars within the stellar half mass radius.'
+    - name: StarMetallicityMaxRad
+      type: float
+      units: '-'
+      descr: 'Same as SubhaloStarMetallicity, but restricted to stars within the radius of $V_{max}$.'
+    - name: StellarPhotometrics_U
+      type: float
+      units: '$ mag $'
+      descr: 'Eight bands: U, B, V, K, g, r, i, z. Magnitudes based on the summed-up luminosities of all the stellar particles of the group. For details on the bands, see snapshot table for stars.'
+    - name: StellarPhotometrics_B
+      type: float
+    - name: StellarPhotometrics_V
+      type: float
+    - name: StellarPhotometrics_K
+      type: float
+    - name: StellarPhotometrics_g
+      type: float
+    - name: StellarPhotometrics_r
+      type: float
+    - name: StellarPhotometrics_i
+      type: float
+    - name: StellarPhotometrics_z
+      type: float
+    - name: StellarPhotometricsMassInRad
+      type: float
+      units: '$ 10^{10} M_\odot/h $'
+      descr: 'Sum of the mass of the member stellar particles, but restricted to stars within the radius SubhaloStellarPhotometricsRad.'
+    - name: StellarPhotometricsRad
+      type: float
+      units: '$ ckpc/h $'
+      descr: 'Radius at which the surface brightness profile (computed from all member stellar particles) drops below the limit of 20.7 mag arcsec$^{-2}$ in the K band (in comoving units).'
     - name: Vel_x
       type: float
+      units: '$ km/s $'
+      descr: 'Peculiar velocity of the group, computed as the sum of the mass weighted velocities of all particles/cells in this group, of all types. No unit conversion is needed.'
     - name: Vel_y
       type: float
     - name: Vel_z
       type: float
+    - name: VelDisp
+      type: float
+      units: '$ km/s $'
+      descr: 'One-dimensional velocity dispersion of all the member particles/cells (the 3D dispersion divided by $\sqrt{3}$).'
+    - name: Vmax
+      type: float
+      units: '$ km/s $'
+      descr: 'Maximum value of the spherically-averaged rotation curve.'
+    - name: VmaxRad
+      type: float
+      units: '$ kpc/h $'
+      descr: 'Comoving radius of rotation curve maximum (where $V_{max}$ is achieved).'
     - name: WindMass
       type: float
-    - name: M_Crit200
-      type: float
-    - name: M_Crit500
-      type: float
-    - name: M_Mean200
-      type: float
-    - name: M_TopHat200
-      type: float
-    - name: R_Crit200
-      type: float
-    - name: R_Crit500
-      type: float
-    - name: R_Mean200
-      type: float
-    - name: R_TopHat200
-      type: float
+      units: '$ 10^{10} M_\odot/h $'
+      descr: 'Sum of masses of all wind-phase cells in this subhalo (with Type==4 and BirthTime&#60;=0).'
 neutrino:
   title: Neutrino
   index: neutrino
@@ -142,6 +463,7 @@ neutrino:
       type: float
     - name: LenType_unused
       type: float
+      disp: false
     - name: LenType_tracers
       type: float
     - name: LenType_stars
@@ -154,6 +476,7 @@ neutrino:
       type: float
     - name: MassType_unused
       type: float
+      disp: false
     - name: MassType_tracers
       type: float
     - name: MassType_stars
