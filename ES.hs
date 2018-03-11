@@ -1,9 +1,12 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module ES
   ( module ES.Types
   , initServer
+  , IndexSettings(..)
+  , createIndex
   , getIndices
   , queryIndex
   ) where
@@ -17,6 +20,7 @@ import qualified Data.Aeson.Types as J (parseEither, emptyObject)
 import qualified Data.Attoparsec.ByteString as AP
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
+import           Data.Default (Default(def))
 import qualified Data.HashMap.Strict as HM
 import           Data.List (intercalate, find)
 import           Data.Monoid ((<>))
@@ -24,17 +28,18 @@ import qualified Data.Text as T
 import qualified Data.Vector as V
 import qualified Network.HTTP.Client as HTTP
 import           Network.HTTP.Types.Header (hAccept, hContentType)
-import           Network.HTTP.Types.Method (StdMethod(GET), renderStdMethod)
+import           Network.HTTP.Types.Method (StdMethod(GET, PUT), renderStdMethod)
 import qualified Network.URI as URI
 import qualified Waimwork.Config as C
 
+import JSON
 import ES.Types
 import Schema
 import Global
 
 initServer :: C.Config -> IO Server
 initServer conf = Server
-  <$> HTTP.parseRequest (conf C.! "server")
+  <$> HTTP.parseUrlThrow (conf C.! "server")
 
 elasticSearch :: J.FromJSON r => StdMethod -> [String] -> Maybe J.Encoding -> M r
 elasticSearch meth url body = do
@@ -46,7 +51,6 @@ elasticSearch meth url body = do
         , HTTP.path = HTTP.path req <> BS.intercalate "/" (map (BSC.pack . URI.escapeURIString URI.isUnescapedInURIComponent) url)
         , HTTP.requestHeaders = (hAccept, "application/json") : HTTP.requestHeaders req
         }
-  -- HTTP.setRequestIgnoreStatus
   liftIO $
     either fail return . (J.parseEither J.parseJSON <=< AP.eitherResult)
       =<< HTTP.withResponse req' (globalHTTP glob) parse
@@ -56,6 +60,42 @@ elasticSearch meth url body = do
     , HTTP.requestBody = HTTP.RequestBodyLBS $ JE.encodingToLazyByteString bod
     }
   parse r = AP.parseWith (HTTP.responseBody r) J.json BS.empty
+
+data IndexSettings = IndexSettings
+  { indexNumberOfShards
+  , indexNumberOfReplicas
+  , indexNumberOfRoutingShards :: Word
+  }
+
+instance Default IndexSettings where
+  def = IndexSettings
+    { indexNumberOfShards = 8
+    , indexNumberOfReplicas = 1
+    , indexNumberOfRoutingShards = 8
+    }
+
+instance J.ToJSON IndexSettings where
+  toJSON IndexSettings{..} = J.object
+    [ "number_of_shards" J..= indexNumberOfShards
+    , "number_of_replicas" J..= indexNumberOfReplicas
+    , "number_of_routing_shards" J..= indexNumberOfRoutingShards
+    ]
+  toEncoding IndexSettings{..} = J.pairs
+    (  "number_of_shards" J..= indexNumberOfShards
+    <> "number_of_replicas" J..= indexNumberOfReplicas
+    <> "number_of_routing_shards" J..= indexNumberOfRoutingShards
+    )
+
+createIndex :: IndexSettings -> Catalog -> M J.Value
+createIndex sets cat = elasticSearch PUT [T.unpack $ catalogIndex cat] $ Just $ JE.pairs $
+     "settings" .=*
+    (  "index" J..= sets)
+  <> "mappings" .=*
+    (  catalogMapping cat .=*
+      (  "dynamic" J..= J.String "strict"
+      <> "properties" .=* (foldMap (\f ->
+          fieldName f .=* ("type" J..= fieldType f))
+        $ expandFields $ catalogFields cat)))
 
 getIndices :: [String] -> M J.Value
 getIndices idx = elasticSearch GET [if null idx then "_all" else intercalate "," idx] Nothing
@@ -70,15 +110,15 @@ queryIndex cat q =
     <> "sort" `JE.pair` JE.list (\(f, a) -> JE.pairs (f J..= if a then "asc" else "desc" :: String)) (querySort q)
     <> (if null (queryFields q) then mempty else
        "_source" J..= queryFields q)
-    <> "query" `JE.pair` JE.pairs
-      ("bool" `JE.pair` JE.pairs
+    <> "query" .=*
+      ("bool" .=*
         ("filter" `JE.pair` JE.list (JE.pairs . term) (queryFilter q)))
-    <> "aggs" `JE.pair` JE.pairs (foldMap
-      (\f -> f `JE.pair` JE.pairs (agg (fieldType <$> find ((f ==) . fieldName) (catalogFields cat)) `JE.pair` JE.pairs ("field" J..= f)))
+    <> "aggs" .=* (foldMap
+      (\f -> f .=* (agg (fieldType <$> find ((f ==) . fieldName) (expandFields $ catalogFields cat)) .=* ("field" J..= f)))
       (queryAggs q)))
   where
-  term (f, a, Nothing) = "term" `JE.pair` JE.pairs (f `JE.pair` bsc a)
-  term (f, a, Just b) = "range" `JE.pair` JE.pairs (f `JE.pair` JE.pairs
+  term (f, a, Nothing) = "term" .=* (f `JE.pair` bsc a)
+  term (f, a, Just b) = "range" .=* (f .=*
     (bound "gte" a <> bound "lte" b))
   bound t a
     | BS.null a = mempty

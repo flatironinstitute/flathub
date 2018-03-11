@@ -3,15 +3,22 @@
 
 module Schema
   ( Field(..)
+  , Fields
   , Catalog(..)
+  , subField
+  , expandFields
+  , fieldsDepth
   , checkESIndices
   ) where
 
 import           Control.Monad (forM_, unless)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Types as J
+import           Data.Default (Default(def))
 import           Data.Monoid ((<>))
+import           Data.Semigroup (Max(getMax))
 import qualified Data.Text as T
+import qualified Data.Vector as V
 
 import qualified ES.Types as ES
 import JSON
@@ -22,7 +29,13 @@ data Field = Field
   , fieldTitle :: T.Text
   , fieldDescr :: T.Text
   , fieldTop, fieldDisp :: Bool
+  , fieldSub :: Maybe Fields
   }
+
+type Fields = V.Vector Field
+
+instance Default Field where
+  def = Field T.empty def T.empty T.empty False True Nothing
 
 instance J.ToJSON Field where
   toJSON Field{..} = J.object
@@ -43,20 +56,37 @@ instance J.ToJSON Field where
     )
 
 instance J.FromJSON Field where
-  parseJSON = J.withObject "field" $ \f -> do
-    n <- f J..: "name"
-    u <- f J..:? "units"
-    Field n
-      <$> (f J..: "type")
-      <*> (f J..:! "title" J..!= n)
-      <*> (maybe id (\u' -> (<> " (" <> u' <> ")")) u <$> f J..:? "descr" J..!= "")
-      <*> (f J..:? "top" J..!= False)
-      <*> (f J..:! "disp" J..!= True)
+  parseJSON = parseFieldDefs def where
+    parseFieldDefs d = J.withObject "field" $ \f -> do
+      n <- f J..: "name"
+      u <- f J..:? "units"
+      r <- Field n
+        <$> (f J..:! "type" J..!= fieldType d)
+        <*> (f J..:! "title" J..!= n)
+        <*> (maybe id (\u' -> (<> " (" <> u' <> ")")) u <$> f J..:? "descr" J..!= "")
+        <*> (f J..:? "top" J..!= fieldTop d)
+        <*> (f J..:! "disp" J..!= fieldDisp d)
+        <*> return Nothing
+      s <- J.explicitParseFieldMaybe' (J.withArray "subfields" $ V.mapM $ parseFieldDefs r) f "sub"
+      return r{ fieldSub = s }
+
+subField :: Field -> Field -> Field
+subField f s = s{ fieldName = fieldName f <> T.cons '_' (fieldName s) }
+
+expandFields :: Fields -> Fields
+expandFields = foldMap expandField where
+  expandField f@Field{ fieldSub = Nothing } = return f
+  expandField f@Field{ fieldSub = Just l } =
+    foldMap (expandField . subField f) l
+
+fieldsDepth :: Fields -> Word
+fieldsDepth = getMax . depth where
+  depth = succ . foldMap (foldMap depth . fieldSub)
 
 data Catalog = Catalog
   { catalogTitle :: T.Text
   , catalogIndex, catalogMapping :: T.Text
-  , catalogFields :: [Field]
+  , catalogFields :: Fields
   }
 
 instance J.FromJSON Catalog where
@@ -73,8 +103,8 @@ checkESIndices cats = J.withObject "indices" $ \is ->
   where
   idx :: Catalog -> J.Value -> J.Parser ()
   idx cat = J.withObject "index" $ parseJSONField "mappings" $ J.withObject "mappings" $
-    parseJSONField (catalogMapping cat) (mapping $ catalogFields cat)
-  mapping :: [Field] -> J.Value -> J.Parser ()
+    parseJSONField (catalogMapping cat) (mapping $ expandFields $ catalogFields cat)
+  mapping :: Fields -> J.Value -> J.Parser ()
   mapping fields = J.withObject "mapping" $ parseJSONField "properties" $ J.withObject "properties" $ \ps ->
     forM_ fields $ \field -> parseJSONField (fieldName field) (prop field) ps
   prop :: Field -> J.Value -> J.Parser ()

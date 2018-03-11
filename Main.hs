@@ -5,14 +5,14 @@
 {-# LANGUAGE ViewPatterns #-}
 
 import           Control.Exception (throwIO)
-import           Control.Monad (forM_, guard, unless, when)
+import           Control.Monad ((<=<), forM_, guard, unless, when)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (ask, asks)
 import qualified Data.Aeson as J
-import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
+import           Data.Default (Default(def))
 import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Map.Strict as Map
@@ -28,6 +28,9 @@ import           Network.HTTP.Types.Header (hContentType, hCacheControl)
 import           Network.HTTP.Types.Status (ok200, badRequest400)
 import qualified Network.Mime as Mime
 import qualified Network.Wai as Wai
+import qualified System.Console.GetOpt as Opt
+import           System.Environment (getProgName, getArgs)
+import           System.Exit (exitFailure)
 import qualified System.FilePath as FP
 import qualified Text.Blaze.Html5 as H hiding (text, textValue)
 import qualified Text.Blaze.Html5.Attributes as HA
@@ -104,25 +107,37 @@ simulation = getPath R.parameter $ \sim _ -> do
     (_, csvuri) = routeActionURI catalogCSV sim
     jcat = J.pairs $
          "title" J..= catalogTitle cat
-      <> "query" `JE.pair` J.pairs
+      <> "query" .=*
         (  "method" J..= (BSC.unpack <$> R.fromMethod qmeth)
         <> "uri" J..= show quri
         <> "csv" J..= show csvuri)
       <> "fields" J..= catalogFields cat
+    fieldBody f = H.span H.! HA.title (H.textValue $ fieldDescr f) $ H.text $ fieldTitle f
+    field :: Word -> Field -> H.Html
+    field d f@Field{ fieldSub = Nothing } = do
+      H.th
+          H.! HA.rowspan (H.toValue d)
+          H.! H.dataAttribute "data" (H.textValue $ fieldName f)
+          H.! H.dataAttribute "name" (H.textValue $ fieldName f) 
+          H.! H.dataAttribute "type" (dtype $ fieldType f)
+          H.!? (not (fieldDisp f), H.dataAttribute "visible" "false")
+          H.! H.dataAttribute "default-content" mempty $ do
+        H.span H.! HA.id ("hide-" <> H.textValue (fieldName f)) H.! HA.class_ "hide" $ H.preEscapedString "&times;"
+        fieldBody f
+    field _ f@Field{ fieldSub = Just s } = do
+      H.th
+          H.! HA.colspan (H.toValue $ V.length $ expandFields s) $
+        fieldBody f
+    row :: Word -> Fields -> H.Html
+    row d l = do
+      H.tr $ mapM_ (field d) l
+      when (d > 1) $ row (pred d) $ foldMap (\f -> foldMap (subField f <$>) $ fieldSub f) l
+    fields = catalogFields cat
   return $ html $ do
     H.h2 $ H.string $ show sim
     H.table H.! HA.id "filt" $ mempty
-    H.table H.! HA.id "tcat" H.! HA.class_ "compact" $ H.thead $ do
-      H.tr $
-        forM_ (catalogFields cat) $ \f ->
-          H.th
-              H.! H.dataAttribute "data" (H.textValue $ fieldName f)
-              H.! H.dataAttribute "name" (H.textValue $ fieldName f) 
-              H.! H.dataAttribute "type" (dtype $ fieldType f)
-              H.!? (not (fieldDisp f), H.dataAttribute "visible" "false")
-              H.! H.dataAttribute "default-content" mempty $ do
-            H.span H.! HA.id ("hide-" <> H.textValue (fieldName f)) H.! HA.class_ "hide" $ H.preEscapedString "&times;"
-            H.span H.! HA.title (H.textValue $ fieldDescr f) $ H.text $ fieldTitle f
+    H.table H.! HA.id "tcat" H.! HA.class_ "compact" $ H.thead $
+      row (fieldsDepth fields) fields
     H.script $ do
       "Catalog="
       H.unsafeBuilder $ J.fromEncoding jcat
@@ -168,7 +183,7 @@ catalogCSV :: Route Simulation
 catalogCSV = getPath (R.parameter R.>* "csv") $ \sim req -> do
   cat <- askCatalog sim
   let query = parseQuery req
-      fields = if null (ES.queryFields query) then map fieldName $ catalogFields cat else ES.queryFields query
+      fields = if null (ES.queryFields query) then map fieldName $ V.toList (expandFields $ catalogFields cat) else ES.queryFields query
       parse = J.withObject "query" $ parseJSONField "hits" $
         J.withObject "hits" $ parseJSONField "hits" $
           J.withArray "hits" $ V.mapM $ J.withObject "hit" $ \d ->
@@ -199,9 +214,31 @@ routes = R.routes
   , R.routeNormCase catalogCSV
   ]
 
+data Opts = Opts
+  { optConfig :: FilePath
+  , optIndices :: [Simulation]
+  }
+
+instance Default Opts where
+  def = Opts "config" []
+
+optDescr :: [Opt.OptDescr (Opts -> Opts)]
+optDescr =
+  [ Opt.Option "c" ["config"] (Opt.ReqArg (\c o -> o{ optConfig = c }) "FILE") "Configuration file [config]"
+  , Opt.Option "i" ["index"] (Opt.ReqArg (\i o -> o{ optIndices = read i : optIndices o }) "SIM") "Create an ES index for the given simulation"
+  ]
+
 main :: IO ()
 main = do
-  conf <- C.load "config"
+  prog <- getProgName
+  args <- getArgs
+  opts <- case Opt.getOpt Opt.Permute optDescr args of
+    (f, [], []) -> return $ foldr ($) def f
+    (_, _, e) -> do
+      mapM_ putStrLn e
+      putStrLn $ Opt.usageInfo ("Usage: " ++ prog ++ " [OPTION...]") optDescr
+      exitFailure
+  conf <- C.load $ optConfig opts
   catalogs <- either throwIO return =<< YAML.decodeFileEither (fromMaybe "catalogs.yml" $ conf C.! "catalogs")
   httpmgr <- HTTP.newManager HTTP.defaultManagerSettings
   es <- ES.initServer (conf C.! "elasticsearch")
@@ -211,6 +248,9 @@ main = do
         , globalES = es
         , globalCatalogs = catalogs
         }
+
+  runGlobal global $ mapM_ (liftIO . print <=< ES.createIndex def . (catalogs HM.!)) $ optIndices opts
+    
   -- check catalogs against es
   indices <- runGlobal global $ ES.getIndices $ map (T.unpack . catalogIndex) $ HM.elems catalogs
   either

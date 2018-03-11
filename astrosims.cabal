@@ -28,6 +28,7 @@ executable astrosims
     , blaze-html
     , bytestring
     , containers
+    , data-default
     , filepath
     , hashable
     , http-client

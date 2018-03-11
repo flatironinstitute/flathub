@@ -8,6 +8,7 @@ module ES.Types
 
 import qualified Data.Aeson as J
 import qualified Data.ByteString as BS
+import           Data.Default (Default(def))
 import qualified Data.Text as T
 import qualified Network.HTTP.Client as HTTP
 import           Text.Read (readPrec, Lexeme(Ident), lexP, readEither)
@@ -31,6 +32,9 @@ data Type
   | Boolean
   | Binary
   deriving (Eq)
+
+instance Default Type where
+  def = Float
 
 instance Show Type where
   show Text             = "text"
