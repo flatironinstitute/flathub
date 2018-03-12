@@ -63,9 +63,12 @@ html :: H.Markup -> Wai.Response
 html h = okResponse [] $ H.docTypeHtml $ do
   H.head $ do
     forM_ [["jspm_packages", "system.src.js"], ["jspm.config.js"]] $ \src ->
-      H.script H.! HA.src (staticURI src) $ mempty
+      H.script H.! HA.type_ "text/javascript" H.! HA.src (staticURI src) $ mempty
     forM_ [["jspm_packages", "npm", "datatables.net-dt@1.10.16", "css", "jquery.dataTables.css"], ["main.css"]] $ \src ->
       H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
+    H.script H.! HA.type_ "text/x-mathjax-config" $
+      "MathJax.Hub.Config({ jax: ['input/TeX','output/HTML-CSS'], extensions: ['tex2jax.js'], tex2jax: {inlineMath: [['$','$'], ['\\\\(','\\\\)']]} })"
+    H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/MathJax.js" $ mempty
   H.body h
 
 top :: Route ()
@@ -105,15 +108,16 @@ simulation = getPath R.parameter $ \sim _ -> do
   let 
     (qmeth, quri) = routeActionURI catalog sim
     (_, csvuri) = routeActionURI catalogCSV sim
+    fields = catalogFields cat
     jcat = J.pairs $
          "title" J..= catalogTitle cat
       <> "query" .=*
         (  "method" J..= (BSC.unpack <$> R.fromMethod qmeth)
         <> "uri" J..= show quri
         <> "csv" J..= show csvuri)
-      <> "fields" J..= catalogFields cat
+      <> "fields" J..= expandFields fields
     fieldBody f = H.span H.! HA.title (H.textValue $ fieldDescr f) $ H.text $ fieldTitle f
-    field :: Word -> Field -> H.Html
+    field :: Word -> FieldGroup -> H.Html
     field d f@Field{ fieldSub = Nothing } = do
       H.th
           H.! HA.rowspan (H.toValue d)
@@ -126,13 +130,12 @@ simulation = getPath R.parameter $ \sim _ -> do
         fieldBody f
     field _ f@Field{ fieldSub = Just s } = do
       H.th
-          H.! HA.colspan (H.toValue $ V.length $ expandFields s) $
+          H.! HA.colspan (H.toValue $ length $ expandFields s) $
         fieldBody f
-    row :: Word -> Fields -> H.Html
+    row :: Word -> FieldGroups -> H.Html
     row d l = do
       H.tr $ mapM_ (field d) l
       when (d > 1) $ row (pred d) $ foldMap (\f -> foldMap (subField f <$>) $ fieldSub f) l
-    fields = catalogFields cat
   return $ html $ do
     H.h2 $ H.string $ show sim
     H.table H.! HA.id "filt" $ mempty
@@ -140,8 +143,8 @@ simulation = getPath R.parameter $ \sim _ -> do
       row (fieldsDepth fields) fields
     H.script $ do
       "Catalog="
-      H.unsafeBuilder $ J.fromEncoding jcat
-      ";System.import('main')"
+      H.preEscapedBuilder $ J.fromEncoding jcat
+      ";System.import('main').then(function(main){main.default(Catalog);});"
   where
   dtype ES.Long = "num"
   dtype ES.Integer = "num"
@@ -165,6 +168,7 @@ parseQuery = foldMap parseQueryItem . Wai.queryString where
       _             -> (TE.decodeUtf8 f, True)
   parseQueryItem ("fields", Just s) = mempty{ ES.queryFields = map TE.decodeUtf8 (BSC.split ',' s) }
   parseQueryItem ("aggs",   Just s) = mempty{ ES.queryAggs = map TE.decodeUtf8 (BSC.split ',' s) }
+  parseQueryItem ("hist",   Just s) = mempty{ ES.queryHist = Just (TE.decodeUtf8 s) }
   parseQueryItem (f,        s) = mempty{ ES.queryFilter = [(TE.decodeUtf8 f, a, snd <$> BS.uncons b)] } where
     (a, b) = BSC.break (',' ==) $ fromMaybe BS.empty s
 
@@ -183,7 +187,7 @@ catalogCSV :: Route Simulation
 catalogCSV = getPath (R.parameter R.>* "csv") $ \sim req -> do
   cat <- askCatalog sim
   let query = parseQuery req
-      fields = if null (ES.queryFields query) then map fieldName $ V.toList (expandFields $ catalogFields cat) else ES.queryFields query
+      fields = if null (ES.queryFields query) then map fieldName $ expandFields $ catalogFields cat else ES.queryFields query
       parse = J.withObject "query" $ parseJSONField "hits" $
         J.withObject "hits" $ parseJSONField "hits" $
           J.withArray "hits" $ V.mapM $ J.withObject "hit" $ \d ->

@@ -8,6 +8,7 @@ module ES
   , IndexSettings(..)
   , createIndex
   , getIndices
+  , Query(..)
   , queryIndex
   ) where
 
@@ -22,7 +23,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import           Data.Default (Default(def))
 import qualified Data.HashMap.Strict as HM
-import           Data.List (intercalate, find)
+import           Data.List (intercalate)
 import           Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Vector as V
@@ -93,12 +94,39 @@ createIndex sets cat = elasticSearch PUT [T.unpack $ catalogIndex cat] $ Just $ 
   <> "mappings" .=*
     (  catalogMapping cat .=*
       (  "dynamic" J..= J.String "strict"
-      <> "properties" .=* (foldMap (\f ->
-          fieldName f .=* ("type" J..= fieldType f))
-        $ expandFields $ catalogFields cat)))
+      <> "properties" J..= HM.map fieldType (catalogFieldMap cat)))
 
 getIndices :: [String] -> M J.Value
 getIndices idx = elasticSearch GET [if null idx then "_all" else intercalate "," idx] Nothing
+
+data Query = Query
+  { queryOffset, queryLimit :: Word
+  , querySort :: [(T.Text, Bool)]
+  , queryFields :: [T.Text]
+  , queryFilter :: [(T.Text, BS.ByteString, Maybe BS.ByteString)]
+  , queryAggs :: [T.Text]
+  , queryHist :: Maybe T.Text
+  }
+
+instance Monoid Query where
+  mempty = Query
+    { queryOffset = 0
+    , queryLimit  = 0
+    , querySort   = []
+    , queryFields = []
+    , queryFilter = []
+    , queryAggs   = []
+    , queryHist   = Nothing
+    }
+  mappend q1 q2 = Query
+    { queryOffset = queryOffset q1 +  queryOffset q2
+    , queryLimit  = queryLimit  q1 +  queryLimit  q2
+    , querySort   = querySort   q1 <> querySort   q2
+    , queryFields = queryFields q1 <> queryFields q2
+    , queryFilter = queryFilter q1 <> queryFilter q2
+    , queryAggs   = queryAggs   q1 <> queryAggs   q2
+    , queryHist   = queryHist   q1 <> queryHist   q2
+    }
 
 queryIndex :: Catalog -> Query -> M J.Value
 queryIndex cat q =
@@ -114,7 +142,7 @@ queryIndex cat q =
       ("bool" .=*
         ("filter" `JE.pair` JE.list (JE.pairs . term) (queryFilter q)))
     <> "aggs" .=* (foldMap
-      (\f -> f .=* (agg (fieldType <$> find ((f ==) . fieldName) (expandFields $ catalogFields cat)) .=* ("field" J..= f)))
+      (\f -> f .=* (agg (fieldType <$> HM.lookup f (catalogFieldMap cat)) .=* ("field" J..= f)))
       (queryAggs q)))
   where
   term (f, a, Nothing) = "term" .=* (f `JE.pair` bsc a)

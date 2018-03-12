@@ -26,7 +26,7 @@ illustris:
       descr: 'Sum of the BH_Mass field of all blackholes (type 5) in this group.'
     - name: BHMdot
       type: float
-      title: '$\dot{M}_{\rm BH}'
+      title: '$\dot{M}_{\rm BH}$'
       units: '$(10^{10} M_\odot/h) / (0.978Gyr/h)$'
       descr: 'Sum of the BH_Mdot field of all blackholes (type 5) in this group.'
     - name: CM
@@ -43,6 +43,7 @@ illustris:
     - name: FirstSub
       type: integer
       descr: 'Index into the <code>Subhalo</code> table of the first/primary/most massive Subfind group within this FoF group. Note: This value is signed (or should be interpreted as signed)! In this case, a value of -1 indicates that this FoF group has no subhalos.'
+      disp: false
     - name: GasMetallicity
       type: float
       descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of all gas cells in this FOF group.'
@@ -503,5 +504,6 @@ gaea:
       type: float
     - name: z
       type: double
+      disp: false
     - name: z_pos
       type: double

@@ -3,7 +3,6 @@
 module ES.Types
   ( Server(..)
   , Type(..)
-  , Query(..)
   ) where
 
 import qualified Data.Aeson as J
@@ -75,30 +74,3 @@ instance J.ToJSON Type where
 
 instance J.FromJSON Type where
   parseJSON = J.withText "ES type" $ either fail return . readEither . T.unpack
-
-data Query = Query
-  { queryOffset, queryLimit :: Word
-  , querySort :: [(T.Text, Bool)]
-  , queryFields :: [T.Text]
-  , queryFilter :: [(T.Text, BS.ByteString, Maybe BS.ByteString)]
-  , queryAggs :: [T.Text]
-  }
-
-instance Monoid Query where
-  mempty = Query
-    { queryOffset = 0
-    , queryLimit  = 0
-    , querySort   = []
-    , queryFields = []
-    , queryFilter = []
-    , queryAggs   = []
-    }
-  mappend q1 q2 = Query
-    { queryOffset = queryOffset q1 +  queryOffset q2
-    , queryLimit  = queryLimit  q1 +  queryLimit  q2
-    , querySort   = querySort   q1 ++ querySort   q2
-    , queryFields = queryFields q1 ++ queryFields q2
-    , queryFilter = queryFilter q1 ++ queryFilter q2
-    , queryAggs   = queryAggs   q1 ++ queryAggs   q2
-    }
-

@@ -3,7 +3,7 @@ packages:
 - '.'
 - location:
     git: git://github.com/dylex/waimwork
-    commit: 55e3367f01935f00162a7695ab6ac35f49504a87
+    commit: 8d9408d2bf864479becfed181c6c440ffbc2a128
   extra-dep: true
 - location:
     git: git://github.com/dylex/web-inv-route

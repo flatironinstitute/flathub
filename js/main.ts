@@ -1,5 +1,10 @@
 import $ from "jquery";
 import "datatables.net";
+import DataTablesColReorder from "datatables.net-colreorder";
+// import "mathjax";
+
+DataTablesColReorder();
+// MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
 
 function assert(x: null|undefined): never;
 function assert(x: object): void;
@@ -34,8 +39,8 @@ interface Filter {
   update_aggs?: (aggs: Dict<any>) => void;
 }
 
-var TCat: DataTables.Api|null = null;
-const Catalog: Catalog = (<any>window).Catalog;
+var TCat: DataTables.Api;
+var Catalog: Catalog;
 const Filters: Array<Filter> = [];
 var Update_aggs: number = 0;
 
@@ -164,7 +169,7 @@ function add_filter(field: Field) {
         else
           filt.query = undefined;
         update();
-        tcol.search(val).visible(!val).draw();
+        (<DataTables.ColumnMethods><any>tcol.search(val)).visible(!val).draw();
       };
       select.onchange = onchange;
       add_filt_row(field.name, label, select);
@@ -200,7 +205,7 @@ function add_filter(field: Field) {
             ub:isFinite(ubv) ? ubv : ''
           };
         update();
-        tcol.search(lbv+" TO "+ubv).visible(lbv==ubv).draw();
+        (<DataTables.ColumnMethods><any>tcol.search(lbv+" TO "+ubv)).visible(lbv==ubv).draw();
       };
       lb.onchange = ub.onchange = onchange;
       add_filt_row(field.name, label,
@@ -215,7 +220,8 @@ function add_filter(field: Field) {
   tcol.search('').draw();
 }
 
-function init() {
+export default function init(cat: Catalog) {
+  Catalog = cat;
   let addfilt = <HTMLSelectElement>document.createElement('select');
   select_options(addfilt, Catalog.fields.map((f) => f.name));
   add_filt_row('', addfilt);
@@ -230,7 +236,8 @@ function init() {
     pageLength: 50,
     dom: 'l<"#download">rtip',
   });
-  window.TCat = TCat;
+  /* for debugging: */
+  (<any>window).TCat = TCat;
   new (<any>$.fn.dataTable).ColReorder(TCat);
   $('.hide').on('click', function (event) {
     if (TCat)
@@ -241,10 +248,3 @@ function init() {
     if (f.top)
       add_filter(f);
 }
-
-System.import("datatables.net-colreorder").then(jq => {
-  jq();
-  $(() => {
-    init();
-  });
-});
