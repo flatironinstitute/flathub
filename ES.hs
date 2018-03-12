@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TupleSections #-}
 
 module ES
   ( module ES.Types
@@ -10,6 +11,7 @@ module ES
   , getIndices
   , Query(..)
   , queryIndex
+  , scrollSearch
   ) where
 
 import           Control.Monad ((<=<))
@@ -17,7 +19,7 @@ import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (ask)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
-import qualified Data.Aeson.Types as J (parseEither, emptyObject)
+import qualified Data.Aeson.Types as J (parseEither)
 import qualified Data.Attoparsec.ByteString as AP
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
@@ -25,11 +27,12 @@ import           Data.Default (Default(def))
 import qualified Data.HashMap.Strict as HM
 import           Data.List (intercalate)
 import           Data.Monoid ((<>))
+import           Data.String (IsString)
 import qualified Data.Text as T
-import qualified Data.Vector as V
 import qualified Network.HTTP.Client as HTTP
 import           Network.HTTP.Types.Header (hAccept, hContentType)
 import           Network.HTTP.Types.Method (StdMethod(GET, PUT), renderStdMethod)
+import qualified Network.HTTP.Types.URI as HTTP (Query)
 import qualified Network.URI as URI
 import qualified Waimwork.Config as C
 
@@ -42,17 +45,19 @@ initServer :: C.Config -> IO Server
 initServer conf = Server
   <$> HTTP.parseUrlThrow (conf C.! "server")
 
-elasticSearch :: J.FromJSON r => StdMethod -> [String] -> Maybe J.Encoding -> M r
-elasticSearch meth url body = do
+elasticSearch :: J.FromJSON r => StdMethod -> [String] -> HTTP.Query -> Maybe J.Encoding -> M r
+elasticSearch meth url query body = do
   glob <- ask
   let req = serverRequest $ globalES glob
-      req' =
-        maybe id setBody body req
+      req' = maybe id setBody body $
+        HTTP.setQueryString query req
         { HTTP.method = renderStdMethod meth
         , HTTP.path = HTTP.path req <> BS.intercalate "/" (map (BSC.pack . URI.escapeURIString URI.isUnescapedInURIComponent) url)
         , HTTP.requestHeaders = (hAccept, "application/json") : HTTP.requestHeaders req
         }
-  liftIO $
+  liftIO $ do
+    -- print $ HTTP.path req'
+    -- print $ JE.encodingToLazyByteString <$> body
     either fail return . (J.parseEither J.parseJSON <=< AP.eitherResult)
       =<< HTTP.withResponse req' (globalHTTP glob) parse
   where
@@ -88,7 +93,7 @@ instance J.ToJSON IndexSettings where
     )
 
 createIndex :: IndexSettings -> Catalog -> M J.Value
-createIndex sets cat = elasticSearch PUT [T.unpack $ catalogIndex cat] $ Just $ JE.pairs $
+createIndex sets cat = elasticSearch PUT [T.unpack $ catalogIndex cat] [] $ Just $ JE.pairs $
      "settings" .=*
     (  "index" J..= sets)
   <> "mappings" .=*
@@ -97,15 +102,17 @@ createIndex sets cat = elasticSearch PUT [T.unpack $ catalogIndex cat] $ Just $ 
       <> "properties" J..= HM.map fieldType (catalogFieldMap cat)))
 
 getIndices :: [String] -> M J.Value
-getIndices idx = elasticSearch GET [if null idx then "_all" else intercalate "," idx] Nothing
+getIndices idx = elasticSearch GET [if null idx then "_all" else intercalate "," idx] [] Nothing
 
 data Query = Query
-  { queryOffset, queryLimit :: Word
+  { queryOffset :: Word
+  , queryLimit :: Word
   , querySort :: [(T.Text, Bool)]
   , queryFields :: [T.Text]
   , queryFilter :: [(T.Text, BS.ByteString, Maybe BS.ByteString)]
   , queryAggs :: [T.Text]
   , queryHist :: Maybe T.Text
+  , queryScroll :: Bool
   }
 
 instance Monoid Query where
@@ -117,34 +124,43 @@ instance Monoid Query where
     , queryFilter = []
     , queryAggs   = []
     , queryHist   = Nothing
+    , queryScroll = False
     }
   mappend q1 q2 = Query
-    { queryOffset = queryOffset q1 +  queryOffset q2
-    , queryLimit  = queryLimit  q1 +  queryLimit  q2
-    , querySort   = querySort   q1 <> querySort   q2
-    , queryFields = queryFields q1 <> queryFields q2
-    , queryFilter = queryFilter q1 <> queryFilter q2
-    , queryAggs   = queryAggs   q1 <> queryAggs   q2
-    , queryHist   = queryHist   q1 <> queryHist   q2
+    { queryOffset = queryOffset q1 +     queryOffset q2
+    , queryLimit  = queryLimit  q1 `max` queryLimit  q2
+    , querySort   = querySort   q1 <>    querySort   q2
+    , queryFields = queryFields q1 <>    queryFields q2
+    , queryFilter = queryFilter q1 <>    queryFilter q2
+    , queryAggs   = queryAggs   q1 <>    queryAggs   q2
+    , queryHist   = queryHist   q1 <>    queryHist   q2
+    , queryScroll = queryScroll q1 ||    queryScroll q2
     }
 
+scrollTime :: IsString s => s
+scrollTime = "10s"
+
 queryIndex :: Catalog -> Query -> M J.Value
-queryIndex cat q =
-  clean <$> elasticSearch GET
+queryIndex cat Query{..} =
+  elasticSearch GET
     [T.unpack $ catalogIndex cat, T.unpack $ catalogMapping cat, "_search"]
-    (Just $ JE.pairs $
-       "from" J..= queryOffset q
-    <> "size" J..= queryLimit q
-    <> "sort" `JE.pair` JE.list (\(f, a) -> JE.pairs (f J..= if a then "asc" else "desc" :: String)) (querySort q)
-    <> (if null (queryFields q) then mempty else
-       "_source" J..= queryFields q)
+    (mif queryScroll $ [("scroll", Just scrollTime)])
+    $ Just $ JE.pairs $
+       (mif (queryOffset > 0) $ "from" J..= queryOffset)
+    <> (mif (queryLimit  > 0) $ "size" J..= queryLimit)
+    <> "sort" `JE.pair` JE.list (\(f, a) -> JE.pairs (f J..= if a then "asc" else "desc" :: String)) (querySort ++ [("_doc",True)])
+    <> (mif (not (null queryFields)) $
+       "_source" J..= queryFields)
     <> "query" .=*
       ("bool" .=*
-        ("filter" `JE.pair` JE.list (JE.pairs . term) (queryFilter q)))
-    <> "aggs" .=* (foldMap
+        ("filter" `JE.pair` JE.list (JE.pairs . term) queryFilter))
+    <> (mif (not (null queryAggs)) $
+       "aggs" .=* (foldMap
       (\f -> f .=* (agg (fieldType <$> HM.lookup f (catalogFieldMap cat)) .=* ("field" J..= f)))
-      (queryAggs q)))
+      queryAggs))
   where
+  mif True v = v
+  mif False _ = mempty
   term (f, a, Nothing) = "term" .=* (f `JE.pair` bsc a)
   term (f, a, Just b) = "range" .=* (f .=*
     (bound "gte" a <> bound "lte" b))
@@ -155,18 +171,8 @@ queryIndex cat q =
   agg (Just Keyword) = "terms"
   agg _ = "stats"
   bsc = JE.string . BSC.unpack
-  clean = mapObject $ HM.mapMaybeWithKey cleanTop
-  cleanTop "aggregations" = Just
-  cleanTop "hits" = Just . mapObject (HM.mapMaybeWithKey cleanHits)
-  cleanTop _ = const Nothing
-  cleanHits "total" = Just
-  cleanHits "hits" = Just . mapArray (V.map sourceOnly)
-  cleanHits _ = const Nothing
-  sourceOnly (J.Object o) = HM.lookupDefault J.emptyObject "_source" o
-  sourceOnly v = v
-  mapObject :: (J.Object -> J.Object) -> J.Value -> J.Value
-  mapObject f (J.Object o) = J.Object (f o)
-  mapObject _ v = v
-  mapArray :: (V.Vector J.Value -> V.Vector J.Value) -> J.Value -> J.Value
-  mapArray f (J.Array v) = J.Array (f v)
-  mapArray _ v = v
+
+scrollSearch :: T.Text -> M J.Value
+scrollSearch sid = elasticSearch GET ["_search", "scroll"] [] $ Just $ JE.pairs $
+     "scroll" J..= J.String scrollTime
+  <> "scroll_id" J..= sid

@@ -16,7 +16,7 @@ import           Data.Default (Default(def))
 import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Map.Strict as Map
-import           Data.Maybe (fromMaybe)
+import           Data.Maybe (fromMaybe, isNothing)
 import           Data.Monoid ((<>))
 import           Data.String (IsString)
 import qualified Data.Text as T
@@ -66,9 +66,9 @@ html h = okResponse [] $ H.docTypeHtml $ do
       H.script H.! HA.type_ "text/javascript" H.! HA.src (staticURI src) $ mempty
     forM_ [["jspm_packages", "npm", "datatables.net-dt@1.10.16", "css", "jquery.dataTables.css"], ["main.css"]] $ \src ->
       H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
+    H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/MathJax.js" $ mempty
     H.script H.! HA.type_ "text/x-mathjax-config" $
       "MathJax.Hub.Config({ jax: ['input/TeX','output/HTML-CSS'], extensions: ['tex2jax.js'], tex2jax: {inlineMath: [['$','$'], ['\\\\(','\\\\)']]} })"
-    H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/MathJax.js" $ mempty
   H.body h
 
 top :: Route ()
@@ -172,42 +172,57 @@ parseQuery = foldMap parseQueryItem . Wai.queryString where
   parseQueryItem (f,        s) = mempty{ ES.queryFilter = [(TE.decodeUtf8 f, a, snd <$> BS.uncons b)] } where
     (a, b) = BSC.break (',' ==) $ fromMaybe BS.empty s
 
-chunkSize :: Word
-chunkSize = 1024
-
 catalog :: Route Simulation
 catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do
   cat <- askCatalog sim
   let query = parseQuery req
-  when (ES.queryLimit query > chunkSize) $ result $ response badRequest400 [] ("limit too large" :: String)
+  unless (ES.queryLimit query > 0 && ES.queryLimit query <= 100) $
+    result $ response badRequest400 [] ("limit too large" :: String)
   res <- ES.queryIndex cat query
-  return $ okResponse [(hContentType, "application/json")] res
+  return $ okResponse [(hContentType, "application/json")] $ clean res
+  where
+  clean = mapObject $ HM.mapMaybeWithKey cleanTop
+  cleanTop "aggregations" = Just
+  cleanTop "hits" = Just . mapObject (HM.mapMaybeWithKey cleanHits)
+  cleanTop _ = const Nothing
+  cleanHits "total" = Just
+  cleanHits "hits" = Just . mapArray (V.map sourceOnly)
+  cleanHits _ = const Nothing
+  sourceOnly (J.Object o) = HM.lookupDefault J.emptyObject "_source" o
+  sourceOnly v = v
+  mapObject :: (J.Object -> J.Object) -> J.Value -> J.Value
+  mapObject f (J.Object o) = J.Object (f o)
+  mapObject _ v = v
+  mapArray :: (V.Vector J.Value -> V.Vector J.Value) -> J.Value -> J.Value
+  mapArray f (J.Array v) = J.Array (f v)
+  mapArray _ v = v
 
 catalogCSV :: Route Simulation
 catalogCSV = getPath (R.parameter R.>* "csv") $ \sim req -> do
   cat <- askCatalog sim
   let query = parseQuery req
       fields = if null (ES.queryFields query) then map fieldName $ expandFields $ catalogFields cat else ES.queryFields query
-      parse = J.withObject "query" $ parseJSONField "hits" $
-        J.withObject "hits" $ parseJSONField "hits" $
-          J.withArray "hits" $ V.mapM $ J.withObject "hit" $ \d ->
-            return $ csvJSONRow $ map (\f -> HM.lookupDefault J.Null f d) fields
-      loop send q = do
-        let q' = q{ ES.queryLimit = min chunkSize (ES.queryLimit q) }
-        res <- ES.queryIndex cat q'
-        csv <- either fail return $ J.parseEither parse res
-        unless (null csv) $ do
-          () <- liftIO $ send $ fold csv
-          when (ES.queryLimit q' < ES.queryLimit q) $
-            loop send q
-              { ES.queryOffset = ES.queryOffset q + ES.queryLimit q'
-              , ES.queryLimit  = ES.queryLimit  q - ES.queryLimit q'
-              }
-  unless (null (ES.queryAggs query)) $ result $ response badRequest400 [] ("aggs not supported for CSV" :: String)
+      parse = J.withObject "query" $ \q -> (,)
+        <$> q J..: "_scroll_id"
+        <*> parseJSONField "hits" (J.withObject "hits" $
+          parseJSONField "hits" $ J.withArray "hits" $
+            V.mapM $ J.withObject "hit" $
+              parseJSONField "_source" $ J.withObject "source" $ \d ->
+                return $ csvJSONRow $ map (\f -> HM.lookupDefault J.Null f d) fields)
+          q
+  unless (ES.queryLimit query == 0 && ES.queryOffset query == 0 && null (ES.queryAggs query) && isNothing (ES.queryHist query)) $
+    result $ response badRequest400 [] ("limit,offset,aggs not supported for CSV" :: String)
   glob <- ask
   return $ Wai.responseStream ok200 [(hContentType, "text/csv")] $ \chunk flush -> do
     chunk $ csvTextRow fields
-    runGlobal glob $ loop (\b -> chunk b >> flush) query
+    let
+      send b = chunk b >> flush
+      loop res = do
+        (sid, csv) <- either fail return $ J.parseEither parse res
+        unless (null csv) $ do
+          () <- liftIO $ send $ fold csv
+          loop =<< ES.scrollSearch sid
+    runGlobal glob $ loop =<< ES.queryIndex cat query{ ES.queryScroll = True }
 
 routes :: R.RouteMap Action
 routes = R.routes
