@@ -22,24 +22,24 @@ illustris:
 
     - name: BHMass
       type: float
-      units: '$ 10^{10} M_\odot / h $'
+      units: '\( 10^{10} M_\odot / h \)'
       descr: 'Sum of the BH_Mass field of all blackholes (type 5) in this group.'
     - name: BHMdot
       type: float
-      title: '$\dot{M}_{\rm BH}$'
-      units: '$(10^{10} M_\odot/h) / (0.978Gyr/h)$'
+      title: '\(\dot{M}_{\rm BH}\)'
+      units: '\((10^{10} M_\odot/h) / (0.978Gyr/h)\)'
       descr: 'Sum of the BH_Mdot field of all blackholes (type 5) in this group.'
     - name: CM
       type: float
-      units: '$ ckpc/h $'
+      units: '\( ckpc/h \)'
       descr: 'Center of mass of the group, computed as the sum of the mass weighted relative coordinates of all particles/cells in the group, of all types. Comoving coordinate. (Available only for the Illustris-3 run)'
       sub:
       - name: "x"
-        title: '${\rm CM}_x$'
+        title: '\({\rm CM}_x\)'
       - name: "y"
-        title: '${\rm CM}_y$'
+        title: '\({\rm CM}_y\)'
       - name: "z"
-        title: '${\rm CM}_z$'
+        title: '\({\rm CM}_z\)'
     - name: FirstSub
       type: integer
       descr: 'Index into the <code>Subhalo</code> table of the first/primary/most massive Subfind group within this FoF group. Note: This value is signed (or should be interpreted as signed)! In this case, a value of -1 indicates that this FoF group has no subhalos.'
@@ -49,119 +49,119 @@ illustris:
       descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of all gas cells in this FOF group.'
     - name: Len
       type: integer
-      title: '$N_{\rm part}$'
+      title: '\(N_{\rm part}\)'
       descr: 'Integer counter of the total number of particles/cells of all types in this group.'
     - name: LenType
       type: integer
       descr: 'Integer counter of the total number of particles/cells, split into the six different types, in this group. Note: Wind phase cells are counted as stars (type 4) for GroupLenType.'
       sub:
       - name: gas
-        title: '$N_{\rm gas}$'
+        title: '\(N_{\rm gas}\)'
       - name: dm
-        title: '$N_{\rm DM}$'
+        title: '\(N_{\rm DM}\)'
       - name: unused
         disp: false
       - name: tracers
       - name: stars
-        title: '$N_{\rm stars}$'
+        title: '\(N_{\rm stars}\)'
       - name: bh
-        title: '$N_{\rm BH}$'
+        title: '\(N_{\rm BH}\)'
     - name: Mass
       type: float
-      title: '$M_{\rm tot}$'
-      units: '$ 10^{10} M_\odot / h $'
+      title: '\(M_{\rm tot}\)'
+      units: '\( 10^{10} M_\odot / h \)'
       descr: 'Sum of the individual masses of every particle/cell, of all types, in this group.'
     - name: MassType
       type: float
-      units: '$ 10^{10} M_\odot / h $'
+      units: '\( 10^{10} M_\odot / h \)'
       descr: 'Sum of the individual masses of every particle/cell, split into the six different types, in this group. Note: Wind phase cells are counted as gas (type 0) for GroupMassType.'
       sub:
       - name: gas
-        title: '$M_{\rm gas}$'
+        title: '\(M_{\rm gas}\)'
       - name: dm
-        title: '$M_{\rm DM}$'
+        title: '\(M_{\rm DM}\)'
       - name: unused
         disp: false
       - name: tracers
       - name: stars
-        title: '$M_{\star}$'
+        title: '\(M_{\star}\)'
       - name: bh
-        title: '$M_{\rm BH}$'
+        title: '\(M_{\rm BH}\)'
     - name: Nsubs
       type: integer
       descr: 'Count of the total number of Subfind groups within this FoF group.'
     - name: Pos
       type: float
-      units: '$ ckpc/h $'
+      units: '\( ckpc/h \)'
       descr: 'Spatial position within the periodic box of the maximum bound particle. Comoving coordinate.'
       sub:
       - name: "x"
-        title: '$x$'
+        title: '\(x\)'
       - name: "y"
-        title: '$y$'
+        title: '\(y\)'
       - name: "z"
-        title: '$z$'
+        title: '\(z\)'
     - name: SFR
       type: float
-      units: '$ M_\odot / yr $'
+      units: '\( M_\odot / yr \)'
       descr: 'Sum of the individual star formation rates of all gas cells in this group.'
     - name: StarMetallicity
       type: float
       descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of all star particles in this FOF group.'
     - name: Vel
       type: float
-      units: '$ km/s/a $'
-      descr: 'Velocity of the group, computed as the sum of the mass weighted velocities of all particles/cells in this group, of all types. The peculiar velocity is obtained by multiplying this value by $1/a.$'
+      units: '\( km/s/a \)'
+      descr: 'Velocity of the group, computed as the sum of the mass weighted velocities of all particles/cells in this group, of all types. The peculiar velocity is obtained by multiplying this value by \(1/a.\)'
       sub:
       - name: "x"
-        title: '$v_x$'
+        title: '\(v_x\)'
       - name: "y"
-        title: '$v_y$'
+        title: '\(v_y\)'
       - name: "z"
-        title: '$v_z$'
+        title: '\(v_z\)'
     - name: WindMass
       type: float
-      units: '$ 10^{10} M_\odot / h $'
+      units: '\( 10^{10} M_\odot / h \)'
       descr: 'Sum of the individual masses of all wind phase gas cells (type 4, BirthTime <= 0) in this group.'
     - name: M_Crit200
       type: float
-      units: '$ 10^{10} M_\odot / h $'
+      units: '\( 10^{10} M_\odot / h \)'
       descr: 'Total Mass of this group enclosed in a sphere whose mean density is 200 times the critical density of the Universe, at the time the halo is considered.  '
       disp: false
     - name: M_Crit500
       type: float
-      units: '$ 10^{10} M_\odot / h $'
+      units: '\( 10^{10} M_\odot / h \)'
       descr: 'Total Mass of this group enclosed in a sphere whose mean density is 500 times the critical density of the Universe, at the time the halo is considered. '
       disp: false
     - name: M_Mean200
       type: float
-      units: '$ 10^{10} M_\odot / h $'
+      units: '\( 10^{10} M_\odot / h \)'
       descr: 'Total Mass of this group enclosed in a sphere whose mean density is 200 times the mean density of the Universe, at the time the halo is considered. '
       disp: false
     - name: M_TopHat200
       type: float
-      units: '$ 10^{10} M_\odot / h $'
-      descr: 'Total Mass of this group enclosed in a sphere whose mean density is $\Delta_c$ times the critical density of the Universe, at the time the halo is considered. $\Delta_c$ derives from the solution of the collapse of a spherical top-hat perturbation (fitting formula from <a href="http://adsabs.harvard.edu/abs/1998ApJ...495...80B">Bryan+ 1998</a>). The subscript 200 can be ignored.'
+      units: '\( 10^{10} M_\odot / h \)'
+      descr: 'Total Mass of this group enclosed in a sphere whose mean density is \(\Delta_c\) times the critical density of the Universe, at the time the halo is considered. \(\Delta_c\) derives from the solution of the collapse of a spherical top-hat perturbation (fitting formula from <a href="http://adsabs.harvard.edu/abs/1998ApJ...495...80B">Bryan+ 1998</a>). The subscript 200 can be ignored.'
       disp: false
     - name: R_Crit200
       type: float
-      units: '$ ckpc/h $'
+      units: '\( ckpc/h \)'
       descr: 'Comoving Radius of a sphere centered at the GroupPos of this Group whose mean density is 200 times the critical density of the Universe, at the time the halo is considered.'
       disp: false
     - name: R_Crit500
       type: float
-      units: '$ ckpc/h $'
+      units: '\( ckpc/h \)'
       descr: 'Comoving Radius of a sphere centered at the GroupPos of this Group whose mean density is 500 times the critical density of the Universe, at the time the halo is considered.'
       disp: false
     - name: R_Mean200
       type: float
-      units: '$ ckpc/h $'
+      units: '\( ckpc/h \)'
       descr: 'Comoving Radius of a sphere centered at the GroupPos of this Group whose mean density is 200 times the mean density of the Universe, at the time the halo is considered.'
       disp: false
     - name: R_TopHat200
       type: float
-      units: '$ ckpc/h $'
-      descr: 'Comoving Radius of a sphere centered at the GroupPos of this Group whose mean density is $\Delta_c$ times the critical density of the Universe, at the time the halo is considered.'
+      units: '\( ckpc/h \)'
+      descr: 'Comoving Radius of a sphere centered at the GroupPos of this Group whose mean density is \(\Delta_c\) times the critical density of the Universe, at the time the halo is considered.'
       disp: false
 illustris_sub:
   title: Illustris Subfind
@@ -170,15 +170,15 @@ illustris_sub:
   fields:
     - name: BHMass
       type: float
-      units: '$ 10^{10} M_\odot/h $'
+      units: '\( 10^{10} M_\odot/h \)'
       descr: 'Sum of the masses of all blackholes in this subhalo.'
     - name: BHMdot
       type: float
-      units: '$(10^{10} M_\odot/h) / (0.978Gyr/h)$'
-      descr: 'Sum of the instantaneous accretion rates $\dot{M}$ of all blackholes in this subhalo.'
+      units: '\((10^{10} M_\odot/h) / (0.978Gyr/h)\)'
+      descr: 'Sum of the instantaneous accretion rates \(\dot{M}\) of all blackholes in this subhalo.'
     - name: CM
       type: float
-      units: '$ ckpc/h $'
+      units: '\( ckpc/h \)'
       descr: 'Comoving center of mass of the Subhalo, computed as the sum of the mass weighted relative coordinates of all particles/cells in the Subhalo, of all types.'
       sub:
       - name: "x"
@@ -192,7 +192,7 @@ illustris_sub:
       descr: 'Same as SubhaloGasMetallicity, but restricted to cells within the stellar half mass radius.'
     - name: GasMetallicityMaxRad
       type: float
-      descr: 'Same as SubhaloGasMetallicity, but restricted to cells within the radius of $V_{max}$.'
+      descr: 'Same as SubhaloGasMetallicity, but restricted to cells within the radius of \(V_{max}\).'
     - name: GasMetallicitySfr
       type: float
       descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of the gas cells bound to this Subhalo, but restricted to cells which are star forming.'
@@ -204,11 +204,11 @@ illustris_sub:
       descr: 'Index into the Group table of the FOF host/parent of this Subhalo.'
     - name: HalfmassRad
       type: float
-      units: '$ ckpc/h $'
+      units: '\( ckpc/h \)'
       descr: 'Comoving radius containing half of the total mass (SubhaloMass) of this Subhalo.'
     - name: HalfmassRadType
       type: float
-      units: '$ ckpc/h $'
+      units: '\( ckpc/h \)'
       descr: 'Comoving radius containing half of the mass of this Subhalo split by Type (SubhaloMassType).'
       sub:
       - name: gas
@@ -237,15 +237,15 @@ illustris_sub:
       - name: bh
     - name: Mass
       type: float
-      units: '$ 10^{10} M_\odot/h $'
+      units: '\( 10^{10} M_\odot/h \)'
       descr: 'Total mass of all member particle/cells which are bound to this Subhalo, of all types. Particle/cells bound to subhaloes of this Subhalo are NOT accounted for.'
     - name: MassInHalfRad
       type: float
-      units: '$ 10^{10} M_\odot/h $'
+      units: '\( 10^{10} M_\odot/h \)'
       descr: 'Sum of masses of all particles/cells within the stellar half mass radius.'
     - name: MassInHalfRadType
       type: float
-      units: '$ 10^{10} M_\odot/h $'
+      units: '\( 10^{10} M_\odot/h \)'
       descr: 'Sum of masses of all particles/cells (split by type) within the stellar half mass radius.'
       sub:
       - name: gas
@@ -257,12 +257,12 @@ illustris_sub:
       - name: bh
     - name: MassInMaxRad
       type: float
-      units: '$ 10^{10} M_\odot/h $'
-      descr: 'Sum of masses of all particles/cells within the radius of $V_{max}$.'
+      units: '\( 10^{10} M_\odot/h \)'
+      descr: 'Sum of masses of all particles/cells within the radius of \(V_{max}\).'
     - name: MassInMaxRadType
       type: float
-      units: '$ 10^{10} M_\odot/h $'
-      descr: 'Sum of masses of all particles/cells (split by type) within the radius of $V_{max}$.'
+      units: '\( 10^{10} M_\odot/h \)'
+      descr: 'Sum of masses of all particles/cells (split by type) within the radius of \(V_{max}\).'
       sub:
       - name: gas
       - name: dm
@@ -273,11 +273,11 @@ illustris_sub:
       - name: bh
     - name: MassInRad
       type: float
-      units: '$ 10^{10} M_\odot/h $'
+      units: '\( 10^{10} M_\odot/h \)'
       descr: 'Sum of masses of all particles/cells within <b>twice</b> the stellar half mass radius.'
     - name: MassInRadType
       type: float
-      units: '$ 10^{10} M_\odot/h $'
+      units: '\( 10^{10} M_\odot/h \)'
       descr: 'Sum of masses of all particles/cells (split by type) within <b>twice</b> the stellar half mass radius.'
       sub:
       - name: gas
@@ -289,7 +289,7 @@ illustris_sub:
       - name: bh
     - name: MassType
       type: float
-      units: '$ 10^{10} M_\odot/h $'
+      units: '\( 10^{10} M_\odot/h \)'
       descr: 'Total mass of all member particle/cells which are bound to this Subhalo, separated by type. Particle/cells bound to subhaloes of this Subhalo are NOT accounted for. Note: Wind phase cells are counted as gas (type 0) for SubhaloMassType.'
       sub:
       - name: gas
@@ -304,7 +304,7 @@ illustris_sub:
       descr: 'Index into the Subhalo table of the unique SUBF host/parent of this Subhalo. This index is local to the group (i.e. 2 indicates the third most massive subhalo of the parent halo of this subhalo, not the third most massive of the whole snapshot). The values are often zero for all subhalos of a group, indicating that there is no resolved hierarchical structure in that group, beyond the primary subhalo having as direct children all of the secondary subhalos.'
     - name: Pos
       type: float
-      units: '$ ckpc/h $'
+      units: '\( ckpc/h \)'
       descr: 'Spatial position within the periodic box of the maximum bound particle. Comoving coordinate.'
       sub:
       - name: "x"
@@ -312,23 +312,23 @@ illustris_sub:
       - name: "z"
     - name: SFR
       type: float
-      units: '$ M_\odot / yr $'
+      units: '\( M_\odot / yr \)'
       descr: 'Sum of the individual star formation rates of all gas cells in this subhalo.'
     - name: SFRinHalfRad
       type: float
-      units: '$ M_\odot / yr $'
+      units: '\( M_\odot / yr \)'
       descr: 'Same as SubhaloSFR, but restricted to cells within the stellar half mass radius.'
     - name: SFRinMaxRad
       type: float
-      units: '$ M_\odot / yr $'
-      descr: 'Same as SubhaloSFR, but restricted to cells within the radius of $V_{max}$.'
+      units: '\( M_\odot / yr \)'
+      descr: 'Same as SubhaloSFR, but restricted to cells within the radius of \(V_{max}\).'
     - name: SFRinRad
       type: float
-      units: '$ M_\odot / yr $'
+      units: '\( M_\odot / yr \)'
       descr: 'Same as SubhaloSFR, but restricted to cells within <b>twice</b> the stellar half mass radius.'
     - name: Spin
       type: float
-      units: '$ (kpc/h) (km/s) $'
+      units: '\( (kpc/h) (km/s) \)'
       descr: 'Total spin per axis, computed for each as the mass weighted sum of the relative coordinate times relative velocity of all member particles/cells.'
       sub:
       - name: "x"
@@ -344,10 +344,10 @@ illustris_sub:
     - name: StarMetallicityMaxRad
       type: float
       units: '-'
-      descr: 'Same as SubhaloStarMetallicity, but restricted to stars within the radius of $V_{max}$.'
+      descr: 'Same as SubhaloStarMetallicity, but restricted to stars within the radius of \(V_{max}\).'
     - name: StellarPhotometrics
       type: float
-      units: '$ mag $'
+      units: '\( mag \)'
       descr: 'Eight bands: U, B, V, K, g, r, i, z. Magnitudes based on the summed-up luminosities of all the stellar particles of the group. For details on the bands, see snapshot table for stars.'
       sub:
       - name: U
@@ -360,15 +360,15 @@ illustris_sub:
       - name: z
     - name: StellarPhotometricsMassInRad
       type: float
-      units: '$ 10^{10} M_\odot/h $'
+      units: '\( 10^{10} M_\odot/h \)'
       descr: 'Sum of the mass of the member stellar particles, but restricted to stars within the radius SubhaloStellarPhotometricsRad.'
     - name: StellarPhotometricsRad
       type: float
-      units: '$ ckpc/h $'
-      descr: 'Radius at which the surface brightness profile (computed from all member stellar particles) drops below the limit of 20.7 mag arcsec$^{-2}$ in the K band (in comoving units).'
+      units: '\( ckpc/h \)'
+      descr: 'Radius at which the surface brightness profile (computed from all member stellar particles) drops below the limit of 20.7 mag arcsec\(^{-2}\) in the K band (in comoving units).'
     - name: Vel
       type: float
-      units: '$ km/s $'
+      units: '\( km/s \)'
       descr: 'Peculiar velocity of the group, computed as the sum of the mass weighted velocities of all particles/cells in this group, of all types. No unit conversion is needed.'
       sub:
       - name: "x"
@@ -376,19 +376,19 @@ illustris_sub:
       - name: "z"
     - name: VelDisp
       type: float
-      units: '$ km/s $'
-      descr: 'One-dimensional velocity dispersion of all the member particles/cells (the 3D dispersion divided by $\sqrt{3}$).'
+      units: '\( km/s \)'
+      descr: 'One-dimensional velocity dispersion of all the member particles/cells (the 3D dispersion divided by \(\sqrt{3}\)).'
     - name: Vmax
       type: float
-      units: '$ km/s $'
+      units: '\( km/s \)'
       descr: 'Maximum value of the spherically-averaged rotation curve.'
     - name: VmaxRad
       type: float
-      units: '$ kpc/h $'
-      descr: 'Comoving radius of rotation curve maximum (where $V_{max}$ is achieved).'
+      units: '\( kpc/h \)'
+      descr: 'Comoving radius of rotation curve maximum (where \(V_{max}\) is achieved).'
     - name: WindMass
       type: float
-      units: '$ 10^{10} M_\odot/h $'
+      units: '\( 10^{10} M_\odot/h \)'
       descr: 'Sum of masses of all wind-phase cells in this subhalo (with Type==4 and BirthTime&#60;=0).'
 neutrino:
   title: Neutrino

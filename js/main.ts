@@ -1,10 +1,8 @@
 import $ from "jquery";
 import "datatables.net";
-import DataTablesColReorder from "datatables.net-colreorder";
-// import "mathjax";
+import DataTablesScroller from "datatables.net-scroller";
 
-DataTablesColReorder();
-// MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+DataTablesScroller();
 
 function assert(x: null|undefined): never;
 function assert(x: object): void;
@@ -40,7 +38,7 @@ interface Filter {
 }
 
 var TCat: DataTables.Api;
-var Catalog: Catalog;
+declare const Catalog: Catalog;
 const Filters: Array<Filter> = [];
 var Update_aggs: number = 0;
 
@@ -84,6 +82,7 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
     url: Catalog.query.uri,
     data: query
   }).then((res: any) => {
+    $('td.loading').remove();
     Catalog.count = Math.max(Catalog.count || 0, res.hits.total);
     callback({
       draw: data.draw,
@@ -155,12 +154,14 @@ function add_filter(field: Field) {
     case 'keyword': {
       let select = document.createElement('select');
       select.name = field.name;
+      select.disabled = true;
       filt.update_aggs = (aggs: any) => {
         let opts: Dict<string> = {};
         for (let b of aggs.buckets)
           opts[b.key] = b.key + ' (' + b.doc_count + ')';
         select_options(select, opts);
         select.value = '';
+        select.disabled = false;
       };
       let onchange = function () {
         let val = select.value;
@@ -188,10 +189,13 @@ function add_filter(field: Field) {
       ub.name = field.name+".ub";
       lb.type = ub.type = "number";
       lb.step = ub.step = isint ? <any>1 : "any";
+      lb.disabled = ub.disabled = true;
       let avg = document.createElement('span');
+      avg.innerHTML = "<em>loading...</em>";
       filt.update_aggs = (aggs: any) => {
         lb.defaultValue = lb.value = lb.min = ub.min = aggs.min;
         ub.defaultValue = ub.value = lb.max = ub.max = aggs.max;
+        lb.disabled = ub.disabled = false;
         avg.textContent = aggs.avg;
       };
       let onchange = function () {
@@ -217,34 +221,38 @@ function add_filter(field: Field) {
       return;
   }
   Filters.push(filt);
-  tcol.search('').draw();
+  tcol.search('');
 }
 
-export default function init(cat: Catalog) {
-  Catalog = cat;
+function init() {
+  Update_aggs = 0;
+  TCat = $('table#tcat').DataTable({
+    serverSide: true,
+    ajax: ajax,
+    deferLoading: 1,
+    scrollX: true,
+    pageLength: 50,
+    processing: true,
+    dom: 'i<"#download">rtlp',
+  });
+  /* for debugging: */
+  (<any>window).TCat = TCat;
   let addfilt = <HTMLSelectElement>document.createElement('select');
   select_options(addfilt, Catalog.fields.map((f) => f.name));
   add_filt_row('', addfilt);
   addfilt.onchange = function () {
     add_filter(Catalog.fields[<any>addfilt.value]);
+    TCat.draw();
   };
-  Update_aggs = 0;
-  TCat = $('table#tcat').DataTable({
-    serverSide: true,
-    ajax: ajax,
-    scrollX: true,
-    pageLength: 50,
-    dom: 'l<"#download">rtip',
-  });
-  /* for debugging: */
-  (<any>window).TCat = TCat;
-  new (<any>$.fn.dataTable).ColReorder(TCat);
+  for (let f of Catalog.fields)
+    if (f.top)
+      add_filter(f);
   $('.hide').on('click', function (event) {
     if (TCat)
       TCat.column(this.id.substr(5)+':name').visible(false);
     event.stopPropagation();
   });
-  for (let f of Catalog.fields)
-    if (f.top)
-      add_filter(f);
+  TCat.draw();
 }
+
+$(init);

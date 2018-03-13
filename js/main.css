@@ -6,10 +6,24 @@ button.remove {
   padding: 0px;
   border-width: 1px;
   margin: 1px;
+  color: red;
 }
 span.hide {
   float: left;
+  color: red;
+}
+table {
+  border-collapse: collapse;
 }
 th {
   white-space: nowrap;
+  border-right: solid 1px #444;
+  border-left: solid 1px #444;
+}
+td {
+  white-space: nowrap;
+}
+.loading {
+  font-style: italic;
+  text-align: center;
 }

@@ -59,20 +59,21 @@ getPath p = R.RouteAction $ R.routeMethod R.GET R.*< R.routePath p
 staticURI :: [FilePathComponent] -> H.AttributeValue
 staticURI p = H.routeActionValue static p mempty
 
-html :: H.Markup -> Wai.Response
-html h = okResponse [] $ H.docTypeHtml $ do
+html :: Wai.Request -> H.Markup -> Wai.Response
+html req h = okResponse [] $ H.docTypeHtml $ do
   H.head $ do
-    forM_ [["jspm_packages", "system.src.js"], ["jspm.config.js"]] $ \src ->
+    forM_ ([["jspm_packages", "system.src.js"], ["jspm.config.js"]] ++ if isdev then [["dev.js"]] else [["index.js"]]) $ \src ->
       H.script H.! HA.type_ "text/javascript" H.! HA.src (staticURI src) $ mempty
+    -- TODO: use System.resolve:
     forM_ [["jspm_packages", "npm", "datatables.net-dt@1.10.16", "css", "jquery.dataTables.css"], ["main.css"]] $ \src ->
       H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
-    H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/MathJax.js" $ mempty
-    H.script H.! HA.type_ "text/x-mathjax-config" $
-      "MathJax.Hub.Config({ jax: ['input/TeX','output/HTML-CSS'], extensions: ['tex2jax.js'], tex2jax: {inlineMath: [['$','$'], ['\\\\(','\\\\)']]} })"
+    H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/MathJax.js?config=TeX-AMS_CHTML" $ mempty
   H.body h
+  where
+  isdev = any ((==) "dev" . fst) $ Wai.queryString req
 
 top :: Route ()
-top = getPath R.unit $ \() _ -> return $ html $ do
+top = getPath R.unit $ \() req -> return $ html req $ do
   H.ul $
     forM_ (enumFromTo minBound maxBound) $ \sim ->
       H.li $ H.a H.! HA.href (H.routeActionValue simulation sim mempty) $ H.string $
@@ -103,19 +104,20 @@ askCatalog :: Simulation -> M Catalog
 askCatalog sim = asks $ (HM.! sim) . globalCatalogs
 
 simulation :: Route Simulation
-simulation = getPath R.parameter $ \sim _ -> do
+simulation = getPath R.parameter $ \sim req -> do
   cat <- askCatalog sim
   let 
     (qmeth, quri) = routeActionURI catalog sim
     (_, csvuri) = routeActionURI catalogCSV sim
     fields = catalogFields cat
+    fields' = expandFields fields
     jcat = J.pairs $
          "title" J..= catalogTitle cat
       <> "query" .=*
         (  "method" J..= (BSC.unpack <$> R.fromMethod qmeth)
         <> "uri" J..= show quri
         <> "csv" J..= show csvuri)
-      <> "fields" J..= expandFields fields
+      <> "fields" J..= fields'
     fieldBody f = H.span H.! HA.title (H.textValue $ fieldDescr f) $ H.text $ fieldTitle f
     field :: Word -> FieldGroup -> H.Html
     field d f@Field{ fieldSub = Nothing } = do
@@ -136,15 +138,15 @@ simulation = getPath R.parameter $ \sim _ -> do
     row d l = do
       H.tr $ mapM_ (field d) l
       when (d > 1) $ row (pred d) $ foldMap (\f -> foldMap (subField f <$>) $ fieldSub f) l
-  return $ html $ do
-    H.h2 $ H.string $ show sim
-    H.table H.! HA.id "filt" $ mempty
-    H.table H.! HA.id "tcat" H.! HA.class_ "compact" $ H.thead $
-      row (fieldsDepth fields) fields
+  return $ html req $ do
     H.script $ do
       "Catalog="
       H.preEscapedBuilder $ J.fromEncoding jcat
-      ";System.import('main').then(function(main){main.default(Catalog);});"
+    H.h2 $ H.string $ show sim
+    H.table H.! HA.id "filt" $ mempty
+    H.table H.! HA.id "tcat" H.! HA.class_ "compact" $ do
+      H.thead $ row (fieldsDepth fields) fields
+      H.tfoot $ H.tr $ H.td H.! HA.colspan (H.toValue $ length fields') H.! HA.class_ "loading" $ "loading..."
   where
   dtype ES.Long = "num"
   dtype ES.Integer = "num"
@@ -276,5 +278,6 @@ main = do
     (fail . ("ES index mismatch: " ++))
     return
     $ J.parseEither (checkESIndices $ HM.elems catalogs) indices
+
   runWaimwork conf $ runGlobal global
     . routeWaiError (\s h _ -> return $ response s h ()) routes

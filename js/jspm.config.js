@@ -51,6 +51,7 @@ SystemJS.config({
     "datatables.net": "npm:datatables.net@1.10.16",
     "datatables.net-colreorder": "npm:datatables.net-colreorder@1.4.1",
     "datatables.net-dt": "npm:datatables.net-dt@1.10.16",
+    "datatables.net-scroller": "npm:datatables.net-scroller@1.4.4",
     "events": "npm:jspm-nodelibs-events@0.2.2",
     "fs": "npm:jspm-nodelibs-fs@0.2.1",
     "http": "npm:jspm-nodelibs-http@0.2.0",
@@ -396,6 +397,12 @@ SystemJS.config({
       "map": {
         "jquery": "npm:jquery@3.3.1",
         "datatables.net": "npm:datatables.net@1.10.16"
+      }
+    },
+    "npm:datatables.net-scroller@1.4.4": {
+      "map": {
+        "datatables.net": "npm:datatables.net@1.10.16",
+        "jquery": "npm:jquery@3.3.1"
       }
     }
   }

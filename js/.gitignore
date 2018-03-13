@@ -1,2 +1,6 @@
 /node_modules/
 /jspm_packages/
+/index.js
+/index.js.map
+/main.js
+/main.js.map
