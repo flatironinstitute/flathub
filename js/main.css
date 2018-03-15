@@ -12,9 +12,6 @@ span.hide {
   float: left;
   color: red;
 }
-table {
-  border-collapse: collapse;
-}
 th {
   white-space: nowrap;
   border-right: solid 1px #444;
