@@ -5,6 +5,7 @@ import h5py
 import numpy
 import psycopg2
 import os
+import struct
 import sys
 
 argp = argparse.ArgumentParser(description="gaea catalog pgsql import")
@@ -35,10 +36,20 @@ types = {
 
 SEP = '\t'
 
+binary_header = struct.pack('!11sii', 'PGCOPY\n\377\r\n\0', 0, 0)
+binary_footer = struct.pack('!h', -1)
+
+binary_fmt = {
+    'float64': 'd',
+    'float32': 'f',
+    'uint64': 'Q',
+    'uint32': 'I'
+}
+
 class HDF5Stream(h5py.File):
     def __init__(self, idx, name, off):
         super(HDF5Stream, self).__init__(name, 'r')
-        self.i = off
+        self.n = off
         cols = {}
         for k, v in self.iteritems():
             if len(v.shape) > 1:
@@ -49,22 +60,44 @@ class HDF5Stream(h5py.File):
         self.count, = cols.values()[0].shape
         cols['_id'] = numpy.arange(idx, idx+self.count, dtype='uint64')
         self.data = []
+        self.fmt = '!H'
+        self.args = [len(columns)]
         for (n, t) in columns:
             v = cols.pop(n)
             assert((self.count,) == v.shape)
             assert(t == types[v.dtype.name])
             self.data.append(v)
+            fmt = binary_fmt[v.dtype.name]
+            self.args.append(struct.calcsize(fmt))
+            self.args.append(None)
+            self.fmt += 'i' + fmt
         assert(not cols)
+        self.rowlen = struct.calcsize(self.fmt)
+        self.done = None
 
     def readline(self, size):
-        i = self.i
-        if i >= self.count: return ''
-        if i % 100 == 0:
-            sys.stdout.write("%d\r"%i)
-            sys.stdout.flush()
-        self.i += 1
-        row = SEP.join(repr(v[i]) for v in self.data)
-        return row+'\n'
+        if self.done is None:
+            self.done = False
+            return binary_header
+        if self.done:
+            return ''
+
+        n = self.n
+        block = min(max(int(size/self.rowlen), 1), self.count-n)
+        if block <= 0:
+            self.done = True
+            return binary_footer
+        sys.stdout.write("%d\r"%n)
+        sys.stdout.flush()
+        self.n += block
+
+        args = self.args
+        buf = ''
+        for i in xrange(n,n+block):
+            for j in xrange(args[0]):
+                args[2+2*j] = self.data[j][i]
+            buf += struct.pack(self.fmt, *args)
+        return buf
 
     def read(self, size):
         return self.readline(size)
@@ -75,5 +108,5 @@ with pg.cursor() as pgc:
     for name in args.file:
         with HDF5Stream(idx, name, max(0, args.offset-idx)) as stream:
             print(repr(idx) + " " + name + " " + str(stream.count))
-            pgc.copy_from(stream, args.table, sep=SEP, columns=cols)
+            pgc.copy_expert('COPY ' + args.table + ' (' + ','.join(cols) + ') FROM STDIN (FORMAT binary)', stream)
             idx += stream.count
