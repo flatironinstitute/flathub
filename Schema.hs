@@ -21,14 +21,12 @@ import           Control.Arrow ((&&&))
 import           Control.Monad (forM_, unless)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Types as J
-import qualified Data.ByteString as BS
 import           Data.Default (Default(def))
 import qualified Data.HashMap.Strict as HM
 import           Data.Monoid ((<>))
 import           Data.Proxy (Proxy(Proxy))
 import           Data.Semigroup (Max(getMax))
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V
 import           Text.Read (readPrec, Lexeme(Ident), lexP, readEither)
 
@@ -159,7 +157,7 @@ data CatalogStore
     { catalogIndex, catalogMapping :: T.Text
     }
   | CatalogPG
-    { catalogTable :: BS.ByteString
+    { catalogTable :: T.Text
     }
 
 data Catalog = Catalog
@@ -177,7 +175,7 @@ instance J.FromJSON Catalog where
         <$> (c J..: "index")
         <*> (c J..:! "mapping" J..!= "catalog")
       <|> CatalogPG
-        <$> (TE.encodeUtf8 <$> c J..: "table")
+        <$> (c J..: "table")
     return $ Catalog t d f (HM.fromList $ map (fieldName &&& id) $ expandFields f)
 
 checkESIndices :: [Catalog] -> J.Value -> J.Parser ()

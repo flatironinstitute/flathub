@@ -7,9 +7,12 @@ module PG
 
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (asks)
-import qualified Data.ByteString as BS
-import qualified Data.ByteString.Lazy as BSL
+import qualified Data.ByteString.Builder as BSB
+import           Data.Monoid ((<>))
+import           Data.String (IsString)
+import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
+import           Database.PostgreSQL.Typed.Types (pgDQuote)
 import qualified Waimwork.Database.PostgreSQL as PG
 
 import Schema
@@ -20,7 +23,10 @@ withPG f = do
   db <- asks globalPG
   liftIO $ PG.withDB db f
 
-pgType :: Type -> BS.ByteString
+pgIdent :: T.Text -> BSB.Builder
+pgIdent = pgDQuote ['A'..'Z'] . TE.encodeUtf8
+
+pgType :: IsString s => Type -> s
 pgType Text = "text"
 pgType Keyword = "text"
 pgType Long = "bigint"
@@ -36,9 +42,10 @@ pgType Binary = "bytea"
 
 createTable :: Catalog -> M ()
 createTable cat@Catalog{ catalogStore = CatalogPG tabn } = withPG $ \db -> do
-  PG.pgExecute_ db $ BSL.fromChunks $ ["CREATE TABLE ", tabn, " (_id bigserial primary key "] ++ foldMap col fields ++ ");" : foldMap idx fields
+  PG.pgExecute_ db $ BSB.toLazyByteString $ "CREATE TABLE " <> tab <> " (_id bigserial primary key " <> foldMap col fields <> ");" <> foldMap idx fields
   where
+  tab = pgIdent tabn
   fields = expandFields $ catalogFields cat
-  col Field{..} = [",", TE.encodeUtf8 fieldName, " ", pgType fieldType]
-  idx Field{..} = ["CREATE INDEX ON ", tabn, " (", TE.encodeUtf8 fieldName, ");"]
+  col Field{..} = "," <> pgIdent fieldName <> " " <> pgType fieldType
+  idx Field{..} = "CREATE INDEX ON " <> tab <> " (" <> pgIdent fieldName <> ");"
 createTable _ = return ()

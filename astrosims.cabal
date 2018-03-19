@@ -36,6 +36,7 @@ executable astrosims
     , mime-types
     , mtl
     , network-uri
+    , postgresql-typed
     , text
     , unordered-containers
     , vector
