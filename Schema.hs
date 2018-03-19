@@ -4,9 +4,11 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 
 module Schema
-  ( FieldSub(..)
+  ( Type(..)
+  , FieldSub(..)
   , Field, FieldGroup
   , Fields, FieldGroups
+  , CatalogStore(..)
   , Catalog(..)
   , subField
   , expandFields
@@ -14,24 +16,83 @@ module Schema
   , checkESIndices
   ) where
 
+import           Control.Applicative ((<|>))
 import           Control.Arrow ((&&&))
 import           Control.Monad (forM_, unless)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Types as J
+import qualified Data.ByteString as BS
 import           Data.Default (Default(def))
 import qualified Data.HashMap.Strict as HM
 import           Data.Monoid ((<>))
 import           Data.Proxy (Proxy(Proxy))
 import           Data.Semigroup (Max(getMax))
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V
+import           Text.Read (readPrec, Lexeme(Ident), lexP, readEither)
 
-import qualified ES.Types as ES
 import JSON
 
+data Type
+  = Text
+  | Keyword
+  | Long
+  | Integer
+  | Short
+  | Byte
+  | Double
+  | Float
+  | HalfFloat
+  | Date
+  | Boolean
+  | Binary
+  deriving (Eq, Enum)
+
+instance Default Type where
+  def = Float
+
+instance Show Type where
+  show Text             = "text"
+  show Keyword          = "keyword"
+  show Long             = "long"
+  show Integer          = "integer"
+  show Short            = "short"
+  show Byte             = "byte"
+  show Double           = "double"
+  show Float            = "float"
+  show HalfFloat        = "half_float"
+  show Date             = "date"
+  show Boolean          = "boolean"
+  show Binary           = "binary"
+
+instance Read Type where
+  readPrec = do
+    Ident s <- lexP
+    case s of
+      "text"        -> return Text
+      "keyword"     -> return Keyword
+      "long"        -> return Long
+      "integer"     -> return Integer
+      "short"       -> return Short
+      "byte"        -> return Byte
+      "double"      -> return Double
+      "float"       -> return Float
+      "half_float"  -> return HalfFloat
+      "date"        -> return Date
+      "boolean"     -> return Boolean
+      "binary"      -> return Binary
+      _ -> fail "Unknown ES type"
+      
+instance J.ToJSON Type where
+  toJSON = J.toJSON . show
+  toEncoding = J.toEncoding . show
+
+instance J.FromJSON Type where
+  parseJSON = J.withText "ES type" $ either fail return . readEither . T.unpack
 data FieldSub m = Field
   { fieldName :: T.Text
-  , fieldType :: ES.Type
+  , fieldType :: Type
   , fieldTitle :: T.Text
   , fieldDescr :: T.Text
   , fieldTop, fieldDisp :: Bool
@@ -93,9 +154,17 @@ fieldsDepth :: FieldGroups -> Word
 fieldsDepth = getMax . depth where
   depth = succ . foldMap (foldMap depth . fieldSub)
 
+data CatalogStore
+  = CatalogES
+    { catalogIndex, catalogMapping :: T.Text
+    }
+  | CatalogPG
+    { catalogTable :: BS.ByteString
+    }
+
 data Catalog = Catalog
   { catalogTitle :: T.Text
-  , catalogIndex, catalogMapping :: T.Text
+  , catalogStore :: CatalogStore
   , catalogFields :: FieldGroups
   , catalogFieldMap :: HM.HashMap T.Text Field
   }
@@ -103,20 +172,21 @@ data Catalog = Catalog
 instance J.FromJSON Catalog where
   parseJSON = J.withObject "catalog" $ \c -> do
     f <- c J..: "fields"
-    Catalog
-      <$> (c J..: "title")
-      <*> (c J..: "index")
-      <*> (c J..:! "mapping" J..!= "catalog")
-      <*> return f
-      <*> return (HM.fromList $ map (fieldName &&& id) $ expandFields f)
+    t <- c J..: "title"
+    d <- CatalogES
+        <$> (c J..: "index")
+        <*> (c J..:! "mapping" J..!= "catalog")
+      <|> CatalogPG
+        <$> (TE.encodeUtf8 <$> c J..: "table")
+    return $ Catalog t d f (HM.fromList $ map (fieldName &&& id) $ expandFields f)
 
 checkESIndices :: [Catalog] -> J.Value -> J.Parser ()
-checkESIndices cats = J.withObject "indices" $ \is ->
-  forM_ cats $ \cat -> parseJSONField (catalogIndex cat) (idx cat) is
-  where
-  idx :: Catalog -> J.Value -> J.Parser ()
-  idx cat = J.withObject "index" $ parseJSONField "mappings" $ J.withObject "mappings" $
-    parseJSONField (catalogMapping cat) (mapping $ expandFields $ catalogFields cat)
+checkESIndices cats = J.withObject "indices" $ forM_ cats . catalog where
+  catalog is cat@Catalog{ catalogStore = CatalogES idxn mapn } = parseJSONField idxn (idx cat mapn) is
+  catalog _ _ = return ()
+  idx :: Catalog -> T.Text -> J.Value -> J.Parser ()
+  idx cat mapn = J.withObject "index" $ parseJSONField "mappings" $ J.withObject "mappings" $
+    parseJSONField mapn (mapping $ expandFields $ catalogFields cat)
   mapping :: Fields -> J.Value -> J.Parser ()
   mapping fields = J.withObject "mapping" $ parseJSONField "properties" $ J.withObject "properties" $ \ps ->
     forM_ fields $ \field -> parseJSONField (fieldName field) (prop field) ps

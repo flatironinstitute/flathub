@@ -16,15 +16,16 @@ import qualified Network.HTTP.Client as HTTP
 import qualified Network.Wai as Wai
 import           Text.Read (readPrec, Lexeme(Ident), lexP, readMaybe)
 import qualified Waimwork.Config as C
+import qualified Waimwork.Database.PostgreSQL as PG
 import qualified Web.Route.Invertible as R
 
-import qualified ES.Types as ES
 import Schema
 
 data Global = Global
   { globalConfig :: C.Config
   , globalHTTP :: HTTP.Manager
-  , globalES :: ES.Server
+  , globalES :: HTTP.Request
+  , globalPG :: PG.DBPool
   , globalCatalogs :: HM.HashMap Simulation Catalog
   }
 
@@ -41,6 +42,7 @@ data Simulation
   | IllustrisSub
   | Neutrino
   | GAEA
+  | GAEA_SQL
   deriving (Eq, Enum, Bounded, Ord)
 
 instance Hashable Simulation where
@@ -51,12 +53,14 @@ instance Show Simulation where
   show IllustrisSub = "illustris_sub"
   show Neutrino     = "neutrino"
   show GAEA         = "gaea"
+  show GAEA_SQL     = "gaea_sql"
 
 parseSimulation :: (Monad m, IsString s, Eq s) => s -> m Simulation
 parseSimulation "illustris"      = return Illustris
 parseSimulation "illustris_sub"  = return IllustrisSub
 parseSimulation "neutrino"       = return Neutrino
 parseSimulation "gaea"           = return GAEA
+parseSimulation "gaea_sql"       = return GAEA_SQL
 parseSimulation _ = fail "Unknown simulation"
 
 instance Read Simulation where

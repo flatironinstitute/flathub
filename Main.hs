@@ -16,7 +16,7 @@ import           Data.Default (Default(def))
 import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Map.Strict as Map
-import           Data.Maybe (fromMaybe, isNothing)
+import           Data.Maybe (fromMaybe, isNothing, mapMaybe)
 import           Data.Monoid ((<>))
 import           Data.String (IsString)
 import qualified Data.Text as T
@@ -37,6 +37,7 @@ import qualified Text.Blaze.Html5.Attributes as HA
 import           Text.Read (readMaybe)
 import qualified Waimwork.Blaze as H hiding ((!?))
 import qualified Waimwork.Config as C
+import qualified Waimwork.Database.PostgreSQL as PG
 import           Waimwork.Response (response, okResponse)
 import           Waimwork.Result (result)
 import           Waimwork.Warp (runWaimwork)
@@ -44,11 +45,12 @@ import qualified Web.Route.Invertible as R
 import           Web.Route.Invertible.URI (routeActionURI)
 import           Web.Route.Invertible.Wai (routeWaiError)
 
-import qualified ES
 import Schema
 import Global
 import JSON
 import CSV
+import qualified ES
+import qualified PG
 
 getPath :: R.Path p -> (p -> Action) -> R.RouteAction p Action
 getPath p = R.RouteAction $ R.routeMethod R.GET R.*< R.routePath p
@@ -148,15 +150,14 @@ simulation = getPath R.parameter $ \sim req -> do
       H.thead $ row (fieldsDepth fields) fields
       H.tfoot $ H.tr $ H.td H.! HA.colspan (H.toValue $ length fields') H.! HA.class_ "loading" $ "loading..."
   where
-  dtype ES.Long = "num"
-  dtype ES.Integer = "num"
-  dtype ES.Short = "num"
-  dtype ES.Byte = "num"
-  dtype ES.Double = "num"
-  dtype ES.Float = "num"
-  dtype ES.HalfFloat = "num"
-  dtype (ES.ScaledFloat _) = "num"
-  dtype ES.Date = "date"
+  dtype Long = "num"
+  dtype Integer = "num"
+  dtype Short = "num"
+  dtype Byte = "num"
+  dtype Double = "num"
+  dtype Float = "num"
+  dtype HalfFloat = "num"
+  dtype Date = "date"
   dtype _ = "string"
 
 parseQuery :: Wai.Request -> ES.Query
@@ -249,6 +250,10 @@ optDescr =
   , Opt.Option "i" ["index"] (Opt.ReqArg (\i o -> o{ optIndices = read i : optIndices o }) "SIM") "Create an ES index for the given simulation"
   ]
 
+createCatalog :: Catalog -> M String
+createCatalog cat@Catalog{ catalogStore = CatalogES{} } = show <$> ES.createIndex def cat
+createCatalog cat@Catalog{ catalogStore = CatalogPG{} } = show <$> PG.createTable cat
+
 main :: IO ()
 main = do
   prog <- getProgName
@@ -263,17 +268,19 @@ main = do
   catalogs <- either throwIO return =<< YAML.decodeFileEither (fromMaybe "catalogs.yml" $ conf C.! "catalogs")
   httpmgr <- HTTP.newManager HTTP.defaultManagerSettings
   es <- ES.initServer (conf C.! "elasticsearch")
+  pg <- PG.initDB (conf C.! "postgresql")
   let global = Global
         { globalConfig = conf
         , globalHTTP = httpmgr
         , globalES = es
+        , globalPG = pg
         , globalCatalogs = catalogs
         }
 
-  runGlobal global $ mapM_ (liftIO . print <=< ES.createIndex def . (catalogs HM.!)) $ optIndices opts
+  runGlobal global $ mapM_ (liftIO . putStrLn <=< createCatalog . (catalogs HM.!)) $ optIndices opts
     
   -- check catalogs against es
-  indices <- runGlobal global $ ES.getIndices $ map (T.unpack . catalogIndex) $ HM.elems catalogs
+  indices <- runGlobal global $ ES.getIndices $ mapMaybe catalogIndex' $ HM.elems catalogs
   either
     (fail . ("ES index mismatch: " ++))
     return
@@ -281,3 +288,7 @@ main = do
 
   runWaimwork conf $ runGlobal global
     . routeWaiError (\s h _ -> return $ response s h ()) routes
+
+  where
+  catalogIndex' Catalog{ catalogStore = CatalogES idxn _ } = Just $ T.unpack idxn
+  catalogIndex' _ = Nothing

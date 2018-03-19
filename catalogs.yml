@@ -507,3 +507,61 @@ gaea:
       disp: false
     - name: z_pos
       type: double
+gaea_sql:
+  title: GAEA (SQL)
+  table: gaea
+  fields:
+    - name: CentralMvir
+      type: float
+    - name: ColdGas
+      type: float
+    - name: GalID
+      type: long
+    - name: GasDiskRadius
+      type: float
+    - name: GasSpin
+      type: float
+      sub:
+      - name: "x"
+      - name: "y"
+      - name: "z"
+    - name: HI
+      type: float
+    - name: MMSubID
+      type: long
+    - name: Mvir
+      type: float
+    - name: PPos
+      type: double
+      sub:
+      - name: "x"
+      - name: "y"
+    - name: Pos
+      type: double
+      sub:
+      - name: "x"
+      - name: "y"
+      - name: "z"
+    - name: Rvir
+      type: float
+    - name: StellarDiskRadius
+      type: float
+    - name: StellarMass
+      type: float
+    - name: Type
+      type: integer
+    - name: Vel
+      type: double
+      sub:
+      - name: "x"
+      - name: "y"
+      - name: "z"
+    - name: Vmax
+      type: float
+    - name: Vvir
+      type: float
+    - name: z
+      type: double
+      disp: false
+    - name: z_pos
+      type: double

@@ -4,8 +4,7 @@
 {-# LANGUAGE TupleSections #-}
 
 module ES
-  ( module ES.Types
-  , initServer
+  ( initServer
   , IndexSettings(..)
   , createIndex
   , getIndices
@@ -37,18 +36,16 @@ import qualified Network.URI as URI
 import qualified Waimwork.Config as C
 
 import JSON
-import ES.Types
 import Schema
 import Global
 
-initServer :: C.Config -> IO Server
-initServer conf = Server
-  <$> HTTP.parseUrlThrow (conf C.! "server")
+initServer :: C.Config -> IO HTTP.Request
+initServer conf = HTTP.parseUrlThrow (conf C.! "server")
 
 elasticSearch :: J.FromJSON r => StdMethod -> [String] -> HTTP.Query -> Maybe J.Encoding -> M r
 elasticSearch meth url query body = do
   glob <- ask
-  let req = serverRequest $ globalES glob
+  let req = globalES glob
       req' = maybe id setBody body $
         HTTP.setQueryString query req
         { HTTP.method = renderStdMethod meth
@@ -93,13 +90,14 @@ instance J.ToJSON IndexSettings where
     )
 
 createIndex :: IndexSettings -> Catalog -> M J.Value
-createIndex sets cat = elasticSearch PUT [T.unpack $ catalogIndex cat] [] $ Just $ JE.pairs $
+createIndex sets cat@Catalog{ catalogStore = CatalogES idxn mapn } = elasticSearch PUT [T.unpack idxn] [] $ Just $ JE.pairs $
      "settings" .=*
     (  "index" J..= sets)
   <> "mappings" .=*
-    (  catalogMapping cat .=*
+    (  mapn .=*
       (  "dynamic" J..= J.String "strict"
       <> "properties" J..= HM.map fieldType (catalogFieldMap cat)))
+createIndex _ _ = return J.Null
 
 getIndices :: [String] -> M J.Value
 getIndices idx = elasticSearch GET [if null idx then "_all" else intercalate "," idx] [] Nothing
@@ -141,9 +139,9 @@ scrollTime :: IsString s => s
 scrollTime = "10s"
 
 queryIndex :: Catalog -> Query -> M J.Value
-queryIndex cat Query{..} =
+queryIndex cat@Catalog{ catalogStore = CatalogES idxn mapn } Query{..} =
   elasticSearch GET
-    [T.unpack $ catalogIndex cat, T.unpack $ catalogMapping cat, "_search"]
+    [T.unpack idxn, T.unpack mapn, "_search"]
     (mif queryScroll $ [("scroll", Just scrollTime)])
     $ Just $ JE.pairs $
        (mif (queryOffset > 0) $ "from" J..= queryOffset)
@@ -171,6 +169,7 @@ queryIndex cat Query{..} =
   agg (Just Keyword) = "terms"
   agg _ = "stats"
   bsc = JE.string . BSC.unpack
+queryIndex _ _ = return J.Null
 
 scrollSearch :: T.Text -> M J.Value
 scrollSearch sid = elasticSearch GET ["_search", "scroll"] [] $ Just $ JE.pairs $
