@@ -14,6 +14,7 @@ module Schema
   , expandFields
   , fieldsDepth
   , Query(..)
+  , fillQuery
   ) where
 
 import           Control.Applicative ((<|>))
@@ -184,7 +185,6 @@ data Query = Query
   , queryFilter :: [(T.Text, BS.ByteString, Maybe BS.ByteString)]
   , queryAggs :: [T.Text]
   , queryHist :: Maybe T.Text
-  , queryScroll :: Bool
   }
 
 instance Monoid Query where
@@ -196,7 +196,6 @@ instance Monoid Query where
     , queryFilter = []
     , queryAggs   = []
     , queryHist   = Nothing
-    , queryScroll = False
     }
   mappend q1 q2 = Query
     { queryOffset = queryOffset q1 +     queryOffset q2
@@ -206,5 +205,8 @@ instance Monoid Query where
     , queryFilter = queryFilter q1 <>    queryFilter q2
     , queryAggs   = queryAggs   q1 <>    queryAggs   q2
     , queryHist   = queryHist   q1 <>    queryHist   q2
-    , queryScroll = queryScroll q1 ||    queryScroll q2
     }
+
+fillQuery :: Catalog -> Query -> Query
+fillQuery cat q@Query{ queryFields = [] } = fillQuery cat $ q{ queryFields = map fieldName $ expandFields $ catalogFields cat }
+fillQuery _ q = q

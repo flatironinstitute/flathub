@@ -8,4 +8,5 @@ postgresql {
   sock = "/run/postgresql/.s.PGSQL.5432"
   db = "astrosims"
   user = "dylan"
+  #debug = true
 }

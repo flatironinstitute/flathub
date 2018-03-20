@@ -9,7 +9,7 @@ module ES
   , createIndex
   , checkIndices
   , queryIndex
-  , scrollSearch
+  , queryBulk
   ) where
 
 import           Control.Monad ((<=<), forM_, unless)
@@ -23,10 +23,12 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import           Data.Default (Default(def))
 import qualified Data.HashMap.Strict as HM
+import           Data.IORef (newIORef, readIORef, writeIORef)
 import           Data.List (intercalate)
 import           Data.Monoid ((<>))
 import           Data.String (IsString)
 import qualified Data.Text as T
+import qualified Data.Vector as V
 import qualified Network.HTTP.Client as HTTP
 import           Network.HTTP.Types.Header (hAccept, hContentType)
 import           Network.HTTP.Types.Method (StdMethod(GET, PUT), renderStdMethod)
@@ -126,17 +128,16 @@ checkIndices = do
 scrollTime :: IsString s => s
 scrollTime = "10s"
 
-queryIndex :: Catalog -> Query -> M J.Value
-queryIndex cat@Catalog{ catalogStore = CatalogES idxn mapn } Query{..} =
+queryIndexScroll :: Bool -> Catalog -> Query -> M J.Value
+queryIndexScroll scroll cat@Catalog{ catalogStore = CatalogES idxn mapn } Query{..} =
   elasticSearch GET
     [T.unpack idxn, T.unpack mapn, "_search"]
-    (mwhen queryScroll $ [("scroll", Just scrollTime)])
+    (mwhen scroll $ [("scroll", Just scrollTime)])
     $ Just $ JE.pairs $
        (mwhen (queryOffset > 0) $ "from" J..= queryOffset)
     <> (mwhen (queryLimit  > 0) $ "size" J..= queryLimit)
     <> "sort" `JE.pair` JE.list (\(f, a) -> JE.pairs (f J..= if a then "asc" else "desc" :: String)) (querySort ++ [("_doc",True)])
-    <> (mwhen (not (null queryFields)) $
-       "_source" J..= queryFields)
+    <> "_source" J..= queryFields
     <> "query" .=*
       ("bool" .=*
         ("filter" `JE.pair` JE.list (JE.pairs . term) queryFilter))
@@ -155,9 +156,35 @@ queryIndex cat@Catalog{ catalogStore = CatalogES idxn mapn } Query{..} =
   agg (Just Keyword) = "terms"
   agg _ = "stats"
   bsc = JE.string . BSC.unpack
-queryIndex _ _ = return J.Null
+queryIndexScroll _ _ _ = return J.Null
+
+queryIndex :: Catalog -> Query -> M J.Value
+queryIndex = queryIndexScroll False
 
 scrollSearch :: T.Text -> M J.Value
 scrollSearch sid = elasticSearch GET ["_search", "scroll"] [] $ Just $ JE.pairs $
      "scroll" J..= J.String scrollTime
   <> "scroll_id" J..= sid
+
+queryBulk :: Catalog -> Query -> M (IO (V.Vector [J.Value]))
+queryBulk cat query@Query{..} = do
+  glob <- ask
+  sidv <- liftIO $ newIORef Nothing
+  return $ do
+    sid <- readIORef sidv
+    res <- runGlobal glob $ maybe
+      (queryIndexScroll True cat query)
+      scrollSearch
+      sid
+    (sid', rows) <- either fail return $ J.parseEither parse res
+    writeIORef sidv $ Just sid'
+    return rows
+  where
+  parse = J.withObject "query" $ \q -> (,)
+    <$> q J..: "_scroll_id"
+    <*> parseJSONField "hits" (J.withObject "hits" $
+      parseJSONField "hits" $ J.withArray "hits" $
+        V.mapM $ J.withObject "hit" $
+          parseJSONField "_source" $ J.withObject "source" $ \d ->
+            return $ map (\f -> HM.lookupDefault J.Null f d) queryFields)
+      q

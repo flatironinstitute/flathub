@@ -13,7 +13,7 @@ import qualified Data.Aeson.Types as J
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import           Data.Default (Default(def))
-import           Data.Foldable (fold)
+import           Data.Function (fix)
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Map.Strict as Map
 import           Data.Maybe (fromMaybe, isNothing)
@@ -178,7 +178,7 @@ parseQuery = foldMap parseQueryItem . Wai.queryString where
 catalog :: Route Simulation
 catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do
   cat <- askCatalog sim
-  let query = parseQuery req
+  let query = fillQuery cat $ parseQuery req
   unless (queryLimit query > 0 && queryLimit query <= 100) $
     result $ response badRequest400 [] ("limit too large" :: String)
   case catalogStore cat of
@@ -208,29 +208,27 @@ catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do
 catalogCSV :: Route Simulation
 catalogCSV = getPath (R.parameter R.>* "csv") $ \sim req -> do
   cat <- askCatalog sim
-  let query = parseQuery req
-      fields = if null (queryFields query) then map fieldName $ expandFields $ catalogFields cat else queryFields query
-      parse = J.withObject "query" $ \q -> (,)
-        <$> q J..: "_scroll_id"
-        <*> parseJSONField "hits" (J.withObject "hits" $
-          parseJSONField "hits" $ J.withArray "hits" $
-            V.mapM $ J.withObject "hit" $
-              parseJSONField "_source" $ J.withObject "source" $ \d ->
-                return $ csvJSONRow $ map (\f -> HM.lookupDefault J.Null f d) fields)
-          q
+  let query = fillQuery cat $ parseQuery req
   unless (queryLimit query == 0 && queryOffset query == 0 && null (queryAggs query) && isNothing (queryHist query)) $
     result $ response badRequest400 [] ("limit,offset,aggs not supported for CSV" :: String)
   glob <- ask
+  next <- ES.queryBulk cat query
   return $ Wai.responseStream ok200 [(hContentType, "text/csv")] $ \chunk flush -> do
-    chunk $ csvTextRow fields
-    let
-      send b = chunk b >> flush
-      loop res = do
-        (sid, csv) <- either fail return $ J.parseEither parse res
-        unless (null csv) $ do
-          () <- liftIO $ send $ fold csv
-          loop =<< ES.scrollSearch sid
-    runGlobal glob $ loop =<< ES.queryIndex cat query{ queryScroll = True }
+    chunk $ csvTextRow $ queryFields query
+    case catalogStore cat of
+      CatalogES{} -> fix $ \loop -> do
+        block <- next
+        unless (V.null block) $ do
+          chunk $ foldMap csvJSONRow block
+          flush
+          loop
+      CatalogPG{} -> runGlobal glob $ PG.queryBulk cat query $ \next -> fix $ \loop -> do
+        block <- next
+        unless (null block) $ do
+          chunk $ foldMap csvJSONRow block
+          flush
+          loop
+
 
 routes :: R.RouteMap Action
 routes = R.routes

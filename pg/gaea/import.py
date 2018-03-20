@@ -108,5 +108,5 @@ with pg.cursor() as pgc:
     for name in args.file:
         with HDF5Stream(idx, name, max(0, args.offset-idx)) as stream:
             print(repr(idx) + " " + name + " " + str(stream.count))
-            pgc.copy_expert('COPY ' + args.table + ' (' + ','.join(cols) + ') FROM STDIN (FORMAT binary)', stream)
+            pgc.copy_expert('COPY ' + args.table + ' (' + ','.join(cols) + ') FROM STDIN (FORMAT binary)', stream, size = 65536)
             idx += stream.count
