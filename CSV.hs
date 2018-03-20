@@ -16,9 +16,7 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import           Data.Word (Word8)
 
-inter :: B.Builder -> [B.Builder] -> B.Builder
-inter _ [] = mempty
-inter d (x:l) = x <> mconcat (map (d <>) l)
+import Monoid
 
 dQuote :: Word8
 dQuote = c2w '"'
@@ -54,7 +52,7 @@ csvJSON x@(J.Bool _) = J.fromEncoding $ J.toEncoding x
 csvJSON x = csvLazyByteString $ J.encode x
 
 csvBuilderRow :: [B.Builder] -> B.Builder
-csvBuilderRow r = inter (B.char8 ',') r <> B.char8 '\n'
+csvBuilderRow r = mintersperse (B.char8 ',') r <> B.char8 '\n'
 
 csvTextRow :: [T.Text] -> B.Builder
 csvTextRow = csvBuilderRow . map csvText

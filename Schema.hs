@@ -13,14 +13,14 @@ module Schema
   , subField
   , expandFields
   , fieldsDepth
-  , checkESIndices
+  , Query(..)
   ) where
 
 import           Control.Applicative ((<|>))
 import           Control.Arrow ((&&&))
-import           Control.Monad (forM_, unless)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Types as J
+import qualified Data.ByteString as BS
 import           Data.Default (Default(def))
 import qualified Data.HashMap.Strict as HM
 import           Data.Monoid ((<>))
@@ -29,8 +29,6 @@ import           Data.Semigroup (Max(getMax))
 import qualified Data.Text as T
 import qualified Data.Vector as V
 import           Text.Read (readPrec, Lexeme(Ident), lexP, readEither)
-
-import JSON
 
 data Type
   = Text
@@ -178,17 +176,35 @@ instance J.FromJSON Catalog where
         <$> (c J..: "table")
     return $ Catalog t d f (HM.fromList $ map (fieldName &&& id) $ expandFields f)
 
-checkESIndices :: [Catalog] -> J.Value -> J.Parser ()
-checkESIndices cats = J.withObject "indices" $ forM_ cats . catalog where
-  catalog is cat@Catalog{ catalogStore = CatalogES idxn mapn } = parseJSONField idxn (idx cat mapn) is
-  catalog _ _ = return ()
-  idx :: Catalog -> T.Text -> J.Value -> J.Parser ()
-  idx cat mapn = J.withObject "index" $ parseJSONField "mappings" $ J.withObject "mappings" $
-    parseJSONField mapn (mapping $ expandFields $ catalogFields cat)
-  mapping :: Fields -> J.Value -> J.Parser ()
-  mapping fields = J.withObject "mapping" $ parseJSONField "properties" $ J.withObject "properties" $ \ps ->
-    forM_ fields $ \field -> parseJSONField (fieldName field) (prop field) ps
-  prop :: Field -> J.Value -> J.Parser ()
-  prop field = J.withObject "property" $ \p -> do
-    t <- p J..: "type"
-    unless (t == fieldType field) $ fail $ "incorrect field type; should be " ++ show (fieldType field)
+data Query = Query
+  { queryOffset :: Word
+  , queryLimit :: Word
+  , querySort :: [(T.Text, Bool)]
+  , queryFields :: [T.Text]
+  , queryFilter :: [(T.Text, BS.ByteString, Maybe BS.ByteString)]
+  , queryAggs :: [T.Text]
+  , queryHist :: Maybe T.Text
+  , queryScroll :: Bool
+  }
+
+instance Monoid Query where
+  mempty = Query
+    { queryOffset = 0
+    , queryLimit  = 0
+    , querySort   = []
+    , queryFields = []
+    , queryFilter = []
+    , queryAggs   = []
+    , queryHist   = Nothing
+    , queryScroll = False
+    }
+  mappend q1 q2 = Query
+    { queryOffset = queryOffset q1 +     queryOffset q2
+    , queryLimit  = queryLimit  q1 `max` queryLimit  q2
+    , querySort   = querySort   q1 <>    querySort   q2
+    , queryFields = queryFields q1 <>    queryFields q2
+    , queryFilter = queryFilter q1 <>    queryFilter q2
+    , queryAggs   = queryAggs   q1 <>    queryAggs   q2
+    , queryHist   = queryHist   q1 <>    queryHist   q2
+    , queryScroll = queryScroll q1 ||    queryScroll q2
+    }

@@ -12,6 +12,7 @@ executable astrosims
   main-is: Main.hs
   other-modules:
     JSON
+    Monoid
     Schema
     Global
     ES

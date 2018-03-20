@@ -9,6 +9,10 @@ packages:
     git: git://github.com/dylex/web-inv-route
     commit: dc79476721f87aad5885e121814b989c4d798ef1
   extra-dep: true
+- location:
+    git: git://github.com/dylex/postgresql-typed
+    commit: dd661a34d353b72b80a1a6741e69fd6cbd0d3577
+  extra-dep: true
 flags:
   web-inv-route:
     snap: false

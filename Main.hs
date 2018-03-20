@@ -16,7 +16,7 @@ import           Data.Default (Default(def))
 import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Map.Strict as Map
-import           Data.Maybe (fromMaybe, isNothing, mapMaybe)
+import           Data.Maybe (fromMaybe, isNothing)
 import           Data.Monoid ((<>))
 import           Data.String (IsString)
 import qualified Data.Text as T
@@ -160,29 +160,34 @@ simulation = getPath R.parameter $ \sim req -> do
   dtype Date = "date"
   dtype _ = "string"
 
-parseQuery :: Wai.Request -> ES.Query
+parseQuery :: Wai.Request -> Query
 parseQuery = foldMap parseQueryItem . Wai.queryString where
-  parseQueryItem ("offset", Just (readMaybe . BSC.unpack -> Just n)) = mempty{ ES.queryOffset = n }
-  parseQueryItem ("limit",  Just (readMaybe . BSC.unpack -> Just n)) = mempty{ ES.queryLimit  = n }
-  parseQueryItem ("sort",   Just s) = mempty{ ES.querySort = map ps (BSC.split ',' s) } where
+  parseQueryItem ("offset", Just (readMaybe . BSC.unpack -> Just n)) = mempty{ queryOffset = n }
+  parseQueryItem ("limit",  Just (readMaybe . BSC.unpack -> Just n)) = mempty{ queryLimit  = n }
+  parseQueryItem ("sort",   Just s) = mempty{ querySort = map ps (BSC.split ',' s) } where
     ps f = case BSC.uncons f of
       Just ('+', r) -> (TE.decodeUtf8 r, True)
       Just ('-', r) -> (TE.decodeUtf8 r, False)
       _             -> (TE.decodeUtf8 f, True)
-  parseQueryItem ("fields", Just s) = mempty{ ES.queryFields = map TE.decodeUtf8 (BSC.split ',' s) }
-  parseQueryItem ("aggs",   Just s) = mempty{ ES.queryAggs = map TE.decodeUtf8 (BSC.split ',' s) }
-  parseQueryItem ("hist",   Just s) = mempty{ ES.queryHist = Just (TE.decodeUtf8 s) }
-  parseQueryItem (f,        s) = mempty{ ES.queryFilter = [(TE.decodeUtf8 f, a, snd <$> BS.uncons b)] } where
+  parseQueryItem ("fields", Just s) = mempty{ queryFields = map TE.decodeUtf8 (BSC.split ',' s) }
+  parseQueryItem ("aggs",   Just s) = mempty{ queryAggs = map TE.decodeUtf8 (BSC.split ',' s) }
+  parseQueryItem ("hist",   Just s) = mempty{ queryHist = Just (TE.decodeUtf8 s) }
+  parseQueryItem (f,        s) = mempty{ queryFilter = [(TE.decodeUtf8 f, a, snd <$> BS.uncons b)] } where
     (a, b) = BSC.break (',' ==) $ fromMaybe BS.empty s
 
 catalog :: Route Simulation
 catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do
   cat <- askCatalog sim
   let query = parseQuery req
-  unless (ES.queryLimit query > 0 && ES.queryLimit query <= 100) $
+  unless (queryLimit query > 0 && queryLimit query <= 100) $
     result $ response badRequest400 [] ("limit too large" :: String)
-  res <- ES.queryIndex cat query
-  return $ okResponse [(hContentType, "application/json")] $ clean res
+  case catalogStore cat of
+    CatalogES{} -> do
+      res <- ES.queryIndex cat query
+      return $ okResponse [] $ clean res
+    CatalogPG{} -> do
+      res <- PG.queryTable cat query
+      return $ okResponse [] res
   where
   clean = mapObject $ HM.mapMaybeWithKey cleanTop
   cleanTop "aggregations" = Just
@@ -204,7 +209,7 @@ catalogCSV :: Route Simulation
 catalogCSV = getPath (R.parameter R.>* "csv") $ \sim req -> do
   cat <- askCatalog sim
   let query = parseQuery req
-      fields = if null (ES.queryFields query) then map fieldName $ expandFields $ catalogFields cat else ES.queryFields query
+      fields = if null (queryFields query) then map fieldName $ expandFields $ catalogFields cat else queryFields query
       parse = J.withObject "query" $ \q -> (,)
         <$> q J..: "_scroll_id"
         <*> parseJSONField "hits" (J.withObject "hits" $
@@ -213,7 +218,7 @@ catalogCSV = getPath (R.parameter R.>* "csv") $ \sim req -> do
               parseJSONField "_source" $ J.withObject "source" $ \d ->
                 return $ csvJSONRow $ map (\f -> HM.lookupDefault J.Null f d) fields)
           q
-  unless (ES.queryLimit query == 0 && ES.queryOffset query == 0 && null (ES.queryAggs query) && isNothing (ES.queryHist query)) $
+  unless (queryLimit query == 0 && queryOffset query == 0 && null (queryAggs query) && isNothing (queryHist query)) $
     result $ response badRequest400 [] ("limit,offset,aggs not supported for CSV" :: String)
   glob <- ask
   return $ Wai.responseStream ok200 [(hContentType, "text/csv")] $ \chunk flush -> do
@@ -225,7 +230,7 @@ catalogCSV = getPath (R.parameter R.>* "csv") $ \sim req -> do
         unless (null csv) $ do
           () <- liftIO $ send $ fold csv
           loop =<< ES.scrollSearch sid
-    runGlobal glob $ loop =<< ES.queryIndex cat query{ ES.queryScroll = True }
+    runGlobal glob $ loop =<< ES.queryIndex cat query{ queryScroll = True }
 
 routes :: R.RouteMap Action
 routes = R.routes
@@ -279,16 +284,8 @@ main = do
 
   runGlobal global $ mapM_ (liftIO . putStrLn <=< createCatalog . (catalogs HM.!)) $ optIndices opts
     
-  -- check catalogs against es
-  indices <- runGlobal global $ ES.getIndices $ mapMaybe catalogIndex' $ HM.elems catalogs
-  either
-    (fail . ("ES index mismatch: " ++))
-    return
-    $ J.parseEither (checkESIndices $ HM.elems catalogs) indices
+  -- check catalogs against dbs
+  runGlobal global $ ES.checkIndices >> PG.checkTables
 
   runWaimwork conf $ runGlobal global
     . routeWaiError (\s h _ -> return $ response s h ()) routes
-
-  where
-  catalogIndex' Catalog{ catalogStore = CatalogES idxn _ } = Just $ T.unpack idxn
-  catalogIndex' _ = Nothing

@@ -7,18 +7,17 @@ module ES
   ( initServer
   , IndexSettings(..)
   , createIndex
-  , getIndices
-  , Query(..)
+  , checkIndices
   , queryIndex
   , scrollSearch
   ) where
 
-import           Control.Monad ((<=<))
+import           Control.Monad ((<=<), forM_, unless)
 import           Control.Monad.IO.Class (liftIO)
-import           Control.Monad.Reader (ask)
+import           Control.Monad.Reader (ask, asks)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
-import qualified Data.Aeson.Types as J (parseEither)
+import qualified Data.Aeson.Types as J (Parser, parseEither)
 import qualified Data.Attoparsec.ByteString as AP
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
@@ -35,6 +34,7 @@ import qualified Network.HTTP.Types.URI as HTTP (Query)
 import qualified Network.URI as URI
 import qualified Waimwork.Config as C
 
+import Monoid
 import JSON
 import Schema
 import Global
@@ -99,41 +99,29 @@ createIndex sets cat@Catalog{ catalogStore = CatalogES idxn mapn } = elasticSear
       <> "properties" J..= HM.map fieldType (catalogFieldMap cat)))
 createIndex _ _ = return J.Null
 
-getIndices :: [String] -> M J.Value
-getIndices idx = elasticSearch GET [if null idx then "_all" else intercalate "," idx] [] Nothing
-
-data Query = Query
-  { queryOffset :: Word
-  , queryLimit :: Word
-  , querySort :: [(T.Text, Bool)]
-  , queryFields :: [T.Text]
-  , queryFilter :: [(T.Text, BS.ByteString, Maybe BS.ByteString)]
-  , queryAggs :: [T.Text]
-  , queryHist :: Maybe T.Text
-  , queryScroll :: Bool
-  }
-
-instance Monoid Query where
-  mempty = Query
-    { queryOffset = 0
-    , queryLimit  = 0
-    , querySort   = []
-    , queryFields = []
-    , queryFilter = []
-    , queryAggs   = []
-    , queryHist   = Nothing
-    , queryScroll = False
-    }
-  mappend q1 q2 = Query
-    { queryOffset = queryOffset q1 +     queryOffset q2
-    , queryLimit  = queryLimit  q1 `max` queryLimit  q2
-    , querySort   = querySort   q1 <>    querySort   q2
-    , queryFields = queryFields q1 <>    queryFields q2
-    , queryFilter = queryFilter q1 <>    queryFilter q2
-    , queryAggs   = queryAggs   q1 <>    queryAggs   q2
-    , queryHist   = queryHist   q1 <>    queryHist   q2
-    , queryScroll = queryScroll q1 ||    queryScroll q2
-    }
+checkIndices :: M ()
+checkIndices = do
+  cats <- asks $ filter ises . HM.elems . globalCatalogs
+  indices <- elasticSearch GET [intercalate "," $ map catalogIndex' cats] [] Nothing
+  either
+    (fail . ("ES index mismatch: " ++))
+    return
+    $ J.parseEither (J.withObject "indices" $ forM_ cats . catalog) indices
+  where
+  ises Catalog{ catalogStore = CatalogES{} } = True
+  ises _ = False
+  catalogIndex' ~Catalog{ catalogStore = CatalogES idxn _ } = T.unpack idxn
+  catalog is ~cat@Catalog{ catalogStore = CatalogES idxn mapn } = parseJSONField idxn (idx cat mapn) is
+  idx :: Catalog -> T.Text -> J.Value -> J.Parser ()
+  idx cat mapn = J.withObject "index" $ parseJSONField "mappings" $ J.withObject "mappings" $
+    parseJSONField mapn (mapping $ expandFields $ catalogFields cat)
+  mapping :: Fields -> J.Value -> J.Parser ()
+  mapping fields = J.withObject "mapping" $ parseJSONField "properties" $ J.withObject "properties" $ \ps ->
+    forM_ fields $ \field -> parseJSONField (fieldName field) (prop field) ps
+  prop :: Field -> J.Value -> J.Parser ()
+  prop field = J.withObject "property" $ \p -> do
+    t <- p J..: "type"
+    unless (t == fieldType field) $ fail $ "incorrect field type; should be " ++ show (fieldType field)
 
 scrollTime :: IsString s => s
 scrollTime = "10s"
@@ -142,23 +130,21 @@ queryIndex :: Catalog -> Query -> M J.Value
 queryIndex cat@Catalog{ catalogStore = CatalogES idxn mapn } Query{..} =
   elasticSearch GET
     [T.unpack idxn, T.unpack mapn, "_search"]
-    (mif queryScroll $ [("scroll", Just scrollTime)])
+    (mwhen queryScroll $ [("scroll", Just scrollTime)])
     $ Just $ JE.pairs $
-       (mif (queryOffset > 0) $ "from" J..= queryOffset)
-    <> (mif (queryLimit  > 0) $ "size" J..= queryLimit)
+       (mwhen (queryOffset > 0) $ "from" J..= queryOffset)
+    <> (mwhen (queryLimit  > 0) $ "size" J..= queryLimit)
     <> "sort" `JE.pair` JE.list (\(f, a) -> JE.pairs (f J..= if a then "asc" else "desc" :: String)) (querySort ++ [("_doc",True)])
-    <> (mif (not (null queryFields)) $
+    <> (mwhen (not (null queryFields)) $
        "_source" J..= queryFields)
     <> "query" .=*
       ("bool" .=*
         ("filter" `JE.pair` JE.list (JE.pairs . term) queryFilter))
-    <> (mif (not (null queryAggs)) $
+    <> (mwhen (not (null queryAggs)) $
        "aggs" .=* (foldMap
       (\f -> f .=* (agg (fieldType <$> HM.lookup f (catalogFieldMap cat)) .=* ("field" J..= f)))
       queryAggs))
   where
-  mif True v = v
-  mif False _ = mempty
   term (f, a, Nothing) = "term" .=* (f `JE.pair` bsc a)
   term (f, a, Just b) = "range" .=* (f .=*
     (bound "gte" a <> bound "lte" b))
