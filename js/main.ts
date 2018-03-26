@@ -209,7 +209,7 @@ function add_filter(field: Field) {
             ub:isFinite(ubv) ? ubv : ''
           };
         update();
-        (<DataTables.ColumnMethods><any>tcol.search(lbv+" TO "+ubv)).visible(lbv==ubv).draw();
+        (<DataTables.ColumnMethods><any>tcol.search(lbv+" TO "+ubv)).visible(lbv!=ubv).draw();
       };
       lb.onchange = ub.onchange = onchange;
       add_filt_row(field.name, label,
