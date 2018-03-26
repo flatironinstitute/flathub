@@ -70,7 +70,9 @@ createIndex cat@Catalog{ catalogStore = CatalogES idxn mapn sets } = elasticSear
   <> "mappings" .=*
     (  mapn .=*
       (  "dynamic" J..= J.String "strict"
-      <> "properties" J..= HM.map fieldType (catalogFieldMap cat)))
+      <> "properties" J..= HM.map field (catalogFieldMap cat)))
+  where
+  field f = J.object ["type" J..= fieldType f]
 createIndex _ = return J.Null
 
 checkIndices :: M ()
