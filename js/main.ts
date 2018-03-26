@@ -147,7 +147,7 @@ function add_filter(field: Field) {
       Filters.splice(i, 1);
       $('tr#filt-'+field.name).remove();
       Update_aggs = i;
-      tcol.search('').draw();
+      tcol.search('').visible(true).draw();
     }),
     field.name);
   switch (field.type) {
