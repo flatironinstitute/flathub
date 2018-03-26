@@ -42,7 +42,7 @@ PG.useTDBConfig "config" "postgresql"
 
 withPG :: (PG.DBConn -> IO a) -> M a
 withPG f = do
-  db <- asks globalPG
+  Just db <- asks globalPG
   liftIO $ PG.withDB db f
 
 pgType :: IsString s => Type -> s

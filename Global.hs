@@ -25,7 +25,7 @@ data Global = Global
   { globalConfig :: C.Config
   , globalHTTP :: HTTP.Manager
   , globalES :: HTTP.Request
-  , globalPG :: PG.DBPool
+  , globalPG :: Maybe PG.DBPool
   , globalCatalogs :: HM.HashMap Simulation Catalog
   }
 
