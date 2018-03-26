@@ -66,5 +66,6 @@ for r in elasticsearch.helpers.streaming_bulk(es, generate()):
     n += 1
     if n % 100 == 0:
         sys.stdout.write("%d\r"%n)
+        sys.stdout.flush()
 print(n)
 es.indices.refresh(index=args.index)
