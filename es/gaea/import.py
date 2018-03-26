@@ -8,13 +8,14 @@ import numpy
 import os
 
 argp = argparse.ArgumentParser(description="gaea catalog elastic search import")
+argp.add_argument('-H', '--host', default='localhost:9200', help="ES host")
 argp.add_argument('-I', '--index', default='gaea', help="Index name")
 argp.add_argument('-T', '--type', default='catalog', help="Type name")
 argp.add_argument('-o', '--offset', type=int, default=0, help="Initial starting offset in first file")
 argp.add_argument('file', nargs='+', help="Simulation files")
 args = argp.parse_args()
 
-es = elasticsearch.Elasticsearch(timeout=120)
+es = elasticsearch.Elasticsearch(args.host, timeout=120)
 
 mapping = es.indices.get_mapping(index=args.index, doc_type=args.type)[args.index]['mappings'][args.type]['properties']
 
