@@ -271,7 +271,7 @@ main = do
   catalogs <- either throwIO return =<< YAML.decodeFileEither (fromMaybe "catalogs.yml" $ conf C.! "catalogs")
   httpmgr <- HTTP.newManager HTTP.defaultManagerSettings
   es <- ES.initServer (conf C.! "elasticsearch")
-  pg <- mapM PG.initDB (conf C.! "postgresql")
+  pg <- PG.initDB (conf C.! "postgresql")
   let global = Global
         { globalConfig = conf
         , globalHTTP = httpmgr
