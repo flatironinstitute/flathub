@@ -6,6 +6,7 @@ import elasticsearch.helpers
 import h5py
 import numpy
 import os
+import sys
 
 argp = argparse.ArgumentParser(description="gaea catalog elastic search import")
 argp.add_argument('-H', '--host', default='localhost:9200', help="ES host")
@@ -36,7 +37,6 @@ def generate():
     for name in args.file:
         base, _ = os.path.splitext(os.path.basename(name))
         baseid = "%s_"%(base)
-        print(base)
         with h5py.File(name, 'r') as f:
             keys = []
             for k, v in f.iteritems():
@@ -53,6 +53,7 @@ def generate():
             if args.offset > count:
                 args.offset -= count
                 continue
+            print("%s %d"%(base, count))
             for i in xrange(args.offset, count):
                 doc['_id'] = baseid + str(i)
                 for n, v in keys:
@@ -63,7 +64,7 @@ def generate():
 n = 0
 for r in elasticsearch.helpers.streaming_bulk(es, generate()):
     n += 1
-    if n % 50000 == 0:
-        print(n)
+    if n % 100 == 0:
+        sys.stdout.write("%d\r"%n)
 print(n)
 es.indices.refresh(index=args.index)
