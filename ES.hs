@@ -5,7 +5,6 @@
 
 module ES
   ( initServer
-  , IndexSettings(..)
   , createIndex
   , checkIndices
   , queryIndex
@@ -21,7 +20,6 @@ import qualified Data.Aeson.Types as J (Parser, parseEither)
 import qualified Data.Attoparsec.ByteString as AP
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
-import           Data.Default (Default(def))
 import qualified Data.HashMap.Strict as HM
 import           Data.IORef (newIORef, readIORef, writeIORef)
 import           Data.List (intercalate)
@@ -66,40 +64,14 @@ elasticSearch meth url query body = do
     }
   parse r = AP.parseWith (HTTP.responseBody r) J.json BS.empty
 
-data IndexSettings = IndexSettings
-  { indexNumberOfShards
-  , indexNumberOfReplicas
-  , indexNumberOfRoutingShards :: Word
-  }
-
-instance Default IndexSettings where
-  def = IndexSettings
-    { indexNumberOfShards = 8
-    , indexNumberOfReplicas = 1
-    , indexNumberOfRoutingShards = 8
-    }
-
-instance J.ToJSON IndexSettings where
-  toJSON IndexSettings{..} = J.object
-    [ "number_of_shards" J..= indexNumberOfShards
-    , "number_of_replicas" J..= indexNumberOfReplicas
-    , "number_of_routing_shards" J..= indexNumberOfRoutingShards
-    ]
-  toEncoding IndexSettings{..} = J.pairs
-    (  "number_of_shards" J..= indexNumberOfShards
-    <> "number_of_replicas" J..= indexNumberOfReplicas
-    <> "number_of_routing_shards" J..= indexNumberOfRoutingShards
-    )
-
-createIndex :: IndexSettings -> Catalog -> M J.Value
-createIndex sets cat@Catalog{ catalogStore = CatalogES idxn mapn } = elasticSearch PUT [T.unpack idxn] [] $ Just $ JE.pairs $
-     "settings" .=*
-    (  "index" J..= sets)
+createIndex :: Catalog -> M J.Value
+createIndex cat@Catalog{ catalogStore = CatalogES idxn mapn sets } = elasticSearch PUT [T.unpack idxn] [] $ Just $ JE.pairs $
+     "settings" J..= sets
   <> "mappings" .=*
     (  mapn .=*
       (  "dynamic" J..= J.String "strict"
       <> "properties" J..= HM.map fieldType (catalogFieldMap cat)))
-createIndex _ _ = return J.Null
+createIndex _ = return J.Null
 
 checkIndices :: M ()
 checkIndices = do
@@ -112,8 +84,8 @@ checkIndices = do
   where
   ises Catalog{ catalogStore = CatalogES{} } = True
   ises _ = False
-  catalogIndex' ~Catalog{ catalogStore = CatalogES idxn _ } = T.unpack idxn
-  catalog is ~cat@Catalog{ catalogStore = CatalogES idxn mapn } = parseJSONField idxn (idx cat mapn) is
+  catalogIndex' ~Catalog{ catalogStore = CatalogES{ catalogIndex = idxn} } = T.unpack idxn
+  catalog is ~cat@Catalog{ catalogStore = CatalogES{ catalogIndex = idxn, catalogMapping = mapn } } = parseJSONField idxn (idx cat mapn) is
   idx :: Catalog -> T.Text -> J.Value -> J.Parser ()
   idx cat mapn = J.withObject "index" $ parseJSONField "mappings" $ J.withObject "mappings" $
     parseJSONField mapn (mapping $ expandFields $ catalogFields cat)
@@ -129,7 +101,7 @@ scrollTime :: IsString s => s
 scrollTime = "10s"
 
 queryIndexScroll :: Bool -> Catalog -> Query -> M J.Value
-queryIndexScroll scroll cat@Catalog{ catalogStore = CatalogES idxn mapn } Query{..} =
+queryIndexScroll scroll cat@Catalog{ catalogStore = CatalogES{ catalogIndex = idxn, catalogMapping = mapn } } Query{..} =
   elasticSearch GET
     [T.unpack idxn, T.unpack mapn, "_search"]
     (mwhen scroll $ [("scroll", Just scrollTime)])

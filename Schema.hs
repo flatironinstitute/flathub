@@ -154,6 +154,7 @@ fieldsDepth = getMax . depth where
 data CatalogStore
   = CatalogES
     { catalogIndex, catalogMapping :: T.Text
+    , catalogSettings :: J.Object
     }
   | CatalogPG
     { catalogTable :: T.Text
@@ -173,6 +174,7 @@ instance J.FromJSON Catalog where
     d <- CatalogES
         <$> (c J..: "index")
         <*> (c J..:! "mapping" J..!= "catalog")
+        <*> (c J..:? "settings" J..!= HM.empty)
       <|> CatalogPG
         <$> (c J..: "table")
     return $ Catalog t d f (HM.fromList $ map (fieldName &&& id) $ expandFields f)

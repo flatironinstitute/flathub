@@ -452,6 +452,10 @@ neutrino:
 gaea:
   title: GAEA
   index: gaea
+  settings:
+    index:
+      number_of_shards: 40
+      number_of_replicas: 1
   fields:
     - name: CentralMvir
       type: float

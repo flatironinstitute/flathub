@@ -254,7 +254,7 @@ optDescr =
   ]
 
 createCatalog :: Catalog -> M String
-createCatalog cat@Catalog{ catalogStore = CatalogES{} } = show <$> ES.createIndex def cat
+createCatalog cat@Catalog{ catalogStore = CatalogES{} } = show <$> ES.createIndex cat
 createCatalog cat@Catalog{ catalogStore = CatalogPG{} } = show <$> PG.createTable cat
 
 main :: IO ()
