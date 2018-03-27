@@ -24,3 +24,10 @@ td {
   font-style: italic;
   text-align: center;
 }
+div#dhist {
+  display: none;
+  position: relative;
+  margin: auto;
+  height: 40vh;
+  width: 80vh;
+}

@@ -44,6 +44,7 @@ SystemJS.config({
     "npm:*.json"
   ],
   map: {
+    "chart.js": "npm:chart.js@2.7.2",
     "assert": "npm:jspm-nodelibs-assert@0.2.1",
     "buffer": "npm:jspm-nodelibs-buffer@0.2.3",
     "constants": "npm:jspm-nodelibs-constants@0.2.1",
@@ -402,6 +403,23 @@ SystemJS.config({
       "map": {
         "datatables.net": "npm:datatables.net@1.10.16",
         "jquery": "npm:jquery@3.3.1"
+      }
+    },
+    "npm:chart.js@2.7.2": {
+      "map": {
+        "moment": "npm:moment@2.21.0",
+        "chartjs-color": "npm:chartjs-color@2.2.0"
+      }
+    },
+    "npm:chartjs-color@2.2.0": {
+      "map": {
+        "color-convert": "npm:color-convert@0.5.3",
+        "chartjs-color-string": "npm:chartjs-color-string@0.5.0"
+      }
+    },
+    "npm:chartjs-color-string@0.5.0": {
+      "map": {
+        "color-name": "npm:color-name@1.1.3"
       }
     }
   }

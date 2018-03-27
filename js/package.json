@@ -13,6 +13,7 @@
     "jspm": "^0.17.0-beta.47"
   },
   "devDependencies": {
+    "@types/chart.js": "^2.7.10",
     "@types/datatables.net": "^1.10.8",
     "@types/jquery": "^3.3.0",
     "@types/systemjs": "^0.20.6",
@@ -22,6 +23,7 @@
     "name": "astrosims",
     "main": "main.ts",
     "dependencies": {
+      "chart.js": "npm:chart.js@^2.7.2",
       "datatables.net": "npm:datatables.net@^1.10.16",
       "datatables.net-colreorder": "npm:datatables.net-colreorder@^1.4.1",
       "datatables.net-dt": "npm:datatables.net-dt@^1.10.16",
@@ -72,6 +74,9 @@
       },
       "npm:jquery@3.3.1": {
         "format": "amd"
+      },
+      "npm:moment@2.21.0": {
+        "jspmNodeConversion": false
       },
       "npm:pbkdf2@3.0.14": {
         "main": "browser.js"

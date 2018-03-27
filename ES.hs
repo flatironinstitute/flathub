@@ -122,8 +122,7 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = CatalogES{ catalogIndex = id
       <> foldMap (\(f, i) -> "hist" .=* (
         "histogram" .=* (
              "field" J..= f
-          <> "interval" `JE.pair` bsc i
-          <> "min_doc_count" J..= J.Number 1)))
+          <> "interval" `JE.pair` bsc i)))
         queryHist)
   where
   term (f, a, Nothing) = "term" .=* (f `JE.pair` bsc a)

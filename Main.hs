@@ -146,6 +146,8 @@ simulation = getPath R.parameter $ \sim req -> do
       H.preEscapedBuilder $ J.fromEncoding jcat
     H.h2 $ H.string $ show sim
     H.table H.! HA.id "filt" $ mempty
+    H.div H.! HA.id "dhist" $
+      H.canvas H.! HA.id "hist" $ mempty
     H.table H.! HA.id "tcat" H.! HA.class_ "compact" $ do
       H.thead $ row (fieldsDepth fields) fields
       H.tfoot $ H.tr $ H.td H.! HA.colspan (H.toValue $ length fields') H.! HA.class_ "loading" $ "loading..."

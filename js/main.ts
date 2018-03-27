@@ -1,6 +1,7 @@
 import $ from "jquery";
 import "datatables.net";
 import DataTablesScroller from "datatables.net-scroller";
+import Chart from "chart.js";
 
 DataTablesScroller();
 
@@ -41,6 +42,9 @@ var TCat: DataTables.Api;
 declare const Catalog: Catalog;
 const Filters: Array<Filter> = [];
 var Update_aggs: number = 0;
+var Histogram: number = -1;
+const Histogram_bins = 100;
+var Histogram_chart: Chart|undefined;
 
 function select_options(select: HTMLSelectElement, options: string[]|Dict<string>) {
   $(select).empty();
@@ -60,6 +64,43 @@ function set_download(query: Dict<string>) {
   a.href = Catalog.query.csv + '?' + $.param(query);
 }
 
+function histogram(agg: {buckets: {key:number,doc_count:number}[]}) {
+  const hist = Filters[Histogram];
+  const data = {
+    datasets: [{
+      label: hist.name,
+      data: agg.buckets.map(d => { return {x:d.key,y:d.doc_count}; }),
+      pointRadius: 0,
+      showLine: true,
+      steppedLine: true,
+      fill: 'origin',
+    }]
+  };
+  $('#dhist').show();
+  if (Histogram_chart) {
+    Histogram_chart.data = data;
+    Histogram_chart.update();
+  }
+  else
+    Histogram_chart = new Chart('hist', {
+      options: {
+        maintainAspectRatio: false,
+        scales: {
+          yAxes: [<Chart.ChartYAxe>{
+            ticks: {
+              beginAtZero: true
+            }
+          }]
+        },
+        animation: {
+          duration: 0
+        },
+      },
+      type: 'scatter',
+      data: data
+    });
+}
+
 function ajax(data: any, callback: ((data: any) => void), opts: any) {
   const query: any = {
     sort: data.order.map((o: any) => {
@@ -77,6 +118,12 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
   query.limit = data.length;
   if (aggs)
     query.aggs = aggs.map((filt) => filt.name).join(',');
+  if (Histogram >= 0) {
+    const hist = Filters[Histogram];
+    const wid = typeof hist.query == 'object' ? <number>hist.query.ub - <number>hist.query.lb : null;
+    if (wid && wid > 0)
+      query.hist = hist.name + ':' + wid/Histogram_bins;
+  }
   $.ajax({
     method: Catalog.query.method,
     url: Catalog.query.uri,
@@ -96,6 +143,8 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
         f(res.aggregations[filt.name]);
     }
     Update_aggs = Filters.length;
+    if (res.aggregations && res.aggregations.hist)
+      histogram(res.aggregations.hist);
   }, (xhr, msg, err) => {
     callback({
       draw: data.draw,
@@ -144,10 +193,16 @@ function add_filter(field: Field) {
       if (!TCat) return;
       let i = Filters.indexOf(filt);
       if (i < 0) return;
+      if (Histogram > i)
+        Histogram -=1;
+      else if (Histogram == i) {
+        Histogram =-1;
+        $('#dhist').hide();
+      }
       Filters.splice(i, 1);
       $('tr#filt-'+field.name).remove();
       Update_aggs = i;
-      tcol.search('').visible(true).draw();
+      (<DataTables.ColumnMethods><any>tcol.search('')).visible(true).draw();
     }),
     field.name);
   switch (field.type) {
@@ -193,6 +248,7 @@ function add_filter(field: Field) {
       let avg = document.createElement('span');
       avg.innerHTML = "<em>loading...</em>";
       filt.update_aggs = (aggs: any) => {
+        filt.query = { lb: aggs.min, ub: aggs.max };
         lb.defaultValue = lb.value = lb.min = ub.min = aggs.min;
         ub.defaultValue = ub.value = lb.max = ub.max = aggs.max;
         lb.disabled = ub.disabled = false;
@@ -205,8 +261,8 @@ function add_filter(field: Field) {
           filt.query = lbv;
         else
           filt.query = {
-            lb:isFinite(lbv) ? lbv : '',
-            ub:isFinite(ubv) ? ubv : ''
+            lb:isFinite(lbv) ? lbv : lb.defaultValue,
+            ub:isFinite(ubv) ? ubv : ub.defaultValue
           };
         update();
         (<DataTables.ColumnMethods><any>tcol.search(lbv+" TO "+ubv)).visible(lbv!=ubv).draw();
@@ -214,7 +270,12 @@ function add_filter(field: Field) {
       lb.onchange = ub.onchange = onchange;
       add_filt_row(field.name, label,
         $('<span>').append(lb).append(' &ndash; ').append(ub),
-        $('<span><em>M</em> = </span>').append(avg));
+        $('<span><em>M</em> = </span>').append(avg),
+        $('<button>histogram</button>').on('click', function () {
+          Histogram = Filters.indexOf(filt);
+          tcol.draw();
+        })
+      );
       break;
     }
     default:
