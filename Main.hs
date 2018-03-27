@@ -162,17 +162,24 @@ simulation = getPath R.parameter $ \sim req -> do
 
 parseQuery :: Wai.Request -> Query
 parseQuery = foldMap parseQueryItem . Wai.queryString where
-  parseQueryItem ("offset", Just (readMaybe . BSC.unpack -> Just n)) = mempty{ queryOffset = n }
-  parseQueryItem ("limit",  Just (readMaybe . BSC.unpack -> Just n)) = mempty{ queryLimit  = n }
-  parseQueryItem ("sort",   Just s) = mempty{ querySort = map ps (BSC.split ',' s) } where
+  parseQueryItem ("offset", Just (readMaybe . BSC.unpack -> Just n)) =
+    mempty{ queryOffset = n }
+  parseQueryItem ("limit",  Just (readMaybe . BSC.unpack -> Just n)) =
+    mempty{ queryLimit  = n }
+  parseQueryItem ("sort",   Just s) =
+    mempty{ querySort = map ps (BSC.split ',' s) } where
     ps f = case BSC.uncons f of
       Just ('+', r) -> (TE.decodeUtf8 r, True)
       Just ('-', r) -> (TE.decodeUtf8 r, False)
       _             -> (TE.decodeUtf8 f, True)
-  parseQueryItem ("fields", Just s) = mempty{ queryFields = map TE.decodeUtf8 (BSC.split ',' s) }
-  parseQueryItem ("aggs",   Just s) = mempty{ queryAggs = map TE.decodeUtf8 (BSC.split ',' s) }
-  parseQueryItem ("hist",   Just s) = mempty{ queryHist = Just (TE.decodeUtf8 s) }
-  parseQueryItem (f,        s) = mempty{ queryFilter = [(TE.decodeUtf8 f, a, snd <$> BS.uncons b)] } where
+  parseQueryItem ("fields", Just s) =
+    mempty{ queryFields = map TE.decodeUtf8 (BSC.split ',' s) }
+  parseQueryItem ("aggs",   Just s) =
+    mempty{ queryAggs = map TE.decodeUtf8 (BSC.split ',' s) }
+  parseQueryItem ("hist",   Just (BSC.break (':' ==) -> (f, (BSC.uncons -> Just (':', i))))) =
+    mempty{ queryHist = Just (TE.decodeUtf8 f, i) }
+  parseQueryItem (f,        s) =
+    mempty{ queryFilter = [(TE.decodeUtf8 f, a, snd <$> BS.uncons b)] } where
     (a, b) = BSC.break (',' ==) $ fromMaybe BS.empty s
 
 catalog :: Route Simulation

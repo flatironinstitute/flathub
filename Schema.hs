@@ -186,7 +186,7 @@ data Query = Query
   , queryFields :: [T.Text]
   , queryFilter :: [(T.Text, BS.ByteString, Maybe BS.ByteString)]
   , queryAggs :: [T.Text]
-  , queryHist :: Maybe T.Text
+  , queryHist :: Maybe (T.Text, BS.ByteString)
   }
 
 instance Monoid Query where

@@ -115,10 +115,16 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = CatalogES{ catalogIndex = id
     <> "query" .=*
       ("bool" .=*
         ("filter" `JE.pair` JE.list (JE.pairs . term) queryFilter))
-    <> (mwhen (not (null queryAggs)) $
-       "aggs" .=* (foldMap
-      (\f -> f .=* (agg (fieldType <$> HM.lookup f (catalogFieldMap cat)) .=* ("field" J..= f)))
-      queryAggs))
+    <> "aggs" .=*
+      (  foldMap
+        (\f -> f .=* (agg (fieldType <$> HM.lookup f (catalogFieldMap cat)) .=* ("field" J..= f)))
+        queryAggs
+      <> foldMap (\(f, i) -> "hist" .=* (
+        "histogram" .=* (
+             "field" J..= f
+          <> "interval" `JE.pair` bsc i
+          <> "min_doc_count" J..= J.Number 1)))
+        queryHist)
   where
   term (f, a, Nothing) = "term" .=* (f `JE.pair` bsc a)
   term (f, a, Just b) = "range" .=* (f .=*
