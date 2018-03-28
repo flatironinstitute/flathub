@@ -56,9 +56,7 @@ pgType Byte = "smallint" -- XXX
 pgType Double = "double precision"
 pgType Float = "real"
 pgType HalfFloat = "real" -- XXX
-pgType Date = "timestamp" -- tz
 pgType Boolean = "boolean"
-pgType Binary = "bytea"
 
 pgIdent :: T.Text -> BSB.Builder
 pgIdent = pgDQuote . TE.encodeUtf8
@@ -81,8 +79,6 @@ pgDecodeType Double    v  = pgDecodeAs (0 :: Double) v
 pgDecodeType Float     v  = pgDecodeAs (0 :: Float) v
 pgDecodeType HalfFloat v  = pgDecodeAs (0 :: Float) v
 pgDecodeType Boolean   v  = pgDecodeAs False v
-pgDecodeType Binary    _  = error "PG Binary unsupported"
-pgDecodeType Date      _  = error "PG Date unsupported"
 -- pgDecodeType _ (PGTextValue v) = JE.unsafeToEncoding $ BSB.byteString v -- assume numeric with identical rep
 -- pgDecodeType _ (PGBinaryValue _) = error "unexpected PG binary value"
 

@@ -159,7 +159,7 @@ simulation = getPath R.parameter $ \sim req -> do
   dtype Double = "num"
   dtype Float = "num"
   dtype HalfFloat = "num"
-  dtype Date = "date"
+  -- dtype Date = "date"
   dtype _ = "string"
 
 parseQuery :: Wai.Request -> Query

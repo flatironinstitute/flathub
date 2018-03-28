@@ -41,9 +41,7 @@ data Type
   | Double
   | Float
   | HalfFloat
-  | Date
   | Boolean
-  | Binary
   deriving (Eq, Enum)
 
 instance Default Type where
@@ -59,9 +57,7 @@ instance Show Type where
   show Double           = "double"
   show Float            = "float"
   show HalfFloat        = "half_float"
-  show Date             = "date"
   show Boolean          = "boolean"
-  show Binary           = "binary"
 
 instance Read Type where
   readPrec = do
@@ -76,9 +72,7 @@ instance Read Type where
       "double"      -> return Double
       "float"       -> return Float
       "half_float"  -> return HalfFloat
-      "date"        -> return Date
       "boolean"     -> return Boolean
-      "binary"      -> return Binary
       _ -> fail "Unknown ES type"
       
 instance J.ToJSON Type where
