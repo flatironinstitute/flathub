@@ -10,9 +10,11 @@ packages:
     commit: dc79476721f87aad5885e121814b989c4d798ef1
   extra-dep: true
 - location:
-    git: git://github.com/dylex/postgresql-typed
-    commit: dd661a34d353b72b80a1a6741e69fd6cbd0d3577
+    git: git://github.com/dylex/hs-hdf5
+    commit: 7f3da0a759d69326031c0ff7a4c6419da57c39fb
   extra-dep: true
+extra-deps:
+  - postgresql-typed-0.5.3.0
 flags:
   web-inv-route:
     snap: false

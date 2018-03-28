@@ -20,7 +20,7 @@ executable astrosims
     CSV
   hs-source-dirs: .
   default-language: Haskell2010
-  ghc-options: -Wall -threaded
+  ghc-options: -Wall -threaded -funbox-strict-fields
   build-depends:
       base >= 4.7 && < 5
     , aeson
@@ -31,7 +31,9 @@ executable astrosims
     , containers
     , data-default
     , filepath
+    , half
     , hashable
+    , hdf5
     , http-client
     , http-types
     , mime-types
