@@ -222,18 +222,18 @@ catalogCSV = getPath (R.parameter R.>* "csv") $ \sim req -> do
   unless (queryLimit query == 0 && queryOffset query == 0 && null (queryAggs query) && isNothing (queryHist query)) $
     result $ response badRequest400 [] ("limit,offset,aggs not supported for CSV" :: String)
   glob <- ask
-  next <- ES.queryBulk cat query
+  nextes <- ES.queryBulk cat query
   return $ Wai.responseStream ok200 [(hContentType, "text/csv")] $ \chunk flush -> do
     chunk $ csvTextRow $ queryFields query
     case catalogStore cat of
       CatalogES{} -> fix $ \loop -> do
-        block <- next
+        block <- nextes
         unless (V.null block) $ do
           chunk $ foldMap csvJSONRow block
           flush
           loop
-      CatalogPG{} -> runGlobal glob $ PG.queryBulk cat query $ \next -> fix $ \loop -> do
-        block <- next
+      CatalogPG{} -> runGlobal glob $ PG.queryBulk cat query $ \nextpg -> fix $ \loop -> do
+        block <- nextpg
         unless (null block) $ do
           chunk $ foldMap csvJSONRow block
           flush
