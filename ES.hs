@@ -131,8 +131,8 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = CatalogES{ catalogIndex = id
   bound t a
     | BS.null a = mempty
     | otherwise = t `JE.pair` bsc a
-  agg (Just Text) = "terms"
-  agg (Just Keyword) = "terms"
+  agg (Just (Text _)) = "terms"
+  agg (Just (Keyword _)) = "terms"
   agg _ = "stats"
   bsc = JE.string . BSC.unpack
 queryIndexScroll _ _ _ = return J.Null

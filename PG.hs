@@ -24,6 +24,7 @@ import           Data.IORef (newIORef, readIORef, writeIORef)
 import           Data.Int (Int16, Int32, Int64)
 import           Data.Maybe (isJust)
 import           Data.Monoid ((<>))
+import           Data.Proxy (Proxy(Proxy))
 import           Data.String (IsString)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -47,16 +48,16 @@ withPG f = do
 
 pgType :: IsString s => Type -> s
 -- pgType = pgTypeName $ pgTypeOf ...
-pgType Text = "text"
-pgType Keyword = "text"
-pgType Long = "bigint"
-pgType Integer = "integer"
-pgType Short = "smallint"
-pgType Byte = "smallint" -- XXX
-pgType Double = "double precision"
-pgType Float = "real"
-pgType HalfFloat = "real" -- XXX
-pgType Boolean = "boolean"
+pgType (Text Proxy) = "text"
+pgType (Keyword Proxy) = "text"
+pgType (Long Proxy) = "bigint"
+pgType (Integer Proxy) = "integer"
+pgType (Short Proxy) = "smallint"
+pgType (Byte Proxy) = "smallint" -- XXX
+pgType (Double Proxy) = "double precision"
+pgType (Float Proxy) = "real"
+pgType (HalfFloat Proxy) = "real" -- XXX
+pgType (Boolean Proxy) = "boolean"
 
 pgIdent :: T.Text -> BSB.Builder
 pgIdent = pgDQuote . TE.encodeUtf8
@@ -69,16 +70,16 @@ pgDecodeAs t v = J.toJSON (pgDecodeRep v `asTypeOf` t)
 
 pgDecodeType :: Type -> PGValue -> J.Value
 pgDecodeType _ PGNullValue = J.Null
-pgDecodeType Text      v  = pgDecodeAs T.empty v
-pgDecodeType Keyword   v  = pgDecodeAs T.empty v
-pgDecodeType Long      v  = pgDecodeAs (0 :: Int64) v
-pgDecodeType Integer   v  = pgDecodeAs (0 :: Int32) v
-pgDecodeType Short     v  = pgDecodeAs (0 :: Int16) v
-pgDecodeType Byte      v  = pgDecodeAs (0 :: Int16) v
-pgDecodeType Double    v  = pgDecodeAs (0 :: Double) v
-pgDecodeType Float     v  = pgDecodeAs (0 :: Float) v
-pgDecodeType HalfFloat v  = pgDecodeAs (0 :: Float) v
-pgDecodeType Boolean   v  = pgDecodeAs False v
+pgDecodeType (Text      Proxy) v  = pgDecodeAs T.empty v
+pgDecodeType (Keyword   Proxy) v  = pgDecodeAs T.empty v
+pgDecodeType (Long      Proxy) v  = pgDecodeAs (0 :: Int64) v
+pgDecodeType (Integer   Proxy) v  = pgDecodeAs (0 :: Int32) v
+pgDecodeType (Short     Proxy) v  = pgDecodeAs (0 :: Int16) v
+pgDecodeType (Byte      Proxy) v  = pgDecodeAs (0 :: Int16) v
+pgDecodeType (Double    Proxy) v  = pgDecodeAs (0 :: Double) v
+pgDecodeType (Float     Proxy) v  = pgDecodeAs (0 :: Float) v
+pgDecodeType (HalfFloat Proxy) v  = pgDecodeAs (0 :: Float) v
+pgDecodeType (Boolean   Proxy) v  = pgDecodeAs False v
 -- pgDecodeType _ (PGTextValue v) = JE.unsafeToEncoding $ BSB.byteString v -- assume numeric with identical rep
 -- pgDecodeType _ (PGBinaryValue _) = error "unexpected PG binary value"
 
@@ -137,7 +138,7 @@ queryTable Catalog{ catalogStore = CatalogPG tabn, catalogFieldMap = fieldMap } 
   return $ JE.pairs $
     (mwhen (not (null aggs)) $ "aggregations" .=* aggregations queryAggs aggs)
     <> "hits" .=*
-      (  "total" J..= pgDecodeType Long count
+      (  "total" J..= pgDecodeType (Long Proxy) count
       <> "hits" `JE.pair` JE.list hit hits)
   where
   aggops _ = ["min", "max", "avg"]

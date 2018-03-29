@@ -152,14 +152,14 @@ simulation = getPath R.parameter $ \sim req -> do
       H.thead $ row (fieldsDepth fields) fields
       H.tfoot $ H.tr $ H.td H.! HA.colspan (H.toValue $ length fields') H.! HA.class_ "loading" $ "loading..."
   where
-  dtype Long = "num"
-  dtype Integer = "num"
-  dtype Short = "num"
-  dtype Byte = "num"
-  dtype Double = "num"
-  dtype Float = "num"
-  dtype HalfFloat = "num"
-  -- dtype Date = "date"
+  dtype (Long _) = "num"
+  dtype (Integer _) = "num"
+  dtype (Short _) = "num"
+  dtype (Byte _) = "num"
+  dtype (Double _) = "num"
+  dtype (Float _) = "num"
+  dtype (HalfFloat _) = "num"
+  -- dtype (Date _) = "date"
   dtype _ = "string"
 
 parseQuery :: Wai.Request -> Query
@@ -271,7 +271,7 @@ main = do
   prog <- getProgName
   args <- getArgs
   opts <- case Opt.getOpt Opt.Permute optDescr args of
-    (f, [], []) -> return $ foldr ($) def f
+    (f, [], []) -> return (foldr ($) def f)
     (_, _, e) -> do
       mapM_ putStrLn e
       putStrLn $ Opt.usageInfo ("Usage: " ++ prog ++ " [OPTION...]") optDescr
@@ -290,7 +290,7 @@ main = do
         }
 
   runGlobal global $ mapM_ (liftIO . putStrLn <=< createCatalog . (catalogs HM.!)) $ optIndices opts
-    
+
   -- check catalogs against dbs
   runGlobal global $ ES.checkIndices >> PG.checkTables
 

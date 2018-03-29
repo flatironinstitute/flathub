@@ -1,10 +1,15 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 
 module Schema
-  ( Type(..)
+  ( TypeValue(..)
+  , Type, Value
+  , typeValue
+  , fmapTypeValue
   , FieldSub(..)
   , Field, FieldGroup
   , Fields, FieldGroups
@@ -23,64 +28,153 @@ import qualified Data.Aeson as J
 import qualified Data.Aeson.Types as J
 import qualified Data.ByteString as BS
 import           Data.Default (Default(def))
+import           Data.Functor.Classes (Eq1, eq1, Show1, showsPrec1)
+import           Data.Functor.Identity (Identity(Identity))
 import qualified Data.HashMap.Strict as HM
+import           Data.Int (Int64, Int32, Int16, Int8)
 import           Data.Monoid ((<>))
 import           Data.Proxy (Proxy(Proxy))
 import           Data.Semigroup (Max(getMax))
 import qualified Data.Text as T
 import qualified Data.Vector as V
+import           Numeric.Half (Half)
 import           Text.Read (readPrec, Lexeme(Ident), lexP, readEither)
 
-data Type
-  = Text
-  | Keyword
-  | Long
-  | Integer
-  | Short
-  | Byte
-  | Double
-  | Float
-  | HalfFloat
-  | Boolean
-  deriving (Eq, Enum)
+instance J.ToJSON Half where
+  toJSON = J.toJSON . (realToFrac :: Half -> Float)
+  toEncoding = J.toEncoding . (realToFrac :: Half -> Float)
+
+instance J.FromJSON Half where
+  parseJSON = fmap (realToFrac :: Float -> Half) . J.parseJSON
+
+data TypeValue f
+  = Double    !(f Double)
+  | Float     !(f Float)
+  | HalfFloat !(f Half)
+  | Long      !(f Int64)
+  | Integer   !(f Int32)
+  | Short     !(f Int16)
+  | Byte      !(f Int8)
+  | Boolean   !(f Bool)
+  | Text      !(f T.Text)
+  | Keyword   !(f T.Text)
+
+type Type = TypeValue Proxy
+type Value = TypeValue Identity
+
+class Typed a where
+  typeValue :: f a -> TypeValue f
+
+typeValue1 :: Typed a => a -> Value
+typeValue1 = typeValue . Identity
+
+instance Typed T.Text where typeValue = Text
+instance Typed Int64  where typeValue = Long
+instance Typed Int32  where typeValue = Integer
+instance Typed Int16  where typeValue = Short
+instance Typed Int8   where typeValue = Byte
+instance Typed Double where typeValue = Double
+instance Typed Float  where typeValue = Float
+instance Typed Half   where typeValue = HalfFloat
+instance Typed Bool   where typeValue = Boolean
+
+-- isn't there a Functor1 class for this or something?
+fmapTypeValue :: (forall a . f a -> g a) -> TypeValue f -> TypeValue g
+fmapTypeValue f (Double    x) = Double    $ f x
+fmapTypeValue f (Float     x) = Float     $ f x
+fmapTypeValue f (HalfFloat x) = HalfFloat $ f x
+fmapTypeValue f (Long      x) = Long      $ f x
+fmapTypeValue f (Integer   x) = Integer   $ f x
+fmapTypeValue f (Short     x) = Short     $ f x
+fmapTypeValue f (Byte      x) = Byte      $ f x
+fmapTypeValue f (Boolean   x) = Boolean   $ f x
+fmapTypeValue f (Text      x) = Text      $ f x
+fmapTypeValue f (Keyword   x) = Keyword   $ f x
+
+instance Eq1 f => Eq (TypeValue f) where
+  Double x == Double y = eq1 x y
+  Float x == Float y = eq1 x y
+  HalfFloat x == HalfFloat y = eq1 x y
+  Long x == Long y = eq1 x y
+  Integer x == Integer y = eq1 x y
+  Short x == Short y = eq1 x y
+  Byte x == Byte y = eq1 x y
+  Boolean x == Boolean y = eq1 x y
+  Text x == Text y = eq1 x y
+  Keyword x == Keyword y = eq1 x y
+  _ == _ = False
+
+instance {-# OVERLAPPABLE #-} Show1 f => Show (TypeValue f) where
+  showsPrec i (Text f) = showsPrec1 i f
+  showsPrec i (Keyword f) = showsPrec1 i f
+  showsPrec i (Long f) = showsPrec1 i f
+  showsPrec i (Integer f) = showsPrec1 i f
+  showsPrec i (Short f) = showsPrec1 i f
+  showsPrec i (Byte f) = showsPrec1 i f
+  showsPrec i (Double f) = showsPrec1 i f
+  showsPrec i (Float f) = showsPrec1 i f
+  showsPrec i (HalfFloat f) = showsPrec1 i f
+  showsPrec i (Boolean f) = showsPrec1 i f
+
+instance {-# OVERLAPPABLE #-} J.ToJSON1 f => J.ToJSON (TypeValue f) where
+  toJSON (Text f) = J.toJSON1 f
+  toJSON (Keyword f) = J.toJSON1 f
+  toJSON (Long f) = J.toJSON1 f
+  toJSON (Integer f) = J.toJSON1 f
+  toJSON (Short f) = J.toJSON1 f
+  toJSON (Byte f) = J.toJSON1 f
+  toJSON (Double f) = J.toJSON1 f
+  toJSON (Float f) = J.toJSON1 f
+  toJSON (HalfFloat f) = J.toJSON1 f
+  toJSON (Boolean f) = J.toJSON1 f
+  toEncoding (Text f) = J.toEncoding1 f
+  toEncoding (Keyword f) = J.toEncoding1 f
+  toEncoding (Long f) = J.toEncoding1 f
+  toEncoding (Integer f) = J.toEncoding1 f
+  toEncoding (Short f) = J.toEncoding1 f
+  toEncoding (Byte f) = J.toEncoding1 f
+  toEncoding (Double f) = J.toEncoding1 f
+  toEncoding (Float f) = J.toEncoding1 f
+  toEncoding (HalfFloat f) = J.toEncoding1 f
+  toEncoding (Boolean f) = J.toEncoding1 f
 
 instance Default Type where
-  def = Float
+  def = Float Proxy
 
-instance Show Type where
-  show Text             = "text"
-  show Keyword          = "keyword"
-  show Long             = "long"
-  show Integer          = "integer"
-  show Short            = "short"
-  show Byte             = "byte"
-  show Double           = "double"
-  show Float            = "float"
-  show HalfFloat        = "half_float"
-  show Boolean          = "boolean"
+instance {-# OVERLAPPING #-} Show Type where
+  show (Text _)      = "text"
+  show (Keyword _)   = "keyword"
+  show (Long _)      = "long"
+  show (Integer _)   = "integer"
+  show (Short _)     = "short"
+  show (Byte _)      = "byte"
+  show (Double _)    = "double"
+  show (Float _)     = "float"
+  show (HalfFloat _) = "half_float"
+  show (Boolean _)   = "boolean"
 
 instance Read Type where
   readPrec = do
     Ident s <- lexP
     case s of
-      "text"        -> return Text
-      "keyword"     -> return Keyword
-      "long"        -> return Long
-      "integer"     -> return Integer
-      "short"       -> return Short
-      "byte"        -> return Byte
-      "double"      -> return Double
-      "float"       -> return Float
-      "half_float"  -> return HalfFloat
-      "boolean"     -> return Boolean
-      _ -> fail "Unknown ES type"
+      "text"        -> return (Text Proxy)
+      "keyword"     -> return (Keyword Proxy)
+      "long"        -> return (Long Proxy)
+      "integer"     -> return (Integer Proxy)
+      "short"       -> return (Short Proxy)
+      "byte"        -> return (Byte Proxy)
+      "double"      -> return (Double Proxy)
+      "float"       -> return (Float Proxy)
+      "half_float"  -> return (HalfFloat Proxy)
+      "boolean"     -> return (Boolean Proxy)
+      _ -> fail "Unknown type"
       
-instance J.ToJSON Type where
+instance {-# OVERLAPPING #-} J.ToJSON Type where
   toJSON = J.toJSON . show
   toEncoding = J.toEncoding . show
 
 instance J.FromJSON Type where
-  parseJSON = J.withText "ES type" $ either fail return . readEither . T.unpack
+  parseJSON = J.withText "type" $ either fail return . readEither . T.unpack
 data FieldSub m = Field
   { fieldName :: T.Text
   , fieldType :: Type
