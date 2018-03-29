@@ -30,7 +30,7 @@ import qualified Network.Mime as Mime
 import qualified Network.Wai as Wai
 import qualified System.Console.GetOpt as Opt
 import           System.Environment (getProgName, getArgs)
-import           System.Exit (exitFailure)
+import           System.Exit (exitSuccess, exitFailure)
 import qualified System.FilePath as FP
 import qualified Text.Blaze.Html5 as H hiding (text, textValue)
 import qualified Text.Blaze.Html5.Attributes as HA
@@ -51,6 +51,7 @@ import JSON
 import CSV
 import qualified ES
 import qualified PG
+import Ingest
 
 getPath :: R.Path p -> (p -> Action) -> R.RouteAction p Action
 getPath p = R.RouteAction $ R.routeMethod R.GET R.*< R.routePath p
@@ -250,16 +251,18 @@ routes = R.routes
 
 data Opts = Opts
   { optConfig :: FilePath
-  , optIndices :: [Simulation]
+  , optCreate :: [Simulation]
+  , optIngest :: Maybe Simulation
   }
 
 instance Default Opts where
-  def = Opts "config" []
+  def = Opts "config" [] Nothing
 
 optDescr :: [Opt.OptDescr (Opts -> Opts)]
 optDescr =
-  [ Opt.Option "c" ["config"] (Opt.ReqArg (\c o -> o{ optConfig = c }) "FILE") "Configuration file [config]"
-  , Opt.Option "i" ["index"] (Opt.ReqArg (\i o -> o{ optIndices = read i : optIndices o }) "SIM") "Create an ES index for the given simulation"
+  [ Opt.Option "f" ["config"] (Opt.ReqArg (\c o -> o{ optConfig = c }) "FILE") "Configuration file [config]"
+  , Opt.Option "s" ["create"] (Opt.ReqArg (\i o -> o{ optCreate = read i : optCreate o }) "SIM") "Create storage schema for the simulation"
+  , Opt.Option "i" ["ingest"] (Opt.ReqArg (\i o -> o{ optIngest = Just (read i) }) "SIM") "Ingest file(s) into the simulation store"
   ]
 
 createCatalog :: Catalog -> M String
@@ -269,9 +272,9 @@ createCatalog cat@Catalog{ catalogStore = CatalogPG{} } = show <$> PG.createTabl
 main :: IO ()
 main = do
   prog <- getProgName
-  args <- getArgs
-  opts <- case Opt.getOpt Opt.Permute optDescr args of
-    (f, [], []) -> return (foldr ($) def f)
+  oargs <- getArgs
+  (opts, args) <- case Opt.getOpt Opt.RequireOrder optDescr oargs of
+    (f, a, []) -> return (foldr ($) def f, a)
     (_, _, e) -> do
       mapM_ putStrLn e
       putStrLn $ Opt.usageInfo ("Usage: " ++ prog ++ " [OPTION...]") optDescr
@@ -289,10 +292,21 @@ main = do
         , globalCatalogs = catalogs
         }
 
-  runGlobal global $ mapM_ (liftIO . putStrLn <=< createCatalog . (catalogs HM.!)) $ optIndices opts
+  runGlobal global $ do
+    -- create
+    mapM_ (liftIO . putStrLn <=< createCatalog . (catalogs HM.!)) $ optCreate opts
 
-  -- check catalogs against dbs
-  runGlobal global $ ES.checkIndices >> PG.checkTables
+    -- check catalogs against dbs
+    ES.checkIndices >> PG.checkTables
+
+    -- ingest
+    forM_ (optIngest opts) $ \sim -> do
+      let cat = catalogs HM.! sim
+      forM_ args $ \f -> do
+        liftIO $ putStrLn f
+        n <- ingestHDF5 cat f
+        liftIO $ print n
+      liftIO exitSuccess
 
   runWaimwork conf $ runGlobal global
     . routeWaiError (\s h _ -> return $ response s h ()) routes

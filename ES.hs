@@ -9,6 +9,7 @@ module ES
   , checkIndices
   , queryIndex
   , queryBulk
+  , createBulk
   ) where
 
 import           Control.Monad ((<=<), forM_, unless)
@@ -19,7 +20,9 @@ import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J (Parser, parseEither)
 import qualified Data.Attoparsec.ByteString as AP
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Char8 as BSC
+import qualified Data.ByteString.Lazy.Char8 as BSLC
 import qualified Data.HashMap.Strict as HM
 import           Data.IORef (newIORef, readIORef, writeIORef)
 import           Data.List (intercalate)
@@ -29,7 +32,7 @@ import qualified Data.Text as T
 import qualified Data.Vector as V
 import qualified Network.HTTP.Client as HTTP
 import           Network.HTTP.Types.Header (hAccept, hContentType)
-import           Network.HTTP.Types.Method (StdMethod(GET, PUT), renderStdMethod)
+import           Network.HTTP.Types.Method (StdMethod(GET, PUT, POST), renderStdMethod)
 import qualified Network.HTTP.Types.URI as HTTP (Query)
 import qualified Network.URI as URI
 import qualified Waimwork.Config as C
@@ -42,15 +45,37 @@ import Global
 initServer :: C.Config -> IO HTTP.Request
 initServer conf = HTTP.parseUrlThrow (conf C.! "server")
 
-elasticSearch :: J.FromJSON r => StdMethod -> [String] -> HTTP.Query -> Maybe J.Encoding -> M r
+class Body a where
+  bodyRequest :: a -> HTTP.RequestBody
+  bodyContentType :: a -> Maybe BS.ByteString
+
+instance Body () where
+  bodyRequest _ = HTTP.requestBody HTTP.defaultRequest
+  bodyContentType _ = Nothing
+
+instance Body J.Encoding where
+  bodyRequest = HTTP.RequestBodyLBS . JE.encodingToLazyByteString
+  bodyContentType _ = Just "application/json"
+
+instance Body J.Value where
+  bodyRequest = bodyRequest . J.toEncoding
+  bodyContentType _ = Just "application/json"
+
+instance Body B.Builder where
+  bodyRequest = HTTP.RequestBodyLBS . B.toLazyByteString
+  bodyContentType _ = Just "application/x-ndjson"
+
+elasticSearch :: Body b => J.FromJSON r => StdMethod -> [String] -> HTTP.Query -> b -> M r
 elasticSearch meth url query body = do
   glob <- ask
   let req = globalES glob
-      req' = maybe id setBody body $
-        HTTP.setQueryString query req
+      req' = HTTP.setQueryString query req
         { HTTP.method = renderStdMethod meth
         , HTTP.path = HTTP.path req <> BS.intercalate "/" (map (BSC.pack . URI.escapeURIString URI.isUnescapedInURIComponent) url)
-        , HTTP.requestHeaders = (hAccept, "application/json") : HTTP.requestHeaders req
+        , HTTP.requestHeaders = maybe id ((:) . (,) hContentType) (bodyContentType body)
+            $ (hAccept, "application/json")
+            : HTTP.requestHeaders req
+        , HTTP.requestBody = bodyRequest body
         }
   liftIO $ do
     -- print $ HTTP.path req'
@@ -58,14 +83,15 @@ elasticSearch meth url query body = do
     either fail return . (J.parseEither J.parseJSON <=< AP.eitherResult)
       =<< HTTP.withResponse req' (globalHTTP glob) parse
   where
-  setBody bod req = req
-    { HTTP.requestHeaders = (hContentType, "application/json") : HTTP.requestHeaders req
-    , HTTP.requestBody = HTTP.RequestBodyLBS $ JE.encodingToLazyByteString bod
-    }
   parse r = AP.parseWith (HTTP.responseBody r) J.json BS.empty
 
+catalogURL :: Catalog -> [String]
+catalogURL Catalog{ catalogStore = CatalogES{ catalogIndex = idxn, catalogMapping = mapn } } =
+  [T.unpack idxn, T.unpack mapn]
+catalogURL _ = error "catalogURL: non-ES catalog"
+
 createIndex :: Catalog -> M J.Value
-createIndex cat@Catalog{ catalogStore = CatalogES idxn mapn sets } = elasticSearch PUT [T.unpack idxn] [] $ Just $ JE.pairs $
+createIndex cat@Catalog{ catalogStore = CatalogES idxn mapn sets } = elasticSearch PUT [T.unpack idxn] [] $ JE.pairs $
      "settings" J..= sets
   <> "mappings" .=*
     (  mapn .=*
@@ -78,7 +104,7 @@ createIndex _ = return J.Null
 checkIndices :: M ()
 checkIndices = do
   cats <- asks $ filter ises . HM.elems . globalCatalogs
-  indices <- elasticSearch GET [intercalate "," $ map catalogIndex' cats] [] Nothing
+  indices <- elasticSearch GET [intercalate "," $ map catalogIndex' cats] [] ()
   either
     (fail . ("ES index mismatch: " ++))
     return
@@ -103,11 +129,11 @@ scrollTime :: IsString s => s
 scrollTime = "10s"
 
 queryIndexScroll :: Bool -> Catalog -> Query -> M J.Value
-queryIndexScroll scroll cat@Catalog{ catalogStore = CatalogES{ catalogIndex = idxn, catalogMapping = mapn } } Query{..} =
+queryIndexScroll scroll cat@Catalog{ catalogStore = CatalogES{} } Query{..} =
   elasticSearch GET
-    [T.unpack idxn, T.unpack mapn, "_search"]
+    (catalogURL cat ++ ["_search"])
     (mwhen scroll $ [("scroll", Just scrollTime)])
-    $ Just $ JE.pairs $
+    $ JE.pairs $
        (mwhen (queryOffset > 0) $ "from" J..= queryOffset)
     <> (mwhen (queryLimit  > 0) $ "size" J..= queryLimit)
     <> "sort" `JE.pair` JE.list (\(f, a) -> JE.pairs (f J..= if a then "asc" else "desc" :: String)) (querySort ++ [("_doc",True)])
@@ -141,7 +167,7 @@ queryIndex :: Catalog -> Query -> M J.Value
 queryIndex = queryIndexScroll False
 
 scrollSearch :: T.Text -> M J.Value
-scrollSearch sid = elasticSearch GET ["_search", "scroll"] [] $ Just $ JE.pairs $
+scrollSearch sid = elasticSearch GET ["_search", "scroll"] [] $ JE.pairs $
      "scroll" J..= J.String scrollTime
   <> "scroll_id" J..= sid
 
@@ -167,3 +193,14 @@ queryBulk cat query@Query{..} = do
           parseJSONField "_source" $ J.withObject "source" $ \d ->
             return $ map (\f -> HM.lookupDefault J.Null f d) queryFields)
       q
+
+createBulk :: Catalog -> [(String, J.Series)] -> M ()
+createBulk cat@Catalog{ catalogStore = CatalogES{} } docs = do
+  r <- elasticSearch POST (catalogURL cat ++ ["_bulk"]) [] body
+  unless (HM.lookup "errors" (r :: J.Object) == Just (J.Bool False)) $ fail $ "createBulk: " ++ BSLC.unpack (J.encode r)
+  where
+  body = foldMap doc docs
+  doc (i, d) = J.fromEncoding (J.pairs $ "create" .=* ("_id" J..= i))
+    <> nl <> J.fromEncoding (J.pairs d) <> nl
+  nl = B.char7 '\n'
+createBulk _ _ = fail "createBulk: non-ES catalog"

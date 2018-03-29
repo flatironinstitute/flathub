@@ -38,6 +38,7 @@ executable astrosims
     , http-client
     , http-types
     , mime-types
+    , monad-control
     , mtl
     , network-uri
     , postgresql-typed

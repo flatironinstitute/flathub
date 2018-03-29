@@ -8,8 +8,9 @@
 module Schema
   ( TypeValue(..)
   , Type, Value
-  , typeValue
-  , fmapTypeValue
+  , typeValue, typeValue1
+  , fmapTypeValue, fmapTypeValue1
+  , onTypeValue
   , FieldSub(..)
   , Field, FieldGroup
   , Fields, FieldGroups
@@ -36,6 +37,7 @@ import           Data.Monoid ((<>))
 import           Data.Proxy (Proxy(Proxy))
 import           Data.Semigroup (Max(getMax))
 import qualified Data.Text as T
+import           Data.Typeable (Typeable)
 import qualified Data.Vector as V
 import           Numeric.Half (Half)
 import           Text.Read (readPrec, Lexeme(Ident), lexP, readEither)
@@ -62,7 +64,7 @@ data TypeValue f
 type Type = TypeValue Proxy
 type Value = TypeValue Identity
 
-class Typed a where
+class (Eq a, Ord a, Show a, Read a, J.ToJSON a, J.FromJSON a, Typeable a) => Typed a where
   typeValue :: f a -> TypeValue f
 
 typeValue1 :: Typed a => a -> Value
@@ -79,7 +81,7 @@ instance Typed Half   where typeValue = HalfFloat
 instance Typed Bool   where typeValue = Boolean
 
 -- isn't there a Functor1 class for this or something?
-fmapTypeValue :: (forall a . f a -> g a) -> TypeValue f -> TypeValue g
+fmapTypeValue :: (forall a . Typed a => f a -> g a) -> TypeValue f -> TypeValue g
 fmapTypeValue f (Double    x) = Double    $ f x
 fmapTypeValue f (Float     x) = Float     $ f x
 fmapTypeValue f (HalfFloat x) = HalfFloat $ f x
@@ -90,6 +92,21 @@ fmapTypeValue f (Byte      x) = Byte      $ f x
 fmapTypeValue f (Boolean   x) = Boolean   $ f x
 fmapTypeValue f (Text      x) = Text      $ f x
 fmapTypeValue f (Keyword   x) = Keyword   $ f x
+
+fmapTypeValue1 :: (forall a . Typed a => f a -> a) -> TypeValue f -> Value
+fmapTypeValue1 f = fmapTypeValue (Identity . f)
+
+onTypeValue :: (forall a . Typed a => f a -> b) -> TypeValue f -> b
+onTypeValue f (Double    x) = f x
+onTypeValue f (Float     x) = f x
+onTypeValue f (HalfFloat x) = f x
+onTypeValue f (Long      x) = f x
+onTypeValue f (Integer   x) = f x
+onTypeValue f (Short     x) = f x
+onTypeValue f (Byte      x) = f x
+onTypeValue f (Boolean   x) = f x
+onTypeValue f (Text      x) = f x
+onTypeValue f (Keyword   x) = f x
 
 instance Eq1 f => Eq (TypeValue f) where
   Double x == Double y = eq1 x y
@@ -105,38 +122,11 @@ instance Eq1 f => Eq (TypeValue f) where
   _ == _ = False
 
 instance {-# OVERLAPPABLE #-} Show1 f => Show (TypeValue f) where
-  showsPrec i (Text f) = showsPrec1 i f
-  showsPrec i (Keyword f) = showsPrec1 i f
-  showsPrec i (Long f) = showsPrec1 i f
-  showsPrec i (Integer f) = showsPrec1 i f
-  showsPrec i (Short f) = showsPrec1 i f
-  showsPrec i (Byte f) = showsPrec1 i f
-  showsPrec i (Double f) = showsPrec1 i f
-  showsPrec i (Float f) = showsPrec1 i f
-  showsPrec i (HalfFloat f) = showsPrec1 i f
-  showsPrec i (Boolean f) = showsPrec1 i f
+  showsPrec i = onTypeValue (showsPrec1 i)
 
 instance {-# OVERLAPPABLE #-} J.ToJSON1 f => J.ToJSON (TypeValue f) where
-  toJSON (Text f) = J.toJSON1 f
-  toJSON (Keyword f) = J.toJSON1 f
-  toJSON (Long f) = J.toJSON1 f
-  toJSON (Integer f) = J.toJSON1 f
-  toJSON (Short f) = J.toJSON1 f
-  toJSON (Byte f) = J.toJSON1 f
-  toJSON (Double f) = J.toJSON1 f
-  toJSON (Float f) = J.toJSON1 f
-  toJSON (HalfFloat f) = J.toJSON1 f
-  toJSON (Boolean f) = J.toJSON1 f
-  toEncoding (Text f) = J.toEncoding1 f
-  toEncoding (Keyword f) = J.toEncoding1 f
-  toEncoding (Long f) = J.toEncoding1 f
-  toEncoding (Integer f) = J.toEncoding1 f
-  toEncoding (Short f) = J.toEncoding1 f
-  toEncoding (Byte f) = J.toEncoding1 f
-  toEncoding (Double f) = J.toEncoding1 f
-  toEncoding (Float f) = J.toEncoding1 f
-  toEncoding (HalfFloat f) = J.toEncoding1 f
-  toEncoding (Boolean f) = J.toEncoding1 f
+  toJSON = onTypeValue J.toJSON1
+  toEncoding = onTypeValue J.toEncoding1
 
 instance Default Type where
   def = Float Proxy
