@@ -88,4 +88,4 @@ ingestHDF5 cat fn = liftBaseOp (withHDF5 fn) $ \hf -> do
   loop 0
   where
   pfx = takeBaseName fn ++ "_"
-  blockSize = 100
+  blockSize = 1000
