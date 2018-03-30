@@ -300,7 +300,7 @@ function init() {
   (<any>window).TCat = TCat;
   let addfilt = <HTMLSelectElement>document.createElement('select');
   select_options(addfilt, Catalog.fields.map((f) => f.name));
-  add_filt_row('', addfilt);
+  add_filt_row('', addfilt, 'Select field to view/filter');
   addfilt.onchange = function () {
     add_filter(Catalog.fields[<any>addfilt.value]);
     TCat.draw();
