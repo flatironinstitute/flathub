@@ -25,7 +25,7 @@ import qualified Data.Vector as V
 import qualified Data.Yaml as YAML
 import qualified Network.HTTP.Client as HTTP
 import           Network.HTTP.Types.Header (hContentType, hCacheControl)
-import           Network.HTTP.Types.Status (ok200, badRequest400)
+import           Network.HTTP.Types.Status (ok200, badRequest400, notFound404)
 import qualified Network.Mime as Mime
 import qualified Network.Wai as Wai
 import qualified System.Console.GetOpt as Opt
@@ -76,11 +76,13 @@ html req h = okResponse [] $ H.docTypeHtml $ do
   isdev = any ((==) "dev" . fst) $ Wai.queryString req
 
 top :: Route ()
-top = getPath R.unit $ \() req -> return $ html req $ do
-  H.ul $
-    forM_ (enumFromTo minBound maxBound) $ \sim ->
-      H.li $ H.a H.! HA.href (H.routeActionValue simulation sim mempty) $ H.string $
-        show sim
+top = getPath R.unit $ \() req -> do
+  cats <- asks globalCatalogs
+  return $ html req $
+    H.ul $
+      forM_ (HM.toList cats) $ \(sim, cat) ->
+        H.li $ H.a H.! HA.href (H.routeActionValue simulation sim mempty) $
+          H.text $ catalogTitle cat
 
 newtype FilePathComponent = FilePathComponent{ componentFilePath :: String }
   deriving (IsString)
@@ -104,7 +106,9 @@ static = getPath ("js" R.*< R.manyI R.parameter) $ \paths _ -> do
     ] path Nothing
 
 askCatalog :: Simulation -> M Catalog
-askCatalog sim = asks $ (HM.! sim) . globalCatalogs
+askCatalog sim = maybe
+  (result $ response notFound404 [] ("No such simulation" :: String))
+  return =<< asks (HM.lookup sim . globalCatalogs)
 
 simulation :: Route Simulation
 simulation = getPath R.parameter $ \sim req -> do
@@ -145,7 +149,7 @@ simulation = getPath R.parameter $ \sim req -> do
     H.script $ do
       "Catalog="
       H.preEscapedBuilder $ J.fromEncoding jcat
-    H.h2 $ H.string $ show sim
+    H.h2 $ H.text $ catalogTitle cat
     H.table H.! HA.id "filt" $ mempty
     H.div H.! HA.id "dhist" $
       H.canvas H.! HA.id "hist" $ mempty
@@ -261,8 +265,8 @@ instance Default Opts where
 optDescr :: [Opt.OptDescr (Opts -> Opts)]
 optDescr =
   [ Opt.Option "f" ["config"] (Opt.ReqArg (\c o -> o{ optConfig = c }) "FILE") "Configuration file [config]"
-  , Opt.Option "s" ["create"] (Opt.ReqArg (\i o -> o{ optCreate = read i : optCreate o }) "SIM") "Create storage schema for the simulation"
-  , Opt.Option "i" ["ingest"] (Opt.ReqArg (\i o -> o{ optIngest = Just (read i) }) "SIM") "Ingest file(s) into the simulation store"
+  , Opt.Option "s" ["create"] (Opt.ReqArg (\i o -> o{ optCreate = i : optCreate o }) "SIM") "Create storage schema for the simulation"
+  , Opt.Option "i" ["ingest"] (Opt.ReqArg (\i o -> o{ optIngest = Just i }) "SIM") "Ingest file(s) into the simulation store"
   ]
 
 createCatalog :: Catalog -> M String
