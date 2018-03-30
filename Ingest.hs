@@ -1,9 +1,11 @@
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE ViewPatterns #-}
 
 module Ingest
   ( ingestHDF5
   ) where
 
+import           Control.Arrow (first)
 import           Control.Exception (bracket)
 import           Control.Monad (when)
 import           Control.Monad.IO.Class (liftIO)
@@ -19,6 +21,7 @@ import qualified Data.Vector.Storable.Mutable as VSM
 import           Data.Word (Word64)
 import           System.FilePath (takeBaseName)
 import           System.IO (hFlush, stdout)
+import           Text.Read (readMaybe)
 
 import Schema
 import Global
@@ -79,13 +82,17 @@ ingestBlock cat@Catalog{ catalogStore = CatalogES{} } pfx off dat = do
   doc i = (pfx ++ show (off + fromIntegral i), foldMap (\(k, v) -> k J..= fmapTypeValue1 (V.! i) v) dat)
 ingestBlock _ _ _ _ = fail "ingestBlock: not implemented"
 
-ingestHDF5 :: Catalog -> FilePath -> M Word64
-ingestHDF5 cat fn = liftBaseOp (withHDF5 fn) $ \hf -> do
+ingestHDF5 :: Catalog -> String -> M Word64
+ingestHDF5 cat fno = liftBaseOp (withHDF5 fn) $ \hf -> do
   let loop o = do
         liftIO $ putStr (show o ++ "\r") >> hFlush stdout
         n <- ingestBlock cat pfx o =<< liftIO (loadBlock cat o blockSize hf)
         (if n < fromIntegral blockSize then return else loop) (o + fromIntegral n)
-  loop 0
+  loop off
   where
+  (fn, off) = splitoff fno
   pfx = takeBaseName fn ++ "_"
   blockSize = 1000
+  splitoff [] = ([], 0)
+  splitoff ('@':(readMaybe -> Just i)) = ([], i)
+  splitoff (c:s) = first (c:) $ splitoff s
