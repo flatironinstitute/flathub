@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
@@ -235,9 +236,11 @@ data CatalogStore
     { catalogIndex, catalogMapping :: T.Text
     , catalogSettings :: J.Object
     }
+#ifdef HAVE_pgsql
   | CatalogPG
     { catalogTable :: T.Text
     }
+#endif
 
 data Catalog = Catalog
   { catalogTitle :: T.Text
@@ -254,8 +257,10 @@ instance J.FromJSON Catalog where
         <$> (c J..: "index")
         <*> (c J..:! "mapping" J..!= "catalog")
         <*> (c J..:? "settings" J..!= HM.empty)
+#ifdef HAVE_pgsql
       <|> CatalogPG
         <$> (c J..: "table")
+#endif
     return $ Catalog t d f (HM.fromList $ map (fieldName &&& id) $ expandFields f)
 
 data Query = Query

@@ -8,6 +8,10 @@ license:        Apache-2.0
 build-type:     Simple
 cabal-version:  >= 1.10
 
+flag pgsql
+  description: postgresql backend
+  default: False
+
 executable astrosims
   main-is: Main.hs
   other-modules:
@@ -16,7 +20,6 @@ executable astrosims
     Schema
     Global
     ES
-    PG
     CSV
     Ingest
   hs-source-dirs: .
@@ -41,7 +44,6 @@ executable astrosims
     , monad-control
     , mtl
     , network-uri
-    , postgresql-typed
     , text
     , unordered-containers
     , vector
@@ -50,3 +52,7 @@ executable astrosims
     , warp
     , web-inv-route
     , yaml
+  if flag(pgsql)
+    other-modules: PG
+    build-depends: postgresql-typed
+    cpp-options: -DHAVE_pgsql

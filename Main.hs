@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -37,7 +38,9 @@ import qualified Text.Blaze.Html5.Attributes as HA
 import           Text.Read (readMaybe)
 import qualified Waimwork.Blaze as H hiding ((!?))
 import qualified Waimwork.Config as C
+#ifdef HAVE_pgsql
 import qualified Waimwork.Database.PostgreSQL as PG
+#endif
 import           Waimwork.HTTP (quoteHTTP)
 import           Waimwork.Response (response, okResponse)
 import           Waimwork.Result (result)
@@ -51,7 +54,9 @@ import Global
 import JSON
 import CSV
 import qualified ES
+#ifdef HAVE_pgsql
 import qualified PG
+#endif
 import Ingest
 
 getPath :: R.Path p -> (p -> Action) -> R.RouteAction p Action
@@ -200,9 +205,11 @@ catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do
     CatalogES{} -> do
       res <- ES.queryIndex cat query
       return $ okResponse [] $ clean res
+#ifdef HAVE_pgsql
     CatalogPG{} -> do
       res <- PG.queryTable cat query
       return $ okResponse [] res
+#endif
   where
   clean = mapObject $ HM.mapMaybeWithKey cleanTop
   cleanTop "aggregations" = Just
@@ -240,12 +247,14 @@ catalogCSV = getPath (R.parameter R.>* "csv") $ \sim req -> do
           chunk $ foldMap csvJSONRow block
           flush
           loop
+#ifdef HAVE_pgsql
       CatalogPG{} -> runGlobal glob $ PG.queryBulk cat query $ \nextpg -> fix $ \loop -> do
         block <- nextpg
         unless (null block) $ do
           chunk $ foldMap csvJSONRow block
           flush
           loop
+#endif
 
 
 routes :: R.RouteMap Action
@@ -275,7 +284,9 @@ optDescr =
 
 createCatalog :: Catalog -> M String
 createCatalog cat@Catalog{ catalogStore = CatalogES{} } = show <$> ES.createIndex cat
+#ifdef HAVE_pgsql
 createCatalog cat@Catalog{ catalogStore = CatalogPG{} } = show <$> PG.createTable cat
+#endif
 
 main :: IO ()
 main = do
@@ -291,12 +302,16 @@ main = do
   catalogs <- either throwIO return =<< YAML.decodeFileEither (fromMaybe "catalogs.yml" $ conf C.! "catalogs")
   httpmgr <- HTTP.newManager HTTP.defaultManagerSettings
   es <- ES.initServer (conf C.! "elasticsearch")
+#ifdef HAVE_pgsql
   pg <- PG.initDB (conf C.! "postgresql")
+#endif
   let global = Global
         { globalConfig = conf
         , globalHTTP = httpmgr
         , globalES = es
+#ifdef HAVE_pgsql
         , globalPG = pg
+#endif
         , globalCatalogs = catalogs
         }
 
@@ -305,7 +320,10 @@ main = do
     mapM_ (liftIO . putStrLn <=< createCatalog . (catalogs HM.!)) $ optCreate opts
 
     -- check catalogs against dbs
-    ES.checkIndices >> PG.checkTables
+    ES.checkIndices
+#ifdef HAVE_pgsql
+    PG.checkTables
+#endif
 
     -- ingest
     forM_ (optIngest opts) $ \sim -> do

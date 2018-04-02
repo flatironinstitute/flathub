@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -18,7 +19,9 @@ import           Control.Monad.Reader (ReaderT, runReaderT)
 import qualified Network.HTTP.Client as HTTP
 import qualified Network.Wai as Wai
 import qualified Waimwork.Config as C
+#ifdef HAVE_pgsql
 import qualified Waimwork.Database.PostgreSQL as PG
+#endif
 import qualified Web.Route.Invertible as R
 
 import Schema
@@ -27,7 +30,9 @@ data Global = Global
   { globalConfig :: C.Config
   , globalHTTP :: HTTP.Manager
   , globalES :: HTTP.Request
+#ifdef HAVE_pgsql
   , globalPG :: PG.DBPool
+#endif
   , globalCatalogs :: HM.HashMap Simulation Catalog
   }
 
