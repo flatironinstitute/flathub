@@ -24,7 +24,7 @@ import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V
 import qualified Data.Yaml as YAML
 import qualified Network.HTTP.Client as HTTP
-import           Network.HTTP.Types.Header (hContentType, hCacheControl)
+import           Network.HTTP.Types.Header (hContentType, hContentDisposition, hCacheControl)
 import           Network.HTTP.Types.Status (ok200, badRequest400, notFound404)
 import qualified Network.Mime as Mime
 import qualified Network.Wai as Wai
@@ -38,6 +38,7 @@ import           Text.Read (readMaybe)
 import qualified Waimwork.Blaze as H hiding ((!?))
 import qualified Waimwork.Config as C
 import qualified Waimwork.Database.PostgreSQL as PG
+import           Waimwork.HTTP (quoteHTTP)
 import           Waimwork.Response (response, okResponse)
 import           Waimwork.Result (result)
 import           Waimwork.Warp (runWaimwork)
@@ -227,7 +228,10 @@ catalogCSV = getPath (R.parameter R.>* "csv") $ \sim req -> do
     result $ response badRequest400 [] ("limit,offset,aggs not supported for CSV" :: String)
   glob <- ask
   nextes <- ES.queryBulk cat query
-  return $ Wai.responseStream ok200 [(hContentType, "text/csv")] $ \chunk flush -> do
+  return $ Wai.responseStream ok200
+    [ (hContentType, "text/csv")
+    , (hContentDisposition, "attachment; filename=" <> quoteHTTP (TE.encodeUtf8 sim <> ".csv"))
+    ] $ \chunk flush -> do
     chunk $ csvTextRow $ queryFields query
     case catalogStore cat of
       CatalogES{} -> fix $ \loop -> do

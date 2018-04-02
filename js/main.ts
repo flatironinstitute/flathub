@@ -61,6 +61,11 @@ function set_download(query: Dict<string>) {
   let a = <HTMLAnchorElement>document.getElementById('download.csv');
   if (!a)
     a = <HTMLAnchorElement>$('#download').html('download as <a id="download.csv">csv</a>').children('a')[0];
+  delete query.limit;
+  delete query.offset;
+  delete query.aggs;
+  delete query.hist;
+  query.fields = TCat.columns(':visible').dataSrc().join(',');
   a.href = Catalog.query.csv + '?' + $.param(query);
 }
 
@@ -112,10 +117,9 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
     if (filt.query != null)
       query[filt.name] = typeof filt.query == 'object' ? filt.query.lb+','+filt.query.ub : filt.query;
   }
-  const aggs = Filters.slice(Update_aggs);
-  set_download(query);
   query.offset = data.start;
   query.limit = data.length;
+  const aggs = Filters.slice(Update_aggs);
   if (aggs)
     query.aggs = aggs.map((filt) => filt.name).join(',');
   if (Histogram >= 0) {
@@ -145,6 +149,7 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
     Update_aggs = Filters.length;
     if (res.aggregations && res.aggregations.hist)
       histogram(res.aggregations.hist);
+    set_download(query);
   }, (xhr, msg, err) => {
     callback({
       draw: data.draw,
