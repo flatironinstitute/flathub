@@ -265,8 +265,8 @@ instance Default Opts where
 optDescr :: [Opt.OptDescr (Opts -> Opts)]
 optDescr =
   [ Opt.Option "f" ["config"] (Opt.ReqArg (\c o -> o{ optConfig = c }) "FILE") "Configuration file [config]"
-  , Opt.Option "s" ["create"] (Opt.ReqArg (\i o -> o{ optCreate = i : optCreate o }) "SIM") "Create storage schema for the simulation"
-  , Opt.Option "i" ["ingest"] (Opt.ReqArg (\i o -> o{ optIngest = Just i }) "SIM") "Ingest file(s) into the simulation store"
+  , Opt.Option "s" ["create"] (Opt.ReqArg (\i o -> o{ optCreate = T.pack i : optCreate o }) "SIM") "Create storage schema for the simulation"
+  , Opt.Option "i" ["ingest"] (Opt.ReqArg (\i o -> o{ optIngest = Just (T.pack i) }) "SIM") "Ingest file(s) into the simulation store"
   ]
 
 createCatalog :: Catalog -> M String
