@@ -458,115 +458,96 @@ gaea:
       number_of_replicas: 1
       refresh_interval: -1
   fields:
-    - name: CentralMvir
-      type: float
-    - name: ColdGas
-      type: float
-    - name: GalID
-      type: long
-    - name: GasDiskRadius
-      type: float
-    - name: GasSpin
-      type: float
-      sub:
-      - name: "x"
-      - name: "y"
-      - name: "z"
-    - name: HI
-      type: float
-    - name: MMSubID
-      type: long
-    - name: Mvir
-      type: float
     - name: PPos
       type: double
+      units: rad
       sub:
       - name: "x"
+        title: RA
+        descr: Right Ascension
       - name: "y"
-    - name: Pos
-      type: double
-      sub:
-      - name: "x"
-      - name: "y"
-      - name: "z"
-    - name: Rvir
-      type: float
-    - name: StellarDiskRadius
-      type: float
-    - name: StellarMass
-      type: float
-    - name: Type
-      type: integer
-    - name: Vel
-      type: double
-      sub:
-      - name: "x"
-      - name: "y"
-      - name: "z"
-    - name: Vmax
-      type: float
-    - name: Vvir
-      type: float
+        title: Dec
+        descr: Declination
     - name: z
       type: double
       disp: false
+      descr: Measured redshift (distance + peculiar velocity)
     - name: z_pos
       type: double
-gaea_sql:
-  title: GAEA (SQL)
-  table: gaea
-  fields:
-    - name: CentralMvir
-      type: float
-    - name: ColdGas
-      type: float
-    - name: GalID
-      type: long
-    - name: GasDiskRadius
-      type: float
-    - name: GasSpin
-      type: float
-      sub:
-      - name: "x"
-      - name: "y"
-      - name: "z"
-    - name: HI
-      type: float
-    - name: MMSubID
-      type: long
-    - name: Mvir
-      type: float
-    - name: PPos
-      type: double
-      sub:
-      - name: "x"
-      - name: "y"
+      descr: Redshift relative only to the distance
     - name: Pos
       type: double
+      descr: Position in the catalog in comoving distance from the observer
+      units: Mpc/h
       sub:
       - name: "x"
       - name: "y"
       - name: "z"
-    - name: Rvir
-      type: float
-    - name: StellarDiskRadius
-      type: float
-    - name: StellarMass
-      type: float
-    - name: Type
-      type: integer
     - name: Vel
       type: double
+      descr: Velocity of the galaxy in the catalog
+      units: km/s
       sub:
       - name: "x"
       - name: "y"
       - name: "z"
-    - name: Vmax
+    - name: Type
+      type: integer
+      descr: Galaxy Type, indicates how this galaxy is related to the HM halo
+    - name: GalID
+      type: long
+      descr: Unique ID for the galaxy
+    - name: MMSubID
+      type: long
+      descr: ID to identify the Friend of Friend group of the galaxy
+    - name: CentralMvir
       type: float
+      descr: '\(M_{200}\) mass of the FoF halo'
+      units: '\(10^{10} M_\odot/h\)'
+    - name: Mvir
+      type: float
+      descr: '\(M_{200}\) mass of the hosting SubHalo'
+      units: '\(10^{10} M_\odot/h\)'
+    - name: Rvir
+      type: float
+      descr: 'Virial radius calculated from \(M_{200}\)'
+      units: 'Mpc/h'
     - name: Vvir
       type: float
-    - name: z
-      type: double
-      disp: false
-    - name: z_pos
-      type: double
+      descr: Virial Velocity of the SubHalo
+      units: 'km/s'
+    - name: Vmax
+      type: float
+      descr: Maximal rotational velocity of DM particles in the Sub-Halo
+      units: 'km/s'
+    - name: StellarMass
+      type: float
+      descr: 'Total stellar Mass of the galaxy (disk+bulge)'
+      units: '\(10^{10} M_\odot/h\)'
+    - name: ColdGas
+      type: float
+      descr: 'Cold gas mass in the gaseous disk'
+      units: '\(10^{10} M_\odot/h\)'
+    - name: HI
+      type: float
+      descr: 'HI mass in the gaseous disk'
+      units: '\(10^{10} M_\odot/h\)'
+    - name: GasDiskRadius
+      type: float
+      descr: 'Gaseous Disk Radius'
+      units: 'Mpc/h'
+    - name: StellarDiskRadius
+      type: float
+      descr: 'Stellar Disk Radius'
+      units: 'Mpc/h'
+    - name: GasSpin
+      type: float
+      descr: 'Gaseous disk specific angular momentum'
+      units: 'Mpc/h km/s'
+      sub:
+      - name: "x"
+        title: jx
+      - name: "y"
+        title: jy
+      - name: "z"
+        title: jz
