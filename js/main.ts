@@ -45,6 +45,7 @@ var Update_aggs: number = 0;
 var Histogram: number = -1;
 const Histogram_bins = 100;
 var Histogram_chart: Chart|undefined;
+var Histogram_bin_width = 0;
 
 function select_options(select: HTMLSelectElement, options: string[]|Dict<string>) {
   $(select).empty();
@@ -100,6 +101,30 @@ function histogram(agg: {buckets: {key:number,doc_count:number}[]}) {
         animation: {
           duration: 0
         },
+        tooltips: {
+          mode: 'index',
+          intersect: false,
+          callbacks: {
+            label: function (item) {
+              return "[" + item.xLabel + "," + (<any>item.xLabel+Histogram_bin_width) + "): " + item.yLabel;
+            }
+          }
+        },
+        hover: {
+          mode: 'index',
+          intersect: false,
+        },
+        /*
+        events: ["mousedown", "mouseup", "mousemove", "mouseout", "touchstart", "touchmove", "touchend"],
+        onHover: function(ev, points) {
+          if (!points)
+            return;
+          if (ev.type === 'mousedown' || ev.type === 'touchstart') {
+          }
+          if (ev.type === 'mouseup' || ev.type === 'touchend') {
+          }
+        }
+        */
       },
       type: 'scatter',
       data: data
@@ -118,7 +143,7 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
   for (let fi = 0; fi < Update_aggs; fi++) {
     const filt = Filters[fi];
     if (filt.query != null)
-      query[filt.name] = typeof filt.query == 'object' ? filt.query.lb+','+filt.query.ub : filt.query;
+      query[filt.name] = typeof filt.query === 'object' ? filt.query.lb+','+filt.query.ub : filt.query;
   }
   query.offset = data.start;
   query.limit = data.length;
@@ -127,9 +152,11 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
     query.aggs = aggs.map((filt) => filt.name).join(',');
   if (Histogram >= 0) {
     const hist = Filters[Histogram];
-    const wid = typeof hist.query == 'object' ? <number>hist.query.ub - <number>hist.query.lb : null;
-    if (wid && wid > 0)
-      query.hist = hist.name + ':' + wid/Histogram_bins;
+    const wid = typeof hist.query === 'object' ? <number>hist.query.ub - <number>hist.query.lb : null;
+    if (wid && wid > 0) {
+      Histogram_bin_width = wid/Histogram_bins;
+      query.hist = hist.name + ':' + Histogram_bin_width;
+    }
   }
   $.ajax({
     method: Catalog.query.method,
@@ -138,7 +165,7 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
   }).then((res: any) => {
     $('td.loading').remove();
     Catalog.count = Math.max(Catalog.count || 0, res.hits.total);
-    var settings = TCat.settings()[0];
+    const settings = (<any>TCat.settings())[0];
     settings.oLanguage.sInfo = "Showing _START_ to _END_ of " + settings.fnFormatNumber(res.hits.total);
     callback({
       draw: data.draw,
@@ -185,7 +212,7 @@ function add_filter(field: Field) {
   if (!field || !TCat)
     return;
   const tcol = TCat.column(field.name+':name').visible(true);
-  if (Filters.some((f) => f.name == field.name))
+  if (Filters.some((f) => f.name === field.name))
     return;
   let isint: boolean = false;
   const filt: Filter = {
@@ -205,7 +232,7 @@ function add_filter(field: Field) {
       if (i < 0) return;
       if (Histogram > i)
         Histogram -=1;
-      else if (Histogram == i) {
+      else if (Histogram === i) {
         Histogram =-1;
         $('#dhist').hide();
       }
@@ -282,8 +309,11 @@ function add_filter(field: Field) {
         $('<span>').append(lb).append(' &ndash; ').append(ub),
         $('<span><em>M</em> = </span>').append(avg),
         $('<button>histogram</button>').on('click', function () {
-          Histogram = Filters.indexOf(filt);
-          tcol.draw();
+          const i = Filters.indexOf(filt);
+          if (i !== Histogram) {
+            Histogram = Filters.indexOf(filt);
+            tcol.draw(false);
+          }
         })
       );
       break;
@@ -315,7 +345,7 @@ function init() {
   add_filt_row('', addfilt, 'Select field to view/filter');
   addfilt.onchange = function () {
     add_filter(Catalog.fields[<any>addfilt.value]);
-    TCat.draw();
+    TCat.draw(false);
   };
   for (let f of Catalog.fields)
     if (f.top)
