@@ -106,6 +106,9 @@ function histogram(agg: {buckets: {key:number,doc_count:number}[]}) {
     });
 }
 
+/* elasticsearch max_result_window */
+const displayLimit = 10000;
+
 function ajax(data: any, callback: ((data: any) => void), opts: any) {
   const query: any = {
     sort: data.order.map((o: any) => {
@@ -135,10 +138,12 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
   }).then((res: any) => {
     $('td.loading').remove();
     Catalog.count = Math.max(Catalog.count || 0, res.hits.total);
+    var settings = TCat.settings()[0];
+    settings.oLanguage.sInfo = "Showing _START_ to _END_ of " + settings.fnFormatNumber(res.hits.total);
     callback({
       draw: data.draw,
       recordsTotal: Catalog.count,
-      recordsFiltered: res.hits.total,
+      recordsFiltered: Math.min(res.hits.total, displayLimit),
       data: res.hits.hits
     });
     for (let filt of aggs) {
@@ -300,6 +305,8 @@ function init() {
     pageLength: 50,
     processing: true,
     dom: 'i<"#download">rtlp',
+    deferRender: true,
+    pagingType: 'simple',
   });
   /* for debugging: */
   (<any>window).TCat = TCat;
