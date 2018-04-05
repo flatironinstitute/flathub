@@ -35,7 +35,12 @@ type Query = undefined|string|number|{lb:string|number, ub:string|number};
 interface Filter {
   name: string;
   query: Query;
+  isint: boolean;
   update_aggs?: (aggs: Dict<any>) => void;
+  select?: HTMLSelectElement;
+  lb?: HTMLInputElement;
+  ub?: HTMLInputElement;
+  change?: () => void;
 }
 
 var TCat: DataTables.Api;
@@ -70,6 +75,13 @@ function set_download(query: Dict<string>) {
   a.href = Catalog.query.csv + '?' + $.param(query);
 }
 
+var Histogram_drag_start: number|null = null;
+
+function getChartX(point: any) {
+  /* needs internal chart.js access? */
+  return point._xScale.getLabelForIndex(point._index, point._datasetIndex);
+}
+
 function histogram(agg: {buckets: {key:number,doc_count:number}[]}) {
   const hist = Filters[Histogram];
   const data = {
@@ -82,6 +94,7 @@ function histogram(agg: {buckets: {key:number,doc_count:number}[]}) {
       fill: 'origin',
     }]
   };
+  Histogram_drag_start = null;
   $('#dhist').show();
   if (Histogram_chart) {
     Histogram_chart.data = data;
@@ -106,25 +119,42 @@ function histogram(agg: {buckets: {key:number,doc_count:number}[]}) {
           intersect: false,
           callbacks: {
             label: function (item) {
-              return "[" + item.xLabel + "," + (<any>item.xLabel+Histogram_bin_width) + "): " + item.yLabel;
+              return "[" + item.xLabel + "," + (<any>item.xLabel+Histogram_bin_width) + "): " + item.yLabel + "\n(drag to filter)";
             }
           }
         },
+        events: ["mousedown", "mouseup", "mousemove", "mouseout", "touchstart", "touchmove", "touchend"],
         hover: {
           mode: 'index',
           intersect: false,
+          onHover: function(ev, points) {
+            if (ev.type === 'mouseout')
+              Histogram_drag_start = null;
+            else if (!points)
+              return;
+            else if (ev.type === 'mousedown' || ev.type === 'touchstart')
+              Histogram_drag_start = getChartX(points[0]);
+            else if (Histogram_drag_start && (ev.type === 'mouseup' || ev.type === 'touchend')) {
+              let left = Histogram_drag_start;
+              let right = getChartX(points[0]);
+              if (left == right) {
+                /* select one bucket? ignore? */
+                return;
+              }
+              if (right < left) {
+                left = right;
+                right = Histogram_drag_start;
+              }
+              right += Histogram_bin_width;
+              const filt = Filters[Histogram];
+              if (!(filt && filt.lb && filt.ub && filt.change))
+                return;
+              filt.lb.valueAsNumber = left;
+              filt.ub.valueAsNumber = right;
+              filt.change();
+            }
+          }
         },
-        /*
-        events: ["mousedown", "mouseup", "mousemove", "mouseout", "touchstart", "touchmove", "touchend"],
-        onHover: function(ev, points) {
-          if (!points)
-            return;
-          if (ev.type === 'mousedown' || ev.type === 'touchstart') {
-          }
-          if (ev.type === 'mouseup' || ev.type === 'touchend') {
-          }
-        }
-        */
       },
       type: 'scatter',
       data: data
@@ -155,6 +185,8 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
     const wid = typeof hist.query === 'object' ? <number>hist.query.ub - <number>hist.query.lb : null;
     if (wid && wid > 0) {
       Histogram_bin_width = wid/Histogram_bins;
+      if (hist.isint)
+        Histogram_bin_width = Math.ceil(Histogram_bin_width);
       query.hist = hist.name + ':' + Histogram_bin_width;
     }
   }
@@ -214,10 +246,10 @@ function add_filter(field: Field) {
   const tcol = TCat.column(field.name+':name').visible(true);
   if (Filters.some((f) => f.name === field.name))
     return;
-  let isint: boolean = false;
   const filt: Filter = {
     name: field.name,
     query: undefined,
+    isint: false
   };
   const update = () => {
     let i = Filters.indexOf(filt);
@@ -255,7 +287,7 @@ function add_filter(field: Field) {
         select.value = '';
         select.disabled = false;
       };
-      let onchange = function () {
+      filt.change = function () {
         let val = select.value;
         if (val)
           filt.query = val;
@@ -264,14 +296,15 @@ function add_filter(field: Field) {
         update();
         (<DataTables.ColumnMethods><any>tcol.search(val)).visible(!val).draw();
       };
-      select.onchange = onchange;
+      select.onchange = filt.change;
+      filt.select = select;
       add_filt_row(field.name, label, select);
       break;
     }
     case 'byte':
     case 'short':
     case 'integer':
-      isint = true;
+      filt.isint = true;
     case 'half_float':
     case 'float':
     case 'double': {
@@ -280,7 +313,7 @@ function add_filter(field: Field) {
       let ub = <HTMLInputElement>document.createElement('input');
       ub.name = field.name+".ub";
       lb.type = ub.type = "number";
-      lb.step = ub.step = isint ? <any>1 : "any";
+      lb.step = ub.step = filt.isint ? <any>1 : "any";
       lb.disabled = ub.disabled = true;
       let avg = document.createElement('span');
       avg.innerHTML = "<em>loading...</em>";
@@ -291,7 +324,7 @@ function add_filter(field: Field) {
         lb.disabled = ub.disabled = false;
         avg.textContent = aggs.avg;
       };
-      let onchange = function () {
+      filt.change = function () {
         let lbv = lb.valueAsNumber;
         let ubv = ub.valueAsNumber;
         if (lbv == ubv)
@@ -304,7 +337,9 @@ function add_filter(field: Field) {
         update();
         (<DataTables.ColumnMethods><any>tcol.search(lbv+" TO "+ubv)).visible(lbv!=ubv).draw();
       };
-      lb.onchange = ub.onchange = onchange;
+      lb.onchange = ub.onchange = filt.change;
+      filt.lb = lb;
+      filt.ub = ub;
       add_filt_row(field.name, label,
         $('<span>').append(lb).append(' &ndash; ').append(ub),
         $('<span><em>M</em> = </span>').append(avg),
