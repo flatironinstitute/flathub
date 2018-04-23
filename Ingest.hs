@@ -45,7 +45,7 @@ hdf5ReadVector d o l = do
   where
   pad s [] = s
   pad (x:s) (_:n) = x : pad s n
-  pad    s  (_:n) = 1 : pad s n -- replicate n 1
+  pad    s  (_:n) = 0 : pad s n -- replicate n 0
 
 hdf5ReadType :: Type -> H5.Dataset -> [H5.HSize] -> Word -> IO (TypeValue V.Vector)
 hdf5ReadType (Long    _) d o l = Long    <$> hdf5ReadVector d o l
