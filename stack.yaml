@@ -1,4 +1,4 @@
-resolver: lts-11.4
+resolver: lts-11.6
 packages:
 - '.'
 - location:
@@ -6,15 +6,12 @@ packages:
     commit: 8d9408d2bf864479becfed181c6c440ffbc2a128
   extra-dep: true
 - location:
-    git: git://github.com/dylex/web-inv-route
-    commit: dc79476721f87aad5885e121814b989c4d798ef1
-  extra-dep: true
-- location:
     git: git://github.com/dylex/hs-hdf5
     commit: 7f3da0a759d69326031c0ff7a4c6419da57c39fb
   extra-dep: true
 extra-deps:
   - postgresql-typed-0.5.3.0
+  - web-inv-route-0.1.2
 flags:
   web-inv-route:
     snap: false
