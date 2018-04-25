@@ -199,7 +199,7 @@ catalog :: Route Simulation
 catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do
   cat <- askCatalog sim
   let query = fillQuery cat $ parseQuery req
-  unless (queryLimit query > 0 && queryLimit query <= 100) $
+  unless (queryLimit query <= 100) $
     result $ response badRequest400 [] ("limit too large" :: String)
   case catalogStore cat of
     CatalogES{} -> do
@@ -231,8 +231,8 @@ catalogCSV :: Route Simulation
 catalogCSV = getPath (R.parameter R.>* "csv") $ \sim req -> do
   cat <- askCatalog sim
   let query = fillQuery cat $ parseQuery req
-  unless (queryLimit query == 0 && queryOffset query == 0 && null (queryAggs query) && isNothing (queryHist query)) $
-    result $ response badRequest400 [] ("limit,offset,aggs not supported for CSV" :: String)
+  unless (queryOffset query == 0 && null (queryAggs query) && isNothing (queryHist query)) $
+    result $ response badRequest400 [] ("offset,aggs not supported for CSV" :: String)
   glob <- ask
   nextes <- ES.queryBulk cat query
   return $ Wai.responseStream ok200
