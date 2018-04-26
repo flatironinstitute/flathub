@@ -2,11 +2,5 @@ http {
   port = 8092
 }
 elasticsearch {
-  server = "http://127.0.0.1:9200/"
-}
-postgresql {
-  sock = "/run/postgresql/.s.PGSQL.5432"
-  db = "astrosims"
-  user = "dylan"
-  #debug = true
+  server = "http://es0:9200/"
 }

@@ -1,0 +1,47 @@
+version: '2.4'
+
+x-es:
+  &es
+  image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.4
+  environment:
+    - cluster.name=astrosims
+    - bootstrap.memory_lock=true
+    - "ES_JAVA_OPTS=-Xms20g -Xmx20g"
+    - "discovery.zen.ping.unicast.hosts=es0"
+    - "discovery.zen.minimum_master_nodes=3"
+    - "node.max_local_storage_nodes=8"
+  ulimits:
+    memlock:
+      soft: -1
+      hard: -1
+  networks:
+    - esnet
+  volumes:
+    - esdata:/usr/share/elasticsearch/data
+
+services:
+  es0:
+    << : *es
+    container_name: es0
+    expose:
+      - "9200"
+    ports:
+      - "9200"
+  es:
+    << : *es
+    scale: 4
+  front:
+    build: ..
+    image: flatironinstitute/astrosims
+    networks:
+      - esnet
+    ports:
+      - "80:8092"
+    depends_on:
+      - es0
+
+volumes:
+  esdata:
+
+networks:
+  esnet:
