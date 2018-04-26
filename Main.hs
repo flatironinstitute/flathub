@@ -336,6 +336,7 @@ main = do
         liftIO $ putStrLn f
         n <- ingestHDF5 cat f
         liftIO $ print n
+      ES.flushIndex cat
 
   when (null (optCreate opts) && isNothing (optIngest opts)) $
     runWaimwork conf $ runGlobal global

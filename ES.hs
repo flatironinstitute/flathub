@@ -10,6 +10,7 @@ module ES
   , queryIndex
   , queryBulk
   , createBulk
+  , flushIndex
   ) where
 
 import           Control.Monad ((<=<), forM_, unless)
@@ -65,7 +66,7 @@ instance Body B.Builder where
   bodyRequest = HTTP.RequestBodyLBS . B.toLazyByteString
   bodyContentType _ = Just "application/x-ndjson"
 
-elasticSearch :: Body b => J.FromJSON r => StdMethod -> [String] -> HTTP.Query -> b -> M r
+elasticSearch :: (Body b, J.FromJSON r) => StdMethod -> [String] -> HTTP.Query -> b -> M r
 elasticSearch meth url query body = do
   glob <- ask
   let req = globalES glob
@@ -204,3 +205,8 @@ createBulk cat@Catalog{ catalogStore = CatalogES{} } docs = do
     <> nl <> J.fromEncoding (J.pairs d) <> nl
   nl = B.char7 '\n'
 createBulk _ _ = fail "createBulk: non-ES catalog"
+
+flushIndex :: Catalog -> M ()
+flushIndex cat@Catalog{ catalogStore = CatalogES{} } =
+  elasticSearch POST (catalogURL cat ++ ["_flush"]) [] ()
+flushIndex _ = return ()
