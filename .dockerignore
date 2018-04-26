@@ -4,6 +4,7 @@ es
 pg
 Dockerfile
 docker-compose.yml
+README.md
 js/node_modules
 js/jspm_packages
 js/index.js

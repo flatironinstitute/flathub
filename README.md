@@ -11,7 +11,8 @@ There is a [docker-compose](docker-compose.yml) definition for installing everyt
 - Change `ES_JAVA_OPTS` and `scale` in docker-compose.yml as appropriate for your environment and needs (currently requires 100+GB memory)
    - You can also setup your own elasticsearch cluster on multiple machines, in which case you only need the astrosims service
    - Update [config](config) to point to your elasticsearch cluster if it's not the default
-- Run `docker-compose up -d` to bring up everything (the astrosims service will exit with an error after building successfully -- this is expected)
-- Run `docker-compose run astrosims -s *CATALOG*` for each defined catalog to create the indices
+- Run `docker-compose build` to build the application
+- Run `docker-compose up -d` to bring up everything (the astrosims service will exit with an error -- this is expected)
+- Run `docker-compose run astrosims -s *CATALOG*` for each defined catalog to create the databases
 - Run `docker-compose run astrosims -i *CATALOG* *FILE* ...` to ingest data into each catalog
 - Run `docker-compose up -d` to bring up the astrosims webserver
