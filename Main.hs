@@ -17,7 +17,7 @@ import           Data.Default (Default(def))
 import           Data.Function (fix)
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Map.Strict as Map
-import           Data.Maybe (fromMaybe, isNothing)
+import           Data.Maybe (fromMaybe, isNothing, isJust)
 import           Data.Monoid ((<>))
 import           Data.String (IsString)
 import qualified Data.Text as T
@@ -31,7 +31,7 @@ import qualified Network.Mime as Mime
 import qualified Network.Wai as Wai
 import qualified System.Console.GetOpt as Opt
 import           System.Environment (getProgName, getArgs)
-import           System.Exit (exitSuccess, exitFailure)
+import           System.Exit (exitFailure)
 import qualified System.FilePath as FP
 import qualified Text.Blaze.Html5 as H hiding (text, textValue)
 import qualified Text.Blaze.Html5.Attributes as HA
@@ -296,10 +296,11 @@ main = do
   prog <- getProgName
   oargs <- getArgs
   (opts, args) <- case Opt.getOpt Opt.RequireOrder optDescr oargs of
-    (f, a, []) -> return (foldr ($) def f, a)
+    (foldr ($) def -> o, a, [])
+      | null a || isJust (optIngest o) -> return (o, a)
     (_, _, e) -> do
       mapM_ putStrLn e
-      putStrLn $ Opt.usageInfo ("Usage: " ++ prog ++ " [OPTION...]") optDescr
+      putStrLn $ Opt.usageInfo ("Usage: " ++ prog ++ " [OPTION...]\n       " ++ prog ++ " [OPTION...] -i SIM FILE[@OFFSET] ...") optDescr
       exitFailure
   conf <- C.load $ optConfig opts
   catalogs <- either throwIO return =<< YAML.decodeFileEither (fromMaybe "catalogs.yml" $ conf C.! "catalogs")
@@ -335,7 +336,7 @@ main = do
         liftIO $ putStrLn f
         n <- ingestHDF5 cat f
         liftIO $ print n
-      liftIO exitSuccess
 
-  runWaimwork conf $ runGlobal global
-    . routeWaiError (\s h _ -> return $ response s h ()) routes
+  when (null (optCreate opts) && isNothing (optIngest opts)) $
+    runWaimwork conf $ runGlobal global
+      . routeWaiError (\s h _ -> return $ response s h ()) routes
