@@ -244,6 +244,7 @@ data CatalogStore
 
 data Catalog = Catalog
   { catalogTitle :: T.Text
+  , catalogDescr :: Maybe T.Text
   , catalogStore :: CatalogStore
   , catalogFields :: FieldGroups
   , catalogFieldMap :: HM.HashMap T.Text Field
@@ -253,7 +254,8 @@ instance J.FromJSON Catalog where
   parseJSON = J.withObject "catalog" $ \c -> do
     f <- c J..: "fields"
     t <- c J..: "title"
-    d <- CatalogES
+    d <- c J..:? "descr"
+    s <- CatalogES
         <$> (c J..: "index")
         <*> (c J..:! "mapping" J..!= "catalog")
         <*> (c J..:? "settings" J..!= HM.empty)
@@ -261,7 +263,7 @@ instance J.FromJSON Catalog where
       <|> CatalogPG
         <$> (c J..: "table")
 #endif
-    return $ Catalog t d f (HM.fromList $ map (fieldName &&& id) $ expandFields f)
+    return $ Catalog t d s f (HM.fromList $ map (fieldName &&& id) $ expandFields f)
 
 data Query = Query
   { queryOffset :: Word

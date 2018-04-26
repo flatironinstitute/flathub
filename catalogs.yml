@@ -451,6 +451,11 @@ neutrino:
       - name: bh
 gaea:
   title: GAEA
+  descr: >
+    <a href='http://adsabs.harvard.edu/abs/2014MNRAS.445..970D'>De Lucia et al. 2014</a>,
+    <a href='http://adsabs.harvard.edu/abs/2016MNRAS.461.1760H'>Hirschmann et al. 2016</a>,
+    <a href='http://adsabs.harvard.edu/abs/2017MNRAS.469..968X'>Xie et al. 2017</a>,
+    <a href='http://adsabs.harvard.edu/abs/2017MNRAS.465.2236Z'>Zoldan et al. 2017</a>
   index: gaea
   settings:
     index:
@@ -470,7 +475,6 @@ gaea:
         descr: Declination
     - name: z
       type: double
-      disp: false
       descr: Measured redshift (distance + peculiar velocity)
     - name: z_pos
       type: double

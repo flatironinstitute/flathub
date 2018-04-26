@@ -24,7 +24,6 @@ type Field = {
 };
 
 type Catalog = {
-  title: string,
   query: {method: string, uri: string, csv: string},
   fields: Field[],
   count?: number,

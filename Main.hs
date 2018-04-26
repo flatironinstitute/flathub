@@ -85,10 +85,11 @@ top :: Route ()
 top = getPath R.unit $ \() req -> do
   cats <- asks globalCatalogs
   return $ html req $
-    H.ul $
-      forM_ (HM.toList cats) $ \(sim, cat) ->
-        H.li $ H.a H.! HA.href (H.routeActionValue simulation sim mempty) $
+    H.dl $
+      forM_ (HM.toList cats) $ \(sim, cat) -> do
+        H.dt $ H.a H.! HA.href (H.routeActionValue simulation sim mempty) $
           H.text $ catalogTitle cat
+        mapM_ (H.dd . H.preEscapedText) $ catalogDescr cat
 
 newtype FilePathComponent = FilePathComponent{ componentFilePath :: String }
   deriving (IsString)
@@ -125,8 +126,7 @@ simulation = getPath R.parameter $ \sim req -> do
     fields = catalogFields cat
     fields' = expandFields fields
     jcat = J.pairs $
-         "title" J..= catalogTitle cat
-      <> "query" .=*
+         "query" .=*
         (  "method" J..= (BSC.unpack <$> R.fromMethod qmeth)
         <> "uri" J..= show quri
         <> "csv" J..= show csvuri)
@@ -156,6 +156,7 @@ simulation = getPath R.parameter $ \sim req -> do
       "Catalog="
       H.preEscapedBuilder $ J.fromEncoding jcat
     H.h2 $ H.text $ catalogTitle cat
+    mapM_ H.preEscapedText $ catalogDescr cat
     H.table H.! HA.id "filt" $ mempty
     H.div H.! HA.id "dhist" $
       H.canvas H.! HA.id "hist" $ mempty
@@ -233,7 +234,9 @@ catalogCSV = getPath (R.parameter R.>* "csv") $ \sim req -> do
   let query = fillQuery cat $ parseQuery req
   unless (queryOffset query == 0 && null (queryAggs query) && isNothing (queryHist query)) $
     result $ response badRequest400 [] ("offset,aggs not supported for CSV" :: String)
+#ifdef HAVE_pgsql
   glob <- ask
+#endif
   nextes <- ES.queryBulk cat query
   return $ Wai.responseStream ok200
     [ (hContentType, "text/csv")

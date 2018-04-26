@@ -10,7 +10,6 @@ packages:
     commit: 7f3da0a759d69326031c0ff7a4c6419da57c39fb
   extra-dep: true
 extra-deps:
-  - postgresql-typed-0.5.3.0
   - web-inv-route-0.1.2
 flags:
   web-inv-route:
