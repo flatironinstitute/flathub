@@ -30,8 +30,8 @@ services:
   es:
     << : *es
     scale: 4
-  front:
-    build: ..
+  astrosims:
+    build: .
     image: flatironinstitute/astrosims
     networks:
       - esnet
