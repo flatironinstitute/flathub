@@ -12,6 +12,7 @@ module Schema
   , Type, Value
   , typeValue, typeValue1
   , fmapTypeValue, fmapTypeValue1
+  , typeOfValue
   , onTypeValue
   , FieldSub(..)
   , Field, FieldGroup
@@ -109,6 +110,9 @@ onTypeValue f (Byte      x) = f x
 onTypeValue f (Boolean   x) = f x
 onTypeValue f (Text      x) = f x
 onTypeValue f (Keyword   x) = f x
+
+typeOfValue :: TypeValue f -> Type
+typeOfValue = fmapTypeValue (const Proxy)
 
 instance Eq1 f => Eq (TypeValue f) where
   Double x == Double y = eq1 x y

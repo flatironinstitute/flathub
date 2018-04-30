@@ -30,18 +30,18 @@ import qualified ES
 type DataBlock = [(T.Text, TypeValue V.Vector)]
 
 hdf5ReadVector :: H5.NativeType a => H5.Dataset -> [H5.HSize] -> Word -> IO (V.Vector a)
-hdf5ReadVector d o l = do
-  s <- H5.getDatasetSpace d
-  (b@(b1:_), _) <- H5.getSimpleDataspaceExtent s
-  let o1:os = pad o b
-      l' | o1 >= b1 = 0
-         | otherwise = min (fromIntegral l) $ b1 - o1
-  v <- VSM.unsafeNew (fromIntegral l')
-  when (l' > 0) $ do
-    H5.selectHyperslab s H5.Set ((o1, Nothing, l', Nothing) : map (, Nothing, 1, Nothing) os)
-    m <- H5.createSimpleDataspace [l']
-    H5.readDatasetInto d (Just m) (Just s) Nothing v
-  V.convert <$> VS.unsafeFreeze v
+hdf5ReadVector d o l =
+  bracket (H5.getDatasetSpace d) H5.closeDataspace $ \s -> do
+    (b@(b1:_), _) <- H5.getSimpleDataspaceExtent s
+    let o1:os = pad o b
+        l' | o1 >= b1 = 0
+           | otherwise = min (fromIntegral l) $ b1 - o1
+    v <- VSM.unsafeNew (fromIntegral l')
+    when (l' > 0) $ do
+      H5.selectHyperslab s H5.Set ((o1, Nothing, l', Nothing) : map (, Nothing, 1, Nothing) os)
+      bracket (H5.createSimpleDataspace [l']) H5.closeDataspace $ \m ->
+        H5.readDatasetInto d (Just m) (Just s) Nothing v
+    V.convert <$> VS.unsafeFreeze v
   where
   pad s [] = s
   pad (x:s) (_:n) = x : pad s n

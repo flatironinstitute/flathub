@@ -573,7 +573,6 @@ gaiadr2:
     - name: random_index
       descr: Random index used to select subsets
       type: long
-      disp: false
     - name: ref_epoch
       descr: Reference epoch
       type: double
@@ -822,8 +821,8 @@ gaiadr2:
       type: float
       units: Abundances[dex]
     - name: phot_variable_flag
-      descr: Photometric variability flag
-      type: keyword
+      descr: Photometric variability flag (NOT_AVALIABLE=-1,CONSTANT=0,VARIABLE=1)
+      type: byte
       units: Dimensionless[see description]
     - name: l
       descr: Galactic longitude

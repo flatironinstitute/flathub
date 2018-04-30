@@ -28,7 +28,6 @@ executable astrosims
   build-depends:
       base >= 4.7 && < 5
     , aeson
-    , array
     , attoparsec
     , blaze-html
     , bytestring
@@ -56,3 +55,31 @@ executable astrosims
     other-modules: PG
     build-depends: postgresql-typed
     cpp-options: -DHAVE_pgsql
+
+executable h5merge
+  main-is: h5merge.hs
+  other-modules:
+    JSON
+    Monoid
+    Schema
+    CSV
+  hs-source-dirs: .
+  default-language: Haskell2010
+  ghc-options: -Wall -funbox-strict-fields
+  build-depends:
+      base >= 4.7 && < 5
+    , aeson
+    , bytestring
+    , cassava
+    , data-default
+    , directory
+    , filepath
+    , half
+    , hdf5
+    , resourcet
+    , text
+    , unordered-containers
+    , vector
+    , vector-algorithms
+    , yaml
+    , zlib
