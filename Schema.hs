@@ -150,14 +150,17 @@ instance Read Type where
     Ident s <- lexP
     case s of
       "text"        -> return (Text Proxy)
+      "string"      -> return (Text Proxy)
       "keyword"     -> return (Keyword Proxy)
       "long"        -> return (Long Proxy)
+      "int"         -> return (Integer Proxy)
       "integer"     -> return (Integer Proxy)
       "short"       -> return (Short Proxy)
       "byte"        -> return (Byte Proxy)
       "double"      -> return (Double Proxy)
       "float"       -> return (Float Proxy)
       "half_float"  -> return (HalfFloat Proxy)
+      "bool"        -> return (Boolean Proxy)
       "boolean"     -> return (Boolean Proxy)
       _ -> fail "Unknown type"
       
