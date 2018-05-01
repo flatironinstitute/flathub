@@ -65,7 +65,7 @@ executable h5merge
     CSV
   hs-source-dirs: .
   default-language: Haskell2010
-  ghc-options: -Wall -funbox-strict-fields
+  ghc-options: -Wall -threaded -funbox-strict-fields
   build-depends:
       base >= 4.7 && < 5
     , aeson

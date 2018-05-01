@@ -5,8 +5,11 @@
 import qualified Bindings.HDF5 as H5
 import           Bindings.HDF5.Error (HDF5Exception)
 import qualified Codec.Compression.GZip as GZ
-import           Control.Exception (bracket, catch, throwIO)
-import           Control.Monad (foldM, when, unless)
+import           Control.Concurrent (forkFinally)
+import           Control.Concurrent.MVar (newEmptyMVar, putMVar, takeMVar)
+import           Control.Concurrent.QSemN
+import           Control.Exception (catch, throwIO)
+import           Control.Monad ((<=<), foldM, when, unless, void)
 import           Control.Monad.IO.Class (liftIO)
 import qualified Control.Monad.Trans.Resource as R
 import qualified Data.ByteString as BS
@@ -111,26 +114,27 @@ main = do
       fieldNames = V.map fieldNameBS fields
       Just solutionIdx = V.elemIndex "solution_id" fieldNames
       Just sortIdx = V.elemIndex "source_id" fieldNames
+      fields' = V.filter (fieldDisp . snd) $ V.indexed fields
 
   infiles <- sortBy compareStrNum . filter (isPrefixOf ".csv" . takeExtensions) <$> listDirectory indir
 
   R.runResourceT $ do
     let allocate o c = snd <$> R.allocate o c
-    
+
     hf <- H5.openFile (BSC.pack outfile) [H5.Create, H5.ReadWrite] Nothing
-      `allocate` H5.closeFile
+      `allocate` (print <=< H5.closeFile)
 
     hs <- H5.createSimpleDataspace [fromIntegral totalCount]
       `allocate` H5.closeDataspace
 
-    hds <- mapM (\f -> if fieldDisp f
-      then (H5.createDataset hf (fieldNameBS f) (h5Type $ fieldType f) hs Nothing Nothing Nothing
+    hds' <- mapM (\(_, f) ->
+      (H5.createDataset hf (fieldNameBS f) (h5Type $ fieldType f) hs Nothing Nothing Nothing
         `catch` \(_ :: HDF5Exception) -> H5.openDataset hf (fieldNameBS f) Nothing)
-        `allocate` H5.closeDataset
-      else return undefined) fields
+        `allocate` H5.closeDataset) fields'
 
-    n <- liftIO $ foldM (\off infile -> if off >= stop then return off else do
-      csv <- either fail return . CSV.decode CSV.NoHeader
+    par <- newQSemN 8 `allocate` (`waitQSemN` 8)
+    n <- foldM (\off infile -> if off >= stop then return off else do
+      csv <- liftIO $ either fail return . CSV.decode CSV.NoHeader
         . (case takeExtensions infile of
           ".csv.gz" -> GZ.decompress
           ".csv" -> id
@@ -140,9 +144,10 @@ main = do
           urows = V.tail csv
           len = fromIntegral (V.length urows)
           off' = off + len
-      when (off' > start) $ do
-        putStrLn $ infile ++ ": " ++ show off ++ "-" ++ show off'
-        unless (header == V.map fieldNameBS fields) $ fail $ "Mismatching fields : " ++ show header
+      unless (header == fieldNames) $ fail $ "Mismatching fields : " ++ show header
+      liftIO $ waitQSemN par 1
+      liftIO $ putStrLn $ infile ++ ": " ++ show off ++ "-" ++ show off'
+      when (off' > start) $ void $ R.resourceForkWith (`forkFinally` \_ -> signalQSemN par 1) $ do
         mrows <- V.unsafeThaw urows
         VSort.sortBy (compareBSNum `on` (V.! sortIdx)) mrows
         rows <- V.unsafeFreeze mrows
@@ -150,11 +155,18 @@ main = do
         case col solutionIdx of
           Long x | VS.all (solutionID ==) x -> return ()
           _ -> fail "Solution_id mismatch"
-        H5.selectHyperslab hs H5.Set [(off, Nothing, len, Nothing)]
-        bracket (H5.createSimpleDataspace [len]) H5.closeDataspace $ \mem ->
-          V.imapM_ (\i f -> when (fieldDisp f) $
-              hdf5WriteType (hds V.! i) hs (col i) mem)
-            fields
+        (hspr, hsp) <- R.allocate (H5.copyDataspace hs) H5.closeDataspace
+        (memr, mem) <- R.allocate (H5.createSimpleDataspace [len]) H5.closeDataspace
+        liftIO $ H5.selectHyperslab hsp H5.Set [(off, Nothing, len, Nothing)]
+        wv <- V.imapM (\i' (i, _) -> do
+            wv <- liftIO $ newEmptyMVar
+            void $ R.resourceForkWith (`forkFinally` putMVar wv) $
+              liftIO $ hdf5WriteType (hds' V.! i') hsp (col i) mem
+            return wv)
+          fields'
+        liftIO $ V.mapM_ takeMVar wv
+        R.release memr
+        R.release hspr
       return off')
       0 infiles
-    unless (n > stop || n == totalCount) $ fail "Incorrect totalCount"
+    liftIO $ unless (n > stop || n == totalCount) $ putStrLn "Incorrect totalCount"
