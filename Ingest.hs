@@ -6,7 +6,7 @@ module Ingest
 
 import           Control.Arrow (first)
 import           Data.Word (Word64)
-import           System.FilePath (takeExtensions)
+import           System.FilePath (takeExtension, splitExtension)
 import           Text.Read (readMaybe)
 
 import Schema
@@ -16,12 +16,16 @@ import Ingest.HDF5
 
 ingest :: Catalog -> String -> M Word64
 ingest cat fno =
-  (case takeExtensions fn of
+  (case takeExtension $ dropz fn of
     ".hdf5" -> ingestHDF5
-    '.':'c':'s':'v':_ -> ingestCSV
+    ".csv" -> ingestCSV
     _ -> error $ "Unknown ingest file type: " ++ fn)
     cat blockSize fn off
   where
+  dropz f = case splitExtension fn of
+    (b, ".gz") -> b
+    (b, ".bz2") -> b
+    _ -> f
   (fn, off) = splitoff fno
   splitoff [] = ([], 0)
   splitoff ('@':(readMaybe -> Just i)) = ([], i)
