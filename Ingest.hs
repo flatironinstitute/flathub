@@ -10,7 +10,7 @@ import           Data.List (sort)
 import           Data.Maybe (isJust, fromMaybe)
 import           Data.Word (Word64)
 import           System.Directory (doesDirectoryExist, listDirectory)
-import           System.FilePath (takeExtension, splitExtension)
+import           System.FilePath (takeExtension, splitExtension, (</>))
 import           Text.Read (readMaybe)
 
 import Schema
@@ -25,8 +25,8 @@ ingest cat fno = do
     then do
       l <- liftIO $ drop (fromIntegral off) . sort . filter (isJust . proc) <$> listDirectory fn
       sum <$> mapM (\f -> do
-        liftIO $ putStrLn f
-        ing f 0) l
+        liftIO $ putStrLn (fn </> f)
+        ing (fn </> f) 0) l
     else ing fn off
   where
   ing f = fromMaybe (error $ "Unknown ingest file type: " ++ f) (proc f)
