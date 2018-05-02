@@ -18,6 +18,7 @@ import qualified Data.Text as T
 import qualified Data.Vector as V
 import           Data.Word (Word64)
 import           System.FilePath (splitExtensions)
+import           System.IO (hFlush, stdout)
 
 import Monoid
 import Schema
@@ -62,6 +63,7 @@ ingestCSV cat blockSize fn off = do
     val r (n, i) = mwhen (not $ T.null v) (n J..= v)
       where v = r V.! i
     loop o cs = do
+      liftIO $ putStr (show o ++ "\r") >> hFlush stdout
       (rs, cs') <- takeCSV blockSize cs
       if null rows
         then return o

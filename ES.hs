@@ -208,5 +208,5 @@ createBulk _ _ = fail "createBulk: non-ES catalog"
 
 flushIndex :: Catalog -> M ()
 flushIndex cat@Catalog{ catalogStore = CatalogES{} } =
-  elasticSearch POST (catalogURL cat ++ ["_flush"]) [] ()
+  elasticSearch POST (catalogURL cat ++ ["_flush"]) [] JE.emptyObject_
 flushIndex _ = return ()
