@@ -117,7 +117,7 @@ checkIndices = do
   catalog is ~cat@Catalog{ catalogStore = CatalogES{ catalogIndex = idxn, catalogMapping = mapn } } = parseJSONField idxn (idx cat mapn) is
   idx :: Catalog -> T.Text -> J.Value -> J.Parser ()
   idx cat mapn = J.withObject "index" $ parseJSONField "mappings" $ J.withObject "mappings" $
-    parseJSONField mapn (mapping $ expandFields $ catalogFields cat)
+    parseJSONField mapn (mapping $ catalogFields cat)
   mapping :: Fields -> J.Value -> J.Parser ()
   mapping fields = J.withObject "mapping" $ parseJSONField "properties" $ J.withObject "properties" $ \ps ->
     forM_ fields $ \field -> parseJSONField (fieldName field) (prop field) ps

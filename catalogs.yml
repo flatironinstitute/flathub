@@ -558,6 +558,7 @@ gaea:
 gaiadr2:
   title: GAIA DR2
   index: gaiadr2
+  key: source_id
   fields:
     - name: solution_id
       descr: Solution Identifier

@@ -6,32 +6,31 @@ import qualified Bindings.HDF5 as H5
 import           Bindings.HDF5.Error (HDF5Exception)
 import qualified Codec.Compression.GZip as GZ
 import           Control.Concurrent (forkFinally)
-import           Control.Concurrent.MVar (newEmptyMVar, putMVar, takeMVar)
 import           Control.Concurrent.QSemN
-import           Control.Exception (catch, throwIO)
-import           Control.Monad ((<=<), foldM, when, unless, void)
+import           Control.Exception (bracket, catch, throwIO)
+import           Control.Monad ((<=<), foldM, unless, void)
 import           Control.Monad.IO.Class (liftIO)
 import qualified Control.Monad.Trans.Resource as R
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy.Char8 as BSLC
 import qualified Data.Csv as CSV
-import           Data.Foldable (fold)
 import           Data.Function (on)
 import qualified Data.HashMap.Strict as HM
 import           Data.Int (Int8, Int64)
-import           Data.List (isPrefixOf, sortBy)
-import           Data.Maybe (fromMaybe)
+import           Data.List (stripPrefix, sort)
+import           Data.Maybe (fromMaybe, listToMaybe, mapMaybe)
 import           Data.Monoid ((<>))
 import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V
 import qualified Data.Vector.Algorithms.Intro as VSort
 import qualified Data.Vector.Storable as VS
+import qualified Data.Vector.Storable.Mutable as VSM
 import           Data.Word (Word32, Word64)
 import qualified Data.Yaml as YAML
 import           System.Directory (listDirectory)
 import           System.Environment (getArgs)
-import           System.FilePath ((</>), takeExtensions)
+import           System.FilePath ((</>))
 import           Text.Read (readMaybe)
 import           Unsafe.Coerce (unsafeCoerce)
 
@@ -88,35 +87,64 @@ hdf5WriteType d s (Double  v) m = hdf5WriteVector d s v m
 hdf5WriteType d s (Float   v) m = hdf5WriteVector d s v m
 hdf5WriteType _ _ t           _ = fail $ "Unsupported HDF5 type: " ++ show (typeOfValue t)
 
-compareStrNum :: String -> String -> Ordering
-compareStrNum a@(a0:ar) b@(b0:br) =
-  fold compareRead <> compare a0 b0 <> compareStrNum ar br <> compare a b
-  where
-  compareRead = do
-    (x, _) <- reads a
-    (y, _) <- reads b
-    return $ compare x (y :: Word)
-compareStrNum a b = compare a b
+hdf5Read1 :: (H5.NativeType a, Show a) => H5.Dataset -> H5.Dataspace -> H5.HSize -> IO a
+hdf5Read1 d s o = do
+  H5.selectElements s H5.Set (V.singleton (VS.singleton o))
+  v <- VSM.new 1
+  bracket (H5.createSimpleDataspace [1]) H5.closeDataspace $ \m ->
+    H5.readDatasetInto d (Just m) (Just s) Nothing v
+  VSM.unsafeRead v 0
+
+hdf5BinSearch :: (H5.NativeType a, Show a) => H5.Dataset -> H5.Dataspace -> (a -> Bool) -> (H5.HSize, H5.HSize) -> IO H5.HSize
+hdf5BinSearch d s f (a, b) = do
+  x <- hdf5Read1 d s i
+  -- putStrLn $ "testing " ++ show ab ++ " " ++ show i ++ " = " ++ show x
+  (if i == a then return . snd else hdf5BinSearch d s f)
+    $ if f x then (a, i) else (i, b)
+  where i = (a + b) `div` 2
 
 compareBSNum :: BS.ByteString -> BS.ByteString -> Ordering
 compareBSNum a b = compare (BS.length a) (BS.length b) <> compare a b
 
+type SourceID = Int64
+
+data SourceFile = SourceFile
+  { sourceFileMin, sourceFileMax :: !SourceID
+  } deriving (Eq, Ord)
+
+sourceFilePath :: SourceFile -> FilePath
+sourceFilePath (SourceFile a b) = "GaiaSource_" ++ show a ++ '_' : show b ++ ".csv.gz"
+
+sourceFile :: FilePath -> Maybe SourceFile
+sourceFile f = do
+  a <- stripPrefix "GaiaSource_" f
+  (x, '_':b) <- listToMaybe $ reads a
+  (y, ".csv.gz") <- listToMaybe $ reads b
+  return $ SourceFile x y
+
 main :: IO ()
 main = do
   (catname:indir:outfile:args) <- getArgs
-  let (start, stop) = case args of
-        [] -> (0, maxBound)
-        [x] -> (read x, maxBound)
-        [x, y] -> (read x, read y)
-        _ -> error "Unhandled args"
+  (startoff, limit) <- case args of
+    [] -> return (Nothing, maxBound)
+    ["-"] -> return (Nothing, maxBound)
+    [start] -> return (Just $ read start, maxBound)
+    ["-",end] -> return (Nothing, read end)
+    [start,end] -> return (Just $ read start, read end)
+    _ -> fail "Unhandled args"
   catalog <- either throwIO (return . (HM.! catname)) =<< YAML.decodeFileEither "catalogs.yml"
-  let fields = V.fromList $ expandFields $ catalogFields catalog
+  let fields = V.fromList $ catalogFields catalog
       fieldNames = V.map fieldNameBS fields
+      Just sortIdx = do
+        k <- catalogKey catalog
+        V.findIndex ((k ==) . fieldName) fields
       Just solutionIdx = V.elemIndex "solution_id" fieldNames
-      Just sortIdx = V.elemIndex "source_id" fieldNames
       fields' = V.filter (fieldDisp . snd) $ V.indexed fields
+      Just sortIdx' = V.findIndex ((sortIdx ==) . fst) fields'
 
-  infiles <- sortBy compareStrNum . filter (isPrefixOf ".csv" . takeExtensions) <$> listDirectory indir
+  -- liftIO $ print $ fieldNameBS $ fields V.! sortIdx
+
+  srcs <- sort . mapMaybe sourceFile <$> listDirectory indir
 
   R.runResourceT $ do
     let allocate o c = snd <$> R.allocate o c
@@ -127,27 +155,38 @@ main = do
     hs <- H5.createSimpleDataspace [fromIntegral totalCount]
       `allocate` H5.closeDataspace
 
-    hds' <- mapM (\(_, f) ->
+    hds' <- V.mapM (\(_, f) ->
       (H5.createDataset hf (fieldNameBS f) (h5Type $ fieldType f) hs Nothing Nothing Nothing
         `catch` \(_ :: HDF5Exception) -> H5.openDataset hf (fieldNameBS f) Nothing)
         `allocate` H5.closeDataset) fields'
 
-    par <- newQSemN 8 `allocate` (`waitQSemN` 8)
-    n <- foldM (\off infile -> if off >= stop then return off else do
-      csv <- liftIO $ either fail return . CSV.decode CSV.NoHeader
-        . (case takeExtensions infile of
-          ".csv.gz" -> GZ.decompress
-          ".csv" -> id
-          _ -> error "Unspported CSV file")
-        =<< BSLC.readFile (indir </> infile)
+    Just off0 <- liftIO $ maybe (fmap fromIntegral . VS.findIndex ((0 :: Float) ==) <$> H5.readDataset (V.last hds') Nothing Nothing) (return . Just) startoff
+    (start, srcs') <- liftIO $ if off0 == 0 then return (0, srcs) else do
+      let hds = hds' V.! sortIdx'
+      key0 <- hdf5Read1 hds hs (pred off0)
+      let srcs' = dropWhile ((key0 >) . sourceFileMax) srcs
+          start = sourceFileMin $ head srcs'
+      off <- hdf5BinSearch hds hs (\x -> x >= start || x == 0) (0, off0)
+      s <- hdf5Read1 hds hs off
+      let desc = '[' : show off ++ "] = " ++ show s
+      unless (s == start) $ fail $ "Start offset mismatch: " ++ desc ++ " /= " ++ show start
+      putStrLn $ "Starting at " ++ desc
+      return (off, srcs')
+
+    par <- newQSemN 28 `allocate` (`waitQSemN` 28)
+    n <- foldM (\off src -> do
+      csv <- liftIO $ either fail return
+        . CSV.decode CSV.NoHeader
+        . GZ.decompress
+        =<< BSLC.readFile (indir </> sourceFilePath src)
       let header = V.head csv
           urows = V.tail csv
           len = fromIntegral (V.length urows)
           off' = off + len
       unless (header == fieldNames) $ fail $ "Mismatching fields : " ++ show header
       liftIO $ waitQSemN par 1
-      liftIO $ putStrLn $ infile ++ ": " ++ show off ++ "-" ++ show off'
-      when (off' > start) $ void $ R.resourceForkWith (`forkFinally` \_ -> signalQSemN par 1) $ do
+      liftIO $ putStrLn $ sourceFilePath src ++ ": " ++ show off ++ "-" ++ show off'
+      void $ R.resourceForkWith (`forkFinally` \_ -> signalQSemN par 1) $ liftIO $ do
         mrows <- V.unsafeThaw urows
         VSort.sortBy (compareBSNum `on` (V.! sortIdx)) mrows
         rows <- V.unsafeFreeze mrows
@@ -155,18 +194,12 @@ main = do
         case col solutionIdx of
           Long x | VS.all (solutionID ==) x -> return ()
           _ -> fail "Solution_id mismatch"
-        (hspr, hsp) <- R.allocate (H5.copyDataspace hs) H5.closeDataspace
-        (memr, mem) <- R.allocate (H5.createSimpleDataspace [len]) H5.closeDataspace
-        liftIO $ H5.selectHyperslab hsp H5.Set [(off, Nothing, len, Nothing)]
-        wv <- V.imapM (\i' (i, _) -> do
-            wv <- liftIO $ newEmptyMVar
-            void $ R.resourceForkWith (`forkFinally` putMVar wv) $
-              liftIO $ hdf5WriteType (hds' V.! i') hsp (col i) mem
-            return wv)
-          fields'
-        liftIO $ V.mapM_ takeMVar wv
-        R.release memr
-        R.release hspr
+        bracket (H5.copyDataspace hs) H5.closeDataspace $ \hsp ->
+          bracket (H5.createSimpleDataspace [len]) H5.closeDataspace $ \mem -> do
+            H5.selectHyperslab hsp H5.Set [(off, Nothing, len, Nothing)]
+            V.imapM_ (\i' (i, _) -> 
+                hdf5WriteType (hds' V.! i') hsp (col i) mem)
+              fields'
       return off')
-      0 infiles
-    liftIO $ unless (n > stop || n == totalCount) $ putStrLn "Incorrect totalCount"
+      start $ take limit srcs'
+    liftIO $ unless (n == totalCount) $ putStrLn "Incorrect totalCount"

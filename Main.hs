@@ -123,8 +123,8 @@ simulation = getPath R.parameter $ \sim req -> do
   let 
     (qmeth, quri) = routeActionURI catalog sim
     (_, csvuri) = routeActionURI catalogCSV sim
-    fields = catalogFields cat
-    fields' = expandFields fields
+    fields = catalogFieldGroups cat
+    fields' = catalogFields cat
     jcat = J.pairs $
          "query" .=*
         (  "method" J..= (BSC.unpack <$> R.fromMethod qmeth)
@@ -334,7 +334,7 @@ main = do
       let cat = catalogs HM.! sim
       forM_ args $ \f -> do
         liftIO $ putStrLn f
-        n <- ingestHDF5 cat f
+        n <- ingest cat f
         liftIO $ print n
       ES.flushIndex cat
 

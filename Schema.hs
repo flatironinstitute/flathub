@@ -253,16 +253,19 @@ data Catalog = Catalog
   { catalogTitle :: T.Text
   , catalogDescr :: Maybe T.Text
   , catalogStore :: CatalogStore
-  , catalogFields :: FieldGroups
+  , catalogFieldGroups :: FieldGroups
+  , catalogFields :: Fields
   , catalogFieldMap :: HM.HashMap T.Text Field
+  , catalogKey :: Maybe T.Text
   }
 
 instance J.FromJSON Catalog where
   parseJSON = J.withObject "catalog" $ \c -> do
-    f <- c J..: "fields"
-    t <- c J..: "title"
-    d <- c J..:? "descr"
-    s <- CatalogES
+    catalogFieldGroups <- c J..: "fields"
+    catalogTitle <- c J..: "title"
+    catalogDescr <- c J..:? "descr"
+    catalogKey <- c J..:? "key"
+    catalogStore <- CatalogES
         <$> (c J..: "index")
         <*> (c J..:! "mapping" J..!= "catalog")
         <*> (c J..:? "settings" J..!= HM.empty)
@@ -270,7 +273,9 @@ instance J.FromJSON Catalog where
       <|> CatalogPG
         <$> (c J..: "table")
 #endif
-    return $ Catalog t d s f (HM.fromList $ map (fieldName &&& id) $ expandFields f)
+    let catalogFields = expandFields catalogFieldGroups
+        catalogFieldMap = HM.fromList $ map (fieldName &&& id) catalogFields
+    return Catalog{..}
 
 data Query = Query
   { queryOffset :: Word
@@ -303,5 +308,5 @@ instance Monoid Query where
     }
 
 fillQuery :: Catalog -> Query -> Query
-fillQuery cat q@Query{ queryFields = [] } = fillQuery cat $ q{ queryFields = map fieldName $ expandFields $ catalogFields cat }
+fillQuery cat q@Query{ queryFields = [] } = fillQuery cat $ q{ queryFields = map fieldName $ catalogFields cat }
 fillQuery _ q = q

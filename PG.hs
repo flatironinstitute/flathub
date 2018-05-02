@@ -91,7 +91,7 @@ createTable cat@Catalog{ catalogStore = CatalogPG tabn } = withPG $ \db -> do
   PG.pgExecute_ db $ BSB.toLazyByteString $ "CREATE TABLE " <> tab <> " (_id bigserial primary key " <> foldMap col fields <> ");" <> foldMap idx fields
   where
   tab = pgIdent tabn
-  fields = expandFields $ catalogFields cat
+  fields = catalogFields cat
   col Field{..} = comma <> pgIdent fieldName <> " " <> pgType fieldType
   idx Field{..} = "CREATE INDEX ON " <> tab <> " (" <> pgIdent fieldName <> ");"
 createTable _ = return ()
