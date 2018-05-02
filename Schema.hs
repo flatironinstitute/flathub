@@ -28,6 +28,7 @@ module Schema
 
 import           Control.Applicative ((<|>))
 import           Control.Arrow ((&&&))
+import           Control.Monad (unless)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Types as J
 import qualified Data.ByteString as BS
@@ -275,6 +276,7 @@ instance J.FromJSON Catalog where
 #endif
     let catalogFields = expandFields catalogFieldGroups
         catalogFieldMap = HM.fromList $ map (fieldName &&& id) catalogFields
+    mapM_ (\k -> unless (HM.member k catalogFieldMap) $ fail "key field not found in catalog") catalogKey
     return Catalog{..}
 
 data Query = Query

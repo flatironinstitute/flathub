@@ -9,20 +9,23 @@ import qualified Codec.Compression.BZip as BZ
 import qualified Codec.Compression.GZip as GZ
 import           Control.Arrow (first)
 import           Control.Monad.IO.Class (liftIO)
+import qualified Data.Aeson as J
 import qualified Data.ByteString.Lazy.Char8 as BSLC
 import qualified Data.Csv.Streaming as CSV
+import           Data.List (mapAccumL)
 import           Data.Maybe (fromMaybe)
 import qualified Data.Text as T
 import qualified Data.Vector as V
 import           Data.Word (Word64)
 import           System.FilePath (splitExtensions)
 
+import Monoid
 import Schema
 import Global
+import qualified ES
 
 dropCSV :: Word64 -> CSV.Records a -> (Word64, CSV.Records a)
-dropCSV 0 r = (0, r)
-dropCSV n (CSV.Cons _ r) = dropCSV (pred n) r
+dropCSV n (CSV.Cons _ r) | n > 0 = dropCSV (pred n) r
 dropCSV n r = (n, r)
 
 unconsCSV :: Monad m => CSV.Records a -> m (Maybe a, CSV.Records a)
@@ -50,10 +53,22 @@ ingestCSV cat blockSize fn off = do
   cols <- mapM (\Field{ fieldName = n } ->
       maybe (fail $ "csv header field missing: " ++ T.unpack n) (return . (,) n) $ V.elemIndex n header)
     $ catalogFields cat
-  let (off', rows') = dropCSV off rows
-  return off'
+  let
+    (del, rows') = dropCSV off rows
+    off' = off - del
+    key
+      | Just k <- (`lookup` cols) =<< catalogKey cat = const $ T.unpack . (V.! k)
+      | otherwise = const . (fnb ++) . ('_' :) . show
+    val r (n, i) = mwhen (not $ T.null v) (n J..= v)
+      where v = r V.! i
+    loop o cs = do
+      (rs, cs') <- takeCSV blockSize cs
+      if null rows
+        then return o
+        else do
+          let (o', block) = mapAccumL (\i r -> (succ i, (key i r, foldMap (val r) cols))) o rs
+          ES.createBulk cat block
+          loop o' cs'
+  loop off' rows'
   where
   (fnb, fne) = splitExtensions fn
-  loop csv = do
-    (rows, csv') <- takeCSV blockSize csv
-    return ()
