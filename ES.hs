@@ -13,7 +13,7 @@ module ES
   , flushIndex
   ) where
 
-import           Control.Monad ((<=<), forM_, unless)
+import           Control.Monad ((<=<), forM_, unless, void)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (ask, asks)
 import qualified Data.Aeson as J
@@ -65,6 +65,10 @@ instance Body J.Value where
 instance Body B.Builder where
   bodyRequest = HTTP.RequestBodyLBS . B.toLazyByteString
   bodyContentType _ = Just "application/x-ndjson"
+
+instance Body EmptyJSON where
+  bodyRequest EmptyJSON = HTTP.RequestBodyBS "{}"
+  bodyContentType _ = Just "application/json"
 
 elasticSearch :: (Body b, J.FromJSON r) => StdMethod -> [String] -> HTTP.Query -> b -> M r
 elasticSearch meth url query body = do
@@ -208,5 +212,5 @@ createBulk _ _ = fail "createBulk: non-ES catalog"
 
 flushIndex :: Catalog -> M ()
 flushIndex cat@Catalog{ catalogStore = CatalogES{} } =
-  elasticSearch POST (catalogURL cat ++ ["_flush"]) [] JE.emptyObject_
+  (void :: M J.Value -> M ()) $ elasticSearch POST (catalogURL cat ++ ["_flush"]) [] EmptyJSON
 flushIndex _ = return ()
