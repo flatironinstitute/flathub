@@ -73,7 +73,7 @@ staticURI p = WH.routeActionValue static p mempty
 html :: Wai.Request -> H.Markup -> Wai.Response
 html req h = okResponse [] $ H.docTypeHtml $ do
   H.head $ do
-    forM_ ([["jspm_packages", "system.src.js"], ["jspm.config.js"]] ++ if isdev then [["dev.js"]] else [["index.js"]]) $ \src ->
+    forM_ ([["jspm_packages", if isdev then "system.src.js" else "system.js"], ["jspm.config.js"]] ++ if isdev then [["dev.js"]] else [["index.js"]]) $ \src ->
       H.script H.! HA.type_ "text/javascript" H.! HA.src (staticURI src) $ mempty
     -- TODO: use System.resolve:
     forM_ [["jspm_packages", "npm", "datatables.net-dt@1.10.16", "css", "jquery.dataTables.css"], ["main.css"]] $ \src ->
