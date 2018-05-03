@@ -179,7 +179,8 @@ data FieldSub m = Field
   { fieldName :: T.Text
   , fieldType :: Type
   , fieldTitle :: T.Text
-  , fieldDescr :: T.Text
+  , fieldDescr :: Maybe T.Text
+  , fieldUnits :: Maybe T.Text
   , fieldTop, fieldDisp :: Bool
   , fieldSub :: m (FieldsSub m)
   }
@@ -191,7 +192,16 @@ type FieldGroups = FieldsSub Maybe
 type Fields = [Field]
 
 instance Default FieldGroup where
-  def = Field T.empty def T.empty T.empty False True Nothing
+  def = Field
+    { fieldName = T.empty
+    , fieldType = def
+    , fieldTitle = T.empty
+    , fieldDescr = Nothing
+    , fieldUnits = Nothing
+    , fieldTop = False
+    , fieldDisp = True
+    , fieldSub = Nothing
+    }
 
 instance J.ToJSON Field where
   toJSON Field{..} = J.object
@@ -199,6 +209,7 @@ instance J.ToJSON Field where
     , "type" J..= fieldType
     , "title" J..= fieldTitle
     , "descr" J..= fieldDescr
+    , "units" J..= fieldUnits
     , "top" J..= fieldTop
     , "disp" J..= fieldDisp
     ]
@@ -207,6 +218,7 @@ instance J.ToJSON Field where
     <> "type" J..= fieldType
     <> "title" J..= fieldTitle
     <> "descr" J..= fieldDescr
+    <> "units" J..= fieldUnits
     <> "top" J..= fieldTop
     <> "disp" J..= fieldDisp
     )
@@ -215,19 +227,28 @@ instance J.FromJSON FieldGroup where
   parseJSON = parseFieldDefs def where
     parseFieldDefs d = J.withObject "field" $ \f -> do
       n <- f J..: "name"
-      u <- f J..:? "units"
       r <- Field n
         <$> (f J..:! "type" J..!= fieldType d)
         <*> (f J..:! "title" J..!= n)
-        <*> (maybe id (\u' -> (<> " (" <> u' <> ")")) u <$> f J..:? "descr" J..!= "")
+        <*> (f J..:? "descr")
+        <*> (f J..:? "units")
         <*> (f J..:? "top" J..!= fieldTop d)
         <*> (f J..:! "disp" J..!= fieldDisp d)
         <*> return Nothing
       s <- J.explicitParseFieldMaybe' (J.withArray "subfields" $ V.mapM $ parseFieldDefs r) f "sub"
       return r{ fieldSub = s }
 
+joinMaybeWith :: (a -> a -> a) -> Maybe a -> Maybe a -> Maybe a
+joinMaybeWith _ Nothing x = x
+joinMaybeWith _ x Nothing = x
+joinMaybeWith f (Just x) (Just y) = Just $ f x y
+
 subField :: FieldSub n -> FieldSub m -> FieldSub m
-subField f s = s{ fieldName = fieldName f <> T.cons '_' (fieldName s) }
+subField f s = s
+  { fieldName = fieldName f <> T.cons '_' (fieldName s)
+  , fieldTitle = fieldTitle f <> T.cons ' ' (fieldTitle s)
+  , fieldDescr = joinMaybeWith (\x -> (x <>) . T.cons '\n') (fieldDescr f) (fieldDescr s)
+  }
 
 expandFields :: FieldGroups -> Fields
 expandFields = foldMap expandField where

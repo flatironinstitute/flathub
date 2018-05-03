@@ -455,7 +455,8 @@ gaea:
     <a href='http://adsabs.harvard.edu/abs/2014MNRAS.445..970D'>De Lucia et al. 2014</a>,
     <a href='http://adsabs.harvard.edu/abs/2016MNRAS.461.1760H'>Hirschmann et al. 2016</a>,
     <a href='http://adsabs.harvard.edu/abs/2017MNRAS.469..968X'>Xie et al. 2017</a>,
-    <a href='http://adsabs.harvard.edu/abs/2017MNRAS.465.2236Z'>Zoldan et al. 2017</a>
+    <a href='http://adsabs.harvard.edu/abs/2017MNRAS.465.2236Z'>Zoldan et al. 2017</a>.
+    WARNING: This is one of the first all sky catalogs we have produced, and there could be some issues/bugs we did not notice. Any bug report will be useful to correct and improve this work! So please let us know if you find anything "strange".
   index: gaea
   settings:
     index:
@@ -560,14 +561,14 @@ gaiadr2:
   index: gaiadr2
   key: source_id
   fields:
-    - name: solution_id
-      descr: Solution Identifier
-      type: long
-      disp: false
-    - name: designation
-      descr: Unique source designation
-      type: text
-      disp: false
+#    - name: solution_id
+#      descr: Solution Identifier
+#      type: long
+#      disp: false
+#    - name: designation
+#      descr: Unique source designation
+#      type: text
+#      disp: false
     - name: source_id
       descr: Unique source identifier
       type: long
@@ -823,7 +824,8 @@ gaiadr2:
       units: Abundances[dex]
     - name: phot_variable_flag
       descr: Photometric variability flag (NOT_AVALIABLE=-1,CONSTANT=0,VARIABLE=1)
-      type: byte
+      #type: byte
+      type: keyword
       units: Dimensionless[see description]
     - name: l
       descr: Galactic longitude

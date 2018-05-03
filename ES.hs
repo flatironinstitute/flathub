@@ -202,6 +202,7 @@ queryBulk cat query@Query{..} = do
 createBulk :: Catalog -> [(String, J.Series)] -> M ()
 createBulk cat@Catalog{ catalogStore = CatalogES{} } docs = do
   r <- elasticSearch POST (catalogURL cat ++ ["_bulk"]) [] body
+  -- TODO: ignore 409
   unless (HM.lookup "errors" (r :: J.Object) == Just (J.Bool False)) $ fail $ "createBulk: " ++ BSLC.unpack (J.encode r)
   where
   body = foldMap doc docs

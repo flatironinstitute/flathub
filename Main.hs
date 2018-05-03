@@ -2,6 +2,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE ViewPatterns #-}
 
@@ -36,7 +37,8 @@ import qualified System.FilePath as FP
 import qualified Text.Blaze.Html5 as H hiding (text, textValue)
 import qualified Text.Blaze.Html5.Attributes as HA
 import           Text.Read (readMaybe)
-import qualified Waimwork.Blaze as H hiding ((!?))
+import qualified Waimwork.Blaze as H (text, textValue, preEscapedBuilder)
+import qualified Waimwork.Blaze as WH
 import qualified Waimwork.Config as C
 #ifdef HAVE_pgsql
 import qualified Waimwork.Database.PostgreSQL as PG
@@ -66,7 +68,7 @@ getPath p = R.RouteAction $ R.routeMethod R.GET R.*< R.routePath p
 -- header q h = lookup h $ Wai.requestHeaders q
 
 staticURI :: [FilePathComponent] -> H.AttributeValue
-staticURI p = H.routeActionValue static p mempty
+staticURI p = WH.routeActionValue static p mempty
 
 html :: Wai.Request -> H.Markup -> Wai.Response
 html req h = okResponse [] $ H.docTypeHtml $ do
@@ -87,7 +89,7 @@ top = getPath R.unit $ \() req -> do
   return $ html req $
     H.dl $
       forM_ (HM.toList cats) $ \(sim, cat) -> do
-        H.dt $ H.a H.! HA.href (H.routeActionValue simulation sim mempty) $
+        H.dt $ H.a H.! HA.href (WH.routeActionValue simulation sim mempty) $
           H.text $ catalogTitle cat
         mapM_ (H.dd . H.preEscapedText) $ catalogDescr cat
 
@@ -131,26 +133,31 @@ simulation = getPath R.parameter $ \sim req -> do
         <> "uri" J..= show quri
         <> "csv" J..= show csvuri)
       <> "fields" J..= fields'
-    fieldBody f = H.span H.! HA.title (H.textValue $ fieldDescr f) $ H.text $ fieldTitle f
-    field :: Word -> FieldGroup -> H.Html
-    field d f@Field{ fieldSub = Nothing } = do
+    fieldBody :: Word -> FieldGroup -> H.Html
+    fieldBody d f = H.span WH.!? (HA.title . H.textValue <$> fieldDescr f) $ do
+      H.text $ fieldTitle f
+      forM_ (fieldUnits f) $ \u -> do
+        if d > 1 then H.br else " "
+        H.span H.! HA.class_ "units" $ "[" <> H.preEscapedText u <> "]"
+    field :: Word -> FieldGroup -> FieldGroup -> H.Html
+    field d f' f@Field{ fieldSub = Nothing } = do
       H.th
           H.! HA.rowspan (H.toValue d)
-          H.! H.dataAttribute "data" (H.textValue $ fieldName f)
-          H.! H.dataAttribute "name" (H.textValue $ fieldName f) 
+          H.! H.dataAttribute "data" (H.textValue $ fieldName f')
+          H.! H.dataAttribute "name" (H.textValue $ fieldName f')
           H.! H.dataAttribute "type" (dtype $ fieldType f)
           H.!? (not (fieldDisp f), H.dataAttribute "visible" "false")
           H.! H.dataAttribute "default-content" mempty $ do
-        H.span H.! HA.id ("hide-" <> H.textValue (fieldName f)) H.! HA.class_ "hide" $ H.preEscapedString "&times;"
-        fieldBody f
-    field _ f@Field{ fieldSub = Just s } = do
+        H.span H.! HA.id ("hide-" <> H.textValue (fieldName f')) H.! HA.class_ "hide" $ H.preEscapedString "&times;"
+        fieldBody d f
+    field _ _ f@Field{ fieldSub = Just s } = do
       H.th
           H.! HA.colspan (H.toValue $ length $ expandFields s) $
-        fieldBody f
-    row :: Word -> FieldGroups -> H.Html
+        fieldBody 1 f
+    row :: Word -> [(FieldGroup -> FieldGroup, FieldGroup)] -> H.Html
     row d l = do
-      H.tr $ mapM_ (field d) l
-      when (d > 1) $ row (pred d) $ foldMap (\f -> foldMap (subField f <$>) $ fieldSub f) l
+      H.tr $ mapM_ (\(p, f) -> field d (p f) f) l
+      when (d > 1) $ row (pred d) $ foldMap (\(p, f) -> foldMap (fmap (p . subField f, ) . V.toList) $ fieldSub f) l
   return $ html req $ do
     H.script $ do
       "Catalog="
@@ -161,7 +168,7 @@ simulation = getPath R.parameter $ \sim req -> do
     H.div H.! HA.id "dhist" $
       H.canvas H.! HA.id "hist" $ mempty
     H.table H.! HA.id "tcat" H.! HA.class_ "compact" $ do
-      H.thead $ row (fieldsDepth fields) fields
+      H.thead $ row (fieldsDepth fields) ((id ,) <$> V.toList fields)
       H.tfoot $ H.tr $ H.td H.! HA.colspan (H.toValue $ length fields') H.! HA.class_ "loading" $ "loading..."
   where
   dtype (Long _) = "num"

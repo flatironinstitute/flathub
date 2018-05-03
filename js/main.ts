@@ -18,7 +18,8 @@ type Field = {
   name: string,
   type: string,
   title: string,
-  descr: string,
+  descr: null|string,
+  units: null|string,
   top: boolean,
   disp: boolean
 };
@@ -32,6 +33,7 @@ type Catalog = {
 type Query = undefined|string|number|{lb:string|number, ub:string|number};
 
 interface Filter {
+  field: number;
   name: string;
   query: Query;
   isint: boolean;
@@ -50,17 +52,6 @@ var Histogram: number = -1;
 const Histogram_bins = 100;
 var Histogram_chart: Chart|undefined;
 var Histogram_bin_width = 0;
-
-function select_options(select: HTMLSelectElement, options: string[]|Dict<string>) {
-  $(select).empty();
-  select.appendChild(document.createElement('option'));
-  for (let i in options) {
-    let opt = document.createElement('option');
-    opt.setAttribute('value', i);
-    opt.textContent = (<any>options)[i];
-    select.appendChild(opt);
-  }
-}
 
 function set_download(query: Dict<string>) {
   let a = <HTMLAnchorElement>document.getElementById('download.csv');
@@ -85,7 +76,7 @@ function histogram(agg: {buckets: {key:number,doc_count:number}[]}) {
   const hist = Filters[Histogram];
   const data = {
     datasets: [{
-      label: hist.name,
+      label: Catalog.fields[hist.field].title,
       data: agg.buckets.map(d => { return {x:d.key,y:d.doc_count}; }),
       pointRadius: 0,
       showLine: true,
@@ -239,13 +230,15 @@ function add_filt_row(name: string, ...nodes: Array<JQuery.htmlString | JQuery.T
   }
 }
 
-function add_filter(field: Field) {
+function add_filter(idx: number) {
+  const field = Catalog.fields[idx];
   if (!field || !TCat)
     return;
   const tcol = TCat.column(field.name+':name').visible(true);
-  if (Filters.some((f) => f.name === field.name))
+  if (Filters.some((f) => f.field === idx))
     return;
   const filt: Filter = {
+    field: idx,
     name: field.name,
     query: undefined,
     isint: false
@@ -272,17 +265,21 @@ function add_filter(field: Field) {
       Update_aggs = i;
       (<DataTables.ColumnMethods><any>tcol.search('')).visible(true).draw();
     }),
-    field.name);
+    field.title);
   switch (field.type) {
     case 'keyword': {
       let select = document.createElement('select');
       select.name = field.name;
       select.disabled = true;
       filt.update_aggs = (aggs: any) => {
-        let opts: Dict<string> = {};
-        for (let b of aggs.buckets)
-          opts[b.key] = b.key + ' (' + b.doc_count + ')';
-        select_options(select, opts);
+        $(select).empty();
+        select.appendChild(document.createElement('option'));
+        for (let b of aggs.buckets) {
+          let opt = document.createElement('option');
+          opt.setAttribute('value', b.key);
+          opt.textContent = b.key + ' (' + b.doc_count + ')';
+          select.appendChild(opt);
+        }
         select.value = '';
         select.disabled = false;
       };
@@ -374,16 +371,24 @@ function init() {
   });
   /* for debugging: */
   (<any>window).TCat = TCat;
-  let addfilt = <HTMLSelectElement>document.createElement('select');
-  select_options(addfilt, Catalog.fields.map((f) => f.name));
+  const addfilt = <HTMLSelectElement>document.createElement('select');
+  addfilt.appendChild(document.createElement('option'));
   add_filt_row('', addfilt, 'Select field to view/filter');
+  for (let i = 0; i < Catalog.fields.length; i++) {
+    let f = Catalog.fields[i];
+    let opt = document.createElement('option');
+    opt.setAttribute('value', i.toString());
+    opt.textContent = f.title;
+    if (f.descr)
+      opt.setAttribute('title', f.descr);
+    addfilt.appendChild(opt);
+    if (f.top)
+      add_filter(i);
+  }
   addfilt.onchange = function () {
-    add_filter(Catalog.fields[<any>addfilt.value]);
+    add_filter(<any>addfilt.value);
     TCat.draw(false);
   };
-  for (let f of Catalog.fields)
-    if (f.top)
-      add_filter(f);
   $('.hide').on('click', function (event) {
     if (TCat)
       TCat.column(this.id.substr(5)+':name').visible(false);
