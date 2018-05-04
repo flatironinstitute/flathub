@@ -14,6 +14,6 @@ There is a [docker-compose](docker-compose.yml) definition for installing everyt
    - Update [config](config) to point to your elasticsearch cluster if it's not the default
 - Run `docker-compose build` to build the application
 - Run `docker-compose up -d` to bring up everything (the astrosims service will exit with an error -- this is expected)
-- Run `docker-compose run astrosims -s CATALOG` for each defined catalog to create the databases
-- Run `docker-compose run -v /data/dir:/data astrosims -i CATALOG /data/FILE ...` to ingest data into each catalog
+- Run `docker-compose run --rm astrosims -s CATALOG` for each defined catalog to create the databases
+- Run `docker-compose run --rm -v /data/dir:/data astrosims -i CATALOG /data/FILE ...` to ingest data into each catalog
 - Run `docker-compose up -d` to bring up the astrosims webserver
