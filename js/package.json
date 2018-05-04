@@ -4,7 +4,7 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "postinstall": "jspm install",
+    "postinstall": "sed -i 's/\\r$//' node_modules/.bin/jspm && jspm install",
     "build": "jspm build --minify main.ts index.js"
   },
   "author": "Dylan Simon",
