@@ -65,7 +65,7 @@ ingestCSV cat blockSize fn off = do
     loop o cs = do
       liftIO $ putStr (show o ++ "\r") >> hFlush stdout
       (rs, cs') <- takeCSV blockSize cs
-      if null rows
+      if null rs
         then return o
         else do
           let (o', block) = mapAccumL (\i r -> (succ i, (key i r, foldMap (val r) cols))) o rs

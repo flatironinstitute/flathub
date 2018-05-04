@@ -5,6 +5,7 @@ module Ingest
   ) where
 
 import           Control.Arrow (first)
+import           Control.Monad (foldM)
 import           Control.Monad.IO.Class (liftIO)
 import           Data.List (sort)
 import           Data.Maybe (isJust, fromMaybe)
@@ -22,11 +23,11 @@ ingest :: Catalog -> String -> M Word64
 ingest cat fno = do
   d <- liftIO $ doesDirectoryExist fn
   if d
-    then do
-      l <- liftIO $ drop (fromIntegral off) . sort . filter (isJust . proc) <$> listDirectory fn
-      sum <$> mapM (\f -> do
+    then foldM (\i f -> do
         liftIO $ putStrLn (fn </> f)
-        ing (fn </> f) 0) l
+        (i +) <$> ing (fn </> f) 0) 0
+      . drop (fromIntegral off) . sort . filter (isJust . proc)
+      =<< liftIO (listDirectory fn)
     else ing fn off
   where
   ing f = fromMaybe (error $ "Unknown ingest file type: " ++ f) (proc f)
@@ -35,7 +36,7 @@ ingest cat fno = do
     ".hdf5" -> Just ingestHDF5
     ".csv" -> Just ingestCSV
     _ -> Nothing
-  dropz f = case splitExtension fn of
+  dropz f = case splitExtension f of
     (b, ".gz") -> b
     (b, ".bz2") -> b
     _ -> f
