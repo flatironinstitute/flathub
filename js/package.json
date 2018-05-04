@@ -10,14 +10,14 @@
   "author": "Dylan Simon",
   "license": "Apache-2.0",
   "dependencies": {
-    "jspm": "^0.17.0-beta.47"
+    "jspm": "^0.17.0-beta.48"
   },
   "devDependencies": {
-    "@types/chart.js": "^2.7.10",
-    "@types/datatables.net": "^1.10.8",
-    "@types/jquery": "^3.3.0",
+    "@types/chart.js": "^2.7.15",
+    "@types/datatables.net": "^1.10.9",
+    "@types/jquery": "^3.3.1",
     "@types/systemjs": "^0.20.6",
-    "typescript": "^2.7.1"
+    "typescript": "^2.8.3"
   },
   "jspm": {
     "name": "astrosims",
@@ -75,16 +75,16 @@
       "npm:jquery@3.3.1": {
         "format": "amd"
       },
-      "npm:moment@2.21.0": {
+      "npm:moment@2.22.1": {
         "jspmNodeConversion": false
       },
-      "npm:pbkdf2@3.0.14": {
+      "npm:pbkdf2@3.0.16": {
         "main": "browser.js"
       },
-      "npm:safe-buffer@5.1.1": {
+      "npm:safe-buffer@5.1.2": {
         "browser": "index.js"
       },
-      "npm:typescript@2.7.1": {
+      "npm:typescript@2.8.3": {
         "browser": {},
         "map": {
           "buffer": "@empty",

@@ -67,7 +67,7 @@ SystemJS.config({
     "stream": "npm:jspm-nodelibs-stream@0.2.1",
     "string_decoder": "npm:jspm-nodelibs-string_decoder@0.2.2",
     "ts": "github:frankwallis/plugin-typescript@9.0.0",
-    "typescript": "npm:typescript@2.7.1",
+    "typescript": "npm:typescript@2.8.3",
     "url": "npm:jspm-nodelibs-url@0.2.1",
     "util": "npm:jspm-nodelibs-util@0.2.2",
     "vm": "npm:jspm-nodelibs-vm@0.2.1",
@@ -87,13 +87,7 @@ SystemJS.config({
     },
     "npm:jspm-nodelibs-buffer@0.2.3": {
       "map": {
-        "buffer": "npm:buffer@5.0.8"
-      }
-    },
-    "npm:buffer@5.0.8": {
-      "map": {
-        "base64-js": "npm:base64-js@1.2.1",
-        "ieee754": "npm:ieee754@1.1.8"
+        "buffer": "npm:buffer@5.1.0"
       }
     },
     "npm:jspm-nodelibs-crypto@0.2.1": {
@@ -103,96 +97,33 @@ SystemJS.config({
     },
     "npm:crypto-browserify@3.12.0": {
       "map": {
-        "create-ecdh": "npm:create-ecdh@4.0.0",
-        "browserify-cipher": "npm:browserify-cipher@1.0.0",
-        "create-hash": "npm:create-hash@1.1.3",
-        "public-encrypt": "npm:public-encrypt@4.0.0",
-        "create-hmac": "npm:create-hmac@1.1.6",
+        "create-ecdh": "npm:create-ecdh@4.0.1",
+        "browserify-cipher": "npm:browserify-cipher@1.0.1",
+        "create-hash": "npm:create-hash@1.2.0",
+        "public-encrypt": "npm:public-encrypt@4.0.2",
+        "create-hmac": "npm:create-hmac@1.1.7",
         "inherits": "npm:inherits@2.0.3",
         "randombytes": "npm:randombytes@2.0.6",
-        "diffie-hellman": "npm:diffie-hellman@5.0.2",
-        "pbkdf2": "npm:pbkdf2@3.0.14",
-        "randomfill": "npm:randomfill@1.0.3",
+        "diffie-hellman": "npm:diffie-hellman@5.0.3",
+        "pbkdf2": "npm:pbkdf2@3.0.16",
+        "randomfill": "npm:randomfill@1.0.4",
         "browserify-sign": "npm:browserify-sign@4.0.4"
-      }
-    },
-    "npm:public-encrypt@4.0.0": {
-      "map": {
-        "create-hash": "npm:create-hash@1.1.3",
-        "randombytes": "npm:randombytes@2.0.6",
-        "browserify-rsa": "npm:browserify-rsa@4.0.1",
-        "parse-asn1": "npm:parse-asn1@5.1.0",
-        "bn.js": "npm:bn.js@4.11.8"
-      }
-    },
-    "npm:create-hash@1.1.3": {
-      "map": {
-        "inherits": "npm:inherits@2.0.3",
-        "cipher-base": "npm:cipher-base@1.0.4",
-        "ripemd160": "npm:ripemd160@2.0.1",
-        "sha.js": "npm:sha.js@2.4.10"
-      }
-    },
-    "npm:create-hmac@1.1.6": {
-      "map": {
-        "create-hash": "npm:create-hash@1.1.3",
-        "inherits": "npm:inherits@2.0.3",
-        "cipher-base": "npm:cipher-base@1.0.4",
-        "ripemd160": "npm:ripemd160@2.0.1",
-        "sha.js": "npm:sha.js@2.4.10",
-        "safe-buffer": "npm:safe-buffer@5.1.1"
-      }
-    },
-    "npm:diffie-hellman@5.0.2": {
-      "map": {
-        "randombytes": "npm:randombytes@2.0.6",
-        "miller-rabin": "npm:miller-rabin@4.0.1",
-        "bn.js": "npm:bn.js@4.11.8"
-      }
-    },
-    "npm:randomfill@1.0.3": {
-      "map": {
-        "randombytes": "npm:randombytes@2.0.6",
-        "safe-buffer": "npm:safe-buffer@5.1.1"
       }
     },
     "npm:browserify-sign@4.0.4": {
       "map": {
-        "create-hash": "npm:create-hash@1.1.3",
-        "create-hmac": "npm:create-hmac@1.1.6",
+        "create-hash": "npm:create-hash@1.2.0",
+        "create-hmac": "npm:create-hmac@1.1.7",
         "inherits": "npm:inherits@2.0.3",
         "browserify-rsa": "npm:browserify-rsa@4.0.1",
-        "parse-asn1": "npm:parse-asn1@5.1.0",
+        "parse-asn1": "npm:parse-asn1@5.1.1",
         "bn.js": "npm:bn.js@4.11.8",
         "elliptic": "npm:elliptic@6.4.0"
       }
     },
-    "npm:pbkdf2@3.0.14": {
-      "map": {
-        "create-hash": "npm:create-hash@1.1.3",
-        "create-hmac": "npm:create-hmac@1.1.6",
-        "ripemd160": "npm:ripemd160@2.0.1",
-        "sha.js": "npm:sha.js@2.4.10",
-        "safe-buffer": "npm:safe-buffer@5.1.1"
-      }
-    },
-    "npm:browserify-cipher@1.0.0": {
-      "map": {
-        "browserify-des": "npm:browserify-des@1.0.0",
-        "evp_bytestokey": "npm:evp_bytestokey@1.0.3",
-        "browserify-aes": "npm:browserify-aes@1.1.1"
-      }
-    },
     "npm:randombytes@2.0.6": {
       "map": {
-        "safe-buffer": "npm:safe-buffer@5.1.1"
-      }
-    },
-    "npm:browserify-des@1.0.0": {
-      "map": {
-        "cipher-base": "npm:cipher-base@1.0.4",
-        "inherits": "npm:inherits@2.0.3",
-        "des.js": "npm:des.js@1.0.0"
+        "safe-buffer": "npm:safe-buffer@5.1.2"
       }
     },
     "npm:browserify-rsa@4.0.1": {
@@ -201,59 +132,22 @@ SystemJS.config({
         "bn.js": "npm:bn.js@4.11.8"
       }
     },
-    "npm:ripemd160@2.0.1": {
-      "map": {
-        "inherits": "npm:inherits@2.0.3",
-        "hash-base": "npm:hash-base@2.0.2"
-      }
-    },
     "npm:cipher-base@1.0.4": {
       "map": {
         "inherits": "npm:inherits@2.0.3",
-        "safe-buffer": "npm:safe-buffer@5.1.1"
-      }
-    },
-    "npm:browserify-aes@1.1.1": {
-      "map": {
-        "cipher-base": "npm:cipher-base@1.0.4",
-        "create-hash": "npm:create-hash@1.1.3",
-        "evp_bytestokey": "npm:evp_bytestokey@1.0.3",
-        "inherits": "npm:inherits@2.0.3",
-        "safe-buffer": "npm:safe-buffer@5.1.1",
-        "buffer-xor": "npm:buffer-xor@1.0.3"
-      }
-    },
-    "npm:parse-asn1@5.1.0": {
-      "map": {
-        "browserify-aes": "npm:browserify-aes@1.1.1",
-        "create-hash": "npm:create-hash@1.1.3",
-        "evp_bytestokey": "npm:evp_bytestokey@1.0.3",
-        "pbkdf2": "npm:pbkdf2@3.0.14",
-        "asn1.js": "npm:asn1.js@4.10.1"
+        "safe-buffer": "npm:safe-buffer@5.1.2"
       }
     },
     "npm:evp_bytestokey@1.0.3": {
       "map": {
-        "safe-buffer": "npm:safe-buffer@5.1.1",
+        "safe-buffer": "npm:safe-buffer@5.1.2",
         "md5.js": "npm:md5.js@1.3.4"
-      }
-    },
-    "npm:create-ecdh@4.0.0": {
-      "map": {
-        "bn.js": "npm:bn.js@4.11.8",
-        "elliptic": "npm:elliptic@6.4.0"
       }
     },
     "npm:miller-rabin@4.0.1": {
       "map": {
         "bn.js": "npm:bn.js@4.11.8",
         "brorand": "npm:brorand@1.1.0"
-      }
-    },
-    "npm:sha.js@2.4.10": {
-      "map": {
-        "inherits": "npm:inherits@2.0.3",
-        "safe-buffer": "npm:safe-buffer@5.1.1"
       }
     },
     "npm:jspm-nodelibs-os@0.2.2": {
@@ -264,7 +158,7 @@ SystemJS.config({
     "npm:des.js@1.0.0": {
       "map": {
         "inherits": "npm:inherits@2.0.3",
-        "minimalistic-assert": "npm:minimalistic-assert@1.0.0"
+        "minimalistic-assert": "npm:minimalistic-assert@1.0.1"
       }
     },
     "npm:md5.js@1.3.4": {
@@ -273,17 +167,12 @@ SystemJS.config({
         "inherits": "npm:inherits@2.0.3"
       }
     },
-    "npm:hash-base@2.0.2": {
-      "map": {
-        "inherits": "npm:inherits@2.0.3"
-      }
-    },
     "npm:elliptic@6.4.0": {
       "map": {
         "bn.js": "npm:bn.js@4.11.8",
         "brorand": "npm:brorand@1.1.0",
         "inherits": "npm:inherits@2.0.3",
-        "minimalistic-assert": "npm:minimalistic-assert@1.0.0",
+        "minimalistic-assert": "npm:minimalistic-assert@1.0.1",
         "hmac-drbg": "npm:hmac-drbg@1.0.1",
         "minimalistic-crypto-utils": "npm:minimalistic-crypto-utils@1.0.1",
         "hash.js": "npm:hash.js@1.1.3"
@@ -292,26 +181,26 @@ SystemJS.config({
     "npm:hash-base@3.0.4": {
       "map": {
         "inherits": "npm:inherits@2.0.3",
-        "safe-buffer": "npm:safe-buffer@5.1.1"
+        "safe-buffer": "npm:safe-buffer@5.1.2"
       }
     },
     "npm:asn1.js@4.10.1": {
       "map": {
         "inherits": "npm:inherits@2.0.3",
         "bn.js": "npm:bn.js@4.11.8",
-        "minimalistic-assert": "npm:minimalistic-assert@1.0.0"
+        "minimalistic-assert": "npm:minimalistic-assert@1.0.1"
       }
     },
     "npm:hmac-drbg@1.0.1": {
       "map": {
         "hash.js": "npm:hash.js@1.1.3",
-        "minimalistic-assert": "npm:minimalistic-assert@1.0.0",
+        "minimalistic-assert": "npm:minimalistic-assert@1.0.1",
         "minimalistic-crypto-utils": "npm:minimalistic-crypto-utils@1.0.1"
       }
     },
     "npm:hash.js@1.1.3": {
       "map": {
-        "minimalistic-assert": "npm:minimalistic-assert@1.0.0",
+        "minimalistic-assert": "npm:minimalistic-assert@1.0.1",
         "inherits": "npm:inherits@2.0.3"
       }
     },
@@ -323,7 +212,7 @@ SystemJS.config({
     "npm:stream-browserify@2.0.1": {
       "map": {
         "inherits": "npm:inherits@2.0.3",
-        "readable-stream": "npm:readable-stream@2.3.4"
+        "readable-stream": "npm:readable-stream@2.3.6"
       }
     },
     "npm:jspm-nodelibs-string_decoder@0.2.2": {
@@ -331,34 +220,9 @@ SystemJS.config({
         "string_decoder": "npm:string_decoder@0.10.31"
       }
     },
-    "npm:readable-stream@2.3.4": {
-      "map": {
-        "string_decoder": "npm:string_decoder@1.0.3",
-        "inherits": "npm:inherits@2.0.3",
-        "safe-buffer": "npm:safe-buffer@5.1.1",
-        "core-util-is": "npm:core-util-is@1.0.2",
-        "process-nextick-args": "npm:process-nextick-args@2.0.0",
-        "util-deprecate": "npm:util-deprecate@1.0.2",
-        "isarray": "npm:isarray@1.0.0"
-      }
-    },
-    "npm:string_decoder@1.0.3": {
-      "map": {
-        "safe-buffer": "npm:safe-buffer@5.1.1"
-      }
-    },
     "npm:jspm-nodelibs-http@0.2.0": {
       "map": {
-        "http-browserify": "npm:stream-http@2.8.0"
-      }
-    },
-    "npm:stream-http@2.8.0": {
-      "map": {
-        "inherits": "npm:inherits@2.0.3",
-        "readable-stream": "npm:readable-stream@2.3.4",
-        "to-arraybuffer": "npm:to-arraybuffer@1.0.1",
-        "builtin-status-codes": "npm:builtin-status-codes@3.0.0",
-        "xtend": "npm:xtend@4.0.1"
+        "http-browserify": "npm:stream-http@2.8.1"
       }
     },
     "npm:jspm-nodelibs-url@0.2.1": {
@@ -379,18 +243,8 @@ SystemJS.config({
     },
     "npm:browserify-zlib@0.1.4": {
       "map": {
-        "readable-stream": "npm:readable-stream@2.3.4",
+        "readable-stream": "npm:readable-stream@2.3.6",
         "pako": "npm:pako@0.2.9"
-      }
-    },
-    "npm:typescript@2.7.1": {
-      "map": {
-        "source-map-support": "npm:source-map-support@0.5.3"
-      }
-    },
-    "npm:source-map-support@0.5.3": {
-      "map": {
-        "source-map": "npm:source-map@0.6.1"
       }
     },
     "npm:datatables.net-colreorder@1.4.1": {
@@ -407,7 +261,7 @@ SystemJS.config({
     },
     "npm:chart.js@2.7.2": {
       "map": {
-        "moment": "npm:moment@2.21.0",
+        "moment": "npm:moment@2.22.1",
         "chartjs-color": "npm:chartjs-color@2.2.0"
       }
     },
@@ -420,6 +274,149 @@ SystemJS.config({
     "npm:chartjs-color-string@0.5.0": {
       "map": {
         "color-name": "npm:color-name@1.1.3"
+      }
+    },
+    "npm:typescript@2.8.3": {
+      "map": {
+        "source-map-support": "npm:source-map-support@0.5.5"
+      }
+    },
+    "npm:source-map-support@0.5.5": {
+      "map": {
+        "source-map": "npm:source-map@0.6.1",
+        "buffer-from": "npm:buffer-from@1.0.0"
+      }
+    },
+    "npm:buffer@5.1.0": {
+      "map": {
+        "base64-js": "npm:base64-js@1.3.0",
+        "ieee754": "npm:ieee754@1.1.11"
+      }
+    },
+    "npm:stream-http@2.8.1": {
+      "map": {
+        "builtin-status-codes": "npm:builtin-status-codes@3.0.0",
+        "to-arraybuffer": "npm:to-arraybuffer@1.0.1",
+        "xtend": "npm:xtend@4.0.1",
+        "readable-stream": "npm:readable-stream@2.3.6",
+        "inherits": "npm:inherits@2.0.3"
+      }
+    },
+    "npm:readable-stream@2.3.6": {
+      "map": {
+        "string_decoder": "npm:string_decoder@1.1.1",
+        "inherits": "npm:inherits@2.0.3",
+        "isarray": "npm:isarray@1.0.0",
+        "core-util-is": "npm:core-util-is@1.0.2",
+        "process-nextick-args": "npm:process-nextick-args@2.0.0",
+        "safe-buffer": "npm:safe-buffer@5.1.2",
+        "util-deprecate": "npm:util-deprecate@1.0.2"
+      }
+    },
+    "npm:string_decoder@1.1.1": {
+      "map": {
+        "safe-buffer": "npm:safe-buffer@5.1.2"
+      }
+    },
+    "npm:pbkdf2@3.0.16": {
+      "map": {
+        "create-hash": "npm:create-hash@1.2.0",
+        "create-hmac": "npm:create-hmac@1.1.7",
+        "safe-buffer": "npm:safe-buffer@5.1.2",
+        "ripemd160": "npm:ripemd160@2.0.2",
+        "sha.js": "npm:sha.js@2.4.11"
+      }
+    },
+    "npm:diffie-hellman@5.0.3": {
+      "map": {
+        "randombytes": "npm:randombytes@2.0.6",
+        "miller-rabin": "npm:miller-rabin@4.0.1",
+        "bn.js": "npm:bn.js@4.11.8"
+      }
+    },
+    "npm:create-hmac@1.1.7": {
+      "map": {
+        "inherits": "npm:inherits@2.0.3",
+        "create-hash": "npm:create-hash@1.2.0",
+        "safe-buffer": "npm:safe-buffer@5.1.2",
+        "ripemd160": "npm:ripemd160@2.0.2",
+        "sha.js": "npm:sha.js@2.4.11",
+        "cipher-base": "npm:cipher-base@1.0.4"
+      }
+    },
+    "npm:public-encrypt@4.0.2": {
+      "map": {
+        "create-hash": "npm:create-hash@1.2.0",
+        "randombytes": "npm:randombytes@2.0.6",
+        "bn.js": "npm:bn.js@4.11.8",
+        "browserify-rsa": "npm:browserify-rsa@4.0.1",
+        "parse-asn1": "npm:parse-asn1@5.1.1"
+      }
+    },
+    "npm:create-hash@1.2.0": {
+      "map": {
+        "inherits": "npm:inherits@2.0.3",
+        "ripemd160": "npm:ripemd160@2.0.2",
+        "sha.js": "npm:sha.js@2.4.11",
+        "cipher-base": "npm:cipher-base@1.0.4",
+        "md5.js": "npm:md5.js@1.3.4"
+      }
+    },
+    "npm:randomfill@1.0.4": {
+      "map": {
+        "randombytes": "npm:randombytes@2.0.6",
+        "safe-buffer": "npm:safe-buffer@5.1.2"
+      }
+    },
+    "npm:browserify-cipher@1.0.1": {
+      "map": {
+        "browserify-aes": "npm:browserify-aes@1.2.0",
+        "evp_bytestokey": "npm:evp_bytestokey@1.0.3",
+        "browserify-des": "npm:browserify-des@1.0.1"
+      }
+    },
+    "npm:browserify-aes@1.2.0": {
+      "map": {
+        "cipher-base": "npm:cipher-base@1.0.4",
+        "evp_bytestokey": "npm:evp_bytestokey@1.0.3",
+        "create-hash": "npm:create-hash@1.2.0",
+        "inherits": "npm:inherits@2.0.3",
+        "safe-buffer": "npm:safe-buffer@5.1.2",
+        "buffer-xor": "npm:buffer-xor@1.0.3"
+      }
+    },
+    "npm:browserify-des@1.0.1": {
+      "map": {
+        "cipher-base": "npm:cipher-base@1.0.4",
+        "inherits": "npm:inherits@2.0.3",
+        "des.js": "npm:des.js@1.0.0"
+      }
+    },
+    "npm:create-ecdh@4.0.1": {
+      "map": {
+        "elliptic": "npm:elliptic@6.4.0",
+        "bn.js": "npm:bn.js@4.11.8"
+      }
+    },
+    "npm:sha.js@2.4.11": {
+      "map": {
+        "inherits": "npm:inherits@2.0.3",
+        "safe-buffer": "npm:safe-buffer@5.1.2"
+      }
+    },
+    "npm:ripemd160@2.0.2": {
+      "map": {
+        "inherits": "npm:inherits@2.0.3",
+        "hash-base": "npm:hash-base@3.0.4"
+      }
+    },
+    "npm:parse-asn1@5.1.1": {
+      "map": {
+        "browserify-aes": "npm:browserify-aes@1.2.0",
+        "evp_bytestokey": "npm:evp_bytestokey@1.0.3",
+        "create-hash": "npm:create-hash@1.2.0",
+        "pbkdf2": "npm:pbkdf2@3.0.16",
+        "asn1.js": "npm:asn1.js@4.10.1"
       }
     }
   }
