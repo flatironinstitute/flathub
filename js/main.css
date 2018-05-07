@@ -31,6 +31,24 @@ div#dhist {
   height: 40vh;
   width: 80vh;
 }
+div.dhist-xy {
+  position: absolute;
+  width: 50px;
+}
+div#dhist-x {
+  right: -50px;
+  bottom: 25px;
+}
+div#dhist-y {
+  left: -35px;
+  top: 20px;
+}
+button.dhist-xy-tog {
+  width: 100%;
+  height: 100%;
+  padding: 2px;
+  border-width: 1px;
+}
 span.units {
   font-size: small;
   font-weight: normal;

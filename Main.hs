@@ -165,7 +165,11 @@ simulation = getPath R.parameter $ \sim req -> do
     H.h2 $ H.text $ catalogTitle cat
     mapM_ H.preEscapedText $ catalogDescr cat
     H.table H.! HA.id "filt" $ mempty
-    H.div H.! HA.id "dhist" $
+    H.div H.! HA.id "dhist" $ do
+      forM_ ['x','y'] $ \xy -> let xyv = H.stringValue [xy] in
+        H.div H.! HA.id ("dhist-" <> xyv) H.! HA.class_ "dhist-xy" $
+          H.button H.! HA.id ("dhist-" <> xyv <> "-tog") H.! HA.class_ "dhist-xy-tog" $
+            "lin/log"
       H.canvas H.! HA.id "hist" $ mempty
     H.table H.! HA.id "tcat" H.! HA.class_ "compact" $ do
       H.thead $ row (fieldsDepth fields) ((id ,) <$> V.toList fields)

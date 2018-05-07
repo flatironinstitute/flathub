@@ -74,9 +74,10 @@ function getChartX(point: any) {
 
 function histogram(agg: {buckets: {key:number,doc_count:number}[]}) {
   const hist = Filters[Histogram];
+  const field = Catalog.fields[hist.field];
   const data = {
     datasets: [{
-      label: Catalog.fields[hist.field].title,
+      label: field.title,
       data: agg.buckets.map(d => { return {x:d.key,y:d.doc_count}; }),
       pointRadius: 0,
       showLine: true,
@@ -84,10 +85,12 @@ function histogram(agg: {buckets: {key:number,doc_count:number}[]}) {
       fill: 'origin',
     }]
   };
+  let xlabel = field.title + (field.units ? ' (' + field.units + ')' : '');
   Histogram_drag_start = null;
   $('#dhist').show();
   if (Histogram_chart) {
     Histogram_chart.data = data;
+    (<any>Histogram_chart).options.scales.xAxes[0].scaleLabel.labelString = xlabel;
     Histogram_chart.update();
   }
   else
@@ -95,9 +98,21 @@ function histogram(agg: {buckets: {key:number,doc_count:number}[]}) {
       options: {
         maintainAspectRatio: false,
         scales: {
+          xAxes: [<Chart.ChartXAxe>{
+            type: 'linear',
+            scaleLabel: {
+              display: true,
+              labelString: xlabel
+            }
+          }],
           yAxes: [<Chart.ChartYAxe>{
+            type: 'linear',
             ticks: {
               beginAtZero: true
+            },
+            scaleLabel: {
+              display: true,
+              labelString: 'count'
             }
           }]
         },
@@ -149,6 +164,21 @@ function histogram(agg: {buckets: {key:number,doc_count:number}[]}) {
       type: 'scatter',
       data: data
     });
+}
+
+function hist_toggle_log(xy: string) {
+  if (!Histogram_chart)
+    return;
+  let axis: Chart.CommonAxe = (<any>Histogram_chart).options.scales[xy+'Axes'][0];
+  // let label = <Chart.ScaleTitleOptions>axis.scaleLabel;
+  if (axis.type === 'logarithmic') {
+    axis.type = 'linear';
+    // label.labelString = (label.labelString as string).substr(4);
+  } else {
+    axis.type = 'logarithmic';
+    // label.labelString = 'log ' + label.labelString;
+  }
+  Histogram_chart.update();
 }
 
 /* elasticsearch max_result_window */
@@ -395,6 +425,9 @@ function init() {
     event.stopPropagation();
   });
   TCat.draw();
+
+  for (let xy of "xy")
+    $('#dhist-'+xy+'-tog').on('click', hist_toggle_log.bind(undefined, xy));
 }
 
 $(init);
