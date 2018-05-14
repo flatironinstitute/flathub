@@ -163,7 +163,8 @@ simulation = getPath R.parameter $ \sim req -> do
       "Catalog="
       H.preEscapedBuilder $ J.fromEncoding jcat
     H.h2 $ H.text $ catalogTitle cat
-    mapM_ H.preEscapedText $ catalogDescr cat
+    mapM_ (H.div . H.preEscapedText) $ catalogDescr cat
+    H.div $ "Query and explore a subset using the filters, download your selection using the link below, or get the full dataset above."
     H.table H.! HA.id "filt" $ mempty
     H.div H.! HA.id "dhist" $ do
       forM_ ['x','y'] $ \xy -> let xyv = H.stringValue [xy] in
