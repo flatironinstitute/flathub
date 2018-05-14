@@ -53,3 +53,7 @@ span.units {
   font-size: small;
   font-weight: normal;
 }
+table#tcat {
+  /* fix incorrect centering of datatables body content */
+  margin: 0;
+}

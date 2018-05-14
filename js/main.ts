@@ -53,7 +53,8 @@ const Histogram_bins = 100;
 var Histogram_chart: Chart|undefined;
 var Histogram_bin_width = 0;
 
-function set_download(query: Dict<string>) {
+var Download_query: Dict<string> = {};
+function set_download(query: Dict<string> = Download_query) {
   let a = <HTMLAnchorElement>document.getElementById('download.csv');
   if (!a)
     a = <HTMLAnchorElement>$('#download').html('download as <a id="download.csv">csv</a>').children('a')[0];
@@ -61,7 +62,7 @@ function set_download(query: Dict<string>) {
   delete query.offset;
   delete query.aggs;
   delete query.hist;
-  query.fields = TCat.columns(':visible').dataSrc().join(',');
+  query.fields = TCat.columns(':visible').dataSrc().join(' ');
   a.href = Catalog.query.csv + '?' + $.param(query);
 }
 
@@ -188,7 +189,7 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
   const query: any = {
     sort: data.order.map((o: any) => {
       return (o.dir == "asc" ? '' : '-') + data.columns[o.column].data;
-    }).join(',')
+    }).join(' ')
   };
   for (let fi = 0; fi < Update_aggs; fi++) {
     const filt = Filters[fi];
@@ -199,7 +200,7 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
   query.limit = data.length;
   const aggs = Filters.slice(Update_aggs);
   if (aggs)
-    query.aggs = aggs.map((filt) => filt.name).join(',');
+    query.aggs = aggs.map((filt) => filt.name).join(' ');
   if (Histogram >= 0) {
     const hist = Filters[Histogram];
     const wid = typeof hist.query === 'object' ? <number>hist.query.ub - <number>hist.query.lb : null;
@@ -210,12 +211,13 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
       query.hist = hist.name + ':' + Histogram_bin_width;
     }
   }
+  $('td.loading').show();
   $.ajax({
     method: Catalog.query.method,
     url: Catalog.query.uri,
     data: query
   }).then((res: any) => {
-    $('td.loading').remove();
+    $('td.loading').hide();
     Catalog.count = Math.max(Catalog.count || 0, res.hits.total);
     const settings = (<any>TCat.settings())[0];
     settings.oLanguage.sInfo = "Showing _START_ to _END_ of " + settings.fnFormatNumber(res.hits.total);
@@ -420,8 +422,10 @@ function init() {
     TCat.draw(false);
   };
   $('.hide').on('click', function (event) {
-    if (TCat)
+    if (TCat) {
       TCat.column(this.id.substr(5)+':name').visible(false);
+      set_download();
+    }
     event.stopPropagation();
   });
   TCat.draw();
