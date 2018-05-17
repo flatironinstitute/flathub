@@ -11,6 +11,7 @@ module Global
   , Action
   , Route
   , Simulation
+  , getPath
   ) where
 
 import qualified Data.HashMap.Strict as HM
@@ -45,3 +46,6 @@ type Action = Wai.Request -> M Wai.Response
 type Route a = R.RouteAction a Action
 
 type Simulation = T.Text
+
+getPath :: R.Path p -> (p -> Action) -> R.RouteAction p Action
+getPath p = R.RouteAction $ R.routeMethod R.GET R.*< R.routePath p
