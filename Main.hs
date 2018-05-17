@@ -83,7 +83,7 @@ top = getPath R.unit $ \() req -> do
 
 askCatalog :: Simulation -> M Catalog
 askCatalog sim = maybe
-  (result $ response notFound404 [] ("No such simulation" :: String))
+  (result $ response notFound404 [] ("No such simulation" :: BSC.ByteString))
   return =<< asks (HM.lookup sim . globalCatalogs)
 
 simulation :: Route Simulation

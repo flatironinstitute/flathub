@@ -50,6 +50,7 @@ executable astrosims
     , mtl
     , network-uri
     , text
+    , time
     , unordered-containers
     , vector
     , wai

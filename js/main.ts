@@ -390,7 +390,10 @@ function add_filter(idx: number) {
 
 function init() {
   Update_aggs = 0;
-  TCat = $('table#tcat').DataTable({
+  const table = $('table#tcat');
+  if (!table.length)
+    return;
+  TCat = table.DataTable({
     serverSide: true,
     ajax: ajax,
     deferLoading: 1,

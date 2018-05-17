@@ -13,7 +13,7 @@ COPY --chown=astrosims js/package*.json js/jspm.config.js /home/astrosims/astros
 RUN cd js && npm install
 
 COPY --chown=astrosims js/ /home/astrosims/astrosims/js/
-RUN cd js && npm run build
+RUN make -C js
 
 COPY --chown=astrosims . /home/astrosims/astrosims
 RUN stack install --system-ghc --extra-include-dirs=/usr/include/hdf5/serial --extra-lib-dirs=/usr/lib/x86_64-linux-gnu/hdf5/serial
