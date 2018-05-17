@@ -1,21 +1,27 @@
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE ViewPatterns #-}
 
 module Query
   ( catalog
-  , catalogCSV
+  , catalogBulk
+  , BulkFormat(..)
   ) where
 
-import           Control.Monad (unless)
+import           Control.Applicative (empty, (<|>))
+import           Control.Monad (guard, unless)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Types as J
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import           Data.Function (fix)
 import qualified Data.HashMap.Strict as HM
-import           Data.Maybe (fromMaybe, isNothing)
+import           Data.Maybe (fromMaybe, isNothing, listToMaybe)
 import           Data.Monoid ((<>))
+import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V
 import           Network.HTTP.Types.Header (hContentType, hContentDisposition)
@@ -34,6 +40,7 @@ import qualified ES
 #ifdef HAVE_pgsql
 import qualified PG
 #endif
+import Compression
 
 parseQuery :: Wai.Request -> Query
 parseQuery = foldMap parseQueryItem . Wai.queryString where
@@ -92,34 +99,52 @@ catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do
   mapArray f (J.Array v) = J.Array (f v)
   mapArray _ v = v
 
-catalogCSV :: Route Simulation
-catalogCSV = getPath (R.parameter R.>* "csv") $ \sim req -> do
+data BulkFormat
+  = BulkCSV
+    { bulkCompression :: Maybe CompressionFormat
+    }
+  deriving (Eq)
+
+instance R.Parameter R.PathString BulkFormat where
+  parseParameter s = case decompressExtension (T.unpack s) of
+    ("csv", z) -> return $ BulkCSV z
+    _ -> empty
+  renderParameter = T.pack . formatExtension
+
+formatExtension :: BulkFormat -> String
+formatExtension (BulkCSV z) = compressionFilename z "csv"
+
+formatMimeType :: BulkFormat -> BS.ByteString
+formatMimeType (BulkCSV z) = maybe "text/csv" compressionMimeType z
+
+catalogBulk :: Route (Simulation, BulkFormat)
+catalogBulk = getPath (R.parameter R.>*< R.parameter) $ \(sim, fmt) req -> do
   cat <- askCatalog sim
   let query = fillQuery cat $ parseQuery req
+      enc = bulkCompression fmt <|> listToMaybe (acceptCompressionEncoding req)
   unless (queryOffset query == 0 && null (queryAggs query) && isNothing (queryHist query)) $
-    result $ response badRequest400 [] ("offset,aggs not supported for CSV" :: String)
+    result $ response badRequest400 [] ("offset,aggs not supported for download" :: String)
 #ifdef HAVE_pgsql
   glob <- ask
 #endif
   nextes <- ES.queryBulk cat query
-  return $ Wai.responseStream ok200
-    [ (hContentType, "text/csv")
-    , (hContentDisposition, "attachment; filename=" <> quoteHTTP (TE.encodeUtf8 sim <> ".csv"))
-    ] $ \chunk flush -> do
+  return $ Wai.responseStream ok200 (
+    [ (hContentType, formatMimeType fmt)
+    , (hContentDisposition, "attachment; filename=" <> quoteHTTP (TE.encodeUtf8 sim <> BSC.pack ('.' : formatExtension fmt)))
+    ] ++ compressionEncodingHeader (guard (enc /= bulkCompression fmt) >> enc))
+    $ compressStream enc $ \chunk _ -> do
     chunk $ csvTextRow $ queryFields query
     case catalogStore cat of
       CatalogES{} -> fix $ \loop -> do
         block <- nextes
         unless (V.null block) $ do
           chunk $ foldMap csvJSONRow block
-          flush
           loop
 #ifdef HAVE_pgsql
       CatalogPG{} -> runGlobal glob $ PG.queryBulk cat query $ \nextpg -> fix $ \loop -> do
         block <- nextpg
         unless (null block) $ do
           chunk $ foldMap csvJSONRow block
-          flush
           loop
 #endif
 

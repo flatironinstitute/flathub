@@ -16,7 +16,7 @@ import           Data.Monoid ((<>))
 import           Data.String (IsString)
 import qualified Data.Text as T
 import           Data.Time.Clock (UTCTime)
-import           Network.HTTP.Types.Header (hContentType, hCacheControl, hAcceptEncoding, hContentEncoding)
+import           Network.HTTP.Types.Header (hContentType, hCacheControl)
 import           Network.HTTP.Types.Status (ok200)
 import qualified Network.Mime as Mime
 import qualified Network.Wai as Wai
@@ -25,10 +25,10 @@ import qualified System.FilePath as FP
 import           System.IO.Error (isDoesNotExistError)
 import qualified Text.Blaze.Html5 as H hiding (text, textValue)
 import qualified Waimwork.Blaze as WH
-import           Waimwork.HTTP (splitHTTP)
 import qualified Web.Route.Invertible as R
 
 import Global
+import Compression
 
 newtype FilePathComponent = FilePathComponent{ componentFilePath :: String }
   deriving (IsString)
@@ -47,19 +47,24 @@ getModificationTime' :: FilePath -> IO (Maybe UTCTime)
 getModificationTime' f =
   handleJust (guard . isDoesNotExistError) (\() -> return Nothing) $ Just <$> getModificationTime f
 
+findM :: Monad m => (a -> m Bool) -> [a] -> m (Maybe a)
+findM _ [] = return Nothing
+findM f (a:l) = do
+  r <- f a
+  if r then return $ Just a else findM f l
+
 static :: Route [FilePathComponent]
-static = getPath ("js" R.*< R.manyI R.parameter) $ \paths q -> do
+static = getPath ("js" R.*< R.manyI R.parameter) $ \paths q -> liftIO $ do
   let path = FP.joinPath ("js" : map componentFilePath paths)
-      gzip = maybe False (elem "gzip" . splitHTTP) $ lookup hAcceptEncoding $ Wai.requestHeaders q
-      gzf = path FP.<.> "gz"
-  gzipe <- if gzip
-    then liftIO $ (>=) <$> getModificationTime' gzf <*> getModificationTime' path
-    else return False
-  return $ Wai.responseFile ok200
-    ((if gzipe then ((hContentEncoding, "gzip") :) else id)
+      encs = acceptCompressionEncoding q
+  fmod <- getModificationTime' path
+  enc <- findM (\e -> do
+    zmod <- getModificationTime' (compressionFilename (Just e) path)
+    return $ zmod >= fmod) encs
+  return $ Wai.responseFile ok200 (
     [ (hContentType, getMimeType (T.pack path))
     , (hCacheControl, "public, max-age=" <> (if length paths == 1 then "10, must-revalidate" else "1000000"))
-    ]) (if gzipe then gzf else path) Nothing
+    ] ++ compressionEncodingHeader enc) (compressionFilename enc path) Nothing
 
 staticURI :: [FilePathComponent] -> H.AttributeValue
 staticURI p = WH.routeActionValue static p mempty

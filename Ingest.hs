@@ -11,13 +11,14 @@ import           Data.List (sort)
 import           Data.Maybe (isJust, fromMaybe)
 import           Data.Word (Word64)
 import           System.Directory (doesDirectoryExist, listDirectory)
-import           System.FilePath (takeExtension, splitExtension, (</>))
+import           System.FilePath (takeExtension, (</>))
 import           Text.Read (readMaybe)
 
 import Schema
 import Global
 import Ingest.CSV
 import Ingest.HDF5
+import Compression
 
 ingest :: Catalog -> String -> M Word64
 ingest cat fno = do
@@ -32,14 +33,10 @@ ingest cat fno = do
   where
   ing f = fromMaybe (error $ "Unknown ingest file type: " ++ f) (proc f)
     cat blockSize f
-  proc f = case takeExtension $ dropz f of
+  proc f = case takeExtension $ fst $ decompressExtension f of
     ".hdf5" -> Just ingestHDF5
     ".csv" -> Just ingestCSV
     _ -> Nothing
-  dropz f = case splitExtension f of
-    (b, ".gz") -> b
-    (b, ".bz2") -> b
-    _ -> f
   (fn, off) = splitoff fno
   splitoff [] = ([], 0)
   splitoff ('@':(readMaybe -> Just i)) = ([], i)

@@ -25,7 +25,8 @@ type Field = {
 };
 
 type Catalog = {
-  query: {method: string, uri: string, csv: string},
+  uri: string,
+  bulk: string[],
   fields: Field[],
   count?: number,
 };
@@ -55,15 +56,21 @@ var Histogram_bin_width = 0;
 
 var Download_query: Dict<string> = {};
 function set_download(query: Dict<string> = Download_query) {
-  let a = <HTMLAnchorElement>document.getElementById('download.csv');
-  if (!a)
-    a = <HTMLAnchorElement>$('#download').html('download as <a id="download.csv">csv</a>').children('a')[0];
   delete query.limit;
   delete query.offset;
   delete query.aggs;
   delete query.hist;
   query.fields = TCat.columns(':visible').dataSrc().join(' ');
-  a.href = Catalog.query.csv + '?' + $.param(query);
+  const q = '?' + $.param(Download_query = query);
+  const h = $('#download').html('download as ');
+  for (let f of Catalog.bulk) {
+    const a = document.createElement('a');
+    h.append(a);
+    a.id = 'download.' + f;
+    a.href = Catalog.uri + '/' + f + q;
+    a.appendChild(document.createTextNode(f));
+    h.append(document.createTextNode(' '));
+  }
 }
 
 var Histogram_drag_start: number|null = null;
@@ -213,8 +220,8 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
   }
   $('td.loading').show();
   $.ajax({
-    method: Catalog.query.method,
-    url: Catalog.query.uri,
+    method: 'GET',
+    url: Catalog.uri + '/catalog',
     data: query
   }).then((res: any) => {
     $('td.loading').hide();
@@ -391,7 +398,7 @@ function add_filter(idx: number) {
 function init() {
   Update_aggs = 0;
   const table = $('table#tcat');
-  if (!table.length)
+  if (!window.Catalog || !table.length)
     return;
   TCat = table.DataTable({
     serverSide: true,

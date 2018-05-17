@@ -8,7 +8,6 @@ import           Control.Monad ((<=<), forM_, when)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (asks)
 import qualified Data.Aeson as J
-import qualified Data.ByteString.Char8 as BSC
 import           Data.Default (Default(def))
 import qualified Data.HashMap.Strict as HM
 import           Data.Maybe (fromMaybe, isNothing, isJust)
@@ -37,7 +36,6 @@ import           Web.Route.Invertible.Wai (routeWaiError)
 
 import Schema
 import Global
-import JSON
 import qualified ES
 #ifdef HAVE_pgsql
 import qualified PG
@@ -45,9 +43,7 @@ import qualified PG
 import Static
 import Query
 import Ingest
-
--- header :: Wai.Request -> HeaderName -> Maybe BS.ByteString
--- header q h = lookup h $ Wai.requestHeaders q
+import Compression
 
 html :: Wai.Request -> H.Markup -> Wai.Response
 html req h = okResponse [] $ H.docTypeHtml $ do
@@ -76,15 +72,12 @@ simulation :: Route Simulation
 simulation = getPath R.parameter $ \sim req -> do
   cat <- askCatalog sim
   let 
-    (qmeth, quri) = routeActionURI catalog sim
-    (_, csvuri) = routeActionURI catalogCSV sim
+    (_, quri) = routeActionURI simulation sim
     fields = catalogFieldGroups cat
     fields' = catalogFields cat
     jcat = J.pairs $
-         "query" .=*
-        (  "method" J..= (BSC.unpack <$> R.fromMethod qmeth)
-        <> "uri" J..= show quri
-        <> "csv" J..= show csvuri)
+         "uri" J..= show quri
+      <> "bulk" J..= map (J.String . R.renderParameter) [BulkCSV Nothing, BulkCSV (Just CompressionGZip)]
       <> "fields" J..= fields'
     fieldBody :: Word -> FieldGroup -> H.Html
     fieldBody d f = H.span WH.!? (HA.title . H.textValue <$> fieldDescr f) $ do
@@ -145,7 +138,7 @@ routes = R.routes
   , R.routeNormCase static
   , R.routeNormCase simulation
   , R.routeNormCase catalog
-  , R.routeNormCase catalogCSV
+  , R.routeNormCase catalogBulk
   ]
 
 data Opts = Opts

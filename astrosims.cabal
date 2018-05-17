@@ -16,6 +16,7 @@ executable astrosims
   main-is: Main.hs
   other-modules:
     CSV
+    Compression
     ES
     Global
     Ingest
@@ -50,6 +51,7 @@ executable astrosims
     , monad-control
     , mtl
     , network-uri
+    , streaming-commons
     , text
     , time
     , unordered-containers

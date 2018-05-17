@@ -26,7 +26,6 @@ module Schema
   , fillQuery
   ) where
 
-import           Control.Applicative ((<|>))
 import           Control.Arrow ((&&&))
 import           Control.Monad (unless)
 import qualified Data.Aeson as J

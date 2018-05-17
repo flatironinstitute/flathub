@@ -5,25 +5,23 @@ module Ingest.CSV
   ( ingestCSV
   ) where
 
-import qualified Codec.Compression.BZip as BZ
-import qualified Codec.Compression.GZip as GZ
 import           Control.Arrow (first)
 import           Control.Monad.IO.Class (liftIO)
 import qualified Data.Aeson as J
-import qualified Data.ByteString.Lazy.Char8 as BSLC
 import qualified Data.Csv.Streaming as CSV
 import           Data.List (mapAccumL)
 import           Data.Maybe (fromMaybe)
 import qualified Data.Text as T
 import qualified Data.Vector as V
 import           Data.Word (Word64)
-import           System.FilePath (splitExtensions)
+import           System.FilePath (dropExtension)
 import           System.IO (hFlush, stdout)
 
 import Monoid
 import Schema
 import Global
 import qualified ES
+import Compression
 
 dropCSV :: Word64 -> CSV.Records a -> (Word64, CSV.Records a)
 dropCSV n (CSV.Cons _ r) | n > 0 = dropCSV (pred n) r
@@ -44,12 +42,7 @@ takeCSV n r = do
 
 ingestCSV :: Catalog -> Word64 -> FilePath -> Word64 -> M Word64
 ingestCSV cat blockSize fn off = do
-  csv <- liftIO $ CSV.decode CSV.NoHeader . (case fne of
-      ".csv.gz" -> GZ.decompress
-      ".csv.bz2" -> BZ.decompress
-      ".csv" -> id
-      _ -> error "Unspported CSV file")
-    <$> BSLC.readFile fn
+  csv <- liftIO $ CSV.decode CSV.NoHeader <$> decompressFile fn
   (fromMaybe V.empty -> header, rows) <- unconsCSV csv
   cols <- mapM (\Field{ fieldName = n } ->
       maybe (fail $ "csv header field missing: " ++ T.unpack n) (return . (,) n) $ V.elemIndex n header)
@@ -73,4 +66,4 @@ ingestCSV cat blockSize fn off = do
           loop o' cs'
   loop off' rows'
   where
-  (fnb, fne) = splitExtensions fn
+  fnb = dropExtension fn
