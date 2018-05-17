@@ -12,17 +12,22 @@ module Global
   , Route
   , Simulation
   , getPath
+  , askCatalog
   ) where
 
+import qualified Data.ByteString.Char8 as BSC
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Text as T
-import           Control.Monad.Reader (ReaderT, runReaderT)
+import           Control.Monad.Reader (ReaderT, runReaderT, asks)
 import qualified Network.HTTP.Client as HTTP
+import           Network.HTTP.Types.Status (notFound404)
 import qualified Network.Wai as Wai
 import qualified Waimwork.Config as C
 #ifdef HAVE_pgsql
 import qualified Waimwork.Database.PostgreSQL as PG
 #endif
+import           Waimwork.Response (response)
+import           Waimwork.Result (result)
 import qualified Web.Route.Invertible as R
 
 import Schema
@@ -49,3 +54,8 @@ type Simulation = T.Text
 
 getPath :: R.Path p -> (p -> Action) -> R.RouteAction p Action
 getPath p = R.RouteAction $ R.routeMethod R.GET R.*< R.routePath p
+
+askCatalog :: Simulation -> M Catalog
+askCatalog sim = maybe
+  (result $ response notFound404 [] ("No such simulation" :: BSC.ByteString))
+  return =<< asks (HM.lookup sim . globalCatalogs)

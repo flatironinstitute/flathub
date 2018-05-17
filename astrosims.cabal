@@ -23,6 +23,7 @@ executable astrosims
     Ingest.HDF5
     JSON
     Monoid
+    Query
     Schema
     Static
   hs-source-dirs: .
