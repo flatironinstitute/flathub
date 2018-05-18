@@ -47,6 +47,8 @@ interface Filter {
 
 var TCat: DataTables.Api;
 declare const Catalog: Catalog;
+declare const Query: {offset:number, limit:number, sort:{field:string,asc:boolean}[], fields:string[], filter:{field:string,value:Query}, aggs:string[], hist:string|null};
+const Fields_idx: Dict<number> = {};
 const Filters: Array<Filter> = [];
 var Update_aggs: number = 0;
 var Histogram: number = -1;
@@ -395,12 +397,23 @@ function add_filter(idx: number) {
   tcol.search('');
 }
 
+(<any>window).hide_column = function hide_column(event:Event) {
+  if (TCat) {
+    TCat.column(event.target.id.substr(5)+':name').visible(false);
+    set_download();
+  }
+  event.stopPropagation();
+  return false;
+};
+
 function init() {
   Update_aggs = 0;
   const table = $('table#tcat');
   if (!(<any>window).Catalog || !table.length)
     return;
-  TCat = table.DataTable({
+  for (let i = 0; i < Catalog.fields.length; i++)
+    Fields_idx[Catalog.fields[i].name] = i;
+  const topts: DataTables.Settings = {
     serverSide: true,
     ajax: ajax,
     deferLoading: 1,
@@ -410,7 +423,24 @@ function init() {
     dom: 'i<"#download">rtlp',
     deferRender: true,
     pagingType: 'simple',
-  });
+    columns: Catalog.fields.map((c) => {
+      return { name: c.name };
+    })
+  };
+  if ((<any>window).Query) {
+    if (Query.offset)
+      topts.displayStart = Query.offset
+    if (Query.limit)
+      topts.pageLength = Query.limit;
+    if (Query.sort)
+      topts.order = Query.sort.map((o) => {
+        return [Fields_idx[o.field], o.asc ? 'asc' : 'desc'];
+      });
+    if (Query.fields && topts.columns)
+      for (let c of topts.columns)
+        c.visible = Query.fields.indexOf(<string>c.name) >= 0;
+  }
+  TCat = table.DataTable(topts);
   /* for debugging: */
   (<any>window).TCat = TCat;
   const addfilt = <HTMLSelectElement>document.createElement('select');
@@ -431,13 +461,6 @@ function init() {
     add_filter(<any>addfilt.value);
     TCat.draw(false);
   };
-  $('.hide').on('click', function (event) {
-    if (TCat) {
-      TCat.column(this.id.substr(5)+':name').visible(false);
-      set_download();
-    }
-    event.stopPropagation();
-  });
   TCat.draw();
 
   for (let xy of "xy")

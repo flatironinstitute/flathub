@@ -6,7 +6,8 @@
 {-# LANGUAGE ViewPatterns #-}
 
 module Query
-  ( catalog
+  ( parseQuery
+  , catalog
   , catalogBulk
   , BulkFormat(..)
   ) where

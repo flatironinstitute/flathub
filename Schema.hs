@@ -40,6 +40,7 @@ import           Data.Monoid ((<>))
 import           Data.Proxy (Proxy(Proxy))
 import           Data.Semigroup (Max(getMax))
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import           Data.Typeable (Typeable)
 import qualified Data.Vector as V
 import           Numeric.Half (Half)
@@ -332,3 +333,21 @@ instance Monoid Query where
 fillQuery :: Catalog -> Query -> Query
 fillQuery cat q@Query{ queryFields = [] } = fillQuery cat $ q{ queryFields = map fieldName $ catalogFields cat }
 fillQuery _ q = q
+
+instance J.ToJSON Query where
+  toJSON Query{..} = J.object
+    [ "offset" J..= queryOffset
+    , "limit"  J..= queryLimit
+    , "sort"   J..= [ J.object
+      [ "field" J..= f
+      , "asc" J..= a
+      ] | (f,a) <- querySort ]
+    , "fields" J..= queryFields
+    , "filter" J..= [ J.object
+      [ "field" J..= f
+      , "value" J..= maybe (bs a) (\b' -> J.object ["lb" J..= bs a, "ub" J..= bs b']) b
+      ] | (f,a,b) <- queryFilter ]
+    , "aggs"   J..= queryAggs
+    , "hist"   J..= (fst <$> queryHist)
+    ] where
+    bs = J.String . TE.decodeLatin1

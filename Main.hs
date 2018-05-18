@@ -94,7 +94,10 @@ simulation = getPath R.parameter $ \sim req -> do
           H.! H.dataAttribute "type" (dtype $ fieldType f)
           H.!? (not (fieldDisp f), H.dataAttribute "visible" "false")
           H.! H.dataAttribute "default-content" mempty $ do
-        H.span H.! HA.id ("hide-" <> H.textValue (fieldName f')) H.! HA.class_ "hide" $ H.preEscapedString "&times;"
+        H.span
+          H.! HA.id ("hide-" <> H.textValue (fieldName f')) H.! HA.class_ "hide"
+          H.! HA.onclick "return hide_column(event)"
+          $ H.preEscapedString "&times;"
         fieldBody d f
     field _ _ f@Field{ fieldSub = Just s } = do
       H.th
@@ -104,10 +107,14 @@ simulation = getPath R.parameter $ \sim req -> do
     row d l = do
       H.tr $ mapM_ (\(p, f) -> field d (p f) f) l
       when (d > 1) $ row (pred d) $ foldMap (\(p, f) -> foldMap (fmap (p . subField f, ) . V.toList) $ fieldSub f) l
+    query = parseQuery req
   return $ html req $ do
     H.script $ do
       "Catalog="
       H.preEscapedBuilder $ J.fromEncoding jcat
+      ";Query="
+      H.unsafeLazyByteString $ J.encode query
+      ";"
     H.h2 $ H.text $ catalogTitle cat
     mapM_ (H.div . H.preEscapedText) $ catalogDescr cat
     H.div $ "Query and explore a subset using the filters, download your selection using the link below, or get the full dataset above."
