@@ -4,4 +4,4 @@ index.js: main.ts
 	npm run-script build
 
 %.gz: %
-	gzip -fk $<
+	gzip -fk $< || gzip -c $< > $@
