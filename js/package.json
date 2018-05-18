@@ -13,9 +13,9 @@
     "jspm": "^0.17.0-beta.48"
   },
   "devDependencies": {
-    "@types/chart.js": "^2.7.15",
+    "@types/chart.js": "^2.7.18",
     "@types/datatables.net": "^1.10.9",
-    "@types/jquery": "^3.3.1",
+    "@types/jquery": "^3.3.2",
     "@types/systemjs": "^0.20.6",
     "typescript": "^2.8.3"
   },

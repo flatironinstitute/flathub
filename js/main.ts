@@ -398,7 +398,7 @@ function add_filter(idx: number) {
 function init() {
   Update_aggs = 0;
   const table = $('table#tcat');
-  if (!window.Catalog || !table.length)
+  if (!(<any>window).Catalog || !table.length)
     return;
   TCat = table.DataTable({
     serverSide: true,

@@ -97,7 +97,7 @@ SystemJS.config({
     },
     "npm:crypto-browserify@3.12.0": {
       "map": {
-        "create-ecdh": "npm:create-ecdh@4.0.1",
+        "create-ecdh": "npm:create-ecdh@4.0.3",
         "browserify-cipher": "npm:browserify-cipher@1.0.1",
         "create-hash": "npm:create-hash@1.2.0",
         "public-encrypt": "npm:public-encrypt@4.0.2",
@@ -222,7 +222,7 @@ SystemJS.config({
     },
     "npm:jspm-nodelibs-http@0.2.0": {
       "map": {
-        "http-browserify": "npm:stream-http@2.8.1"
+        "http-browserify": "npm:stream-http@2.8.2"
       }
     },
     "npm:jspm-nodelibs-url@0.2.1": {
@@ -278,28 +278,13 @@ SystemJS.config({
     },
     "npm:typescript@2.8.3": {
       "map": {
-        "source-map-support": "npm:source-map-support@0.5.5"
-      }
-    },
-    "npm:source-map-support@0.5.5": {
-      "map": {
-        "source-map": "npm:source-map@0.6.1",
-        "buffer-from": "npm:buffer-from@1.0.0"
+        "source-map-support": "npm:source-map-support@0.5.6"
       }
     },
     "npm:buffer@5.1.0": {
       "map": {
         "base64-js": "npm:base64-js@1.3.0",
         "ieee754": "npm:ieee754@1.1.11"
-      }
-    },
-    "npm:stream-http@2.8.1": {
-      "map": {
-        "builtin-status-codes": "npm:builtin-status-codes@3.0.0",
-        "to-arraybuffer": "npm:to-arraybuffer@1.0.1",
-        "xtend": "npm:xtend@4.0.1",
-        "readable-stream": "npm:readable-stream@2.3.6",
-        "inherits": "npm:inherits@2.0.3"
       }
     },
     "npm:readable-stream@2.3.6": {
@@ -392,12 +377,6 @@ SystemJS.config({
         "des.js": "npm:des.js@1.0.0"
       }
     },
-    "npm:create-ecdh@4.0.1": {
-      "map": {
-        "elliptic": "npm:elliptic@6.4.0",
-        "bn.js": "npm:bn.js@4.11.8"
-      }
-    },
     "npm:sha.js@2.4.11": {
       "map": {
         "inherits": "npm:inherits@2.0.3",
@@ -417,6 +396,27 @@ SystemJS.config({
         "create-hash": "npm:create-hash@1.2.0",
         "pbkdf2": "npm:pbkdf2@3.0.16",
         "asn1.js": "npm:asn1.js@4.10.1"
+      }
+    },
+    "npm:stream-http@2.8.2": {
+      "map": {
+        "builtin-status-codes": "npm:builtin-status-codes@3.0.0",
+        "inherits": "npm:inherits@2.0.3",
+        "to-arraybuffer": "npm:to-arraybuffer@1.0.1",
+        "xtend": "npm:xtend@4.0.1",
+        "readable-stream": "npm:readable-stream@2.3.6"
+      }
+    },
+    "npm:source-map-support@0.5.6": {
+      "map": {
+        "buffer-from": "npm:buffer-from@1.0.0",
+        "source-map": "npm:source-map@0.6.1"
+      }
+    },
+    "npm:create-ecdh@4.0.3": {
+      "map": {
+        "bn.js": "npm:bn.js@4.11.8",
+        "elliptic": "npm:elliptic@6.4.0"
       }
     }
   }
