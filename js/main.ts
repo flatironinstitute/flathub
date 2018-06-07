@@ -50,6 +50,8 @@ declare const Catalog: Catalog;
 declare const Query: {offset:number, limit:number, sort:{field:string,asc:boolean}[], fields:string[], filter:{field:string,value:Query}, aggs:string[], hist:string|null};
 const Fields_idx: Dict<number> = {};
 const Filters: Array<Filter> = [];
+var Sample: number = 1;
+var Seed: undefined|number = 0;
 var Update_aggs: number = 0;
 var Histogram: number = -1;
 const Histogram_bins = 100;
@@ -95,7 +97,7 @@ function histogram(agg: {buckets: {key:number,doc_count:number}[]}) {
       fill: 'origin',
     }]
   };
-  let xlabel = field.title + (field.units ? ' (' + field.units + ')' : '');
+  const xlabel = field.title + (field.units ? ' (' + field.units + ')' : '');
   Histogram_drag_start = null;
   $('#dhist').show();
   if (Histogram_chart) {
@@ -179,7 +181,7 @@ function histogram(agg: {buckets: {key:number,doc_count:number}[]}) {
 function hist_toggle_log(xy: string) {
   if (!Histogram_chart)
     return;
-  let axis: Chart.CommonAxe = (<any>Histogram_chart).options.scales[xy+'Axes'][0];
+  const axis: Chart.CommonAxe = (<any>Histogram_chart).options.scales[xy+'Axes'][0];
   // let label = <Chart.ScaleTitleOptions>axis.scaleLabel;
   if (axis.type === 'logarithmic') {
     axis.type = 'linear';
@@ -204,6 +206,11 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
     const filt = Filters[fi];
     if (filt.query != null)
       query[filt.name] = typeof filt.query === 'object' ? filt.query.lb+','+filt.query.ub : filt.query;
+  }
+  if (Sample < 1) {
+    query.sample = Sample;
+    if (Seed != undefined)
+      query.sample += '@' + Seed;
   }
   query.offset = data.start;
   query.limit = data.length;
@@ -237,7 +244,7 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
       data: res.hits.hits
     });
     for (let filt of aggs) {
-      let f = filt.update_aggs;
+      const f = filt.update_aggs;
       if (f)
         f(res.aggregations[filt.name]);
     }
@@ -255,10 +262,10 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
 }
 
 function add_filt_row(name: string, ...nodes: Array<JQuery.htmlString | JQuery.TypeOrArray<JQuery.Node | JQuery<JQuery.Node>>>) {
-  let id = 'filt-'+name;
+  const id = 'filt-'+name;
   let tr = <HTMLTableRowElement|null>document.getElementById(id);
   if (tr) return;
-  let tab = <HTMLTableElement>document.getElementById('filt');
+  const tab = <HTMLTableElement>document.getElementById('filt');
   tr = document.createElement('tr');
   tr.id = id;
   if (tab.lastChild)
@@ -266,9 +273,43 @@ function add_filt_row(name: string, ...nodes: Array<JQuery.htmlString | JQuery.T
   else
     $(tr).appendTo(tab);
   for (let node of nodes) {
-    let td = $(document.createElement('td')).appendTo(tr);
+    const td = $(document.createElement('td')).appendTo(tr);
     td.append(node);
   }
+}
+
+function add_sample() {
+  const samp = <HTMLInputElement>document.createElement('input');
+  samp.name = "sample";
+  samp.type = "number";
+  samp.step = "any";
+  samp.min = <any>0;
+  samp.max = <any>1;
+  samp.value = <any>Sample;
+
+  const seed = <HTMLInputElement>document.createElement('input');
+  seed.name = "seed";
+  seed.type = "number";
+  seed.step = <any>1;
+  seed.min = <any>0;
+  seed.value = <any>Seed;
+  seed.disabled = true;
+
+  samp.onchange = seed.onchange = function () {
+    Sample = samp.valueAsNumber;
+    if (!isFinite(Sample))
+      Sample = 1;
+    if (seed.disabled = Sample >= 1)
+      seed.value = '';
+    Seed = seed.valueAsNumber;
+    if (!isFinite(Seed))
+      Seed = undefined;
+    TCat.draw();
+  };
+
+  add_filt_row('sample', 'random sample',
+    $('<span>').append('fraction ').append(samp),
+    $('<span>').append('seed ').append(seed));
 }
 
 function add_filter(idx: number) {
@@ -285,15 +326,15 @@ function add_filter(idx: number) {
     isint: false
   };
   const update = () => {
-    let i = Filters.indexOf(filt);
+    const i = Filters.indexOf(filt);
     if (i >= 0 && Update_aggs > i)
       Update_aggs = i+1;
   };
-  let label = $(document.createElement('span'));
+  const label = $(document.createElement('span'));
   label.append(
     $('<button class="remove">&times;</button>').on('click', function () {
       if (!TCat) return;
-      let i = Filters.indexOf(filt);
+      const i = Filters.indexOf(filt);
       if (i < 0) return;
       if (Histogram > i)
         Histogram -=1;
@@ -309,14 +350,14 @@ function add_filter(idx: number) {
     field.title);
   switch (field.type) {
     case 'keyword': {
-      let select = document.createElement('select');
+      const select = document.createElement('select');
       select.name = field.name;
       select.disabled = true;
       filt.update_aggs = (aggs: any) => {
         $(select).empty();
         select.appendChild(document.createElement('option'));
         for (let b of aggs.buckets) {
-          let opt = document.createElement('option');
+          const opt = document.createElement('option');
           opt.setAttribute('value', b.key);
           opt.textContent = b.key + ' (' + b.doc_count + ')';
           select.appendChild(opt);
@@ -325,7 +366,7 @@ function add_filter(idx: number) {
         select.disabled = false;
       };
       filt.change = function () {
-        let val = select.value;
+        const val = select.value;
         if (val)
           filt.query = val;
         else
@@ -345,14 +386,14 @@ function add_filter(idx: number) {
     case 'half_float':
     case 'float':
     case 'double': {
-      let lb = <HTMLInputElement>document.createElement('input');
+      const lb = <HTMLInputElement>document.createElement('input');
       lb.name = field.name+".lb";
-      let ub = <HTMLInputElement>document.createElement('input');
+      const ub = <HTMLInputElement>document.createElement('input');
       ub.name = field.name+".ub";
       lb.type = ub.type = "number";
       lb.step = ub.step = filt.isint ? <any>1 : "any";
       lb.disabled = ub.disabled = true;
-      let avg = document.createElement('span');
+      const avg = document.createElement('span');
       avg.innerHTML = "<em>loading...</em>";
       filt.update_aggs = (aggs: any) => {
         filt.query = { lb: aggs.min, ub: aggs.max };
@@ -362,8 +403,8 @@ function add_filter(idx: number) {
         avg.textContent = aggs.avg;
       };
       filt.change = function () {
-        let lbv = lb.valueAsNumber;
-        let ubv = ub.valueAsNumber;
+        const lbv = lb.valueAsNumber;
+        const ubv = ub.valueAsNumber;
         if (lbv == ubv)
           filt.query = lbv;
         else
@@ -399,7 +440,7 @@ function add_filter(idx: number) {
 
 (<any>window).hide_column = function hide_column(event:Event) {
   if (TCat) {
-    TCat.column(event.target.id.substr(5)+':name').visible(false);
+    TCat.column((<HTMLElement>event.target).id.substr(5)+':name').visible(false);
     set_download();
   }
   event.stopPropagation();
@@ -436,13 +477,14 @@ function init() {
       topts.order = Query.sort.map((o) => {
         return [Fields_idx[o.field], o.asc ? 'asc' : 'desc'];
       });
-    if (Query.fields && topts.columns)
+    if (Query.fields && Query.fields.length && topts.columns)
       for (let c of topts.columns)
         c.visible = Query.fields.indexOf(<string>c.name) >= 0;
   }
   TCat = table.DataTable(topts);
   /* for debugging: */
   (<any>window).TCat = TCat;
+
   const addfilt = <HTMLSelectElement>document.createElement('select');
   addfilt.appendChild(document.createElement('option'));
   add_filt_row('', addfilt, 'Select field to view/filter');
@@ -461,6 +503,7 @@ function init() {
     add_filter(<any>addfilt.value);
     TCat.draw(false);
   };
+  add_sample();
   TCat.draw();
 
   for (let xy of "xy")
