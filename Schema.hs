@@ -30,6 +30,7 @@ import           Control.Arrow ((&&&))
 import           Control.Monad (unless)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Types as J
+import           Data.Bits (xor)
 import qualified Data.ByteString as BS
 import           Data.Default (Default(def))
 import           Data.Functor.Classes (Eq1, eq1, Show1, showsPrec1)
@@ -306,6 +307,8 @@ data Query = Query
   , querySort :: [(T.Text, Bool)]
   , queryFields :: [T.Text]
   , queryFilter :: [(T.Text, BS.ByteString, Maybe BS.ByteString)]
+  , querySample :: Double
+  , querySeed :: Maybe Word
   , queryAggs :: [T.Text]
   , queryHist :: Maybe (T.Text, BS.ByteString)
   }
@@ -317,6 +320,8 @@ instance Monoid Query where
     , querySort   = []
     , queryFields = []
     , queryFilter = []
+    , querySample = 1
+    , querySeed   = Nothing
     , queryAggs   = []
     , queryHist   = Nothing
     }
@@ -326,8 +331,10 @@ instance Monoid Query where
     , querySort   = querySort   q1 <>    querySort   q2
     , queryFields = queryFields q1 <>    queryFields q2
     , queryFilter = queryFilter q1 <>    queryFilter q2
+    , querySample = querySample q1 *     querySample q2
+    , querySeed   = joinMaybeWith xor (querySeed q1) (querySeed q2)
     , queryAggs   = queryAggs   q1 <>    queryAggs   q2
-    , queryHist   = queryHist   q1 <>    queryHist   q2
+    , queryHist   = queryHist q1 `mappend` queryHist q2
     }
 
 fillQuery :: Catalog -> Query -> Query
@@ -347,6 +354,8 @@ instance J.ToJSON Query where
       [ "field" J..= f
       , "value" J..= maybe (bs a) (\b' -> J.object ["lb" J..= bs a, "ub" J..= bs b']) b
       ] | (f,a,b) <- queryFilter ]
+    , "seed"   J..= querySeed
+    , "sample" J..= querySample
     , "aggs"   J..= queryAggs
     , "hist"   J..= (fst <$> queryHist)
     ] where

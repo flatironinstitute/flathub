@@ -45,9 +45,9 @@ import Compression
 
 parseQuery :: Wai.Request -> Query
 parseQuery = foldMap parseQueryItem . Wai.queryString where
-  parseQueryItem ("offset", Just (readMaybe . BSC.unpack -> Just n)) =
+  parseQueryItem ("offset", Just (rmbs -> Just n)) =
     mempty{ queryOffset = n }
-  parseQueryItem ("limit",  Just (readMaybe . BSC.unpack -> Just n)) =
+  parseQueryItem ("limit",  Just (rmbs -> Just n)) =
     mempty{ queryLimit  = n }
   parseQueryItem ("sort",   Just s) =
     mempty{ querySort = map ps (BSC.splitWith delim s) } where
@@ -57,9 +57,13 @@ parseQuery = foldMap parseQueryItem . Wai.queryString where
       _             -> (TE.decodeUtf8 f, True)
   parseQueryItem ("fields", Just s) =
     mempty{ queryFields = map TE.decodeUtf8 (BSC.splitWith delim s) }
+  parseQueryItem ("sample", Just (rmbs -> Just p)) =
+    mempty{ querySample = p }
+  parseQueryItem ("sample", Just (spl '@' -> Just (rmbs -> Just p, rmbs -> Just s))) =
+    mempty{ querySample = p, querySeed = Just s }
   parseQueryItem ("aggs",   Just s) =
     mempty{ queryAggs = map TE.decodeUtf8 (BSC.splitWith delim s) }
-  parseQueryItem ("hist",   Just (BSC.break (':' ==) -> (f, (BSC.uncons -> Just (':', i))))) =
+  parseQueryItem ("hist",   Just (spl ':' -> Just (f, i))) =
     mempty{ queryHist = Just (TE.decodeUtf8 f, i) }
   parseQueryItem (f,        s) =
     mempty{ queryFilter = [(TE.decodeUtf8 f, a, snd <$> BS.uncons b)] } where
@@ -67,6 +71,10 @@ parseQuery = foldMap parseQueryItem . Wai.queryString where
   delim ',' = True
   delim ' ' = True
   delim _ = False
+  rmbs :: Read a => BSC.ByteString -> Maybe a
+  rmbs = readMaybe . BSC.unpack
+  spl c s = (,) p . snd <$> BSC.uncons r
+    where (p, r) = BSC.break (c ==) s
 
 catalog :: Route Simulation
 catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do

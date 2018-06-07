@@ -143,9 +143,12 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = CatalogES{} } Query{..} =
     <> (mwhen (queryLimit  > 0 || not scroll) $ "size" J..= queryLimit)
     <> "sort" `JE.pair` JE.list (\(f, a) -> JE.pairs (f J..= if a then "asc" else "desc" :: String)) (querySort ++ [("_doc",True)])
     <> "_source" J..= queryFields
-    <> "query" .=*
-      ("bool" .=*
-        ("filter" `JE.pair` JE.list (JE.pairs . term) queryFilter))
+    <> "query" .=* (if querySample < 1
+      then \q -> ("function_score" .=* ("query" .=* q
+        <> "random_score" .=* foldMap (\s -> "seed" J..= s <> "field" J..= ("_seq_no" :: String)) querySeed
+        <> "boost_mode" J..= ("replace" :: String)
+        <> "min_score" J..= (1 - querySample)))
+      else id) ("bool" .=* ("filter" `JE.pair` JE.list (JE.pairs . term) queryFilter))
     <> "aggs" .=*
       (  foldMap
         (\f -> f .=* (agg (fieldType <$> HM.lookup f (catalogFieldMap cat)) .=* ("field" J..= f)))
