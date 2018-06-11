@@ -179,7 +179,7 @@ scrollSearch sid = elasticSearch GET ["_search", "scroll"] [] $ JE.pairs $
      "scroll" J..= J.String scrollTime
   <> "scroll_id" J..= sid
 
-queryBulk :: Catalog -> Query -> M (IO (V.Vector [J.Value]))
+queryBulk :: Catalog -> Query -> M (IO (Word, V.Vector [J.Value]))
 queryBulk cat query@Query{..} = do
   glob <- ask
   sidv <- liftIO $ newIORef Nothing
@@ -195,11 +195,12 @@ queryBulk cat query@Query{..} = do
   where
   parse = J.withObject "query" $ \q -> (,)
     <$> q J..: "_scroll_id"
-    <*> parseJSONField "hits" (J.withObject "hits" $
-      parseJSONField "hits" $ J.withArray "hits" $
+    <*> parseJSONField "hits" (J.withObject "hits" $ \hits -> (,)
+      <$> hits J..: "total"
+      <*> parseJSONField "hits" (J.withArray "hits" $
         V.mapM $ J.withObject "hit" $
           parseJSONField "_source" $ J.withObject "source" $ \d ->
-            return $ map (\f -> HM.lookupDefault J.Null f d) queryFields)
+            return $ map (\f -> HM.lookupDefault J.Null f d) queryFields) hits)
       q
 
 createBulk :: Catalog -> [(String, J.Series)] -> M ()

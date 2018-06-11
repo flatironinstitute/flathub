@@ -2,6 +2,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE ViewPatterns #-}
 
@@ -14,11 +15,12 @@ module Query
 
 import           Control.Applicative (empty, (<|>))
 import           Control.Monad (guard, unless)
+import           Control.Monad.IO.Class (liftIO)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Types as J
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Char8 as BSC
-import           Data.Function (fix)
 import qualified Data.HashMap.Strict as HM
 import           Data.Maybe (fromMaybe, isNothing, listToMaybe)
 import           Data.Monoid ((<>))
@@ -32,6 +34,7 @@ import           Text.Read (readMaybe)
 import           Waimwork.HTTP (quoteHTTP)
 import           Waimwork.Response (response, okResponse)
 import           Waimwork.Result (result)
+import           System.FilePath ((<.>))
 import qualified Web.Route.Invertible as R
 
 import Schema
@@ -121,34 +124,61 @@ instance R.Parameter R.PathString BulkFormat where
   renderParameter = T.pack . formatExtension
 
 formatExtension :: BulkFormat -> String
-formatExtension (BulkCSV z) = compressionFilename z "csv"
+formatExtension b = bulkExtension $ bulk b [] 0
 
-formatMimeType :: BulkFormat -> BS.ByteString
-formatMimeType (BulkCSV z) = maybe "text/csv" compressionMimeType z
+data Bulk = Bulk
+  { bulkMimeType :: BS.ByteString
+  , bulkExtension :: String
+  , bulkSize :: Maybe Word
+  , bulkHeader :: B.Builder
+  , bulkBlock :: V.Vector [J.Value] -> B.Builder
+  , bulkFooter :: B.Builder
+  }
+
+compressBulk :: CompressionFormat -> Bulk -> Bulk
+compressBulk z b = b
+  { bulkMimeType = compressionMimeType z
+  , bulkExtension = bulkExtension b <.> compressionExtension z
+  , bulkSize = Nothing
+  }
+
+bulk :: BulkFormat -> [Field] -> Word -> Bulk
+bulk (BulkCSV z) fields _ = maybe id compressBulk z Bulk
+  { bulkMimeType = "text/csv"
+  , bulkExtension = "csv"
+  , bulkSize = Nothing
+  , bulkHeader = csvTextRow $ map fieldName fields
+  , bulkBlock = foldMap csvJSONRow
+  , bulkFooter = mempty
+  }
 
 catalogBulk :: Route (Simulation, BulkFormat)
 catalogBulk = getPath (R.parameter R.>*< R.parameter) $ \(sim, fmt) req -> do
   cat <- askCatalog sim
   let query = fillQuery cat $ parseQuery req
       enc = bulkCompression fmt <|> listToMaybe (acceptCompressionEncoding req)
+  fields <- maybe (result $ response badRequest400 [] ("unknown field name" :: String)) return $
+    mapM (`HM.lookup` catalogFieldMap cat) $ queryFields query
   unless (queryOffset query == 0 && null (queryAggs query) && isNothing (queryHist query)) $
     result $ response badRequest400 [] ("offset,aggs not supported for download" :: String)
 #ifdef HAVE_pgsql
   glob <- ask
 #endif
   nextes <- ES.queryBulk cat query
+  (count, first) <- liftIO nextes
+  let Bulk{..} = bulk fmt fields count
   return $ Wai.responseStream ok200 (
-    [ (hContentType, formatMimeType fmt)
-    , (hContentDisposition, "attachment; filename=" <> quoteHTTP (TE.encodeUtf8 sim <> BSC.pack ('.' : formatExtension fmt)))
+    [ (hContentType, bulkMimeType)
+    , (hContentDisposition, "attachment; filename=" <> quoteHTTP (TE.encodeUtf8 sim <> BSC.pack ('.' : bulkExtension)))
     ] ++ compressionEncodingHeader (guard (enc /= bulkCompression fmt) >> enc))
     $ compressStream enc $ \chunk _ -> do
-    chunk $ csvTextRow $ queryFields query
+    chunk bulkHeader
     case catalogStore cat of
-      CatalogES{} -> fix $ \loop -> do
-        block <- nextes
-        unless (V.null block) $ do
-          chunk $ foldMap csvJSONRow block
-          loop
+      CatalogES{} -> do
+        let loop block = unless (V.null block) $ do
+              chunk $ bulkBlock block
+              loop . snd =<< nextes
+        loop first
 #ifdef HAVE_pgsql
       CatalogPG{} -> runGlobal glob $ PG.queryBulk cat query $ \nextpg -> fix $ \loop -> do
         block <- nextpg
@@ -156,4 +186,5 @@ catalogBulk = getPath (R.parameter R.>*< R.parameter) $ \(sim, fmt) req -> do
           chunk $ foldMap csvJSONRow block
           loop
 #endif
+    chunk bulkFooter
 

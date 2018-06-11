@@ -4,6 +4,7 @@ module Compression
   ( CompressionFormat(..)
   , compressionEncodingHeader
   , acceptCompressionEncoding
+  , compressionExtension
   , compressionFilename
   , compressionMimeType
   , decompressExtension
