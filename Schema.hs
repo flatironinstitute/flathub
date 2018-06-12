@@ -14,6 +14,7 @@ module Schema
   , fmapTypeValue, fmapTypeValue1
   , typeOfValue
   , onTypeValue
+  , parseTypeJSONValue
   , FieldSub(..)
   , Field, FieldGroup
   , Fields, FieldGroups
@@ -135,6 +136,9 @@ instance {-# OVERLAPPABLE #-} Show1 f => Show (TypeValue f) where
 instance {-# OVERLAPPABLE #-} J.ToJSON1 f => J.ToJSON (TypeValue f) where
   toJSON = onTypeValue J.toJSON1
   toEncoding = onTypeValue J.toEncoding1
+
+parseTypeJSONValue :: Type -> J.Value -> TypeValue J.Parser
+parseTypeJSONValue t j = fmapTypeValue (\Proxy -> J.parseJSON j) t
 
 instance Default Type where
   def = Float Proxy

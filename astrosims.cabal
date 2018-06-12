@@ -24,6 +24,7 @@ executable astrosims
     Ingest.HDF5
     JSON
     Monoid
+    Numpy
     Query
     Schema
     Static

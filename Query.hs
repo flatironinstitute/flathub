@@ -22,12 +22,12 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.HashMap.Strict as HM
-import           Data.Maybe (fromMaybe, isNothing, listToMaybe)
+import           Data.Maybe (fromMaybe, isNothing, listToMaybe, maybeToList)
 import           Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V
-import           Network.HTTP.Types.Header (hContentType, hContentDisposition)
+import           Network.HTTP.Types.Header (hContentType, hContentDisposition, hContentLength)
 import           Network.HTTP.Types.Status (ok200, badRequest400)
 import qualified Network.Wai as Wai
 import           Text.Read (readMaybe)
@@ -45,6 +45,7 @@ import qualified ES
 import qualified PG
 #endif
 import Compression
+import Numpy
 
 parseQuery :: Wai.Request -> Query
 parseQuery = foldMap parseQueryItem . Wai.queryString where
@@ -115,11 +116,15 @@ data BulkFormat
   = BulkCSV
     { bulkCompression :: Maybe CompressionFormat
     }
+  | BulkNumpy
+    { bulkCompression :: Maybe CompressionFormat
+    }
   deriving (Eq)
 
 instance R.Parameter R.PathString BulkFormat where
   parseParameter s = case decompressExtension (T.unpack s) of
     ("csv", z) -> return $ BulkCSV z
+    ("npy", z) -> return $ BulkNumpy z
     _ -> empty
   renderParameter = T.pack . formatExtension
 
@@ -131,9 +136,12 @@ data Bulk = Bulk
   , bulkExtension :: String
   , bulkSize :: Maybe Word
   , bulkHeader :: B.Builder
-  , bulkBlock :: V.Vector [J.Value] -> B.Builder
+  , bulkRow :: [J.Value] -> B.Builder
   , bulkFooter :: B.Builder
   }
+
+bulkBlock :: Bulk -> V.Vector [J.Value] -> B.Builder
+bulkBlock = foldMap . bulkRow
 
 compressBulk :: CompressionFormat -> Bulk -> Bulk
 compressBulk z b = b
@@ -148,9 +156,17 @@ bulk (BulkCSV z) fields _ = maybe id compressBulk z Bulk
   , bulkExtension = "csv"
   , bulkSize = Nothing
   , bulkHeader = csvTextRow $ map fieldName fields
-  , bulkBlock = foldMap csvJSONRow
+  , bulkRow = csvJSONRow
   , bulkFooter = mempty
   }
+bulk (BulkNumpy z) fields count = maybe id compressBulk z Bulk
+  { bulkMimeType = "application/octet-stream"
+  , bulkExtension = "npy"
+  , bulkSize = Just size
+  , bulkHeader = header
+  , bulkRow = numpyRow fields
+  , bulkFooter = mempty
+  } where (header, size) = numpyHeader fields count
 
 catalogBulk :: Route (Simulation, BulkFormat)
 catalogBulk = getPath (R.parameter R.>*< R.parameter) $ \(sim, fmt) req -> do
@@ -166,17 +182,19 @@ catalogBulk = getPath (R.parameter R.>*< R.parameter) $ \(sim, fmt) req -> do
 #endif
   nextes <- ES.queryBulk cat query
   (count, first) <- liftIO nextes
-  let Bulk{..} = bulk fmt fields count
+  let b@Bulk{..} = bulk fmt fields count
   return $ Wai.responseStream ok200 (
     [ (hContentType, bulkMimeType)
     , (hContentDisposition, "attachment; filename=" <> quoteHTTP (TE.encodeUtf8 sim <> BSC.pack ('.' : bulkExtension)))
-    ] ++ compressionEncodingHeader (guard (enc /= bulkCompression fmt) >> enc))
+    ]
+    ++ maybeToList ((,) hContentLength . BSC.pack . show <$> bulkSize)
+    ++ compressionEncodingHeader (guard (enc /= bulkCompression fmt) >> enc))
     $ compressStream enc $ \chunk _ -> do
     chunk bulkHeader
     case catalogStore cat of
       CatalogES{} -> do
         let loop block = unless (V.null block) $ do
-              chunk $ bulkBlock block
+              chunk $ bulkBlock b block
               loop . snd =<< nextes
         loop first
 #ifdef HAVE_pgsql

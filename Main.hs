@@ -77,7 +77,7 @@ simulation = getPath R.parameter $ \sim req -> do
     fields' = catalogFields cat
     jcat = J.pairs $
          "uri" J..= show quri
-      <> "bulk" J..= map (J.String . R.renderParameter) [BulkCSV Nothing, BulkCSV (Just CompressionGZip)]
+      <> "bulk" J..= map (J.String . R.renderParameter) [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)]
       <> "fields" J..= fields'
     fieldBody :: Word -> FieldGroup -> H.Html
     fieldBody d f = H.span WH.!? (HA.title . H.textValue <$> fieldDescr f) $ do
