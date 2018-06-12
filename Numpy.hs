@@ -9,7 +9,6 @@ import qualified Data.Aeson.Types as J
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Lazy as BSL
 import           Data.Maybe (fromMaybe)
-import           Data.Proxy (Proxy(Proxy))
 import           Data.Semigroup ((<>), stimesMonoid)
 import           Data.Word (Word16, Word32, Word64)
 import           Foreign.C.Types (CUShort(CUShort))
@@ -81,7 +80,7 @@ numpyHeader fields count = (B.string8 "\147NUMPY"
   jenc = J.fromEncoding . J.toEncoding -- json is similar enough to python for most things
 
 numpyValue :: Field -> J.Value -> B.Builder
-numpyValue f j = numpyBuild $ fmapTypeValue (\Proxy -> J.parseMaybe J.parseJSON j) (fieldType f)
+numpyValue f = numpyBuild . parseTypeJSONValue (fieldType f)
 
 unconsJ :: [J.Value] -> (J.Value, [J.Value])
 unconsJ [] = (J.Null, [])

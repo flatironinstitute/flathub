@@ -27,6 +27,7 @@ module Schema
   , fillQuery
   ) where
 
+import           Control.Applicative ((<|>))
 import           Control.Arrow ((&&&))
 import           Control.Monad (unless)
 import qualified Data.Aeson as J
@@ -46,7 +47,7 @@ import qualified Data.Text.Encoding as TE
 import           Data.Typeable (Typeable)
 import qualified Data.Vector as V
 import           Numeric.Half (Half)
-import           Text.Read (readPrec, Lexeme(Ident), lexP, readEither)
+import           Text.Read (readMaybe, readPrec, Lexeme(Ident), lexP, readEither)
 
 instance J.ToJSON Half where
   toJSON = J.toJSON . (realToFrac :: Half -> Float)
@@ -137,8 +138,9 @@ instance {-# OVERLAPPABLE #-} J.ToJSON1 f => J.ToJSON (TypeValue f) where
   toJSON = onTypeValue J.toJSON1
   toEncoding = onTypeValue J.toEncoding1
 
-parseTypeJSONValue :: Type -> J.Value -> TypeValue J.Parser
-parseTypeJSONValue t j = fmapTypeValue (\Proxy -> J.parseJSON j) t
+parseTypeJSONValue :: Type -> J.Value -> TypeValue Maybe
+parseTypeJSONValue t j = fmapTypeValue (\Proxy -> J.parseMaybe J.parseJSON j
+  <|> case j of { J.String s -> readMaybe (T.unpack s) ; _ -> Nothing }) t
 
 instance Default Type where
   def = Float Proxy
