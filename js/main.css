@@ -38,6 +38,7 @@ div.dhist-xy {
 div#dhist-x {
   right: -50px;
   bottom: 25px;
+  display: none; /* not a valid histogram transformation */
 }
 div#dhist-y {
   left: -35px;
