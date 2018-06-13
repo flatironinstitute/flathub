@@ -8,15 +8,19 @@ import           Control.Monad ((<=<), forM_, when)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (asks)
 import qualified Data.Aeson as J
+import qualified Data.ByteString as BS
 import           Data.Default (Default(def))
 import qualified Data.HashMap.Strict as HM
+import           Data.List (find)
 import           Data.Maybe (fromMaybe, isNothing, isJust)
 import           Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Vector as V
 import qualified Data.Yaml as YAML
 import qualified Network.HTTP.Client as HTTP
+import           Network.HTTP.Types.Header (hAccept)
 import qualified Network.Wai as Wai
+import           Network.Wai.Parse (parseHttpAccept)
 import qualified System.Console.GetOpt as Opt
 import           System.Environment (getProgName, getArgs)
 import           System.Exit (exitFailure)
@@ -58,6 +62,9 @@ html req h = okResponse [] $ H.docTypeHtml $ do
   where
   isdev = any ((==) "dev" . fst) $ Wai.queryString req
 
+acceptable :: [BS.ByteString] -> Wai.Request -> Maybe BS.ByteString
+acceptable l = find (`elem` l) . foldMap parseHttpAccept . lookup hAccept . Wai.requestHeaders
+
 top :: Route ()
 top = getPath R.unit $ \() req -> do
   cats <- asks globalCatalogs
@@ -76,7 +83,9 @@ simulation = getPath R.parameter $ \sim req -> do
     fields = catalogFieldGroups cat
     fields' = catalogFields cat
     jcat = J.pairs $
-         "uri" J..= show quri
+         "title" J..= catalogTitle cat
+      <> "descr" J..= catalogDescr cat
+      <> "uri" J..= show quri
       <> "bulk" J..= map (J.String . R.renderParameter) [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)]
       <> "fields" J..= fields'
     fieldBody :: Word -> FieldGroup -> H.Html
@@ -108,26 +117,29 @@ simulation = getPath R.parameter $ \sim req -> do
       H.tr $ mapM_ (\(p, f) -> field d (p f) f) l
       when (d > 1) $ row (pred d) $ foldMap (\(p, f) -> foldMap (fmap (p . subField f, ) . V.toList) $ fieldSub f) l
     query = parseQuery req
-  return $ html req $ do
-    H.script $ do
-      "Catalog="
-      H.preEscapedBuilder $ J.fromEncoding jcat
-      ";Query="
-      H.unsafeLazyByteString $ J.encode query
-      ";"
-    H.h2 $ H.text $ catalogTitle cat
-    mapM_ (H.p . H.preEscapedText) $ catalogDescr cat
-    H.p $ "Query and explore a subset using the filters, download your selection using the link below, or get the full dataset above."
-    H.table H.! HA.id "filt" $ mempty
-    H.div H.! HA.id "dhist" $ do
-      forM_ ['x','y'] $ \xy -> let xyv = H.stringValue [xy] in
-        H.div H.! HA.id ("dhist-" <> xyv) H.! HA.class_ "dhist-xy" $
-          H.button H.! HA.id ("dhist-" <> xyv <> "-tog") H.! HA.class_ "dhist-xy-tog" $
-            "lin/log"
-      H.canvas H.! HA.id "hist" $ mempty
-    H.table H.! HA.id "tcat" H.! HA.class_ "compact" $ do
-      H.thead $ row (fieldsDepth fields) ((id ,) <$> V.toList fields)
-      H.tfoot $ H.tr $ H.td H.! HA.colspan (H.toValue $ length fields') H.! HA.class_ "loading" $ "loading..."
+  case acceptable ["application/json", "text/html"] req of
+    Just "application/json" ->
+      return $ okResponse [] jcat
+    _ -> return $ html req $ do
+      H.script $ do
+        "Catalog="
+        H.preEscapedBuilder $ J.fromEncoding jcat
+        ";Query="
+        H.unsafeLazyByteString $ J.encode query
+        ";"
+      H.h2 $ H.text $ catalogTitle cat
+      mapM_ (H.p . H.preEscapedText) $ catalogDescr cat
+      H.p $ "Query and explore a subset using the filters, download your selection using the link below, or get the full dataset above."
+      H.table H.! HA.id "filt" $ mempty
+      H.div H.! HA.id "dhist" $ do
+        forM_ ['x','y'] $ \xy -> let xyv = H.stringValue [xy] in
+          H.div H.! HA.id ("dhist-" <> xyv) H.! HA.class_ "dhist-xy" $
+            H.button H.! HA.id ("dhist-" <> xyv <> "-tog") H.! HA.class_ "dhist-xy-tog" $
+              "lin/log"
+        H.canvas H.! HA.id "hist" $ mempty
+      H.table H.! HA.id "tcat" H.! HA.class_ "compact" $ do
+        H.thead $ row (fieldsDepth fields) ((id ,) <$> V.toList fields)
+        H.tfoot $ H.tr $ H.td H.! HA.colspan (H.toValue $ length fields') H.! HA.class_ "loading" $ "loading..."
   where
   dtype (Long _) = "num"
   dtype (Integer _) = "num"

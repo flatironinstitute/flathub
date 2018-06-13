@@ -5,8 +5,13 @@ author:         Dylan Simon
 maintainer:     dylan@dylex.net
 copyright:      2018 Dylan Simon, Flatiron Institute
 license:        Apache-2.0
+license-file:   COPYING
 build-type:     Simple
 cabal-version:  >= 1.10
+
+source-repository head
+  type:     git
+  location: git://github.com/flatironinstitute/astrosims-reproto
 
 flag pgsql
   description: postgresql backend
@@ -58,6 +63,7 @@ executable astrosims
     , unordered-containers
     , vector
     , wai
+    , wai-extra
     , waimwork
     , warp
     , web-inv-route
