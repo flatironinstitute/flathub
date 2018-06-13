@@ -6,10 +6,13 @@ module Numpy
   ) where
 
 import qualified Data.Aeson.Types as J
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Lazy as BSL
 import           Data.Maybe (fromMaybe)
 import           Data.Semigroup ((<>), stimesMonoid)
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import           Data.Word (Word16, Word32, Word64)
 import           Foreign.C.Types (CUShort(CUShort))
 import           Numeric.Half (Half(Half))
@@ -27,10 +30,15 @@ numpyDtype (Integer   _) = "<i4"
 numpyDtype (Short     _) = "<i2"
 numpyDtype (Byte      _) = "i1"
 numpyDtype (Boolean   _) = "?"
-numpyDtype _ = error "unsupported numpy type"
+numpyDtype (Keyword   _) = "S8"
+numpyDtype (Text      _) = "S16"
 
 getHalf' :: Half -> Word16
 getHalf' (Half (CUShort x)) = x
+
+numpyString :: Int -> Maybe T.Text -> B.Builder
+numpyString l t = B.byteString s <> stimesMonoid (l - BS.length s) (B.char7 '\0') where
+  s = BS.take l $ foldMap TE.encodeUtf8 t
 
 numpyBuild :: TypeValue Maybe -> B.Builder
 numpyBuild (Double    x) = B.doubleLE $ fromMaybe (unsafeCoerce (0x7ff80000ffffffff::Word64)) x
@@ -43,18 +51,20 @@ numpyBuild (Byte      x) = B.int8     $ fromMaybe (-1) x
 numpyBuild (Boolean Nothing) = B.int8 0
 numpyBuild (Boolean (Just False)) = B.int8 0
 numpyBuild (Boolean (Just True)) = B.int8 1
-numpyBuild _ = error "unsupported numpy value"
+numpyBuild (Keyword   x) = numpyString 8 x
+numpyBuild (Text      x) = numpyString 16 x
 
 numpySize :: Type -> Word
-numpySize (Double _) = 8
-numpySize (Float _) = 4
+numpySize (Double    _) = 8
+numpySize (Float     _) = 4
 numpySize (HalfFloat _) = 2
-numpySize (Long _) = 8
-numpySize (Integer _) = 4
-numpySize (Short _) = 2
-numpySize (Byte _) = 1
-numpySize (Boolean _) = 1
-numpySize _ = error "unsupported numpy type"
+numpySize (Long      _) = 8
+numpySize (Integer   _) = 4
+numpySize (Short     _) = 2
+numpySize (Byte      _) = 1
+numpySize (Boolean   _) = 1
+numpySize (Keyword   _) = 8
+numpySize (Text      _) = 16
 
 numpyRowSize :: [Field] -> Word
 numpyRowSize = sum . map (numpySize . fieldType)
