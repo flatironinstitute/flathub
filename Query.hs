@@ -71,7 +71,7 @@ parseQuery = foldMap parseQueryItem . Wai.queryString where
     mempty{ queryHist = Just (TE.decodeUtf8 f, i) }
   parseQueryItem (f,        s) =
     mempty{ queryFilter = [(TE.decodeUtf8 f, a, snd <$> BS.uncons b)] } where
-    (a, b) = BSC.break (',' ==) $ fromMaybe BS.empty s
+    (a, b) = BSC.break delim $ fromMaybe BS.empty s
   delim ',' = True
   delim ' ' = True
   delim _ = False
