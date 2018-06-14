@@ -286,6 +286,7 @@ function add_sample() {
   samp.min = <any>0;
   samp.max = <any>1;
   samp.value = <any>Sample;
+  samp.title = "Probability (0,1] with which to include each item"
 
   const seed = <HTMLInputElement>document.createElement('input');
   seed.name = "seed";
@@ -294,6 +295,7 @@ function add_sample() {
   seed.min = <any>0;
   seed.value = <any>Seed;
   seed.disabled = true;
+  seed.title = "Random seed to generate sample selection"
 
   samp.onchange = seed.onchange = function () {
     Sample = samp.valueAsNumber;
@@ -388,8 +390,10 @@ function add_filter(idx: number) {
     case 'double': {
       const lb = <HTMLInputElement>document.createElement('input');
       lb.name = field.name+".lb";
+      lb.title = "Lower bound for " + field.title + " values"
       const ub = <HTMLInputElement>document.createElement('input');
       ub.name = field.name+".ub";
+      ub.title = "Upper bound for " + field.title + " values"
       lb.type = ub.type = "number";
       lb.step = ub.step = filt.isint ? <any>1 : "any";
       lb.disabled = ub.disabled = true;

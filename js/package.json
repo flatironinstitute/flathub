@@ -13,8 +13,8 @@
     "jspm": "^0.17.0-beta.48"
   },
   "devDependencies": {
-    "@types/chart.js": "^2.7.18",
-    "@types/datatables.net": "^1.10.9",
+    "@types/chart.js": "^2.7.22",
+    "@types/datatables.net": "^1.10.11",
     "@types/jquery": "^3.3.2",
     "@types/systemjs": "^0.20.6",
     "typescript": "^2.8.3"
@@ -75,7 +75,7 @@
       "npm:jquery@3.3.1": {
         "format": "amd"
       },
-      "npm:moment@2.22.1": {
+      "npm:moment@2.22.2": {
         "jspmNodeConversion": false
       },
       "npm:pbkdf2@3.0.16": {

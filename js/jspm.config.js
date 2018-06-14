@@ -175,7 +175,7 @@ SystemJS.config({
         "minimalistic-assert": "npm:minimalistic-assert@1.0.1",
         "hmac-drbg": "npm:hmac-drbg@1.0.1",
         "minimalistic-crypto-utils": "npm:minimalistic-crypto-utils@1.0.1",
-        "hash.js": "npm:hash.js@1.1.3"
+        "hash.js": "npm:hash.js@1.1.4"
       }
     },
     "npm:hash-base@3.0.4": {
@@ -193,15 +193,9 @@ SystemJS.config({
     },
     "npm:hmac-drbg@1.0.1": {
       "map": {
-        "hash.js": "npm:hash.js@1.1.3",
+        "hash.js": "npm:hash.js@1.1.4",
         "minimalistic-assert": "npm:minimalistic-assert@1.0.1",
         "minimalistic-crypto-utils": "npm:minimalistic-crypto-utils@1.0.1"
-      }
-    },
-    "npm:hash.js@1.1.3": {
-      "map": {
-        "minimalistic-assert": "npm:minimalistic-assert@1.0.1",
-        "inherits": "npm:inherits@2.0.3"
       }
     },
     "npm:jspm-nodelibs-stream@0.2.1": {
@@ -222,7 +216,7 @@ SystemJS.config({
     },
     "npm:jspm-nodelibs-http@0.2.0": {
       "map": {
-        "http-browserify": "npm:stream-http@2.8.2"
+        "http-browserify": "npm:stream-http@2.8.3"
       }
     },
     "npm:jspm-nodelibs-url@0.2.1": {
@@ -261,7 +255,7 @@ SystemJS.config({
     },
     "npm:chart.js@2.7.2": {
       "map": {
-        "moment": "npm:moment@2.22.1",
+        "moment": "npm:moment@2.22.2",
         "chartjs-color": "npm:chartjs-color@2.2.0"
       }
     },
@@ -276,15 +270,10 @@ SystemJS.config({
         "color-name": "npm:color-name@1.1.3"
       }
     },
-    "npm:typescript@2.8.3": {
-      "map": {
-        "source-map-support": "npm:source-map-support@0.5.6"
-      }
-    },
     "npm:buffer@5.1.0": {
       "map": {
         "base64-js": "npm:base64-js@1.3.0",
-        "ieee754": "npm:ieee754@1.1.11"
+        "ieee754": "npm:ieee754@1.1.12"
       }
     },
     "npm:readable-stream@2.3.6": {
@@ -398,18 +387,9 @@ SystemJS.config({
         "asn1.js": "npm:asn1.js@4.10.1"
       }
     },
-    "npm:stream-http@2.8.2": {
-      "map": {
-        "builtin-status-codes": "npm:builtin-status-codes@3.0.0",
-        "inherits": "npm:inherits@2.0.3",
-        "to-arraybuffer": "npm:to-arraybuffer@1.0.1",
-        "xtend": "npm:xtend@4.0.1",
-        "readable-stream": "npm:readable-stream@2.3.6"
-      }
-    },
     "npm:source-map-support@0.5.6": {
       "map": {
-        "buffer-from": "npm:buffer-from@1.0.0",
+        "buffer-from": "npm:buffer-from@1.1.0",
         "source-map": "npm:source-map@0.6.1"
       }
     },
@@ -417,6 +397,26 @@ SystemJS.config({
       "map": {
         "bn.js": "npm:bn.js@4.11.8",
         "elliptic": "npm:elliptic@6.4.0"
+      }
+    },
+    "npm:stream-http@2.8.3": {
+      "map": {
+        "builtin-status-codes": "npm:builtin-status-codes@3.0.0",
+        "inherits": "npm:inherits@2.0.3",
+        "xtend": "npm:xtend@4.0.1",
+        "to-arraybuffer": "npm:to-arraybuffer@1.0.1",
+        "readable-stream": "npm:readable-stream@2.3.6"
+      }
+    },
+    "npm:hash.js@1.1.4": {
+      "map": {
+        "inherits": "npm:inherits@2.0.3",
+        "minimalistic-assert": "npm:minimalistic-assert@1.0.1"
+      }
+    },
+    "npm:typescript@2.8.3": {
+      "map": {
+        "source-map-support": "npm:source-map-support@0.5.6"
       }
     }
   }
