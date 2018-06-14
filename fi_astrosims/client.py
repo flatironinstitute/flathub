@@ -34,7 +34,8 @@ class Simulation:
 
     *name* is the id of the catalog at the *host* url.
 
-    The resulting object contains the JSON description of the *catalog*, and a dictionary of available *fields*.
+    The resulting object contains the JSON description of the *catalog*, and a
+    dictionary of available *fields*.
     """
     def __init__(self, name, host = "http://astrosims.flatironinstitute.org"):
         self.url = urllib.parse.urljoin(host, name)
@@ -42,36 +43,75 @@ class Simulation:
         self.fields = { f['name']: f for f in self.catalog['fields'] }
 
 class Query:
+    """A query against a Simulation catalog.
+
+    *simulation* specifies the Simulation object or name to run against.
+    See *update* for other parameters.
+    """
     def __init__(self, simulation, fields = None, sort = None, sample = 1, seed = None, **filters):
-            if type(simulation) is str:
-                simulation = Simulation(simulation)
-            self.simulation = simulation
-            if fields is None:
-                fields = [ f['name'] for f in simulation.catalog['fields'] ]
-            self.query = { 'fields': delim.join(fields) }
-            if type(sort) is list:
-                self.query['sort'] = delim.join(sort)
-            elif sort:
-                self.query['sort'] = sort
-            if sample < 1:
-                self.query['sample'] = str(sample)
-                if seed is not None:
-                    self.query['sample'] += '@' + str(seed)
-            for (k, v) in filters.items():
-                if not k in self.simulation.fields:
-                    raise KeyError('No such field: ' + k)
-                if type(v) is list:
-                    v = delim.join(map(str, v))
-                else:
-                    v = str(v)
-                self.query[k] = v
-            self._count = None
-            self._aggs = {}
+        if type(simulation) is str:
+            simulation = Simulation(simulation)
+        self.simulation = simulation
+        self.query = dict()
+        if fields is None:
+            fields = [ f['name'] for f in simulation.catalog['fields'] ]
+        self.update(fields, sort, sample, seed, **filters)
+
+    def update(fields = None, sort = None, sample = None, seed = None, **filters):
+        """Modify query parameters in place.
+
+        *fields* specifies the list of fields to return, defaulting to all
+        simulation fields.
+
+        *sort* specifies the ordering of result objects, which may be the name
+        of a single field, a field name prefixed with '-' for descending, or a
+        list of sort fields.
+
+        *sample* sets the fraction of results to return as a random subset
+        (0,1].  *seed* specifies the random seed for this selection, which
+        defaults to a different random set each time.  Note that each item is
+        independently selected with the sample fraction, so the result set may
+        not be exactly this fraction of the original size.
+
+        Additional *filters* parameters specify restrictions on fields to query
+        by.  Each parameter must be the name of a field in the catalog, and
+        have the value of None to not filter on this field, a scalar to filter
+        exact values, or tuple of lower- and upper-bounds to select items in
+        that range.
+        """
+        if fields:
+            self.query['fields'] = delim.join(fields)
+        if type(sort) is list:
+            self.query['sort'] = delim.join(sort)
+        elif sort:
+            self.query['sort'] = sort
+        if sample < 1:
+            self.query['sample'] = str(sample)
+            if seed is not None:
+                self.query['sample'] += '@' + str(seed)
+        for (k, v) in filters.items():
+            if not k in self.simulation.fields:
+                raise KeyError('No such field: ' + k)
+            if v is None:
+                try:
+                    del self.query[k]
+                except KeyError:
+                    pass
+                continue
+            if type(v) is tuple:
+                v = delim.join(map(str, v))
+            else:
+                v = str(v)
+            self.query[k] = v
+
+        self._count = None
+        self._aggs = {}
 
     def makeurl(self, path, **query):
         return makeurl(self.simulation.url, path, dictWith(self.query, **query))
 
     def count(self):
+        """Return the count of objects matching this query."""
         if self._count is None:
             res = getJSON(self.makeurl('catalog', limit=0))
             self._count = res['hits']['total']
@@ -85,15 +125,19 @@ class Query:
         return self._aggs[field]
 
     def avg(self, field):
+        """Return the average value of a given field."""
         return self.aggs(field)['avg']
 
     def min(self, field):
+        """Return the minimum value of a given field."""
         return self.aggs(field)['min']
 
     def max(self, field):
+        """Return the maximum value of a given field."""
         return self.aggs(field)['max']
 
     def hist(self, field, width=None, bins=100):
+        """Return a histogram of the given field, with either the specified bin width or total bin count."""
         if not width:
             width = (self.max(field) - self.min(field))/bins
         res = getJSON(self.makeurl('catalog', limit=0, hist=field+':'+str(width)))
@@ -101,4 +145,5 @@ class Query:
                 [('bucket', self.simulation.fields[field]['dtype']), ('count', 'u8')])
 
     def numpy(self):
+        """Return all of the results in a numpy array."""
         return numpy.load(numpy.DataSource().open(self.makeurl('npy'), 'rb'))
