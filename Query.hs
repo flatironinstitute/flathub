@@ -125,6 +125,7 @@ instance R.Parameter R.PathString BulkFormat where
   parseParameter s = case decompressExtension (T.unpack s) of
     ("csv", z) -> return $ BulkCSV z
     ("npy", z) -> return $ BulkNumpy z
+    ("numpy", z) -> return $ BulkNumpy z
     _ -> empty
   renderParameter = T.pack . formatExtension
 

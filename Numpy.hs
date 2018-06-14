@@ -21,18 +21,6 @@ import           Unsafe.Coerce (unsafeCoerce)
 import Schema
 import Monoid
 
-numpyDtype :: Type -> String
-numpyDtype (Double    _) = "<f8"
-numpyDtype (Float     _) = "<f4"
-numpyDtype (HalfFloat _) = "<f2"
-numpyDtype (Long      _) = "<i8"
-numpyDtype (Integer   _) = "<i4"
-numpyDtype (Short     _) = "<i2"
-numpyDtype (Byte      _) = "i1"
-numpyDtype (Boolean   _) = "?"
-numpyDtype (Keyword   _) = "S8"
-numpyDtype (Text      _) = "S16"
-
 getHalf' :: Half -> Word16
 getHalf' (Half (CUShort x)) = x
 
@@ -53,18 +41,6 @@ numpyBuild (Boolean (Just False)) = B.int8 0
 numpyBuild (Boolean (Just True)) = B.int8 1
 numpyBuild (Keyword   x) = numpyString 8 x
 numpyBuild (Text      x) = numpyString 16 x
-
-numpySize :: Type -> Word
-numpySize (Double    _) = 8
-numpySize (Float     _) = 4
-numpySize (HalfFloat _) = 2
-numpySize (Long      _) = 8
-numpySize (Integer   _) = 4
-numpySize (Short     _) = 2
-numpySize (Byte      _) = 1
-numpySize (Boolean   _) = 1
-numpySize (Keyword   _) = 8
-numpySize (Text      _) = 16
 
 numpyRowSize :: [Field] -> Word
 numpyRowSize = sum . map (numpySize . fieldType)

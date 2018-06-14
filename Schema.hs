@@ -15,6 +15,7 @@ module Schema
   , typeOfValue
   , onTypeValue
   , parseTypeJSONValue
+  , numpySize, numpyDtype
   , FieldSub(..)
   , Field, FieldGroup
   , Fields, FieldGroups
@@ -182,6 +183,33 @@ instance {-# OVERLAPPING #-} J.ToJSON Type where
 
 instance J.FromJSON Type where
   parseJSON = J.withText "type" $ either fail return . readEither . T.unpack
+
+numpySize :: Type -> Word
+numpySize (Double    _) = 8
+numpySize (Float     _) = 4
+numpySize (HalfFloat _) = 2
+numpySize (Long      _) = 8
+numpySize (Integer   _) = 4
+numpySize (Short     _) = 2
+numpySize (Byte      _) = 1
+numpySize (Boolean   _) = 1
+numpySize (Keyword   _) = 8
+numpySize (Text      _) = 16
+
+numpyDtype :: Type -> String
+numpyDtype (Boolean _) = "?"
+numpyDtype t = '<' : numpyBtype t : show (numpySize t) where
+  numpyBtype (Double    _) = 'f'
+  numpyBtype (Float     _) = 'f'
+  numpyBtype (HalfFloat _) = 'f'
+  numpyBtype (Long      _) = 'i'
+  numpyBtype (Integer   _) = 'i'
+  numpyBtype (Short     _) = 'i'
+  numpyBtype (Byte      _) = 'i'
+  numpyBtype (Boolean   _) = '?'
+  numpyBtype (Keyword   _) = 'S'
+  numpyBtype (Text      _) = 'S'
+
 data FieldSub m = Field
   { fieldName :: T.Text
   , fieldType :: Type
@@ -219,6 +247,7 @@ instance J.ToJSON Field where
     , "units" J..= fieldUnits
     , "top" J..= fieldTop
     , "disp" J..= fieldDisp
+    , "dtype" J..= numpyDtype fieldType
     ]
   toEncoding Field{..} = J.pairs
     (  "name" J..= fieldName
@@ -228,6 +257,7 @@ instance J.ToJSON Field where
     <> "units" J..= fieldUnits
     <> "top" J..= fieldTop
     <> "disp" J..= fieldDisp
+    <> "dtype" J..= numpyDtype fieldType
     )
 
 instance J.FromJSON FieldGroup where
