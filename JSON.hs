@@ -2,6 +2,7 @@ module JSON
   ( parseJSONField
   , (.=*)
   , EmptyJSON(..)
+  , mergeJSON, mergeJSONObject
   ) where
 
 import qualified Data.Aeson.Types as J
@@ -29,3 +30,10 @@ instance J.FromJSON EmptyJSON where
   parseJSON (J.Array o) | V.null o = return EmptyJSON
   parseJSON v = J.typeMismatch "EmptyJSON" v
 
+mergeJSON :: J.Value -> J.Value -> J.Value
+mergeJSON J.Null x = x
+mergeJSON (J.Object a) (J.Object b) = J.Object (mergeJSONObject a b)
+mergeJSON x _ = x
+
+mergeJSONObject :: J.Object -> J.Object -> J.Object
+mergeJSONObject = HM.unionWith mergeJSON
