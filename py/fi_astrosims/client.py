@@ -57,7 +57,7 @@ class Query:
             fields = [ f['name'] for f in simulation.catalog['fields'] ]
         self.update(fields, sort, sample, seed, **filters)
 
-    def update(fields = None, sort = None, sample = None, seed = None, **filters):
+    def update(self, fields = None, sort = None, sample = None, seed = None, **filters):
         """Modify query parameters in place.
 
         *fields* specifies the list of fields to return, defaulting to all
