@@ -58,3 +58,6 @@ table#tcat {
   /* fix incorrect centering of datatables body content */
   margin: 0;
 }
+footer {
+  text-align: right;
+}

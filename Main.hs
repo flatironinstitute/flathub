@@ -58,7 +58,11 @@ html req h = okResponse [] $ H.docTypeHtml $ do
     forM_ [["jspm_packages", "npm", "datatables.net-dt@1.10.16", "css", "jquery.dataTables.css"], ["main.css"]] $ \src ->
       H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
     H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/MathJax.js?config=TeX-AMS_CHTML" $ mempty
-  H.body h
+  H.body $ do
+    h
+    H.footer $ do
+      H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto" $
+        H.img H.! HA.src (staticURI ["github.png"])
   where
   isdev = any ((==) "dev" . fst) $ Wai.queryString req
 
