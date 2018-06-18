@@ -424,7 +424,7 @@ function add_filter(idx: number) {
       filt.ub = ub;
       add_filt_row(field.name, label,
         $('<span>').append(lb).append(' &ndash; ').append(ub),
-        $('<span><em>M</em> = </span>').append(avg),
+        $('<span><em>&mu;</em> = </span>').append(avg),
         $('<button>histogram</button>').on('click', function () {
           const i = Filters.indexOf(filt);
           if (i !== Histogram) {
