@@ -146,4 +146,4 @@ class Query:
 
     def numpy(self):
         """Return all of the results in a numpy array."""
-        return numpy.load(numpy.DataSource().open(self.makeurl('npy'), 'rb'))
+        return numpy.load(numpy.DataSource(None).open(self.makeurl('npy'), 'rb'))
