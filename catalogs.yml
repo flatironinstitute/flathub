@@ -456,8 +456,9 @@ gaea:
     <a href='http://adsabs.harvard.edu/abs/2016MNRAS.461.1760H'>Hirschmann et al. 2016</a>,
     <a href='http://adsabs.harvard.edu/abs/2017MNRAS.469..968X'>Xie et al. 2017</a>,
     <a href='http://adsabs.harvard.edu/abs/2017MNRAS.465.2236Z'>Zoldan et al. 2017</a>.
+    Data release v3 2018-06-26.
     WARNING: This is one of the first all sky catalogs we have produced, and there could be some issues/bugs we did not notice. Any bug report will be useful to correct and improve this work! So please let us know if you find anything "strange".
-    The full dataset is available <a href='http://voms.simonsfoundation.org:50013/cv9s2IQ3B5IOchIVLuZlLRTxn2jhgrh/HI_lightcone_Anna2/'>here</a>.
+    The full dataset is available <a href='http://voms.simonsfoundation.org:50013/KZiLTE5keWT4N535B3Zd2aHibbjju6n/HI_lightcone_Anna3/'>here</a>.
   index: gaea
   settings:
     index:
