@@ -49,10 +49,10 @@ SystemJS.config({
     "buffer": "npm:jspm-nodelibs-buffer@0.2.3",
     "constants": "npm:jspm-nodelibs-constants@0.2.1",
     "crypto": "npm:jspm-nodelibs-crypto@0.2.1",
-    "datatables.net": "npm:datatables.net@1.10.16",
-    "datatables.net-colreorder": "npm:datatables.net-colreorder@1.4.1",
-    "datatables.net-dt": "npm:datatables.net-dt@1.10.16",
-    "datatables.net-scroller": "npm:datatables.net-scroller@1.4.4",
+    "datatables.net": "npm:datatables.net@1.10.19",
+    "datatables.net-colreorder": "npm:datatables.net-colreorder@1.5.1",
+    "datatables.net-dt": "npm:datatables.net-dt@1.10.19",
+    "datatables.net-scroller": "npm:datatables.net-scroller@1.5.1",
     "events": "npm:jspm-nodelibs-events@0.2.2",
     "fs": "npm:jspm-nodelibs-fs@0.2.1",
     "http": "npm:jspm-nodelibs-http@0.2.0",
@@ -67,24 +67,13 @@ SystemJS.config({
     "stream": "npm:jspm-nodelibs-stream@0.2.1",
     "string_decoder": "npm:jspm-nodelibs-string_decoder@0.2.2",
     "ts": "github:frankwallis/plugin-typescript@9.0.0",
-    "typescript": "npm:typescript@2.8.3",
+    "typescript": "npm:typescript@2.8.4",
     "url": "npm:jspm-nodelibs-url@0.2.1",
     "util": "npm:jspm-nodelibs-util@0.2.2",
     "vm": "npm:jspm-nodelibs-vm@0.2.1",
     "zlib": "npm:jspm-nodelibs-zlib@0.2.3"
   },
   packages: {
-    "npm:datatables.net-dt@1.10.16": {
-      "map": {
-        "jquery": "npm:jquery@3.3.1",
-        "datatables.net": "npm:datatables.net@1.10.16"
-      }
-    },
-    "npm:datatables.net@1.10.16": {
-      "map": {
-        "jquery": "npm:jquery@3.3.1"
-      }
-    },
     "npm:jspm-nodelibs-buffer@0.2.3": {
       "map": {
         "buffer": "npm:buffer@5.1.0"
@@ -239,18 +228,6 @@ SystemJS.config({
       "map": {
         "readable-stream": "npm:readable-stream@2.3.6",
         "pako": "npm:pako@0.2.9"
-      }
-    },
-    "npm:datatables.net-colreorder@1.4.1": {
-      "map": {
-        "jquery": "npm:jquery@3.3.1",
-        "datatables.net": "npm:datatables.net@1.10.16"
-      }
-    },
-    "npm:datatables.net-scroller@1.4.4": {
-      "map": {
-        "datatables.net": "npm:datatables.net@1.10.16",
-        "jquery": "npm:jquery@3.3.1"
       }
     },
     "npm:chart.js@2.7.2": {
@@ -414,7 +391,30 @@ SystemJS.config({
         "minimalistic-assert": "npm:minimalistic-assert@1.0.1"
       }
     },
-    "npm:typescript@2.8.3": {
+    "npm:datatables.net-scroller@1.5.1": {
+      "map": {
+        "jquery": "npm:jquery@3.3.1",
+        "datatables.net": "npm:datatables.net@1.10.19"
+      }
+    },
+    "npm:datatables.net-dt@1.10.19": {
+      "map": {
+        "jquery": "npm:jquery@3.3.1",
+        "datatables.net": "npm:datatables.net@1.10.19"
+      }
+    },
+    "npm:datatables.net-colreorder@1.5.1": {
+      "map": {
+        "jquery": "npm:jquery@3.3.1",
+        "datatables.net": "npm:datatables.net@1.10.19"
+      }
+    },
+    "npm:datatables.net@1.10.19": {
+      "map": {
+        "jquery": "npm:jquery@3.3.1"
+      }
+    },
+    "npm:typescript@2.8.4": {
       "map": {
         "source-map-support": "npm:source-map-support@0.5.6"
       }
