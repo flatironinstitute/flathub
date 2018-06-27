@@ -33,18 +33,6 @@ type Catalog = {
 
 type Query = undefined|string|number|{lb:string|number, ub:string|number};
 
-interface Filter {
-  field: number;
-  name: string;
-  query: Query;
-  isint: boolean;
-  update_aggs?: (aggs: Dict<any>) => void;
-  select?: HTMLSelectElement;
-  lb?: HTMLInputElement;
-  ub?: HTMLInputElement;
-  change?: () => void;
-}
-
 var TCat: DataTables.Api;
 declare const Catalog: Catalog;
 declare const Query: {offset:number, limit:number, sort:{field:string,asc:boolean}[], fields:string[], filter:{field:string,value:Query}, aggs:string[], hist:string|null};
@@ -53,7 +41,7 @@ const Filters: Array<Filter> = [];
 var Sample: number = 1;
 var Seed: undefined|number = 0;
 var Update_aggs: number = 0;
-var Histogram: number = -1;
+var Histogram: undefined|NumericFilter;
 const Histogram_bins = 100;
 var Histogram_chart: Chart|undefined;
 var Histogram_bin_width = 0;
@@ -85,12 +73,16 @@ function getChartX(point: any) {
 }
 
 function histogram(agg: {buckets: {key:number,doc_count:number}[]}) {
-  const hist = Filters[Histogram];
-  const field = Catalog.fields[hist.field];
+  const hist = Histogram;
+  if (!hist)
+    return;
+  const field = hist.field;
+  const points = agg.buckets.map(d => { return {x:d.key,y:d.doc_count}; });
+  points.push({x:points[points.length-1].x+Histogram_bin_width,y:0});
   const data = {
     datasets: [{
       label: field.title,
-      data: agg.buckets.map(d => { return {x:d.key,y:d.doc_count}; }),
+      data: points,
       pointRadius: 0,
       showLine: true,
       steppedLine: true,
@@ -163,12 +155,10 @@ function histogram(agg: {buckets: {key:number,doc_count:number}[]}) {
                 right = Histogram_drag_start;
               }
               right += Histogram_bin_width;
-              const filt = Filters[Histogram];
-              if (!(filt && filt.lb && filt.ub && filt.change))
+              const filt = Histogram;
+              if (!filt)
                 return;
-              filt.lb.valueAsNumber = left;
-              filt.ub.valueAsNumber = right;
-              filt.change();
+              filt.setRange(left, right);
             }
           }
         },
@@ -217,8 +207,8 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
   const aggs = Filters.slice(Update_aggs);
   if (aggs)
     query.aggs = aggs.map((filt) => filt.name).join(' ');
-  if (Histogram >= 0) {
-    const hist = Filters[Histogram];
+  if (Histogram) {
+    const hist = Histogram;
     const wid = typeof hist.query === 'object' ? <number>hist.query.ub - <number>hist.query.lb : null;
     if (wid && wid > 0) {
       Histogram_bin_width = wid/Histogram_bins;
@@ -243,11 +233,8 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
       recordsFiltered: Math.min(res.hits.total, displayLimit),
       data: res.hits.hits
     });
-    for (let filt of aggs) {
-      const f = filt.update_aggs;
-      if (f)
-        f(res.aggregations[filt.name]);
-    }
+    for (let filt of aggs)
+      filt.update_aggs(res.aggregations[filt.name]);
     Update_aggs = Filters.length;
     if (res.aggregations && res.aggregations.hist)
       histogram(res.aggregations.hist);
@@ -314,132 +301,178 @@ function add_sample() {
     $('<span>').append('seed ').append(seed));
 }
 
-function add_filter(idx: number) {
-  const field = Catalog.fields[idx];
-  if (!field || !TCat)
-    return;
-  const tcol = TCat.column(field.name+':name').visible(true);
-  if (Filters.some((f) => f.field === idx))
-    return;
-  const filt: Filter = {
-    field: idx,
-    name: field.name,
-    query: undefined,
-    isint: false
-  };
-  const update = () => {
-    const i = Filters.indexOf(filt);
+abstract class Filter {
+  name: string
+  query: Query
+  protected tcol: DataTables.ColumnMethods
+  private label: JQuery<HTMLSpanElement>
+
+  constructor(public field: Field) {
+    this.name = this.field.name
+    this.tcol = TCat.column(this.name+':name');
+    this.tcol.visible(true);
+    this.label = $(document.createElement('span'));
+    this.label.append($('<button class="remove">&times;</button>')
+      .on('click', this.remove.bind(this)),
+      this.field.title);
+  }
+
+  protected add(...nodes: Array<JQuery.TypeOrArray<JQuery.Node | JQuery<JQuery.Node>>>) {
+    add_filt_row(this.field.name, this.label, ...nodes);
+    Filters.push(this);
+    this.tcol.search('');
+  }
+
+  abstract update_aggs(aggs: Dict<any>): void;
+
+  protected change(search: any, vis: boolean) {
+    const i = Filters.indexOf(this);
     if (i >= 0 && Update_aggs > i)
       Update_aggs = i+1;
-  };
-  const label = $(document.createElement('span'));
-  label.append(
-    $('<button class="remove">&times;</button>').on('click', function () {
-      if (!TCat) return;
-      const i = Filters.indexOf(filt);
-      if (i < 0) return;
-      if (Histogram > i)
-        Histogram -=1;
-      else if (Histogram === i) {
-        Histogram =-1;
-        $('#dhist').hide();
-      }
-      Filters.splice(i, 1);
-      $('tr#filt-'+field.name).remove();
-      Update_aggs = i;
-      (<DataTables.ColumnMethods><any>tcol.search('')).visible(true).draw();
-    }),
-    field.title);
-  switch (field.type) {
-    case 'keyword': {
-      const select = document.createElement('select');
-      select.name = field.name;
-      select.disabled = true;
-      filt.update_aggs = (aggs: any) => {
-        $(select).empty();
-        select.appendChild(document.createElement('option'));
-        for (let b of aggs.buckets) {
-          const opt = document.createElement('option');
-          opt.setAttribute('value', b.key);
-          opt.textContent = b.key + ' (' + b.doc_count + ')';
-          select.appendChild(opt);
-        }
-        select.value = '';
-        select.disabled = false;
-      };
-      filt.change = function () {
-        const val = select.value;
-        if (val)
-          filt.query = val;
-        else
-          filt.query = undefined;
-        update();
-        (<DataTables.ColumnMethods><any>tcol.search(val)).visible(!val).draw();
-      };
-      select.onchange = filt.change;
-      filt.select = select;
-      add_filt_row(field.name, label, select);
-      break;
+    this.tcol.search(search);
+    this.tcol.visible(vis).draw();
+  }
+
+  protected remove() {
+    if (!TCat) return;
+    const i = Filters.indexOf(this);
+    if (i < 0) return;
+    Filters.splice(i, 1);
+    $('tr#filt-'+this.name).remove();
+    Update_aggs = i;
+    this.tcol.search('');
+    this.tcol.visible(true).draw();
+  }
+
+}
+
+class SelectFilter extends Filter {
+  select: HTMLSelectElement
+
+  constructor(field: Field) {
+    super(field);
+
+    this.select = document.createElement('select');
+    this.select.name = this.field.name;
+    this.select.disabled = true;
+    this.select.onchange = this.change.bind(this);
+    this.add(this.select);
+  }
+
+  update_aggs(aggs: Dict<any>) {
+    $(this.select).empty();
+    this.select.appendChild(document.createElement('option'));
+    for (let b of aggs.buckets) {
+      const opt = document.createElement('option');
+      opt.setAttribute('value', b.key);
+      opt.textContent = b.key + ' (' + b.doc_count + ')';
+      this.select.appendChild(opt);
     }
+    this.select.value = '';
+    this.select.disabled = false;
+  }
+
+  protected change() {
+    const val = this.select.value;
+    if (val)
+      this.query = val;
+    else
+      this.query = undefined;
+    super.change(val, !val);
+  }
+}
+
+class NumericFilter extends Filter {
+  lb: HTMLInputElement
+  ub: HTMLInputElement
+  private avg: HTMLSpanElement
+
+  private makeBound(w: boolean): HTMLInputElement {
+    const b = <HTMLInputElement>document.createElement('input');
+    b.name = this.name+"."+(w?"u":"l")+"b";
+    b.title = (w?"Upper":"Lower")+" bound for " + this.field.title + " values"
+    b.type = "number";
+    b.step = this.isint ? <any>1 : "any";
+    b.disabled = true;
+    b.onchange = this.change.bind(this);
+    return b;
+  }
+
+  constructor(field: Field, public isint: boolean) {
+    super(field);
+
+    this.lb = this.makeBound(false);
+    this.ub = this.makeBound(true);
+    this.avg = document.createElement('span');
+    this.avg.innerHTML = "<em>loading...</em>";
+    this.add(
+      $('<span>').append(this.lb).append(' &ndash; ').append(this.ub),
+      $('<span><em>&mu;</em> = </span>').append(this.avg),
+      $('<button>histogram</button>').on('click', this.histogram.bind(this))
+    );
+  }
+
+  update_aggs(aggs: Dict<any>) {
+    this.query = { lb: aggs.min, ub: aggs.max };
+    this.lb.defaultValue = this.lb.value = this.lb.min = this.ub.min = aggs.min;
+    this.ub.defaultValue = this.ub.value = this.lb.max = this.ub.max = aggs.max;
+    this.lb.disabled = this.ub.disabled = false;
+    this.avg.textContent = aggs.avg;
+  }
+
+  protected change() {
+    const lbv = this.lb.valueAsNumber;
+    const ubv = this.ub.valueAsNumber;
+    if (lbv == ubv)
+      this.query = lbv;
+    else
+      this.query = {
+        lb:isFinite(lbv) ? lbv : this.lb.defaultValue,
+        ub:isFinite(ubv) ? ubv : this.ub.defaultValue
+      };
+    super.change(lbv+" TO "+ubv, lbv!=ubv);
+  }
+
+  private histogram() {
+    if (Histogram !== this) {
+      Histogram = this;
+      this.tcol.draw(false);
+    }
+  }
+
+  protected remove() {
+    super.remove();
+    if (Histogram === this) {
+      Histogram = undefined;
+      $('#dhist').hide();
+    }
+  }
+
+  setRange(lbv: number, ubv: number) {
+    this.lb.valueAsNumber = lbv;
+    this.ub.valueAsNumber = ubv;
+    this.change();
+  }
+}
+
+function add_filter(idx: number): Filter|undefined {
+  const field = Catalog.fields[idx];
+  if (!TCat || !field || Filters.some((f) => f.field === field))
+    return;
+  let isint = false;
+  switch (field.type) {
+    case 'keyword':
+      return new SelectFilter(field);
     case 'byte':
     case 'short':
     case 'integer':
-      filt.isint = true;
+    case 'long':
+      isint = true;
     case 'half_float':
     case 'float':
-    case 'double': {
-      const lb = <HTMLInputElement>document.createElement('input');
-      lb.name = field.name+".lb";
-      lb.title = "Lower bound for " + field.title + " values"
-      const ub = <HTMLInputElement>document.createElement('input');
-      ub.name = field.name+".ub";
-      ub.title = "Upper bound for " + field.title + " values"
-      lb.type = ub.type = "number";
-      lb.step = ub.step = filt.isint ? <any>1 : "any";
-      lb.disabled = ub.disabled = true;
-      const avg = document.createElement('span');
-      avg.innerHTML = "<em>loading...</em>";
-      filt.update_aggs = (aggs: any) => {
-        filt.query = { lb: aggs.min, ub: aggs.max };
-        lb.defaultValue = lb.value = lb.min = ub.min = aggs.min;
-        ub.defaultValue = ub.value = lb.max = ub.max = aggs.max;
-        lb.disabled = ub.disabled = false;
-        avg.textContent = aggs.avg;
-      };
-      filt.change = function () {
-        const lbv = lb.valueAsNumber;
-        const ubv = ub.valueAsNumber;
-        if (lbv == ubv)
-          filt.query = lbv;
-        else
-          filt.query = {
-            lb:isFinite(lbv) ? lbv : lb.defaultValue,
-            ub:isFinite(ubv) ? ubv : ub.defaultValue
-          };
-        update();
-        (<DataTables.ColumnMethods><any>tcol.search(lbv+" TO "+ubv)).visible(lbv!=ubv).draw();
-      };
-      lb.onchange = ub.onchange = filt.change;
-      filt.lb = lb;
-      filt.ub = ub;
-      add_filt_row(field.name, label,
-        $('<span>').append(lb).append(' &ndash; ').append(ub),
-        $('<span><em>&mu;</em> = </span>').append(avg),
-        $('<button>histogram</button>').on('click', function () {
-          const i = Filters.indexOf(filt);
-          if (i !== Histogram) {
-            Histogram = Filters.indexOf(filt);
-            tcol.draw(false);
-          }
-        })
-      );
-      break;
-    }
-    default:
-      return;
+    case 'double':
+      return new NumericFilter(field, isint);
   }
-  Filters.push(filt);
-  tcol.search('');
 }
 
 (<any>window).hide_column = function hide_column(event:Event) {
