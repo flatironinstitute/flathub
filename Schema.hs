@@ -19,6 +19,7 @@ module Schema
   , FieldSub(..)
   , Field, FieldGroup
   , Fields, FieldGroups
+  , ESStoreField(..)
   , CatalogStore(..)
   , Catalog(..)
   , subField
@@ -297,21 +298,39 @@ fieldsDepth :: FieldGroups -> Word
 fieldsDepth = getMax . depth where
   depth = succ . foldMap (foldMap depth . fieldSub)
 
+data ESStoreField
+  = ESStoreSource
+  | ESStoreValues
+  | ESStoreStore
+  deriving (Eq, Ord, Enum, Show)
+
+instance J.FromJSON ESStoreField where
+  parseJSON J.Null                  = return ESStoreSource
+  parseJSON (J.Bool False)          = return ESStoreValues
+  parseJSON (J.Bool True)           = return ESStoreStore
+  parseJSON (J.String "source")     = return ESStoreSource
+  parseJSON (J.String "doc_values") = return ESStoreValues
+  parseJSON (J.String "docvalue")   = return ESStoreValues
+  parseJSON (J.String "value")      = return ESStoreValues
+  parseJSON (J.String "store")      = return ESStoreStore
+  parseJSON x = J.typeMismatch "ESStoreField" x
+
 data CatalogStore
   = CatalogES
-    { catalogIndex, catalogMapping :: T.Text
+    { catalogIndex, catalogMapping :: !T.Text
     , catalogSettings :: J.Object
+    , catalogStoreField :: !ESStoreField
     }
 #ifdef HAVE_pgsql
   | CatalogPG
-    { catalogTable :: T.Text
+    { catalogTable :: !T.Text
     }
 #endif
 
 data Catalog = Catalog
-  { catalogTitle :: T.Text
+  { catalogTitle :: !T.Text
   , catalogDescr :: Maybe T.Text
-  , catalogStore :: CatalogStore
+  , catalogStore :: !CatalogStore
   , catalogFieldGroups :: FieldGroups
   , catalogFields :: Fields
   , catalogFieldMap :: HM.HashMap T.Text Field
@@ -328,6 +347,7 @@ instance J.FromJSON Catalog where
         <$> (c J..: "index")
         <*> (c J..:! "mapping" J..!= "catalog")
         <*> (c J..:? "settings" J..!= HM.empty)
+        <*> (c J..:? "store" J..!= ESStoreSource)
 #ifdef HAVE_pgsql
       <|> CatalogPG
         <$> (c J..: "table")

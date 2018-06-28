@@ -105,14 +105,18 @@ defaultSettings = HM.fromList
   ]
 
 createIndex :: Catalog -> M J.Value
-createIndex cat@Catalog{ catalogStore = CatalogES idxn mapn sets } = elasticSearch PUT [T.unpack idxn] [] $ JE.pairs $
-     "settings" J..= mergeJSONObject sets defaultSettings
+createIndex cat@Catalog{ catalogStore = CatalogES{..} } = elasticSearch PUT [T.unpack catalogIndex] [] $ JE.pairs $
+     "settings" J..= mergeJSONObject catalogSettings defaultSettings
   <> "mappings" .=*
-    (  mapn .=*
+    (  catalogMapping .=*
       (  "dynamic" J..= J.String "strict"
+      <> "_source" .=* ("enabled" J..= (catalogStoreField == ESStoreSource))
       <> "properties" J..= HM.map field (catalogFieldMap cat)))
   where
-  field f = J.object ["type" J..= fieldType f]
+  field f = J.object
+    [ "type" J..= fieldType f
+    , "store" J..= (catalogStoreField == ESStoreStore)
+    ]
 createIndex _ = return J.Null
 
 checkIndices :: M ()
@@ -143,7 +147,7 @@ scrollTime :: IsString s => s
 scrollTime = "10s"
 
 queryIndexScroll :: Bool -> Catalog -> Query -> M J.Value
-queryIndexScroll scroll cat@Catalog{ catalogStore = CatalogES{} } Query{..} =
+queryIndexScroll scroll cat@Catalog{ catalogStore = CatalogES{ catalogStoreField = store } } Query{..} =
   elasticSearch GET
     (catalogURL cat ++ ["_search"])
     (mwhen scroll $ [("scroll", Just scrollTime)])
@@ -151,7 +155,10 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = CatalogES{} } Query{..} =
        (mwhen (queryOffset > 0) $ "from" J..= queryOffset)
     <> (mwhen (queryLimit  > 0 || not scroll) $ "size" J..= queryLimit)
     <> "sort" `JE.pair` JE.list (\(f, a) -> JE.pairs (f J..= if a then "asc" else "desc" :: String)) (querySort ++ [("_doc",True)])
-    <> "_source" J..= queryFields
+    <> (case store of
+      ESStoreSource -> "_source"
+      ESStoreValues -> "docvalue_fields"
+      ESStoreStore -> "stored_fields") J..= queryFields
     <> "query" .=* (if querySample < 1
       then \q -> ("function_score" .=* ("query" .=* q
         <> "random_score" .=* foldMap (\s -> "seed" J..= s <> "field" J..= ("_seq_no" :: String)) querySeed
