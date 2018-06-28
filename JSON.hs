@@ -3,6 +3,7 @@ module JSON
   , (.=*)
   , EmptyJSON(..)
   , mergeJSON, mergeJSONObject
+  , unsingletonJSON
   ) where
 
 import qualified Data.Aeson.Types as J
@@ -37,3 +38,7 @@ mergeJSON x _ = x
 
 mergeJSONObject :: J.Object -> J.Object -> J.Object
 mergeJSONObject = HM.unionWith mergeJSON
+
+unsingletonJSON :: J.Value -> J.Value
+unsingletonJSON (J.Array v) | V.length v == 1 = V.head v
+unsingletonJSON v = v

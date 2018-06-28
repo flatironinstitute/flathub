@@ -39,6 +39,7 @@ import qualified Web.Route.Invertible as R
 
 import Schema
 import Global
+import JSON
 import CSV
 import qualified ES
 #ifdef HAVE_pgsql
@@ -87,24 +88,25 @@ catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do
   unless (queryLimit query <= 100) $
     result $ response badRequest400 [] ("limit too large" :: String)
   case catalogStore cat of
-    CatalogES{} -> do
+    CatalogES{ catalogStoreField = store } -> do
       res <- ES.queryIndex cat query
-      return $ okResponse [] $ clean res
+      return $ okResponse [] $ clean store res
 #ifdef HAVE_pgsql
     CatalogPG{} -> do
       res <- PG.queryTable cat query
       return $ okResponse [] res
 #endif
   where
-  clean = mapObject $ HM.mapMaybeWithKey cleanTop
-  cleanTop "aggregations" = Just
-  cleanTop "hits" = Just . mapObject (HM.mapMaybeWithKey cleanHits)
-  cleanTop _ = const Nothing
-  cleanHits "total" = Just
-  cleanHits "hits" = Just . mapArray (V.map sourceOnly)
-  cleanHits _ = const Nothing
-  sourceOnly (J.Object o) = HM.lookupDefault J.emptyObject "_source" o
-  sourceOnly v = v
+  clean store = mapObject $ HM.mapMaybeWithKey (cleanTop store)
+  cleanTop _ "aggregations" = Just
+  cleanTop store "hits" = Just . mapObject (HM.mapMaybeWithKey $ cleanHits store)
+  cleanTop _ _ = const Nothing
+  cleanHits _ "total" = Just
+  cleanHits store "hits" = Just . mapArray (V.map $ sourceOnly store)
+  cleanHits _ _ = const Nothing
+  sourceOnly ESStoreSource (J.Object o) = HM.lookupDefault J.emptyObject "_source" o
+  sourceOnly _ (J.Object o) = mapObject (HM.map unsingletonJSON) $ HM.lookupDefault J.emptyObject "fields" o
+  sourceOnly _ v = v
   mapObject :: (J.Object -> J.Object) -> J.Value -> J.Value
   mapObject f (J.Object o) = J.Object (f o)
   mapObject _ v = v

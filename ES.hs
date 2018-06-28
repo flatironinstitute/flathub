@@ -70,7 +70,7 @@ instance Body EmptyJSON where
   bodyRequest EmptyJSON = HTTP.RequestBodyBS "{}"
   bodyContentType _ = Just "application/json"
 
-elasticSearch :: (Body b, J.FromJSON r) => StdMethod -> [String] -> HTTP.Query -> b -> M r
+elasticSearch :: (Body b, J.FromJSON r, Show r) => StdMethod -> [String] -> HTTP.Query -> b -> M r
 elasticSearch meth url query body = do
   glob <- ask
   let req = globalES glob
@@ -85,8 +85,10 @@ elasticSearch meth url query body = do
   liftIO $ do
     -- print $ HTTP.path req'
     -- print $ JE.encodingToLazyByteString <$> body
-    either fail return . (J.parseEither J.parseJSON <=< AP.eitherResult)
+    r <- either fail return . (J.parseEither J.parseJSON <=< AP.eitherResult)
       =<< HTTP.withResponse req' (globalHTTP glob) parse
+    -- print r
+    return r
   where
   parse r = AP.parseWith (HTTP.responseBody r) J.json BS.empty
 
@@ -196,7 +198,7 @@ scrollSearch sid = elasticSearch GET ["_search", "scroll"] [] $ JE.pairs $
   <> "scroll_id" J..= sid
 
 queryBulk :: Catalog -> Query -> M (IO (Word, V.Vector [J.Value]))
-queryBulk cat query@Query{..} = do
+queryBulk cat@Catalog{ catalogStore = CatalogES{ catalogStoreField = store } } query@Query{..} = do
   glob <- ask
   sidv <- liftIO $ newIORef Nothing
   return $ do
@@ -214,9 +216,13 @@ queryBulk cat query@Query{..} = do
     <*> parseJSONField "hits" (J.withObject "hits" $ \hits -> (,)
       <$> hits J..: "total"
       <*> parseJSONField "hits" (J.withArray "hits" $
-        V.mapM $ J.withObject "hit" $
-          parseJSONField "_source" $ J.withObject "source" $ \d ->
-            return $ map (\f -> HM.lookupDefault J.Null f d) queryFields) hits)
+        V.mapM $ J.withObject "hit" $ case store of
+          ESStoreSource ->
+            parseJSONField "_source" $ J.withObject "source" $ \d ->
+              return $ map (\f -> HM.lookupDefault J.Null f d) queryFields
+          _ ->
+            parseJSONField "fields" $ J.withObject "fields" $ \d ->
+              return $ map (\f -> unsingletonJSON $ HM.lookupDefault J.Null f d) queryFields) hits)
       q
 
 createBulk :: Catalog -> [(String, J.Series)] -> M ()
