@@ -347,7 +347,7 @@ instance J.FromJSON Catalog where
         <$> (c J..: "index")
         <*> (c J..:! "mapping" J..!= "catalog")
         <*> (c J..:? "settings" J..!= HM.empty)
-        <*> (c J..:? "store" J..!= ESStoreSource)
+        <*> (c J..:? "store" J..!= ESStoreValues)
 #ifdef HAVE_pgsql
       <|> CatalogPG
         <$> (c J..: "table")
