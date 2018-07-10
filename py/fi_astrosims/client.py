@@ -74,6 +74,9 @@ class Query:
         self.query = dict()
         if fields is None:
             fields = [ f['name'] for f in simulation.catalog['fields'] ]
+        if sample > 1:
+            self.update(fields, sort, sample, seed, **filters)
+            sample = sample / self.count()
         self.update(fields, sort, sample, seed, **filters)
 
     def update(self, fields = None, sort = None, sample = None, seed = None, **filters):
@@ -109,8 +112,6 @@ class Query:
             self.query['sort'] = delim.join(sort)
         elif sort:
             self.query['sort'] = sort
-        if sample > 1:
-            sample = sample / self.count()
         if sample < 1:
             self.query['sample'] = str(sample)
             if seed is not None:
