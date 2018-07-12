@@ -11,6 +11,7 @@ import qualified Data.Aeson as J
 import qualified Data.Csv.Streaming as CSV
 import           Data.List (mapAccumL)
 import           Data.Maybe (fromMaybe)
+import           Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Vector as V
 import           Data.Word (Word64)
@@ -41,8 +42,8 @@ takeCSV n r = do
     (\a' -> first (a':) <$> takeCSV (pred n) r')
     a
 
-ingestCSV :: Catalog -> Word64 -> FilePath -> Word64 -> M Word64
-ingestCSV cat blockSize fn off = do
+ingestCSV :: Catalog -> J.Series -> Word64 -> FilePath -> Word64 -> M Word64
+ingestCSV cat consts blockSize fn off = do
   csv <- liftIO $ CSV.decode CSV.NoHeader <$> decompressFile fn
   (fromMaybe V.empty -> header, rows) <- unconsCSV csv
   cols <- mapM (\Field{ fieldName = n } ->
@@ -62,7 +63,7 @@ ingestCSV cat blockSize fn off = do
       if null rs
         then return o
         else do
-          let (o', block) = mapAccumL (\i r -> (succ i, (key i r, foldMap (val r) cols))) o rs
+          let (o', block) = mapAccumL (\i r -> (succ i, (key i r, consts <> foldMap (val r) cols))) o rs
           ES.createBulk cat block
           loop o' cs'
   loop off' rows'
