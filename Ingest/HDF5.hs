@@ -20,7 +20,8 @@ import           Data.Word (Word64)
 import           System.FilePath (takeBaseName)
 import           System.IO (hFlush, stdout)
 
-import Schema
+import Field
+import Catalog
 import Global
 import qualified ES
 

@@ -18,7 +18,7 @@ import           Foreign.C.Types (CUShort(CUShort))
 import           Numeric.Half (Half(Half))
 import           Unsafe.Coerce (unsafeCoerce)
 
-import Schema
+import Field
 import Monoid
 
 getHalf' :: Half -> Word16

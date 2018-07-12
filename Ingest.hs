@@ -14,7 +14,7 @@ import           System.Directory (doesDirectoryExist, listDirectory)
 import           System.FilePath (takeExtension, (</>))
 import           Text.Read (readMaybe)
 
-import Schema
+import Catalog
 import Global
 import Ingest.CSV
 import Ingest.HDF5

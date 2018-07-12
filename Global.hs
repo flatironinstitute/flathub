@@ -30,7 +30,7 @@ import           Waimwork.Response (response)
 import           Waimwork.Result (result)
 import qualified Web.Route.Invertible as R
 
-import Schema
+import Catalog
 
 data Global = Global
   { globalConfig :: C.Config

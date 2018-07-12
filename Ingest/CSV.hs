@@ -18,7 +18,8 @@ import           System.FilePath (dropExtension)
 import           System.IO (hFlush, stdout)
 
 import Monoid
-import Schema
+import Field
+import Catalog
 import Global
 import qualified ES
 import Compression

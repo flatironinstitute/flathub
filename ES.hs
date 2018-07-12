@@ -40,7 +40,8 @@ import qualified Waimwork.Config as C
 
 import Monoid
 import JSON
-import Schema
+import Field
+import Catalog
 import Global
 
 initServer :: C.Config -> IO HTTP.Request

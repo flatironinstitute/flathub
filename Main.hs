@@ -38,7 +38,8 @@ import qualified Web.Route.Invertible as R
 import           Web.Route.Invertible.URI (routeActionURI)
 import           Web.Route.Invertible.Wai (routeWaiError)
 
-import Schema
+import Field
+import Catalog
 import Global
 import qualified ES
 #ifdef HAVE_pgsql

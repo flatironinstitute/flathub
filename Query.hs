@@ -37,7 +37,8 @@ import           Waimwork.Result (result)
 import           System.FilePath ((<.>))
 import qualified Web.Route.Invertible as R
 
-import Schema
+import Field
+import Catalog
 import Global
 import JSON
 import CSV
