@@ -20,7 +20,6 @@ flag pgsql
 executable astrosims
   main-is: Main.hs
   other-modules:
-    CSV
     Catalog
     Compression
     ES
@@ -31,7 +30,8 @@ executable astrosims
     Ingest.HDF5
     JSON
     Monoid
-    Numpy
+    Output.CSV
+    Output.Numpy
     Query
     Static
   hs-source-dirs: .

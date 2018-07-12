@@ -41,13 +41,13 @@ import Field
 import Catalog
 import Global
 import JSON
-import CSV
+import Output.CSV
 import qualified ES
 #ifdef HAVE_pgsql
 import qualified PG
 #endif
 import Compression
-import Numpy
+import Output.Numpy
 
 parseQuery :: Wai.Request -> Query
 parseQuery = foldMap parseQueryItem . Wai.queryString where

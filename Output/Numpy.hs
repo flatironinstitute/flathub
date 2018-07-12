@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Numpy
+module Output.Numpy
   ( numpyHeader
   , numpyRow
   ) where
