@@ -5,7 +5,7 @@ SystemJS.config({
     "astrosims/": ""
   },
   browserConfig: {
-    "baseURL": "/js"
+    "baseURL": "/web"
   },
   typescriptOptions: {
     "tsconfig": true

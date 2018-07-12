@@ -54,8 +54,8 @@ findM f (a:l) = do
   if r then return $ Just a else findM f l
 
 static :: Route [FilePathComponent]
-static = getPath ("js" R.*< R.manyI R.parameter) $ \paths q -> liftIO $ do
-  let path = FP.joinPath ("js" : map componentFilePath paths)
+static = getPath ("web" R.*< R.manyI R.parameter) $ \paths q -> liftIO $ do
+  let path = FP.joinPath ("web" : map componentFilePath paths)
       encs = acceptCompressionEncoding q
   fmod <- getModificationTime' path
   enc <- findM (\e -> do
