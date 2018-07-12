@@ -200,9 +200,10 @@ numpyDtype t = '<' : numpyBtype t : show (numpySize t) where
   numpyBtype (Keyword   _) = 'S'
   numpyBtype (Text      _) = 'S'
 
-data FieldSub m = Field
+data FieldSub t m = Field
   { fieldName :: T.Text
-  , fieldType :: Type
+  , fieldType :: TypeValue t
+  , fieldEnum :: Maybe (V.Vector T.Text)
   , fieldTitle :: T.Text
   , fieldDescr :: Maybe T.Text
   , fieldUnits :: Maybe T.Text
@@ -210,9 +211,11 @@ data FieldSub m = Field
   , fieldSub :: m (FieldsSub m)
   }
 
-type FieldsSub m = V.Vector (FieldSub m)
-type FieldGroup = FieldSub Maybe
-type Field = FieldSub Proxy
+type FieldGroup = FieldSub Proxy Maybe
+type Field = FieldSub Proxy Proxy
+type FieldValue = FieldSub Identity Proxy
+
+type FieldsSub m = V.Vector (FieldSub Proxy m)
 type FieldGroups = FieldsSub Maybe
 type Fields = [Field]
 
@@ -220,6 +223,7 @@ instance Default FieldGroup where
   def = Field
     { fieldName = T.empty
     , fieldType = def
+    , fieldEnum = Nothing
     , fieldTitle = T.empty
     , fieldDescr = Nothing
     , fieldUnits = Nothing
@@ -232,6 +236,7 @@ instance J.ToJSON Field where
   toJSON Field{..} = J.object
     [ "name" J..= fieldName
     , "type" J..= fieldType
+    , "enum" J..= fieldEnum
     , "title" J..= fieldTitle
     , "descr" J..= fieldDescr
     , "units" J..= fieldUnits
@@ -242,6 +247,7 @@ instance J.ToJSON Field where
   toEncoding Field{..} = J.pairs
     (  "name" J..= fieldName
     <> "type" J..= fieldType
+    <> "enum" J..= fieldEnum
     <> "title" J..= fieldTitle
     <> "descr" J..= fieldDescr
     <> "units" J..= fieldUnits
@@ -256,6 +262,7 @@ instance J.FromJSON FieldGroup where
       n <- f J..: "name"
       r <- Field n
         <$> (f J..:! "type" J..!= fieldType d)
+        <*> (f J..:? "enum")
         <*> (f J..:! "title" J..!= n)
         <*> (f J..:? "descr")
         <*> (f J..:? "units")
@@ -265,7 +272,7 @@ instance J.FromJSON FieldGroup where
       s <- J.explicitParseFieldMaybe' (J.withArray "subfields" $ V.mapM $ parseFieldDefs r) f "sub"
       return r{ fieldSub = s }
 
-subField :: FieldSub n -> FieldSub m -> FieldSub m
+subField :: FieldSub s n -> FieldSub t m -> FieldSub t m
 subField f s = s
   { fieldName = fieldName f <> T.cons '_' (fieldName s)
   , fieldTitle = fieldTitle f <> T.cons ' ' (fieldTitle s)

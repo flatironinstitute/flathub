@@ -117,7 +117,7 @@ createIndex cat@Catalog{ catalogStore = CatalogES{..} } = elasticSearch PUT [T.u
       <> "properties" J..= HM.map field (catalogFieldMap cat)))
   where
   field f = J.object
-    [ "type" J..= fieldType f
+    [ "type" J..= (fieldType f :: Type)
     , "store" J..= (catalogStoreField == ESStoreStore)
     ]
 createIndex _ = return J.Null
