@@ -28,6 +28,7 @@ executable astrosims
     Ingest
     Ingest.CSV
     Ingest.HDF5
+    Ingest.Delim
     JSON
     Monoid
     Output.CSV

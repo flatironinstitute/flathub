@@ -19,6 +19,7 @@ import           Text.Read (readMaybe)
 import Catalog
 import Global
 import Ingest.CSV
+import Ingest.Delim
 import Ingest.HDF5
 import Compression
 
@@ -38,6 +39,7 @@ ingest cat consts fno = do
   proc f = case takeExtension $ fst $ decompressExtension f of
     ".hdf5" -> Just ingestHDF5
     ".csv" -> Just ingestCSV
+    ".dat" -> Just ingestDat
     _ -> Nothing
   (fn, off) = splitoff fno
   splitoff [] = ([], 0)
