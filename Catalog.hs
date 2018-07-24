@@ -18,7 +18,7 @@ import qualified Data.Aeson.Types as J
 import           Data.Bits (xor)
 import qualified Data.ByteString as BS
 import qualified Data.HashMap.Strict as HM
-import           Data.Monoid ((<>))
+import           Data.Semigroup (Semigroup((<>)))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 
@@ -108,7 +108,10 @@ instance Monoid Query where
     , queryAggs   = []
     , queryHist   = Nothing
     }
-  mappend q1 q2 = Query
+  mappend = (<>)
+
+instance Semigroup Query where
+  q1 <> q2 = Query
     { queryOffset = queryOffset q1 +     queryOffset q2
     , queryLimit  = queryLimit  q1 `max` queryLimit  q2
     , querySort   = querySort   q1 <>    querySort   q2
@@ -117,7 +120,7 @@ instance Monoid Query where
     , querySample = querySample q1 *     querySample q2
     , querySeed   = joinMaybeWith xor (querySeed q1) (querySeed q2)
     , queryAggs   = queryAggs   q1 <>    queryAggs   q2
-    , queryHist   = queryHist q1 `mappend` queryHist q2
+    , queryHist   = queryHist   q1 <>    queryHist q2
     }
 
 fillQuery :: Catalog -> Query -> Query
