@@ -1,4 +1,4 @@
-FROM fpco/stack-build:lts-11.13
+FROM fpco/stack-build:lts-12.2
 RUN apt-get update && \
     apt-get install -y libhdf5-dev && \
     rm -rf /var/lib/apt/lists/*
@@ -9,11 +9,11 @@ COPY --chown=astrosims stack.yaml astrosims.cabal /home/astrosims/astrosims/
 WORKDIR /home/astrosims/astrosims
 RUN stack install --system-ghc --extra-include-dirs=/usr/include/hdf5/serial --extra-lib-dirs=/usr/lib/x86_64-linux-gnu/hdf5/serial --only-dependencies
 
-COPY --chown=astrosims js/package*.json js/jspm.config.js /home/astrosims/astrosims/js/
-RUN cd js && npm install
+COPY --chown=astrosims web/package*.json web/jspm.config.js /home/astrosims/astrosims/web/
+RUN cd web && npm install
 
-COPY --chown=astrosims js/ /home/astrosims/astrosims/js/
-RUN make -C js
+COPY --chown=astrosims web/ /home/astrosims/astrosims/web/
+RUN make -C web
 
 COPY --chown=astrosims . /home/astrosims/astrosims
 RUN stack install --system-ghc --extra-include-dirs=/usr/include/hdf5/serial --extra-lib-dirs=/usr/lib/x86_64-linux-gnu/hdf5/serial

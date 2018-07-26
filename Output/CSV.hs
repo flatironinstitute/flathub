@@ -1,4 +1,4 @@
-module CSV
+module Output.CSV
   ( csvTextRow
   , csvJSONRow
   ) where

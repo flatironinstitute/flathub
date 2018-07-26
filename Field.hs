@@ -1,13 +1,11 @@
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Schema
+module Field
   ( TypeValue(..)
   , Type, Value
   , typeValue, typeValue1
@@ -19,36 +17,28 @@ module Schema
   , FieldSub(..)
   , Field, FieldGroup
   , Fields, FieldGroups
-  , CatalogStore(..)
-  , Catalog(..)
   , subField
   , expandFields
   , fieldsDepth
-  , Query(..)
-  , fillQuery
   ) where
 
 import           Control.Applicative ((<|>))
-import           Control.Arrow ((&&&))
-import           Control.Monad (unless)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Types as J
-import           Data.Bits (xor)
-import qualified Data.ByteString as BS
 import           Data.Default (Default(def))
 import           Data.Functor.Classes (Eq1, eq1, Show1, showsPrec1)
 import           Data.Functor.Identity (Identity(Identity))
-import qualified Data.HashMap.Strict as HM
 import           Data.Int (Int64, Int32, Int16, Int8)
 import           Data.Monoid ((<>))
 import           Data.Proxy (Proxy(Proxy))
 import           Data.Semigroup (Max(getMax))
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
 import           Data.Typeable (Typeable)
 import qualified Data.Vector as V
 import           Numeric.Half (Half)
 import           Text.Read (readMaybe, readPrec, Lexeme(Ident), lexP, readEither)
+
+import Monoid
 
 instance J.ToJSON Half where
   toJSON = J.toJSON . (realToFrac :: Half -> Float)
@@ -210,9 +200,10 @@ numpyDtype t = '<' : numpyBtype t : show (numpySize t) where
   numpyBtype (Keyword   _) = 'S'
   numpyBtype (Text      _) = 'S'
 
-data FieldSub m = Field
+data FieldSub t m = Field
   { fieldName :: T.Text
-  , fieldType :: Type
+  , fieldType :: TypeValue t
+  , fieldEnum :: Maybe (V.Vector T.Text)
   , fieldTitle :: T.Text
   , fieldDescr :: Maybe T.Text
   , fieldUnits :: Maybe T.Text
@@ -220,9 +211,11 @@ data FieldSub m = Field
   , fieldSub :: m (FieldsSub m)
   }
 
-type FieldsSub m = V.Vector (FieldSub m)
-type FieldGroup = FieldSub Maybe
-type Field = FieldSub Proxy
+type FieldGroup = FieldSub Proxy Maybe
+type Field = FieldSub Proxy Proxy
+type FieldValue = FieldSub Identity Proxy
+
+type FieldsSub m = V.Vector (FieldSub Proxy m)
 type FieldGroups = FieldsSub Maybe
 type Fields = [Field]
 
@@ -230,6 +223,7 @@ instance Default FieldGroup where
   def = Field
     { fieldName = T.empty
     , fieldType = def
+    , fieldEnum = Nothing
     , fieldTitle = T.empty
     , fieldDescr = Nothing
     , fieldUnits = Nothing
@@ -242,6 +236,7 @@ instance J.ToJSON Field where
   toJSON Field{..} = J.object
     [ "name" J..= fieldName
     , "type" J..= fieldType
+    , "enum" J..= fieldEnum
     , "title" J..= fieldTitle
     , "descr" J..= fieldDescr
     , "units" J..= fieldUnits
@@ -252,6 +247,7 @@ instance J.ToJSON Field where
   toEncoding Field{..} = J.pairs
     (  "name" J..= fieldName
     <> "type" J..= fieldType
+    <> "enum" J..= fieldEnum
     <> "title" J..= fieldTitle
     <> "descr" J..= fieldDescr
     <> "units" J..= fieldUnits
@@ -266,6 +262,7 @@ instance J.FromJSON FieldGroup where
       n <- f J..: "name"
       r <- Field n
         <$> (f J..:! "type" J..!= fieldType d)
+        <*> (f J..:? "enum")
         <*> (f J..:! "title" J..!= n)
         <*> (f J..:? "descr")
         <*> (f J..:? "units")
@@ -275,17 +272,16 @@ instance J.FromJSON FieldGroup where
       s <- J.explicitParseFieldMaybe' (J.withArray "subfields" $ V.mapM $ parseFieldDefs r) f "sub"
       return r{ fieldSub = s }
 
-joinMaybeWith :: (a -> a -> a) -> Maybe a -> Maybe a -> Maybe a
-joinMaybeWith _ Nothing x = x
-joinMaybeWith _ x Nothing = x
-joinMaybeWith f (Just x) (Just y) = Just $ f x y
-
-subField :: FieldSub n -> FieldSub m -> FieldSub m
+subField :: FieldSub s n -> FieldSub t m -> FieldSub t m
 subField f s = s
-  { fieldName = fieldName f <> T.cons '_' (fieldName s)
-  , fieldTitle = fieldTitle f <> T.cons ' ' (fieldTitle s)
+  { fieldName = merge '_' (fieldName f) (fieldName s)
+  , fieldTitle = merge ' ' (fieldTitle f) (fieldTitle s)
   , fieldDescr = joinMaybeWith (\x -> (x <>) . T.cons '\n') (fieldDescr f) (fieldDescr s)
-  }
+  } where
+  merge c a b
+    | T.null a = b
+    | T.null b = a
+    | otherwise = a <> T.cons c b
 
 expandFields :: FieldGroups -> Fields
 expandFields = foldMap expandField where
@@ -297,102 +293,3 @@ fieldsDepth :: FieldGroups -> Word
 fieldsDepth = getMax . depth where
   depth = succ . foldMap (foldMap depth . fieldSub)
 
-data CatalogStore
-  = CatalogES
-    { catalogIndex, catalogMapping :: T.Text
-    , catalogSettings :: J.Object
-    }
-#ifdef HAVE_pgsql
-  | CatalogPG
-    { catalogTable :: T.Text
-    }
-#endif
-
-data Catalog = Catalog
-  { catalogTitle :: T.Text
-  , catalogDescr :: Maybe T.Text
-  , catalogStore :: CatalogStore
-  , catalogFieldGroups :: FieldGroups
-  , catalogFields :: Fields
-  , catalogFieldMap :: HM.HashMap T.Text Field
-  , catalogKey :: Maybe T.Text
-  }
-
-instance J.FromJSON Catalog where
-  parseJSON = J.withObject "catalog" $ \c -> do
-    catalogFieldGroups <- c J..: "fields"
-    catalogTitle <- c J..: "title"
-    catalogDescr <- c J..:? "descr"
-    catalogKey <- c J..:? "key"
-    catalogStore <- CatalogES
-        <$> (c J..: "index")
-        <*> (c J..:! "mapping" J..!= "catalog")
-        <*> (c J..:? "settings" J..!= HM.empty)
-#ifdef HAVE_pgsql
-      <|> CatalogPG
-        <$> (c J..: "table")
-#endif
-    let catalogFields = expandFields catalogFieldGroups
-        catalogFieldMap = HM.fromList $ map (fieldName &&& id) catalogFields
-    mapM_ (\k -> unless (HM.member k catalogFieldMap) $ fail "key field not found in catalog") catalogKey
-    return Catalog{..}
-
-data Query = Query
-  { queryOffset :: Word
-  , queryLimit :: Word
-  , querySort :: [(T.Text, Bool)]
-  , queryFields :: [T.Text]
-  , queryFilter :: [(T.Text, BS.ByteString, Maybe BS.ByteString)]
-  , querySample :: Double
-  , querySeed :: Maybe Word
-  , queryAggs :: [T.Text]
-  , queryHist :: Maybe (T.Text, BS.ByteString)
-  }
-
-instance Monoid Query where
-  mempty = Query
-    { queryOffset = 0
-    , queryLimit  = 0
-    , querySort   = []
-    , queryFields = []
-    , queryFilter = []
-    , querySample = 1
-    , querySeed   = Nothing
-    , queryAggs   = []
-    , queryHist   = Nothing
-    }
-  mappend q1 q2 = Query
-    { queryOffset = queryOffset q1 +     queryOffset q2
-    , queryLimit  = queryLimit  q1 `max` queryLimit  q2
-    , querySort   = querySort   q1 <>    querySort   q2
-    , queryFields = queryFields q1 <>    queryFields q2
-    , queryFilter = queryFilter q1 <>    queryFilter q2
-    , querySample = querySample q1 *     querySample q2
-    , querySeed   = joinMaybeWith xor (querySeed q1) (querySeed q2)
-    , queryAggs   = queryAggs   q1 <>    queryAggs   q2
-    , queryHist   = queryHist q1 `mappend` queryHist q2
-    }
-
-fillQuery :: Catalog -> Query -> Query
-fillQuery cat q@Query{ queryFields = [] } = fillQuery cat $ q{ queryFields = map fieldName $ catalogFields cat }
-fillQuery _ q = q
-
-instance J.ToJSON Query where
-  toJSON Query{..} = J.object
-    [ "offset" J..= queryOffset
-    , "limit"  J..= queryLimit
-    , "sort"   J..= [ J.object
-      [ "field" J..= f
-      , "asc" J..= a
-      ] | (f,a) <- querySort ]
-    , "fields" J..= queryFields
-    , "filter" J..= [ J.object
-      [ "field" J..= f
-      , "value" J..= maybe (bs a) (\b' -> J.object ["lb" J..= bs a, "ub" J..= bs b']) b
-      ] | (f,a,b) <- queryFilter ]
-    , "seed"   J..= querySeed
-    , "sample" J..= querySample
-    , "aggs"   J..= queryAggs
-    , "hist"   J..= (fst <$> queryHist)
-    ] where
-    bs = J.String . TE.decodeLatin1

@@ -11,6 +11,7 @@ import           Control.Monad.Trans.Control (liftBaseOp)
 import qualified Bindings.HDF5 as H5
 import qualified Data.Aeson as J
 import qualified Data.ByteString.Char8 as BSC
+import           Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V
@@ -20,7 +21,8 @@ import           Data.Word (Word64)
 import           System.FilePath (takeBaseName)
 import           System.IO (hFlush, stdout)
 
-import Schema
+import Field
+import Catalog
 import Global
 import qualified ES
 
@@ -67,23 +69,23 @@ loadBlock Catalog{ catalogFieldGroups = cat } off len hf = concat <$> mapM (\f -
 blockLength :: DataBlock -> Int
 blockLength = maximum . map (onTypeValue V.length . snd)
 
-ingestBlock :: Catalog -> String -> Word64 -> DataBlock -> M Int
-ingestBlock cat@Catalog{ catalogStore = CatalogES{} } pfx off dat = do
+ingestBlock :: Catalog -> J.Series -> String -> Word64 -> DataBlock -> M Int
+ingestBlock cat@Catalog{ catalogStore = CatalogES{} } consts pfx off dat = do
   ES.createBulk cat $ map doc [0..pred n]
   return n
   where
   n = blockLength dat
-  doc i = (pfx ++ show (off + fromIntegral i), foldMap (\(k, v) -> k J..= fmapTypeValue1 (V.! i) v) dat)
-ingestBlock _ _ _ _ = fail "ingestBlock: not implemented"
+  doc i = (pfx ++ show (off + fromIntegral i), consts <> foldMap (\(k, v) -> k J..= fmapTypeValue1 (V.! i) v) dat)
+ingestBlock _ _ _ _ _ = fail "ingestBlock: not implemented"
 
 withHDF5 :: FilePath -> (H5.File -> IO a) -> IO a
 withHDF5 fn = bracket (H5.openFile (BSC.pack fn) [H5.ReadOnly] Nothing) H5.closeFile
 
-ingestHDF5 :: Catalog -> Word64 -> FilePath -> Word64 -> M Word64
-ingestHDF5 cat blockSize fn off = liftBaseOp (withHDF5 fn) $ \hf -> do
+ingestHDF5 :: Catalog -> J.Series -> Word64 -> FilePath -> Word64 -> M Word64
+ingestHDF5 cat consts blockSize fn off = liftBaseOp (withHDF5 fn) $ \hf -> do
   let loop o = do
         liftIO $ putStr (show o ++ "\r") >> hFlush stdout
-        n <- ingestBlock cat pfx o =<< liftIO (loadBlock cat o blockSize hf)
+        n <- ingestBlock cat consts pfx o =<< liftIO (loadBlock cat o blockSize hf)
         (if n < fromIntegral blockSize then return else loop) (o + fromIntegral n)
   loop off
   where

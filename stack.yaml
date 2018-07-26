@@ -1,16 +1,16 @@
-resolver: lts-11.13
+resolver: lts-12.2
 packages:
 - '.'
 - location:
     git: git://github.com/dylex/waimwork
-    commit: 8d9408d2bf864479becfed181c6c440ffbc2a128
+    commit: 4ac02af8e56cf26235737a964e08bce5a5f22305
   extra-dep: true
 - location:
     git: git://github.com/dylex/hs-hdf5
     commit: 7f3da0a759d69326031c0ff7a4c6419da57c39fb
   extra-dep: true
 extra-deps:
-  - web-inv-route-0.1.2
+  - web-inv-route-0.1.2.1
 flags:
   web-inv-route:
     snap: false

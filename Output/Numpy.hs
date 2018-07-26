@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Numpy
+module Output.Numpy
   ( numpyHeader
   , numpyRow
   ) where
@@ -18,7 +18,7 @@ import           Foreign.C.Types (CUShort(CUShort))
 import           Numeric.Half (Half(Half))
 import           Unsafe.Coerce (unsafeCoerce)
 
-import Schema
+import Field
 import Monoid
 
 getHalf' :: Half -> Word16
@@ -52,14 +52,15 @@ numpyHeader fields count = (B.string8 "\147NUMPY"
   <> (if vers2 then B.int32LE . fromIntegral else B.int16LE . fromIntegral) len'
   <> header
   <> stimesMonoid pad (B.char7 ' ')
+  <> B.char7 '\n'
   , fromIntegral (plen + len') + count * numpyRowSize fields)
   where
   plen = 8 + if vers2 then 4 else 2
   header = "{'descr':["
     <> mintersperseMap (B.char7 ',') field fields 
-    <> "],'fortran_order':False,'shape':(" <> B.wordDec count <> ",)}\n"
+    <> "],'fortran_order':False,'shape':(" <> B.wordDec count <> ",)}"
   field f = B.char7 '(' <> jenc (fieldName f) <> B.char7 ',' <> B.char7 '\'' <> B.string7 (numpyDtype (fieldType f)) <> B.char7 '\'' <> B.char7 ')'
-  len = BSL.length $ B.toLazyByteString header
+  len = succ $ BSL.length $ B.toLazyByteString header
   pad = negate $ (plen + len) `mod` (-64)
   len' = len + pad
   vers2 = len > 65472 -- with padding
