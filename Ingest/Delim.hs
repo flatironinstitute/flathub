@@ -3,6 +3,7 @@
 
 module Ingest.Delim
   ( ingestDat
+  , ingestTxt
   ) where
 
 import           Control.Arrow (first)
@@ -33,11 +34,13 @@ data DelimHeaders
 
 data Delim = Delim
   { delimDelim :: !Char
+  , delimMulti :: !Bool
   , delimHeaders :: !DelimHeaders
   } deriving (Show)
 
 splitDelim :: Delim -> BSC.ByteString -> [BSC.ByteString]
-splitDelim = BSC.split . delimDelim
+splitDelim Delim{ delimDelim = c, delimMulti = False } =                           BSC.split c
+splitDelim Delim{ delimDelim = c, delimMulti = True }  = filter (not . BSC.null) . BSC.split c
 
 parseHeaders :: Delim -> [BSC.ByteString] -> ([BSC.ByteString], [BSC.ByteString])
 parseHeaders _ [] = ([], [])
@@ -76,4 +79,7 @@ ingestDelim delim cat consts blockSize fn off = do
   fnb = dropExtension fn
 
 ingestDat :: Catalog -> J.Series -> Word64 -> FilePath -> Word64 -> M Word64
-ingestDat = ingestDelim (Delim ' ' DelimHeaderComments)
+ingestDat = ingestDelim (Delim ' ' False DelimHeaderComments)
+
+ingestTxt :: Catalog -> J.Series -> Word64 -> FilePath -> Word64 -> M Word64
+ingestTxt = ingestDelim (Delim ' ' True DelimHeaderComments)

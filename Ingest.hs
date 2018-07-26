@@ -40,6 +40,7 @@ ingest cat consts fno = do
     ".hdf5" -> Just ingestHDF5
     ".csv" -> Just ingestCSV
     ".dat" -> Just ingestDat
+    ".txt" -> Just ingestTxt
     _ -> Nothing
   (fn, off) = splitoff fno
   splitoff [] = ([], 0)
