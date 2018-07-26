@@ -65,7 +65,10 @@ ingestDelim delim cat consts blockSize fn off = do
         = \_ x -> BSC.unpack $ x !! i
       | otherwise = \i _ -> fnb ++ '_' : show i
     val Nothing _ = mempty
-    val (Just f) x = fieldName f J..= TE.decodeLatin1 x
+    val (Just f) x
+      | typeIsFloating (fieldType f) && x `elem` ["Inf", "-Inf", "+Inf"] = mempty
+      | BSC.null x = mempty
+      | otherwise = fieldName f J..= TE.decodeLatin1 x
     loop o [] = return o
     loop o s = do
       liftIO $ putStr (show o ++ "\r") >> hFlush stdout

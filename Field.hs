@@ -13,6 +13,7 @@ module Field
   , typeOfValue
   , onTypeValue
   , parseTypeJSONValue
+  , typeIsFloating, typeIsIntegral, typeIsNumeric, typeIsString
   , numpySize, numpyDtype
   , FieldSub(..)
   , Field, FieldGroup
@@ -174,6 +175,27 @@ instance {-# OVERLAPPING #-} J.ToJSON Type where
 instance J.FromJSON Type where
   parseJSON = J.withText "type" $ either fail return . readEither . T.unpack
 
+typeIsFloating :: Type -> Bool
+typeIsFloating (Double    _) = True
+typeIsFloating (Float     _) = True
+typeIsFloating (HalfFloat _) = True
+typeIsFloating _ = False
+
+typeIsIntegral :: Type -> Bool
+typeIsIntegral (Long      _) = True
+typeIsIntegral (Integer   _) = True
+typeIsIntegral (Short     _) = True
+typeIsIntegral (Byte      _) = True
+typeIsIntegral _ = False
+
+typeIsNumeric :: Type -> Bool
+typeIsNumeric t = typeIsFloating t || typeIsIntegral t
+
+typeIsString :: Type -> Bool
+typeIsString (Keyword   _) = True
+typeIsString (Text      _) = True
+typeIsString _ = False
+
 numpySize :: Type -> Word
 numpySize (Double    _) = 8
 numpySize (Float     _) = 4
@@ -189,16 +211,11 @@ numpySize (Text      _) = 16
 numpyDtype :: Type -> String
 numpyDtype (Boolean _) = "?"
 numpyDtype t = '<' : numpyBtype t : show (numpySize t) where
-  numpyBtype (Double    _) = 'f'
-  numpyBtype (Float     _) = 'f'
-  numpyBtype (HalfFloat _) = 'f'
-  numpyBtype (Long      _) = 'i'
-  numpyBtype (Integer   _) = 'i'
-  numpyBtype (Short     _) = 'i'
-  numpyBtype (Byte      _) = 'i'
+  numpyBtype t
+    | typeIsFloating t = 'f'
+    | typeIsIntegral t = 'i'
+    | typeIsString   t = 'S'
   numpyBtype (Boolean   _) = '?'
-  numpyBtype (Keyword   _) = 'S'
-  numpyBtype (Text      _) = 'S'
 
 data FieldSub t m = Field
   { fieldName :: T.Text
