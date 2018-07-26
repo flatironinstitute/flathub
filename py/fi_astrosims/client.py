@@ -2,16 +2,19 @@ import json
 import urllib.parse
 import urllib.request
 import numpy
+import random
 
 __all__ = ['Simulation', 'Query']
 
 delim = ' '
+
 
 def dictWith(a, **b):
     if b:
         a = a.copy()
         a.update(b)
     return a
+
 
 def makeurl(url, path=None, query=None):
     if path:
@@ -22,18 +25,31 @@ def makeurl(url, path=None, query=None):
         url += '?' + urllib.parse.urlencode(query)
     return url
 
+
 def get(url, headers={}):
+    """
+    :param url: (string) url to JSON catalog
+    :param headers:
+    :return:
+    Helper function used in getJSON
+    """
     return urllib.request.urlopen(urllib.request.Request(url, headers=headers))
 
+
 def getJSON(url):
+    """
+    :param: url: (string) url to JSON catalog
+    :return: (dict) dictionary of JSON catalog
+    Helper function used in Simulation initialization, count, aggs, and hist.
+    """
     res = get(url, headers={'accept': 'application/json'})
     return json.loads(res.read().decode(res.info().get_content_charset('utf-8')))
 
+
 class Simulation:
-    """Reference to a particular catalog.
-
+    """
+    Reference to a particular catalog.
     *name* is the id of the catalog at the *host* url.
-
     The resulting object contains the JSON description of the *catalog*, and a
     dictionary of available *fields*.
     """
@@ -42,43 +58,54 @@ class Simulation:
         self.catalog = getJSON(self.url)
         self.fields = { f['name']: f for f in self.catalog['fields'] }
 
-class Query:
-    """A query against a Simulation catalog.
 
+class Query:
+    """
+    A query against a Simulation catalog.
     *simulation* specifies the Simulation object or name to run against.
     See *update* for other parameters.
     """
     def __init__(self, simulation, fields = None, sort = None, sample = 1, seed = None, **filters):
+        if seed is None:
+            seed = random.randrange(0, 2**32-1)
         if type(simulation) is str:
             simulation = Simulation(simulation)
         self.simulation = simulation
         self.query = dict()
         if fields is None:
             fields = [ f['name'] for f in simulation.catalog['fields'] ]
+        if sample > 1:
+            self.update(fields, sort, sample, seed, **filters)
+            sample = sample / self.count()
         self.update(fields, sort, sample, seed, **filters)
 
     def update(self, fields = None, sort = None, sample = None, seed = None, **filters):
-        """Modify query parameters in place.
-
-        *fields* specifies the list of fields to return, defaulting to all
-        simulation fields.
-
-        *sort* specifies the ordering of result objects, which may be the name
-        of a single field, a field name prefixed with '-' for descending, or a
-        list of sort fields.
-
-        *sample* sets the fraction of results to return as a random subset
-        (0,1].  *seed* specifies the random seed for this selection, which
-        defaults to a different random set each time.  Note that each item is
-        independently selected with the sample fraction, so the result set may
-        not be exactly this fraction of the original size.
-
-        Additional *filters* parameters specify restrictions on fields to query
-        by.  Each parameter must be the name of a field in the catalog, and
-        have the value of None to not filter on this field, a scalar to filter
-        exact values, or tuple of lower- and upper-bounds to select items in
-        that range.
         """
+        :param fields: (list) specifies the list of fields to return,
+        defaulting to all simulation fields.
+        :param sort: (type) specifies the ordering of result objects, which may
+        be the name of a single field, a field name prefixed with '-' for
+        descending, or a list of sort fields.
+        :param sample: (float) sets the fraction of results to return as a
+        random subset(0,1]. If sample is set to a value > 1, the value will be
+        converted into a fraction within (0,1].
+        :param seed: (int) specifies the random seed for this selection, which
+        defaults to a different random set each time. If seed is None, a random
+        seed is assigned.
+        Note that each item is independently selected with the sample fraction,
+        so the result set may not be exactly this fraction of the original size.
+        :param filters: (dict) parameters specify restrictions on fields to
+        query by. Each parameter must be the name of a field in the catalog,
+        and have the value of None to not filter on this field, a scalar to
+        filter exact values, or tuple of lower- and upper-bounds to select
+        items in that range.
+        """
+
+        # forces self.count() to return the max number of items in the catalog
+        self._count = None
+        self._aggs = {}
+
+        self.count()
         if fields:
             self.query['fields'] = delim.join(fields)
         if type(sort) is list:
@@ -104,20 +131,26 @@ class Query:
                 v = str(v)
             self.query[k] = v
 
+        # forces count to update to correct value next time it is called
         self._count = None
-        self._aggs = {}
 
     def makeurl(self, path, **query):
         return makeurl(self.simulation.url, path, dictWith(self.query, **query))
 
     def count(self):
-        """Return the count of objects matching this query."""
+        """
+        :return: (int) Number of objects in the query
+        """
         if self._count is None:
             res = getJSON(self.makeurl('catalog', limit=0))
             self._count = res['hits']['total']
         return self._count
 
     def aggs(self, field):
+        """
+        :param: field: (string) field you want to query
+        :return: (dict) properties of the field aggregated into a dictionary
+        """
         if field not in self._aggs:
             res = getJSON(self.makeurl('catalog', limit=0, aggs=field))
             self._count = res['hits']['total']
@@ -125,19 +158,33 @@ class Query:
         return self._aggs[field]
 
     def avg(self, field):
-        """Return the average value of a given field."""
+        """
+        :param: field: (string) field you want to query
+        :return: (float) average value of that field
+        """
         return self.aggs(field)['avg']
 
     def min(self, field):
-        """Return the minimum value of a given field."""
+        """
+        :param: field: (string) field you want to query
+        :return: (float) min value of that field
+        """
         return self.aggs(field)['min']
 
     def max(self, field):
-        """Return the maximum value of a given field."""
+        """
+        :param: field: (string) field you want to query
+        :return: (float) max value of that field
+        """
         return self.aggs(field)['max']
 
     def hist(self, field, width=None, bins=100):
-        """Return a histogram of the given field, with either the specified bin width or total bin count."""
+        """
+        :param field: (string) field that you want a histogram produced of
+        :param width: (float) width of each bin, either specified or calculated
+        :param bins: (int) number of bins, defaults to 100
+        :return: dataframe (pandas) with index-able fields 'bucket', 'count'
+        """
         if not width:
             width = (self.max(field) - self.min(field))/bins
         res = getJSON(self.makeurl('catalog', limit=0, hist=field+':'+str(width)))
@@ -145,5 +192,8 @@ class Query:
                 [('bucket', self.simulation.fields[field]['dtype']), ('count', 'u8')])
 
     def numpy(self):
-        """Return all of the results in a numpy array."""
-        return numpy.load(numpy.DataSource(None).open(self.makeurl('npy'), 'rb'))
+        """
+        :return: array (numpy void)
+        Returns the data from the query in the form of a numpy void array.
+        """
+        return numpy.load(numpy.DataSource().open(self.makeurl('npy'), 'rb'))

@@ -1,4 +1,4 @@
-version: '2.4'
+version: '2.2'
 
 x-es:
   &es
@@ -6,7 +6,7 @@ x-es:
   environment:
     - cluster.name=astrosims
     - bootstrap.memory_lock=true
-    - "ES_JAVA_OPTS=-Xms20g -Xmx20g"
+    - "ES_JAVA_OPTS=-Xms5g -Xmx6g"
     - "discovery.zen.ping.unicast.hosts=es0"
     - "discovery.zen.minimum_master_nodes=3"
     - "node.max_local_storage_nodes=8"
@@ -29,7 +29,7 @@ services:
       - "127.0.0.1:9200:9200"
   es:
     << : *es
-    scale: 4
+    scale: 0
   astrosims:
     build: .
     image: flatironinstitute/astrosims
