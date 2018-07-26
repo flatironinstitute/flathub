@@ -274,10 +274,14 @@ instance J.FromJSON FieldGroup where
 
 subField :: FieldSub s n -> FieldSub t m -> FieldSub t m
 subField f s = s
-  { fieldName = fieldName f <> T.cons '_' (fieldName s)
-  , fieldTitle = fieldTitle f <> T.cons ' ' (fieldTitle s)
+  { fieldName = merge '_' (fieldName f) (fieldName s)
+  , fieldTitle = merge ' ' (fieldTitle f) (fieldTitle s)
   , fieldDescr = joinMaybeWith (\x -> (x <>) . T.cons '\n') (fieldDescr f) (fieldDescr s)
-  }
+  } where
+  merge c a b
+    | T.null a = b
+    | T.null b = a
+    | otherwise = a <> T.cons c b
 
 expandFields :: FieldGroups -> Fields
 expandFields = foldMap expandField where

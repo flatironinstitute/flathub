@@ -912,3 +912,17 @@ gaiadr2:
       descr: lum_val upper uncertainty
       type: float
       units: Luminosity[Solar Luminosity]
+candels:
+  title: CANDELS
+  index: candels
+  fields:
+    - name: halo_id_nbody
+      type: long
+    - name: gal_id
+      type: long
+    - name: gal_type
+      type: byte
+    - name: z_nopec
+      type: float
+    - name: redshift
+      type: float
