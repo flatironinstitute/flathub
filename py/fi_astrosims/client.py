@@ -196,4 +196,5 @@ class Query:
         :return: array (numpy void)
         Returns the data from the query in the form of a numpy void array.
         """
-        return numpy.load(numpy.DataSource().open(self.makeurl('npy'), 'rb'))
+        return numpy.load(numpy.DataSource(None).open(self.makeurl('npy'), 'rb'))
+

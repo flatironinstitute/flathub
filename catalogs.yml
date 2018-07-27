@@ -961,7 +961,7 @@ candels:
       descr: dimensionless spin parameter (host halo)
     - name: mstar_diffuse
       type: float
-      descr: mass of stars in a ‘diffuse stellar halo’
+      descr: mass of stars in a 'diffuse stellar halo'
       units: '\(10^{10} M_\odot\)'
     - name: m_hot_halo
       type: float
@@ -1013,7 +1013,7 @@ candels:
       units: '\M_\odot/yr\)'
     - name: maccdot_radio
       type: float
-      descr: BHAR associated with ‘radio mode’
+      descr: BHAR associated with 'radio mode'
       units: '\M_\odot/yr\)'
     - name: Zstar
       type: float
