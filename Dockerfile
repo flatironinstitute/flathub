@@ -1,4 +1,4 @@
-FROM fpco/stack-build:lts-12.2
+FROM fpco/stack-build:lts-11.18
 RUN apt-get update && \
     apt-get install -y libhdf5-dev && \
     rm -rf /var/lib/apt/lists/*
