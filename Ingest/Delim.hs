@@ -27,29 +27,34 @@ import Catalog
 import Compression
 import qualified ES
 
-data DelimHeaders
-  = DelimHeaderComments
-  | DelimHeaderLine
-  deriving (Eq, Enum, Show)
-
 data Delim = Delim
   { delimDelim :: !Char
   , delimMulti :: !Bool
-  , delimHeaders :: !DelimHeaders
   } deriving (Show)
 
 splitDelim :: Delim -> BSC.ByteString -> [BSC.ByteString]
 splitDelim Delim{ delimDelim = c, delimMulti = False } =                           BSC.split c
 splitDelim Delim{ delimDelim = c, delimMulti = True }  = filter (not . BSC.null) . BSC.split c
 
+commentHeaders :: Int -> [BSC.ByteString] -> ([BSC.ByteString], [BSC.ByteString])
+commentHeaders _ [] = ([], [])
+commentHeaders i hr@(h:r) = case BSC.uncons h of
+  Just ('#', BSC.words -> ((readMaybe . BSC.unpack -> Just j):f:_)) | j == i -> first (f :) $ commentHeaders (succ i) r
+  _ -> ([], hr)
+
 parseHeaders :: Delim -> [BSC.ByteString] -> ([BSC.ByteString], [BSC.ByteString])
 parseHeaders _ [] = ([], [])
-parseHeaders Delim{ delimHeaders = DelimHeaderComments } l = hdrs (0 :: Int) l where
-  hdrs _ [] = ([], [])
-  hdrs i hr@(h:r) = case BSC.words h of
-    ("#":(readMaybe . BSC.unpack -> Just j):f:_) | j == i -> first (f :) $ hdrs (succ i) r
-    _ -> ([], hr)
-parseHeaders d@Delim{ delimHeaders = DelimHeaderLine } (h:r) = (splitDelim d h, r)
+parseHeaders d a@(h:r) = case BSC.uncons h of
+  Just ('#', l) -> case BSC.words l of
+    "0":_:_ -> commentHeaders (0 :: Int) a
+    _ -> (splitDelim d l, r)
+  _ ->   (splitDelim d h, r)
+
+commentLine :: BSC.ByteString -> Bool
+commentLine x = case BSC.uncons x of
+  Just ('#', _) -> True
+  Nothing -> True
+  Just _ -> False
 
 ingestDelim :: Delim -> Catalog -> J.Series -> Word64 -> FilePath -> Word64 -> M Word64
 ingestDelim delim cat consts blockSize fn off = do
@@ -57,7 +62,7 @@ ingestDelim delim cat consts blockSize fn off = do
   let
     (header, rows) = parseHeaders delim ls
     (missing, fields) = mapAccumL (\fm s -> let n = TE.decodeUtf8 s in (HM.delete n fm, HM.lookup n fm)) (catalogFieldMap cat) header
-    rows' = genericDrop off rows
+    rows' = genericDrop off $ filter (not . commentLine) rows
     key
       | Just i <- do
           n <- catalogKey cat 
@@ -82,7 +87,7 @@ ingestDelim delim cat consts blockSize fn off = do
   fnb = dropExtension fn
 
 ingestDat :: Catalog -> J.Series -> Word64 -> FilePath -> Word64 -> M Word64
-ingestDat = ingestDelim (Delim ' ' False DelimHeaderComments)
+ingestDat = ingestDelim (Delim ' ' False)
 
 ingestTxt :: Catalog -> J.Series -> Word64 -> FilePath -> Word64 -> M Word64
-ingestTxt = ingestDelim (Delim ' ' True DelimHeaderComments)
+ingestTxt = ingestDelim (Delim ' ' True)
