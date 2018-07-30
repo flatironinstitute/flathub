@@ -912,11 +912,11 @@ gaiadr2:
       descr: lum_val upper uncertainty
       type: float
       units: Luminosity[Solar Luminosity]
-candels:
-  title: CANDELS
+lusam:
+  title: LuSAM
   descr: >
-    Lu SAM Lightcones.
-  index: candels
+    Lu SAM Lightcones for the CANDELS project.
+  index: lusam
   fields:
     - name: halo_id_nbody
       type: long
@@ -961,7 +961,7 @@ candels:
       descr: dimensionless spin parameter (host halo)
     - name: mstar_diffuse
       type: float
-      descr: mass of stars in a 'diffuse stellar halo'
+      descr: mass of stars in a ‘diffuse stellar halo’
       units: '\(10^{10} M_\odot\)'
     - name: m_hot_halo
       type: float
@@ -970,7 +970,7 @@ candels:
     - name: Z_hot_halo
       type: float
       descr: metallicity of hot gas in host halo
-      units: 'Z_\odot\)'
+      units: '\( Z_\odot\)'
     - name: v_disk
       type: float
       descr: maximum rotation velocity of disk
@@ -1010,27 +1010,27 @@ candels:
     - name: maccdot
       type: float
       descr: total accretion rate onto black hole
-      units: '\M_\odot/yr\)'
+      units: '\( M_\odot\)/yr'
     - name: maccdot_radio
       type: float
-      descr: BHAR associated with 'radio mode'
-      units: '\M_\odot/yr\)'
+      descr: BHAR associated with ‘radio mode’
+      units: '\( M_\odot\)/yr'
     - name: Zstar
       type: float
       descr: mass weighted metallicity of stars
-      units: 'Z_\odot\)'
+      units: '\( Z_\odot\)'
     - name: Zcold
       type: float
       descr: mass weighted metallicity of cold gas
-      units: 'Z_\odot\)'
+      units: '\( Z_\odot\)'
     - name: mstardot
       type: float
       descr: instantaneous star formation rate
-      units: '\M_\odot/yr\)'
+      units: '\( M_\odot\)/yr'
     - name: sfr_ave
       type: float
       descr: star formation rate averaged over past 1E8 yr
-      units: '\M_\odot/yr\)'
+      units: '\( M_\odot\)/yr'
     - name: meanage
       type: float
       descr: mean stellar mass weighted age of stars
@@ -1442,3 +1442,137 @@ candels:
         descr: magnitude of bulge only, without extinction
       - name: "dust"
         descr: galaxy magnitude, including extinction by dust
+unimach:
+  title: UniverseMachine
+  descr: >
+    UniverseMachine Lightcones for the CANDELS project.
+  index: unimach
+  fields:
+    - name: Ra
+      type: float
+      descr: Right Ascension
+      units: 'deg'
+    - name: Dec
+      type: float
+      descr: Declination
+      units: 'deg'
+    - name: Z(los)
+      type: float
+      descr: Redshift including redshift-space distortions.
+    - name: Z(cosmo)
+      type: float
+      descr: Cosmological redshift---i.e., without redshift-space distortions.
+    - name: Scale
+      type: float
+      descr: Scale factor of the timestep from which the halo was taken
+    - name: ID
+      type: long
+      descr: Halo ID (unique across all timesteps)
+    - name: DescID
+      type: long
+      descr: ID of descendant halo (or -1 at z=0)
+    - name: UPID
+      type: long
+      descr: -1 for central halos, otherwise, ID of largest parent halo
+    - name: Flags
+      type: float
+      descr: Ignore
+      disp: false
+    - name: Uparent_Dist
+      type: float
+      descr: Ignore
+      disp: false
+    - name: 'X'
+      type: float
+      descr: Position of halo relative to axes of lightcone (distance along lightcone) in comoving Mpc / h
+      units: 'Mpc/h'
+    - name: 'Y'
+      type: float
+      descr: Position of halo relative to axes of lightcone (distance perpendicular to lightcone X-axis) in comoving Mpc / h
+      units: 'Mpc/h'
+    - name: 'Z'
+      type: float
+      descr: Position of halo relative to axes of lightcone (distance perpendicular to lightcone X-axis) in comoving Mpc / h
+      units: 'Mpc/h'
+    - name: VX
+      type: float
+      descr: Peculiar velocity in physical (i.e., non-comoving) km/s, relative to lightcone axes
+      units: 'km/s'
+    - name: VY
+      type: float
+      descr: Peculiar velocity in physical (i.e., non-comoving) km/s, relative to lightcone axes
+      units: 'km/s'
+    - name: VZ
+      type: float
+      descr: Peculiar velocity in physical (i.e., non-comoving) km/s, relative to lightcone axes
+      units: 'km/s'
+    - name: M
+      type: float
+      descr: Halo mass (Bryan & Norman (BN98) 1998 virial mass)
+      units: '\( M_\odot\)'
+    - name: V
+      type: float
+      descr: Halo vmax (physical km/s)
+      units: 'km/s'
+    - name: MP
+      type: float
+      descr: Halo peak historical mass (BN98 virial mass)
+      units: '\( M_\odot\)'
+    - name: VMP
+      type: float
+      descr: Halo vmax at the time when peak mass was reached
+      units: 'km/s'
+    - name: R
+      type: float
+      descr: Halo raidus (BN98 vir, co-moving kpc/h)
+    - name: Rank1
+      type: float
+      descr: Halo rank in Delta_vmax (see UniverseMachine paper)
+    - name: Rank2
+      type: float
+      descr: Ignore
+      disp: false
+    - name: RA
+      type: float
+      descr: Ignore
+      disp: false
+    - name: RARank
+      type: float
+      descr: Ignore
+      disp: false
+    - name: SM
+      type: float
+      descr: True stellar mass
+      units: '\( M_\odot\)'
+    - name: ICL
+      type: float
+      descr: True intracluster stellar mass
+      units: '\( M_\odot\)'
+    - name: SFR
+      type: float
+      descr: True start formation rate
+      units: '\( M_\odot\)/yr'
+    - name: Obs_SM
+      type: float
+      descr: Observed stellar mass, including random & systematic errors
+      units: '\( M_\odot\)'
+    - name: Obs_SFR
+      type: float
+      descr: Observed SFR, including random & systemic errors
+      units: '\( M_\odot\)/yr'
+    - name: SSFR
+      type: float
+      descr: Observed SSFR
+    - name: SMHM
+      type: float
+      descr: SM/HM ratio
+    - name: Obs_UV
+      type: float
+      descr: Observed UV Magnitude
+      units: 'M_1500 AB'
+    - name:  A_UV
+      type: float
+      descr: UV attenuation from dust
+      units: 'AB Mag'
+
+
