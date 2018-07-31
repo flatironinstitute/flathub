@@ -1448,7 +1448,7 @@ unimach:
     UniverseMachine Lightcones for the CANDELS project.
   index: unimach
   fields:
-    - name: Ra
+    - name: RA
       type: float
       descr: Right Ascension
       units: 'deg'
@@ -1532,10 +1532,10 @@ unimach:
       type: float
       descr: Ignore
       disp: false
-    - name: RA
-      type: float
-      descr: Ignore
-      disp: false
+    #- name: RA
+    #  type: float
+    #  descr: Ignore
+    #  disp: false
     - name: RARank
       type: float
       descr: Ignore
@@ -1552,21 +1552,21 @@ unimach:
       type: float
       descr: True start formation rate
       units: '\( M_\odot\)/yr'
-    - name: Obs_SM
+    - name: obs_SM
       type: float
       descr: Observed stellar mass, including random & systematic errors
       units: '\( M_\odot\)'
-    - name: Obs_SFR
+    - name: obs_SFR
       type: float
       descr: Observed SFR, including random & systemic errors
       units: '\( M_\odot\)/yr'
     - name: SSFR
       type: float
       descr: Observed SSFR
-    - name: SMHM
+    - name: "SM/HM"
       type: float
       descr: SM/HM ratio
-    - name: Obs_UV
+    - name: obs_UV
       type: float
       descr: Observed UV Magnitude
       units: 'M_1500 AB'

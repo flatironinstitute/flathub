@@ -474,6 +474,11 @@ function add_filter(idx: number): Filter|undefined {
       return new NumericFilter(field, isint);
   }
 }
+/*
+function sample_py{
+    document.write("from client import * \n" +
+        "\catalog" + " = Simulation(" + "\catalog" + ")")
+}*/ 
 
 (<any>window).hide_column = function hide_column(event:Event) {
   if (TCat) {
@@ -496,14 +501,22 @@ function init() {
     ajax: ajax,
     deferLoading: 1,
     scrollX: true,
-    pageLength: 50,
+    pageLength: 25,
     processing: true,
     dom: 'i<"#download">rtlp',
     deferRender: true,
-    pagingType: 'simple',
+    pagingType: 'simple', 
     columns: Catalog.fields.map((c) => {
-      return { name: c.name };
-    })
+      return {
+          render: function (data, type, row) {
+              if (data % 1 != 0)
+                  return data.toPrecision(8);
+              return data;
+          },
+          name: c.name };
+      }) 
+
+
   };
   if ((<any>window).Query) {
     if (Query.offset)
