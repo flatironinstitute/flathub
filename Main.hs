@@ -3,7 +3,7 @@
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE ViewPatterns #-}
 
-import           Control.Arrow (second)
+import           Control.Arrow (first, second)
 import           Control.Exception (throwIO)
 import           Control.Monad ((<=<), forM_, when)
 import           Control.Monad.IO.Class (liftIO)
@@ -121,7 +121,7 @@ simulation = getPath R.parameter $ \sim req -> do
     row :: Word -> [(FieldGroup -> FieldGroup, FieldGroup)] -> H.Html
     row d l = do
       H.tr $ mapM_ (\(p, f) -> field d (p f) f) l
-      when (d > 1) $ row (pred d) $ foldMap (\(p, f) -> foldMap (fmap (p . subField f, ) . V.toList) $ fieldSub f) l
+      when (d > 1) $ row (pred d) $ foldMap (\(p, f) -> foldMap (fmap (p . mappend f, ) . V.toList) $ fieldSub f) l
     query = parseQuery req
   case acceptable ["application/json", "text/html"] req of
     Just "application/json" ->
@@ -230,10 +230,15 @@ main = do
 
     -- ingest
     forM_ (optIngest opts) $ \sim -> do
-      let cat = catalogs HM.! sim
+      let pconst c [] = return ([], c)
+          pconst c ((n,s):r) = do
+            (f, c') <- maybe (fail $ "Unknown field: " ++ show n) return $ takeCatalogField n c
+            v <- maybe (fail $ "Invalid value: " ++ show s) return $ parseFieldValue f s
+            first (v:) <$> pconst c' r
+      (consts, cat) <- pconst (catalogs HM.! sim) $ optConstFields opts
       forM_ args $ \f -> do
         liftIO $ putStrLn f
-        n <- ingest cat (optConstFields opts) f
+        n <- ingest cat consts f
         liftIO $ print n
       ES.flushIndex cat
 
