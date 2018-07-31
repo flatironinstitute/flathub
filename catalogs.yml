@@ -961,7 +961,7 @@ lusam:
       descr: dimensionless spin parameter (host halo)
     - name: mstar_diffuse
       type: float
-      descr: mass of stars in a ‘diffuse stellar halo’
+      descr: mass of stars in a 'diffuse stellar halo'
       units: '\(10^{10} M_\odot\)'
     - name: m_hot_halo
       type: float
@@ -1013,7 +1013,7 @@ lusam:
       units: '\( M_\odot\)/yr'
     - name: maccdot_radio
       type: float
-      descr: BHAR associated with ‘radio mode’
+      descr: BHAR associated with 'radio mode'
       units: '\( M_\odot\)/yr'
     - name: Zstar
       type: float
@@ -1448,7 +1448,7 @@ unimach:
     UniverseMachine Lightcones for the CANDELS project.
   index: unimach
   fields:
-    - name: Ra
+    - name: RA
       type: float
       descr: Right Ascension
       units: 'deg'
@@ -1474,14 +1474,6 @@ unimach:
     - name: UPID
       type: long
       descr: -1 for central halos, otherwise, ID of largest parent halo
-    - name: Flags
-      type: float
-      descr: Ignore
-      disp: false
-    - name: Uparent_Dist
-      type: float
-      descr: Ignore
-      disp: false
     - name: 'X'
       type: float
       descr: Position of halo relative to axes of lightcone (distance along lightcone) in comoving Mpc / h
@@ -1528,18 +1520,6 @@ unimach:
     - name: Rank1
       type: float
       descr: Halo rank in Delta_vmax (see UniverseMachine paper)
-    - name: Rank2
-      type: float
-      descr: Ignore
-      disp: false
-    - name: RA
-      type: float
-      descr: Ignore
-      disp: false
-    - name: RARank
-      type: float
-      descr: Ignore
-      disp: false
     - name: SM
       type: float
       descr: True stellar mass
@@ -1552,21 +1532,21 @@ unimach:
       type: float
       descr: True start formation rate
       units: '\( M_\odot\)/yr'
-    - name: Obs_SM
+    - name: obs_SM
       type: float
       descr: Observed stellar mass, including random & systematic errors
       units: '\( M_\odot\)'
-    - name: Obs_SFR
+    - name: obs_SFR
       type: float
       descr: Observed SFR, including random & systemic errors
       units: '\( M_\odot\)/yr'
     - name: SSFR
       type: float
       descr: Observed SSFR
-    - name: SMHM
+    - name: "SM/HM"
       type: float
       descr: SM/HM ratio
-    - name: Obs_UV
+    - name: obs_UV
       type: float
       descr: Observed UV Magnitude
       units: 'M_1500 AB'
@@ -1574,5 +1554,3 @@ unimach:
       type: float
       descr: UV attenuation from dust
       units: 'AB Mag'
-
-
