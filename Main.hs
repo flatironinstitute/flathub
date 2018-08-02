@@ -61,6 +61,8 @@ html req h = okResponse [] $ H.docTypeHtml $ do
       H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
     H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/MathJax.js?config=TeX-AMS_CHTML" $ mempty
   H.body $ do
+    H.button $ do
+        H.a H.! HA.href (WH.routeActionValue top () mempty) $ H.img H.! HA.src (staticURI [""])
     h
     H.footer $ do
       H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto" $
@@ -134,6 +136,7 @@ simulation = getPath R.parameter $ \sim req -> do
         H.unsafeLazyByteString $ J.encode query
         ";"
       H.h2 $ H.text $ catalogTitle cat
+
       mapM_ (H.p . H.preEscapedText) $ catalogDescr cat
       H.p $ "Query and explore a subset using the filters, download your selection using the link below, or get the full dataset above."
       H.table H.! HA.id "filt" $ mempty
@@ -143,9 +146,15 @@ simulation = getPath R.parameter $ \sim req -> do
             H.button H.! HA.id ("dhist-" <> xyv <> "-tog") H.! HA.class_ "dhist-xy-tog" $
               "lin/log"
         H.canvas H.! HA.id "hist" $ mempty
+      H.p $ "Generate python code to use the above filters on your local machine:"
+      H.button $ do
+        H.a H.! HA.onclick "return py_text(event)" $ H.img H.! HA.src (staticURI [""])
+      H.div H.! HA.id "py" $ "Hello, world!"
+
       H.table H.! HA.id "tcat" H.! HA.class_ "compact" $ do
         H.thead $ row (fieldsDepth fields) ((id ,) <$> V.toList fields)
         H.tfoot $ H.tr $ H.td H.! HA.colspan (H.toValue $ length fields') H.! HA.class_ "loading" $ "loading..."
+
   where
   dtype (Long _) = "num"
   dtype (Integer _) = "num"

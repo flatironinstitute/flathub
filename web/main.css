@@ -61,3 +61,19 @@ table#tcat {
 footer {
   text-align: right;
 }
+
+div#py{
+    background-color: #e2e2e2;
+    font-family: "Courier New", Courier, monospace;
+    margin-top: -0px;
+    margin-bottom: 10px;
+    padding-left: 2%;
+    padding-right: 2%;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+body{
+    margin-left: 2%;
+    margin-right: 2%;
+}

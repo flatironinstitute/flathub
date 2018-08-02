@@ -474,11 +474,6 @@ function add_filter(idx: number): Filter|undefined {
       return new NumericFilter(field, isint);
   }
 }
-/*
-function sample_py{
-    document.write("from client import * \n" +
-        "\catalog" + " = Simulation(" + "\catalog" + ")")
-}*/ 
 
 (<any>window).hide_column = function hide_column(event:Event) {
   if (TCat) {
@@ -488,6 +483,22 @@ function sample_py{
   event.stopPropagation();
   return false;
 };
+
+(<any>window).py_text = function py_text(event: Event) {
+    var st = '';
+    for (let i = 0; i < Filters.length; i++) {
+        st += ", " + Filters[i].name + ' = (' + Filters[i].query['lb'] + ', ' + Filters[i].query['ub'] + ')';
+    }
+    st = "from client import * <br>" + Catalog.uri + " = Simulation(" + "\catalog" + ") <br>" + "q = Query(" + Catalog.uri + st;
+    if (Seed != 0)
+        st += ", seed = ", + Seed;
+    if (Sample != 1)
+        st += ", sample = ", + Sample.valueOf;
+    st += ') <br> dat = q.numpy()';
+    document.getElementById('py').innerHTML = st;
+    return;
+}
+
 
 function init() {
   Update_aggs = 0;
@@ -553,7 +564,7 @@ function init() {
     add_filter(<any>addfilt.value);
     TCat.draw(false);
   };
-  add_sample();
+    add_sample();
   TCat.draw();
 
   for (let xy of "xy")
