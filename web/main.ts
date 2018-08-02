@@ -204,6 +204,7 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
   }
   query.offset = data.start;
   query.limit = data.length;
+  query.fields = TCat.columns(':visible').dataSrc().join(' ');
   const aggs = Filters.slice(Update_aggs);
   if (aggs)
     query.aggs = aggs.map((filt) => filt.name).join(' ');

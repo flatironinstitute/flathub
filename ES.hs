@@ -98,18 +98,19 @@ catalogURL Catalog{ catalogStore = CatalogES{ catalogIndex = idxn, catalogMappin
   [T.unpack idxn, T.unpack mapn]
 catalogURL _ = error "catalogURL: non-ES catalog"
 
-defaultSettings :: J.Object
-defaultSettings = HM.fromList
+defaultSettings :: Catalog -> J.Object
+defaultSettings cat = HM.fromList
   [ "index" J..= J.object
     [ "number_of_shards" J..= J.Number 10
     , "number_of_replicas" J..= J.Number 0
     , "refresh_interval" J..= J.Number (-1)
+    , "max_docvalue_fields_search" J..= (8 + length (catalogFields cat))
     ]
   ]
 
 createIndex :: Catalog -> M J.Value
 createIndex cat@Catalog{ catalogStore = CatalogES{..} } = elasticSearch PUT [T.unpack catalogIndex] [] $ JE.pairs $
-     "settings" J..= mergeJSONObject catalogSettings defaultSettings
+     "settings" J..= mergeJSONObject catalogSettings (defaultSettings cat)
   <> "mappings" .=*
     (  catalogMapping .=*
       (  "dynamic" J..= J.String "strict"
