@@ -147,8 +147,6 @@ simulation = getPath R.parameter $ \sim req -> do
               "lin/log"
         H.canvas H.! HA.id "hist" $ mempty
       H.p $ "Generate python code to use the above filters on your local machine:"
-      H.button $ do
-        H.a H.! HA.onclick "return py_text(event)" $ H.img H.! HA.src (staticURI [""])
       H.div H.! HA.id "py" $ "Hello, world!"
 
       H.table H.! HA.id "tcat" H.! HA.class_ "compact" $ do

@@ -295,6 +295,7 @@ function add_sample() {
     if (!isFinite(Seed))
       Seed = undefined;
     TCat.draw();
+      py_text();
   };
 
   add_filt_row('sample', 'random sample',
@@ -371,6 +372,7 @@ class SelectFilter extends Filter {
     }
     this.select.value = '';
     this.select.disabled = false;
+    py_text();
   }
 
   protected change() {
@@ -380,6 +382,7 @@ class SelectFilter extends Filter {
     else
       this.query = undefined;
     super.change(val, !val);
+    py_text();
   }
 }
 
@@ -419,6 +422,7 @@ class NumericFilter extends Filter {
     this.ub.defaultValue = this.ub.value = this.lb.max = this.ub.max = aggs.max;
     this.lb.disabled = this.ub.disabled = false;
     this.avg.textContent = aggs.avg;
+    py_text();
   }
 
   protected change() {
@@ -432,6 +436,7 @@ class NumericFilter extends Filter {
         ub:isFinite(ubv) ? ubv : this.ub.defaultValue
       };
     super.change(lbv+" TO "+ubv, lbv!=ubv);
+    py_text();
   }
 
   private histogram() {
@@ -443,6 +448,7 @@ class NumericFilter extends Filter {
 
   protected remove() {
     super.remove();
+    py_text();
     if (Histogram === this) {
       Histogram = undefined;
       $('#dhist').hide();
@@ -485,16 +491,17 @@ function add_filter(idx: number): Filter|undefined {
   return false;
 };
 
-(<any>window).py_text = function py_text(event: Event) {
+function py_text() {
     var st = '';
+    var cat = Catalog.uri.substring(Catalog.uri.indexOf('/') + 1, );
     for (let i = 0; i < Filters.length; i++) {
         st += ", " + Filters[i].name + ' = (' + Filters[i].query['lb'] + ', ' + Filters[i].query['ub'] + ')';
     }
-    st = "from client import * <br>" + Catalog.uri + " = Simulation(" + "\catalog" + ") <br>" + "q = Query(" + Catalog.uri + st;
+    st = "from client import * <br>" + Catalog.uri + " = Simulation('" + cat + "') <br>" + "q = Query(" + cat + st;
     if (Seed != 0)
-        st += ", seed = ", + Seed;
+        st += ", seed = " + Seed;
     if (Sample != 1)
-        st += ", sample = ", + Sample.valueOf;
+        st += ", sample = " + Sample;
     st += ') <br> dat = q.numpy()';
     document.getElementById('py').innerHTML = st;
     return;
