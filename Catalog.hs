@@ -2,11 +2,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE TupleSections #-}
 
 module Catalog
   ( ESStoreField(..)
   , CatalogStore(..)
   , Catalog(..)
+  , takeCatalogField
   , Query(..)
   , fillQuery
   ) where
@@ -84,6 +86,13 @@ instance J.FromJSON Catalog where
     mapM_ (\k -> unless (HM.member k catalogFieldMap) $ fail "key field not found in catalog") catalogKey
     return Catalog{..}
 
+takeCatalogField :: T.Text -> Catalog -> Maybe (Field, Catalog)
+takeCatalogField n c = (, c
+  { catalogFieldMap    = HM.delete n                 $ catalogFieldMap c
+  , catalogFields      = filter ((n /=) . fieldName) $ catalogFields c
+  , catalogFieldGroups = deleteField n               $ catalogFieldGroups c
+  }) <$> HM.lookup n (catalogFieldMap c) where
+
 data Query = Query
   { queryOffset :: Word
   , queryLimit :: Word
@@ -146,3 +155,4 @@ instance J.ToJSON Query where
     , "hist"   J..= (fst <$> queryHist)
     ] where
     bs = J.String . TE.decodeLatin1
+

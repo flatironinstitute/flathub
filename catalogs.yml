@@ -1013,7 +1013,7 @@ lusam:
       units: '\( M_\odot\)/yr'
     - name: maccdot_radio
       type: float
-      descr: BHAR associated with ‘radio mode’
+      descr: BHAR associated with 'radio mode'
       units: '\( M_\odot\)/yr'
     - name: Zstar
       type: float
@@ -1448,15 +1448,6 @@ unimach:
     UniverseMachine Lightcones for the CANDELS project.
   index: unimach
   fields:
-    - name: field
-      type: enum
-      top: true
-      descr: "e.g. 'COSMOS-0' or 'GOODS-N'."
-#    - name: realization
-#      type: byte
-#      top: true
-#      descr: 'Runs 0 - 7'
-
     - name: RA
       type: float
       descr: Right Ascension

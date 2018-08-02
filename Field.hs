@@ -11,28 +11,30 @@ module Field
   , typeValue, typeValue1
   , fmapTypeValue, fmapTypeValue1
   , typeOfValue
-  , onTypeValue
+  , unTypeValue
+  , parseTypeValue
   , parseTypeJSONValue
   , typeIsFloating, typeIsIntegral, typeIsNumeric, typeIsString
   , numpySize, numpyDtype
   , FieldSub(..)
   , Field, FieldGroup
   , Fields, FieldGroups
-  , subField
   , expandFields
+  , deleteField
   , fieldsDepth
+  , FieldValue
+  , parseFieldValue
   ) where
 
-import           Control.Applicative ((<|>))
+import           Control.Applicative (Alternative, empty)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Types as J
 import           Data.Default (Default(def))
 import           Data.Functor.Classes (Eq1, eq1, Show1, showsPrec1)
-import           Data.Functor.Identity (Identity(Identity))
+import           Data.Functor.Identity (Identity(Identity, runIdentity))
 import           Data.Int (Int64, Int32, Int16, Int8)
-import           Data.Monoid ((<>))
 import           Data.Proxy (Proxy(Proxy))
-import           Data.Semigroup (Max(getMax))
+import           Data.Semigroup (Max(getMax), Semigroup((<>)))
 import qualified Data.Text as T
 import           Data.Typeable (Typeable)
 import qualified Data.Vector as V
@@ -79,36 +81,54 @@ instance Typed Float  where typeValue = Float
 instance Typed Half   where typeValue = HalfFloat
 instance Typed Bool   where typeValue = Boolean
 
+transformTypeValue :: Applicative g => (forall a . Typed a => f a -> g (h a)) -> TypeValue f -> g (TypeValue h)
+transformTypeValue f (Double    x) = Double    <$> f x
+transformTypeValue f (Float     x) = Float     <$> f x
+transformTypeValue f (HalfFloat x) = HalfFloat <$> f x
+transformTypeValue f (Long      x) = Long      <$> f x
+transformTypeValue f (Integer   x) = Integer   <$> f x
+transformTypeValue f (Short     x) = Short     <$> f x
+transformTypeValue f (Byte      x) = Byte      <$> f x
+transformTypeValue f (Boolean   x) = Boolean   <$> f x
+transformTypeValue f (Text      x) = Text      <$> f x
+transformTypeValue f (Keyword   x) = Keyword   <$> f x
+
+traverseTypeValue :: Applicative g => (forall a . Typed a => f a -> g a) -> TypeValue f -> g Value
+traverseTypeValue f = transformTypeValue (fmap Identity . f)
+
+sequenceTypeValue :: Applicative f => TypeValue f -> f Value
+sequenceTypeValue = transformTypeValue (fmap Identity)
+
 -- isn't there a Functor1 class for this or something?
 fmapTypeValue :: (forall a . Typed a => f a -> g a) -> TypeValue f -> TypeValue g
-fmapTypeValue f (Double    x) = Double    $ f x
-fmapTypeValue f (Float     x) = Float     $ f x
-fmapTypeValue f (HalfFloat x) = HalfFloat $ f x
-fmapTypeValue f (Long      x) = Long      $ f x
-fmapTypeValue f (Integer   x) = Integer   $ f x
-fmapTypeValue f (Short     x) = Short     $ f x
-fmapTypeValue f (Byte      x) = Byte      $ f x
-fmapTypeValue f (Boolean   x) = Boolean   $ f x
-fmapTypeValue f (Text      x) = Text      $ f x
-fmapTypeValue f (Keyword   x) = Keyword   $ f x
+fmapTypeValue f = runIdentity . transformTypeValue (Identity . f)
 
 fmapTypeValue1 :: (forall a . Typed a => f a -> a) -> TypeValue f -> Value
 fmapTypeValue1 f = fmapTypeValue (Identity . f)
 
-onTypeValue :: (forall a . Typed a => f a -> b) -> TypeValue f -> b
-onTypeValue f (Double    x) = f x
-onTypeValue f (Float     x) = f x
-onTypeValue f (HalfFloat x) = f x
-onTypeValue f (Long      x) = f x
-onTypeValue f (Integer   x) = f x
-onTypeValue f (Short     x) = f x
-onTypeValue f (Byte      x) = f x
-onTypeValue f (Boolean   x) = f x
-onTypeValue f (Text      x) = f x
-onTypeValue f (Keyword   x) = f x
+unTypeValue :: (forall a . Typed a => f a -> b) -> TypeValue f -> b
+unTypeValue f (Double    x) = f x
+unTypeValue f (Float     x) = f x
+unTypeValue f (HalfFloat x) = f x
+unTypeValue f (Long      x) = f x
+unTypeValue f (Integer   x) = f x
+unTypeValue f (Short     x) = f x
+unTypeValue f (Byte      x) = f x
+unTypeValue f (Boolean   x) = f x
+unTypeValue f (Text      x) = f x
+unTypeValue f (Keyword   x) = f x
 
 typeOfValue :: TypeValue f -> Type
 typeOfValue = fmapTypeValue (const Proxy)
+
+parseTypeValue :: Type -> T.Text -> TypeValue Maybe
+parseTypeValue (Text    _) s       = Text    $ Just s
+parseTypeValue (Keyword _) s       = Keyword $ Just s
+parseTypeValue (Boolean _) "0"     = Boolean $ Just False
+parseTypeValue (Boolean _) "false" = Boolean $ Just False
+parseTypeValue (Boolean _) "1"     = Boolean $ Just True
+parseTypeValue (Boolean _) "true"  = Boolean $ Just True
+parseTypeValue t s = fmapTypeValue (\Proxy -> readMaybe $ T.unpack s) t
 
 instance Eq1 f => Eq (TypeValue f) where
   Double x == Double y = eq1 x y
@@ -124,15 +144,15 @@ instance Eq1 f => Eq (TypeValue f) where
   _ == _ = False
 
 instance {-# OVERLAPPABLE #-} Show1 f => Show (TypeValue f) where
-  showsPrec i = onTypeValue (showsPrec1 i)
+  showsPrec i = unTypeValue (showsPrec1 i)
 
 instance {-# OVERLAPPABLE #-} J.ToJSON1 f => J.ToJSON (TypeValue f) where
-  toJSON = onTypeValue J.toJSON1
-  toEncoding = onTypeValue J.toEncoding1
+  toJSON = unTypeValue J.toJSON1
+  toEncoding = unTypeValue J.toEncoding1
 
 parseTypeJSONValue :: Type -> J.Value -> TypeValue Maybe
-parseTypeJSONValue t j = fmapTypeValue (\Proxy -> J.parseMaybe J.parseJSON j
-  <|> case j of { J.String s -> readMaybe (T.unpack s) ; _ -> Nothing }) t
+parseTypeJSONValue t (J.String s) = parseTypeValue t s
+parseTypeJSONValue t j = fmapTypeValue (\Proxy -> J.parseMaybe J.parseJSON j) t
 
 instance Default Type where
   def = Float Proxy
@@ -225,18 +245,18 @@ data FieldSub t m = Field
   , fieldDescr :: Maybe T.Text
   , fieldUnits :: Maybe T.Text
   , fieldTop, fieldDisp :: Bool
-  , fieldSub :: m (FieldsSub m)
+  , fieldSub :: m (FieldsSub t m)
   }
 
 type FieldGroup = FieldSub Proxy Maybe
 type Field = FieldSub Proxy Proxy
 type FieldValue = FieldSub Identity Proxy
 
-type FieldsSub m = V.Vector (FieldSub Proxy m)
-type FieldGroups = FieldsSub Maybe
+type FieldsSub t m = V.Vector (FieldSub t m)
+type FieldGroups = FieldsSub Proxy Maybe
 type Fields = [Field]
 
-instance Default FieldGroup where
+instance Alternative m => Default (FieldSub Proxy m) where
   def = Field
     { fieldName = T.empty
     , fieldType = def
@@ -246,7 +266,7 @@ instance Default FieldGroup where
     , fieldUnits = Nothing
     , fieldTop = False
     , fieldDisp = True
-    , fieldSub = Nothing
+    , fieldSub = empty
     }
 
 instance J.ToJSON Field where
@@ -275,6 +295,7 @@ instance J.ToJSON Field where
 
 instance J.FromJSON FieldGroup where
   parseJSON = parseFieldDefs def where
+    parseFieldDefs :: FieldGroup -> J.Value -> J.Parser FieldGroup
     parseFieldDefs d = J.withObject "field" $ \f -> do
       n <- f J..: "name"
       r <- Field n
@@ -289,6 +310,13 @@ instance J.FromJSON FieldGroup where
       s <- J.explicitParseFieldMaybe' (J.withArray "subfields" $ V.mapM $ parseFieldDefs r) f "sub"
       return r{ fieldSub = s }
 
+instance Semigroup (FieldSub t m) where
+  (<>) = subField
+
+instance Alternative m => Monoid (FieldSub Proxy m) where
+  mempty = def
+  mappend = subField
+
 subField :: FieldSub s n -> FieldSub t m -> FieldSub t m
 subField f s = s
   { fieldName = merge '_' (fieldName f) (fieldName s)
@@ -302,11 +330,29 @@ subField f s = s
 
 expandFields :: FieldGroups -> Fields
 expandFields = foldMap expandField where
+  expandField :: FieldGroup -> Fields
   expandField f@Field{ fieldSub = Nothing } = return f{ fieldSub = Proxy }
   expandField f@Field{ fieldSub = Just l } =
-    foldMap (expandField . subField f) l
+    foldMap (expandField . mappend f) l
+
+deleteField :: T.Text -> FieldGroups -> FieldGroups
+deleteField n = dfs mempty where
+  df p f@Field{ fieldSub = Nothing }
+    | n == fieldName (p <> f) = Nothing
+    | otherwise = Just f
+  df p f@Field{ fieldSub = Just l } = Just f{ fieldSub = Just $ dfs (p <> f) l }
+  dfs = V.mapMaybe . df
 
 fieldsDepth :: FieldGroups -> Word
 fieldsDepth = getMax . depth where
   depth = succ . foldMap (foldMap depth . fieldSub)
 
+
+parseFieldValue :: Field -> T.Text -> Maybe FieldValue
+parseFieldValue f = fmap sv . pv f where
+  pv Field{ fieldType = (Byte _), fieldEnum = Just l } s | Just i <- V.elemIndex s l = Just $ Byte $ fromIntegral i
+  pv Field{ fieldType = t } s = sequenceTypeValue $ parseTypeValue t s
+  sv v = f
+    { fieldType = v
+    , fieldSub = Proxy
+    }

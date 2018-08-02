@@ -67,7 +67,7 @@ loadBlock Catalog{ catalogFieldGroups = cat } off len hf = concat <$> mapM (\f -
   cat
 
 blockLength :: DataBlock -> Int
-blockLength = maximum . map (onTypeValue V.length . snd)
+blockLength = maximum . map (unTypeValue V.length . snd)
 
 ingestBlock :: Catalog -> J.Series -> String -> Word64 -> DataBlock -> M Int
 ingestBlock cat@Catalog{ catalogStore = CatalogES{} } consts pfx off dat = do

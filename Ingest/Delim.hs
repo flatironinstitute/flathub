@@ -61,7 +61,7 @@ ingestDelim delim cat consts blockSize fn off = do
   ls <- liftIO $ map BSLC.toStrict . BSLC.lines <$> decompressFile fn
   let
     (header, rows) = parseHeaders delim ls
-    (missing, fields) = mapAccumL (\fm s -> let n = TE.decodeUtf8 s in (HM.delete n fm, HM.lookup n fm)) (catalogFieldMap cat) header
+    (missing, fields) = mapAccumL (\c s -> maybe (c, Nothing) (\(f, c') -> (c', Just f)) $ takeCatalogField (TE.decodeUtf8 s) c) cat header
     rows' = genericDrop off $ filter (not . commentLine) rows
     key
       | Just i <- do
@@ -81,7 +81,7 @@ ingestDelim delim cat consts blockSize fn off = do
           (o', block) = mapAccumL (\i l -> let x = splitDelim delim l in (succ i, (key i x, consts <> foldMap (uncurry val) (zip fields x)))) o d
       ES.createBulk cat block
       loop o' s'
-  unless (HM.null missing) $ fail $ "missing fields: " ++ show (fieldName <$> missing)
+  unless (HM.null $ catalogFieldMap missing) $ fail $ "missing fields: " ++ show (fieldName <$> catalogFieldMap missing)
   loop off rows'
   where
   fnb = dropExtension fn

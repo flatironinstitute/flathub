@@ -10,12 +10,12 @@ import           Control.Monad.IO.Class (liftIO)
 import qualified Data.Aeson as J
 import           Data.List (sort)
 import           Data.Maybe (isJust, fromMaybe)
-import qualified Data.Text as T
 import           Data.Word (Word64)
 import           System.Directory (doesDirectoryExist, listDirectory)
 import           System.FilePath (takeExtension, (</>))
 import           Text.Read (readMaybe)
 
+import Field
 import Catalog
 import Global
 import Ingest.CSV
@@ -23,7 +23,7 @@ import Ingest.Delim
 import Ingest.HDF5
 import Compression
 
-ingest :: Catalog -> [(T.Text, T.Text)] -> String -> M Word64
+ingest :: Catalog -> [FieldValue] -> String -> M Word64
 ingest cat consts fno = do
   d <- liftIO $ doesDirectoryExist fn
   if d
@@ -47,4 +47,4 @@ ingest cat consts fno = do
   splitoff ('@':(readMaybe -> Just i)) = ([], i)
   splitoff (c:s) = first (c:) $ splitoff s
   blockSize = 1000
-  jconsts = foldMap (uncurry (J..=)) consts
+  jconsts = foldMap (\f -> fieldName f J..= fieldType f) consts
