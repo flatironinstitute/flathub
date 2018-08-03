@@ -497,7 +497,7 @@ function py_text() {
     for (let i = 0; i < Filters.length; i++) {
         st += ", " + Filters[i].name + ' = (' + Filters[i].query['lb'] + ', ' + Filters[i].query['ub'] + ')';
     }
-    st = "from client import * <br>" + Catalog.uri + " = Simulation('" + cat + "') <br>" + "q = Query(" + cat + st;
+    st = "from client import * <br>" + cat + " = Simulation('" + cat + "') <br>" + "q = Query(" + cat + st;
     if (Seed != 0)
         st += ", seed = " + Seed;
     if (Sample != 1)
