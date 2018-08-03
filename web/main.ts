@@ -528,7 +528,7 @@ function init() {
     columns: Catalog.fields.map((c) => {
       return {
           render: function (data, type, row) {
-              if (data % 1 != 0)
+              if (c.type == 'float' || c.type == 'double')
                   return data.toPrecision(8);
               return data;
           },
