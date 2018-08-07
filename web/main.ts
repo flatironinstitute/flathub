@@ -468,23 +468,6 @@ function add_filter(idx: number): Filter|undefined {
   const field = Catalog.fields[idx];
   if (!TCat || !field || Filters.some((f) => f.field === field))
     return;
-    let isint = false;
-    if (field.top) {
-        return new SelectFilter(field);
-    }
-  switch (field.type) {
-    case 'keyword':
-      return new SelectFilter(field);
-    case 'byte':
-    case 'short':
-    case 'integer':
-    case 'long':
-      isint = true;
-    case 'half_float':
-    case 'float':
-    case 'double':
-      return new NumericFilter(field, isint);
-  }
   if (field.terms)
     return new SelectFilter(field);
   return new NumericFilter(field);
@@ -580,7 +563,7 @@ function init() {
     add_filter(<any>addfilt.value);
     TCat.draw(false);
   };
-    add_sample();
+  add_sample();
   TCat.draw();
 
   for (let xy of "xy")
