@@ -219,7 +219,8 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
         Histogram_bin_width = Math.ceil(Histogram_bin_width);
       query.hist = hist.name + ':' + Histogram_bin_width;
     }
-  }
+    }
+    py_text();
   $('td.loading').show();
   $.ajax({
     method: 'GET',
@@ -297,7 +298,6 @@ function add_sample() {
     if (!isFinite(Seed))
       Seed = undefined;
     TCat.draw();
-      py_text();
   };
 
   add_filt_row('sample', 'random sample',
@@ -374,7 +374,6 @@ class SelectFilter extends Filter {
     }
     this.select.value = '';
     this.select.disabled = false;
-    py_text();
   }
 
   protected change() {
@@ -384,7 +383,6 @@ class SelectFilter extends Filter {
     else
       this.query = undefined;
     super.change(val, !val);
-    py_text();
   }
 }
 
@@ -424,7 +422,6 @@ class NumericFilter extends Filter {
     this.ub.defaultValue = this.ub.value = this.lb.max = this.ub.max = aggs.max;
     this.lb.disabled = this.ub.disabled = false;
     this.avg.textContent = aggs.avg;
-    py_text();
   }
 
   protected change() {
@@ -438,7 +435,6 @@ class NumericFilter extends Filter {
         ub:isFinite(ubv) ? ubv : this.ub.defaultValue
       };
     super.change(lbv+" TO "+ubv, lbv!=ubv);
-    py_text();
   }
 
   private histogram() {
@@ -450,7 +446,6 @@ class NumericFilter extends Filter {
 
   protected remove() {
     super.remove();
-    py_text();
     if (Histogram === this) {
       Histogram = undefined;
       $('#dhist').hide();
@@ -486,7 +481,12 @@ function py_text() {
     var st = '';
     var cat = Catalog.uri.substring(Catalog.uri.indexOf('/') + 1, );
     for (let i = 0; i < Filters.length; i++) {
-        st += ", " + Filters[i].name + ' = (' + Filters[i].query['lb'] + ', ' + Filters[i].query['ub'] + ')';
+        if (Filters[i] instanceof NumericFilter) {
+            st += ", " + Filters[i].name + ' = ('
+            if (typeof (Filters[i].query) != 'undefined')
+                st += Filters[i].query['lb'] + ', ' + Filters[i].query['ub'];
+            st += ')';
+        }
     }
     st = "from client import * <br>" + cat + " = Simulation('" + cat + "') <br>" + "q = Query(" + cat + st;
     if (Seed != 0)
@@ -499,7 +499,7 @@ function py_text() {
 }
 
 
-function render_funct(field: Field): (any)=>string {
+function render_funct(field: Field): (any) => string {
     if (field.base === 'f')
         return function (data) {
             if (data != undefined)
