@@ -23,7 +23,8 @@ type Field = {
   top: boolean,
   disp: boolean,
   base: string,
-  terms: boolean
+  terms: boolean,
+  enum: null|string[]
 };
 
 type Catalog = {
@@ -219,8 +220,8 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
         Histogram_bin_width = Math.ceil(Histogram_bin_width);
       query.hist = hist.name + ':' + Histogram_bin_width;
     }
-    }
-    py_text();
+  }
+  py_text();
   $('td.loading').show();
   $.ajax({
     method: 'GET',
@@ -369,9 +370,11 @@ class SelectFilter extends Filter {
     for (let b of aggs.buckets) {
       const opt = document.createElement('option');
       opt.setAttribute('value', b.key);
-      if (this.field.enum)
-          b.key = this.field.enum[b.key];
-      opt.textContent = b.key + ' (' + b.doc_count + ')';
+      if (this.field.enum && b.key in this.field.enum)
+        opt.textContent = this.field.enum[b.key];
+      else
+        opt.textContent = b.key;
+      opt.textContent += ' (' + b.doc_count + ')';
       this.select.appendChild(opt);
     }
     this.select.value = '';
@@ -500,21 +503,14 @@ function py_text() {
     return;
 }
 
-
-function render_funct(field: Field): (any) => string {
-    if (field.base === 'f')
-        return function (data) {
-            if (data != undefined)
-                return data.toPrecision(8);
-        }
-    if (field.enum)
-        return function (data) {
-            if (data != undefined)
-                return field.enum[data];
-        }
-    return  (data)=> {
-        return data;
-    }
+function render_funct(field: Field): (data: any) => string {
+  if (field.base === 'f')
+    return (data) => data != undefined ? parseFloat(data).toPrecision(8) : data;
+  if (field.enum) {
+    let e: string[] = field.enum;
+    return (data) => data in e ? e[data] : data;
+  }
+  return (data) => data;
 }
 
 function init() {
@@ -535,12 +531,11 @@ function init() {
     deferRender: true,
     pagingType: 'simple', 
     columns: Catalog.fields.map((c) => {
-        return {
-          render: render_funct(c),
-          name: c.name };
-      }) 
-
-
+      return {
+        name: c.name,
+        render: render_funct(c)
+      };
+    })
   };
   if ((<any>window).Query) {
     if (Query.offset)

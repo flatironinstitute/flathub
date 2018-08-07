@@ -2114,5 +2114,3 @@ scsam:
         descr: magnitude of bulge only, without extinction
       - name: "dust"
         descr: galaxy magnitude, including extinction by dust
-
-
