@@ -1487,14 +1487,6 @@ unimach:
     - name: UPID
       type: long
       descr: -1 for central halos, otherwise, ID of largest parent halo
-    - name: Flags
-      type: float
-      descr: Ignore
-      disp: false
-    - name: Uparent_Dist
-      type: float
-      descr: Ignore
-      disp: false
     - name: 'X'
       type: float
       descr: Position of halo relative to axes of lightcone (distance along lightcone) in comoving Mpc / h
@@ -1541,18 +1533,6 @@ unimach:
     - name: Rank1
       type: float
       descr: Halo rank in Delta_vmax (see UniverseMachine paper)
-    - name: Rank2
-      type: float
-      descr: Ignore
-      disp: false
-    #- name: RA
-    #  type: float
-    #  descr: Ignore
-    #  disp: false
-    - name: RARank
-      type: float
-      descr: Ignore
-      disp: false
     - name: SM
       type: float
       descr: True stellar mass
