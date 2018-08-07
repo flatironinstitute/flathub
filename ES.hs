@@ -171,7 +171,7 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = CatalogES{ catalogStoreField
       else id) ("bool" .=* ("filter" `JE.pair` JE.list (JE.pairs . term) queryFilter))
     <> "aggs" .=*
       (  foldMap
-        (\f -> f .=* (agg (fieldType <$> HM.lookup f (catalogFieldMap cat)) .=* ("field" J..= f)))
+        (\n -> foldMap (\f -> n .=* (agg f .=* ("field" J..= fieldName f))) $ HM.lookup n (catalogFieldMap cat))
         queryAggs
       <> foldMap (\(f, i) -> "hist" .=* (
         "histogram" .=* (
@@ -185,9 +185,9 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = CatalogES{ catalogStoreField
   bound t a
     | BS.null a = mempty
     | otherwise = t `JE.pair` bsc a
-  agg (Just (Text _)) = "terms"
-  agg (Just (Keyword _)) = "terms"
-  agg _ = "stats"
+  agg f
+    | isTermsField f = "terms"
+    | otherwise = "stats"
   bsc = JE.string . BSC.unpack
 queryIndexScroll _ _ _ = return J.Null
 

@@ -918,6 +918,9 @@ lusam:
     Lu SAM Lightcones for the CANDELS project.
   index: lusam
   fields:
+    - name: realization
+      type: byte
+      top: true
     - name: halo_id_nbody
       type: long
       descr: halo id from Bolshoi halo catalog
