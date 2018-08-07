@@ -920,6 +920,10 @@ lusam:
     The full dataset is available <a href='http://www.slac.stanford.edu/~luyu/Yu_Lus_home/codes_%26_data.html'>here</a>.
   index: lusam
   fields:
+    - name: field
+      enum: ['cosmos']
+      type: byte
+      top: true
     - name: realization
       type: byte
       top: true

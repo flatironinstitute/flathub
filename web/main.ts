@@ -499,6 +499,17 @@ function py_text() {
 }
 
 
+function render_funct(field: Field): (any)=>string {
+    if (field.base === 'f')
+        return function (data) {
+            if (data != undefined)
+                return data.toPrecision(8);
+        }
+    return  (data)=> {
+        return data;
+    }
+}
+
 function init() {
   Update_aggs = 0;
   const table = $('table#tcat');
@@ -518,11 +529,7 @@ function init() {
     pagingType: 'simple', 
     columns: Catalog.fields.map((c) => {
         return {
-            render: function (data, type, row) {
-                if ((c.type == 'float' || c.type == 'double') && c.disp)
-                  return data.toPrecision(8);
-              return data;
-          },
+          render: render_funct(c),
           name: c.name };
       }) 
 
