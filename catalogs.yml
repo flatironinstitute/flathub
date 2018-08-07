@@ -455,8 +455,8 @@ gaea:
     <a href='http://adsabs.harvard.edu/abs/2014MNRAS.445..970D'>De Lucia et al. 2014</a>,
     <a href='http://adsabs.harvard.edu/abs/2016MNRAS.461.1760H'>Hirschmann et al. 2016</a>,
     <a href='http://adsabs.harvard.edu/abs/2017MNRAS.469..968X'>Xie et al. 2017</a>,
-    <a href='http://adsabs.harvard.edu/abs/2017MNRAS.465.2236Z'>Zoldan et al. 2017</a>.
-    Data release v3 2018-06-26.
+    <a href='http://adsabs.harvard.edu/abs/2017MNRAS.465.2236Z'>Zoldan et al. 2017</a>. <br>
+    Data release v3 2018-06-26. <br>
     WARNING: This is one of the first all sky catalogs we have produced, and there could be some issues/bugs we did not notice. Any bug report will be useful to correct and improve this work! So please let us know if you find anything "strange".
     The full dataset is available <a href='http://voms.simonsfoundation.org:50013/KZiLTE5keWT4N535B3Zd2aHibbjju6n/HI_lightcone_Anna3/'>here</a>.
   index: gaea
@@ -915,12 +915,19 @@ gaiadr2:
 lusam:
   title: LuSAM
   descr: >
+    Data release v3 2018-06-26. <br>
     Lu SAM Lightcones for the CANDELS project.
+    The full dataset is available <a href='http://www.slac.stanford.edu/~luyu/Yu_Lus_home/codes_%26_data.html'>here</a>.
   index: lusam
   fields:
+    - name: field
+      enum: ['cosmos', 'EGS', 'GOODS-N', 'GOODS-S', 'UDS']
+      type: byte
+      top: true
     - name: realization
       type: byte
       top: true
+
     - name: halo_id_nbody
       type: long
       descr: halo id from Bolshoi halo catalog
@@ -986,7 +993,7 @@ lusam:
       type: float
       descr: line-of-sight velocity dispersion of bulge
       units: 'km/s'
-    - name: r_bulge
+    - name: r_bulge #rbulge in SC SAM
       type: float
       descr: effective radius of bulge (projected)
       units: 'kpc'
@@ -1006,7 +1013,7 @@ lusam:
       type: float
       descr: stellar mass of bulge component
       units: '\(10^{10} M_\odot\)'
-    - name: mBH
+    - name: mBH #mbh in SU SAM
       type: float
       descr: mass of black hole
       units: '\(10^{10} M_\odot\)'
@@ -1448,9 +1455,19 @@ lusam:
 unimach:
   title: UniverseMachine
   descr: >
+    Data release v2 2018-06-20 <br>
     UniverseMachine Lightcones for the CANDELS project.
+    The full dataset is available <a href='http://behroozi.users.hpc.arizona.edu/UniverseMachine/EDR/Lightcones/'>here</a>.
   index: unimach
   fields:
+    - name: field
+      enum: ['cosmos', 'EGS', 'GOODS-N', 'GOODS-S', 'UDS']
+      type: byte
+      top: true
+    - name: realization
+      type: byte
+      top: true
+
     - name: RA
       type: float
       descr: Right Ascension
@@ -1557,3 +1574,543 @@ unimach:
       type: float
       descr: UV attenuation from dust
       units: 'AB Mag'
+scsam:
+  title: SC-SAM
+  descr: >
+    Data release v3 2018-06-26. <br>
+    SC SAM Lightcones for the CANDELS project.
+    The full dataset is available <a href='http://www.slac.stanford.edu/~luyu/Yu_Lus_home/codes_%26_data.html'>here</a>.
+  index: scsam
+  fields:
+    - name: field
+      enum: ['cosmos', 'EGS', 'GOODS-N', 'GOODS-S', 'UDS']
+      type: byte
+      top: true
+    - name: realization
+      type: byte
+      top: true
+
+    - name: halo_id_nbody
+      type: long
+      descr: halo id from Bolshoi halo catalog
+    - name: gal_id
+      type: long
+      descr: galaxy id
+    - name: gal_type
+      type: int
+      descr: 0=central, 1=satellite, 2=orphan
+    - name: z_nopec
+      type: float
+      descr: redshift without peculiar velocity
+    - name: redshift
+      type: float
+      descr: redshift with peculiar velocity
+    - name: ra
+      type: float
+      descr: right ascension
+      units: 'deg'
+    - name: dec
+      type: float
+      descr: declination
+      units: 'deg'
+    - name: m_vir
+      type: float
+      descr: host halo virial mass
+      units: '\(10^{10} M_\odot\)'
+    - name: V_vir
+      type: float
+      descr: host halo virial velocity
+      units: 'km/s'
+    - name: r_vir
+      type: float
+      descr: host halo virial radius (physical coordinates)
+      units: 'Mpc'
+    - name: c_NFW
+      type: float
+      descr: NFW concentration (host halo)
+    - name: spin
+      type: float
+      descr: dimensionless spin parameter (host halo)
+    - name: mstar_diffuse
+      type: float
+      descr: mass of stars in a 'diffuse stellar halo'
+      units: '\(10^{10} M_\odot\)'
+    - name: m_hot_halo
+      type: float
+      descr: mass of hot gas in host halo
+      units: '\(10^{10} M_\odot\)'
+    - name: Z_hot_halo
+      type: float
+      descr: metallicity of hot gas in host halo
+      units: '\( Z_\odot\)'
+    - name: v_disk
+      type: float
+      descr: maximum rotation velocity of disk
+      units: 'km/s'
+    - name: r_disk
+      type: float
+      descr: scale length of disk
+      units: 'kpc'
+    - name: sigma_bulge
+      type: float
+      descr: line-of-sight velocity dispersion of bulge
+      units: 'km/s'
+    - name: rbulge
+      type: float
+      descr: effective radius of bulge (projected)
+      units: 'kpc'
+    - name: mhalo
+      type: float
+      descr: mass of sub-halo (at the time it became a sub)
+      units: '\(10^{10} M_\odot\)'
+    - name: mstar
+      type: float
+      descr: stellar mass
+      units: '\(10^{10} M_\odot\)'
+    - name: mcold
+      type: float
+      descr: mass of cold gas
+      units: '\(10^{10} M_\odot\)'
+    - name: mbulge
+      type: float
+      descr: stellar mass of bulge component
+      units: '\(10^{10} M_\odot\)'
+    - name: mbh #mbh in SU SAM
+      type: float
+      descr: mass of black hole
+      units: '\(10^{10} M_\odot\)'
+    - name: maccdot
+      type: float
+      descr: total accretion rate onto black hole
+      units: '\( M_\odot\)/yr'
+    - name: maccdot_radio
+      type: float
+      descr: BHAR associated with 'radio mode'
+      units: '\( M_\odot\)/yr'
+    - name: Zstar
+      type: float
+      descr: mass weighted metallicity of stars
+      units: '\( Z_\odot\)'
+    - name: Zcold
+      type: float
+      descr: mass weighted metallicity of cold gas
+      units: '\( Z_\odot\)'
+    - name: mstardot
+      type: float
+      descr: instantaneous star formation rate
+      units: '\( M_\odot\)/yr'
+    - name: sfr_ave
+      type: float
+      descr: star formation rate averaged over past 1E8 yr
+      units: '\( M_\odot\)/yr'
+    - name: meanage
+      type: float
+      descr: mean stellar mass weighted age of stars
+      units: 'Gyr'
+    - name: tmerge
+      type: float
+      descr: time since last merger greater than 1:10
+      units: 'Gyr'
+    - name: tmajmerge
+      type: float
+      descr: time since last merger greater than 1:4
+      units: 'Gyr'
+    - name: cosi
+      type: float
+      descr: cosine of disk inclination angle
+    - name: UV1500_rest
+      type: float
+      descr: CANDELS/TOPHAT/UV1500top.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: UV2300_rest
+      type: float
+      descr: CANDELS/TOPHAT/UV2300top.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: UV2800_rest
+      type: float
+      descr: CANDELS/TOPHAT/UV2800top.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: U_rest
+      type: float
+      descr: CANDELS/Johnson/Johnson_U.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: B_rest
+      type: float
+      descr: CANDELS/Johnson/Johnson_B.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: V_rest
+      type: float
+      descr: CANDELS/Johnson/Johnson_V.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: R_rest
+      type: float
+      descr: CANDELS/Johnson/Cousins_R.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: I_rest
+      type: float
+      descr: CANDELS/Johnson/Cousins_I.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: J_rest
+      type: float
+      descr: CANDELS/Johnson/Bessell_J.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: H_rest
+      type: float
+      descr: CANDELS/Johnson/Bessell_H.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: K_rest
+      type: float
+      descr: CANDELS/Johnson/Bessell_K.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: galex_FUV
+      type: float
+      descr: CANDELS/GALEX/galex_FUV.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: galex_NUV
+      type: float
+      descr: CANDELS/GALEX/galex_NUV.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: sdss_u
+      type: float
+      descr: CANDELS/SDSS/sdss_u.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: sdss_g
+      type: float
+      descr: CANDELS/SDSS/sdss_g.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: sdss_r
+      type: float
+      descr: CANDELS/SDSS/sdss_r.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: sdss_i
+      type: float
+      descr: CANDELS/SDSS/sdss_i.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: sdss_z
+      type: float
+      descr: CANDELS/SDSS/sdss_z.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: acsf435w
+      type: float
+      descr: CANDELS/ACS/f435w.WFC1.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: acsf606w
+      type: float
+      descr: CANDELS/ACS/f606w.WFC1.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: acsf775w
+      type: float
+      descr: CANDELS/ACS/f775w.WFC1.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: acsf814w
+      type: float
+      descr: CANDELS/ACS/f814w.WFC1.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: acsf850lp
+      type: float
+      descr: CANDELS/ACS/f850lp.WFC1.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: wfc3f275w
+      type: float
+      descr: CANDELS/WFC3/f275w.UVIS1.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: wfc3f336w
+      type: float
+      descr: CANDELS/WFC3/f336w.UVIS1.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: wfc3f105w
+      type: float
+      descr: CANDELS/WFC3/f105w.IR.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: wfc3f125w
+      type: float
+      descr: CANDELS/WFC3/f125w.IR.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: wfc3f160w
+      type: float
+      descr: CANDELS/WFC3/f160w.IR.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: ctio_U
+      type: float
+      descr: CANDELS/CTIO/U_ctio_mosaic_tot.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: CFHTLS_u
+      type: float
+      descr: CANDELS/CFHTLS/uMega.fil
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: musyc_u38
+      type: float
+      descr: CANDELS/MUSYC/ecdfs.U38.filt.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: UKIRT_J
+      type: float
+      descr: CANDELS/UKIRT/J_filter.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: UKIRT_H
+      type: float
+      descr: CANDELS/UKIRT/H_filter.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: UKIRT_K
+      type: float
+      descr: CANDELS/UKIRT/K_filter.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: irac_ch1
+      type: float
+      descr: CANDELS/IRAC/irac_ch1.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust
+    - name: irac_ch2
+      type: float
+      descr: CANDELS/IRAC/irac_ch2.dat
+      units: 'mag'
+      sub:
+      - name: ""
+        descr: total galaxy magnitude, without extinction
+      - name: "bulge"
+        descr: magnitude of bulge only, without extinction
+      - name: "dust"
+        descr: galaxy magnitude, including extinction by dust

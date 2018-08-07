@@ -369,6 +369,8 @@ class SelectFilter extends Filter {
     for (let b of aggs.buckets) {
       const opt = document.createElement('option');
       opt.setAttribute('value', b.key);
+      if (this.field.enum)
+        b.key = this.field.enum[b.key];
       opt.textContent = b.key + ' (' + b.doc_count + ')';
       this.select.appendChild(opt);
     }
@@ -476,6 +478,22 @@ function add_filter(idx: number): Filter|undefined {
   event.stopPropagation();
   return false;
 };
+
+function render_funct(field: Field): (any) => string {
+    if (field.base === 'f')
+        return function (data) {
+            if (data != undefined)
+                return data.toPrecision(8);
+        }
+    if (field.enum)
+        return function (data) {
+            if (data != undefined)
+                return field.enum[data];
+        }
+    return  (data)=> {
+        return data;
+    }
+}
 
 function init() {
   Update_aggs = 0;
