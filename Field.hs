@@ -24,6 +24,7 @@ module Field
   , fieldsDepth
   , FieldValue
   , parseFieldValue
+  , isTermsField
   ) where
 
 import           Control.Applicative (Alternative, empty)
@@ -270,7 +271,7 @@ instance Alternative m => Default (FieldSub Proxy m) where
     }
 
 instance J.ToJSON Field where
-  toJSON Field{..} = J.object
+  toJSON f@Field{..} = J.object
     [ "name" J..= fieldName
     , "type" J..= fieldType
     , "enum" J..= fieldEnum
@@ -280,18 +281,11 @@ instance J.ToJSON Field where
     , "top" J..= fieldTop
     , "disp" J..= fieldDisp
     , "dtype" J..= numpyDtype fieldType
+    , "terms" J..= isTermsField f
+    , "base" J..= if typeIsFloating fieldType then "f" else
+                  if typeIsIntegral fieldType then "i" else
+                  if typeIsString   fieldType then "s" else []
     ]
-  toEncoding Field{..} = J.pairs
-    (  "name" J..= fieldName
-    <> "type" J..= fieldType
-    <> "enum" J..= fieldEnum
-    <> "title" J..= fieldTitle
-    <> "descr" J..= fieldDescr
-    <> "units" J..= fieldUnits
-    <> "top" J..= fieldTop
-    <> "disp" J..= fieldDisp
-    <> "dtype" J..= numpyDtype fieldType
-    )
 
 instance J.FromJSON FieldGroup where
   parseJSON = parseFieldDefs def where
@@ -347,7 +341,6 @@ fieldsDepth :: FieldGroups -> Word
 fieldsDepth = getMax . depth where
   depth = succ . foldMap (foldMap depth . fieldSub)
 
-
 parseFieldValue :: Field -> T.Text -> Maybe FieldValue
 parseFieldValue f = fmap sv . pv f where
   pv Field{ fieldType = (Byte _), fieldEnum = Just l } s | Just i <- V.elemIndex s l = Just $ Byte $ fromIntegral i
@@ -356,3 +349,10 @@ parseFieldValue f = fmap sv . pv f where
     { fieldType = v
     , fieldSub = Proxy
     }
+
+isTermsField :: Field -> Bool
+isTermsField Field{ fieldType = Keyword _ } = True
+isTermsField Field{ fieldType = Text _ } = True
+isTermsField Field{ fieldType = Byte _, fieldEnum = Just _ } = True
+isTermsField Field{ fieldType = Byte _, fieldTop = True } = True
+isTermsField _ = False

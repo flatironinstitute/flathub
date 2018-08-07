@@ -21,7 +21,9 @@ type Field = {
   descr: null|string,
   units: null|string,
   top: boolean,
-  disp: boolean
+  disp: boolean,
+  base: string,
+  terms: boolean
 };
 
 type Catalog = {
@@ -213,7 +215,7 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
     const wid = typeof hist.query === 'object' ? <number>hist.query.ub - <number>hist.query.lb : null;
     if (wid && wid > 0) {
       Histogram_bin_width = wid/Histogram_bins;
-      if (hist.isint)
+      if (hist.field.base == "i")
         Histogram_bin_width = Math.ceil(Histogram_bin_width);
       query.hist = hist.name + ':' + Histogram_bin_width;
     }
@@ -396,13 +398,13 @@ class NumericFilter extends Filter {
     b.name = this.name+"."+(w?"u":"l")+"b";
     b.title = (w?"Upper":"Lower")+" bound for " + this.field.title + " values"
     b.type = "number";
-    b.step = this.isint ? <any>1 : "any";
+    b.step = this.field.base == "i" ? <any>1 : "any";
     b.disabled = true;
     b.onchange = this.change.bind(this);
     return b;
   }
 
-  constructor(field: Field, public isint: boolean) {
+  constructor(field: Field) {
     super(field);
 
     this.lb = this.makeBound(false);
@@ -466,7 +468,10 @@ function add_filter(idx: number): Filter|undefined {
   const field = Catalog.fields[idx];
   if (!TCat || !field || Filters.some((f) => f.field === field))
     return;
-  let isint = false;
+    let isint = false;
+    if (field.top) {
+        return new SelectFilter(field);
+    }
   switch (field.type) {
     case 'keyword':
       return new SelectFilter(field);
@@ -480,6 +485,9 @@ function add_filter(idx: number): Filter|undefined {
     case 'double':
       return new NumericFilter(field, isint);
   }
+  if (field.terms)
+    return new SelectFilter(field);
+  return new NumericFilter(field);
 }
 
 (<any>window).hide_column = function hide_column(event:Event) {
@@ -526,9 +534,9 @@ function init() {
     deferRender: true,
     pagingType: 'simple', 
     columns: Catalog.fields.map((c) => {
-      return {
-          render: function (data, type, row) {
-              if (c.type == 'float' || c.type == 'double')
+        return {
+            render: function (data, type, row) {
+                if ((c.type == 'float' || c.type == 'double') && c.disp)
                   return data.toPrecision(8);
               return data;
           },
