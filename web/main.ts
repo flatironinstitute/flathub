@@ -23,7 +23,8 @@ type Field = {
   top: boolean,
   disp: boolean,
   base: string,
-  terms: boolean
+  terms: boolean,
+  enum: null|string[]
 };
 
 type Catalog = {
