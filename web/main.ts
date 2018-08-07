@@ -369,7 +369,7 @@ class SelectFilter extends Filter {
     for (let b of aggs.buckets) {
       const opt = document.createElement('option');
       opt.setAttribute('value', b.key);
-      if (this.field.enum)
+      if (this.field.enum && b.key in this.field.enum)
         b.key = this.field.enum[b.key];
       opt.textContent = b.key + ' (' + b.doc_count + ')';
       this.select.appendChild(opt);
@@ -479,20 +479,14 @@ function add_filter(idx: number): Filter|undefined {
   return false;
 };
 
-function render_funct(field: Field): (any) => string {
-    if (field.base === 'f')
-        return function (data) {
-            if (data != undefined)
-                return data.toPrecision(8);
-        }
-    if (field.enum)
-        return function (data) {
-            if (data != undefined)
-                return field.enum[data];
-        }
-    return  (data)=> {
-        return data;
-    }
+function render_funct(field: Field): (data: any) => string {
+  if (field.base === 'f')
+    return (data) => data != undefined ? parseFloat(data).toPrecision(8) : data;
+  if (field.enum) {
+    let e: string[] = field.enum;
+    return (data) => data in e ? e[data] : data;
+  }
+  return (data) => data;
 }
 
 function init() {
@@ -513,7 +507,10 @@ function init() {
     deferRender: true,
     pagingType: 'simple',
     columns: Catalog.fields.map((c) => {
-      return { name: c.name };
+      return {
+        name: c.name,
+        render: render_funct(c)
+      };
     })
   };
   if ((<any>window).Query) {
