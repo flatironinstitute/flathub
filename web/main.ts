@@ -466,7 +466,10 @@ function add_filter(idx: number): Filter|undefined {
   const field = Catalog.fields[idx];
   if (!TCat || !field || Filters.some((f) => f.field === field))
     return;
-  let isint = false;
+    let isint = false;
+    if (field.top) {
+        return new SelectFilter(field);
+    }
   switch (field.type) {
     case 'keyword':
       return new SelectFilter(field);
@@ -526,9 +529,9 @@ function init() {
     deferRender: true,
     pagingType: 'simple', 
     columns: Catalog.fields.map((c) => {
-      return {
-          render: function (data, type, row) {
-              if (c.type == 'float' || c.type == 'double')
+        return {
+            render: function (data, type, row) {
+                if ((c.type == 'float' || c.type == 'double') && c.disp)
                   return data.toPrecision(8);
               return data;
           },

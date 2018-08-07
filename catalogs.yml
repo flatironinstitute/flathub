@@ -455,8 +455,8 @@ gaea:
     <a href='http://adsabs.harvard.edu/abs/2014MNRAS.445..970D'>De Lucia et al. 2014</a>,
     <a href='http://adsabs.harvard.edu/abs/2016MNRAS.461.1760H'>Hirschmann et al. 2016</a>,
     <a href='http://adsabs.harvard.edu/abs/2017MNRAS.469..968X'>Xie et al. 2017</a>,
-    <a href='http://adsabs.harvard.edu/abs/2017MNRAS.465.2236Z'>Zoldan et al. 2017</a>.
-    Data release v3 2018-06-26.
+    <a href='http://adsabs.harvard.edu/abs/2017MNRAS.465.2236Z'>Zoldan et al. 2017</a>. <br>
+    Data release v3 2018-06-26. <br>
     WARNING: This is one of the first all sky catalogs we have produced, and there could be some issues/bugs we did not notice. Any bug report will be useful to correct and improve this work! So please let us know if you find anything "strange".
     The full dataset is available <a href='http://voms.simonsfoundation.org:50013/KZiLTE5keWT4N535B3Zd2aHibbjju6n/HI_lightcone_Anna3/'>here</a>.
   index: gaea
@@ -915,7 +915,9 @@ gaiadr2:
 lusam:
   title: LuSAM
   descr: >
+    Data release v3 2018-06-26. <br>
     Lu SAM Lightcones for the CANDELS project.
+    The full dataset is available <a href='http://www.slac.stanford.edu/~luyu/Yu_Lus_home/codes_%26_data.html'>here</a>.
   index: lusam
   fields:
     - name: realization
@@ -1449,9 +1451,16 @@ lusam:
 unimach:
   title: UniverseMachine
   descr: >
+    Data release v2 2018-06-20 <br>
     UniverseMachine Lightcones for the CANDELS project.
+    The full dataset is available <a href='http://behroozi.users.hpc.arizona.edu/UniverseMachine/EDR/Lightcones/'>here</a>.
   index: unimach
   fields:
+    - name: field
+      enum: ['cosmos']
+      type: byte
+      top: true
+
     - name: RA
       type: float
       descr: Right Ascension
