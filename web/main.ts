@@ -370,8 +370,10 @@ class SelectFilter extends Filter {
       const opt = document.createElement('option');
       opt.setAttribute('value', b.key);
       if (this.field.enum && b.key in this.field.enum)
-        b.key = this.field.enum[b.key];
-      opt.textContent = b.key + ' (' + b.doc_count + ')';
+        opt.textContent = this.field.enum[b.key];
+      else
+        opt.textContent = b.key;
+      opt.textContent += ' (' + b.doc_count + ')';
       this.select.appendChild(opt);
     }
     this.select.value = '';
@@ -501,7 +503,7 @@ function init() {
     ajax: ajax,
     deferLoading: 1,
     scrollX: true,
-    pageLength: 50,
+    pageLength: 25,
     processing: true,
     dom: 'i<"#download">rtlp',
     deferRender: true,
