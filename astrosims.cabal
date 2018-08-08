@@ -13,10 +13,6 @@ source-repository head
   type:     git
   location: git://github.com/flatironinstitute/astrosims-reproto
 
-flag pgsql
-  description: postgresql backend
-  default: False
-
 executable astrosims
   main-is: Main.hs
   other-modules:
@@ -71,7 +67,3 @@ executable astrosims
     , web-inv-route
     , yaml
     , zlib
-  if flag(pgsql)
-    other-modules: PG
-    build-depends: postgresql-typed
-    cpp-options: -DHAVE_pgsql

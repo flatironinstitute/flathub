@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -23,9 +22,6 @@ import qualified Network.HTTP.Client as HTTP
 import           Network.HTTP.Types.Status (notFound404)
 import qualified Network.Wai as Wai
 import qualified Waimwork.Config as C
-#ifdef HAVE_pgsql
-import qualified Waimwork.Database.PostgreSQL as PG
-#endif
 import           Waimwork.Response (response)
 import           Waimwork.Result (result)
 import qualified Web.Route.Invertible as R
@@ -36,9 +32,6 @@ data Global = Global
   { globalConfig :: C.Config
   , globalHTTP :: HTTP.Manager
   , globalES :: HTTP.Request
-#ifdef HAVE_pgsql
-  , globalPG :: PG.DBPool
-#endif
   , globalCatalogs :: HM.HashMap Simulation Catalog
   }
 
