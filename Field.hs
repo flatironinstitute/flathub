@@ -219,6 +219,13 @@ typeIsString (Keyword   _) = True
 typeIsString (Text      _) = True
 typeIsString _ = False
 
+baseType :: (a,a,a,a) -> Type -> a
+baseType (f,i,_,s) t
+  | typeIsFloating t = f
+  | typeIsIntegral t = i
+  | typeIsString   t = s
+baseType (_,_,b,_) ~(Boolean   _) = b
+
 numpySize :: Type -> Word
 numpySize (Double    _) = 8
 numpySize (Float     _) = 4
@@ -233,12 +240,7 @@ numpySize (Text      _) = 16
 
 numpyDtype :: Type -> String
 numpyDtype (Boolean _) = "?"
-numpyDtype f = '<' : numpyBtype f : show (numpySize f) where
-  numpyBtype t
-    | typeIsFloating t = 'f'
-    | typeIsIntegral t = 'i'
-    | typeIsString   t = 'S'
-  numpyBtype ~(Boolean   _) = '?'
+numpyDtype t = '<' : baseType ('f','i','?','S') t : show (numpySize t) where
 
 data FieldSub t m = Field
   { fieldName :: T.Text
@@ -286,9 +288,8 @@ instance J.ToJSON Field where
     , "disp" J..= fieldDisp
     , "dtype" J..= numpyDtype fieldType
     , "terms" J..= isTermsField f
-    , "base" J..= if typeIsFloating fieldType then "f" else
-                  if typeIsIntegral fieldType then "i" else
-                  if typeIsString   fieldType then "s" else []
+    , "base" J..= baseType ('f','i','b','s') fieldType
+    , "dict" J..= fieldDict
     ]
 
 parseFieldGroup :: HM.HashMap T.Text FieldGroup -> J.Value -> J.Parser FieldGroup
