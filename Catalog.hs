@@ -8,6 +8,7 @@ module Catalog
   , CatalogStore(..)
   , Catalog(..)
   , takeCatalogField
+  , Catalogs(..)
   , Query(..)
   , fillQuery
   ) where
@@ -91,7 +92,7 @@ takeCatalogField n c = (, c
 
 data Catalogs = Catalogs
   { catalogDict :: [Field]
-  , catalogMap :: HM.HashMap T.Text Catalog
+  , catalogMap :: !(HM.HashMap T.Text Catalog)
   }
 
 instance Monoid Catalogs where

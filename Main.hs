@@ -66,7 +66,7 @@ acceptable l = find (`elem` l) . foldMap parseHttpAccept . lookup hAccept . Wai.
 
 top :: Route ()
 top = getPath R.unit $ \() req -> do
-  cats <- asks globalCatalogs
+  cats <- asks (catalogMap . globalCatalogs)
   return $ html req $
     H.dl $
       forM_ (HM.toList cats) $ \(sim, cat) -> do
@@ -199,12 +199,12 @@ main = do
         { globalConfig = conf
         , globalHTTP = httpmgr
         , globalES = es
-        , globalCatalogs = HM.filter catalogEnabled catalogs
+        , globalCatalogs = catalogs{ catalogMap = HM.filter catalogEnabled $ catalogMap catalogs }
         }
 
   runGlobal global $ do
     -- create
-    mapM_ (liftIO . putStrLn <=< createCatalog . (catalogs HM.!)) $ optCreate opts
+    mapM_ (liftIO . putStrLn <=< createCatalog . (catalogMap catalogs HM.!)) $ optCreate opts
 
     -- check catalogs against dbs
     ES.checkIndices
@@ -216,7 +216,7 @@ main = do
             (f, c') <- maybe (fail $ "Unknown field: " ++ show n) return $ takeCatalogField n c
             v <- maybe (fail $ "Invalid value: " ++ show s) return $ parseFieldValue f s
             first (v:) <$> pconst c' r
-      (consts, cat) <- pconst (catalogs HM.! sim) $ optConstFields opts
+      (consts, cat) <- pconst (catalogMap catalogs HM.! sim) $ optConstFields opts
       forM_ args $ \f -> do
         liftIO $ putStrLn f
         n <- ingest cat consts f

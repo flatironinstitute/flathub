@@ -123,7 +123,7 @@ createIndex cat@Catalog{ catalogStore = ~CatalogES{..} } = elasticSearch PUT [T.
 
 checkIndices :: M ()
 checkIndices = do
-  cats <- asks $ filter ises . HM.elems . globalCatalogs
+  cats <- asks $ filter ises . HM.elems . catalogMap . globalCatalogs
   indices <- elasticSearch GET [intercalate "," $ map catalogIndex' cats] [] ()
   either
     (fail . ("ES index mismatch: " ++))

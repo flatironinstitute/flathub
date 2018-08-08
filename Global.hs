@@ -32,7 +32,7 @@ data Global = Global
   { globalConfig :: C.Config
   , globalHTTP :: HTTP.Manager
   , globalES :: HTTP.Request
-  , globalCatalogs :: HM.HashMap Simulation Catalog
+  , globalCatalogs :: Catalogs
   }
 
 type M = ReaderT Global IO
@@ -51,4 +51,4 @@ getPath p = R.RouteAction $ R.routeMethod R.GET R.*< R.routePath p
 askCatalog :: Simulation -> M Catalog
 askCatalog sim = maybe
   (result $ response notFound404 [] ("No such simulation" :: BSC.ByteString))
-  return =<< asks (HM.lookup sim . globalCatalogs)
+  return =<< asks (HM.lookup sim . catalogMap . globalCatalogs)
