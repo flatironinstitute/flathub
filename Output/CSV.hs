@@ -29,8 +29,8 @@ csvQuote = BP.condB (== dQuote)
   (BP.liftFixedToBounded $ const (dQuote, dQuote) BP.>$< BP.word8 BP.>*< BP.word8)
   (BP.liftFixedToBounded BP.word8) where
 
-csvByteString :: BS.ByteString -> B.Builder
-csvByteString t
+_csvByteString :: BS.ByteString -> B.Builder
+_csvByteString t
   | BSC.any (`elem` "\",\r\n") t = bQuote <> BP.primMapByteStringBounded csvQuote t <> bQuote
   | otherwise = B.byteString t
 

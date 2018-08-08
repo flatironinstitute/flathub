@@ -8,6 +8,7 @@ module Catalog
   , CatalogStore(..)
   , Catalog(..)
   , takeCatalogField
+  , Catalogs(..)
   , Query(..)
   , fillQuery
   ) where
@@ -25,6 +26,7 @@ import qualified Data.Text.Encoding as TE
 
 import Monoid
 import Field
+import JSON
 
 data ESStoreField
   = ESStoreSource
@@ -61,22 +63,25 @@ data Catalog = Catalog
   , catalogKey :: Maybe T.Text
   }
 
+parseCatalog :: HM.HashMap T.Text FieldGroup -> J.Value -> J.Parser Catalog
+parseCatalog dict = J.withObject "catalog" $ \c -> do
+  catalogEnabled <- c J..:! "enabled" J..!= True
+  catalogFieldGroups <- parseJSONField "fields" (J.withArray "fields" $ mapM (parseFieldGroup dict)) c
+  catalogTitle <- c J..: "title"
+  catalogDescr <- c J..:? "descr"
+  catalogKey <- c J..:? "key"
+  catalogStore <- CatalogES
+      <$> (c J..: "index")
+      <*> (c J..:! "mapping" J..!= "catalog")
+      <*> (c J..:? "settings" J..!= HM.empty)
+      <*> (c J..:? "store" J..!= ESStoreValues)
+  let catalogFields = expandFields catalogFieldGroups
+      catalogFieldMap = HM.fromList $ map (fieldName &&& id) catalogFields
+  mapM_ (\k -> unless (HM.member k catalogFieldMap) $ fail "key field not found in catalog") catalogKey
+  return Catalog{..}
+
 instance J.FromJSON Catalog where
-  parseJSON = J.withObject "catalog" $ \c -> do
-    catalogEnabled <- c J..:! "enabled" J..!= True
-    catalogFieldGroups <- c J..: "fields"
-    catalogTitle <- c J..: "title"
-    catalogDescr <- c J..:? "descr"
-    catalogKey <- c J..:? "key"
-    catalogStore <- CatalogES
-        <$> (c J..: "index")
-        <*> (c J..:! "mapping" J..!= "catalog")
-        <*> (c J..:? "settings" J..!= HM.empty)
-        <*> (c J..:? "store" J..!= ESStoreValues)
-    let catalogFields = expandFields catalogFieldGroups
-        catalogFieldMap = HM.fromList $ map (fieldName &&& id) catalogFields
-    mapM_ (\k -> unless (HM.member k catalogFieldMap) $ fail "key field not found in catalog") catalogKey
-    return Catalog{..}
+  parseJSON = parseCatalog mempty
 
 takeCatalogField :: T.Text -> Catalog -> Maybe (Field, Catalog)
 takeCatalogField n c = (, c
@@ -84,6 +89,24 @@ takeCatalogField n c = (, c
   , catalogFields      = filter ((n /=) . fieldName) $ catalogFields c
   , catalogFieldGroups = deleteField n               $ catalogFieldGroups c
   }) <$> HM.lookup n (catalogFieldMap c) where
+
+data Catalogs = Catalogs
+  { catalogDict :: [Field]
+  , catalogMap :: !(HM.HashMap T.Text Catalog)
+  }
+
+instance Monoid Catalogs where
+  mempty = Catalogs mempty mempty
+  mappend a b = Catalogs
+    { catalogDict = mappend (catalogDict a) (catalogDict b)
+    , catalogMap = mappend (catalogMap a) (catalogMap b)
+    }
+
+instance J.FromJSON Catalogs where
+  parseJSON = J.withObject "top" $ \o -> do
+    dict <- o J..:? "dict" J..!= mempty
+    cats <- mapM (parseCatalog $ expandAllFields dict) (HM.delete "dict" o)
+    return $ Catalogs (expandFields dict) cats
 
 data Query = Query
   { queryOffset :: Word

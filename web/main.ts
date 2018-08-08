@@ -24,7 +24,8 @@ type Field = {
   disp: boolean,
   base: string,
   terms: boolean,
-  enum: null|string[]
+  enum: null|string[],
+  dict: null|string
 };
 
 type Catalog = {
