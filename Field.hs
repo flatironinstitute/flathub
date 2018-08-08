@@ -19,7 +19,8 @@ module Field
   , FieldSub(..)
   , Field, FieldGroup
   , Fields, FieldGroups
-  , expandFields
+  , parseFieldGroup
+  , expandFields, expandAllFields
   , deleteField
   , fieldsDepth
   , FieldValue
@@ -27,12 +28,13 @@ module Field
   , isTermsField
   ) where
 
-import           Control.Applicative (Alternative, empty)
+import           Control.Applicative (Alternative, empty, (<|>))
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Types as J
 import           Data.Default (Default(def))
 import           Data.Functor.Classes (Eq1, eq1, Show1, showsPrec1)
 import           Data.Functor.Identity (Identity(Identity, runIdentity))
+import qualified Data.HashMap.Strict as HM
 import           Data.Int (Int64, Int32, Int16, Int8)
 import           Data.Proxy (Proxy(Proxy))
 import           Data.Semigroup (Max(getMax), Semigroup((<>)))
@@ -231,12 +233,12 @@ numpySize (Text      _) = 16
 
 numpyDtype :: Type -> String
 numpyDtype (Boolean _) = "?"
-numpyDtype t = '<' : numpyBtype t : show (numpySize t) where
+numpyDtype f = '<' : numpyBtype f : show (numpySize f) where
   numpyBtype t
     | typeIsFloating t = 'f'
     | typeIsIntegral t = 'i'
     | typeIsString   t = 'S'
-  numpyBtype (Boolean   _) = '?'
+  numpyBtype ~(Boolean   _) = '?'
 
 data FieldSub t m = Field
   { fieldName :: T.Text
@@ -247,6 +249,7 @@ data FieldSub t m = Field
   , fieldUnits :: Maybe T.Text
   , fieldTop, fieldDisp :: Bool
   , fieldSub :: m (FieldsSub t m)
+  , fieldDict :: Maybe T.Text
   }
 
 type FieldGroup = FieldSub Proxy Maybe
@@ -268,6 +271,7 @@ instance Alternative m => Default (FieldSub Proxy m) where
     , fieldTop = False
     , fieldDisp = True
     , fieldSub = empty
+    , fieldDict = Nothing
     }
 
 instance J.ToJSON Field where
@@ -287,22 +291,32 @@ instance J.ToJSON Field where
                   if typeIsString   fieldType then "s" else []
     ]
 
+parseFieldGroup :: HM.HashMap T.Text FieldGroup -> J.Value -> J.Parser FieldGroup
+parseFieldGroup dict = parseFieldDefs def where
+  parseFieldDefs :: FieldGroup -> J.Value -> J.Parser FieldGroup
+  parseFieldDefs defd = J.withObject "field" $ \f -> do
+    fieldDict <- f J..:? "dict"
+    let d = maybe defd (dict HM.!) fieldDict
+    fieldName <- f J..:? "name" J..!= fieldName d
+    fieldType <- f J..:! "type" J..!= fieldType d
+    fieldEnum <- (<|> fieldEnum d) <$> f J..:? "enum"
+    fieldTitle <- f J..:! "title" J..!= if T.null (fieldTitle d) then fieldName else fieldTitle d
+    fieldDescr <- (<|> fieldDescr d) <$> f J..:? "descr"
+    fieldUnits <- (<|> fieldUnits d) <$> f J..:? "units"
+    fieldTop <- f J..:? "top" J..!= fieldTop d
+    fieldDisp <- f J..:! "disp" J..!= fieldDisp d
+    fieldSub <- (<|> fieldSub d) <$> J.explicitParseFieldMaybe' (J.withArray "subfields" $ V.mapM $
+        parseFieldDefs defd
+          { fieldType = fieldType
+          , fieldEnum = fieldEnum
+          , fieldTop = fieldTop
+          , fieldDisp = fieldDisp
+          })
+      f "sub"
+    return Field{..}
+
 instance J.FromJSON FieldGroup where
-  parseJSON = parseFieldDefs def where
-    parseFieldDefs :: FieldGroup -> J.Value -> J.Parser FieldGroup
-    parseFieldDefs d = J.withObject "field" $ \f -> do
-      n <- f J..: "name"
-      r <- Field n
-        <$> (f J..:! "type" J..!= fieldType d)
-        <*> (f J..:? "enum")
-        <*> (f J..:! "title" J..!= n)
-        <*> (f J..:? "descr")
-        <*> (f J..:? "units")
-        <*> (f J..:? "top" J..!= fieldTop d)
-        <*> (f J..:! "disp" J..!= fieldDisp d)
-        <*> return Nothing
-      s <- J.explicitParseFieldMaybe' (J.withArray "subfields" $ V.mapM $ parseFieldDefs r) f "sub"
-      return r{ fieldSub = s }
+  parseJSON = parseFieldGroup mempty
 
 instance Semigroup (FieldSub t m) where
   (<>) = subField
@@ -316,10 +330,12 @@ subField f s = s
   { fieldName = merge '_' (fieldName f) (fieldName s)
   , fieldTitle = merge ' ' (fieldTitle f) (fieldTitle s)
   , fieldDescr = joinMaybeWith (\x -> (x <>) . T.cons '\n') (fieldDescr f) (fieldDescr s)
+  , fieldUnits = fieldUnits s <|> fieldUnits f
   } where
   merge c a b
     | T.null a = b
     | T.null b = a
+    | a == b = b
     | otherwise = a <> T.cons c b
 
 expandFields :: FieldGroups -> Fields
@@ -328,6 +344,11 @@ expandFields = foldMap expandField where
   expandField f@Field{ fieldSub = Nothing } = return f{ fieldSub = Proxy }
   expandField f@Field{ fieldSub = Just l } =
     foldMap (expandField . mappend f) l
+
+expandAllFields :: FieldGroups -> HM.HashMap T.Text FieldGroup
+expandAllFields = foldMap expandField where
+  expandField :: FieldGroup -> HM.HashMap T.Text FieldGroup
+  expandField f = HM.singleton (fieldName f) f <> foldMap (foldMap (expandField . mappend f)) (fieldSub f)
 
 deleteField :: T.Text -> FieldGroups -> FieldGroups
 deleteField n = dfs mempty where
