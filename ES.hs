@@ -94,9 +94,8 @@ elasticSearch meth url query body = do
   parse r = AP.parseWith (HTTP.responseBody r) J.json BS.empty
 
 catalogURL :: Catalog -> [String]
-catalogURL Catalog{ catalogStore = CatalogES{ catalogIndex = idxn, catalogMapping = mapn } } =
+catalogURL Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn, catalogMapping = mapn } } =
   [T.unpack idxn, T.unpack mapn]
-catalogURL _ = error "catalogURL: non-ES catalog"
 
 defaultSettings :: Catalog -> J.Object
 defaultSettings cat = HM.fromList
@@ -109,7 +108,7 @@ defaultSettings cat = HM.fromList
   ]
 
 createIndex :: Catalog -> M J.Value
-createIndex cat@Catalog{ catalogStore = CatalogES{..} } = elasticSearch PUT [T.unpack catalogIndex] [] $ JE.pairs $
+createIndex cat@Catalog{ catalogStore = ~CatalogES{..} } = elasticSearch PUT [T.unpack catalogIndex] [] $ JE.pairs $
      "settings" J..= mergeJSONObject catalogSettings (defaultSettings cat)
   <> "mappings" .=*
     (  catalogMapping .=*
@@ -121,7 +120,6 @@ createIndex cat@Catalog{ catalogStore = CatalogES{..} } = elasticSearch PUT [T.u
     [ "type" J..= (fieldType f :: Type)
     , "store" J..= (catalogStoreField == ESStoreStore)
     ]
-createIndex _ = return J.Null
 
 checkIndices :: M ()
 checkIndices = do
@@ -132,8 +130,7 @@ checkIndices = do
     return
     $ J.parseEither (J.withObject "indices" $ forM_ cats . catalog) indices
   where
-  ises Catalog{ catalogStore = CatalogES{} } = True
-  ises _ = False
+  ises Catalog{ catalogStore = ~CatalogES{} } = True
   catalogIndex' ~Catalog{ catalogStore = CatalogES{ catalogIndex = idxn} } = T.unpack idxn
   catalog is ~cat@Catalog{ catalogStore = CatalogES{ catalogIndex = idxn, catalogMapping = mapn } } = parseJSONField idxn (idx cat mapn) is
   idx :: Catalog -> T.Text -> J.Value -> J.Parser ()
@@ -151,7 +148,7 @@ scrollTime :: IsString s => s
 scrollTime = "10s"
 
 queryIndexScroll :: Bool -> Catalog -> Query -> M J.Value
-queryIndexScroll scroll cat@Catalog{ catalogStore = CatalogES{ catalogStoreField = store } } Query{..} =
+queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreField = store } } Query{..} =
   elasticSearch GET
     (catalogURL cat ++ ["_search"])
     (mwhen scroll $ [("scroll", Just scrollTime)])
@@ -189,7 +186,6 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = CatalogES{ catalogStoreField
     | isTermsField f = "terms"
     | otherwise = "stats"
   bsc = JE.string . BSC.unpack
-queryIndexScroll _ _ _ = return J.Null
 
 queryIndex :: Catalog -> Query -> M J.Value
 queryIndex = queryIndexScroll False
@@ -228,7 +224,7 @@ queryBulk cat@Catalog{ catalogStore = CatalogES{ catalogStoreField = store } } q
       q
 
 createBulk :: Catalog -> [(String, J.Series)] -> M ()
-createBulk cat@Catalog{ catalogStore = CatalogES{} } docs = do
+createBulk cat@Catalog{ catalogStore = ~CatalogES{} } docs = do
   r <- elasticSearch POST (catalogURL cat ++ ["_bulk"]) [] body
   -- TODO: ignore 409
   unless (HM.lookup "errors" (r :: J.Object) == Just (J.Bool False)) $ fail $ "createBulk: " ++ BSLC.unpack (J.encode r)
@@ -237,9 +233,7 @@ createBulk cat@Catalog{ catalogStore = CatalogES{} } docs = do
   doc (i, d) = J.fromEncoding (J.pairs $ "create" .=* ("_id" J..= i))
     <> nl <> J.fromEncoding (J.pairs d) <> nl
   nl = B.char7 '\n'
-createBulk _ _ = fail "createBulk: non-ES catalog"
 
 flushIndex :: Catalog -> M ()
-flushIndex cat@Catalog{ catalogStore = CatalogES{} } =
+flushIndex cat@Catalog{ catalogStore = ~CatalogES{} } =
   (void :: M J.Value -> M ()) $ elasticSearch POST (catalogURL cat ++ ["_flush"]) [] EmptyJSON
-flushIndex _ = return ()

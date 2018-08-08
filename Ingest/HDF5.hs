@@ -70,13 +70,12 @@ blockLength :: DataBlock -> Int
 blockLength = maximum . map (unTypeValue V.length . snd)
 
 ingestBlock :: Catalog -> J.Series -> String -> Word64 -> DataBlock -> M Int
-ingestBlock cat@Catalog{ catalogStore = CatalogES{} } consts pfx off dat = do
+ingestBlock cat@Catalog{ catalogStore = ~CatalogES{} } consts pfx off dat = do
   ES.createBulk cat $ map doc [0..pred n]
   return n
   where
   n = blockLength dat
   doc i = (pfx ++ show (off + fromIntegral i), consts <> foldMap (\(k, v) -> k J..= fmapTypeValue1 (V.! i) v) dat)
-ingestBlock _ _ _ _ _ = fail "ingestBlock: not implemented"
 
 withHDF5 :: FilePath -> (H5.File -> IO a) -> IO a
 withHDF5 fn = bracket (H5.openFile (BSC.pack fn) [H5.ReadOnly] Nothing) H5.closeFile

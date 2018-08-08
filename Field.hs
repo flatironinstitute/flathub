@@ -96,8 +96,8 @@ transformTypeValue f (Boolean   x) = Boolean   <$> f x
 transformTypeValue f (Text      x) = Text      <$> f x
 transformTypeValue f (Keyword   x) = Keyword   <$> f x
 
-traverseTypeValue :: Applicative g => (forall a . Typed a => f a -> g a) -> TypeValue f -> g Value
-traverseTypeValue f = transformTypeValue (fmap Identity . f)
+_traverseTypeValue :: Applicative g => (forall a . Typed a => f a -> g a) -> TypeValue f -> g Value
+_traverseTypeValue f = transformTypeValue (fmap Identity . f)
 
 sequenceTypeValue :: Applicative f => TypeValue f -> f Value
 sequenceTypeValue = transformTypeValue (fmap Identity)
