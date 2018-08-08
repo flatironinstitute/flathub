@@ -215,7 +215,7 @@ main = do
 #ifdef HAVE_pgsql
         , globalPG = pg
 #endif
-        , globalCatalogs = catalogs
+        , globalCatalogs = HM.filter catalogEnabled catalogs
         }
 
   runGlobal global $ do
