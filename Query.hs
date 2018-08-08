@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -43,9 +42,6 @@ import Global
 import JSON
 import Output.CSV
 import qualified ES
-#ifdef HAVE_pgsql
-import qualified PG
-#endif
 import Compression
 import Output.Numpy
 
@@ -92,11 +88,6 @@ catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do
     CatalogES{ catalogStoreField = store } -> do
       res <- ES.queryIndex cat query
       return $ okResponse [] $ clean store res
-#ifdef HAVE_pgsql
-    CatalogPG{} -> do
-      res <- PG.queryTable cat query
-      return $ okResponse [] res
-#endif
   where
   clean store = mapObject $ HM.mapMaybeWithKey (cleanTop store)
   cleanTop _ "aggregations" = Just
@@ -181,9 +172,6 @@ catalogBulk = getPath (R.parameter R.>*< R.parameter) $ \(sim, fmt) req -> do
     mapM (`HM.lookup` catalogFieldMap cat) $ queryFields query
   unless (queryOffset query == 0 && null (queryAggs query) && isNothing (queryHist query)) $
     result $ response badRequest400 [] ("offset,aggs not supported for download" :: String)
-#ifdef HAVE_pgsql
-  glob <- ask
-#endif
   nextes <- ES.queryBulk cat query
   (count, first) <- liftIO nextes
   let b@Bulk{..} = bulk fmt fields count
@@ -201,12 +189,5 @@ catalogBulk = getPath (R.parameter R.>*< R.parameter) $ \(sim, fmt) req -> do
               chunk $ bulkBlock b block
               loop . snd =<< nextes
         loop first
-#ifdef HAVE_pgsql
-      CatalogPG{} -> runGlobal glob $ PG.queryBulk cat query $ \nextpg -> fix $ \loop -> do
-        block <- nextpg
-        unless (null block) $ do
-          chunk $ foldMap csvJSONRow block
-          loop
-#endif
     chunk bulkFooter
 

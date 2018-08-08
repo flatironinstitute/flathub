@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE StandaloneDeriving #-}
@@ -50,14 +49,10 @@ data CatalogStore
     , catalogSettings :: J.Object
     , catalogStoreField :: !ESStoreField
     }
-#ifdef HAVE_pgsql
-  | CatalogPG
-    { catalogTable :: !T.Text
-    }
-#endif
 
 data Catalog = Catalog
-  { catalogTitle :: !T.Text
+  { catalogEnabled :: !Bool
+  , catalogTitle :: !T.Text
   , catalogDescr :: Maybe T.Text
   , catalogStore :: !CatalogStore
   , catalogFieldGroups :: FieldGroups
@@ -68,6 +63,7 @@ data Catalog = Catalog
 
 instance J.FromJSON Catalog where
   parseJSON = J.withObject "catalog" $ \c -> do
+    catalogEnabled <- c J..:! "enabled" J..!= True
     catalogFieldGroups <- c J..: "fields"
     catalogTitle <- c J..: "title"
     catalogDescr <- c J..:? "descr"
@@ -77,10 +73,6 @@ instance J.FromJSON Catalog where
         <*> (c J..:! "mapping" J..!= "catalog")
         <*> (c J..:? "settings" J..!= HM.empty)
         <*> (c J..:? "store" J..!= ESStoreValues)
-#ifdef HAVE_pgsql
-      <|> CatalogPG
-        <$> (c J..: "table")
-#endif
     let catalogFields = expandFields catalogFieldGroups
         catalogFieldMap = HM.fromList $ map (fieldName &&& id) catalogFields
     mapM_ (\k -> unless (HM.member k catalogFieldMap) $ fail "key field not found in catalog") catalogKey

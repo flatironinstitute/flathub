@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE ViewPatterns #-}
@@ -30,9 +29,6 @@ import qualified Text.Blaze.Html5.Attributes as HA
 import qualified Waimwork.Blaze as H (text, textValue, preEscapedBuilder)
 import qualified Waimwork.Blaze as WH
 import qualified Waimwork.Config as C
-#ifdef HAVE_pgsql
-import qualified Waimwork.Database.PostgreSQL as PG
-#endif
 import           Waimwork.Response (response, okResponse)
 import           Waimwork.Warp (runWaimwork)
 import qualified Web.Route.Invertible as R
@@ -43,9 +39,6 @@ import Field
 import Catalog
 import Global
 import qualified ES
-#ifdef HAVE_pgsql
-import qualified PG
-#endif
 import Static
 import Query
 import Ingest
@@ -193,9 +186,6 @@ optDescr =
 
 createCatalog :: Catalog -> M String
 createCatalog cat@Catalog{ catalogStore = CatalogES{} } = show <$> ES.createIndex cat
-#ifdef HAVE_pgsql
-createCatalog cat@Catalog{ catalogStore = CatalogPG{} } = show <$> PG.createTable cat
-#endif
 
 main :: IO ()
 main = do
@@ -212,17 +202,11 @@ main = do
   catalogs <- either throwIO return =<< YAML.decodeFileEither (fromMaybe "catalogs.yml" $ conf C.! "catalogs")
   httpmgr <- HTTP.newManager HTTP.defaultManagerSettings
   es <- ES.initServer (conf C.! "elasticsearch")
-#ifdef HAVE_pgsql
-  pg <- PG.initDB (conf C.! "postgresql")
-#endif
   let global = Global
         { globalConfig = conf
         , globalHTTP = httpmgr
         , globalES = es
-#ifdef HAVE_pgsql
-        , globalPG = pg
-#endif
-        , globalCatalogs = catalogs
+        , globalCatalogs = HM.filter catalogEnabled catalogs
         }
 
   runGlobal global $ do
@@ -231,9 +215,6 @@ main = do
 
     -- check catalogs against dbs
     ES.checkIndices
-#ifdef HAVE_pgsql
-    PG.checkTables
-#endif
 
     -- ingest
     forM_ (optIngest opts) $ \sim -> do
