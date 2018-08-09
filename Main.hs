@@ -55,18 +55,30 @@ html req h = okResponse [] $ H.docTypeHtml $ do
       H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
     H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/MathJax.js?config=TeX-AMS_CHTML" $ mempty
   H.body $ do
-    H.button $ do
-        H.a H.! HA.href (WH.routeActionValue top () mempty) $ H.img H.! HA.src (staticURI [""])
+    H.h1 $ H.text "ASTROSIMS"
+    H.div H.! HA.id "bar" $ do
+        H.ul H.! HA.id "topbar" $ do
+            H.li $ H.text " "
+           -- H.li $ do
+            --    H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto" $
+             --       H.img H.! HA.src (staticURI ["github.png"]) H.! HA.height "30" H.! HA.width "30"
+            H.li $ do
+                H.a H.! HA.href (WH.routeActionValue top () mempty) $ H.text "Home"
+            H.li $ do
+                H.a H.! HA.href (WH.routeActionValue top () mempty) $ H.text "Catalogs"
+                -- H.a H.! HA.href "gaea" $ H.text "Catalogs"
+            H.li $ do
+                H.a H.! HA.href (WH.routeActionValue top () mempty) $ H.text "About"
     h
-    H.footer $ do
-      H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto" $
-        H.img H.! HA.src (staticURI ["github.png"])
+    -- H.footer $ do
+
   where
   isdev = any ((==) "dev" . fst) $ Wai.queryString req
 
 acceptable :: [BS.ByteString] -> Wai.Request -> Maybe BS.ByteString
 acceptable l = find (`elem` l) . foldMap parseHttpAccept . lookup hAccept . Wai.requestHeaders
 
+-- Here is where the main page is generated
 top :: Route ()
 top = getPath R.unit $ \() req -> do
   cats <- asks (catalogMap . globalCatalogs)

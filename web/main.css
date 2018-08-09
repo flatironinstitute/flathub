@@ -75,12 +75,62 @@ div#py{
     padding-bottom: 10px;
 }
 body{
-    margin-left: 2%;
-    margin-right: 2%;
+    margin-left: 30px;
+    margin-right: 3%;
+    margin-top: 0;
+}
+div#bar{
+    margin-left: -30px;
+    margin-right: -3%;
+    background-color: black;
+}
+ul#topbar {
+    list-style-type: none;
+    padding: 0;
+    overflow: hidden;
+    background-color: black;
+    margin-top: 0;
+    
+}
+
+li {
+    float: left;
+    border-right:1px solid #bbb;
+}
+
+li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+li a:hover:not(.active) {
+    background-color: white;
+    color: black;
+}
+
+li:last-child {
+    border-right: none;
+}
+
+li:first-child{
+    width: 30px;
+}
+
+dd{
+    padding-bottom: 10px;
 }
 #units{
     text-align: center;
 }
 #checkbox{
     text-align: center;
+}
+h1{
+    text-align:center;
+    display:inline-block;
+    position:relative;
+    width: 100%;
 }
