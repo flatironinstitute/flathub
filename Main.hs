@@ -10,6 +10,7 @@ import           Control.Monad.Reader (asks)
 import qualified Data.Aeson as J
 import qualified Data.ByteString as BS
 import           Data.Default (Default(def))
+import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
 import           Data.List (find)
 import           Data.Maybe (fromMaybe, isNothing, isJust)
@@ -106,10 +107,6 @@ simulation = getPath R.parameter $ \sim req -> do
           H.! H.dataAttribute "type" (dtype $ fieldType f)
           H.!? (not (fieldDisp f), H.dataAttribute "visible" "false")
           H.! H.dataAttribute "default-content" mempty $ do
-        H.span
-          H.! HA.id ("hide-" <> H.textValue (fieldName f')) H.! HA.class_ "hide"
-          H.! HA.onclick "return hide_column(event)"
-          $ H.preEscapedString "&times;"
         fieldBody d f
     field _ _ f@Field{ fieldSub = Just s } = do
       H.th
@@ -119,8 +116,22 @@ simulation = getPath R.parameter $ \sim req -> do
     row d l = do
       H.tr $ mapM_ (\(p, f) -> field d (p f) f) l
       when (d > 1) $ row (pred d) $ foldMap (\(p, f) -> foldMap (fmap (p . mappend f, ) . V.toList) $ fieldSub f) l
-
     query = parseQuery req
+
+    subfield :: FieldGroup -> FieldGroup -> H.Html
+    subfield f g = do
+        H.tr $ do
+            H.td H.! HA.id "checkbox" $
+                H.span $ H.input H.! HA.type_ "checkbox"
+                    H.! HA.id ("hide-" <> H.textValue (fieldName f))
+                    H.! HA.onclick "return hide_show(event)"
+            H.td $ H.text (fieldTitle g)
+            H.td H.! HA.id "units" $ foldMap H.text (fieldUnits g)
+            H.td $ H.string (show $ fieldType g)
+            H.td $ foldMap H.text (fieldDescr g)
+        forM_ (fold (fieldSub g)) $ \sf ->
+            subfield (f <> sf) sf
+
   case acceptable ["application/json", "text/html"] req of
     Just "application/json" ->
       return $ okResponse [] jcat
@@ -132,7 +143,6 @@ simulation = getPath R.parameter $ \sim req -> do
         H.unsafeLazyByteString $ J.encode query
         ";"
       H.h2 $ H.text $ catalogTitle cat
-
       mapM_ (H.p . H.preEscapedText) $ catalogDescr cat
       H.p $ "Query and explore a subset using the filters, download your selection using the link below, or get the full dataset above."
       H.table H.! HA.id "filt" $ mempty
@@ -142,25 +152,6 @@ simulation = getPath R.parameter $ \sim req -> do
             H.button H.! HA.id ("dhist-" <> xyv <> "-tog") H.! HA.class_ "dhist-xy-tog" $
               "lin/log"
         H.canvas H.! HA.id "hist" $ mempty
-
-      H.p $ "Table of fields, units, and their descriptions (haskell made"
-      H.table H.! HA.id "tdict" H.! HA.class_ "compact" $ do
-        H.thead $ H.tr $ do
-            H.th $ H.text "Display"
-            H.th $ H.text "Field"
-            H.th $ H.text "Units"
-            H.th $ H.text "Description"
-        forM_ (catalogFields cat) $ \f -> do
-            H.tr $ do
-                H.td $
-                    H.span
-                      H.! HA.id ("hide-" <> H.textValue (fieldName f))
-                      H.! HA.onclick "return hide_column(event)"
-                      $ H.preEscapedString "&times;"
-                H.td $ H.text (fieldTitle f)
-                H.td $ foldMap H.text (fieldUnits f)
-                H.td $ foldMap H.text (fieldDescr f)
-
         --TODO: Make into button
       H.p $ "Generate python code to use the above filters on your local machine:"
       H.div H.! HA.id "py" $ "Hello, world!"
@@ -169,8 +160,16 @@ simulation = getPath R.parameter $ \sim req -> do
         H.thead $ row (fieldsDepth fields) ((id ,) <$> V.toList fields)
         H.tfoot $ H.tr $ H.td H.! HA.colspan (H.toValue $ length fields') H.! HA.class_ "loading" $ "loading..."
 
-      H.p $ "Table of fields, units, and their descriptions (javascript made example)"
-      H.table H.! HA.id "tfield" $ mempty
+      H.p $ "Table of fields, units, and their descriptions. Click the checkbox to view / hide the specific field."
+      H.table H.! HA.id "tdict" H.! HA.class_ "compact" $ do
+        H.thead $ H.tr $ do
+            H.th $ H.text "Display"
+            H.th $ H.text "Field"
+            H.th $ H.text "Units"
+            H.th $ H.text "Type"
+            H.th $ H.text "Description"
+        forM_ (catalogFieldGroups cat) $ \f -> do
+            subfield f f
 
   where
   dtype (Long _) = "num"

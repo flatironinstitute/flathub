@@ -483,6 +483,16 @@ function add_filter(idx: number): Filter|undefined {
   return false;
 };
 
+(<any>window).hide_show = function hide_show(event: Event) {
+    if (TCat) {
+        var col = TCat.column((<HTMLElement>event.target).id.substr(5) + ':name');
+        var state = !col.visible();
+        col.visible(state);
+        set_download();
+    }
+    event.stopPropagation();
+}
+
 function py_text() {
     var st = '';
     var cat = Catalog.uri.substring(Catalog.uri.indexOf('/') + 1, );
@@ -512,6 +522,12 @@ function render_funct(field: Field): (data: any) => string {
     return (data) => data in e ? e[data] : data;
   }
   return (data) => data;
+}
+
+function checkbox_check() {
+    for (let i = 0; i < Catalog.fields.length; i++) {
+        document.getElementById("hide-" + Catalog.fields[i].name).checked = Catalog.fields[i].disp;
+    }
 }
 
 function init() {
@@ -574,8 +590,8 @@ function init() {
     TCat.draw(false);
   };
   add_sample();
-  TCat.draw();
-
+    TCat.draw();
+    checkbox_check();
   for (let xy of "xy")
     $('#dhist-'+xy+'-tog').on('click', hist_toggle_log.bind(undefined, xy));
 }

@@ -58,10 +58,12 @@ table#tcat {
   /* fix incorrect centering of datatables body content */
   margin: 0;
 }
+table#tdict{
+    margin: 0 auto;
+}
 footer {
   text-align: right;
 }
-
 div#py{
     background-color: #e2e2e2;
     font-family: "Courier New", Courier, monospace;
@@ -72,8 +74,13 @@ div#py{
     padding-top: 10px;
     padding-bottom: 10px;
 }
-
 body{
     margin-left: 2%;
     margin-right: 2%;
+}
+#units{
+    text-align: center;
+}
+#checkbox{
+    text-align: center;
 }
