@@ -921,37 +921,46 @@ lusam:
   index: lusam
   fields:
     - name: field
+      dict: candels_field
       enum: ['cosmos', 'EGS', 'GOODS-N', 'GOODS-S', 'UDS']
       type: byte
       top: true
     - name: realization
+      dict: candels_realization
       type: byte
       top: true
 
     - name: halo_id_nbody
+      dict: halo_id
       type: long
       descr: halo id from Bolshoi halo catalog
     - name: gal_id
+      dict: gal_id
       type: long
       descr: galaxy id
     - name: gal_type
       type: int
       descr: 0=central, 1=satellite, 2=orphan
-    - name: z_nopec 
+    - name: z_nopec
+      dict: true_redshift
       type: float
       descr: redshift without peculiar velocity
     - name: redshift
+      dict: redshift
       type: float
       descr: redshift with peculiar velocity
     - name: ra
+      dict: RA
       type: float
       descr: right ascension
       units: 'deg'
     - name: dec
+      dict: Dec
       type: float
       descr: declination
       units: 'deg'
     - name: m_vir
+      dict: halo_mass
       type: float
       descr: host halo virial mass
       units: '\(10^{10} M_\odot\)'
@@ -1461,31 +1470,38 @@ unimach:
   index: unimach
   fields:
     - name: field
+      dict: candels_field
       enum: ['cosmos', 'EGS', 'GOODS-N', 'GOODS-S', 'UDS']
       type: byte
       top: true
     - name: realization
+      dict: candels_realization
       type: byte
       top: true
 
     - name: RA
+      dict: RA
       type: float
       descr: Right Ascension
       units: 'deg'
     - name: Dec
+      dict: Dec
       type: float
       descr: Declination
       units: 'deg'
     - name: Z(los)
+      dict: redshift
       type: float
       descr: Redshift including redshift-space distortions.
     - name: Z(cosmo)
+      dict: true_redshift
       type: float
       descr: Cosmological redshift---i.e., without redshift-space distortions.
     - name: Scale
       type: float
       descr: Scale factor of the timestep from which the halo was taken
     - name: ID
+      dict: gal_id # also halo_id
       type: long
       descr: Halo ID (unique across all timesteps)
     - name: DescID
@@ -1495,14 +1511,17 @@ unimach:
       type: long
       descr: -1 for central halos, otherwise, ID of largest parent halo
     - name: 'X'
+      dict: pos_x
       type: float
       descr: Position of halo relative to axes of lightcone (distance along lightcone) in comoving Mpc / h
       units: 'Mpc/h'
     - name: 'Y'
+      dict: pos_y
       type: float
       descr: Position of halo relative to axes of lightcone (distance perpendicular to lightcone X-axis) in comoving Mpc / h
       units: 'Mpc/h'
     - name: 'Z'
+      dict: pos_z
       type: float
       descr: Position of halo relative to axes of lightcone (distance perpendicular to lightcone X-axis) in comoving Mpc / h
       units: 'Mpc/h'
@@ -1519,6 +1538,7 @@ unimach:
       descr: Peculiar velocity in physical (i.e., non-comoving) km/s, relative to lightcone axes
       units: 'km/s'
     - name: M
+      dict: halo_mass
       type: float
       descr: Halo mass (Bryan & Norman (BN98) 1998 virial mass)
       units: '\( M_\odot\)'
@@ -1583,37 +1603,46 @@ scsam:
   index: scsam
   fields:
     - name: field
+      dict: candels_field
       enum: ['cosmos', 'EGS', 'GOODS-N', 'GOODS-S', 'UDS']
       type: byte
       top: true
     - name: realization
+      dict: candels_realization
       type: byte
       top: true
 
     - name: halo_id_nbody
+      dict: halo_id
       type: long
       descr: halo id from Bolshoi halo catalog
     - name: gal_id
+      dict: gal_id
       type: long
       descr: galaxy id
     - name: gal_type
       type: int
       descr: 0=central, 1=satellite, 2=orphan
     - name: z_nopec
+      dict: true_redshift
       type: float
       descr: redshift without peculiar velocity
     - name: redshift
+      dict: redshift
       type: float
       descr: redshift with peculiar velocity
     - name: ra
+      dict: RA
       type: float
       descr: right ascension
       units: 'deg'
     - name: dec
+      dict: Dec
       type: float
       descr: declination
       units: 'deg'
     - name: m_vir
+      dict: halo_mass
       type: float
       descr: host halo virial mass
       units: '\(10^{10} M_\odot\)'
@@ -2114,3 +2143,44 @@ scsam:
         descr: magnitude of bulge only, without extinction
       - name: "dust"
         descr: galaxy magnitude, including extinction by dust
+
+dict:
+    - name: candels_field
+      type: byte
+      top: true
+      descr: "Area of CANDELS (COSMOS, EGS, GOODS-N, GOOODS-S)"
+    - name: candels_realization
+      type: byte
+      top: true
+      descr: "Realization between 0-7"
+    - name: RA
+      type: float
+      descr: Right Ascension
+    - name: Dec
+      type: float
+    - name: pos_x
+      type: float
+    - name: pos_y
+      type: float
+    - name: pos_z
+      type: float
+    - name: redshift
+      type: float
+    - name: true_redshift
+      type: float
+    - name: gal_id
+      type: long
+    - name: halo_id
+      type:  long
+    - name: halo_mass
+      type: float
+
+
+
+
+
+
+
+
+
+

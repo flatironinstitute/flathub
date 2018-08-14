@@ -134,3 +134,30 @@ h1{
     position:relative;
     width: 100%;
 }
+.tdict{
+  border-collapse: collapse;
+}
+.tdict th{
+  background-color: lightgrey;
+  border-top: solid;
+  border-width: 1px;
+  border-color: #bfbfbf;
+}
+.tdict tr:nth-child(odd){
+  background-color: #ededed;
+}
+.tdict td{
+  border: solid;
+  border-width: 1px 1px;
+  border-color: #bfbfbf;
+  padding: 4px 10px;
+}
+#depth_1{
+  padding-left: 25px;
+}
+.tdict{
+  text-align: center;
+}
+.tdict td:first-child{
+  text-align: left;
+}

@@ -130,19 +130,20 @@ simulation = getPath R.parameter $ \sim req -> do
       when (d > 1) $ row (pred d) $ foldMap (\(p, f) -> foldMap (fmap (p . mappend f, ) . V.toList) $ fieldSub f) l
     query = parseQuery req
 
-    subfield :: FieldGroup -> FieldGroup -> H.Html
-    subfield f g = do
-        H.tr $ do
-            H.td H.! HA.id "checkbox" $
+    subfield :: FieldGroup -> FieldGroup -> Int -> H.Html
+    subfield f g d = do
+        H.tr H.! HA.id "row_" $ do
+          --  H.td H.! HA.id "checkbox" $ H.div $ do
+            H.td H.! HA.id (H.stringValue("depth_" <> show d)) $ H.div $ do
                 H.span $ H.input H.! HA.type_ "checkbox"
                     H.! HA.id ("hide-" <> H.textValue (fieldName f))
                     H.! HA.onclick "return hide_show(event)"
-            H.td $ H.text (fieldTitle g)
+                H.text (fieldTitle g)
             H.td H.! HA.id "units" $ foldMap H.text (fieldUnits g)
             H.td $ H.string (show $ fieldType g)
             H.td $ foldMap H.text (fieldDescr g)
         forM_ (fold (fieldSub g)) $ \sf ->
-            subfield (f <> sf) sf
+            subfield (f <> sf) sf (d+1)
 
   case acceptable ["application/json", "text/html"] req of
     Just "application/json" ->
@@ -173,15 +174,14 @@ simulation = getPath R.parameter $ \sim req -> do
         H.tfoot $ H.tr $ H.td H.! HA.colspan (H.toValue $ length fields') H.! HA.class_ "loading" $ "loading..."
 
       H.p $ "Table of fields, units, and their descriptions. Click the checkbox to view / hide the specific field."
-      H.table H.! HA.id "tdict" H.! HA.class_ "compact" $ do
+      H.table H.! HA.id "tdict" H.! HA.class_ "tdict" $ do
         H.thead $ H.tr $ do
-            H.th $ H.text "Display"
             H.th $ H.text "Field"
             H.th $ H.text "Units"
             H.th $ H.text "Type"
             H.th $ H.text "Description"
         forM_ (catalogFieldGroups cat) $ \f -> do
-            subfield f f
+            subfield f f 0
 
   where
   dtype (Long _) = "num"
