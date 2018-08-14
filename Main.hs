@@ -44,20 +44,25 @@ import Query
 import Ingest
 import Compression
 
-html :: Wai.Request -> H.Markup -> Wai.Response
-html req h = okResponse [] $ H.docTypeHtml $ do
-  H.head $ do
-    forM_ ([["jspm_packages", if isdev then "system.src.js" else "system.js"], ["jspm.config.js"]] ++ if isdev then [["dev.js"]] else [["index.js"]]) $ \src ->
-      H.script H.! HA.type_ "text/javascript" H.! HA.src (staticURI src) $ mempty
-    -- TODO: use System.resolve:
-    forM_ [["jspm_packages", "npm", "datatables.net-dt@1.10.19", "css", "jquery.dataTables.css"], ["main.css"]] $ \src ->
-      H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
-    H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/MathJax.js?config=TeX-AMS_CHTML" $ mempty
-  H.body $ do
-    h
-    H.footer $ do
-      H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto" $
-        H.img H.! HA.src (staticURI ["github.png"])
+html :: Wai.Request -> H.Markup -> M Wai.Response
+html req h = do
+  cats <- asks $ catalogMap . globalCatalogs
+  return $ okResponse [] $ H.docTypeHtml $ do
+    H.head $ do
+      forM_ ([["jspm_packages", if isdev then "system.src.js" else "system.js"], ["jspm.config.js"]] ++ if isdev then [["dev.js"]] else [["index.js"]]) $ \src ->
+        H.script H.! HA.type_ "text/javascript" H.! HA.src (staticURI src) $ mempty
+      -- TODO: use System.resolve:
+      forM_ [["jspm_packages", "npm", "datatables.net-dt@1.10.19", "css", "jquery.dataTables.css"], ["main.css"]] $ \src ->
+        H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
+      H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/MathJax.js?config=TeX-AMS_CHTML" $ mempty
+      H.script $ do
+        "Catalogs="
+        H.unsafeLazyByteString $ J.encode $ HM.map catalogTitle cats
+    H.body $ do
+      h
+      H.footer $ do
+        H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto" $
+          H.img H.! HA.src (staticURI ["github.png"])
   where
   isdev = any ((==) "dev" . fst) $ Wai.queryString req
 
@@ -67,7 +72,7 @@ acceptable l = find (`elem` l) . foldMap parseHttpAccept . lookup hAccept . Wai.
 top :: Route ()
 top = getPath R.unit $ \() req -> do
   cats <- asks (catalogMap . globalCatalogs)
-  return $ html req $
+  html req $
     H.dl $
       forM_ (HM.toList cats) $ \(sim, cat) -> do
         H.dt $ H.a H.! HA.href (WH.routeActionValue simulation sim mempty) $
@@ -119,7 +124,7 @@ simulation = getPath R.parameter $ \sim req -> do
   case acceptable ["application/json", "text/html"] req of
     Just "application/json" ->
       return $ okResponse [] jcat
-    _ -> return $ html req $ do
+    _ -> html req $ do
       H.script $ do
         "Catalog="
         H.preEscapedBuilder $ J.fromEncoding jcat
