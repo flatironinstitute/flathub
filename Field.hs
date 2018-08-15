@@ -14,6 +14,7 @@ module Field
   , unTypeValue
   , parseTypeValue
   , parseTypeJSONValue
+  , baseType
   , typeIsFloating, typeIsIntegral, typeIsNumeric, typeIsString
   , numpySize, numpyDtype
   , FieldSub(..)

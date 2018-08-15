@@ -120,7 +120,7 @@ simulation = getPath R.parameter $ \sim req -> do
           H.! HA.rowspan (H.toValue d)
           H.! H.dataAttribute "data" (H.textValue $ fieldName f')
           H.! H.dataAttribute "name" (H.textValue $ fieldName f')
-          H.! H.dataAttribute "type" (dtype $ fieldType f)
+          H.! H.dataAttribute "type" (baseType ("num","num","string","string") $ fieldType f)
           H.!? (not (fieldDisp f), H.dataAttribute "visible" "false")
           H.! H.dataAttribute "default-content" mempty $ do
         fieldBody d f
@@ -186,17 +186,6 @@ simulation = getPath R.parameter $ \sim req -> do
             H.th $ H.text "Description"
         forM_ (catalogFieldGroups cat) $ \f -> do
             subfield f f 0
-
-  where
-  dtype (Long _) = "num"
-  dtype (Integer _) = "num"
-  dtype (Short _) = "num"
-  dtype (Byte _) = "num"
-  dtype (Double _) = "num"
-  dtype (Float _) = "num"
-  dtype (HalfFloat _) = "num"
-  -- dtype (Date _) = "date"
-  dtype _ = "string"
 
 staticHtml :: Route [FilePathComponent]
 staticHtml = getPath ("html" R.*< R.manyI R.parameter) $ \paths q -> do
