@@ -1,3 +1,8 @@
+body{
+    margin-left: 30px;
+    margin-right: 3%;
+    margin-top: 0;
+}
 div#download {
   float: right;
   text-align: right;
@@ -6,10 +11,6 @@ button.remove {
   padding: 0px;
   border-width: 1px;
   margin: 1px;
-  color: red;
-}
-span.hide {
-  float: left;
   color: red;
 }
 th {
@@ -58,9 +59,6 @@ table#tcat {
   /* fix incorrect centering of datatables body content */
   margin: 0;
 }
-table#tdict{
-    margin: 0 auto;
-}
 footer {
   text-align: right;
 }
@@ -73,11 +71,6 @@ div#py{
     padding-right: 2%;
     padding-top: 10px;
     padding-bottom: 10px;
-}
-body{
-    margin-left: 30px;
-    margin-right: 3%;
-    margin-top: 0;
 }
 div#bar{
     margin-left: -30px;
@@ -134,30 +127,32 @@ h1{
     position:relative;
     width: 100%;
 }
-.tdict{
+table#tdict{
+  margin: 0 auto;
   border-collapse: collapse;
+  text-align: center;
 }
-.tdict th{
+#tdict th{
   background-color: lightgrey;
   border-top: solid;
   border-width: 1px;
   border-color: #bfbfbf;
 }
-.tdict tr:nth-child(odd){
+#tdict tr:nth-child(odd){
   background-color: #ededed;
 }
-.tdict td{
+#tdict td{
   border: solid;
   border-width: 1px 1px;
   border-color: #bfbfbf;
   padding: 4px 10px;
 }
-#depth_1{
-  padding-left: 25px;
-}
-.tdict{
-  text-align: center;
-}
-.tdict td:first-child{
+#tdict td:first-child{
   text-align: left;
+}
+.depth-1{
+  padding-left: 25px !important;
+}
+.depth-2{
+  padding-left: 50px !important;
 }

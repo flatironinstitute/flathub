@@ -16,7 +16,9 @@ import qualified Data.ByteString.Lazy as BSL
 import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
 import           Data.List (find)
+import           Data.Maybe (isNothing)
 import           Data.Monoid ((<>))
+import qualified Data.Text as T
 import qualified Data.Vector as V
 import           Network.HTTP.Types.Header (ResponseHeaders, hAccept, hIfModifiedSince, hLastModified, hContentType, hCacheControl)
 import           Network.HTTP.Types.Status (notModified304, notFound404)
@@ -134,20 +136,25 @@ simulation = getPath R.parameter $ \sim req -> do
       when (d > 1) $ row (pred d) $ foldMap (\(p, f) -> foldMap (fmap (p . mappend f, ) . V.toList) $ fieldSub f) l
     query = parseQuery req
 
-    subfield :: FieldGroup -> FieldGroup -> Int -> H.Html
-    subfield f g d = do
-        H.tr H.! HA.id "row_" $ do
+    fielddesc :: FieldGroup -> FieldGroup -> Int -> H.Html
+    fielddesc f g d = do
+        H.tr $ do
           --  H.td H.! HA.id "checkbox" $ H.div $ do
-            H.td H.! HA.id (H.stringValue("depth_" <> show d)) $ H.div $ do
-                H.span $ H.input H.! HA.type_ "checkbox"
-                    H.! HA.id ("hide-" <> H.textValue (fieldName f))
-                    H.! HA.onclick "return hide_show(event)"
+            H.td H.! HA.class_ ("depth-" <> H.stringValue (show d)) $ do
+                H.input H.! HA.type_ "checkbox"
+                    H.!? (isNothing (fieldSub g), HA.id $ H.textValue $ key f)
+                    H.! HA.class_ (H.textValue $ T.unwords $ map key fs)
+                    H.!? (fieldDisp g, HA.checked "checked")
+                    H.! HA.onclick "return colvisSet(event)"
                 H.text (fieldTitle g)
-            H.td H.! HA.id "units" $ foldMap H.text (fieldUnits g)
+            H.td H.! HA.class_ "units" $ foldMap H.text (fieldUnits g)
             H.td $ H.string (show $ fieldType g)
             H.td $ foldMap H.text (fieldDescr g)
         forM_ (fold (fieldSub g)) $ \sf ->
-            subfield (f <> sf) sf (d+1)
+            fielddesc (f <> sf) sf (d+1)
+      where
+      fs = expandField f
+      key = ("colvis-" <>) . fieldName
 
   case acceptable ["application/json", "text/html"] req of
     Just "application/json" ->
@@ -178,14 +185,14 @@ simulation = getPath R.parameter $ \sim req -> do
         H.tfoot $ H.tr $ H.td H.! HA.colspan (H.toValue $ length fields') H.! HA.class_ "loading" $ "loading..."
 
       H.p $ "Table of fields, units, and their descriptions. Click the checkbox to view / hide the specific field."
-      H.table H.! HA.id "tdict" H.! HA.class_ "tdict" $ do
+      H.table H.! HA.id "tdict" $ do
         H.thead $ H.tr $ do
             H.th $ H.text "Field"
             H.th $ H.text "Units"
             H.th $ H.text "Type"
             H.th $ H.text "Description"
         forM_ (catalogFieldGroups cat) $ \f -> do
-            subfield f f 0
+            fielddesc f f 0
 
 staticHtml :: Route [FilePathComponent]
 staticHtml = getPath ("html" R.*< R.manyI R.parameter) $ \paths q -> do
