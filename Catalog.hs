@@ -95,12 +95,15 @@ data Catalogs = Catalogs
   , catalogMap :: !(HM.HashMap T.Text Catalog)
   }
 
+instance Semigroup Catalogs where
+  a <> b = Catalogs
+    { catalogDict = catalogDict a <> catalogDict b
+    , catalogMap  = catalogMap  a <> catalogMap  b
+    }
+
 instance Monoid Catalogs where
   mempty = Catalogs mempty mempty
-  mappend a b = Catalogs
-    { catalogDict = mappend (catalogDict a) (catalogDict b)
-    , catalogMap = mappend (catalogMap a) (catalogMap b)
-    }
+  mappend = (<>)
 
 instance J.FromJSON Catalogs where
   parseJSON = J.withObject "top" $ \o -> do
