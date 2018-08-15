@@ -62,13 +62,14 @@ htmlResponse req hdrs body = do
              -- H.li $ do
               --    H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto" $
                --       H.img H.! HA.src (staticURI ["github.png"]) H.! HA.height "30" H.! HA.width "30"
+              H.li $
+                H.a H.! HA.href (WH.routeActionValue top () mempty) $ H.text "Home"
               H.li $ do
-                  H.a H.! HA.href (WH.routeActionValue top () mempty) $ H.text "Home"
-              H.li $ do
-                  H.a H.! HA.href (WH.routeActionValue top () mempty) $ H.text "Catalogs"
-                  -- H.a H.! HA.href "gaea" $ H.text "Catalogs"
-              H.li $ do
-                  H.a H.! HA.href (WH.routeActionValue top () mempty) $ H.text "About"
+                H.text "Catalogs"
+                forM_ (HM.toList cats) $ \(key, cat) ->
+                  H.a H.! HA.href (WH.routeActionValue simulation key mempty) $ H.text (catalogTitle cat)
+              H.li $
+                H.a H.! HA.href (WH.routeActionValue top () mempty) $ H.text "About"
       body
       -- H.footer $ do
 
