@@ -1,3 +1,5 @@
+"use strict";
+
 import $ from "jquery";
 import "datatables.net";
 import DataTablesScroller from "datatables.net-scroller";
