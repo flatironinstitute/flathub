@@ -1,9 +1,9 @@
-resolver: lts-11.20
+resolver: lts-11.21
 packages:
 - '.'
 - location:
     git: git://github.com/dylex/waimwork
-    commit: 4ac02af8e56cf26235737a964e08bce5a5f22305
+    commit: 08ce12a8fbeffd7efbf5e1b1b2748893e58f7fc4
   extra-dep: true
 - location:
     git: git://github.com/dylex/hs-hdf5
