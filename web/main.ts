@@ -489,14 +489,14 @@ function add_filter(idx: number): Filter|undefined {
 
 function colvisNames(box: HTMLInputElement): string[] {
   let l: string[] = [];
-  for (let k of box.classList) {
+  for (let k of <any>box.classList as string[]) {
     l.push(k.substr(7));
   }
   return l;
 }
 
 function colvisUpdate(box: HTMLInputElement, vis: boolean) {
-  let v: boolean[] = TCat.columns(colvisNames(box).map(n => n+":name")).visible().toArray();
+  let v: boolean[] = (<any>TCat.columns(colvisNames(box).map(n => n+":name")).visible() as JQuery<boolean>).toArray();
   // vis = v.shift();
   box.checked = vis;
   box.indeterminate = v.some(x => x !== vis);
