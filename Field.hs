@@ -14,13 +14,14 @@ module Field
   , unTypeValue
   , parseTypeValue
   , parseTypeJSONValue
+  , baseType
   , typeIsFloating, typeIsIntegral, typeIsNumeric, typeIsString
   , numpySize, numpyDtype
   , FieldSub(..)
   , Field, FieldGroup
   , Fields, FieldGroups
   , parseFieldGroup
-  , expandFields, expandAllFields
+  , expandField, expandFields, expandAllFields
   , deleteField
   , fieldsDepth
   , FieldValue
@@ -339,17 +340,18 @@ subField f s = s
     | a == b = b
     | otherwise = a <> T.cons c b
 
+expandField :: FieldGroup -> Fields
+expandField f@Field{ fieldSub = Nothing } = return f{ fieldSub = Proxy }
+expandField f@Field{ fieldSub = Just l } =
+  foldMap (expandField . mappend f) l
+
 expandFields :: FieldGroups -> Fields
-expandFields = foldMap expandField where
-  expandField :: FieldGroup -> Fields
-  expandField f@Field{ fieldSub = Nothing } = return f{ fieldSub = Proxy }
-  expandField f@Field{ fieldSub = Just l } =
-    foldMap (expandField . mappend f) l
+expandFields = foldMap expandField
 
 expandAllFields :: FieldGroups -> HM.HashMap T.Text FieldGroup
-expandAllFields = foldMap expandField where
-  expandField :: FieldGroup -> HM.HashMap T.Text FieldGroup
-  expandField f = HM.singleton (fieldName f) f <> foldMap (foldMap (expandField . mappend f)) (fieldSub f)
+expandAllFields = foldMap expandAllField where
+  expandAllField :: FieldGroup -> HM.HashMap T.Text FieldGroup
+  expandAllField f = HM.singleton (fieldName f) f <> foldMap (foldMap (expandAllField . mappend f)) (fieldSub f)
 
 deleteField :: T.Text -> FieldGroups -> FieldGroups
 deleteField n = dfs mempty where
