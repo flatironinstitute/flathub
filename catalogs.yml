@@ -11,6 +11,7 @@ dict:
     top: true
     descr: "Realization between 0-7"
   - name: ppos
+    title: coord
     sub:
     - name: 'x'
       title: RA

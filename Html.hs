@@ -15,7 +15,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
 import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
-import           Data.List (find)
+import           Data.List (find, sortOn)
 import           Data.Maybe (isNothing)
 import           Data.Monoid ((<>))
 import qualified Data.Text as T
@@ -70,7 +70,7 @@ htmlResponse req hdrs body = do
                 H.div H.! HA.class_ "dropdown" $ do
                     H.a H.! HA.href (WH.routeActionValue top () mempty) $ H.text "Catalogs"
                     H.div H.! HA.class_"dropdown-content" $ do
-                        forM_ (HM.toList cats) $ \(key, cat) ->
+                        forM_ (sortOn (catalogSort . snd) $ HM.toList cats) $ \(key, cat) ->
                             H.a H.! HA.href (WH.routeActionValue simulation key mempty) $ H.text (catalogTitle cat)
               H.li $
                 H.a H.! HA.href "/html/candels" $ H.text "CANDELS"
@@ -190,7 +190,7 @@ simulation = getPath R.parameter $ \sim req -> do
 
       H.div $ do
         H.button H.! HA.class_ "show_button" H.! HA.onclick "return div_display('tdict')" $ "show/hide"
-        "Table of fields, units, and their descriptions. Click the checkbox to view/hide specific fields."
+        "Table of fields, units, and their descriptions (use checkboxes to view/hide fields above)"
       H.div $ H.table H.! HA.id "tdict" $ do
         H.thead $ H.tr $ do
             H.th $ H.text "Field"
@@ -203,7 +203,7 @@ simulation = getPath R.parameter $ \sim req -> do
 
       H.div $ do
         H.button H.! HA.class_ "show_button" H.! HA.onclick "return div_display('py')" $ "show/hide"
-        "Generate python code to use the above filters on your local machine:"
+        "Example python code to apply the above filters and retrieve data"
       H.div H.! HA.id "py" $ "Hello, world!"
 
 staticHtml :: Route [FilePathComponent]

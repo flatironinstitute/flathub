@@ -54,6 +54,7 @@ data CatalogStore
 
 data Catalog = Catalog
   { catalogEnabled :: !Bool
+  , catalogSort :: !T.Text
   , catalogTitle :: !T.Text
   , catalogDescr :: Maybe T.Text
   , catalogStore :: !CatalogStore
@@ -68,6 +69,7 @@ parseCatalog dict = J.withObject "catalog" $ \c -> do
   catalogEnabled <- c J..:! "enabled" J..!= True
   catalogFieldGroups <- parseJSONField "fields" (J.withArray "fields" $ mapM (parseFieldGroup dict)) c
   catalogTitle <- c J..: "title"
+  catalogSort <- c J..:? "sort" J..!= T.empty
   catalogDescr <- c J..:? "descr"
   catalogKey <- c J..:? "key"
   catalogStore <- CatalogES
