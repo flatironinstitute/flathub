@@ -528,7 +528,7 @@ function py_text() {
             st += ')';
         }
     }
-    st = "from client import * <br>" + cat + " = Simulation('" + cat + "') <br>" + "q = Query(" + cat + st;
+    st = "import fi_astrosims.client <br>" + cat + " = fi_astrosims.client.Simulation('" + cat + "') <br>" + "q = fi_astrosims.client.Query(" + cat + st;
     if (Seed != 'undefined')
         st += ", seed = " + Seed;
     if (Sample != 1)
