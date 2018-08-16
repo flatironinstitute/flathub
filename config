@@ -2,5 +2,5 @@ http {
   port = 8092
 }
 elasticsearch {
-  server = "http://10.128.128.22:9200/"
+  server = "http://es0:9200/"
 }
