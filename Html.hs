@@ -73,6 +73,8 @@ htmlResponse req hdrs body = do
                         forM_ (HM.toList cats) $ \(key, cat) ->
                             H.a H.! HA.href (WH.routeActionValue simulation key mempty) $ H.text (catalogTitle cat)
               H.li $
+                H.a H.! HA.href "/html/candels" $ H.text "CANDELS"
+              H.li $
                 H.a H.! HA.href (WH.routeActionValue top () mempty) $ H.text "About"
       body
       H.footer $ do
@@ -185,8 +187,10 @@ simulation = getPath R.parameter $ \sim req -> do
         H.thead $ row (fieldsDepth fields) ((id ,) <$> V.toList fields)
         H.tfoot $ H.tr $ H.td H.! HA.colspan (H.toValue $ length fields') H.! HA.class_ "loading" $ "loading..."
 
-      H.p $ "Table of fields, units, and their descriptions. Click the checkbox to view / hide the specific field."
-      H.table H.! HA.id "tdict" $ do
+      H.div $ do
+        H.p H.! HA.id "p_button" $ "Table of fields, units, and their descriptions. Click the checkbox to view / hide the specific field:"
+        H.button H.! HA.id "show_button" H.! HA.onclick "return div_display(tdict)" $ "show/hide"
+      H.div $ H.table H.! HA.id "tdict" H.! HA.class_ "tdict" $ do
         H.thead $ H.tr $ do
             H.th $ H.text "Field"
             H.th $ H.text "Units"
@@ -196,7 +200,7 @@ simulation = getPath R.parameter $ \sim req -> do
             fielddesc f f 0
 
       H.div $ do
-        H.p $ "Generate python code to use the above filters on your local machine:"
+        H.p H.! HA.id "p_button" $ "Generate python code to use the above filters on your local machine:"
         H.button H.! HA.id "show_button" H.! HA.onclick "return div_display(py)" $ "show/hide"
       H.div H.! HA.id "py" $ "Hello, world!"
 

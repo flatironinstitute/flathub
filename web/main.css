@@ -65,7 +65,7 @@ footer {
 div#py{
     background-color: #e2e2e2;
     font-family: "Courier New", Courier, monospace;
-    margin-top: -0px;
+    margin-top: 10px;
     margin-bottom: 10px;
     padding-left: 2%;
     padding-right: 2%;
@@ -154,6 +154,8 @@ table#tdict{
   margin: 0 auto;
   border-collapse: collapse;
   text-align: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 #tdict th{
   background-color: lightgrey;
@@ -202,7 +204,11 @@ table#tdict{
 }
 .dropdown-content a:hover {
   background-color: #f1f1f1
-  }
+}
 .dropdown:hover .dropdown-content {
     display: block;
+}
+p#p_button{
+  display: inline;
+  padding-right: 10px;
 }
