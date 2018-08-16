@@ -327,7 +327,6 @@ abstract class Filter {
   protected add(...nodes: Array<JQuery.TypeOrArray<JQuery.Node | JQuery<JQuery.Node>>>) {
     add_filt_row(this.field.name, this.label, ...nodes);
     Filters.push(this);
-    this.tcol.search('');
   }
 
   abstract update_aggs(aggs: Dict<any>): void;
@@ -336,8 +335,8 @@ abstract class Filter {
     const i = Filters.indexOf(this);
     if (i >= 0 && Update_aggs > i)
       Update_aggs = i+1;
-    this.tcol.search(search);
     columnVisible(this.name, vis);
+    this.tcol.draw();
   }
 
   protected remove() {
@@ -347,8 +346,8 @@ abstract class Filter {
     Filters.splice(i, 1);
     $('tr#filt-'+this.name).remove();
     Update_aggs = i;
-    this.tcol.search('');
     columnVisible(this.name, true);
+    this.tcol.draw();
   }
 
 }
@@ -449,6 +448,17 @@ class NumericFilter extends Filter {
       Histogram = this;
       this.tcol.draw(false);
     }
+    else {
+      Histogram = undefined;
+      $('#dhist').hide();
+    }
+  }
+
+  private reset(){
+      if (Histogram === this) {
+          this.lb.value = this.lb.defaultValue;
+          this.ub.value = this.ub.defaultValue;
+      }
   }
 
   protected remove() {
