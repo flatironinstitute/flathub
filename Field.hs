@@ -298,7 +298,9 @@ parseFieldGroup dict = parseFieldDefs def where
   parseFieldDefs :: FieldGroup -> J.Value -> J.Parser FieldGroup
   parseFieldDefs defd = J.withObject "field" $ \f -> do
     fieldDict <- f J..:? "dict"
-    let d = maybe defd (dict HM.!) fieldDict
+    d <- maybe (return defd)
+      (\n -> maybe (fail $ "Unknown dict key: " ++ show n) return $ HM.lookup n dict)
+      fieldDict
     fieldName <- f J..:? "name" J..!= fieldName d
     fieldType <- f J..:! "type" J..!= fieldType d
     fieldEnum <- (<|> fieldEnum d) <$> f J..:? "enum"
