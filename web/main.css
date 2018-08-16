@@ -172,7 +172,7 @@ table#tdict{
   border-color: #bfbfbf;
   padding: 4px 10px;
 }
-#tdict td:first-child{
+#tdict td:first-child, td:nth-child(2){
   text-align: left;
 }
 .depth-1{
@@ -208,7 +208,7 @@ table#tdict{
 .dropdown:hover .dropdown-content {
     display: block;
 }
-p#p_button{
+.p_button{
   display: inline;
   padding-right: 10px;
 }

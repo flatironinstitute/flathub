@@ -536,8 +536,9 @@ function render_funct(field: Field): (data: any) => string {
   return (data) => data;
 }
 
-(<any>window).div_display = function div_display(ele) {
-    ele.style.display = (ele.style.display === 'none') ? '' : 'none';
+(<any>window).div_display = function div_display(ele: string) {
+    let x = document.getElementById(ele);
+    x.style.display = (x.style.display === 'none') ? '' : 'none';
 }
 
 function init() {
@@ -554,6 +555,10 @@ function init() {
     scrollX: true,
     pageLength: 25,
     processing: true,
+    language: {
+        emptyTable: "",
+        zeroRecords: ""
+    },
     dom: 'i<"#download">rtlp',
     deferRender: true,
     pagingType: 'simple', 

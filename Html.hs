@@ -153,8 +153,9 @@ simulation = getPath R.parameter $ \sim req -> do
                     H.!? (fieldDisp g, HA.checked "checked")
                     H.! HA.onclick "return colvisSet(event)"
                 H.text (fieldTitle g)
-            H.td H.! HA.class_ "units" $ foldMap H.text (fieldUnits g)
+            H.td $ when (isNothing (fieldSub g)) (H.text (fieldName f))
             H.td $ H.string (show $ fieldType g)
+            H.td H.! HA.class_ "units" $ foldMap H.text (fieldUnits g)
             H.td $ foldMap H.text (fieldDescr g)
         forM_ (fold (fieldSub g)) $ \sf ->
             fielddesc (f <> sf) sf (d+1)
@@ -188,20 +189,21 @@ simulation = getPath R.parameter $ \sim req -> do
         H.tfoot $ H.tr $ H.td H.! HA.colspan (H.toValue $ length fields') H.! HA.class_ "loading" $ "loading..."
 
       H.div $ do
-        H.p H.! HA.id "p_button" $ "Table of fields, units, and their descriptions. Click the checkbox to view / hide the specific field:"
-        H.button H.! HA.id "show_button" H.! HA.onclick "return div_display(tdict)" $ "show/hide"
+        H.p H.! HA.class_ "p_button" $ "Table of fields, units, and their descriptions. Click the checkbox to view / hide the specific field:"
+        H.button H.! HA.class_ "show_button" H.! HA.onclick "return div_display('tdict')" $ "show/hide"
       H.div $ H.table H.! HA.id "tdict" H.! HA.class_ "tdict" $ do
         H.thead $ H.tr $ do
             H.th $ H.text "Field"
-            H.th $ H.text "Units"
+            H.th $ H.text "Variable"
             H.th $ H.text "Type"
+            H.th $ H.text "Units"
             H.th $ H.text "Description"
         forM_ (catalogFieldGroups cat) $ \f -> do
             fielddesc f f 0
 
       H.div $ do
-        H.p H.! HA.id "p_button" $ "Generate python code to use the above filters on your local machine:"
-        H.button H.! HA.id "show_button" H.! HA.onclick "return div_display(py)" $ "show/hide"
+        H.p H.! HA.class_ "p_button" $ "Generate python code to use the above filters on your local machine:"
+        H.button H.! HA.class_ "show_button" H.! HA.onclick "return div_display('py')" $ "show/hide"
       H.div H.! HA.id "py" $ "Hello, world!"
 
 staticHtml :: Route [FilePathComponent]
