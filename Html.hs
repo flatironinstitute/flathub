@@ -189,9 +189,9 @@ simulation = getPath R.parameter $ \sim req -> do
         H.tfoot $ H.tr $ H.td H.! HA.colspan (H.toValue $ length fields') H.! HA.class_ "loading" $ "loading..."
 
       H.div $ do
-        H.p H.! HA.class_ "p_button" $ "Table of fields, units, and their descriptions. Click the checkbox to view / hide the specific field:"
         H.button H.! HA.class_ "show_button" H.! HA.onclick "return div_display('tdict')" $ "show/hide"
-      H.div $ H.table H.! HA.id "tdict" H.! HA.class_ "tdict" $ do
+        "Table of fields, units, and their descriptions. Click the checkbox to view/hide specific fields."
+      H.div $ H.table H.! HA.id "tdict" $ do
         H.thead $ H.tr $ do
             H.th $ H.text "Field"
             H.th $ H.text "Variable"
@@ -202,8 +202,8 @@ simulation = getPath R.parameter $ \sim req -> do
             fielddesc f f 0
 
       H.div $ do
-        H.p H.! HA.class_ "p_button" $ "Generate python code to use the above filters on your local machine:"
         H.button H.! HA.class_ "show_button" H.! HA.onclick "return div_display('py')" $ "show/hide"
+        "Generate python code to use the above filters on your local machine:"
       H.div H.! HA.id "py" $ "Hello, world!"
 
 staticHtml :: Route [FilePathComponent]

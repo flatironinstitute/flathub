@@ -63,14 +63,15 @@ footer {
   text-align: right;
 }
 div#py{
-    background-color: #e2e2e2;
-    font-family: "Courier New", Courier, monospace;
-    margin-top: 10px;
-    margin-bottom: 10px;
-    padding-left: 2%;
-    padding-right: 2%;
-    padding-top: 10px;
-    padding-bottom: 10px;
+  display: none;
+  background-color: #e2e2e2;
+  font-family: "Courier New", Courier, monospace;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  padding-left: 2%;
+  padding-right: 2%;
+  padding-top: 10px;
+  padding-bottom: 10px;
 }
 div#bar{
     margin-left: -30px;
@@ -151,6 +152,7 @@ h1{
     width: 100%;
 }
 table#tdict{
+  display: none;
   margin: 0 auto;
   border-collapse: collapse;
   text-align: center;
@@ -173,7 +175,7 @@ table#tdict{
   padding: 4px 10px;
 }
 #tdict td:first-child, td:nth-child(2){
-  text-align: left;
+  text-align: left; !important;
 }
 .depth-1{
   padding-left: 25px !important;
@@ -181,9 +183,7 @@ table#tdict{
 .depth-2{
   padding-left: 50px !important;
 }
-.tdict td:first-child{
-  text-align: left;
-}li.dropdown {
+li.dropdown {
     display: inline-block;
 }
 .dropdown-content {
@@ -208,7 +208,7 @@ table#tdict{
 .dropdown:hover .dropdown-content {
     display: block;
 }
-.p_button{
+.show_button{
   display: inline;
-  padding-right: 10px;
+  margin-right: 10px;
 }

@@ -549,8 +549,7 @@ function render_funct(field: Field): (data: any) => string {
 }
 
 (<any>window).div_display = function div_display(ele: string) {
-    let x = document.getElementById(ele);
-    x.style.display = (x.style.display === 'none') ? '' : 'none';
+  $('#'+ele).toggle();
 }
 
 function init() {
