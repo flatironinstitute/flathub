@@ -969,6 +969,8 @@ lusam:
       descr: host halo virial velocity
       units: 'km/s'
     - name: r_vir
+      dict: R
+      title: '\(r_{vir}\)'
       type: float
       descr: host halo virial radius (physical coordinates)
       units: 'Mpc'
@@ -1007,10 +1009,12 @@ lusam:
       descr: effective radius of bulge (projected)
       units: 'kpc'
     - name: mhalo
+      dict: M
       type: float
       descr: mass of sub-halo (at the time it became a sub)
       units: '\(10^{10} M_\odot\)'
     - name: mstar
+      dict: SM
       type: float
       descr: stellar mass
       units: '\(10^{10} M_\odot\)'
@@ -1047,6 +1051,7 @@ lusam:
       descr: instantaneous star formation rate
       units: '\( M_\odot\)/yr'
     - name: sfr_ave
+      dict: SFR
       type: float
       descr: star formation rate averaged over past 1E8 yr
       units: '\( M_\odot\)/yr'
@@ -1066,6 +1071,7 @@ lusam:
       type: float
       descr: cosine of disk inclination angle
     - name: UV1500_rest
+      dict: UV1500_rest
       type: float
       descr: CANDELS/TOPHAT/UV1500top.dat
       units: 'mag'
@@ -1510,35 +1516,43 @@ unimach:
     - name: UPID
       type: long
       descr: -1 for central halos, otherwise, ID of largest parent halo
-    - name: 'X'
-      dict: pos_x
-      type: float
-      descr: Position of halo relative to axes of lightcone (distance along lightcone) in comoving Mpc / h
+    - name: ""
+      title: Position
       units: 'Mpc/h'
-    - name: 'Y'
-      dict: pos_y
-      type: float
-      descr: Position of halo relative to axes of lightcone (distance perpendicular to lightcone X-axis) in comoving Mpc / h
-      units: 'Mpc/h'
-    - name: 'Z'
-      dict: pos_z
-      type: float
-      descr: Position of halo relative to axes of lightcone (distance perpendicular to lightcone X-axis) in comoving Mpc / h
-      units: 'Mpc/h'
-    - name: VX
-      type: float
-      descr: Peculiar velocity in physical (i.e., non-comoving) km/s, relative to lightcone axes
-      units: 'km/s'
-    - name: VY
-      type: float
-      descr: Peculiar velocity in physical (i.e., non-comoving) km/s, relative to lightcone axes
-      units: 'km/s'
-    - name: VZ
-      type: float
-      descr: Peculiar velocity in physical (i.e., non-comoving) km/s, relative to lightcone axes
-      units: 'km/s'
+      sub:
+      - name: 'X'
+        dict: pos_x
+        type: float
+        descr: Position of halo relative to axes of lightcone (distance along lightcone) in comoving Mpc / h
+      - name: 'Y'
+        dict: pos_y
+        type: float
+        descr: Position of halo relative to axes of lightcone (distance perpendicular to lightcone X-axis) in comoving Mpc / h
+      - name: 'Z'
+        dict: pos_z
+        type: float
+        descr: Position of halo relative to axes of lightcone (distance perpendicular to lightcone X-axis) in comoving Mpc / h
+    - name: ""
+      title: Velocity
+      units: '\(km/s\)'
+      sub:
+      - name: VX
+        # title: '\( V_x\)'
+        type: float
+        descr: Peculiar velocity in physical (i.e., non-comoving) km/s, relative to lightcone axes
+        units: 'km/s'
+      - name: VY
+        # title: '\( V_y\)'
+        type: float
+        descr: Peculiar velocity in physical (i.e., non-comoving) km/s, relative to lightcone axes
+        units: 'km/s'
+      - name: VZ
+        # title: '\( V_z\)'
+        type: float
+        descr: Peculiar velocity in physical (i.e., non-comoving) km/s, relative to lightcone axes
+        units: 'km/s'
     - name: M
-      dict: halo_mass
+      dict: M
       type: float
       descr: Halo mass (Bryan & Norman (BN98) 1998 virial mass)
       units: '\( M_\odot\)'
@@ -1555,12 +1569,14 @@ unimach:
       descr: Halo vmax at the time when peak mass was reached
       units: 'km/s'
     - name: R
+      dict: R
       type: float
       descr: Halo raidus (BN98 vir, co-moving kpc/h)
     - name: Rank1
       type: float
       descr: Halo rank in Delta_vmax (see UniverseMachine paper)
     - name: SM
+      dict: SM
       type: float
       descr: True stellar mass
       units: '\( M_\odot\)'
@@ -1569,6 +1585,7 @@ unimach:
       descr: True intracluster stellar mass
       units: '\( M_\odot\)'
     - name: SFR
+      dict: SFR
       type: float
       descr: True start formation rate
       units: '\( M_\odot\)/yr'
@@ -1587,6 +1604,7 @@ unimach:
       type: float
       descr: SM/HM ratio
     - name: obs_UV
+      dict: UV1500_rest
       type: float
       descr: Observed UV Magnitude
       units: 'M_1500 AB'
@@ -2146,10 +2164,12 @@ scsam:
 
 dict:
     - name: candels_field
+      title: field
       type: byte
       top: true
       descr: "Area of CANDELS (COSMOS, EGS, GOODS-N, GOOODS-S)"
     - name: candels_realization
+      title: realization
       type: byte
       top: true
       descr: "Realization between 0-7"
@@ -2159,28 +2179,32 @@ dict:
     - name: Dec
       type: float
     - name: pos_x
+      title: 'X'
       type: float
     - name: pos_y
+      title: 'Y'
       type: float
     - name: pos_z
+      title: 'Z'
       type: float
     - name: redshift
       type: float
     - name: true_redshift
+      title: 'z_nopec'
       type: float
     - name: gal_id
       type: long
     - name: halo_id
-      type:  long
+      type: long
     - name: halo_mass
       type: float
-
-
-
-
-
-
-
-
-
-
+    - name: R
+      type: float
+    - name: SM
+      type: float
+    - name: M
+      type: float
+    - name: SFR
+      type: float
+    - name: UV1500_rest
+      type: float

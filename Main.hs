@@ -59,18 +59,23 @@ html req h = okResponse [] $ H.docTypeHtml $ do
     H.div H.! HA.id "bar" $ do
         H.ul H.! HA.id "topbar" $ do
             H.li $ H.text " "
-           -- H.li $ do
-            --    H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto" $
-             --       H.img H.! HA.src (staticURI ["github.png"]) H.! HA.height "30" H.! HA.width "30"
             H.li $ do
                 H.a H.! HA.href (WH.routeActionValue top () mempty) $ H.text "Home"
             H.li $ do
-                H.a H.! HA.href (WH.routeActionValue top () mempty) $ H.text "Catalogs"
-                -- H.a H.! HA.href "gaea" $ H.text "Catalogs"
+                H.div H.! HA.class_ "dropdown" $ do
+                    H.a H.! HA.href (WH.routeActionValue top () mempty) $ H.text "Catalogs"
+                    H.div H.! HA.class_"dropdown-content" $ do
+                        H.a H.! HA.href "gaea" $ H.text "GAEA"
+                        H.a H.! HA.href "lusam" $ H.text "LU-SAM"
+                        H.a H.! HA.href "scsam" $ H.text "SC-SAM"
+                        H.a H.! HA.href "unimach" $ H.text "UM"
+                        H.a H.! HA.href "/web/candels.html" $ H.text "CANDELS"
             H.li $ do
                 H.a H.! HA.href (WH.routeActionValue top () mempty) $ H.text "About"
     h
-    -- H.footer $ do
+    H.footer $ do
+        H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto" $
+            H.img H.! HA.src (staticURI ["github.png"])
 
   where
   isdev = any ((==) "dev" . fst) $ Wai.queryString req
@@ -165,16 +170,15 @@ simulation = getPath R.parameter $ \sim req -> do
             H.button H.! HA.id ("dhist-" <> xyv <> "-tog") H.! HA.class_ "dhist-xy-tog" $
               "lin/log"
         H.canvas H.! HA.id "hist" $ mempty
-        --TODO: Make into button
-      H.p $ "Generate python code to use the above filters on your local machine:"
-      H.div H.! HA.id "py" $ "Hello, world!"
 
       H.table H.! HA.id "tcat" H.! HA.class_ "compact" $ do
         H.thead $ row (fieldsDepth fields) ((id ,) <$> V.toList fields)
         H.tfoot $ H.tr $ H.td H.! HA.colspan (H.toValue $ length fields') H.! HA.class_ "loading" $ "loading..."
 
-      H.p $ "Table of fields, units, and their descriptions. Click the checkbox to view / hide the specific field."
-      H.table H.! HA.id "tdict" H.! HA.class_ "tdict" $ do
+      H.div $ do
+        H.p $ "Table of fields, units, and their descriptions. Click the checkbox to view / hide the specific field:"
+        H.button H.! HA.id "show_button" H.! HA.onclick "return div_display(tdict)" $ "show/hide"
+      H.div $ H.table H.! HA.id "tdict" H.! HA.class_ "tdict" $ do
         H.thead $ H.tr $ do
             H.th $ H.text "Field"
             H.th $ H.text "Units"
@@ -182,6 +186,11 @@ simulation = getPath R.parameter $ \sim req -> do
             H.th $ H.text "Description"
         forM_ (catalogFieldGroups cat) $ \f -> do
             subfield f f 0
+
+      H.div $ do
+        H.p $ "Generate python code to use the above filters on your local machine:"
+        H.button H.! HA.id "show_button" H.! HA.onclick "return div_display(py)" $ "show/hide"
+      H.div H.! HA.id "py" $ "Hello, world!"
 
   where
   dtype (Long _) = "num"

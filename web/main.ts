@@ -524,10 +524,8 @@ function render_funct(field: Field): (data: any) => string {
   return (data) => data;
 }
 
-function checkbox_check() {
-    for (let i = 0; i < Catalog.fields.length; i++) {
-        document.getElementById("hide-" + Catalog.fields[i].name).checked = Catalog.fields[i].disp;
-    }
+(<any>window).div_display = function div_display(ele) {
+    ele.style.display = (ele.style.display === 'none') ? '' : 'none';
 }
 
 function init() {
@@ -550,6 +548,7 @@ function init() {
     columns: Catalog.fields.map((c) => {
       return {
         name: c.name,
+        className: 'dt-body-right',
         render: render_funct(c)
       };
     })
@@ -591,7 +590,9 @@ function init() {
   };
   add_sample();
     TCat.draw();
-    checkbox_check();
+    for (let i = 0; i < Catalog.fields.length; i++) {
+        document.getElementById("hide-" + Catalog.fields[i].name).checked = Catalog.fields[i].disp;
+    }
   for (let xy of "xy")
     $('#dhist-'+xy+'-tog').on('click', hist_toggle_log.bind(undefined, xy));
 }
