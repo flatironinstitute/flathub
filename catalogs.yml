@@ -458,6 +458,7 @@ illustris_sub:
 neutrino:
   title: Neutrino
   index: neutrino
+  sort: 'neutrino'
   fields:
     - name: simulation
       type: keyword
@@ -989,12 +990,13 @@ gaiadr2:
       type: float
       units: Luminosity[Solar Luminosity]
 lusam:
-  title: LuSAM
+  title: Lu-SAM
   descr: >
     Data release v3 2018-06-26. <br>
-    Lu SAM Lightcones for the CANDELS project.
+    Lu-SAM Lightcones for the CANDELS project.
     The full dataset is available <a href='http://www.slac.stanford.edu/~luyu/Yu_Lus_home/codes_%26_data.html'>here</a>.
   index: lusam
+  sort: 'candels-1'
   fields:
     - name: field
       dict: candels_field
@@ -1575,6 +1577,7 @@ unimach:
     UniverseMachine Lightcones for the CANDELS project.
     The full dataset is available <a href='http://behroozi.users.hpc.arizona.edu/UniverseMachine/EDR/Lightcones/'>here</a>.
   index: unimach
+  sort: 'candels-2'
   fields:
     - name: field
       dict: candels_field
@@ -1712,9 +1715,10 @@ scsam:
   title: SC-SAM
   descr: >
     Data release v3 2018-06-26. <br>
-    SC SAM Lightcones for the CANDELS project.
-    The full dataset is available <a href='http://www.slac.stanford.edu/~luyu/Yu_Lus_home/codes_%26_data.html'>here</a>.
+    SC-SAM Lightcones for the CANDELS project.
+    The full dataset will be available shortly.
   index: scsam
+  sort: 'candels-3'
   fields:
     - name: field
       dict: candels_field
