@@ -24,7 +24,7 @@ type Field = {
   units: null|string,
   top: boolean,
   disp: boolean,
-  base: string,
+  base: 'f'|'i'|'b'|'s',
   terms: boolean,
   enum: null|string[],
   dict: null|string
@@ -572,11 +572,11 @@ function init() {
     },
     dom: 'i<"#download">rtlp',
     deferRender: true,
-    pagingType: 'simple', 
+    pagingType: 'simple',
     columns: Catalog.fields.map((c) => {
       return {
         name: c.name,
-        className: 'dt-body-right',
+        className: c.base === 'f' || c.base === 'i' ? 'dt-body-right' : 'dt-body-left',
         render: render_funct(c)
       };
     })
@@ -617,7 +617,7 @@ function init() {
     TCat.draw(false);
   };
   add_sample();
-    TCat.draw();
+  TCat.draw();
   for (let xy of "xy")
     $('#dhist-'+xy+'-tog').on('click', hist_toggle_log.bind(undefined, xy));
 }
