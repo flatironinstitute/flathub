@@ -49,7 +49,6 @@ var Histogram: undefined|NumericFilter;
 const Histogram_bins = 100;
 var Histogram_chart: Chart|undefined;
 var Histogram_bin_width = 0;
-var Last_fields: string[] = [];
 
 var Download_query: Dict<string> = {};
 function set_download(query: Dict<string> = Download_query) {
@@ -57,6 +56,7 @@ function set_download(query: Dict<string> = Download_query) {
   delete query.offset;
   delete query.aggs;
   delete query.hist;
+  query.fields = TCat.columns(':visible').dataSrc().join(' ');
   const q = '?' + $.param(Download_query = query);
   const h = $('#download').html('download as ');
   for (let f of Catalog.bulk) {
@@ -208,8 +208,7 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
   }
   query.offset = data.start;
   query.limit = data.length;
-  Last_fields = TCat.columns(':visible').dataSrc().toArray();
-  query.fields = Last_fields.join(' ');
+  query.fields = TCat.columns(':visible').dataSrc().join(' ');
   const aggs = Filters.slice(Update_aggs);
   if (aggs)
     query.aggs = aggs.map((filt) => filt.name).join(' ');
@@ -317,7 +316,7 @@ abstract class Filter {
   constructor(public field: Field) {
     this.name = this.field.name
     this.tcol = TCat.column(this.name+':name');
-    // columnVisible(this.name, true);
+    this.tcol.visible(true);
     this.label = $(document.createElement('span'));
     this.label.append($('<button class="remove">&times;</button>')
       .on('click', this.remove.bind(this)),
@@ -337,7 +336,7 @@ abstract class Filter {
     if (i >= 0 && Update_aggs > i)
       Update_aggs = i+1;
     this.tcol.search(search);
-    columnVisible(this.name, vis);
+    this.tcol.visible(vis).draw();
   }
 
   protected remove() {
@@ -348,7 +347,7 @@ abstract class Filter {
     $('tr#filt-'+this.name).remove();
     Update_aggs = i;
     this.tcol.search('');
-    columnVisible(this.name, true);
+    this.tcol.visible(true).draw();
   }
 
 }
@@ -475,34 +474,23 @@ function add_filter(idx: number): Filter|undefined {
   return new NumericFilter(field);
 }
 
-function colvisNames(box: HTMLInputElement): string[] {
-  let l: string[] = [];
-  for (let k of box.classList) {
-    l.push(k.substr(7));
+(<any>window).hide_column = function hide_column(event:Event) {
+  if (TCat) {
+    TCat.column((<HTMLElement>event.target).id.substr(5)+':name').visible(false);
+    set_download();
   }
-  return l;
-}
+  event.stopPropagation();
+  return false;
+};
 
-function colvisUpdate(box: HTMLInputElement, vis: boolean) {
-  let v: boolean[] = TCat.columns(colvisNames(box).map(n => n+":name")).visible().toArray();
-  // vis = v.shift();
-  box.checked = vis;
-  box.indeterminate = v.some(x => x !== vis);
-}
-
-function columnVisible(name: string, vis: boolean) {
-  TCat.column(name+":name").visible(vis);
-  for (let b of document.getElementsByClassName('colvis-'+name))
-    colvisUpdate(b, vis);
-  if (vis && !Last_fields.includes(name))
-    TCat.draw();
-}
-
-(<any>window).colvisSet = function colvisSet(event: Event) {
-  let box = <HTMLInputElement>event.target;
-  if (!box.indeterminate)
-    for (let n of colvisNames(box))
-      columnVisible(n, box.checked);
+(<any>window).hide_show = function hide_show(event: Event) {
+    if (TCat) {
+        var col = TCat.column((<HTMLElement>event.target).id.substr(5) + ':name');
+        var state = !col.visible();
+        col.visible(state);
+        set_download();
+    }
+    event.stopPropagation();
 }
 
 function py_text() {
@@ -576,7 +564,7 @@ function init() {
       });
     if (Query.fields && Query.fields.length && topts.columns)
       for (let c of topts.columns)
-        c.visible = Query.fields.includes(c.name); // FIXME: colvis
+        c.visible = Query.fields.indexOf(<string>c.name) >= 0;
   }
   TCat = table.DataTable(topts);
   /* for debugging: */
@@ -602,12 +590,9 @@ function init() {
   };
   add_sample();
     TCat.draw();
-<<<<<<< HEAD
     for (let i = 0; i < Catalog.fields.length; i++) {
         document.getElementById("hide-" + Catalog.fields[i].name).checked = Catalog.fields[i].disp;
     }
-=======
->>>>>>> 065f1983534be9c7a07f991c7ee91e81cdec4037
   for (let xy of "xy")
     $('#dhist-'+xy+'-tog').on('click', hist_toggle_log.bind(undefined, xy));
 }

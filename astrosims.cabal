@@ -21,7 +21,6 @@ executable astrosims
     ES
     Field
     Global
-    Html
     Ingest
     Ingest.CSV
     Ingest.HDF5

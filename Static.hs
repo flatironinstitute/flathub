@@ -4,9 +4,7 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 
 module Static
-  ( FilePathComponent(..)
-  , getModificationTime'
-  , static
+  ( static
   , staticURI
   ) where
 

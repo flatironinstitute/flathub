@@ -1,23 +1,39 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE ViewPatterns #-}
 
 import           Control.Arrow (first, second)
 import           Control.Exception (throwIO)
 import           Control.Monad ((<=<), forM_, when)
 import           Control.Monad.IO.Class (liftIO)
+import           Control.Monad.Reader (asks)
+import qualified Data.Aeson as J
+import qualified Data.ByteString as BS
 import           Data.Default (Default(def))
+import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
+import           Data.List (find)
 import           Data.Maybe (fromMaybe, isNothing, isJust)
+import           Data.Monoid ((<>))
 import qualified Data.Text as T
+import qualified Data.Vector as V
 import qualified Data.Yaml as YAML
 import qualified Network.HTTP.Client as HTTP
+import           Network.HTTP.Types.Header (hAccept)
+import qualified Network.Wai as Wai
+import           Network.Wai.Parse (parseHttpAccept)
 import qualified System.Console.GetOpt as Opt
 import           System.Environment (getProgName, getArgs)
 import           System.Exit (exitFailure)
+import qualified Text.Blaze.Html5 as H hiding (text, textValue)
+import qualified Text.Blaze.Html5.Attributes as HA
+import qualified Waimwork.Blaze as H (text, textValue, preEscapedBuilder)
+import qualified Waimwork.Blaze as WH
 import qualified Waimwork.Config as C
-import           Waimwork.Response (response)
+import           Waimwork.Response (response, okResponse)
 import           Waimwork.Warp (runWaimwork)
 import qualified Web.Route.Invertible as R
+import           Web.Route.Invertible.URI (routeActionURI)
 import           Web.Route.Invertible.Wai (routeWaiError)
 
 import Field
@@ -187,14 +203,10 @@ simulation = getPath R.parameter $ \sim req -> do
   -- dtype (Date _) = "date"
   dtype _ = "string"
 
-import Html
-
-
 routes :: R.RouteMap Action
 routes = R.routes
   [ R.routeNormCase top
   , R.routeNormCase static
-  , R.routeNormCase staticHtml
   , R.routeNormCase simulation
   , R.routeNormCase catalog
   , R.routeNormCase catalogBulk
