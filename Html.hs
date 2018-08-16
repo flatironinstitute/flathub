@@ -73,7 +73,7 @@ htmlResponse req hdrs body = do
                         forM_ (sortOn (catalogSort . snd) $ HM.toList cats) $ \(key, cat) ->
                             H.a H.! HA.href (WH.routeActionValue simulation key mempty) $ H.text (catalogTitle cat)
               H.li $
-                H.a H.! HA.href "/html/candels" $ H.text "CANDELS"
+                H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) $ H.text "CANDELS"
               H.li $
                 H.a H.! HA.href (WH.routeActionValue top () mempty) $ H.text "About"
       body

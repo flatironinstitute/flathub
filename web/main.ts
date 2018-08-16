@@ -572,7 +572,7 @@ function init() {
     },
     dom: 'i<"#download">rtlp',
     deferRender: true,
-    pagingType: 'simple', 
+    pagingType: 'simple',
     columns: Catalog.fields.map((c) => {
       return {
         name: c.name,
@@ -617,7 +617,7 @@ function init() {
     TCat.draw(false);
   };
   add_sample();
-    TCat.draw();
+  TCat.draw();
   for (let xy of "xy")
     $('#dhist-'+xy+'-tog').on('click', hist_toggle_log.bind(undefined, xy));
 }
