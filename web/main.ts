@@ -24,7 +24,7 @@ type Field = {
   units: null|string,
   top: boolean,
   disp: boolean,
-  base: string,
+  base: 'f'|'i'|'b'|'s',
   terms: boolean,
   enum: null|string[],
   dict: null|string
@@ -576,7 +576,7 @@ function init() {
     columns: Catalog.fields.map((c) => {
       return {
         name: c.name,
-        className: 'dt-body-right',
+        className: c.base === 'f' || c.base === 'i' ? 'dt-body-right' : 'dt-body-left',
         render: render_funct(c)
       };
     })
