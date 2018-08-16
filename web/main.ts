@@ -602,12 +602,6 @@ function init() {
   };
   add_sample();
     TCat.draw();
-<<<<<<< HEAD
-    for (let i = 0; i < Catalog.fields.length; i++) {
-        document.getElementById("hide-" + Catalog.fields[i].name).checked = Catalog.fields[i].disp;
-    }
-=======
->>>>>>> 065f1983534be9c7a07f991c7ee91e81cdec4037
   for (let xy of "xy")
     $('#dhist-'+xy+'-tog').on('click', hist_toggle_log.bind(undefined, xy));
 }

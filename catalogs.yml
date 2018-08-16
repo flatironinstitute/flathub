@@ -1669,6 +1669,8 @@ scsam:
       descr: host halo virial velocity
       units: 'km/s'
     - name: r_vir
+      dict: R
+      title: '\(r_{vir}\)'
       type: float
       descr: host halo virial radius (physical coordinates)
       units: 'Mpc'
@@ -1707,10 +1709,12 @@ scsam:
       descr: effective radius of bulge (projected)
       units: 'kpc'
     - name: mhalo
+      dict: M
       type: float
       descr: mass of sub-halo (at the time it became a sub)
       units: '\(10^{10} M_\odot\)'
     - name: mstar
+      dict: SM
       type: float
       descr: stellar mass
       units: '\(10^{10} M_\odot\)'
@@ -1747,6 +1751,7 @@ scsam:
       descr: instantaneous star formation rate
       units: '\( M_\odot\)/yr'
     - name: sfr_ave
+      dict: SFR
       type: float
       descr: star formation rate averaged over past 1E8 yr
       units: '\( M_\odot\)/yr'
@@ -1766,6 +1771,7 @@ scsam:
       type: float
       descr: cosine of disk inclination angle
     - name: UV1500_rest
+      dict: UV1500_rest
       type: float
       descr: CANDELS/TOPHAT/UV1500top.dat
       units: 'mag'

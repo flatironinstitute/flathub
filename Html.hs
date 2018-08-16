@@ -66,14 +66,18 @@ htmlResponse req hdrs body = do
                --       H.img H.! HA.src (staticURI ["github.png"]) H.! HA.height "30" H.! HA.width "30"
               H.li $
                 H.a H.! HA.href (WH.routeActionValue top () mempty) $ H.text "Home"
-              H.li $ do
-                H.text "Catalogs"
-                forM_ (HM.toList cats) $ \(key, cat) ->
-                  H.a H.! HA.href (WH.routeActionValue simulation key mempty) $ H.text (catalogTitle cat)
+              H.li $
+                H.div H.! HA.class_ "dropdown" $ do
+                    H.a H.! HA.href (WH.routeActionValue top () mempty) $ H.text "Catalogs"
+                    H.div H.! HA.class_"dropdown-content" $ do
+                        forM_ (HM.toList cats) $ \(key, cat) ->
+                            H.a H.! HA.href (WH.routeActionValue simulation key mempty) $ H.text (catalogTitle cat)
               H.li $
                 H.a H.! HA.href (WH.routeActionValue top () mempty) $ H.text "About"
       body
-      -- H.footer $ do
+      H.footer $ do
+        H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto" $
+            H.img H.! HA.src (staticURI ["github.png"])
 
   where
   isdev = any ((==) "dev" . fst) $ Wai.queryString req
@@ -98,7 +102,7 @@ top = getPath R.unit $ \() req -> do
 simulation :: Route Simulation
 simulation = getPath R.parameter $ \sim req -> do
   cat <- askCatalog sim
-  let 
+  let
     (_, quri) = routeActionURI simulation sim
     fields = catalogFieldGroups cat
     fields' = catalogFields cat
@@ -176,9 +180,6 @@ simulation = getPath R.parameter $ \sim req -> do
             H.button H.! HA.id ("dhist-" <> xyv <> "-tog") H.! HA.class_ "dhist-xy-tog" $
               "lin/log"
         H.canvas H.! HA.id "hist" $ mempty
-        --TODO: Make into button
-      H.p $ "Generate python code to use the above filters on your local machine:"
-      H.div H.! HA.id "py" $ "Hello, world!"
 
       H.table H.! HA.id "tcat" H.! HA.class_ "compact" $ do
         H.thead $ row (fieldsDepth fields) ((id ,) <$> V.toList fields)
@@ -193,6 +194,11 @@ simulation = getPath R.parameter $ \sim req -> do
             H.th $ H.text "Description"
         forM_ (catalogFieldGroups cat) $ \f -> do
             fielddesc f f 0
+
+      H.div $ do
+        H.p $ "Generate python code to use the above filters on your local machine:"
+        H.button H.! HA.id "show_button" H.! HA.onclick "return div_display(py)" $ "show/hide"
+      H.div H.! HA.id "py" $ "Hello, world!"
 
 staticHtml :: Route [FilePathComponent]
 staticHtml = getPath ("html" R.*< R.manyI R.parameter) $ \paths q -> do
