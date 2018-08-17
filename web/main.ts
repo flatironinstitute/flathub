@@ -420,10 +420,10 @@ class NumericFilter extends Filter {
     this.add(
       $('<span>').append(this.lb).append(' &ndash; ').append(this.ub),
       $('<span><em>&mu;</em> = </span>').append(this.avg),
-      $('<button>histogram</button>').on('click', this.histogram.bind(this))
-    );
-  }
-
+      $('<button>histogram</button>').on('click', this.histogram.bind(this)),
+      $('<button>reset</button>').on('click', this.reset())
+      );
+  }  
   update_aggs(aggs: Dict<any>) {
     this.query = { lb: aggs.min, ub: aggs.max };
     this.lb.defaultValue = this.lb.value = this.lb.min = this.ub.min = aggs.min;
@@ -457,10 +457,11 @@ class NumericFilter extends Filter {
   }
 
   private reset(){
-      if (Histogram === this) {
-          this.lb.value = this.lb.defaultValue;
-          this.ub.value = this.ub.defaultValue;
-      }
+      console.log(this);
+      console.log('triggered', this.lb.value, this.ub.value);
+      this.lb.value = this.lb.defaultValue;
+      this.ub.value = this.ub.defaultValue;
+      console.log('triggered', this.lb.value, this.ub.value);
   }
 
   protected remove() {
@@ -618,8 +619,9 @@ function init() {
   };
   add_sample();
   TCat.draw();
-  for (let xy of "xy")
+  for (let xy of "xy"){
     $('#dhist-'+xy+'-tog').on('click', hist_toggle_log.bind(undefined, xy));
+  }
 }
 
 $(init);

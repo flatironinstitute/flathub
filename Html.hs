@@ -96,7 +96,7 @@ top = getPath R.unit $ \() req -> do
       return $ okResponse [] $ J.encode $ HM.map catalogTitle cats
     _ -> htmlResponse req [] $
       H.dl $
-        forM_ (HM.toList cats) $ \(sim, cat) -> do
+        forM_ (sortOn (catalogSort . snd) $ HM.toList cats) $ \(sim, cat) -> do
           H.dt $ H.a H.! HA.href (WH.routeActionValue simulation sim mempty) $
             H.text $ catalogTitle cat
           mapM_ (H.dd . H.preEscapedText) $ catalogDescr cat
