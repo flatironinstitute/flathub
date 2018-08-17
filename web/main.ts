@@ -421,8 +421,8 @@ class NumericFilter extends Filter {
       $('<span>').append(this.lb).append(' &ndash; ').append(this.ub),
       $('<span><em>&mu;</em> = </span>').append(this.avg),
       $('<button>histogram</button>').on('click', this.histogram.bind(this)),
-      $('<button>reset</button>').on('click', this.reset())
-      );
+      $('<button>reset</button>').on('click', this.reset.bind(this))
+    );
   }  
   update_aggs(aggs: Dict<any>) {
     this.query = { lb: aggs.min, ub: aggs.max };
@@ -456,12 +456,10 @@ class NumericFilter extends Filter {
     }
   }
 
-  private reset(){
-      console.log(this);
-      console.log('triggered', this.lb.value, this.ub.value);
-      this.lb.value = this.lb.defaultValue;
-      this.ub.value = this.ub.defaultValue;
-      console.log('triggered', this.lb.value, this.ub.value);
+  private reset() {
+    this.lb.value = this.lb.defaultValue;
+    this.ub.value = this.ub.defaultValue;
+    this.change();
   }
 
   protected remove() {
