@@ -226,6 +226,7 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
     }
   }
   py_text();
+  url_update(query);
   $('td.loading').show();
   $.ajax({
     method: 'GET',
@@ -535,6 +536,15 @@ function py_text() {
     st += ') <br> dat = q.numpy()';
     document.getElementById('py').innerHTML = st;
     return;
+}
+
+function url_update(query: Query) {
+  let k = Object.keys(query);
+  let str = '/sort=' + query.sort;
+  for (let i = 1; i < k.length - 4; i++) {
+     str += '&' + k[i] + '=' + query[k[i]].replace(',', '%2C').replace('@','%40'); 
+  };
+  history.pushState(null, null, Catalog.uri + str);
 }
 
 function render_funct(field: Field): (data: any) => string {

@@ -56,6 +56,8 @@ htmlResponse req hdrs body = do
       H.script $ do
         "Catalogs="
         H.unsafeLazyByteString $ J.encode $ HM.map catalogTitle cats
+      -- H.meta H.! HA.httpEquiv "refresh" H.! HA.content ( "0;URL=" <> (WH.routeActionValue top () mempty) )
+
     H.body $ do
       H.h1 $ H.text "ASTROSIMS"
       H.div H.! HA.id "bar" $ do
