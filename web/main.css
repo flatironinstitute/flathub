@@ -62,10 +62,9 @@ table#tcat {
 footer {
   text-align: right;
 }
-div#py{
+#div-py{
   display: none;
   background-color: #e2e2e2;
-  font-family: "Courier New", Courier, monospace;
   margin-top: 10px;
   margin-bottom: 10px;
   padding-left: 2%;

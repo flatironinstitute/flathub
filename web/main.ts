@@ -31,6 +31,9 @@ type Field = {
 };
 
 type Catalog = {
+  name: string,
+  title: string,
+  descr: null|string,
   uri: string,
   bulk: string[],
   fields: Field[],
@@ -225,7 +228,6 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
       query.hist = hist.name + ':' + Histogram_bin_width;
     }
   }
-  py_text();
   $('td.loading').show();
   $.ajax({
     method: 'GET',
@@ -255,6 +257,7 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
       error: msg + ": " + err
     });
   });
+  py_text();
 }
 
 function add_filt_row(name: string, ...nodes: Array<JQuery.htmlString | JQuery.TypeOrArray<JQuery.Node | JQuery<JQuery.Node>>>) {
@@ -504,9 +507,9 @@ function colvisUpdate(box: HTMLInputElement, vis: boolean) {
 
 function columnVisible(name: string, vis: boolean) {
   TCat.column(name+":name").visible(vis);
-  for (let b of document.getElementsByClassName('colvis-'+name))
-    colvisUpdate(b, vis);
-  if (vis && !Last_fields.includes(name))
+  for (let b of <any>document.getElementsByClassName('colvis-'+name) as Element[])
+    colvisUpdate(<HTMLInputElement>b, vis);
+  if (vis && Last_fields.indexOf(name) < 0)
     TCat.draw();
 }
 
@@ -518,24 +521,25 @@ function columnVisible(name: string, vis: boolean) {
 }
 
 function py_text() {
-    var st = '';
-    var cat = Catalog.uri.substring(Catalog.uri.indexOf('/') + 1, );
-    for (let i = 0; i < Filters.length; i++) {
-        if (Filters[i] instanceof NumericFilter) {
-            st += ", " + Filters[i].name + ' = ('
-            if (typeof (Filters[i].query) != 'undefined')
-                st += Filters[i].query['lb'] + ', ' + Filters[i].query['ub'];
-            st += ')';
-        }
+  let cat = Catalog.name;
+  let st = "import fi_astrosims.client\n" + cat + " = fi_astrosims.client.Simulation(" + JSON.stringify(cat) + ")\nq = fi_astrosims.client.Query(" + cat;
+  for (let i = 0; i < Filters.length; i++) {
+    let q = Filters[i].query;
+    if (q != null) {
+      st += ", " + Filters[i].name + ' = ';
+      if (typeof q === 'object')
+        st += '(' + JSON.stringify(q.lb) + ', ' + JSON.stringify(q.ub) + ')';
+      else
+        st += JSON.stringify(q);
     }
-    st = "import fi_astrosims.client <br>" + cat + " = fi_astrosims.client.Simulation('" + cat + "') <br>" + "q = fi_astrosims.client.Query(" + cat + st;
-    if (Seed != 'undefined')
-        st += ", seed = " + Seed;
-    if (Sample != 1)
-        st += ", sample = " + Sample;
-    st += ') <br> dat = q.numpy()';
-    document.getElementById('py').innerHTML = st;
-    return;
+  }
+  if (Sample < 1) {
+    st += ", sample = " + Sample;
+    if (Seed != undefined)
+      st += ", seed = " + Seed;
+  }
+  st += ')\ndat = q.numpy()';
+  (<HTMLPreElement>document.getElementById('code-py')).textContent = st;
 }
 
 function render_funct(field: Field): (data: any) => string {
@@ -592,7 +596,7 @@ function init() {
       });
     if (Query.fields && Query.fields.length && topts.columns)
       for (let c of topts.columns)
-        c.visible = Query.fields.includes(c.name); // FIXME: colvis
+        c.visible = Query.fields.indexOf(c.name) >= 0; // FIXME: colvis
   }
   TCat = table.DataTable(topts);
   /* for debugging: */

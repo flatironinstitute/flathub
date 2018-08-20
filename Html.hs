@@ -109,7 +109,8 @@ simulation = getPath R.parameter $ \sim req -> do
     fields = catalogFieldGroups cat
     fields' = catalogFields cat
     jcat = J.pairs $
-         "title" J..= catalogTitle cat
+         "name" J..= sim
+      <> "title" J..= catalogTitle cat
       <> "descr" J..= catalogDescr cat
       <> "uri" J..= show quri
       <> "bulk" J..= map (J.String . R.renderParameter) [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)]
@@ -202,9 +203,9 @@ simulation = getPath R.parameter $ \sim req -> do
             fielddesc f f 0
 
       H.div $ do
-        H.button H.! HA.class_ "show_button" H.! HA.onclick "return div_display('py')" $ "show/hide"
+        H.button H.! HA.class_ "show_button" H.! HA.onclick "return div_display('div-py')" $ "show/hide"
         "Example python code to apply the above filters and retrieve data"
-      H.div H.! HA.id "py" $ "Hello, world!"
+      H.div H.! HA.id "div-py" $ H.pre H.! HA.id "code-py" $ mempty
 
 staticHtml :: Route [FilePathComponent]
 staticHtml = getPath ("html" R.*< R.manyI R.parameter) $ \paths q -> do
