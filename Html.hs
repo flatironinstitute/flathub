@@ -62,10 +62,9 @@ htmlResponse req hdrs body = do
       H.h1 $ H.text "ASTROSIMS"
       H.div H.! HA.id "bar" $ do
           H.ul H.! HA.id "topbar" $ do
-              H.li $ H.text " "
-             -- H.li $ do
-              --    H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto" $
-               --       H.img H.! HA.src (staticURI ["github.png"]) H.! HA.height "30" H.! HA.width "30"
+              H.li $ do
+                  H.a H.! HA.href "https://www.simonsfoundation.org/flatiron/" H.! HA.id "flaticon" $
+                      H.img H.! HA.src (staticURI ["Flatiron Icon.svg"]) H.! HA.height "40" H.! HA.width "40"
               H.li $
                 H.a H.! HA.href (WH.routeActionValue top () mempty) $ H.text "Home"
               H.li $
@@ -178,6 +177,7 @@ simulation = getPath R.parameter $ \sim req -> do
         ";"
       H.h2 $ H.text $ catalogTitle cat
       mapM_ (H.p . H.preEscapedText) $ catalogDescr cat
+      H.h3 $ "Filters"
       H.p $ "Query and explore a subset using the filters, download your selection using the link below, or get the full dataset above."
       H.table H.! HA.id "filt" $ mempty
       H.div H.! HA.id "dhist" $ do
@@ -187,10 +187,12 @@ simulation = getPath R.parameter $ \sim req -> do
               "lin/log"
         H.canvas H.! HA.id "hist" $ mempty
 
+      H.h3 $ "Data Table"
       H.table H.! HA.id "tcat" H.! HA.class_ "compact" $ do
         H.thead $ row (fieldsDepth fields) ((id ,) <$> V.toList fields)
         H.tfoot $ H.tr $ H.td H.! HA.colspan (H.toValue $ length fields') H.! HA.class_ "loading" $ "loading..."
 
+      H.h3 $ "Fields Dictionary"
       H.div $ do
         H.button H.! HA.class_ "show_button" H.! HA.onclick "return div_display('tdict')" $ "show/hide"
         "Table of fields, units, and their descriptions (use checkboxes to view/hide fields above)"
@@ -204,9 +206,11 @@ simulation = getPath R.parameter $ \sim req -> do
         forM_ (catalogFieldGroups cat) $ \f -> do
             fielddesc f f 0
 
+      H.h3 $ "Python Query"
       H.div $ do
         H.button H.! HA.class_ "show_button" H.! HA.onclick "return div_display('div-py')" $ "show/hide"
-        "Example python code to apply the above filters and retrieve data"
+        "Example python code to apply the above filters and retrieve data. To use, download and install "
+        H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto/tree/austen/py" $ "this module."
       H.div H.! HA.id "div-py" $ H.pre H.! HA.id "code-py" $ mempty
 
 staticHtml :: Route [FilePathComponent]

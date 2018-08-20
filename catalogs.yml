@@ -3,7 +3,7 @@ dict:
     title: field
     type: byte
     top: true
-    descr: "Area of CANDELS (COSMOS, EGS, GOODS-N, GOOODS-S)"
+    descr: "Area of CANDELS (COSMOS, EGS, GOODS-N, GOOODS-S, UDS)"
     enum: ['cosmos', 'EGS', 'GOODS-N', 'GOODS-S', 'UDS']
   - name: candels_realization
     title: realization
