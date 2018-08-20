@@ -31,10 +31,11 @@ import Html
 
 routes :: R.RouteMap Action
 routes = R.routes
-  [ R.routeNormCase top
+  [ R.routeNormCase topPage
   , R.routeNormCase static
   , R.routeNormCase staticHtml
-  , R.routeNormCase simulation
+  , R.routeNormCase simulationPage
+  , R.routeNormCase comparePage
   , R.routeNormCase catalog
   , R.routeNormCase catalogBulk
   ]

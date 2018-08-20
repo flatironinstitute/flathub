@@ -20,14 +20,14 @@ type Field = {
   name: string,
   type: string,
   title: string,
-  descr: null|string,
-  units: null|string,
-  top: boolean,
+  descr?: null|string,
+  units?: null|string,
+  top?: boolean,
   disp: boolean,
   base: 'f'|'i'|'b'|'s',
-  terms: boolean,
-  enum: null|string[],
-  dict: null|string
+  terms?: boolean,
+  enum?: null|string[],
+  dict?: null|string
 };
 
 type Catalog = {

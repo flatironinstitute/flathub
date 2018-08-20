@@ -2,8 +2,9 @@
 {-# LANGUAGE TupleSections #-}
 
 module Html
-  ( top
-  , simulation
+  ( topPage
+  , simulationPage
+  , comparePage
   , staticHtml
   ) where
 
@@ -42,6 +43,16 @@ import Compression
 import Query
 import Static
 
+jsonEncodingVar :: T.Text -> J.Encoding -> H.Html
+jsonEncodingVar var enc = H.script $ do
+  H.text var
+  "="
+  H.preEscapedBuilder $ J.fromEncoding enc
+  ";"
+
+jsonVar :: J.ToJSON a => T.Text -> a -> H.Html
+jsonVar var = jsonEncodingVar var . J.toEncoding
+
 htmlResponse :: Wai.Request -> ResponseHeaders -> H.Markup -> M Wai.Response
 htmlResponse req hdrs body = do
   cats <- asks $ catalogMap . globalCatalogs
@@ -53,9 +64,7 @@ htmlResponse req hdrs body = do
       forM_ [["jspm_packages", "npm", "datatables.net-dt@1.10.19", "css", "jquery.dataTables.css"], ["main.css"]] $ \src ->
         H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
       H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/MathJax.js?config=TeX-AMS_CHTML" $ mempty
-      H.script $ do
-        "Catalogs="
-        H.unsafeLazyByteString $ J.encode $ HM.map catalogTitle cats
+      jsonVar "Catalogs" (HM.map catalogTitle cats)
     H.body $ do
       H.h1 $ H.text "ASTROSIMS"
       H.div H.! HA.id "bar" $ do
@@ -65,17 +74,17 @@ htmlResponse req hdrs body = do
               --    H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto" $
                --       H.img H.! HA.src (staticURI ["github.png"]) H.! HA.height "30" H.! HA.width "30"
               H.li $
-                H.a H.! HA.href (WH.routeActionValue top () mempty) $ H.text "Home"
+                H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Home"
               H.li $
                 H.div H.! HA.class_ "dropdown" $ do
-                    H.a H.! HA.href (WH.routeActionValue top () mempty) $ H.text "Catalogs"
+                    H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Catalogs"
                     H.div H.! HA.class_"dropdown-content" $ do
                         forM_ (sortOn (catalogSort . snd) $ HM.toList cats) $ \(key, cat) ->
-                            H.a H.! HA.href (WH.routeActionValue simulation key mempty) $ H.text (catalogTitle cat)
+                            H.a H.! HA.href (WH.routeActionValue simulationPage key mempty) $ H.text (catalogTitle cat)
               H.li $
                 H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) $ H.text "CANDELS"
               H.li $
-                H.a H.! HA.href (WH.routeActionValue top () mempty) $ H.text "About"
+                H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "About"
       body
       H.footer $ do
         H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto" $
@@ -88,8 +97,8 @@ acceptable :: [BS.ByteString] -> Wai.Request -> Maybe BS.ByteString
 acceptable l = find (`elem` l) . foldMap parseHttpAccept . lookup hAccept . Wai.requestHeaders
 
 -- Here is where the main page is generated
-top :: Route ()
-top = getPath R.unit $ \() req -> do
+topPage :: Route ()
+topPage = getPath R.unit $ \() req -> do
   cats <- asks (catalogMap . globalCatalogs)
   case acceptable ["application/json", "text/html"] req of
     Just "application/json" ->
@@ -97,15 +106,15 @@ top = getPath R.unit $ \() req -> do
     _ -> htmlResponse req [] $
       H.dl $
         forM_ (HM.toList cats) $ \(sim, cat) -> do
-          H.dt $ H.a H.! HA.href (WH.routeActionValue simulation sim mempty) $
+          H.dt $ H.a H.! HA.href (WH.routeActionValue simulationPage sim mempty) $
             H.text $ catalogTitle cat
           mapM_ (H.dd . H.preEscapedText) $ catalogDescr cat
 
-simulation :: Route Simulation
-simulation = getPath R.parameter $ \sim req -> do
+simulationPage :: Route Simulation
+simulationPage = getPath R.parameter $ \sim req -> do
   cat <- askCatalog sim
   let
-    (_, quri) = routeActionURI simulation sim
+    (_, quri) = routeActionURI simulationPage sim
     fields = catalogFieldGroups cat
     fields' = catalogFields cat
     jcat = J.pairs $
@@ -168,12 +177,8 @@ simulation = getPath R.parameter $ \sim req -> do
     Just "application/json" ->
       return $ okResponse [] jcat
     _ -> htmlResponse req [] $ do
-      H.script $ do
-        "Catalog="
-        H.preEscapedBuilder $ J.fromEncoding jcat
-        ";Query="
-        H.unsafeLazyByteString $ J.encode query
-        ";"
+      jsonEncodingVar "Catalog" jcat
+      jsonVar "Query" query
       H.h2 $ H.text $ catalogTitle cat
       mapM_ (H.p . H.preEscapedText) $ catalogDescr cat
       H.p $ "Query and explore a subset using the filters, download your selection using the link below, or get the full dataset above."
@@ -206,6 +211,13 @@ simulation = getPath R.parameter $ \sim req -> do
         H.button H.! HA.class_ "show_button" H.! HA.onclick "return div_display('div-py')" $ "show/hide"
         "Example python code to apply the above filters and retrieve data"
       H.div H.! HA.id "div-py" $ H.pre H.! HA.id "code-py" $ mempty
+
+comparePage :: Route ()
+comparePage = getPath "compare" $ \() req -> do
+  cats <- asks globalCatalogs
+  htmlResponse req [] $ do
+    jsonVar "Catalogs" $ catalogMap cats
+    jsonVar "Dict" $ catalogDict cats
 
 staticHtml :: Route [FilePathComponent]
 staticHtml = getPath ("html" R.*< R.manyI R.parameter) $ \paths q -> do

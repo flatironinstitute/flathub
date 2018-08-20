@@ -85,6 +85,13 @@ parseCatalog dict = J.withObject "catalog" $ \c -> do
 instance J.FromJSON Catalog where
   parseJSON = parseCatalog mempty
 
+instance J.ToJSON Catalog where
+  toJSON Catalog{..} = J.object
+    [ "title" J..= catalogTitle
+    , "descr"  J..= catalogDescr
+    , "fields" J..= catalogFields
+    ] where
+
 takeCatalogField :: T.Text -> Catalog -> Maybe (Field, Catalog)
 takeCatalogField n c = (, c
   { catalogFieldMap    = HM.delete n                 $ catalogFieldMap c
