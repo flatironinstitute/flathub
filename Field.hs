@@ -37,6 +37,7 @@ import           Data.Functor.Classes (Eq1, eq1, Show1, showsPrec1)
 import           Data.Functor.Identity (Identity(Identity, runIdentity))
 import qualified Data.HashMap.Strict as HM
 import           Data.Int (Int64, Int32, Int16, Int8)
+import           Data.Maybe (maybeToList)
 import           Data.Proxy (Proxy(Proxy))
 import           Data.Semigroup (Max(getMax), Semigroup((<>)))
 import qualified Data.Text as T
@@ -278,20 +279,22 @@ instance Alternative m => Default (FieldSub Proxy m) where
     }
 
 instance J.ToJSON Field where
-  toJSON f@Field{..} = J.object
+  toJSON f@Field{..} = J.object $
     [ "name" J..= fieldName
     , "type" J..= fieldType
-    , "enum" J..= fieldEnum
     , "title" J..= fieldTitle
-    , "descr" J..= fieldDescr
-    , "units" J..= fieldUnits
-    , "top" J..= fieldTop
     , "disp" J..= fieldDisp
-    , "dtype" J..= numpyDtype fieldType
-    , "terms" J..= isTermsField f
     , "base" J..= baseType ('f','i','b','s') fieldType
-    , "dict" J..= fieldDict
-    ]
+    ] ++ concatMap maybeToList
+    [ ("enum" J..=) <$> fieldEnum
+    , ("descr" J..=) <$> fieldDescr
+    , ("units" J..=) <$> fieldUnits
+    , bool "top" fieldTop
+    , bool "terms" $ isTermsField f
+    , ("dict" J..=) <$> fieldDict
+    ] where
+    bool _ False = Nothing
+    bool n b = Just $ n J..= b
 
 parseFieldGroup :: HM.HashMap T.Text FieldGroup -> J.Value -> J.Parser FieldGroup
 parseFieldGroup dict = parseFieldDefs def where
