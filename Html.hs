@@ -21,7 +21,7 @@ import           Data.Maybe (isNothing)
 import           Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Vector as V
-import           Network.HTTP.Types.Header (ResponseHeaders, hAccept, hIfModifiedSince, hLastModified, hContentType, hCacheControl)
+import           Network.HTTP.Types.Header (ResponseHeaders, hAccept, hIfModifiedSince, hLastModified, hContentType)
 import           Network.HTTP.Types.Status (notModified304, notFound404)
 import qualified Network.Wai as Wai
 import           Network.Wai.Parse (parseHttpAccept)
@@ -231,6 +231,6 @@ staticHtml = getPath ("html" R.*< R.manyI R.parameter) $ \paths q -> do
       htmlResponse q
         [ (hLastModified, formatHTTPDate fmod)
         , (hContentType, "text/html")
-        , (hCacheControl, "public, max-age=3600")
+        , cacheControl q
         ] (H.unsafeLazyByteString bod)
 

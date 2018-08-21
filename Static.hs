@@ -6,6 +6,7 @@
 module Static
   ( FilePathComponent(..)
   , getModificationTime'
+  , cacheControl
   , static
   , staticURI
   ) where
@@ -13,13 +14,15 @@ module Static
 import           Control.Exception (handleJust)
 import           Control.Monad (guard)
 import           Control.Monad.IO.Class (liftIO)
+import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Map.Strict as Map
 import           Data.Monoid ((<>))
 import           Data.String (IsString)
 import qualified Data.Text as T
 import           Data.Time.Clock (UTCTime)
-import           Network.HTTP.Types.Header (hContentType, hCacheControl)
+import           Network.HTTP.Types.Header (Header, hContentType, hCacheControl, hReferer)
 import           Network.HTTP.Types.Status (ok200)
+import           Network.HTTP.Types.URI (parseQuery)
 import qualified Network.Mime as Mime
 import qualified Network.Wai as Wai
 import           System.Directory (getModificationTime)
@@ -55,6 +58,13 @@ findM f (a:l) = do
   r <- f a
   if r then return $ Just a else findM f l
 
+cacheControl :: Wai.Request -> Header
+cacheControl q = (hCacheControl, "public, max-age=" <> (if isdev then "10, must-revalidate" else "1000000")) where
+  isdev =
+    length (Wai.pathInfo q) <= 2 -- only un-cache "top-level" web/html files
+    && any ((==) "dev" . fst) (Wai.queryString q ++
+      foldMap (parseQuery . BSC.dropWhile ('?' /=)) (lookup hReferer (Wai.requestHeaders q)))
+
 static :: Route [FilePathComponent]
 static = getPath ("web" R.*< R.manyI R.parameter) $ \paths q -> liftIO $ do
   let path = FP.joinPath ("web" : map componentFilePath paths)
@@ -65,7 +75,7 @@ static = getPath ("web" R.*< R.manyI R.parameter) $ \paths q -> liftIO $ do
     return $ zmod >= fmod) encs
   return $ Wai.responseFile ok200 (
     [ (hContentType, getMimeType (T.pack path))
-    , (hCacheControl, "public, max-age=" <> (if length paths == 1 then "10, must-revalidate" else "1000000"))
+    , cacheControl q
     ] ++ compressionEncodingHeader enc) (compressionFilename enc path) Nothing
 
 staticURI :: [FilePathComponent] -> H.AttributeValue
