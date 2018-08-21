@@ -72,7 +72,7 @@ htmlResponse req hdrs body = do
           H.ul H.! HA.id "topbar" $ do
               H.li $ do
                   H.a H.! HA.href "https://www.simonsfoundation.org/flatiron/" H.! HA.id "flaticon" $
-                      H.img H.! HA.src (staticURI ["Flatiron Icon.svg"]) H.! HA.height "40" H.! HA.width "40"
+                      H.img H.! HA.src (staticURI ["flatiron.svg"]) H.! HA.height "40" H.! HA.width "40"
               H.li $
                 H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Home"
               H.li $
