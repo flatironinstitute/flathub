@@ -285,6 +285,7 @@ instance J.ToJSON Field where
     , "title" J..= fieldTitle
     , "disp" J..= fieldDisp
     , "base" J..= baseType ('f','i','b','s') fieldType
+    , "dtype" J..= numpyDtype fieldType
     ] ++ concatMap maybeToList
     [ ("enum" J..=) <$> fieldEnum
     , ("descr" J..=) <$> fieldDescr
