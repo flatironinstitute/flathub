@@ -9,6 +9,7 @@ setuptools.setup(
     url="https://github.com/flatironinstitute/astrosims-reproto",
     packages=setuptools.find_packages(),
     classifiers=(
+        "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 3",
 	"License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",

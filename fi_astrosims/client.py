@@ -1,6 +1,10 @@
 import json
-import urllib.parse
-import urllib.request
+try:
+    from urllib.parse import urlencode, urljoin
+    from urllib.request import urlopen, Request
+except ImportError:
+    from urllib import urlencode, basejoin as urljoin
+    from urllib2 import urlopen, Request
 import numpy
 import random
 
@@ -22,7 +26,7 @@ def makeurl(url, path=None, query=None):
             url += '/'
         url += path
     if query:
-        url += '?' + urllib.parse.urlencode(query)
+        url += '?' + urlencode(query)
     return url
 
 
@@ -33,7 +37,7 @@ def get(url, headers={}):
     :return:
     Helper function used in getJSON
     """
-    return urllib.request.urlopen(urllib.request.Request(url, headers=headers))
+    return urlopen(Request(url, headers=headers))
 
 
 def getJSON(url):
@@ -43,7 +47,10 @@ def getJSON(url):
     Helper function used in Simulation initialization, count, aggs, and hist.
     """
     res = get(url, headers={'accept': 'application/json'})
-    return json.loads(res.read().decode(res.info().get_content_charset('utf-8')))
+    data = res.read()
+    if type(data) is not str:
+        data = data.decode(res.info().get_content_charset('utf-8'))
+    return json.loads(data)
 
 
 class Simulation:
@@ -54,10 +61,13 @@ class Simulation:
     dictionary of available *fields*.
     """
     def __init__(self, name, host = "http://astrosims.flatironinstitute.org"):
-        self.url = urllib.parse.urljoin(host, name)
+        self.url = urljoin(host, name)
         self.catalog = getJSON(self.url)
         self.fields = { f['name']: f for f in self.catalog['fields'] }
 
+    def query(self, **kwargs):
+        """Construct a Query using the given arguments and this simulation."""
+        return Query(self, **kwargs)
 
 class Query:
     """
