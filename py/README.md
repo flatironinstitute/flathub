@@ -6,7 +6,7 @@ A query module created to access any of the simulation catalogs hosted on astros
 
 ### Prerequisites
 
-To install the module, you will need Python 3 (to utilize urllib.parse) and Numpy, preferably the latest releases. This check can be easily done on your command line.
+To install the module, you will need Python 3 and numpy, preferably the latest releases. This check can be easily done on your command line.
 
 ```
 python3 -v
@@ -21,7 +21,15 @@ numpy.version.version
 
 ### Installing
 
-Once you have succesfully istalled the module, you can now utilize it through the following command: 
+To install, just clone this repository and run setup.py:
+
+```
+git clone git://github.com/flatironinstitute/astrosims-reproto
+cd astrosims-reproto/py
+python3 setup.py install
+```
+
+Once you have successfully installed the module, you can use it as:
 
 ```
 import fi_astrosims.client 
@@ -49,13 +57,6 @@ Finally, you can download your query locally using the numpy() function, which w
 x = q.numpy()
 ```
 
-## Authors
-
-* **Dylan Simons** - *Majority of Functions* - [dylex](https://github.com/dylex)
-* **Austen Gabrielpillai** - *Tweaks and Documentation* [aust427](https://github.com/aust427)
-
-See also the list of [contributors](https://github.com/flatironinstitute/astrosims-reproto/graphs/contributors) who participated in this project.
-
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the Apache 2 License - see the [COPYING](../COPYING) file for details.
