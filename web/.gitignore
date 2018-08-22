@@ -1,7 +1,9 @@
 /node_modules/
 /jspm_packages/
 /index.js
-/index.js.map
 /main.js
-/main.js.map
+/compare.js
+/catalog.js
+/types.js
+/*.js.map
 *.gz
