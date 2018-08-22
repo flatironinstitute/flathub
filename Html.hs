@@ -53,9 +53,12 @@ jsonEncodingVar var enc = H.script $ do
 jsonVar :: J.ToJSON a => T.Text -> a -> H.Html
 jsonVar var = jsonEncodingVar var . J.toEncoding
 
+catalogsSorted :: Catalogs -> [(T.Text, Catalog)]
+catalogsSorted = sortOn (catalogSort . snd) . HM.toList . catalogMap
+
 htmlResponse :: Wai.Request -> ResponseHeaders -> H.Markup -> M Wai.Response
 htmlResponse req hdrs body = do
-  cats <- asks $ catalogMap . globalCatalogs
+  cats <- asks globalCatalogs
   return $ okResponse hdrs $ H.docTypeHtml $ do
     H.head $ do
       forM_ ([["jspm_packages", if isdev then "system.src.js" else "system.js"], ["jspm.config.js"]] ++ if isdev then [["dev.js"]] else [["index.js"]]) $ \src ->
@@ -64,7 +67,7 @@ htmlResponse req hdrs body = do
       forM_ [["jspm_packages", "npm", "datatables.net-dt@1.10.19", "css", "jquery.dataTables.css"], ["main.css"]] $ \src ->
         H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
       H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/MathJax.js?config=TeX-AMS_CHTML" $ mempty
-      jsonVar "Catalogs" (HM.map catalogTitle cats)
+      jsonVar "Catalogs" (HM.map catalogTitle $ catalogMap cats)
     H.body $ do
       H.h1 $ H.text "ASTROSIMS"
       H.div H.! HA.id "bar" $ do
@@ -79,7 +82,7 @@ htmlResponse req hdrs body = do
                 H.div H.! HA.class_ "dropdown" $ do
                     H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Catalogs"
                     H.div H.! HA.class_"dropdown-content" $ do
-                        forM_ (sortOn (catalogSort . snd) $ HM.toList cats) $ \(key, cat) ->
+                        forM_ (catalogsSorted cats) $ \(key, cat) ->
                             H.a H.! HA.href (WH.routeActionValue simulationPage key mempty) $ H.text (catalogTitle cat)
               H.li $
                 H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) $ H.text "CANDELS"
@@ -99,13 +102,13 @@ acceptable l = find (`elem` l) . foldMap parseHttpAccept . lookup hAccept . Wai.
 -- Here is where the main page is generated
 topPage :: Route ()
 topPage = getPath R.unit $ \() req -> do
-  cats <- asks (catalogMap . globalCatalogs)
+  cats <- asks globalCatalogs
   case acceptable ["application/json", "text/html"] req of
     Just "application/json" ->
-      return $ okResponse [] $ J.encode $ HM.map catalogTitle cats
+      return $ okResponse [] $ J.encode $ HM.map catalogTitle $ catalogMap cats
     _ -> htmlResponse req [] $
       H.dl $
-        forM_ (HM.toList cats) $ \(sim, cat) -> do
+        forM_ (catalogsSorted cats) $ \(sim, cat) -> do
           H.dt $ H.a H.! HA.href (WH.routeActionValue simulationPage sim mempty) $
             H.text $ catalogTitle cat
           mapM_ (H.dd . H.preEscapedText) $ catalogDescr cat
@@ -186,7 +189,7 @@ simulationPage = getPath R.parameter $ \sim req -> do
       H.div H.! HA.id "dhist" $ do
         forM_ ['x','y'] $ \xy -> let xyv = H.stringValue [xy] in
           H.div H.! HA.id ("dhist-" <> xyv) H.! HA.class_ "dhist-xy" $
-            H.button H.! HA.id ("dhist-" <> xyv <> "-tog") H.! HA.class_ "dhist-xy-tog" $
+            H.button H.! HA.class_ "dhist-xy-tog" H.! HA.onclick ("return toggleLog('" <> xyv <> "')") $
               "lin/log"
         H.canvas H.! HA.id "hist" $ mempty
 
@@ -195,7 +198,7 @@ simulationPage = getPath R.parameter $ \sim req -> do
         H.tfoot $ H.tr $ H.td H.! HA.colspan (H.toValue $ length fields') H.! HA.class_ "loading" $ "loading..."
 
       H.div $ do
-        H.button H.! HA.class_ "show_button" H.! HA.onclick "return div_display('tdict')" $ "show/hide"
+        H.button H.! HA.class_ "show_button" H.! HA.onclick "return toggleDisplay('tdict')" $ "show/hide"
         "Table of fields, units, and their descriptions (use checkboxes to view/hide fields above)"
       H.div $ H.table H.! HA.id "tdict" $ do
         H.thead $ H.tr $ do
@@ -208,7 +211,7 @@ simulationPage = getPath R.parameter $ \sim req -> do
             fielddesc f f 0
 
       H.div $ do
-        H.button H.! HA.class_ "show_button" H.! HA.onclick "return div_display('div-py')" $ "show/hide"
+        H.button H.! HA.class_ "show_button" H.! HA.onclick "return toggleDisplay('div-py')" $ "show/hide"
         "Example python code to apply the above filters and retrieve data"
       H.div H.! HA.id "div-py" $ H.pre H.! HA.id "code-py" $ mempty
 
@@ -218,6 +221,18 @@ comparePage = getPath "compare" $ \() req -> do
   htmlResponse req [] $ do
     jsonVar "Catalogs" $ catalogMap cats
     jsonVar "Dict" $ catalogDict cats
+    H.h2 "Compare"
+    H.table H.! HA.id "tcompare" $ do
+      H.thead $ do
+        H.tr $ do
+          H.th "simulation"
+          H.td $ H.select H.! HA.onchange "return selectSim(event)" $ do
+            H.option H.! HA.selected "selected" $ mempty
+            forM_ (catalogsSorted cats) $ \(sim, cat) ->
+              H.option H.! HA.value (H.textValue sim) $ H.text $ catalogTitle cat
+        H.tr H.! HA.id "tr-title" $ H.th "field"
+      H.tbody H.! HA.id "tb-top" $ mempty
+      H.tbody H.! HA.id "tb-filt" $ mempty
 
 staticHtml :: Route [FilePathComponent]
 staticHtml = getPath ("html" R.*< R.manyI R.parameter) $ \paths q -> do

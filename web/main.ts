@@ -42,6 +42,7 @@ type Catalog = {
 
 type Query = undefined|string|number|{lb:string|number, ub:string|number};
 
+/* catalog */
 var TCat: DataTables.Api;
 declare const Catalog: Catalog;
 declare const Query: {offset:number, limit:number, sort:{field:string,asc:boolean}[], fields:string[], filter:{field:string,value:Query}, aggs:string[], hist:string|null};
@@ -55,6 +56,11 @@ const Histogram_bins = 100;
 var Histogram_chart: Chart|undefined;
 var Histogram_bin_width = 0;
 var Last_fields: string[] = [];
+
+/* compare */
+declare const Catalogs: Dict<Catalog>;
+declare const Dict: Field[];
+const Dict_map: Dict<Field> = {};
 
 var Download_query: Dict<string> = {};
 function set_download(query: Dict<string> = Download_query) {
@@ -177,7 +183,7 @@ function histogram(agg: {buckets: {key:number,doc_count:number}[]}) {
     });
 }
 
-function hist_toggle_log(xy: string) {
+(<any>window).toggleLog = function toggleLog(xy: string) {
   if (!Histogram_chart)
     return;
   const axis: Chart.CommonAxe = (<any>Histogram_chart).options.scales[xy+'Axes'][0];
@@ -491,7 +497,7 @@ function add_filter(idx: number): Filter|undefined {
 }
 
 function colvisNames(box: HTMLInputElement): string[] {
-  let l: string[] = [];
+  const l: string[] = [];
   for (let k of <any>box.classList as string[]) {
     l.push(k.substr(7));
   }
@@ -499,7 +505,7 @@ function colvisNames(box: HTMLInputElement): string[] {
 }
 
 function colvisUpdate(box: HTMLInputElement, vis: boolean) {
-  let v: boolean[] = (<any>TCat.columns(colvisNames(box).map(n => n+":name")).visible() as JQuery<boolean>).toArray();
+  const v: boolean[] = (<any>TCat.columns(colvisNames(box).map(n => n+":name")).visible() as JQuery<boolean>).toArray();
   // vis = v.shift();
   box.checked = vis;
   box.indeterminate = v.some(x => x !== vis);
@@ -514,17 +520,17 @@ function columnVisible(name: string, vis: boolean) {
 }
 
 (<any>window).colvisSet = function colvisSet(event: Event) {
-  let box = <HTMLInputElement>event.target;
+  const box = <HTMLInputElement>event.target;
   if (!box.indeterminate)
     for (let n of colvisNames(box))
       columnVisible(n, box.checked);
 }
 
 function py_text() {
-  let cat = Catalog.name;
+  const cat = Catalog.name;
   let st = "import fi_astrosims.client\n" + cat + " = fi_astrosims.client.Simulation(" + JSON.stringify(cat) + ")\nq = fi_astrosims.client.Query(" + cat;
   for (let i = 0; i < Filters.length; i++) {
-    let q = Filters[i].query;
+    const q = Filters[i].query;
     if (q != null) {
       st += ", " + Filters[i].name + ' = ';
       if (typeof q === 'object')
@@ -546,21 +552,18 @@ function render_funct(field: Field): (data: any) => string {
   if (field.base === 'f')
     return (data) => data != undefined ? parseFloat(data).toPrecision(8) : data;
   if (field.enum) {
-    let e: string[] = field.enum;
+    const e: string[] = field.enum;
     return (data) => data in e ? e[data] : data;
   }
   return (data) => data;
 }
 
-(<any>window).div_display = function div_display(ele: string) {
+(<any>window).toggleDisplay = function toggleDisplay(ele: string) {
   $('#'+ele).toggle();
 }
 
-function init() {
+function initCatalog(table: JQuery<HTMLTableElement>) {
   Update_aggs = 0;
-  const table = $('table#tcat');
-  if (!(<any>window).Catalog || !table.length)
-    return;
   for (let i = 0; i < Catalog.fields.length; i++)
     Fields_idx[Catalog.fields[i].name] = i;
   const topts: DataTables.Settings = {
@@ -596,7 +599,7 @@ function init() {
       });
     if (Query.fields && Query.fields.length && topts.columns)
       for (let c of topts.columns)
-        c.visible = Query.fields.indexOf(c.name) >= 0; // FIXME: colvis
+        c.visible = Query.fields.indexOf(<string>c.name) >= 0; // FIXME: colvis
   }
   TCat = table.DataTable(topts);
   /* for debugging: */
@@ -606,8 +609,8 @@ function init() {
   addfilt.appendChild(document.createElement('option'));
   add_filt_row('', addfilt, 'Select field to view/filter');
   for (let i = 0; i < Catalog.fields.length; i++) {
-    let f = Catalog.fields[i];
-    let opt = document.createElement('option');
+    const f = Catalog.fields[i];
+    const opt = document.createElement('option');
     opt.setAttribute('value', i.toString());
     opt.textContent = f.title;
     if (f.descr)
@@ -622,8 +625,43 @@ function init() {
   };
   add_sample();
   TCat.draw();
-  for (let xy of "xy")
-    $('#dhist-'+xy+'-tog').on('click', hist_toggle_log.bind(undefined, xy));
+}
+
+(<any>window).selectSim = function selectSim(event: Event) {
+  const sel = <HTMLSelectElement>event.target;
+  const tsel = <HTMLTableCellElement>sel.parentElement;
+  const idx = tsel.cellIndex;
+  const rsel = <HTMLTableRowElement>tsel.parentElement;
+  const sim = Catalogs[sel.value];
+  if (sim) {
+    if (rsel.cells.length == idx+1)
+      rsel.insertCell().appendChild(sel.cloneNode(true));
+    const rtitle = <HTMLTableRowElement>document.getElementById('tr-title');
+    while (rtitle.cells.length < idx+1)
+      rtitle.insertCell();
+    rtitle.cells[idx].textContent = sim.title;
+  } else if (idx > 1) {
+    /* delete col */
+    const t = <HTMLTableElement>document.getElementById('tcompare');
+    for (let r of <any>t.rows as HTMLTableRowElement[])
+      r.deleteCell(idx);
+  }
+}
+
+function initCompare(table: JQuery<HTMLTableElement>) {
+  for (let c in Catalogs)
+    Catalogs[c].name = c;
+  for (let f of Dict)
+    Dict_map[f.name] = f;
+}
+
+function init() {
+  const tcat: JQuery<HTMLTableElement> = $('table#tcat');
+  const tcomp: JQuery<HTMLTableElement> = $('table#tcompare');
+  if ((<any>window).Catalog && tcat.length)
+    initCatalog(tcat);
+  else if ((<any>window).Catalogs && (<any>window).Dict && tcomp.length)
+    initCompare(tcomp);
 }
 
 $(init);
