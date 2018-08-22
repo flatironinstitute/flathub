@@ -61,6 +61,12 @@ var Last_fields: string[] = [];
 declare const Catalogs: Dict<Catalog>;
 declare const Dict: Field[];
 const Dict_map: Dict<Field> = {};
+const Compare: Array<Catalog> = [];
+var TComp: HTMLTableElement;
+
+function catalog_dict(c: Catalog, d: string): Field|undefined {
+  return c.fields.find((f: Field) => f.dict === d);
+}
 
 var Download_query: Dict<string> = {};
 function set_download(query: Dict<string> = Download_query) {
@@ -627,28 +633,68 @@ function initCatalog(table: JQuery<HTMLTableElement>) {
   TCat.draw();
 }
 
-(<any>window).selectSim = function selectSim(event: Event) {
-  const sel = <HTMLSelectElement>event.target;
-  const tsel = <HTMLTableCellElement>sel.parentElement;
-  const idx = tsel.cellIndex;
-  const rsel = <HTMLTableRowElement>tsel.parentElement;
-  const sim = Catalogs[sel.value];
-  if (sim) {
-    if (rsel.cells.length == idx+1)
-      rsel.insertCell().appendChild(sel.cloneNode(true));
-    const rtitle = <HTMLTableRowElement>document.getElementById('tr-title');
-    while (rtitle.cells.length < idx+1)
-      rtitle.insertCell();
-    rtitle.cells[idx].textContent = sim.title;
-  } else if (idx > 1) {
-    /* delete col */
-    const t = <HTMLTableElement>document.getElementById('tcompare');
-    for (let r of <any>t.rows as HTMLTableRowElement[])
-      r.deleteCell(idx);
+function tr_cell(r: HTMLTableRowElement, i: number): HTMLTableCellElement {
+  let n = i - r.cells.length + 1;
+  if (n <= 0)
+    return r.cells[i];
+  while (--n)
+    r.insertCell();
+  return r.insertCell();
+}
+
+function add_compare(idx: number, f: Field) {
+  const cat = Compare[idx];
+  const d = f.dict && Dict_map[f.dict];
+  const id = d ? "dict-"+d.name : cat.name+"-"+f.name;
+  let r = <HTMLTableRowElement|null>document.getElementById("comp-"+id);
+  if (!r) {
+    r = TComp.tBodies[0].insertRow();
+    r.id = "comp-"+id;
+    const h = r.insertCell();
+    h.textContent = (d || f).title;
+  }
+
+  for (idx = 0; idx < Compare.length; idx++) {
+    let c = Compare[idx];
+    let cf: Field|undefined;
+    if (c === cat)
+      cf = f;
+    else if (d)
+      cf = catalog_dict(c, d.name);
+    if (!cf)
+      continue;
+    tr_cell(r, idx+1);
   }
 }
 
-function initCompare(table: JQuery<HTMLTableElement>) {
+(<any>window).selectCat = function selectCat(event: Event) {
+  const sel = <HTMLSelectElement>event.target;
+  const tsel = <HTMLTableCellElement>sel.parentElement;
+  const idx = tsel.cellIndex-1;
+  const rsel = <HTMLTableRowElement>tsel.parentElement;
+  const cat = Catalogs[sel.value];
+  if (cat) {
+    Compare[idx] = cat;
+    if (rsel.cells.length == idx+2)
+      rsel.insertCell().appendChild(sel.cloneNode(true));
+    const rtitle = <HTMLTableRowElement>document.getElementById('tr-title');
+    tr_cell(rtitle, idx+1).textContent = cat.title;
+
+    for (let f of cat.fields) {
+      if (f.top) {
+        add_compare(idx, f);
+      }
+    }
+  } else if (idx > 0) {
+    Compare.splice(idx, 1);
+    for (let r of <any>TComp.rows as HTMLTableRowElement[])
+      r.deleteCell(idx+1);
+    /* TODO: remove unnecessary fields */
+  }
+}
+
+function initCompare(table: HTMLTableElement) {
+  TComp = table;
   for (let c in Catalogs)
     Catalogs[c].name = c;
   for (let f of Dict)
@@ -657,10 +703,10 @@ function initCompare(table: JQuery<HTMLTableElement>) {
 
 function init() {
   const tcat: JQuery<HTMLTableElement> = $('table#tcat');
-  const tcomp: JQuery<HTMLTableElement> = $('table#tcompare');
+  const tcomp = <HTMLTableElement|null>document.getElementById('tcompare');
   if ((<any>window).Catalog && tcat.length)
     initCatalog(tcat);
-  else if ((<any>window).Catalogs && (<any>window).Dict && tcomp.length)
+  else if ((<any>window).Catalogs && (<any>window).Dict && tcomp)
     initCompare(tcomp);
 }
 
