@@ -558,7 +558,7 @@ gaea:
     - name: Pos
       type: double
       descr: Position in the catalog in comoving distance from the observer
-      units: Mpc/h
+      units: '\(Mpc/h\)'
       sub:
       - name: "x"
       - name: "y"
@@ -566,7 +566,7 @@ gaea:
     - name: Vel
       type: double
       descr: Velocity of the galaxy in the catalog
-      units: km/s
+      units: '\(km/s\)'
       sub:
       - name: "x"
       - name: "y"
@@ -591,15 +591,15 @@ gaea:
     - name: Rvir
       type: float
       descr: 'Virial radius calculated from \(M_{200}\)'
-      units: 'Mpc/h'
+      units: '\(km/s\)'
     - name: Vvir
       type: float
       descr: Virial Velocity of the SubHalo
-      units: 'km/s'
+      units: '\(km/s\)'
     - name: Vmax
       type: float
       descr: Maximal rotational velocity of DM particles in the Sub-Halo
-      units: 'km/s'
+      units: '\(km/s\)'
     - name: StellarMass
       type: float
       descr: 'Total stellar Mass of the galaxy (disk+bulge)'
@@ -615,15 +615,15 @@ gaea:
     - name: GasDiskRadius
       type: float
       descr: 'Gaseous Disk Radius'
-      units: 'Mpc/h'
+      units: '\(Mpc/h\)'
     - name: StellarDiskRadius
       type: float
       descr: 'Stellar Disk Radius'
-      units: 'Mpc/h'
+      units: '\(Mpc/h\)'
     - name: GasSpin
       type: float
       descr: 'Gaseous disk specific angular momentum'
-      units: 'Mpc/h km/s'
+      units: '\({Mpc/h} \text{ } {km/s}\)'
       sub:
       - name: "x"
         title: jx
@@ -992,11 +992,11 @@ gaiadr2:
 lusam:
   title: Lu-SAM
   descr: >
-    Data release v3 2018-06-26. <br>
+    Data Release v0.5 2018-06-20.<br>
     Lu-SAM Lightcones for the CANDELS project.
-    The full dataset is available <a href='http://www.slac.stanford.edu/~luyu/Yu_Lus_home/codes_%26_data.html'>here</a>.
+    The full data release will be available shortly.
   index: lusam
-  sort: 'candels-1'
+  sort: 'candels-3'
   fields:
     - name: field
       dict: candels_field
@@ -1019,26 +1019,26 @@ lusam:
     - name: z_nopec
       dict: true_redshift
       type: float
-      descr: redshift without peculiar velocity
+      descr: redshift (without peculiar velocity)
     - name: redshift
       dict: redshift
       type: float
-      descr: redshift with peculiar velocity
+      descr: redshift (with peculiar velocity)
     - name: ra
       dict: ppos_x
       type: float
-      units: 'deg'
+      units: '\(deg\)'
     - name: dec
       dict: ppos_y
       type: float
-      units: 'deg'
+      units: '\(deg\)'
     - name: m_vir
       dict: halo_mass
       type: float
     - name: V_vir
       type: float
       descr: host halo virial velocity
-      units: 'km/s'
+      units: '\(km/s\)'
     - name: r_vir
       dict: R
       title: '\(r_{vir}\)'
@@ -1066,19 +1066,19 @@ lusam:
     - name: v_disk
       type: float
       descr: maximum rotation velocity of disk
-      units: 'km/s'
+      units: '\(km/s\)'
     - name: r_disk
       type: float
       descr: scale length of disk
-      units: 'kpc'
+      units: '\(kpc\)'
     - name: sigma_bulge
       type: float
       descr: line-of-sight velocity dispersion of bulge
-      units: 'km/s'
-    - name: r_bulge #rbulge in SC SAM
+      units: '\(km/s\)'
+    - name: r_bulge
       type: float
       descr: effective radius of bulge (projected)
-      units: 'kpc'
+      units: '\(kpc\)'
     - name: mhalo
       dict: M
       type: float
@@ -1097,7 +1097,7 @@ lusam:
       type: float
       descr: stellar mass of bulge component
       units: '\(10^{10} M_\odot\)'
-    - name: mBH #mbh in SU SAM
+    - name: mBH
       type: float
       descr: mass of black hole
       units: '\(10^{10} M_\odot\)'
@@ -1120,27 +1120,24 @@ lusam:
     - name: mstardot
       type: float
       descr: instantaneous star formation rate
-      units: '\( M_\odot\)/yr'
+      units: '\( M_\odot /yr\)'
     - name: sfr_ave
       dict: SFR
       type: float
       descr: star formation rate averaged over past 1E8 yr
-      units: '\( M_\odot\)/yr'
+      units: '\( M_\odot /yr \)'
     - name: meanage
       type: float
       descr: mean stellar mass weighted age of stars
-      units: 'Gyr'
+      units: '\(Gyr\)'
     - name: tmerge
       type: float
       descr: time since last merger greater than 1:10
-      units: 'Gyr'
+      units: '\(Gyr\)'
     - name: tmajmerge
       type: float
       descr: time since last merger greater than 1:4
-      units: 'Gyr'
-    - name: cosi
-      type: float
-      descr: cosine of disk inclination angle
+      units: '\(Gyr\)'
     - name: UV1500_rest
       type: float
       descr: CANDELS/TOPHAT/UV1500top.dat
@@ -1573,9 +1570,9 @@ lusam:
 unimach:
   title: UniverseMachine
   descr: >
-    Data release v2 2018-06-20 <br>
-    UniverseMachine Lightcones for the CANDELS project.
-    The full dataset is available <a href='http://behroozi.users.hpc.arizona.edu/UniverseMachine/EDR/Lightcones/'>here</a>.
+    Data Release v0.5 2018-06-05.<br>
+    UniverseMachine Lightcones for the CANDELS project, provided by Dr. Peter Behroozi, PhD.
+    The full data release is available <a href="https://www.peterbehroozi.com/data.html">here</a>.
   index: unimach
   sort: 'candels-2'
   fields:
@@ -1589,11 +1586,11 @@ unimach:
     - name: RA
       dict: ppos_x
       type: float
-      units: 'deg'
+      units: '\(deg)\'
     - name: Dec
       dict: ppos_y
       type: float
-      units: 'deg'
+      units: '\(deg)\'
     - name: Z(los)
       dict: redshift
       type: float
@@ -1611,26 +1608,26 @@ unimach:
       descr: Halo ID (unique across all timesteps)
     - name: DescID
       type: long
-      descr: ID of descendant halo (or -1 at z=0)
+      descr: ID of descendant halo (or -1 at z = 0)
     - name: UPID
       type: long
       descr: -1 for central halos, otherwise, ID of largest parent halo
     - name: ""
       title: Position
-      units: 'Mpc/h'
+      units: '\(Mpc/h \)'
       sub:
       - name: 'X'
         dict: pos_x
         type: float
-        descr: Position of halo relative to axes of lightcone (distance along lightcone) in comoving Mpc / h
+        descr: 'Position of halo relative to axes of lightcone (distance along lightcone) in comoving \(Mpc/h \)'
       - name: 'Y'
         dict: pos_y
         type: float
-        descr: Position of halo relative to axes of lightcone (distance perpendicular to lightcone X-axis) in comoving Mpc / h
+        descr: 'Position of halo relative to axes of lightcone (distance perpendicular to lightcone X-axis) in comoving \(Mpc/h \)'
       - name: 'Z'
         dict: pos_z
         type: float
-        descr: Position of halo relative to axes of lightcone (distance perpendicular to lightcone X-axis) in comoving Mpc / h
+        descr: 'Position of halo relative to axes of lightcone (distance perpendicular to lightcone X-axis) in comoving \(Mpc/h \)'
     - name: ""
       title: Velocity
       units: '\(km/s\)'
@@ -1638,18 +1635,15 @@ unimach:
       - name: VX
         # title: '\( V_x\)'
         type: float
-        descr: Peculiar velocity in physical (i.e., non-comoving) km/s, relative to lightcone axes
-        units: 'km/s'
+        descr: 'Peculiar velocity in physical (i.e., non-comoving) \(km/s \), relative to lightcone axes'
       - name: VY
         # title: '\( V_y\)'
         type: float
-        descr: Peculiar velocity in physical (i.e., non-comoving) km/s, relative to lightcone axes
-        units: 'km/s'
+        descr: 'Peculiar velocity in physical (i.e., non-comoving) \(km/s \), relative to lightcone axes'
       - name: VZ
         # title: '\( V_z\)'
         type: float
-        descr: Peculiar velocity in physical (i.e., non-comoving) km/s, relative to lightcone axes
-        units: 'km/s'
+        descr: 'Peculiar velocity in physical (i.e., non-comoving) \(km/s \), relative to lightcone axes'
     - name: M
       dict: M
       type: float
@@ -1657,23 +1651,23 @@ unimach:
       units: '\( M_\odot\)'
     - name: V
       type: float
-      descr: Halo vmax (physical km/s)
-      units: 'km/s'
+      descr: 'Halo \(v_{max}\) (physical \(km/s\))'
+      units: '\( km/s \)'
     - name: MP
       type: float
       descr: Halo peak historical mass (BN98 virial mass)
-      units: '\( M_\odot\)'
+      units: '\( M_\odot \)'
     - name: VMP
       type: float
       descr: Halo vmax at the time when peak mass was reached
-      units: 'km/s'
+      units: '\( km/s \)'
     - name: R
       dict: R
       type: float
-      descr: Halo raidus (BN98 vir, co-moving kpc/h)
+      descr: 'Halo raidus (BN98 vir, co-moving \(kpc/h\))'
     - name: Rank1
       type: float
-      descr: Halo rank in Delta_vmax (see UniverseMachine paper)
+      descr: 'Halo rank in \(\Delta v_{max}\) (see UniverseMachine paper)'
     - name: SM
       dict: SM
       type: float
@@ -1687,15 +1681,15 @@ unimach:
       dict: SFR
       type: float
       descr: True star formation rate
-      units: '\( M_\odot\)/yr'
+      units: '\( M_\odot /yr \)'
     - name: obs_SM
       type: float
       descr: Observed stellar mass, including random & systematic errors
       units: '\( M_\odot\)'
     - name: obs_SFR
       type: float
-      descr: Observed SFR, including random & systemic errors
-      units: '\( M_\odot\)/yr'
+      descr: Observed star formation rate (SFR), including random & systemic errors
+      units: '\( M_\odot /yr \)'
     - name: SSFR
       type: float
       descr: Observed SSFR
@@ -1706,7 +1700,7 @@ unimach:
       dict: UV1500_rest
       type: float
       descr: Observed UV Magnitude
-      units: 'M_1500 AB'
+      units: '\( M_{1500} AB \)'
     - name:  A_UV
       type: float
       descr: UV attenuation from dust
@@ -1714,11 +1708,11 @@ unimach:
 scsam:
   title: SC-SAM
   descr: >
-    Data release v3 2018-06-26. <br>
-    SC-SAM Lightcones for the CANDELS project.
-    The full dataset will be available shortly.
+    Data Release v1 2018-08-17.<br>
+    SC-SAM Lightcones for the CANDELS project, provided by Long Yan Yung and Dr. Rachel Somerville, PhD.
+    The full data release will be available shortly.
   index: scsam
-  sort: 'candels-3'
+  sort: 'candels-1'
   fields:
     - name: field
       dict: candels_field
@@ -1741,26 +1735,26 @@ scsam:
     - name: z_nopec
       dict: true_redshift
       type: float
-      descr: redshift without peculiar velocity
+      descr: redshift (without peculiar velocity)
     - name: redshift
       dict: redshift
       type: float
-      descr: redshift with peculiar velocity
+      descr: redshift (with peculiar velocity)
     - name: ra
       dict: ppos_x
       type: float
-      units: 'deg'
+      units: '\(deg\)'
     - name: dec
       dict: ppos_y
       type: float
-      units: 'deg'
+      units: '\(deg\)'
     - name: m_vir
       dict: halo_mass
       type: float
     - name: V_vir
       type: float
       descr: host halo virial velocity
-      units: 'km/s'
+      units: '\(km/s\)'
     - name: r_vir
       dict: R
       title: '\(r_{vir}\)'
@@ -1788,19 +1782,19 @@ scsam:
     - name: v_disk
       type: float
       descr: maximum rotation velocity of disk
-      units: 'km/s'
+      units: '\(km/s\)'
     - name: r_disk
       type: float
       descr: scale length of disk
-      units: 'kpc'
+      units: '\(kpc\)'
     - name: sigma_bulge
       type: float
       descr: line-of-sight velocity dispersion of bulge
-      units: 'km/s'
+      units: '\(km/s\)'
     - name: rbulge
       type: float
       descr: effective radius of bulge (projected)
-      units: 'kpc'
+      units: '\(kpc\)'
     - name: mhalo
       dict: M
       type: float
@@ -1842,24 +1836,24 @@ scsam:
     - name: mstardot
       type: float
       descr: instantaneous star formation rate
-      units: '\( M_\odot\)/yr'
+      units: '\( M_\odot /yr\)'
     - name: sfr_ave
       dict: SFR
       type: float
       descr: star formation rate averaged over past 1E8 yr
-      units: '\( M_\odot\)/yr'
+      units: '\( M_\odot /yr \)'
     - name: meanage
       type: float
       descr: mean stellar mass weighted age of stars
-      units: 'Gyr'
+      units: '\(Gyr\)'
     - name: tmerge
       type: float
       descr: time since last merger greater than 1:10
-      units: 'Gyr'
+      units: '\(Gyr\)'
     - name: tmajmerge
       type: float
       descr: time since last merger greater than 1:4
-      units: 'Gyr'
+      units: '\(Gyr\)'
     - name: cosi
       type: float
       descr: cosine of disk inclination angle
