@@ -230,14 +230,13 @@ comparePage = getPath "compare" $ \() req -> do
     H.table H.! HA.id "tcompare" $ do
       H.thead $ do
         H.tr $ do
-          H.th "simulation"
-          H.td $ H.select H.! HA.onchange "return selectSim(event)" $ do
+          H.th "catalog"
+          H.td $ H.select H.! HA.onchange "return selectCat(event)" $ do
             H.option H.! HA.selected "selected" $ mempty
             forM_ (catalogsSorted cats) $ \(sim, cat) ->
               H.option H.! HA.value (H.textValue sim) $ H.text $ catalogTitle cat
         H.tr H.! HA.id "tr-title" $ H.th "field"
-      H.tbody H.! HA.id "tb-top" $ mempty
-      H.tbody H.! HA.id "tb-filt" $ mempty
+      H.tbody $ mempty
 
 staticHtml :: Route [FilePathComponent]
 staticHtml = getPath ("html" R.*< R.manyI R.parameter) $ \paths q -> do
