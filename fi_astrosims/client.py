@@ -45,6 +45,12 @@ def getJSON(url):
     res = get(url, headers={'accept': 'application/json'})
     return json.loads(res.read().decode(res.info().get_content_charset('utf-8')))
 
+def getCatalogs():
+    """
+    :return: (dict) dictionary of hosted Catalogs
+    Function to create a dict of available catalogs for querying. 
+    """
+    return getJSON("http://10.254.65.5:8092")
 
 class Simulation:
     """
