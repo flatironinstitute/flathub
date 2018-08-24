@@ -34,7 +34,6 @@ import           Waimwork.HTTP (parseHTTPDate, formatHTTPDate)
 import           Waimwork.Response (response, okResponse)
 import           Waimwork.Result (result)
 import qualified Web.Route.Invertible as R
-import           Web.Route.Invertible.URI (routeActionURI)
 
 import Field
 import Catalog

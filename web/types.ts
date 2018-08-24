@@ -1,10 +1,9 @@
 "use strict";
 
-export function assert(x: null|undefined): never;
-export function assert(x: object): void;
-export function assert(x: any): void {
-  if (x == null)
+export function assert<T>(x: undefined|null|false|T): T {
+  if (!x)
     throw new Error("assertion failure");
+  return x;
 }
 
 export type Dict<T> = { [name: string]: T };
