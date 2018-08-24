@@ -25,6 +25,8 @@ var Histogram_chart: Chart|undefined;
 var Histogram_bin_width = 0;
 var Last_fields: string[] = [];
 
+var url_dict = {};
+
 var Download_query: Dict<string> = {};
 function set_download(query: Dict<string> = Download_query) {
   delete query.limit;
@@ -165,21 +167,27 @@ function histogram(agg: {buckets: {key:number,doc_count:number}[]}) {
 const displayLimit = 10000;
 
 function ajax(data: any, callback: ((data: any) => void), opts: any) {
+    delete url_dict['sample'];
+    delete url_dict['seed'];
+    delete url_dict[''];
+    delete url_dict['?sort'];
+    console.log(url_dict, Seed, Sample);
   const query: any = {
     sort: data.order.map((o: any) => {
       return (o.dir == "asc" ? '' : '-') + data.columns[o.column].data;
     }).join(' ')
   };
   for (let fi = 0; fi < Update_aggs; fi++) {
-    const filt = Filters[fi];
+      const filt = Filters[fi];
     if (filt.query != null)
       query[filt.name] = typeof filt.query === 'object' ? filt.query.lb+','+filt.query.ub : filt.query;
-  }
+    }
   if (Sample < 1) {
     query.sample = Sample;
     if (Seed != undefined)
       query.sample += '@' + Seed;
-  }
+    }
+
   query.offset = data.start;
   query.limit = data.length;
   Last_fields = TCat.columns(':visible').dataSrc().toArray();
@@ -253,8 +261,8 @@ function add_sample() {
   samp.type = "number";
   samp.step = "any";
   samp.min = <any>0;
-  samp.max = <any>1;
-  samp.value = <any>Sample;
+    samp.max = <any>1;
+    samp.value = <any>Sample;
   samp.title = "Probability (0,1] with which to include each item"
 
   const seed = <HTMLInputElement>document.createElement('input');
@@ -262,7 +270,7 @@ function add_sample() {
   seed.type = "number";
   seed.step = <any>1;
   seed.min = <any>0;
-  seed.value = <any>Seed;
+    seed.value =  <any>Seed;
   seed.disabled = true;
   seed.title = "Random seed to generate sample selection"
 
@@ -274,7 +282,7 @@ function add_sample() {
       seed.value = '';
     Seed = seed.valueAsNumber;
     if (!isFinite(Seed))
-      Seed = undefined;
+      Seed = 0;
     TCat.draw();
   };
 
@@ -514,11 +522,16 @@ function py_text() {
 
 function url_update(query: Query) {
   let k = Object.keys(query);
-  let str = '/sort=' + query.sort;
+  let str = '?';
+  if (query.sort !== "") { 
+      str += 'sort=' + query.sort;
+    }
+    console.log(query);
   for (let i = 1; i < k.length - 4; i++) {
-     str += '&' + k[i] + '=' + query[k[i]].replace(',', '%2C').replace('@','%40'); 
+      str += '&' + k[i] + '=' + query[k[i]]; //.replace(',', '%2C').replace('@','%40'); 
   };
-  history.pushState(null, null, Catalog.uri + str);
+    str += "&dev"
+    history.pushState(null, null, Catalog.uri + encodeURI(str));
 }
 
 function render_funct(field: Field): (data: any) => string {
@@ -577,7 +590,6 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
   TCat = table.DataTable(topts);
   /* for debugging: */
   (<any>window).TCat = TCat;
-
   const addfilt = <HTMLSelectElement>document.createElement('select');
   addfilt.appendChild(document.createElement('option'));
   add_filt_row('', addfilt, 'Select field to view/filter');
@@ -596,6 +608,18 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
     add_filter(<any>addfilt.value);
     TCat.draw(false);
   };
-  add_sample();
+
+  let arr = window.location.search.split('&');
+  for (let i = 0; i < arr.length; i++) {
+      url_dict[arr[i].substring(0, arr[i].indexOf('='))] = arr[i].substring(arr[i].indexOf('=') + 1, ).replace('%2C', ',').replace('%40', '@');
+    };
+
+    add_sample();
+
+  if ('sample' in url_dict) {
+    url_dict['seed'] = url_dict['sample'].substring(url_dict['sample'].indexOf('@') + 1, );
+    url_dict['sample'] = url_dict['sample'].substring(0, url_dict['sample'].indexOf('@'));
+  };
   TCat.draw();
+  url_dict = {};
 }
