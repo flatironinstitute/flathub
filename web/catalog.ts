@@ -4,13 +4,12 @@ import $ from "jquery";
 import "datatables.net";
 import DataTablesScroller from "datatables.net-scroller";
 import Chart from "chart.js";
-import { assert, Dict, Field, Catalog } from "./types";
+import { assert, Dict, Field, Catalog, AggrStats, AggrTerms, Aggr, CatalogResponse, fill_select_terms, field_option } from "./types";
 
 DataTablesScroller();
 
 type Query = undefined|string|number|{lb:string|number, ub:string|number};
 
-/* catalog */
 var TCat: DataTables.Api;
 declare const Catalog: Catalog;
 declare const Query: {offset:number, limit:number, sort:{field:string,asc:boolean}[], fields:string[], filter:{field:string,value:Query}, aggs:string[], hist:string|null};
@@ -39,7 +38,7 @@ function set_download(query: Dict<string> = Download_query) {
     const a = document.createElement('a');
     h.append(a);
     a.id = 'download.' + f;
-    a.href = Catalog.uri + '/' + f + q;
+    a.href = '/' + Catalog.name + '/' + f + q;
     a.appendChild(document.createTextNode(f));
     h.append(document.createTextNode(' '));
   }
@@ -52,7 +51,7 @@ function getChartX(point: any) {
   return point._xScale.getLabelForIndex(point._index, point._datasetIndex);
 }
 
-function histogram(agg: {buckets: {key:number,doc_count:number}[]}) {
+function histogram(agg: AggrTerms<number>) {
   const hist = Histogram;
   if (!hist)
     return;
@@ -172,7 +171,7 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
     delete url_dict[''];
     delete url_dict['?sort'];
     console.log(url_dict, Seed, Sample);
-  const query: any = {
+  const query: Dict<string> = {
     sort: data.order.map((o: any) => {
       return (o.dir == "asc" ? '' : '-') + data.columns[o.column].data;
     }).join(' ')
@@ -180,10 +179,10 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
   for (let fi = 0; fi < Update_aggs; fi++) {
       const filt = Filters[fi];
     if (filt.query != null)
-      query[filt.name] = typeof filt.query === 'object' ? filt.query.lb+','+filt.query.ub : filt.query;
-    }
+      query[filt.name] = typeof filt.query === 'object' ? filt.query.lb+','+filt.query.ub : <string>filt.query;
+  }
   if (Sample < 1) {
-    query.sample = Sample;
+    query.sample = <any>Sample;
     if (Seed != undefined)
       query.sample += '@' + Seed;
     }
@@ -208,9 +207,9 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
   $('td.loading').show();
   $.ajax({
     method: 'GET',
-    url: Catalog.uri + '/catalog',
+    url: '/' + Catalog.name + '/catalog',
     data: query
-  }).then((res: any) => {
+  }).then((res: CatalogResponse) => {
     $('td.loading').hide();
     Catalog.count = Math.max(Catalog.count || 0, res.hits.total);
     const settings = (<any>TCat.settings())[0];
@@ -222,10 +221,10 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
       data: res.hits.hits
     });
     for (let filt of aggs)
-      filt.update_aggs(res.aggregations[filt.name]);
+      filt.update_aggs((res.aggregations as Dict<Aggr>)[filt.name]);
     Update_aggs = Filters.length;
     if (res.aggregations && res.aggregations.hist)
-      histogram(res.aggregations.hist);
+      histogram(res.aggregations.hist as AggrTerms<number>);
     set_download(query);
   }, (xhr, msg, err) => {
     callback({
@@ -312,7 +311,7 @@ abstract class Filter {
     Filters.push(this);
   }
 
-  abstract update_aggs(aggs: Dict<any>): void;
+  abstract update_aggs(aggs: Aggr): void;
 
   protected change(search: any, vis: boolean) {
     const i = Filters.indexOf(this);
@@ -348,21 +347,11 @@ class SelectFilter extends Filter {
     this.add(this.select);
   }
 
-  update_aggs(aggs: Dict<any>) {
-    $(this.select).empty();
-    this.select.appendChild(document.createElement('option'));
-    for (let b of aggs.buckets) {
-      const opt = document.createElement('option');
-      opt.setAttribute('value', b.key);
-      if (this.field.enum && b.key in this.field.enum)
-        opt.textContent = this.field.enum[b.key];
-      else
-        opt.textContent = b.key;
-      opt.textContent += ' (' + b.doc_count + ')';
-      this.select.appendChild(opt);
-    }
+  update_aggs(aggs: AggrTerms<string>) {
+    while (this.select.lastChild)
+      this.select.removeChild(this.select.lastChild);
+    fill_select_terms(this.select, this.field, aggs);
     this.select.value = '';
-    this.select.disabled = false;
   }
 
   protected change() {
@@ -406,12 +395,12 @@ class NumericFilter extends Filter {
     );
   }
 
-  update_aggs(aggs: Dict<any>) {
+  update_aggs(aggs: AggrStats) {
     this.query = { lb: aggs.min, ub: aggs.max };
-    this.lb.defaultValue = this.lb.value = this.lb.min = this.ub.min = aggs.min;
-    this.ub.defaultValue = this.ub.value = this.lb.max = this.ub.max = aggs.max;
+    this.lb.defaultValue = this.lb.value = this.lb.min = this.ub.min = <any>aggs.min;
+    this.ub.defaultValue = this.ub.value = this.lb.max = this.ub.max = <any>aggs.max;
     this.lb.disabled = this.ub.disabled = false;
-    this.avg.textContent = aggs.avg;
+    this.avg.textContent = <any>aggs.avg;
   }
 
   protected change() {
@@ -595,11 +584,8 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
   add_filt_row('', addfilt, 'Select field to view/filter');
   for (let i = 0; i < Catalog.fields.length; i++) {
     const f = Catalog.fields[i];
-    const opt = document.createElement('option');
-    opt.setAttribute('value', i.toString());
-    opt.textContent = f.title;
-    if (f.descr)
-      opt.setAttribute('title', f.descr);
+    const opt = field_option(f);
+    opt.value = <any>i;
     addfilt.appendChild(opt);
     if (f.top)
       add_filter(i);

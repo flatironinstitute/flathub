@@ -34,7 +34,6 @@ import           Waimwork.HTTP (parseHTTPDate, formatHTTPDate)
 import           Waimwork.Response (response, okResponse)
 import           Waimwork.Result (result)
 import qualified Web.Route.Invertible as R
-import           Web.Route.Invertible.URI (routeActionURI)
 
 import Field
 import Catalog
@@ -117,14 +116,12 @@ simulationPage :: Route Simulation
 simulationPage = getPath R.parameter $ \sim req -> do
   cat <- askCatalog sim
   let
-    (_, quri) = routeActionURI simulationPage sim
     fields = catalogFieldGroups cat
     fields' = catalogFields cat
     jcat = J.pairs $
          "name" J..= sim
       <> "title" J..= catalogTitle cat
       <> "descr" J..= catalogDescr cat
-      <> "uri" J..= show quri
       <> "bulk" J..= map (J.String . R.renderParameter) [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)]
       <> "fields" J..= fields'
     fieldBody :: Word -> FieldGroup -> H.Html
@@ -231,12 +228,15 @@ comparePage = getPath "compare" $ \() req -> do
       H.thead $ do
         H.tr $ do
           H.th "catalog"
-          H.td $ H.select H.! HA.onchange "return selectCat(event)" $ do
+          H.td $ H.select H.! HA.name "selcat" H.! HA.onchange "return selectCat(event.target)" $ do
             H.option H.! HA.selected "selected" $ mempty
             forM_ (catalogsSorted cats) $ \(sim, cat) ->
               H.option H.! HA.value (H.textValue sim) $ H.text $ catalogTitle cat
         H.tr H.! HA.id "tr-title" $ H.th "field"
       H.tbody $ mempty
+      H.tfoot $ do
+        H.tr $
+          H.td $ H.select H.! HA.id "addf" H.! HA.onchange "return addField()" $ mempty
 
 staticHtml :: Route [FilePathComponent]
 staticHtml = getPath ("html" R.*< R.manyI R.parameter) $ \paths q -> do
