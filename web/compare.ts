@@ -179,8 +179,6 @@ class Compare {
 
   constructor(public catalog: Catalog, idx: number) {
     Compares[idx] = this;
-    const rtitle = <HTMLTableRowElement>document.getElementById('tr-title');
-    tr_cell(rtitle, this.col).textContent = this.catalog.title;
 
     for (let f of this.catalog.fields) {
       this.fillField(new CField(this.catalog, f), f.top);
