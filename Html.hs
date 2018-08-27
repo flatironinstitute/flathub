@@ -231,7 +231,9 @@ comparePage = getPath "compare" $ \() req -> do
       H.tbody $ mempty
       H.tfoot $ do
         H.tr $
-          H.td $ H.select H.! HA.id "addf" H.! HA.onchange "return addField()" $ mempty
+          H.td $ H.select H.! HA.id "addf"  H.! HA.onchange "return addField()"  $ mempty
+        H.tr H.! HA.id "tr-comp" $
+          H.td $ H.select H.! HA.id "compf" H.! HA.onchange "return compField()" $ mempty
 
 staticHtml :: Route [FilePathComponent]
 staticHtml = getPath ("html" R.*< R.manyI R.parameter) $ \paths q -> do

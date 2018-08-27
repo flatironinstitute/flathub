@@ -153,18 +153,24 @@ class CField {
     for (let idx = 0; idx < Compares.length; idx++)
       Compares[idx].fillField(this);
 
-    update_addf();
+    update_fields();
   }
 
   remove() {
     let r = this.tr;
-    if (r)
+    if (r && r.parentNode)
       (r.parentNode as HTMLTableSectionElement).removeChild(r);
     let idx = this.idx;
     if (idx >= 0)
       Fields.splice(idx, 1);
 
-    update_addf();
+    update_fields();
+    update_comp();
+  }
+
+  addOption(g: HTMLElement) {
+    const o = g.appendChild(field_option(this.field));
+    o.value = this.id;
   }
 }
 
@@ -179,6 +185,8 @@ class Compare {
     for (let f of this.catalog.fields) {
       this.fillField(new CField(this.catalog, f), f.top);
     }
+
+    update_comp(this);
   }
 
   get idx(): number {
@@ -195,7 +203,12 @@ class Compare {
     for (let r of <any>TComp.rows as HTMLTableRowElement[])
       if (r.cells.length > col)
         r.deleteCell(col);
-    /* TODO: remove unnecessary fields */
+
+    /* remove unnecessary fields */
+    const old = Fields.filter((f: CField, i: number) =>
+      Compares.every(c => !c.filters[i]));
+    for (let f of old)
+      f.remove();
   }
 
   fillField(cf: CField, add: boolean = false): boolean {
@@ -216,35 +229,89 @@ class Compare {
 
     let filt: Filter
     if (f.terms)
-      filt = new SelectFilter(this.catalog, f, cell);
+      filt = new SelectFilter(this, f, cell);
     else
-      filt = new NumericFilter(this.catalog, f, cell);
+      filt = new NumericFilter(this, f, cell);
     this.filters[cf.idx] = filt;
     return true;
+  }
+
+  private query(): Dict<string> {
+    const filt: Dict<string> = {};
+    for (let f of this.filters) {
+      if (!f)
+        continue;
+      const q = f.query();
+      if (!q)
+        continue;
+      filt[f.field.name] = q;
+    }
+    return filt;
+  }
+
+  updateResults(r: HTMLTableRowElement, cf: CField|null) {
+    const cell = tr_cell(r, this.col);
+    let f = cf && cf.onCatalog(this.catalog);
+    while (cell.firstChild)
+      cell.removeChild(cell.firstChild);
+    if (!f)
+      return;
+    const n = f.name;
+
+    const q = this.query();
+    q.limit = <any>0;
+    q.aggs = n;
+    $.ajax({
+      method: 'GET',
+      url: '/' + this.catalog.name + '/catalog',
+      data: q
+    }).then((res: CatalogResponse) => {
+      const r = res.aggregations;
+      if (!r)
+        return;
+      let a = r[n] as AggrStats;
+      cell.appendChild(document.createTextNode(a.min + ' \u2013 ' + a.max));
+      cell.appendChild(document.createElement('br'));
+      cell.appendChild(document.createElement('em')).appendChild(document.createTextNode('\u03bc'));
+      cell.appendChild(document.createTextNode(' = ' + a.avg));
+    });
   }
 }
 
 abstract class Filter {
-  constructor(public catalog: Catalog, public field: Field, public cell: HTMLTableCellElement) {
-    request_aggs(catalog.name, field.name, this.fillAggs.bind(this));
+  constructor(public compare: Compare, public field: Field, public cell: HTMLTableCellElement) {
+    request_aggs(compare.catalog.name, field.name, this.fillAggs.bind(this));
   }
 
   protected abstract fillAggs(aggs: Aggr): void;
+
+  change() {
+    update_comp(this.compare);
+  }
+
+  abstract query(): string|undefined
 }
 
 class SelectFilter extends Filter {
   select: HTMLSelectElement
 
-  constructor(catalog: Catalog, field: Field, cell: HTMLTableCellElement) {
-    super(catalog, field, cell);
+  constructor(compare: Compare, field: Field, cell: HTMLTableCellElement) {
+    super(compare, field, cell);
 
     this.select = document.createElement('select');
     this.select.disabled = true;
+    this.select.onchange = this.change.bind(this);
     cell.appendChild(this.select);
   }
 
   protected fillAggs(a: AggrTerms<string>) {
     fill_select_terms(this.select, this.field, a);
+  }
+
+  query(): string|undefined {
+    const val = this.select.value;
+    if (val)
+      return val;
   }
 }
 
@@ -258,16 +325,17 @@ class NumericFilter extends Filter {
     b.type = "number";
     b.step = this.field.base == "i" ? <any>1 : "any";
     b.disabled = true;
+    b.onchange = this.change.bind(this);
     return b;
   }
 
-  constructor(catalog: Catalog, field: Field, cell: HTMLTableCellElement) {
-    super(catalog, field, cell);
+  constructor(compare: Compare, field: Field, cell: HTMLTableCellElement) {
+    super(compare, field, cell);
 
     this.lb = this.makeBound(false);
     this.ub = this.makeBound(true);
-    cell.innerHTML = ' &ndash; ';
-    cell.insertBefore(this.lb, cell.firstChild);
+    cell.appendChild(this.lb);
+    cell.appendChild(document.createTextNode(' \u2013 '));
     cell.appendChild(this.ub);
   }
 
@@ -276,62 +344,109 @@ class NumericFilter extends Filter {
     this.ub.defaultValue = this.ub.value = this.lb.max = this.ub.max = <any>a.max;
     this.lb.disabled = this.ub.disabled = false;
   }
+
+  query(): string {
+    const lbv = this.lb.valueAsNumber;
+    const ubv = this.ub.valueAsNumber;
+    if (lbv == ubv)
+      return <any>lbv;
+    else
+      return lbv+','+ubv;
+  }
 }
 
-function update_addf() {
-  const sel = <HTMLSelectElement>document.getElementById('addf');
-  while (sel.lastChild)
-    sel.removeChild(sel.lastChild);
-  sel.add(document.createElement('option'));
+function update_fields() {
+  const asel = <HTMLSelectElement>document.getElementById('addf');
+  const csel = <HTMLSelectElement>document.getElementById('compf');
+  let cval = csel.value;
+  while (asel.lastChild)
+    asel.removeChild(asel.lastChild);
+  while (csel.lastChild)
+    csel.removeChild(csel.lastChild);
+  asel.add(document.createElement('option'));
+  csel.add(document.createElement('option'));
 
-  const dict: Dict<boolean> = {};
-  const cats: Dict<boolean> = {};
-
-  const dg = document.createElement('optgroup');
-  dg.label = "Common fields";
-  sel.add(dg);
-
-  const add = (cf: CField, g: HTMLElement) => {
+  const add = (g: HTMLElement, cf: CField) => {
     if (cf.tr)
       return;
-    const o = g.appendChild(field_option(cf.field));
-    o.value = cf.id;
+    cf.addOption(g);
+  };
+  const addc = (cf: CField) => {
+    if (!cf.field.terms)
+      cf.addOption(csel);
   };
 
-  for (let c of Compares) {
-    const cat = c.catalog;
-    if (cats[cat.name])
-      continue;
-    cats[cat.name] = true;
-    const g = document.createElement('optgroup');
-    g.label = cat.title;
+  const cats: Dict<boolean> = {};
+  for (let c of Compares)
+    cats[c.catalog.name] = true;
 
+  let cl = Object.keys(cats);
+  if (cl.length == 1) {
+    /* only one catalog -- just use its fields */
+    let cat = Catalogs[cl[0]];
     for (let f of cat.fields) {
-      if (f.dict)
-        dict[f.dict] = true;
-      else 
-        add(new CField(cat, f), g);
+      let cf = new CField(cat, f);
+      add(asel, cf);
+      addc(cf);
     }
-    sel.add(g);
-  }
+  } else {
+    const dict: Dict<number> = {};
+    const dg = document.createElement('optgroup');
+    dg.label = "Common fields";
+    asel.add(dg);
 
-  for (let f of Dict) {
-    if (dict[f.name])
-      add(new CField(null, f), dg);
+    for (let c of cl) {
+      const cat = Catalogs[c];
+      const g = document.createElement('optgroup');
+      g.label = cat.title;
+
+      for (let f of cat.fields) {
+        if (f.dict)
+          dict[f.dict] = (dict[f.dict] || 0)+1;
+        else 
+          add(g, new CField(cat, f));
+      }
+      asel.add(g);
+    }
+
+    for (let f of Dict) {
+      if (dict[f.name]) {
+        let cf = new CField(null, f);
+        add(dg, cf);
+        if (dict[f.name] == Compares.length)
+          addc(cf);
+      }
+    }
   }
+  csel.value = cval;
+}
+
+function selected_field(sel: HTMLSelectElement): CField|null {
+  const v = sel.value;
+  if (!v)
+    return null;
+  const [c,n] = v.split('.', 2);
+  return new CField(c, n);
 }
 
 (<any>window).addField = function addField() {
   const sel = <HTMLSelectElement>document.getElementById('addf');
-  const v = sel.value;
-  if (!v)
-    return;
+  const cf = selected_field(sel);
   sel.value = '';
-  const [c,n] = v.split('.', 2);
-  let cf = new CField(c, n);
-  if (!cf.tr) /* shouldn't exist */
+  if (cf && !cf.tr) /* shouldn't exist */
     cf.add();
 };
+
+function update_comp(...comps: Compare[]) {
+  if (!comps.length)
+    comps = Compares;
+  const sel = <HTMLSelectElement>document.getElementById('compf');
+  const cf = selected_field(sel);
+  const r = <HTMLTableRowElement>document.getElementById('tr-comp');
+  for (let c of comps)
+    c.updateResults(r, cf);
+};
+(<any>window).compField = update_comp;
 
 function selectCat(sel: HTMLSelectElement) {
   const tsel = <HTMLTableCellElement>sel.parentElement;
@@ -345,7 +460,7 @@ function selectCat(sel: HTMLSelectElement) {
   let n = rsel.cells.length-1;
   if (Compares.length >= n && n < Max_compare)
     rsel.insertCell().appendChild(sel.cloneNode(true));
-  update_addf();
+  update_fields();
 }
 (<any>window).selectCat = selectCat;
 
@@ -361,6 +476,5 @@ export function initCompare(table: HTMLTableElement) {
     if (sel.value)
       selectCat(sel);
 
-  update_addf();
+  update_fields();
 }
-
