@@ -532,7 +532,7 @@ function url_update(query: Query) {
       str += '&' + k[i] + '=' + query[k[i]]; //.replace(',', '%2C').replace('@','%40'); 
   };
     str = '?' + str.replace(',', '%2C').replace('@', '%40') + '&dev';
-    history.pushState(null, null, Catalog.uri + str);
+   // history.pushState(null, null, Catalog.uri + str);
 }
 
 function render_funct(field: Field): (data: any) => string {
@@ -582,7 +582,7 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
       topts.pageLength = Query.limit;
     if (Query.filter) {
         for (let i = 1; i < Query.filter.length - 1; i++) {
-            Filters.push(new NumericFilter(Query.filter[i].field ));
+           // Filters.push(new NumericFilter(Query.filter[i].field ));
          }
         Update_aggs = Filters.length;
     }
@@ -611,6 +611,7 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
   addfilt.onchange = function () {
     add_filter(<any>addfilt.value);
     TCat.draw(false);
-  };
+    };
+    console.log('init');
   TCat.draw();
 }
