@@ -8,11 +8,9 @@ import { assert, Dict, Field, Catalog, AggrStats, AggrTerms, Aggr, CatalogRespon
 
 DataTablesScroller();
 
-type Query = undefined|string|number|{lb:string|number, ub:string|number};
-
 var TCat: DataTables.Api;
 declare const Catalog: Catalog;
-declare const Query: {offset:number, limit:number, sort:{field:string,asc:boolean}[], fields:string[], filter:{field:string,value:Query}, aggs:string[], hist:string|null};
+declare const Query: {offset:number, limit:number, sort:{field:string,asc:boolean}[], fields:string[], filter:{field:string,value:string|{lb:string,ub:string}}[], aggs:string[], hist:string|null};
 const Fields_idx: Dict<number> = {};
 const Filters: Array<Filter> = [];
 var Sample: number = 1;
@@ -172,10 +170,11 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
     }).join(' ')
     };
   for (let fi = 0; fi < Update_aggs; fi++) {
-      const filt = Filters[fi];
-    if (filt.query != null)
-      query[filt.name] = typeof filt.query === 'object' ? filt.query.lb+','+filt.query.ub : <string>filt.query;
-    }
+    const filt = Filters[fi];
+    const q = filt.query();
+    if (q != null)
+      query[filt.name] = q;
+  }
   if (Sample < 1) {
     query.sample = <any>Sample;
     if (Seed != undefined)
@@ -190,13 +189,12 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
   if (aggs)
     query.aggs = aggs.map((filt) => filt.name).join(' ');
   if (Histogram) {
-    const hist = Histogram;
-    const wid = typeof hist.query === 'object' ? <number>hist.query.ub - <number>hist.query.lb : null;
+    const wid = Histogram.ubv - Histogram.lbv;
     if (wid && wid > 0) {
       Histogram_bin_width = wid/Histogram_bins;
-      if (hist.field.base == "i")
+      if (Histogram.field.base == "i")
         Histogram_bin_width = Math.ceil(Histogram_bin_width);
-      query.hist = hist.name + ':' + Histogram_bin_width;
+      query.hist = Histogram.name + ':' + Histogram_bin_width;
     }
   }
   $('td.loading').show();
@@ -287,7 +285,6 @@ function add_sample() {
 
 abstract class Filter {
   name: string
-  query: Query
   protected tcol: DataTables.ColumnMethods
   private label: JQuery<HTMLSpanElement>
 
@@ -327,6 +324,8 @@ abstract class Filter {
     this.tcol.draw();
   }
 
+  abstract query(): string|undefined
+  abstract pyQuery(): string|undefined
 }
 
 class SelectFilter extends Filter {
@@ -351,11 +350,19 @@ class SelectFilter extends Filter {
 
   protected change() {
     const val = this.select.value;
-    if (val)
-      this.query = val;
-    else
-      this.query = undefined;
     super.change(val, !val);
+  }
+
+  query(): string|undefined {
+    const val = this.select.value;
+    if (val)
+      return val;
+  }
+
+  pyQuery(): string|undefined {
+    const val = this.select.value;
+    if (val)
+      return JSON.stringify(val);
   }
 }
 
@@ -390,8 +397,15 @@ class NumericFilter extends Filter {
     );
   }
 
+  get lbv(): number {
+    return this.lb.valueAsNumber;
+  }
+
+  get ubv(): number {
+    return this.ub.valueAsNumber;
+  }
+
   update_aggs(aggs: AggrStats) {
-    this.query = { lb: aggs.min, ub: aggs.max };
     this.lb.defaultValue = this.lb.value = this.lb.min = this.ub.min = <any>aggs.min;
     this.ub.defaultValue = this.ub.value = this.lb.max = this.ub.max = <any>aggs.max;
     this.lb.disabled = this.ub.disabled = false;
@@ -399,16 +413,25 @@ class NumericFilter extends Filter {
   }
 
   protected change() {
-    const lbv = this.lb.valueAsNumber;
-    const ubv = this.ub.valueAsNumber;
+    super.change(this.lbv+" TO "+this.ubv, this.lbv!=this.ubv);
+  }
+
+  query(): string {
+    const lbv = this.lbv;
+    const ubv = this.ubv;
     if (lbv == ubv)
-      this.query = lbv;
+      return <any>lbv;
     else
-      this.query = {
-        lb:isFinite(lbv) ? lbv : this.lb.defaultValue,
-        ub:isFinite(ubv) ? ubv : this.ub.defaultValue
-      };
-    super.change(lbv+" TO "+ubv, lbv!=ubv);
+      return lbv+','+ubv;
+  }
+
+  pyQuery(): string {
+    const lbv = this.lbv;
+    const ubv = this.ubv;
+    if (lbv == ubv)
+      return JSON.stringify(lbv);
+    else
+      return '(' + JSON.stringify(lbv) + ', ' + JSON.stringify(ubv) + ')';
   }
 
   private histogram() {
@@ -486,14 +509,9 @@ function py_text() {
   const cat = Catalog.name;
   let st = "import fi_astrosims.client\n" + cat + " = fi_astrosims.client.Simulation(" + JSON.stringify(cat) + ")\nq = fi_astrosims.client.Query(" + cat;
   for (let i = 0; i < Filters.length; i++) {
-    const q = Filters[i].query;
-    if (q != null) {
-      st += ", " + Filters[i].name + ' = ';
-      if (typeof q === 'object')
-        st += '(' + JSON.stringify(q.lb) + ', ' + JSON.stringify(q.ub) + ')';
-      else
-        st += JSON.stringify(q);
-    }
+    const q = Filters[i].pyQuery();
+    if (q != null)
+      st += ", " + Filters[i].name + ' = ' + q;
   }
   if (Sample < 1) {
     st += ", sample = " + Sample;

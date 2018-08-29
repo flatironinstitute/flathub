@@ -225,18 +225,18 @@ comparePage = getPath "compare" $ \() req -> do
     jsonVar "Dict" $ catalogDict cats
     H.h2 "Compare"
     H.table H.! HA.id "tcompare" $ do
-      H.thead $ do
-        H.tr $ do
-          H.th "catalog"
-          H.td $ H.select H.! HA.name "selcat" H.! HA.onchange "return selectCat(event.target)" $ do
-            H.option H.! HA.selected "selected" $ mempty
-            forM_ (catalogsSorted cats) $ \(sim, cat) ->
-              H.option H.! HA.value (H.textValue sim) $ H.text $ catalogTitle cat
-        H.tr H.! HA.id "tr-title" $ H.th "field"
+      H.thead $ H.tr $ do
+        H.th "catalog"
+        H.td $ H.select H.! HA.name "selcat" H.! HA.onchange "return selectCat(event.target)" $ do
+          H.option H.! HA.selected "selected" $ mempty
+          forM_ (catalogsSorted cats) $ \(sim, cat) ->
+            H.option H.! HA.value (H.textValue sim) $ H.text $ catalogTitle cat
       H.tbody $ mempty
       H.tfoot $ do
         H.tr $
-          H.td $ H.select H.! HA.id "addf" H.! HA.onchange "return addField()" $ mempty
+          H.td $ H.select H.! HA.id "addf"  H.! HA.onchange "return addField()"  $ mempty
+        H.tr H.! HA.id "tr-comp" $
+          H.td $ H.select H.! HA.id "compf" H.! HA.onchange "return compField()" $ mempty
 
 staticHtml :: Route [FilePathComponent]
 staticHtml = getPath ("html" R.*< R.manyI R.parameter) $ \paths q -> do
