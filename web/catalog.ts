@@ -166,21 +166,16 @@ function histogram(agg: AggrTerms<number>) {
 const displayLimit = 10000;
 
 function ajax(data: any, callback: ((data: any) => void), opts: any) {
-    delete url_dict['sample'];
-    delete url_dict['seed'];
-    delete url_dict[''];
-    delete url_dict['?sort'];
-    console.log(url_dict, Seed, Sample);
   const query: Dict<string> = {
     sort: data.order.map((o: any) => {
       return (o.dir == "asc" ? '' : '-') + data.columns[o.column].data;
     }).join(' ')
-  };
+    };
   for (let fi = 0; fi < Update_aggs; fi++) {
       const filt = Filters[fi];
     if (filt.query != null)
       query[filt.name] = typeof filt.query === 'object' ? filt.query.lb+','+filt.query.ub : <string>filt.query;
-  }
+    }
   if (Sample < 1) {
     query.sample = <any>Sample;
     if (Seed != undefined)
@@ -233,7 +228,7 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
       error: msg + ": " + err
     });
   });
-  py_text();
+    py_text();
   url_update(query);
 }
 
@@ -449,7 +444,7 @@ class NumericFilter extends Filter {
 }
 
 function add_filter(idx: number): Filter|undefined {
-  const field = Catalog.fields[idx];
+    const field = Catalog.fields[idx];
   if (!TCat || !field || Filters.some((f) => f.field === field))
     return;
   if (field.terms)
@@ -511,16 +506,15 @@ function py_text() {
 
 function url_update(query: Query) {
   let k = Object.keys(query);
-  let str = '?';
+  let str = '';
   if (query.sort !== "") { 
       str += 'sort=' + query.sort;
     }
-    console.log(query);
   for (let i = 1; i < k.length - 4; i++) {
       str += '&' + k[i] + '=' + query[k[i]]; //.replace(',', '%2C').replace('@','%40'); 
   };
-    str += "&dev"
-    history.pushState(null, null, Catalog.uri + encodeURI(str));
+    str = '?' + str.replace(',', '%2C').replace('@', '%40') + '&dev';
+    history.pushState(null, null, Catalog.uri + str);
 }
 
 function render_funct(field: Field): (data: any) => string {
@@ -563,11 +557,17 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
       };
     })
   };
-  if ((<any>window).Query) {
+    if ((<any>window).Query) {
     if (Query.offset)
       topts.displayStart = Query.offset
     if (Query.limit)
       topts.pageLength = Query.limit;
+    if (Query.filter) {
+        for (let i = 1; i < Query.filter.length - 1; i++) {
+            Filters.push(new NumericFilter(Query.filter[i].field ));
+         }
+        Update_aggs = Filters.length;
+    }
     if (Query.sort)
       topts.order = Query.sort.map((o) => {
         return [Fields_idx[o.field], o.asc ? 'asc' : 'desc'];
@@ -594,18 +594,5 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
     add_filter(<any>addfilt.value);
     TCat.draw(false);
   };
-
-  let arr = window.location.search.split('&');
-  for (let i = 0; i < arr.length; i++) {
-      url_dict[arr[i].substring(0, arr[i].indexOf('='))] = arr[i].substring(arr[i].indexOf('=') + 1, ).replace('%2C', ',').replace('%40', '@');
-    };
-
-    add_sample();
-
-  if ('sample' in url_dict) {
-    url_dict['seed'] = url_dict['sample'].substring(url_dict['sample'].indexOf('@') + 1, );
-    url_dict['sample'] = url_dict['sample'].substring(0, url_dict['sample'].indexOf('@'));
-  };
   TCat.draw();
-  url_dict = {};
 }
