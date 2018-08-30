@@ -172,6 +172,7 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
   for (let fi = 0; fi < Update_aggs; fi++) {
     const filt = Filters[fi];
     const q = filt.query();
+    console.log(filt, q);
     if (q != null)
       query[filt.name] = q;
   }
@@ -367,8 +368,10 @@ class SelectFilter extends Filter {
 }
 
 class NumericFilter extends Filter {
-  lb: HTMLInputElement
-  ub: HTMLInputElement
+  lb: HTMLInputElement 
+  ub: HTMLInputElement 
+  t_ub: undefined | number
+  t_lb: undefined | number 
   private avg: HTMLSpanElement
 
   private makeBound(w: boolean): HTMLInputElement {
@@ -382,11 +385,12 @@ class NumericFilter extends Filter {
     return b;
   }
 
-  constructor(field: Field) {
+  constructor(field: Field, t_lb: number, t_ub: number ) {
     super(field);
-
     this.lb = this.makeBound(false);
     this.ub = this.makeBound(true);
+    this.t_ub = t_ub;
+    this.t_lb = t_lb;
     this.avg = document.createElement('span');
     this.avg.innerHTML = "<em>loading...</em>";
     this.add(
@@ -397,12 +401,12 @@ class NumericFilter extends Filter {
     );
   }
 
-  get lbv(): number {
-    return this.lb.valueAsNumber;
+    get lbv(): number {
+      return this.t_lb !== undefined ? this.t_lb : this.lb.valueAsNumber;
   }
 
   get ubv(): number {
-    return this.ub.valueAsNumber;
+      return this.t_ub !== undefined ? this.t_ub : this.ub.valueAsNumber;
   }
 
   update_aggs(aggs: AggrStats) {
@@ -418,7 +422,7 @@ class NumericFilter extends Filter {
 
   query(): string {
     const lbv = this.lbv;
-    const ubv = this.ubv;
+    const ubv =  this.ubv;
     if (lbv == ubv)
       return <any>lbv;
     else
@@ -529,9 +533,11 @@ function url_update(query: Query) {
       str += 'sort=' + query.sort;
     }
   for (let i = 1; i < k.length - 4; i++) {
-      str += '&' + k[i] + '=' + query[k[i]]; //.replace(',', '%2C').replace('@','%40'); 
+      str += '&' + k[i] + '=' + query[k[i]].replace(',', '%2C'); 
   };
-    str = '?' + str.replace(',', '%2C').replace('@', '%40') + '&dev';
+    str = '?' + str.replace('@', '%40') + '&dev';
+    history.replaceState({}, '', location.origin + location.pathname + str);
+
    // history.pushState(null, null, Catalog.uri + str);
 }
 
@@ -580,12 +586,7 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
       topts.displayStart = Query.offset
     if (Query.limit)
       topts.pageLength = Query.limit;
-    if (Query.filter) {
-        for (let i = 1; i < Query.filter.length - 1; i++) {
-           // Filters.push(new NumericFilter(Query.filter[i].field ));
-         }
-        Update_aggs = Filters.length;
-    }
+
     if (Query.sort)
       topts.order = Query.sort.map((o) => {
         return [Fields_idx[o.field], o.asc ? 'asc' : 'desc'];
@@ -600,6 +601,17 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
   const addfilt = <HTMLSelectElement>document.createElement('select');
   addfilt.appendChild(document.createElement('option'));
   add_filt_row('', addfilt, 'Select field to view/filter');
+  /*  if ((<any>window).Query) {
+        if (Query.filter) {
+            for (let i = 1; i < Query.filter.length - 1; i++) {
+                const field = Catalog.fields[Fields_idx[Query.filter[i].field]];
+                let lb = (Query.filter[i].value.lb);
+                let ub = (Query.filter[i].value.ub);
+                new NumericFilter(field, lb, ub);
+            }
+        }
+        Update_aggs = Filters.length;
+    } */ 
   for (let i = 0; i < Catalog.fields.length; i++) {
     const f = Catalog.fields[i];
     const opt = field_option(f);
