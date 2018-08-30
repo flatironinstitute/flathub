@@ -170,11 +170,7 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreFiel
       (  foldMap
         (\n -> foldMap (\f -> n .=* (agg f .=* ("field" J..= fieldName f))) $ HM.lookup n (catalogFieldMap cat))
         queryAggs
-      <> foldMap (\(f, i) -> "hist" .=* (
-        "histogram" .=* (
-             "field" J..= f
-          <> "interval" `JE.pair` bsc i)))
-        queryHist)
+      <> histogram queryHist)
   where
   term (f, a, Nothing) = "term" .=* (f `JE.pair` bsc a)
   term (f, a, Just b) = "range" .=* (f .=*
@@ -185,6 +181,14 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreFiel
   agg f
     | isTermsField f = "terms"
     | otherwise = "stats"
+  histogram [] = mempty
+  histogram ((f,i):hl) = "hist" .=* (
+    "histogram" .=* (
+         "field" J..= f
+      <> "interval" `JE.pair` bsc i)
+    <> histogram' hl)
+  histogram' [] = mempty
+  histogram' hl = "aggs" .=* histogram hl
   bsc = JE.string . BSC.unpack
 
 queryIndex :: Catalog -> Query -> M J.Value
