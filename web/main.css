@@ -25,6 +25,13 @@ td {
   font-style: italic;
   text-align: center;
 }
+div#container {
+  display: none;
+  position: relative;
+  margin: auto;
+  height: 40vh;
+  width: 80vh;
+}
 div#dhist {
   display: none;
   position: relative;

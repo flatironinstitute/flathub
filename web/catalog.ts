@@ -2,6 +2,7 @@
 
 import $ from "jquery";
 import "datatables.net";
+import Highcharts from "highcharts";
 import DataTablesScroller from "datatables.net-scroller";
 import Chart from "chart.js";
 import { assert, Dict, Field, Catalog, AggrStats, AggrTerms, Aggr, CatalogResponse, fill_select_terms, field_option } from "./types";
@@ -18,7 +19,8 @@ var Seed: undefined|number = 0;
 var Update_aggs: number = 0;
 var Histogram: undefined|NumericFilter;
 const Histogram_bins = 100;
-var Histogram_chart: Chart|undefined;
+var Histogram_chart: Chart | undefined;
+var F_Histogram_chart: Highcharts|undefined;
 var Histogram_bin_width = 0;
 var Last_fields: string[] = [];
 
@@ -50,6 +52,7 @@ function getChartX(point: any) {
 }
 
 function histogram(agg: AggrTerms<number>) {
+    hc_histogram(agg);
   const hist = Histogram;
   if (!hist)
     return;
@@ -74,7 +77,7 @@ function histogram(agg: AggrTerms<number>) {
     (<any>Histogram_chart).options.scales.xAxes[0].scaleLabel.labelString = xlabel;
     Histogram_chart.update();
   }
-  else
+  else 
     Histogram_chart = new Chart('hist', {
       options: {
         maintainAspectRatio: false,
@@ -124,7 +127,7 @@ function histogram(agg: AggrTerms<number>) {
               let left = Histogram_drag_start;
               let right = getChartX(points[0]);
               if (left == right) {
-                /* select one bucket? ignore? */
+                /* select one bucket? ignore? */  
                 return;
               }
               if (right < left) {
@@ -143,6 +146,68 @@ function histogram(agg: AggrTerms<number>) {
       type: 'scatter',
       data: data
     });
+}
+
+function hc_histogram(agg: AggrTerms<number>) {
+  const hist = Histogram;
+  if (!hist)
+    return;
+  const field = hist.field;
+  const points = agg.buckets.map(d => { return { x: d.key, y: d.doc_count }; });
+  let cat = []
+  for (let i = 0; i < points.length; i++) {
+    cat.push([points[i].x, points[i].y]);
+  }
+  const xlabel = field.title + (field.units ? ' (' + field.units + ')' : '');
+  Histogram_drag_start = null;
+  $('#container').show();
+  F_Histogram_chart = Highcharts.chart('container', {
+    legend: {
+      verticalAlign: 'top'
+    },
+    title: {
+      text: null
+    },
+    subTitle: {
+      text: null
+    },
+    credits: {
+      enabled: false
+    }, 
+    xAxis: { 
+      title: {
+        useHTML: true,
+        text: xlabel
+      },
+      gridLineWidth: 1
+    },
+    yAxis: { 
+      title: { 
+        text: 'Count' 
+      },
+      min: 0
+    }, 
+    tooltip: { 
+      formatter: function (): String {
+        return ('[' + this.x + ',' + (this.x + Histogram_bin_width) + '): ' + this.y + '\n(drag to filter)');
+      } 
+    }, 
+    series: [{ 
+      type: 'area',
+      data: cat,
+      name: field.name,
+      step: 'left',
+      color: 'rgba(190, 190, 190, 0.8)',
+      fillColor: 'rgba(190, 190, 190, 0.4)',
+      animation: false,
+      marker: {
+        radius: 0
+      },
+      click: function () {
+        console.log(this);
+      }
+    }]
+  });
 }
 
 (<any>window).toggleLog = function toggleLog(xy: string) {
@@ -172,7 +237,7 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
   for (let fi = 0; fi < Update_aggs; fi++) {
     const filt = Filters[fi];
     const q = filt.query();
-    console.log(filt, q);
+    //console.log(filt, q);
     if (q != null)
       query[filt.name] = q;
   }
@@ -228,7 +293,7 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
     });
   });
     py_text();
-  url_update(query);
+ // url_update(query);
 }
 
 function add_filt_row(name: string, ...nodes: Array<JQuery.htmlString | JQuery.TypeOrArray<JQuery.Node | JQuery<JQuery.Node>>>) {

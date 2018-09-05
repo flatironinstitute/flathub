@@ -55,6 +55,7 @@ SystemJS.config({
     "datatables.net-scroller": "npm:datatables.net-scroller@1.5.1",
     "events": "npm:jspm-nodelibs-events@0.2.2",
     "fs": "npm:jspm-nodelibs-fs@0.2.1",
+    "highcharts": "npm:highcharts@6.1.1",
     "http": "npm:jspm-nodelibs-http@0.2.0",
     "https": "npm:jspm-nodelibs-https@0.2.2",
     "jquery": "npm:jquery@3.3.1",
