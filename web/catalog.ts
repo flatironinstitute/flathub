@@ -15,7 +15,7 @@ const Fields_idx: Dict<number> = {};
 const Filters: Array<Filter> = [];
 var Sample: number = 1;
 var Seed: undefined|number = 0;
-var Update_aggs: number = 0;
+var Update_aggs: number = -1;
 var Histogram: undefined|NumericFilter;
 const Histogram_bins = 100;
 var Histogram_chart: Chart|undefined;
@@ -136,6 +136,7 @@ function histogram(agg: AggrTerms<number>) {
               if (!filt)
                 return;
               filt.setRange(left, right);
+              filt.change();
             }
           }
         },
@@ -169,6 +170,12 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
       return (o.dir == "asc" ? '' : '-') + data.columns[o.column].data;
     }).join(' ')
     };
+
+    let aggs = Filters;
+  if (Update_aggs >= 0)
+    aggs = aggs.slice(Update_aggs);
+  else
+    Update_aggs = Filters.length;
   for (let fi = 0; fi < Update_aggs; fi++) {
     const filt = Filters[fi];
     const q = filt.query();
@@ -186,7 +193,6 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
   query.limit = data.length;
   Last_fields = TCat.columns(':visible').dataSrc().toArray();
   query.fields = Last_fields.join(' ');
-  const aggs = Filters.slice(Update_aggs);
   if (aggs)
     query.aggs = aggs.map((filt) => filt.name).join(' ');
   if (Histogram) {
@@ -264,7 +270,7 @@ function add_sample() {
   seed.step = <any>1;
   seed.min = <any>0;
     seed.value =  <any>Seed;
-  seed.disabled = true;
+  seed.disabled = Sample >= 1;
   seed.title = "Random seed to generate sample selection"
 
   samp.onchange = seed.onchange = function () {
@@ -390,7 +396,11 @@ class NumericFilter extends Filter {
     this.lb = this.makeBound(false);
     this.ub = this.makeBound(true);
     this.t_ub = t_ub;
-    this.t_lb = t_lb;
+      this.t_lb = t_lb;
+      if (t_ub !== undefined)
+          this.ub.valueAsNumber = t_ub;
+      if (t_lb !== undefined)
+          this.lb.valueAsNumber = t_lb;
     this.avg = document.createElement('span');
     this.avg.innerHTML = "<em>loading...</em>";
     this.add(
@@ -402,16 +412,16 @@ class NumericFilter extends Filter {
   }
 
     get lbv(): number {
-      return this.t_lb !== undefined ? this.t_lb : this.lb.valueAsNumber;
+      return this.lb.valueAsNumber;
   }
 
   get ubv(): number {
-      return this.t_ub !== undefined ? this.t_ub : this.ub.valueAsNumber;
+      return this.ub.valueAsNumber;
   }
 
   update_aggs(aggs: AggrStats) {
-    this.lb.defaultValue = this.lb.value = this.lb.min = this.ub.min = <any>aggs.min;
-    this.ub.defaultValue = this.ub.value = this.lb.max = this.ub.max = <any>aggs.max;
+    this.lb.defaultValue = this.lb.min = this.ub.min = <any>aggs.min;
+    this.ub.defaultValue = this.lb.max = this.ub.max = <any>aggs.max;
     this.lb.disabled = this.ub.disabled = false;
     this.avg.textContent = <any>aggs.avg;
   }
@@ -527,18 +537,9 @@ function py_text() {
 }
 
 function url_update(query: Query) {
-  let k = Object.keys(query);
-  let str = '';
-  if (query.sort !== "") { 
-      str += 'sort=' + query.sort;
-    }
-  for (let i = 1; i < k.length - 4; i++) {
-      str += '&' + k[i] + '=' + query[k[i]].replace(',', '%2C'); 
-  };
-    str = '?' + str.replace('@', '%40') + '&dev';
-    history.replaceState({}, '', location.origin + location.pathname + str);
-
-   // history.pushState(null, null, Catalog.uri + str);
+  let st = '?' + $.param(query);
+  st = st.substr(0, st.indexOf('&fields=')) + "&dev";
+  history.replaceState({}, '', location.origin + location.pathname + st);
 }
 
 function render_funct(field: Field): (data: any) => string {
@@ -556,7 +557,6 @@ function render_funct(field: Field): (data: any) => string {
 }
 
 export function initCatalog(table: JQuery<HTMLTableElement>) {
-  Update_aggs = 0;
   for (let i = 0; i < Catalog.fields.length; i++)
     Fields_idx[Catalog.fields[i].name] = i;
   const topts: DataTables.Settings = {
@@ -582,11 +582,12 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
     })
   };
     if ((<any>window).Query) {
+    if (Query.sample)
+        Sample = Query.sample;
     if (Query.offset)
       topts.displayStart = Query.offset
     if (Query.limit)
       topts.pageLength = Query.limit;
-
     if (Query.sort)
       topts.order = Query.sort.map((o) => {
         return [Fields_idx[o.field], o.asc ? 'asc' : 'desc'];
@@ -595,23 +596,23 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
       for (let c of topts.columns)
         c.visible = Query.fields.indexOf(<string>c.name) >= 0; // FIXME: colvis
   }
+    console.log(Query);
   TCat = table.DataTable(topts);
   /* for debugging: */
   (<any>window).TCat = TCat;
   const addfilt = <HTMLSelectElement>document.createElement('select');
   addfilt.appendChild(document.createElement('option'));
   add_filt_row('', addfilt, 'Select field to view/filter');
-  /*  if ((<any>window).Query) {
+    if ((<any>window).Query) {
         if (Query.filter) {
-            for (let i = 1; i < Query.filter.length - 1; i++) {
+            for (let i = 0; i < Query.filter.length - 1; i++) {
                 const field = Catalog.fields[Fields_idx[Query.filter[i].field]];
                 let lb = (Query.filter[i].value.lb);
                 let ub = (Query.filter[i].value.ub);
                 new NumericFilter(field, lb, ub);
             }
         }
-        Update_aggs = Filters.length;
-    } */ 
+    } 
   for (let i = 0; i < Catalog.fields.length; i++) {
     const f = Catalog.fields[i];
     const opt = field_option(f);
@@ -620,6 +621,7 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
     if (f.top)
       add_filter(i);
   }
+    add_sample();
   addfilt.onchange = function () {
     add_filter(<any>addfilt.value);
     TCat.draw(false);
