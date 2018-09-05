@@ -13,11 +13,11 @@
     "jspm": "^0.17.0-beta.48"
   },
   "devDependencies": {
-    "@types/chart.js": "^2.7.30",
+    "@types/chart.js": "^2.7.31",
     "@types/datatables.net": "^1.10.13",
-    "@types/jquery": "^3.3.5",
+    "@types/jquery": "^3.3.6",
     "@types/systemjs": "^0.20.6",
-    "typescript": "2.8.x"
+    "typescript": "~2.8.0"
   },
   "jspm": {
     "name": "astrosims",
@@ -51,7 +51,7 @@
       "querystring": "npm:jspm-nodelibs-querystring@^0.2.0",
       "stream": "npm:jspm-nodelibs-stream@^0.2.0",
       "string_decoder": "npm:jspm-nodelibs-string_decoder@^0.2.0",
-      "typescript": "npm:typescript@^2.4.0",
+      "typescript": "npm:typescript@~2.8.0",
       "url": "npm:jspm-nodelibs-url@^0.2.0",
       "util": "npm:jspm-nodelibs-util@^0.2.0",
       "vm": "npm:jspm-nodelibs-vm@^0.2.0",

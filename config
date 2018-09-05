@@ -4,3 +4,4 @@ http {
 elasticsearch {
   server = "http://es0:9200/"
 }
+dev = true

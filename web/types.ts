@@ -32,12 +32,12 @@ export type Catalog = {
 };
 
 export type AggrStats = {
-  min: number, 
-  max: number, 
+  min: number,
+  max: number,
   avg: number
 };
 export type AggrTerms<T> = {
-  buckets: Array<{ key: T, doc_count: number }> 
+  buckets: Array<{ key: T, doc_count: number }>
 }
 
 export type Aggr = AggrStats|AggrTerms<string|number>;
