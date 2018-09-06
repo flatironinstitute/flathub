@@ -21,15 +21,15 @@ python setup.py install
 Once you have successfully installed the module, you can use it as:
 
 ```
-import fi_astrosims.client 
+import fi_astrosims.client
 ```
 
-## Running the Module 
+## Running the Module
 
-To start off, create a Simulation object based off the simulation you want to query. From there, you can create a Query object and can query based off fields, sample, seed, and sort). 
+To start off, create a Simulation object based off the simulation you want to query. From there, you can create a Query object and can query based off fields, sample, seed, and sort).
 
 ```
-gaea = fi_astrosims.client.Simulation('gaea') 
+gaea = fi_astrosims.client.Simulation('gaea')
 q = gaea.query(fields = ['RA', 'Dec', 'z'], Mvir = (4700, 4900), sample = 0.01, seed = 0)
 ```
 
