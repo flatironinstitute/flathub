@@ -10,7 +10,7 @@ DataTablesScroller();
 
 var TCat: DataTables.Api;
 declare const Catalog: Catalog;
-declare const Query: {offset:number, limit:number, sort:{field:string,asc:boolean}[], fields:string[], filter:{field:string,value:string|{lb:string,ub:string}}[], aggs:string[], hist:string|null};
+declare const Query: {offset:number, limit:number, sort:{field:string,asc:boolean}[], fields:string[], filter:{field:string,value:string|{lb:number,ub:number}}[], sample:number, seed:number|undefined, aggs:string[], hist:string|null};
 const Fields_idx: Dict<number> = {};
 const Filters: Array<Filter> = [];
 var Sample: number = 1;
@@ -22,15 +22,8 @@ var Histogram_chart: Chart|undefined;
 var Histogram_bin_width = 0;
 var Last_fields: string[] = [];
 
-var url_dict = {};
-
-var Download_query: Dict<string> = {};
-function set_download(query: Dict<string> = Download_query) {
-  delete query.limit;
-  delete query.offset;
-  delete query.aggs;
-  delete query.hist;
-  const q = '?' + $.param(Download_query = query);
+function set_download(query: Dict<string>) {
+  const q = '?' + $.param(query);
   const h = $('#download').html('download as ');
   for (let f of Catalog.bulk) {
     const a = document.createElement('a');
@@ -169,9 +162,9 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
     sort: data.order.map((o: any) => {
       return (o.dir == "asc" ? '' : '-') + data.columns[o.column].data;
     }).join(' ')
-    };
+  };
 
-    let aggs = Filters;
+  let aggs = Filters;
   if (Update_aggs >= 0)
     aggs = aggs.slice(Update_aggs);
   else
@@ -179,7 +172,6 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
   for (let fi = 0; fi < Update_aggs; fi++) {
     const filt = Filters[fi];
     const q = filt.query();
-    console.log(filt, q);
     if (q != null)
       query[filt.name] = q;
   }
@@ -187,7 +179,7 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
     query.sample = <any>Sample;
     if (Seed != undefined)
       query.sample += '@' + Seed;
-    }
+  }
 
   query.offset = data.start;
   query.limit = data.length;
@@ -225,6 +217,12 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
     Update_aggs = Filters.length;
     if (res.aggregations && res.aggregations.hist)
       histogram(res.aggregations.hist as AggrTerms<number>);
+
+    delete query.aggs;
+    delete query.hist;
+    url_update(query);
+    delete query.limit;
+    delete query.offset;
     set_download(query);
   }, (xhr, msg, err) => {
     callback({
@@ -233,8 +231,7 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
       error: msg + ": " + err
     });
   });
-    py_text();
-  url_update(query);
+  py_text();
 }
 
 function add_filt_row(name: string, ...nodes: Array<JQuery.htmlString | JQuery.TypeOrArray<JQuery.Node | JQuery<JQuery.Node>>>) {
@@ -260,8 +257,8 @@ function add_sample() {
   samp.type = "number";
   samp.step = "any";
   samp.min = <any>0;
-    samp.max = <any>1;
-    samp.value = <any>Sample;
+  samp.max = <any>1;
+  samp.value = <any>Sample;
   samp.title = "Probability (0,1] with which to include each item"
 
   const seed = <HTMLInputElement>document.createElement('input');
@@ -269,7 +266,7 @@ function add_sample() {
   seed.type = "number";
   seed.step = <any>1;
   seed.min = <any>0;
-    seed.value =  <any>Seed;
+  seed.value = <any>Seed;
   seed.disabled = Sample >= 1;
   seed.title = "Random seed to generate sample selection"
 
@@ -337,6 +334,7 @@ abstract class Filter {
 
 class SelectFilter extends Filter {
   select: HTMLSelectElement
+  private value?: string
 
   constructor(field: Field) {
     super(field);
@@ -352,12 +350,22 @@ class SelectFilter extends Filter {
     while (this.select.lastChild)
       this.select.removeChild(this.select.lastChild);
     fill_select_terms(this.select, this.field, aggs);
-    this.select.value = '';
+    if (this.value != null) {
+      this.select.value = this.value;
+      delete this.value;
+    }
   }
 
-  protected change() {
+  change() {
     const val = this.select.value;
     super.change(val, !val);
+  }
+
+  setValue(val: string) {
+    if (this.select.disabled)
+      this.value = val;
+    else
+      this.select.value = val;
   }
 
   query(): string|undefined {
@@ -374,10 +382,8 @@ class SelectFilter extends Filter {
 }
 
 class NumericFilter extends Filter {
-  lb: HTMLInputElement 
-  ub: HTMLInputElement 
-  t_ub: undefined | number
-  t_lb: undefined | number 
+  lb: HTMLInputElement
+  ub: HTMLInputElement
   private avg: HTMLSpanElement
 
   private makeBound(w: boolean): HTMLInputElement {
@@ -391,16 +397,10 @@ class NumericFilter extends Filter {
     return b;
   }
 
-  constructor(field: Field, t_lb: number, t_ub: number ) {
+  constructor(field: Field) {
     super(field);
     this.lb = this.makeBound(false);
     this.ub = this.makeBound(true);
-    this.t_ub = t_ub;
-      this.t_lb = t_lb;
-      if (t_ub !== undefined)
-          this.ub.valueAsNumber = t_ub;
-      if (t_lb !== undefined)
-          this.lb.valueAsNumber = t_lb;
     this.avg = document.createElement('span');
     this.avg.innerHTML = "<em>loading...</em>";
     this.add(
@@ -411,12 +411,12 @@ class NumericFilter extends Filter {
     );
   }
 
-    get lbv(): number {
-      return this.lb.valueAsNumber;
+  get lbv(): number {
+    return this.lb.valueAsNumber;
   }
 
   get ubv(): number {
-      return this.ub.valueAsNumber;
+    return this.ub.valueAsNumber;
   }
 
   update_aggs(aggs: AggrStats) {
@@ -426,7 +426,7 @@ class NumericFilter extends Filter {
     this.avg.textContent = <any>aggs.avg;
   }
 
-  protected change() {
+  change() {
     super.change(this.lbv+" TO "+this.ubv, this.lbv!=this.ubv);
   }
 
@@ -436,7 +436,7 @@ class NumericFilter extends Filter {
     if (lbv == ubv)
       return <any>lbv;
     else
-      return lbv+','+ubv;
+      return lbv+' '+ubv;
   }
 
   pyQuery(): string {
@@ -476,14 +476,16 @@ class NumericFilter extends Filter {
   setRange(lbv: number, ubv: number) {
     this.lb.valueAsNumber = lbv;
     this.ub.valueAsNumber = ubv;
-    this.change();
   }
 }
 
 function add_filter(idx: number): Filter|undefined {
-    const field = Catalog.fields[idx];
-  if (!TCat || !field || Filters.some((f) => f.field === field))
+  const field = Catalog.fields[idx];
+  if (!TCat || !field)
     return;
+  let filt = Filters.find((f) => f.field.name === field.name);
+  if (filt)
+    return filt;
   if (field.terms)
     return new SelectFilter(field);
   return new NumericFilter(field);
@@ -536,10 +538,8 @@ function py_text() {
   (<HTMLPreElement>document.getElementById('code-py')).textContent = st;
 }
 
-function url_update(query: Query) {
-  let st = '?' + $.param(query);
-  st = st.substr(0, st.indexOf('&fields=')) + "&dev";
-  history.replaceState({}, '', location.origin + location.pathname + st);
+function url_update(query: Dict<string>) {
+  history.replaceState({}, '', location.origin + location.pathname + '?' + $.param(query));
 }
 
 function render_funct(field: Field): (data: any) => string {
@@ -581,9 +581,11 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
       };
     })
   };
-    if ((<any>window).Query) {
-    if (Query.sample)
-        Sample = Query.sample;
+  if ((<any>window).Query) {
+    if (Query.sample != null)
+      Sample = Query.sample;
+    if (Query.seed != null)
+      Seed = Query.seed;
     if (Query.offset)
       topts.displayStart = Query.offset
     if (Query.limit)
@@ -596,23 +598,13 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
       for (let c of topts.columns)
         c.visible = Query.fields.indexOf(<string>c.name) >= 0; // FIXME: colvis
   }
-    console.log(Query);
   TCat = table.DataTable(topts);
   /* for debugging: */
   (<any>window).TCat = TCat;
   const addfilt = <HTMLSelectElement>document.createElement('select');
   addfilt.appendChild(document.createElement('option'));
   add_filt_row('', addfilt, 'Select field to view/filter');
-    if ((<any>window).Query) {
-        if (Query.filter) {
-            for (let i = 0; i < Query.filter.length - 1; i++) {
-                const field = Catalog.fields[Fields_idx[Query.filter[i].field]];
-                let lb = (Query.filter[i].value.lb);
-                let ub = (Query.filter[i].value.ub);
-                new NumericFilter(field, lb, ub);
-            }
-        }
-    } 
+  add_sample();
   for (let i = 0; i < Catalog.fields.length; i++) {
     const f = Catalog.fields[i];
     const opt = field_option(f);
@@ -621,11 +613,21 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
     if (f.top)
       add_filter(i);
   }
-    add_sample();
   addfilt.onchange = function () {
     add_filter(<any>addfilt.value);
     TCat.draw(false);
-    };
-    console.log('init');
+  };
+  if ((<any>window).Query && Query.filter) {
+    for (let f of Query.filter) {
+      const fi = Fields_idx[f.field];
+      if (fi == null)
+        continue;
+      const filt = add_filter(fi);
+      if (filt instanceof NumericFilter && typeof(f.value) === 'object')
+        filt.setRange(f.value.lb, f.value.ub);
+      if (filt instanceof SelectFilter && typeof(f.value) !== 'object')
+        filt.setValue(f.value);
+    }
+  }
   TCat.draw();
 }
