@@ -214,7 +214,7 @@ simulationPage = getPath R.parameter $ \sim req -> do
       H.div $ do
         H.button H.! HA.class_ "show_button" H.! HA.onclick "return toggleDisplay('div-py')" $ "show/hide"
         "Example python code to apply the above filters and retrieve data. To use, download and install "
-        H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto/tree/austen/py" $ "this module."
+        H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto/tree/master/py" $ "this module."
       H.div H.! HA.id "div-py" $ H.pre H.! HA.id "code-py" $ mempty
 
 comparePage :: Route ()
