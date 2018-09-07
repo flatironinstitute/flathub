@@ -190,8 +190,6 @@ simulationPage = getPath R.parameter $ \sim req -> do
             H.button H.! HA.class_ "dhist-xy-tog" H.! HA.onclick ("return toggleLog('" <> xyv <> "')") $
               "lin/log"
         H.canvas H.! HA.id "hist" $ mempty
-      H.div H.! HA.id "container" $ mempty
-
 
       H.h3 $ "Data Table"
       H.table H.! HA.id "tcat" H.! HA.class_ "compact" $ do

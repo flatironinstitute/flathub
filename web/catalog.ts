@@ -19,8 +19,7 @@ var Seed: undefined|number = 0;
 var Update_aggs: number = 0;
 var Histogram: undefined|NumericFilter;
 const Histogram_bins = 100;
-var Histogram_chart: Chart | undefined;
-var F_Histogram_chart: Highcharts|undefined;
+var Histogram_chart: Highcharts|undefined;
 var Histogram_bin_width = 0;
 var Last_fields: string[] = [];
 
@@ -44,111 +43,12 @@ function set_download(query: Dict<string> = Download_query) {
   }
 }
 
-var Histogram_drag_start: number|null = null;
-
-function getChartX(point: any) {
-  /* needs internal chart.js access? */
-  return point._xScale.getLabelForIndex(point._index, point._datasetIndex);
-}
+var Histogram_drag_start: number | null = null;
+const r = Math.floor(Math.random() * 200);
+const g = Math.floor(Math.random() * 200);
+const b = Math.floor(Math.random() * 200);
 
 function histogram(agg: AggrTerms<number>) {
-    hc_histogram(agg);
-  const hist = Histogram;
-  if (!hist)
-    return;
-  const field = hist.field;
-  const points = agg.buckets.map(d => { return {x:d.key,y:d.doc_count}; });
-  points.push({x:points[points.length-1].x+Histogram_bin_width,y:0});
-  const data = {
-    datasets: [{
-      label: field.title,
-      data: points,
-      pointRadius: 0,
-      showLine: true,
-      steppedLine: true,
-      fill: 'origin',
-    }]
-  };
-  const xlabel = field.title + (field.units ? ' (' + field.units + ')' : '');
-  Histogram_drag_start = null;
-  $('#dhist').show();
-  if (Histogram_chart) {
-    Histogram_chart.data = data;
-    (<any>Histogram_chart).options.scales.xAxes[0].scaleLabel.labelString = xlabel;
-    Histogram_chart.update();
-  }
-  else 
-    Histogram_chart = new Chart('hist', {
-      options: {
-        maintainAspectRatio: false,
-        scales: {
-          xAxes: [<Chart.ChartXAxe>{
-            type: 'linear',
-            scaleLabel: {
-              display: true,
-              labelString: xlabel
-            }
-          }],
-          yAxes: [<Chart.ChartYAxe>{
-            type: 'linear',
-            ticks: {
-              beginAtZero: true
-            },
-            scaleLabel: {
-              display: true,
-              labelString: 'count'
-            }
-          }]
-        },
-        animation: {
-          duration: 0
-        },
-        tooltips: {
-          mode: 'index',
-          intersect: false,
-          callbacks: {
-            label: function (item) {
-              return "[" + item.xLabel + "," + (<any>item.xLabel+Histogram_bin_width) + "): " + item.yLabel + "\n(drag to filter)";
-            }
-          }
-        },
-        events: ["mousedown", "mouseup", "mousemove", "mouseout", "touchstart", "touchmove", "touchend"],
-        hover: {
-          mode: 'index',
-          intersect: false,
-          onHover: function(ev, points) {
-            if (ev.type === 'mouseout')
-              Histogram_drag_start = null;
-            else if (!points)
-              return;
-            else if (ev.type === 'mousedown' || ev.type === 'touchstart')
-              Histogram_drag_start = getChartX(points[0]);
-            else if (Histogram_drag_start && (ev.type === 'mouseup' || ev.type === 'touchend')) {
-              let left = Histogram_drag_start;
-              let right = getChartX(points[0]);
-              if (left == right) {
-                /* select one bucket? ignore? */  
-                return;
-              }
-              if (right < left) {
-                left = right;
-                right = Histogram_drag_start;
-              }
-              right += Histogram_bin_width;
-              const filt = Histogram;
-              if (!filt)
-                return;
-              filt.setRange(left, right);
-            }
-          }
-        },
-      },
-      type: 'scatter',
-      data: data
-    });
-}
-
-function hc_histogram(agg: AggrTerms<number>) {
   const hist = Histogram;
   if (!hist)
     return;
@@ -160,8 +60,32 @@ function hc_histogram(agg: AggrTerms<number>) {
   }
   const xlabel = field.title + (field.units ? ' (' + field.units + ')' : '');
   Histogram_drag_start = null;
-  $('#container').show();
-  F_Histogram_chart = Highcharts.chart('container', {
+  $('#dhist').show();
+  Histogram_chart = Highcharts.chart('dhist', {
+    chart: {
+      events: {
+        selection: function (event) {
+          let left = event.xAxis[0].min;
+          let right = event.xAxis[0].max;
+          if (left == right) {
+            /* select one bucket? ignore? */
+            return;
+          }
+          if (right < left) {
+            left = right;
+            right = Histogram_drag_start;
+          }
+          right += Histogram_bin_width;
+          const filt = Histogram;
+          if (!filt)
+            return;
+          filt.setRange(left, right);
+          return false; // Don't zoom
+        }
+      },
+      zoomType: 'x',
+      animation: false
+    },
     legend: {
       verticalAlign: 'top'
     },
@@ -175,6 +99,7 @@ function hc_histogram(agg: AggrTerms<number>) {
       enabled: false
     }, 
     xAxis: { 
+      type: 'linear',
       title: {
         useHTML: true,
         text: xlabel
@@ -182,6 +107,7 @@ function hc_histogram(agg: AggrTerms<number>) {
       gridLineWidth: 1
     },
     yAxis: { 
+      type: 'linear',
       title: { 
         text: 'Count' 
       },
@@ -192,19 +118,19 @@ function hc_histogram(agg: AggrTerms<number>) {
         return ('[' + this.x + ',' + (this.x + Histogram_bin_width) + '): ' + this.y + '\n(drag to filter)');
       } 
     }, 
+    line: {
+      animation: false
+    },
     series: [{ 
       type: 'area',
       data: cat,
       name: field.name,
       step: 'left',
-      color: 'rgba(190, 190, 190, 0.8)',
-      fillColor: 'rgba(190, 190, 190, 0.4)',
+      color: 'rgba(' + r + ',' + b + ',' + g + ', 0.8)',
+      fillColor: 'rgba(' + r + ',' + b + ',' + g + ', 0.4)',
       animation: false,
       marker: {
-        radius: 0
-      },
-      click: function () {
-        console.log(this);
+      radius: 0
       }
     }]
   });
@@ -435,8 +361,6 @@ class SelectFilter extends Filter {
 class NumericFilter extends Filter {
   lb: HTMLInputElement 
   ub: HTMLInputElement 
-  t_ub: undefined | number
-  t_lb: undefined | number 
   private avg: HTMLSpanElement
 
   private makeBound(w: boolean): HTMLInputElement {
@@ -450,12 +374,10 @@ class NumericFilter extends Filter {
     return b;
   }
 
-  constructor(field: Field, t_lb: number, t_ub: number ) {
+  constructor(field: Field) {
     super(field);
     this.lb = this.makeBound(false);
     this.ub = this.makeBound(true);
-    this.t_ub = t_ub;
-    this.t_lb = t_lb;
     this.avg = document.createElement('span');
     this.avg.innerHTML = "<em>loading...</em>";
     this.add(
@@ -666,17 +588,6 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
   const addfilt = <HTMLSelectElement>document.createElement('select');
   addfilt.appendChild(document.createElement('option'));
   add_filt_row('', addfilt, 'Select field to view/filter');
-  /*  if ((<any>window).Query) {
-        if (Query.filter) {
-            for (let i = 1; i < Query.filter.length - 1; i++) {
-                const field = Catalog.fields[Fields_idx[Query.filter[i].field]];
-                let lb = (Query.filter[i].value.lb);
-                let ub = (Query.filter[i].value.ub);
-                new NumericFilter(field, lb, ub);
-            }
-        }
-        Update_aggs = Filters.length;
-    } */ 
   for (let i = 0; i < Catalog.fields.length; i++) {
     const f = Catalog.fields[i];
     const opt = field_option(f);
@@ -689,6 +600,5 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
     add_filter(<any>addfilt.value);
     TCat.draw(false);
     };
-    console.log('init');
   TCat.draw();
 }
