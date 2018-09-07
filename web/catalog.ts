@@ -61,7 +61,7 @@ function histogram(agg: AggrTerms<number>) {
   const xlabel = field.title + (field.units ? ' (' + field.units + ')' : '');
   Histogram_drag_start = null;
   $('#dhist').show();
-  Histogram_chart = Highcharts.chart('dhist', {
+  Histogram_chart = Highcharts.chart('hist', {
     chart: {
       events: {
         selection: function (event) {
@@ -139,16 +139,20 @@ function histogram(agg: AggrTerms<number>) {
 (<any>window).toggleLog = function toggleLog(xy: string) {
   if (!Histogram_chart)
     return;
-  const axis: Chart.CommonAxe = (<any>Histogram_chart).options.scales[xy+'Axes'][0];
-  // let label = <Chart.ScaleTitleOptions>axis.scaleLabel;
-  if (axis.type === 'logarithmic') {
-    axis.type = 'linear';
-    // label.labelString = (label.labelString as string).substr(4);
-  } else {
-    axis.type = 'logarithmic';
-    // label.labelString = 'log ' + label.labelString;
+  let axis_dim = xy + "Axis";
+  const axis = Histogram_chart[axis_dim][0];
+  if (axis.userOptions.type === 'logarithmic') {
+    axis.update({
+      min: 0,
+      type: 'linear'
+    });
   }
-  Histogram_chart.update();
+  else {
+    axis.update({
+      min: 0.0001, 
+      type: 'logarithmic'
+    });
+  }
 }
 
 /* elasticsearch max_result_window */
@@ -389,11 +393,11 @@ class NumericFilter extends Filter {
   }
 
     get lbv(): number {
-      return this.t_lb !== undefined ? this.t_lb : this.lb.valueAsNumber;
+      return this.lb.valueAsNumber;
   }
 
   get ubv(): number {
-      return this.t_ub !== undefined ? this.t_ub : this.ub.valueAsNumber;
+      return this.ub.valueAsNumber;
   }
 
   update_aggs(aggs: AggrStats) {

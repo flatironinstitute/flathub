@@ -25,17 +25,11 @@ td {
   font-style: italic;
   text-align: center;
 }
-div#container {
-  display: none;
-  position: relative;
-  margin: auto;
-  height: 40vh;
-  width: 80vh;
-}
 div#dhist {
   display: none;
   position: relative;
   margin: auto;
+  margin-bottom: 30px;
   height: 40vh;
   width: 80vh;
 }
@@ -49,8 +43,8 @@ div#dhist-x {
   display: none; /* not a valid histogram transformation */
 }
 div#dhist-y {
-  left: -35px;
   top: 20px;
+  z-index: 1;
 }
 button.dhist-xy-tog {
   width: 100%;
@@ -159,7 +153,8 @@ h1{
     width: 100%;
 }
 h3{
-  margin-bottom: 10px;
+  margin-top: 5px;
+  margin-bottom: 5px;
 }
 table#tdict{
   display: none;
