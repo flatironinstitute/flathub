@@ -80,6 +80,7 @@ function histogram(agg: AggrTerms<number>) {
           if (!filt)
             return;
           filt.setRange(left, right);
+          filt.change();
           return false; // Don't zoom
         }
       },
