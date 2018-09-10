@@ -10,7 +10,7 @@ module Html
 
 import           Control.Monad (forM_, when)
 import           Control.Monad.IO.Class (liftIO)
-import           Control.Monad.Reader (asks)
+import           Control.Monad.Reader (ask, asks)
 import qualified Data.Aeson as J
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
@@ -57,7 +57,8 @@ catalogsSorted = sortOn (catalogSort . snd) . HM.toList . catalogMap
 
 htmlResponse :: Wai.Request -> ResponseHeaders -> H.Markup -> M Wai.Response
 htmlResponse req hdrs body = do
-  cats <- asks globalCatalogs
+  glob <- ask
+  let isdev = globalDevMode glob && any ((==) "dev" . fst) (Wai.queryString req)
   return $ okResponse hdrs $ H.docTypeHtml $ do
     H.head $ do
       forM_ ([["jspm_packages", if isdev then "system.src.js" else "system.js"], ["jspm.config.js"]] ++ if isdev then [["dev.js"]] else [["index.js"]]) $ \src ->
@@ -66,8 +67,7 @@ htmlResponse req hdrs body = do
       forM_ [["jspm_packages", "npm", "datatables.net-dt@1.10.19", "css", "jquery.dataTables.css"], ["main.css"]] $ \src ->
         H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
       H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/MathJax.js?config=TeX-AMS_CHTML" $ mempty
-      jsonVar "Catalogs" (HM.map catalogTitle $ catalogMap cats)
-      -- H.meta H.! HA.httpEquiv "refresh" H.! HA.content ( "0;URL=" <> (WH.routeActionValue top () mempty) )
+      jsonVar "Catalogs" (HM.map catalogTitle $ catalogMap $ globalCatalogs glob)
     H.body $ do
       H.h1 $ H.text "ASTROSIMS"
       H.div H.! HA.id "bar" $ do
@@ -81,7 +81,7 @@ htmlResponse req hdrs body = do
                 H.div H.! HA.class_ "dropdown" $ do
                     H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Catalogs"
                     H.div H.! HA.class_"dropdown-content" $ do
-                        forM_ (catalogsSorted cats) $ \(key, cat) ->
+                        forM_ (catalogsSorted $ globalCatalogs glob) $ \(key, cat) ->
                             H.a H.! HA.href (WH.routeActionValue simulationPage key mempty) $ H.text (catalogTitle cat)
               H.li $
                 H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) $ H.text "CANDELS"
@@ -91,9 +91,6 @@ htmlResponse req hdrs body = do
       H.footer $ do
         H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto" $
             H.img H.! HA.src (staticURI ["github.png"])
-
-  where
-  isdev = any ((==) "dev" . fst) $ Wai.queryString req
 
 acceptable :: [BS.ByteString] -> Wai.Request -> Maybe BS.ByteString
 acceptable l = find (`elem` l) . foldMap parseHttpAccept . lookup hAccept . Wai.requestHeaders
@@ -214,7 +211,7 @@ simulationPage = getPath R.parameter $ \sim req -> do
       H.div $ do
         H.button H.! HA.class_ "show_button" H.! HA.onclick "return toggleDisplay('div-py')" $ "show/hide"
         "Example python code to apply the above filters and retrieve data. To use, download and install "
-        H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto/tree/austen/py" $ "this module."
+        H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto/tree/master/py" $ "this module."
       H.div H.! HA.id "div-py" $ H.pre H.! HA.id "code-py" $ mempty
 
 comparePage :: Route ()
@@ -246,10 +243,11 @@ staticHtml = getPath ("html" R.*< R.manyI R.parameter) $ \paths q -> do
   if any (fmod <=) $ parseHTTPDate =<< lookup hIfModifiedSince (Wai.requestHeaders q)
     then return $ Wai.responseBuilder notModified304 [] mempty
     else do
+      glob <- ask
       bod <- liftIO $ BSL.readFile path
       htmlResponse q
         [ (hLastModified, formatHTTPDate fmod)
         , (hContentType, "text/html")
-        , cacheControl q
+        , cacheControl glob q
         ] (H.unsafeLazyByteString bod)
 

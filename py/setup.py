@@ -13,6 +13,6 @@ setuptools.setup(
         "Programming Language :: Python :: 3",
 	"License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
-    ), 
+    ),
     install_requires=['numpy']
 )

@@ -13,6 +13,7 @@ module Query
   ) where
 
 import           Control.Applicative (empty, (<|>))
+import           Control.Arrow (first)
 import           Control.Monad (guard, unless)
 import           Control.Monad.IO.Class (liftIO)
 import qualified Data.Aeson as J
@@ -21,7 +22,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.HashMap.Strict as HM
-import           Data.Maybe (fromMaybe, isNothing, listToMaybe, maybeToList)
+import           Data.Maybe (fromMaybe, listToMaybe, maybeToList)
 import           Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -65,8 +66,8 @@ parseQuery = foldMap parseQueryItem . Wai.queryString where
     mempty{ querySample = p, querySeed = Just s }
   parseQueryItem ("aggs",   Just s) =
     mempty{ queryAggs = map TE.decodeUtf8 (BSC.splitWith delim s) }
-  parseQueryItem ("hist",   Just (spl ':' -> Just (f, i))) =
-    mempty{ queryHist = Just (TE.decodeUtf8 f, i) }
+  parseQueryItem ("hist",   Just (mapM (spl ':') . BSC.splitWith delim -> Just fis)) =
+    mempty{ queryHist = map (first TE.decodeUtf8) fis }
   parseQueryItem (f,        s) =
     mempty{ queryFilter = [(TE.decodeUtf8 f, a, snd <$> BS.uncons b)] } where
     (a, b) = BSC.break delim $ fromMaybe BS.empty s
@@ -170,10 +171,10 @@ catalogBulk = getPath (R.parameter R.>*< R.parameter) $ \(sim, fmt) req -> do
       enc = bulkCompression fmt <|> listToMaybe (acceptCompressionEncoding req)
   fields <- maybe (result $ response badRequest400 [] ("unknown field name" :: String)) return $
     mapM (`HM.lookup` catalogFieldMap cat) $ queryFields query
-  unless (queryOffset query == 0 && null (queryAggs query) && isNothing (queryHist query)) $
+  unless (queryOffset query == 0 && null (queryAggs query) && null (queryHist query)) $
     result $ response badRequest400 [] ("offset,aggs not supported for download" :: String)
   nextes <- ES.queryBulk cat query
-  (count, first) <- liftIO nextes
+  (count, block1) <- liftIO nextes
   let b@Bulk{..} = bulk fmt fields count
   return $ Wai.responseStream ok200 (
     [ (hContentType, bulkMimeType)
@@ -188,6 +189,6 @@ catalogBulk = getPath (R.parameter R.>*< R.parameter) $ \(sim, fmt) req -> do
         let loop block = unless (V.null block) $ do
               chunk $ bulkBlock b block
               loop . snd =<< nextes
-        loop first
+        loop block1
     chunk bulkFooter
 

@@ -129,7 +129,7 @@ data Query = Query
   , querySample :: Double
   , querySeed :: Maybe Word
   , queryAggs :: [T.Text]
-  , queryHist :: Maybe (T.Text, BS.ByteString)
+  , queryHist :: [(T.Text, BS.ByteString)]
   }
 
 instance Monoid Query where
@@ -142,7 +142,7 @@ instance Monoid Query where
     , querySample = 1
     , querySeed   = Nothing
     , queryAggs   = []
-    , queryHist   = Nothing
+    , queryHist   = []
     }
   mappend = (<>)
 

@@ -2,36 +2,28 @@
 
 import $ from "jquery";
 import "datatables.net";
-import Highcharts from "highcharts";
 import DataTablesScroller from "datatables.net-scroller";
-import Chart from "chart.js";
+import Highcharts from "highcharts";
 import { assert, Dict, Field, Catalog, AggrStats, AggrTerms, Aggr, CatalogResponse, fill_select_terms, field_option } from "./types";
 
 DataTablesScroller();
 
 var TCat: DataTables.Api;
 declare const Catalog: Catalog;
-declare const Query: {offset:number, limit:number, sort:{field:string,asc:boolean}[], fields:string[], filter:{field:string,value:string|{lb:string,ub:string}}[], aggs:string[], hist:string|null};
+declare const Query: {offset:number, limit:number, sort:{field:string,asc:boolean}[], fields:string[], filter:{field:string,value:string|{lb:number,ub:number}}[], sample:number, seed:number|undefined, aggs:string[], hist:string|null};
 const Fields_idx: Dict<number> = {};
 const Filters: Array<Filter> = [];
 var Sample: number = 1;
 var Seed: undefined|number = 0;
-var Update_aggs: number = 0;
+var Update_aggs: number = -1;
 var Histogram: undefined|NumericFilter;
 const Histogram_bins = 100;
-var Histogram_chart: Highcharts|undefined;
+var Histogram_chart: Highcharts.ChartObject|undefined;
 var Histogram_bin_width = 0;
 var Last_fields: string[] = [];
 
-var url_dict = {};
-
-var Download_query: Dict<string> = {};
-function set_download(query: Dict<string> = Download_query) {
-  delete query.limit;
-  delete query.offset;
-  delete query.aggs;
-  delete query.hist;
-  const q = '?' + $.param(Download_query = query);
+function set_download(query: Dict<string>) {
+  const q = '?' + $.param(query);
   const h = $('#download').html('download as ');
   for (let f of Catalog.bulk) {
     const a = document.createElement('a');
@@ -43,43 +35,28 @@ function set_download(query: Dict<string> = Download_query) {
   }
 }
 
-var Histogram_drag_start: number | null = null;
-const r = Math.floor(Math.random() * 200);
-const g = Math.floor(Math.random() * 200);
-const b = Math.floor(Math.random() * 200);
-
 function histogram(agg: AggrTerms<number>) {
   const hist = Histogram;
   if (!hist)
     return;
   const field = hist.field;
-  const points = agg.buckets.map(d => { return { x: d.key, y: d.doc_count }; });
-  let cat = []
-  for (let i = 0; i < points.length; i++) {
-    cat.push([points[i].x, points[i].y]);
-  }
-  const xlabel = field.title + (field.units ? ' (' + field.units + ')' : '');
-  Histogram_drag_start = null;
+  const points = agg.buckets.map(d => { return [d.key,d.doc_count]; });
+  points.push([points[points.length-1][0]+Histogram_bin_width,0]);
+  const render = render_funct(hist.field);
   $('#dhist').show();
   Histogram_chart = Highcharts.chart('hist', {
     chart: {
       events: {
-        selection: function (event) {
+        selection: function (event: Highcharts.ChartSelectionEvent) {
           let left = event.xAxis[0].min;
           let right = event.xAxis[0].max;
-          if (left == right) {
+          if (left == null || right == null || !(left < right)) {
             /* select one bucket? ignore? */
             return;
           }
-          if (right < left) {
-            left = right;
-            right = Histogram_drag_start;
-          }
           right += Histogram_bin_width;
-          const filt = Histogram;
-          if (!filt)
-            return;
-          filt.setRange(left, right);
+          hist.setRange(left, right);
+          hist.change();
           return false; // Don't zoom
         }
       },
@@ -92,56 +69,52 @@ function histogram(agg: AggrTerms<number>) {
     title: {
       text: null
     },
-    subTitle: {
-      text: null
-    },
     credits: {
       enabled: false
-    }, 
-    xAxis: { 
+    },
+    xAxis: {
       type: 'linear',
       title: {
         useHTML: true,
-        text: xlabel
+        text: field.title + (field.units ? ' (' + field.units + ')' : '')
       },
-      gridLineWidth: 1
+      gridLineWidth: 1,
+      min: hist.lbv,
+      max: hist.ubv,
     },
-    yAxis: { 
+    yAxis: {
       type: 'linear',
-      title: { 
-        text: 'Count' 
+      title: {
+        text: 'Count'
       },
       min: 0
-    }, 
-    tooltip: { 
-      formatter: function (): String {
-        return ('[' + this.x + ',' + (this.x + Histogram_bin_width) + '): ' + this.y + '\n(drag to filter)');
-      } 
-    }, 
-    line: {
-      animation: false
     },
-    series: [{ 
+    tooltip: {
+      animation: false,
+      formatter: function (this: {x: number, y: number}): string {
+        return ('[' + render(this.x) + ',' + render(this.x+Histogram_bin_width) + '): ' + this.y + '\n(drag to filter)');
+      }
+    },
+    series: [{
       type: 'area',
-      data: cat,
+      data: points,
       name: field.name,
       step: 'left',
-      color: 'rgba(' + r + ',' + b + ',' + g + ', 0.8)',
-      fillColor: 'rgba(' + r + ',' + b + ',' + g + ', 0.4)',
+      color: 'rgba(100,100,100,0.8)',
+      fillColor: 'rgba(100,100,100,0.4)',
       animation: false,
       marker: {
-      radius: 0
+        radius: 0
       }
-    }]
+    } as Highcharts.IndividualSeriesOptions]
   });
 }
 
 (<any>window).toggleLog = function toggleLog(xy: string) {
   if (!Histogram_chart)
     return;
-  let axis_dim = xy + "Axis";
-  const axis = Histogram_chart[axis_dim][0];
-  if (axis.userOptions.type === 'logarithmic') {
+  const axis = (xy === 'y' ? Histogram_chart.yAxis : Histogram_chart.xAxis)[0];
+  if ((<any>axis).userOptions.type !== 'linear') {
     axis.update({
       min: 0,
       type: 'linear'
@@ -149,7 +122,7 @@ function histogram(agg: AggrTerms<number>) {
   }
   else {
     axis.update({
-      min: 0.0001, 
+      min: 0.0001,
       type: 'logarithmic'
     });
   }
@@ -163,11 +136,16 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
     sort: data.order.map((o: any) => {
       return (o.dir == "asc" ? '' : '-') + data.columns[o.column].data;
     }).join(' ')
-    };
+  };
+
+  let aggs = Filters;
+  if (Update_aggs >= 0)
+    aggs = aggs.slice(Update_aggs);
+  else
+    Update_aggs = Filters.length;
   for (let fi = 0; fi < Update_aggs; fi++) {
     const filt = Filters[fi];
     const q = filt.query();
-    //console.log(filt, q);
     if (q != null)
       query[filt.name] = q;
   }
@@ -175,13 +153,12 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
     query.sample = <any>Sample;
     if (Seed != undefined)
       query.sample += '@' + Seed;
-    }
+  }
 
   query.offset = data.start;
   query.limit = data.length;
   Last_fields = TCat.columns(':visible').dataSrc().toArray();
   query.fields = Last_fields.join(' ');
-  const aggs = Filters.slice(Update_aggs);
   if (aggs)
     query.aggs = aggs.map((filt) => filt.name).join(' ');
   if (Histogram) {
@@ -214,6 +191,12 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
     Update_aggs = Filters.length;
     if (res.aggregations && res.aggregations.hist)
       histogram(res.aggregations.hist as AggrTerms<number>);
+
+    delete query.aggs;
+    delete query.hist;
+    url_update(query);
+    delete query.limit;
+    delete query.offset;
     set_download(query);
   }, (xhr, msg, err) => {
     callback({
@@ -222,8 +205,7 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
       error: msg + ": " + err
     });
   });
-    py_text();
- // url_update(query);
+  py_text();
 }
 
 function add_filt_row(name: string, ...nodes: Array<JQuery.htmlString | JQuery.TypeOrArray<JQuery.Node | JQuery<JQuery.Node>>>) {
@@ -249,8 +231,8 @@ function add_sample() {
   samp.type = "number";
   samp.step = "any";
   samp.min = <any>0;
-    samp.max = <any>1;
-    samp.value = <any>Sample;
+  samp.max = <any>1;
+  samp.value = <any>Sample;
   samp.title = "Probability (0,1] with which to include each item"
 
   const seed = <HTMLInputElement>document.createElement('input');
@@ -258,8 +240,8 @@ function add_sample() {
   seed.type = "number";
   seed.step = <any>1;
   seed.min = <any>0;
-    seed.value =  <any>Seed;
-  seed.disabled = true;
+  seed.value = <any>Seed;
+  seed.disabled = Sample >= 1;
   seed.title = "Random seed to generate sample selection"
 
   samp.onchange = seed.onchange = function () {
@@ -326,6 +308,7 @@ abstract class Filter {
 
 class SelectFilter extends Filter {
   select: HTMLSelectElement
+  private value?: string
 
   constructor(field: Field) {
     super(field);
@@ -341,12 +324,22 @@ class SelectFilter extends Filter {
     while (this.select.lastChild)
       this.select.removeChild(this.select.lastChild);
     fill_select_terms(this.select, this.field, aggs);
-    this.select.value = '';
+    if (this.value != null) {
+      this.select.value = this.value;
+      delete this.value;
+    }
   }
 
-  protected change() {
+  change() {
     const val = this.select.value;
     super.change(val, !val);
+  }
+
+  setValue(val: string) {
+    if (this.select.disabled)
+      this.value = val;
+    else
+      this.select.value = val;
   }
 
   query(): string|undefined {
@@ -363,8 +356,8 @@ class SelectFilter extends Filter {
 }
 
 class NumericFilter extends Filter {
-  lb: HTMLInputElement 
-  ub: HTMLInputElement 
+  lb: HTMLInputElement
+  ub: HTMLInputElement
   private avg: HTMLSpanElement
 
   private makeBound(w: boolean): HTMLInputElement {
@@ -392,22 +385,22 @@ class NumericFilter extends Filter {
     );
   }
 
-    get lbv(): number {
-      return this.lb.valueAsNumber;
+  get lbv(): number {
+    return this.lb.valueAsNumber;
   }
 
   get ubv(): number {
-      return this.ub.valueAsNumber;
+    return this.ub.valueAsNumber;
   }
 
   update_aggs(aggs: AggrStats) {
-    this.lb.defaultValue = this.lb.value = this.lb.min = this.ub.min = <any>aggs.min;
-    this.ub.defaultValue = this.ub.value = this.lb.max = this.ub.max = <any>aggs.max;
+    this.lb.defaultValue = this.lb.min = this.ub.min = <any>aggs.min;
+    this.ub.defaultValue = this.lb.max = this.ub.max = <any>aggs.max;
     this.lb.disabled = this.ub.disabled = false;
     this.avg.textContent = <any>aggs.avg;
   }
 
-  protected change() {
+  change() {
     super.change(this.lbv+" TO "+this.ubv, this.lbv!=this.ubv);
   }
 
@@ -417,7 +410,7 @@ class NumericFilter extends Filter {
     if (lbv == ubv)
       return <any>lbv;
     else
-      return lbv+','+ubv;
+      return lbv+' '+ubv;
   }
 
   pyQuery(): string {
@@ -457,14 +450,16 @@ class NumericFilter extends Filter {
   setRange(lbv: number, ubv: number) {
     this.lb.valueAsNumber = lbv;
     this.ub.valueAsNumber = ubv;
-    this.change();
   }
 }
 
 function add_filter(idx: number): Filter|undefined {
-    const field = Catalog.fields[idx];
-  if (!TCat || !field || Filters.some((f) => f.field === field))
+  const field = Catalog.fields[idx];
+  if (!TCat || !field)
     return;
+  let filt = Filters.find((f) => f.field.name === field.name);
+  if (filt)
+    return filt;
   if (field.terms)
     return new SelectFilter(field);
   return new NumericFilter(field);
@@ -517,19 +512,8 @@ function py_text() {
   (<HTMLPreElement>document.getElementById('code-py')).textContent = st;
 }
 
-function url_update(query: Query) {
-  let k = Object.keys(query);
-  let str = '';
-  if (query.sort !== "") { 
-      str += 'sort=' + query.sort;
-    }
-  for (let i = 1; i < k.length - 4; i++) {
-      str += '&' + k[i] + '=' + query[k[i]].replace(',', '%2C'); 
-  };
-    str = '?' + str.replace('@', '%40') + '&dev';
-    history.replaceState({}, '', location.origin + location.pathname + str);
-
-   // history.pushState(null, null, Catalog.uri + str);
+function url_update(query: Dict<string>) {
+  history.replaceState({}, '', location.origin + location.pathname + '?' + $.param(query));
 }
 
 function render_funct(field: Field): (data: any) => string {
@@ -547,7 +531,6 @@ function render_funct(field: Field): (data: any) => string {
 }
 
 export function initCatalog(table: JQuery<HTMLTableElement>) {
-  Update_aggs = 0;
   for (let i = 0; i < Catalog.fields.length; i++)
     Fields_idx[Catalog.fields[i].name] = i;
   const topts: DataTables.Settings = {
@@ -572,12 +555,15 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
       };
     })
   };
-    if ((<any>window).Query) {
+  if ((<any>window).Query) {
+    if (Query.sample != null)
+      Sample = Query.sample;
+    if (Query.seed != null)
+      Seed = Query.seed;
     if (Query.offset)
       topts.displayStart = Query.offset
     if (Query.limit)
       topts.pageLength = Query.limit;
-
     if (Query.sort)
       topts.order = Query.sort.map((o) => {
         return [Fields_idx[o.field], o.asc ? 'asc' : 'desc'];
@@ -592,6 +578,7 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
   const addfilt = <HTMLSelectElement>document.createElement('select');
   addfilt.appendChild(document.createElement('option'));
   add_filt_row('', addfilt, 'Select field to view/filter');
+  add_sample();
   for (let i = 0; i < Catalog.fields.length; i++) {
     const f = Catalog.fields[i];
     const opt = field_option(f);
@@ -603,6 +590,18 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
   addfilt.onchange = function () {
     add_filter(<any>addfilt.value);
     TCat.draw(false);
-    };
+  };
+  if ((<any>window).Query && Query.filter) {
+    for (let f of Query.filter) {
+      const fi = Fields_idx[f.field];
+      if (fi == null)
+        continue;
+      const filt = add_filter(fi);
+      if (filt instanceof NumericFilter && typeof(f.value) === 'object')
+        filt.setRange(f.value.lb, f.value.ub);
+      if (filt instanceof SelectFilter && typeof(f.value) !== 'object')
+        filt.setValue(f.value);
+    }
+  }
   TCat.draw();
 }

@@ -401,7 +401,7 @@ function update_fields() {
       for (let f of cat.fields) {
         if (f.dict)
           dict[f.dict] = (dict[f.dict] || 0)+1;
-        else 
+        else
           add(g, new CField(cat, f));
       }
       asel.add(g);

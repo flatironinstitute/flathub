@@ -8,7 +8,7 @@ except ImportError:
 import numpy
 import random
 
-__all__ = ['Simulation', 'Query']
+__all__ = ['Simulation', 'Query', 'getCatalogs']
 
 delim = ' '
 
@@ -52,12 +52,17 @@ def getJSON(url):
         data = data.decode(res.info().get_content_charset('utf-8'))
     return json.loads(data)
 
-def getCatalogs():
+defaultHost = "http://astrosims.flatironinstitute.org"
+catalogs = None
+
+def getCatalogs(host = defaultHost):
     """
     :return: (dict) dictionary of hosted Catalogs
     Function to create a dict of available catalogs for querying. 
     """
-    return getJSON("http://10.254.65.5:8092")
+    if not catalogs:
+        catalogs = getJSON(host)
+    return catalogs
 
 class Simulation:
     """
@@ -66,7 +71,7 @@ class Simulation:
     The resulting object contains the JSON description of the *catalog*, and a
     dictionary of available *fields*.
     """
-    def __init__(self, name, host = "http://astrosims.flatironinstitute.org"):
+    def __init__(self, name, host = defaultHost):
         self.url = urljoin(host, name)
         self.catalog = getJSON(self.url)
         self.fields = { f['name']: f for f in self.catalog['fields'] }

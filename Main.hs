@@ -81,6 +81,7 @@ main = do
         , globalHTTP = httpmgr
         , globalES = es
         , globalCatalogs = catalogs{ catalogMap = HM.filter catalogEnabled $ catalogMap catalogs }
+        , globalDevMode = fromMaybe False $ conf C.! "dev"
         }
 
   runGlobal global $ do
