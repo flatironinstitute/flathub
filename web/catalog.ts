@@ -47,8 +47,8 @@ function histogram(agg: AggrTerms<number>) {
   if (!hist)
     return;
   const field = hist.field;
-  const points = agg.buckets.map(d => { return [d.key,d.doc_count]; });
-  points.push([points[points.length-1][0]+Histogram_bin_width,0]);
+  const points = agg.buckets.map(d => { return {x:d.key,y:d.doc_count}; });
+  points.push({x:points[points.length-1].x+Histogram_bin_width,y:0});
   const render = render_funct(hist.field);
   $('#dhist').show();
   Histogram_chart = Highcharts.chart('hist', {
@@ -61,7 +61,8 @@ function histogram(agg: AggrTerms<number>) {
             /* select one bucket? ignore? */
             return;
           }
-          right += Histogram_bin_width;
+          left  = Histogram_bin_width*Math.floor(left/Histogram_bin_width);
+          right = Histogram_bin_width*Math.ceil(right/Histogram_bin_width);
           hist.setRange(left, right);
           hist.change();
           return false; // Don't zoom
@@ -71,7 +72,7 @@ function histogram(agg: AggrTerms<number>) {
       animation: false
     },
     legend: {
-      verticalAlign: 'top'
+      enabled: false
     },
     title: {
       text: null
@@ -82,12 +83,12 @@ function histogram(agg: AggrTerms<number>) {
     xAxis: {
       type: 'linear',
       title: {
-        useHTML: true,
-        text: field.title + (field.units ? ' (' + field.units + ')' : '')
+        // useHTML: true, // not enough for mathjax
+        text: field.title + (field.units ? ' [' + field.units + ']' : '')
       },
       gridLineWidth: 1,
       min: hist.lbv,
-      max: hist.ubv,
+      max: hist.ubv+Histogram_bin_width
     },
     yAxis: {
       type: 'linear',
@@ -102,25 +103,33 @@ function histogram(agg: AggrTerms<number>) {
         return ('[' + render(this.x) + ',' + render(this.x+Histogram_bin_width) + '): ' + this.y + '\n(drag to filter)');
       }
     },
+    plotOptions: {
+      area: {
+        step: 'left',
+        fillOpacity: 0.5,
+        animation: { duration: 0 },
+        marker: {
+          radius: 0
+        },
+        states: {
+          hover: {
+            enabled: false
+          }
+        }
+      }
+    },
     series: [{
       type: 'area',
       data: points,
-      name: field.name,
-      step: 'left',
-      color: 'rgba(100,100,100,0.8)',
-      fillColor: 'rgba(100,100,100,0.4)',
-      animation: false,
-      marker: {
-        radius: 0
-      }
-    } as Highcharts.IndividualSeriesOptions]
+      color: '#555555',
+    }]
   });
 }
 
-(<any>window).toggleLog = function toggleLog(xy: string) {
+(<any>window).toggleLog = function toggleLog() {
   if (!Histogram_chart)
     return;
-  const axis = (xy === 'y' ? Histogram_chart.yAxis : Histogram_chart.xAxis)[0];
+  const axis = Histogram_chart.yAxis[0];
   if ((<any>axis).userOptions.type !== 'linear') {
     axis.update({
       min: 0,
@@ -129,7 +138,7 @@ function histogram(agg: AggrTerms<number>) {
   }
   else {
     axis.update({
-      min: 0.0001,
+      min: 0.1, 
       type: 'logarithmic'
     });
   }
@@ -171,8 +180,13 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
   if (Histogram) {
     const wid = Histogram.ubv - Histogram.lbv;
     if (wid && wid > 0) {
+<<<<<<< HEAD
       Histogram_bin_width = wid / Histogram_bins;
       if (Histogram.field.base == "i")
+=======
+      Histogram_bin_width = wid/Histogram_bins;
+      if (Histogram.field.base === "i")
+>>>>>>> upstream/highcharts
         Histogram_bin_width = Math.ceil(Histogram_bin_width);
       query.hist = Histogram.name + ':' + Histogram_bin_width;
     }
@@ -584,7 +598,7 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
   (<any>window).TCat = TCat;
   const addfilt = <HTMLSelectElement>document.createElement('select');
   addfilt.appendChild(document.createElement('option'));
-  add_filt_row('', addfilt, 'Select field to view/filter');
+  add_filt_row('', addfilt, 'Select field to filter');
   add_sample();
   for (let i = 0; i < Catalog.fields.length; i++) {
     const f = Catalog.fields[i];

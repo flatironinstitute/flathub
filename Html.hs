@@ -191,10 +191,9 @@ simulationPage = getPath R.parameter $ \sim req -> do
                     then H.option $ (H.text (fieldTitle f) <> " (Heatmap)")
                     else forM_ ( fold (fieldSub f)) $ \fs -> do
                         H.option $ (H.text (fieldTitle (fs)) <> " (Heatmap)")
-        forM_ ['x','y'] $ \xy -> let xyv = H.stringValue [xy] in
-          H.div H.! HA.id ("dhist-" <> xyv) H.! HA.class_ "dhist-xy" $
-            H.button H.! HA.class_ "dhist-xy-tog" H.! HA.onclick ("return toggleLog('" <> xyv <> "')") $
-              "lin/log"
+        H.div H.! HA.id "dhist-y" $
+          H.button H.! HA.id "dhist-y-tog" H.! HA.onclick "return toggleLog()" $
+            "lin/log"
         H.div H.! HA.id "hist" $ mempty
 
       H.h3 $ "Data Table"
