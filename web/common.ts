@@ -73,3 +73,19 @@ export function field_option(f: Field): HTMLOptionElement {
     o.title = f.descr;
   return o;
 }
+
+export function toggle_log(chart: Highcharts.ChartObject) {
+  const axis = chart.yAxis[0];
+  if ((<any>axis).userOptions.type !== 'linear') {
+    axis.update({
+      min: 0,
+      type: 'linear'
+    });
+  }
+  else {
+    axis.update({
+      min: 0.1, 
+      type: 'logarithmic'
+    });
+  }
+}

@@ -4,7 +4,7 @@ import $ from "jquery";
 import "datatables.net";
 import DataTablesScroller from "datatables.net-scroller";
 import Highcharts from "highcharts";
-import { assert, Dict, Field, Catalog, AggrStats, AggrTerms, Aggr, CatalogResponse, fill_select_terms, field_option } from "./types";
+import { assert, Dict, Field, Catalog, AggrStats, AggrTerms, Aggr, CatalogResponse, fill_select_terms, field_option, toggle_log } from "./common";
 
 DataTablesScroller();
 
@@ -33,6 +33,12 @@ function set_download(query: Dict<string>) {
     a.appendChild(document.createTextNode(f));
     h.append(document.createTextNode(' '));
   }
+}
+
+function histogramRemove() {
+  Histogram = undefined;
+  $('#dhist').hide();
+  $('#hist').empty();
 }
 
 function histogram(agg: AggrTerms<number>) {
@@ -120,21 +126,8 @@ function histogram(agg: AggrTerms<number>) {
 }
 
 (<any>window).toggleLog = function toggleLog() {
-  if (!Histogram_chart)
-    return;
-  const axis = Histogram_chart.yAxis[0];
-  if ((<any>axis).userOptions.type !== 'linear') {
-    axis.update({
-      min: 0,
-      type: 'linear'
-    });
-  }
-  else {
-    axis.update({
-      min: 0.1, 
-      type: 'logarithmic'
-    });
-  }
+  if (Histogram_chart)
+    toggle_log(Histogram_chart);
 }
 
 /* elasticsearch max_result_window */
@@ -431,14 +424,17 @@ class NumericFilter extends Filter {
       return '(' + JSON.stringify(lbv) + ', ' + JSON.stringify(ubv) + ')';
   }
 
+  private histogramRemove(): boolean {
+    if (Histogram !== this)
+      return false;
+    histogramRemove();
+    return true;
+  }
+
   private histogram() {
-    if (Histogram !== this) {
+    if (!this.histogramRemove()) {
       Histogram = this;
       this.tcol.draw(false);
-    }
-    else {
-      Histogram = undefined;
-      $('#dhist').hide();
     }
   }
 
@@ -449,11 +445,8 @@ class NumericFilter extends Filter {
   }
 
   protected remove() {
+    this.histogramRemove();
     super.remove();
-    if (Histogram === this) {
-      Histogram = undefined;
-      $('#dhist').hide();
-    }
   }
 
   setRange(lbv: number, ubv: number) {

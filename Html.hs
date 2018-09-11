@@ -69,7 +69,6 @@ htmlResponse req hdrs body = do
       H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/MathJax.js?config=TeX-AMS_CHTML" $ mempty
       jsonVar "Catalogs" (HM.map catalogTitle $ catalogMap $ globalCatalogs glob)
     H.body $ do
-      H.h1 $ H.text "ASTROSIMS"
       H.div H.! HA.id "bar" $ do
           H.ul H.! HA.id "topbar" $ do
               H.li $ do
@@ -108,6 +107,13 @@ topPage = getPath R.unit $ \() req -> do
           H.dt $ H.a H.! HA.href (WH.routeActionValue simulationPage sim mempty) $
             H.text $ catalogTitle cat
           mapM_ (H.dd . H.preEscapedText) $ catalogDescr cat
+
+divHistogram :: H.Html
+divHistogram = H.div H.! HA.id "dhist" $ do
+  H.div H.! HA.id "hist-y" $
+    H.button H.! HA.id "hist-y-tog" H.! HA.onclick "return toggleLog()" $
+      "lin/log"
+  H.div H.! HA.id "hist" $ mempty
 
 simulationPage :: Route Simulation
 simulationPage = getPath R.parameter $ \sim req -> do
@@ -181,11 +187,7 @@ simulationPage = getPath R.parameter $ \sim req -> do
       H.h3 $ "Filters"
       H.p $ "Query and explore a subset using the filters, download your selection using the link below, or get the full dataset above."
       H.table H.! HA.id "filt" $ mempty
-      H.div H.! HA.id "dhist" $ do
-        H.div H.! HA.id "dhist-y" $
-          H.button H.! HA.id "dhist-y-tog" H.! HA.onclick "return toggleLog()" $
-            "lin/log"
-        H.div H.! HA.id "hist" $ mempty
+      divHistogram
 
       H.h3 $ "Data Table"
       H.table H.! HA.id "tcat" H.! HA.class_ "compact" $ do
@@ -233,6 +235,8 @@ comparePage = getPath "compare" $ \() req -> do
           H.td $ H.select H.! HA.id "addf"  H.! HA.onchange "return addField()"  $ mempty
         H.tr H.! HA.id "tr-comp" $
           H.td $ H.select H.! HA.id "compf" H.! HA.onchange "return compField()" $ mempty
+    H.button H.! HA.id "hist-tog" H.! HA.disabled "disabled" H.! HA.onclick "return histogram()" $ "histogram"
+    divHistogram
 
 staticHtml :: Route [FilePathComponent]
 staticHtml = getPath ("html" R.*< R.manyI R.parameter) $ \paths q -> do
