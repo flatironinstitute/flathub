@@ -14,15 +14,14 @@ module Static
 import           Control.Exception (handleJust)
 import           Control.Monad (guard)
 import           Control.Monad.IO.Class (liftIO)
-import qualified Data.ByteString.Char8 as BSC
+import           Control.Monad.Reader (ask)
 import qualified Data.Map.Strict as Map
 import           Data.Monoid ((<>))
 import           Data.String (IsString)
 import qualified Data.Text as T
 import           Data.Time.Clock (UTCTime)
-import           Network.HTTP.Types.Header (Header, hContentType, hCacheControl, hReferer)
+import           Network.HTTP.Types.Header (Header, hContentType, hCacheControl)
 import           Network.HTTP.Types.Status (ok200)
-import           Network.HTTP.Types.URI (parseQuery)
 import qualified Network.Mime as Mime
 import qualified Network.Wai as Wai
 import           System.Directory (getModificationTime)
@@ -58,24 +57,22 @@ findM f (a:l) = do
   r <- f a
   if r then return $ Just a else findM f l
 
-cacheControl :: Wai.Request -> Header
-cacheControl q = (hCacheControl, "public, max-age=" <> (if isdev then "10, must-revalidate" else "1000000")) where
-  isdev =
-    length (Wai.pathInfo q) <= 2 -- only un-cache "top-level" web/html files
-    && any ((==) "dev" . fst) (Wai.queryString q ++
-      foldMap (parseQuery . BSC.dropWhile ('?' /=)) (lookup hReferer (Wai.requestHeaders q)))
+cacheControl :: Global -> Wai.Request -> Header
+cacheControl glob q = (hCacheControl, "public, max-age=" <> (if isdev then "10, must-revalidate" else "1000000")) where
+  isdev = globalDevMode glob && length (Wai.pathInfo q) <= 2 -- only un-cache "top-level" web/html files
 
 static :: Route [FilePathComponent]
-static = getPath ("web" R.*< R.manyI R.parameter) $ \paths q -> liftIO $ do
+static = getPath ("web" R.*< R.manyI R.parameter) $ \paths q -> do
+  glob <- ask
   let path = FP.joinPath ("web" : map componentFilePath paths)
       encs = acceptCompressionEncoding q
-  fmod <- getModificationTime' path
-  enc <- findM (\e -> do
+  fmod <- liftIO $ getModificationTime' path
+  enc <- liftIO $ findM (\e -> do
     zmod <- getModificationTime' (compressionFilename (Just e) path)
     return $ zmod >= fmod) encs
   return $ Wai.responseFile ok200 (
     [ (hContentType, getMimeType (T.pack path))
-    , cacheControl q
+    , cacheControl glob q
     ] ++ compressionEncodingHeader enc) (compressionFilename enc path) Nothing
 
 staticURI :: [FilePathComponent] -> H.AttributeValue

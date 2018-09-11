@@ -44,7 +44,6 @@ SystemJS.config({
     "npm:*.json"
   ],
   map: {
-    "chart.js": "npm:chart.js@2.7.2",
     "assert": "npm:jspm-nodelibs-assert@0.2.1",
     "buffer": "npm:jspm-nodelibs-buffer@0.2.3",
     "constants": "npm:jspm-nodelibs-constants@0.2.1",
@@ -55,7 +54,7 @@ SystemJS.config({
     "datatables.net-scroller": "npm:datatables.net-scroller@1.5.1",
     "events": "npm:jspm-nodelibs-events@0.2.2",
     "fs": "npm:jspm-nodelibs-fs@0.2.1",
-    "highcharts": "npm:highcharts@6.1.1",
+    "highcharts": "npm:highcharts@6.1.2",
     "http": "npm:jspm-nodelibs-http@0.2.0",
     "https": "npm:jspm-nodelibs-https@0.2.2",
     "jquery": "npm:jquery@3.3.1",
@@ -77,7 +76,7 @@ SystemJS.config({
   packages: {
     "npm:jspm-nodelibs-buffer@0.2.3": {
       "map": {
-        "buffer": "npm:buffer@5.2.0"
+        "buffer": "npm:buffer@5.2.1"
       }
     },
     "npm:jspm-nodelibs-crypto@0.2.1": {
@@ -108,7 +107,7 @@ SystemJS.config({
         "browserify-rsa": "npm:browserify-rsa@4.0.1",
         "parse-asn1": "npm:parse-asn1@5.1.1",
         "bn.js": "npm:bn.js@4.11.8",
-        "elliptic": "npm:elliptic@6.4.0"
+        "elliptic": "npm:elliptic@6.4.1"
       }
     },
     "npm:randombytes@2.0.6": {
@@ -155,17 +154,6 @@ SystemJS.config({
       "map": {
         "hash-base": "npm:hash-base@3.0.4",
         "inherits": "npm:inherits@2.0.3"
-      }
-    },
-    "npm:elliptic@6.4.0": {
-      "map": {
-        "bn.js": "npm:bn.js@4.11.8",
-        "brorand": "npm:brorand@1.1.0",
-        "inherits": "npm:inherits@2.0.3",
-        "minimalistic-assert": "npm:minimalistic-assert@1.0.1",
-        "hmac-drbg": "npm:hmac-drbg@1.0.1",
-        "minimalistic-crypto-utils": "npm:minimalistic-crypto-utils@1.0.1",
-        "hash.js": "npm:hash.js@1.1.5"
       }
     },
     "npm:hash-base@3.0.4": {
@@ -229,23 +217,6 @@ SystemJS.config({
       "map": {
         "readable-stream": "npm:readable-stream@2.3.6",
         "pako": "npm:pako@0.2.9"
-      }
-    },
-    "npm:chart.js@2.7.2": {
-      "map": {
-        "moment": "npm:moment@2.22.2",
-        "chartjs-color": "npm:chartjs-color@2.2.0"
-      }
-    },
-    "npm:chartjs-color@2.2.0": {
-      "map": {
-        "color-convert": "npm:color-convert@0.5.3",
-        "chartjs-color-string": "npm:chartjs-color-string@0.5.0"
-      }
-    },
-    "npm:chartjs-color-string@0.5.0": {
-      "map": {
-        "color-name": "npm:color-name@1.1.3"
       }
     },
     "npm:readable-stream@2.3.6": {
@@ -352,16 +323,10 @@ SystemJS.config({
         "asn1.js": "npm:asn1.js@4.10.1"
       }
     },
-    "npm:source-map-support@0.5.6": {
-      "map": {
-        "buffer-from": "npm:buffer-from@1.1.1",
-        "source-map": "npm:source-map@0.6.1"
-      }
-    },
     "npm:create-ecdh@4.0.3": {
       "map": {
         "bn.js": "npm:bn.js@4.11.8",
-        "elliptic": "npm:elliptic@6.4.0"
+        "elliptic": "npm:elliptic@6.4.1"
       }
     },
     "npm:stream-http@2.8.3": {
@@ -396,17 +361,6 @@ SystemJS.config({
         "jquery": "npm:jquery@3.3.1"
       }
     },
-    "npm:typescript@2.8.4": {
-      "map": {
-        "source-map-support": "npm:source-map-support@0.5.6"
-      }
-    },
-    "npm:buffer@5.2.0": {
-      "map": {
-        "base64-js": "npm:base64-js@1.3.0",
-        "ieee754": "npm:ieee754@1.1.12"
-      }
-    },
     "npm:browserify-des@1.0.2": {
       "map": {
         "cipher-base": "npm:cipher-base@1.0.4",
@@ -419,6 +373,34 @@ SystemJS.config({
       "map": {
         "inherits": "npm:inherits@2.0.3",
         "minimalistic-assert": "npm:minimalistic-assert@1.0.1"
+      }
+    },
+    "npm:source-map-support@0.5.9": {
+      "map": {
+        "buffer-from": "npm:buffer-from@1.1.1",
+        "source-map": "npm:source-map@0.6.1"
+      }
+    },
+    "npm:elliptic@6.4.1": {
+      "map": {
+        "bn.js": "npm:bn.js@4.11.8",
+        "inherits": "npm:inherits@2.0.3",
+        "hmac-drbg": "npm:hmac-drbg@1.0.1",
+        "minimalistic-assert": "npm:minimalistic-assert@1.0.1",
+        "minimalistic-crypto-utils": "npm:minimalistic-crypto-utils@1.0.1",
+        "brorand": "npm:brorand@1.1.0",
+        "hash.js": "npm:hash.js@1.1.5"
+      }
+    },
+    "npm:buffer@5.2.1": {
+      "map": {
+        "ieee754": "npm:ieee754@1.1.12",
+        "base64-js": "npm:base64-js@1.3.0"
+      }
+    },
+    "npm:typescript@2.8.4": {
+      "map": {
+        "source-map-support": "npm:source-map-support@0.5.9"
       }
     }
   }

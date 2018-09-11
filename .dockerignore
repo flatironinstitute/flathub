@@ -5,9 +5,9 @@ pg
 Dockerfile
 docker-compose.yml
 README.md
-js/node_modules
-js/jspm_packages
-js/index.js
-js/index.js.map
-js/main.js
-js/main.js.map
+web/node_modules
+web/jspm_packages
+web/index.js
+web/index.js.map
+web/main.js
+web/main.js.map
