@@ -178,10 +178,19 @@ simulationPage = getPath R.parameter $ \sim req -> do
       jsonVar "Query" query
       H.h2 $ H.text $ catalogTitle cat
       mapM_ (H.p . H.preEscapedText) $ catalogDescr cat
+
       H.h3 $ "Filters"
       H.p $ "Query and explore a subset using the filters, download your selection using the link below, or get the full dataset above."
       H.table H.! HA.id "filt" $ mempty
       H.div H.! HA.id "dhist" $ do
+        H.select $ do
+            H.option "Histogram"
+            forM_ (catalogFieldGroups cat) $ \f -> do
+                when (typeIsFloating (fieldType f)) $ do
+                    if isNothing (fieldSub f)
+                    then H.option $ (H.text (fieldTitle f) <> " (Heatmap)")
+                    else forM_ ( fold (fieldSub f)) $ \fs -> do
+                        H.option $ (H.text (fieldTitle (fs)) <> " (Heatmap)")
         forM_ ['x','y'] $ \xy -> let xyv = H.stringValue [xy] in
           H.div H.! HA.id ("dhist-" <> xyv) H.! HA.class_ "dhist-xy" $
             H.button H.! HA.class_ "dhist-xy-tog" H.! HA.onclick ("return toggleLog('" <> xyv <> "')") $
@@ -196,7 +205,7 @@ simulationPage = getPath R.parameter $ \sim req -> do
       H.h3 $ "Fields Dictionary"
       H.div $ do
         H.button H.! HA.class_ "show_button" H.! HA.onclick "return toggleDisplay('tdict')" $ "show/hide"
-        "Table of fields, units, and their descriptions (use checkboxes to view/hide fields above)"
+        "Table of fields, units, and their descriptions (use checkboxes to view/hide fields in the table above)"
       H.div $ H.table H.! HA.id "tdict" $ do
         H.thead $ H.tr $ do
             H.th $ H.text "Field"
