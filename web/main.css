@@ -1,7 +1,7 @@
 body{
-    margin-left: 40px;
-    margin-right: 40px;
-    margin-top: 0;
+  margin-left: 40px;
+  margin-right: 40px;
+  margin-top: 0;
 }
 div#download {
   float: right;
@@ -33,20 +33,14 @@ div#dhist {
   height: 40vh;
   width: 80vw;
 }
-div.dhist-xy {
+div#dhist-y {
+  left: 5px;
+  top: 20px;
+  z-index: 1;
   position: absolute;
   width: 50px;
 }
-div#dhist-x {
-  right: -50px;
-  bottom: 25px;
-  display: none; /* not a valid histogram transformation */
-}
-div#dhist-y {
-  top: 20px;
-  z-index: 1;
-}
-button.dhist-xy-tog {
+button#dhist-y-tog {
   width: 100%;
   height: 100%;
   padding: 2px;

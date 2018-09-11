@@ -182,10 +182,9 @@ simulationPage = getPath R.parameter $ \sim req -> do
       H.p $ "Query and explore a subset using the filters, download your selection using the link below, or get the full dataset above."
       H.table H.! HA.id "filt" $ mempty
       H.div H.! HA.id "dhist" $ do
-        forM_ ['x','y'] $ \xy -> let xyv = H.stringValue [xy] in
-          H.div H.! HA.id ("dhist-" <> xyv) H.! HA.class_ "dhist-xy" $
-            H.button H.! HA.class_ "dhist-xy-tog" H.! HA.onclick ("return toggleLog('" <> xyv <> "')") $
-              "lin/log"
+        H.div H.! HA.id "dhist-y" $
+          H.button H.! HA.id "dhist-y-tog" H.! HA.onclick "return toggleLog()" $
+            "lin/log"
         H.div H.! HA.id "hist" $ mempty
 
       H.h3 $ "Data Table"
