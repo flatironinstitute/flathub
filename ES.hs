@@ -13,21 +13,27 @@ module ES
   , flushIndex
   ) where
 
-import           Control.Monad ((<=<), forM_, unless, void)
+import           Control.Monad ((<=<), forM, forM_, unless, void)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (ask, asks)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
-import qualified Data.Aeson.Types as J (Parser, parseEither)
+import qualified Data.Aeson.Types as J (Parser, parseEither, parseMaybe)
 import qualified Data.Attoparsec.ByteString as AP
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy.Char8 as BSLC
+import           Data.Default (def)
+import           Data.Either (partitionEithers)
+import           Data.Foldable (fold)
+import           Data.Functor.Identity (Identity(Identity))
 import qualified Data.HashMap.Strict as HM
 import           Data.IORef (newIORef, readIORef, writeIORef)
-import           Data.List (intercalate)
+import           Data.List (find, intercalate)
+import           Data.Maybe (mapMaybe)
 import           Data.Monoid ((<>))
+import           Data.Proxy (Proxy(Proxy))
 import           Data.String (IsString)
 import qualified Data.Text as T
 import qualified Data.Vector as V
@@ -148,48 +154,79 @@ scrollTime :: IsString s => s
 scrollTime = "10s"
 
 queryIndexScroll :: Bool -> Catalog -> Query -> M J.Value
-queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreField = store } } Query{..} =
+queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreField = store } } Query{..} = do
+  hists <- mapMaybe histsize . (histbnds ++) <$> if null histunks then return [] else
+    fold . J.parseMaybe fillhistbnd <$> elasticSearch GET
+      (catalogURL cat ++ ["_search"]) []
+      (JE.pairs $
+        "size" J..= J.Number 0
+      <> "query" .=* filts
+      <> "aggs" .=* foldMap (\(f, _) -> 
+           ("0" <> fieldName f) .=* ("min" .=* field f)
+        <> ("1" <> fieldName f) .=* ("max" .=* field f))
+        histunks)
   elasticSearch GET
     (catalogURL cat ++ ["_search"])
     (mwhen scroll $ [("scroll", Just scrollTime)])
     $ JE.pairs $
        (mwhen (queryOffset > 0) $ "from" J..= queryOffset)
     <> (mwhen (queryLimit  > 0 || not scroll) $ "size" J..= queryLimit)
-    <> "sort" `JE.pair` JE.list (\(f, a) -> JE.pairs (f J..= if a then "asc" else "desc" :: String)) (querySort ++ [("_doc",True)])
+    <> "sort" `JE.pair` JE.list (\(f, a) -> JE.pairs (fieldName f J..= if a then "asc" else "desc" :: String)) (querySort ++ [(def{ fieldName = "_doc" },True)])
     <> (case store of
       ESStoreSource -> "_source"
       ESStoreValues -> "docvalue_fields"
-      ESStoreStore -> "stored_fields") J..= queryFields
+      ESStoreStore -> "stored_fields") J..= map fieldName queryFields
     <> "query" .=* (if querySample < 1
       then \q -> ("function_score" .=* ("query" .=* q
         <> "random_score" .=* foldMap (\s -> "seed" J..= s <> "field" J..= ("_seq_no" :: String)) querySeed
         <> "boost_mode" J..= ("replace" :: String)
         <> "min_score" J..= (1 - querySample)))
-      else id) ("bool" .=* ("filter" `JE.pair` JE.list (JE.pairs . term) queryFilter))
+      else id) filts
     <> "aggs" .=*
-      (  foldMap
-        (\n -> foldMap (\f -> n .=* (agg f .=* ("field" J..= fieldName f))) $ HM.lookup n (catalogFieldMap cat))
+      (foldMap
+        (\f -> fieldName f .=* ((if isTermsField f then "terms" else "stats") .=* field f))
         queryAggs
-      <> histogram queryHist)
+      <> histogram hists)
   where
-  term (f, a, Nothing) = "term" .=* (f `JE.pair` bsc a)
-  term (f, a, Just b) = "range" .=* (f .=*
-    (bound "gte" a <> bound "lte" b))
-  bound t a
-    | BS.null a = mempty
-    | otherwise = t `JE.pair` bsc a
-  agg f
-    | isTermsField f = "terms"
-    | otherwise = "stats"
+  filts = "bool" .=* ("filter" `JE.pair` JE.list (\f -> JE.pairs $ unTypeValue (term f) $ fieldType f) queryFilter)
+  term f (FilterEQ v) = "term" .=* (fieldName f J..= v)
+  term f (FilterRange l u) = "range" .=* (fieldName f .=* (bound "gte" l <> bound "lte" u)) where
+    bound t = foldMap (t J..=)
+  histogram :: [FieldValue] -> J.Series
   histogram [] = mempty
-  histogram ((f,i):hl) = "hist" .=* (
-    "histogram" .=* (
-         "field" J..= f
-      <> "interval" `JE.pair` bsc i)
+  histogram (f:hl) = "hist" .=* (
+    "histogram" .=* (field f
+      <> "interval" J..= fieldType f)
     <> histogram' hl)
   histogram' [] = mempty
   histogram' hl = "aggs" .=* histogram hl
-  bsc = JE.string . BSC.unpack
+  histsize :: (FieldSub Filter Proxy, Word) -> Maybe FieldValue
+  histsize (f, n) = f' <$> case fieldType f of
+    Double    (FilterRange (Just l) (Just u)) -> return $ Double    $ Identity $ (u - l) / realToFrac n
+    Float     (FilterRange (Just l) (Just u)) -> return $ Float     $ Identity $ (u - l) / realToFrac n
+    HalfFloat (FilterRange (Just l) (Just u)) -> return $ HalfFloat $ Identity $ (u - l) / realToFrac n
+    Long      (FilterRange (Just l) (Just u)) -> return $ Long      $ Identity $ (u - l + n' - 1) `div` n' where n' = fromIntegral n
+    Integer   (FilterRange (Just l) (Just u)) -> return $ Integer   $ Identity $ (u - l + n' - 1) `div` n' where n' = fromIntegral n
+    Short     (FilterRange (Just l) (Just u)) -> return $ Short     $ Identity $ (u - l + n' - 1) `div` n' where n' = fromIntegral n
+    Byte      (FilterRange (Just l) (Just u)) -> return $ Byte      $ Identity $ (u - l + n' - 1) `div` n' where n' = fromIntegral n
+    _ -> fail "invalid hist"
+    where
+    f' s = f{ fieldSub = Proxy, fieldType = s }
+  fillhistbnd j = do
+    aggs <- j J..: "aggregations"
+    forM histunks $ \(f, n) -> do
+      let val a = traverseTypeValue (maybe (fail "bnd value") return) . parseTypeJSONValue (fieldType f)
+            =<< (J..: "value") =<< aggs J..: a
+      lb <- val ("0" <> fieldName f)
+      ub <- val ("1" <> fieldName f)
+      return (liftFilterValue f $ FilterRange (Just lb) (Just ub), n)
+  histunks :: [(Field, Word)]
+  (histunks, histbnds) = partitionEithers $ map (\h@(f, n) -> 
+      maybe (Left h) (Right . (, n)) $ find (\q -> fieldName f == fieldName q && unTypeValue isbnd (fieldType q)) queryFilter)
+    queryHist
+  isbnd (FilterRange (Just _) (Just _)) = True
+  isbnd _ = False
+  field = ("field" J..=) . fieldName
 
 queryIndex :: Catalog -> Query -> M J.Value
 queryIndex = queryIndexScroll False
@@ -221,10 +258,10 @@ queryBulk cat@Catalog{ catalogStore = CatalogES{ catalogStoreField = store } } q
         V.mapM $ J.withObject "hit" $ case store of
           ESStoreSource ->
             parseJSONField "_source" $ J.withObject "source" $ \d ->
-              return $ map (\f -> HM.lookupDefault J.Null f d) queryFields
+              return $ map (\f -> HM.lookupDefault J.Null (fieldName f) d) queryFields
           _ ->
             parseJSONField "fields" $ J.withObject "fields" $ \d ->
-              return $ map (\f -> unsingletonJSON $ HM.lookupDefault J.Null f d) queryFields) hits)
+              return $ map (\f -> unsingletonJSON $ HM.lookupDefault J.Null (fieldName f) d) queryFields) hits)
       q
 
 createBulk :: Catalog -> [(String, J.Series)] -> M ()

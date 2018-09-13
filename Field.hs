@@ -9,7 +9,8 @@ module Field
   ( TypeValue(..)
   , Type, Value
   , typeValue, typeValue1
-  , fmapTypeValue, fmapTypeValue1
+  , traverseTypeValue
+  , fmapTypeValue, fmapTypeValue1, fmapTypeValue2
   , typeOfValue
   , unTypeValue
   , parseTypeValue
@@ -34,6 +35,7 @@ import qualified Data.Aeson as J
 import qualified Data.Aeson.Types as J
 import           Data.Default (Default(def))
 import           Data.Functor.Classes (Eq1, eq1, Show1, showsPrec1)
+import           Data.Functor.Const (Const(Const, getConst))
 import           Data.Functor.Identity (Identity(Identity, runIdentity))
 import qualified Data.HashMap.Strict as HM
 import           Data.Int (Int64, Int32, Int16, Int8)
@@ -86,31 +88,6 @@ instance Typed Float  where typeValue = Float
 instance Typed Half   where typeValue = HalfFloat
 instance Typed Bool   where typeValue = Boolean
 
-transformTypeValue :: Applicative g => (forall a . Typed a => f a -> g (h a)) -> TypeValue f -> g (TypeValue h)
-transformTypeValue f (Double    x) = Double    <$> f x
-transformTypeValue f (Float     x) = Float     <$> f x
-transformTypeValue f (HalfFloat x) = HalfFloat <$> f x
-transformTypeValue f (Long      x) = Long      <$> f x
-transformTypeValue f (Integer   x) = Integer   <$> f x
-transformTypeValue f (Short     x) = Short     <$> f x
-transformTypeValue f (Byte      x) = Byte      <$> f x
-transformTypeValue f (Boolean   x) = Boolean   <$> f x
-transformTypeValue f (Text      x) = Text      <$> f x
-transformTypeValue f (Keyword   x) = Keyword   <$> f x
-
-_traverseTypeValue :: Applicative g => (forall a . Typed a => f a -> g a) -> TypeValue f -> g Value
-_traverseTypeValue f = transformTypeValue (fmap Identity . f)
-
-sequenceTypeValue :: Applicative f => TypeValue f -> f Value
-sequenceTypeValue = transformTypeValue (fmap Identity)
-
--- isn't there a Functor1 class for this or something?
-fmapTypeValue :: (forall a . Typed a => f a -> g a) -> TypeValue f -> TypeValue g
-fmapTypeValue f = runIdentity . transformTypeValue (Identity . f)
-
-fmapTypeValue1 :: (forall a . Typed a => f a -> a) -> TypeValue f -> Value
-fmapTypeValue1 f = fmapTypeValue (Identity . f)
-
 unTypeValue :: (forall a . Typed a => f a -> b) -> TypeValue f -> b
 unTypeValue f (Double    x) = f x
 unTypeValue f (Float     x) = f x
@@ -123,8 +100,55 @@ unTypeValue f (Boolean   x) = f x
 unTypeValue f (Text      x) = f x
 unTypeValue f (Keyword   x) = f x
 
+transformTypeValue :: Functor g => (forall a . Typed a => f a -> g (h a)) -> TypeValue f -> g (TypeValue h)
+transformTypeValue f (Double    x) = Double    <$> f x
+transformTypeValue f (Float     x) = Float     <$> f x
+transformTypeValue f (HalfFloat x) = HalfFloat <$> f x
+transformTypeValue f (Long      x) = Long      <$> f x
+transformTypeValue f (Integer   x) = Integer   <$> f x
+transformTypeValue f (Short     x) = Short     <$> f x
+transformTypeValue f (Byte      x) = Byte      <$> f x
+transformTypeValue f (Boolean   x) = Boolean   <$> f x
+transformTypeValue f (Text      x) = Text      <$> f x
+transformTypeValue f (Keyword   x) = Keyword   <$> f x
+
+transformTypeValue2 :: Monad g => (forall a . Typed a => f a -> f a -> g (h a)) -> TypeValue f -> TypeValue f -> g (TypeValue h)
+transformTypeValue2 f (Double    x) (Double    y) = Double    <$> f x y
+transformTypeValue2 f (Float     x) (Float     y) = Float     <$> f x y
+transformTypeValue2 f (HalfFloat x) (HalfFloat y) = HalfFloat <$> f x y
+transformTypeValue2 f (Long      x) (Long      y) = Long      <$> f x y
+transformTypeValue2 f (Integer   x) (Integer   y) = Integer   <$> f x y
+transformTypeValue2 f (Short     x) (Short     y) = Short     <$> f x y
+transformTypeValue2 f (Byte      x) (Byte      y) = Byte      <$> f x y
+transformTypeValue2 f (Boolean   x) (Boolean   y) = Boolean   <$> f x y
+transformTypeValue2 f (Text      x) (Text      y) = Text      <$> f x y
+transformTypeValue2 f (Keyword   x) (Keyword   y) = Keyword   <$> f x y
+transformTypeValue2 _ _             _             = fail "transformTypeValue2: type mismatch"
+
+traverseTypeValue :: Functor g => (forall a . Typed a => f a -> g a) -> TypeValue f -> g Value
+traverseTypeValue f = transformTypeValue (fmap Identity . f)
+
+sequenceTypeValue :: Functor f => TypeValue f -> f Value
+sequenceTypeValue = transformTypeValue (fmap Identity)
+
+-- isn't there a Functor1 class for this or something?
+fmapTypeValue :: (forall a . Typed a => f a -> g a) -> TypeValue f -> TypeValue g
+fmapTypeValue f = runIdentity . transformTypeValue (Identity . f)
+
+fmapTypeValue1 :: (forall a . Typed a => f a -> a) -> TypeValue f -> Value
+fmapTypeValue1 f = fmapTypeValue (Identity . f)
+
+fmapTypeValue2 :: (forall a . Typed a => f a -> f a -> g a) -> TypeValue f -> TypeValue f -> TypeValue g
+fmapTypeValue2 f = (runIdentity .) . transformTypeValue2 ((Identity .) . f)
+
 typeOfValue :: TypeValue f -> Type
 typeOfValue = fmapTypeValue (const Proxy)
+
+instance Eq1 f => Eq (TypeValue f) where
+  a == b = maybe False (unTypeValue getConst) $ transformTypeValue2 (\x y -> Just $ Const $ eq1 x y) a b
+
+instance {-# OVERLAPPABLE #-} Show1 f => Show (TypeValue f) where
+  showsPrec i = unTypeValue (showsPrec1 i)
 
 parseTypeValue :: Type -> T.Text -> TypeValue Maybe
 parseTypeValue (Text    _) s       = Text    $ Just s
@@ -134,22 +158,6 @@ parseTypeValue (Boolean _) "false" = Boolean $ Just False
 parseTypeValue (Boolean _) "1"     = Boolean $ Just True
 parseTypeValue (Boolean _) "true"  = Boolean $ Just True
 parseTypeValue t s = fmapTypeValue (\Proxy -> readMaybe $ T.unpack s) t
-
-instance Eq1 f => Eq (TypeValue f) where
-  Double x == Double y = eq1 x y
-  Float x == Float y = eq1 x y
-  HalfFloat x == HalfFloat y = eq1 x y
-  Long x == Long y = eq1 x y
-  Integer x == Integer y = eq1 x y
-  Short x == Short y = eq1 x y
-  Byte x == Byte y = eq1 x y
-  Boolean x == Boolean y = eq1 x y
-  Text x == Text y = eq1 x y
-  Keyword x == Keyword y = eq1 x y
-  _ == _ = False
-
-instance {-# OVERLAPPABLE #-} Show1 f => Show (TypeValue f) where
-  showsPrec i = unTypeValue (showsPrec1 i)
 
 instance {-# OVERLAPPABLE #-} J.ToJSON1 f => J.ToJSON (TypeValue f) where
   toJSON = unTypeValue J.toJSON1

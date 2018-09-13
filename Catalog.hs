@@ -9,20 +9,23 @@ module Catalog
   , Catalog(..)
   , takeCatalogField
   , Catalogs(..)
+  , Filter(..)
+  , liftFilterValue
   , Query(..)
-  , fillQuery
   ) where
 
 import           Control.Arrow ((&&&))
 import           Control.Monad (unless)
 import qualified Data.Aeson as J
+import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
 import           Data.Bits (xor)
-import qualified Data.ByteString as BS
+import           Data.Functor.Identity (Identity(runIdentity))
 import qualified Data.HashMap.Strict as HM
+import           Data.Maybe (catMaybes)
+import           Data.Proxy (Proxy(Proxy))
 import           Data.Semigroup (Semigroup((<>)))
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
 
 import Monoid
 import Field
@@ -120,16 +123,40 @@ instance J.FromJSON Catalogs where
     cats <- mapM (parseCatalog $ expandAllFields dict) (HM.delete "dict" o)
     return $ Catalogs (expandFields dict) cats
 
+data Filter a
+  = FilterEQ !a
+  | FilterRange{ filterLB, filterUB :: Maybe a }
+
+instance J.ToJSON1 Filter where
+  liftToJSON f _ (FilterEQ x) = f x
+  liftToJSON f _ (FilterRange l u) = J.object $ catMaybes $
+    [("lb" J..=) . f <$> l, ("ub" J..=) . f <$> u]
+  liftToEncoding f _ (FilterEQ x) = f x
+  liftToEncoding f _ (FilterRange l u) = J.pairs $
+    foldMap (JE.pair "lb" . f) l <> foldMap (JE.pair "ub" . f) u
+
+liftFilterValue :: Field -> Filter Value -> FieldSub Filter Proxy
+liftFilterValue f (FilterEQ v) =
+  f{ fieldSub = Proxy, fieldType = fmapTypeValue (FilterEQ . runIdentity) v }
+liftFilterValue f (FilterRange (Just l) (Just u)) =
+  f{ fieldSub = Proxy, fieldType = fmapTypeValue2 (\x y -> FilterRange (Just $ runIdentity x) (Just $ runIdentity y)) l u }
+liftFilterValue f (FilterRange (Just l) Nothing) =
+  f{ fieldSub = Proxy, fieldType = fmapTypeValue (\x -> FilterRange (Just $ runIdentity x) Nothing) l }
+liftFilterValue f (FilterRange Nothing (Just u)) =
+  f{ fieldSub = Proxy, fieldType = fmapTypeValue (\x -> FilterRange Nothing (Just $ runIdentity x)) u }
+liftFilterValue f (FilterRange Nothing Nothing) =
+  f{ fieldSub = Proxy, fieldType = fmapTypeValue (\Proxy -> FilterRange Nothing Nothing) (fieldType f) }
+
 data Query = Query
   { queryOffset :: Word
   , queryLimit :: Word
-  , querySort :: [(T.Text, Bool)]
-  , queryFields :: [T.Text]
-  , queryFilter :: [(T.Text, BS.ByteString, Maybe BS.ByteString)]
+  , querySort :: [(Field, Bool)]
+  , queryFields :: [Field]
+  , queryFilter :: [(FieldSub Filter Proxy)]
   , querySample :: Double
   , querySeed :: Maybe Word
-  , queryAggs :: [T.Text]
-  , queryHist :: [(T.Text, BS.ByteString)]
+  , queryAggs :: [Field]
+  , queryHist :: [(Field, Word)]
   }
 
 instance Monoid Query where
@@ -159,27 +186,21 @@ instance Semigroup Query where
     , queryHist   = queryHist   q1 <>    queryHist q2
     }
 
-fillQuery :: Catalog -> Query -> Query
-fillQuery cat q@Query{ queryFields = [] } = fillQuery cat $ q{ queryFields = map fieldName $ catalogFields cat }
-fillQuery _ q = q
-
 instance J.ToJSON Query where
   toJSON Query{..} = J.object
     [ "offset" J..= queryOffset
     , "limit"  J..= queryLimit
     , "sort"   J..= [ J.object
-      [ "field" J..= f
+      [ "field" J..= fieldName f
       , "asc" J..= a
       ] | (f,a) <- querySort ]
-    , "fields" J..= queryFields
+    , "fields" J..= map fieldName queryFields
     , "filter" J..= [ J.object
-      [ "field" J..= f
-      , "value" J..= maybe (bs a) (\b' -> J.object ["lb" J..= bs a, "ub" J..= bs b']) b
-      ] | (f,a,b) <- queryFilter ]
+      [ "field" J..= fieldName f
+      , "value" J..= unTypeValue J.toJSON1 (fieldType f)
+      ] | f <- queryFilter ]
     , "seed"   J..= querySeed
     , "sample" J..= querySample
-    , "aggs"   J..= queryAggs
-    , "hist"   J..= (fst <$> queryHist)
-    ] where
-    bs = J.String . TE.decodeLatin1
-
+    , "aggs"   J..= map fieldName queryAggs
+    , "hist"   J..= (fieldName . fst <$> queryHist)
+    ]

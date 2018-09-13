@@ -153,7 +153,7 @@ simulationPage = getPath R.parameter $ \sim req -> do
     row d l = do
       H.tr $ mapM_ (\(p, f) -> field d (p f) f) l
       when (d > 1) $ row (pred d) $ foldMap (\(p, f) -> foldMap (fmap (p . mappend f, ) . V.toList) $ fieldSub f) l
-    query = parseQuery req
+    query = parseQuery cat req
 
     fielddesc :: FieldGroup -> FieldGroup -> Int -> H.Html
     fielddesc f g d = do
