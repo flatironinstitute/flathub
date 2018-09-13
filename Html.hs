@@ -108,13 +108,6 @@ topPage = getPath R.unit $ \() req -> do
             H.text $ catalogTitle cat
           mapM_ (H.dd . H.preEscapedText) $ catalogDescr cat
 
-divHistogram :: H.Html
-divHistogram = H.div H.! HA.id "dhist" $ do
-  H.div H.! HA.id "hist-y" $
-    H.button H.! HA.id "hist-y-tog" H.! HA.onclick "return toggleLog()" $
-      "lin/log"
-  H.div H.! HA.id "hist" $ mempty
-
 simulationPage :: Route Simulation
 simulationPage = getPath R.parameter $ \sim req -> do
   cat <- askCatalog sim
@@ -184,10 +177,23 @@ simulationPage = getPath R.parameter $ \sim req -> do
       jsonVar "Query" query
       H.h2 $ H.text $ catalogTitle cat
       mapM_ (H.p . H.preEscapedText) $ catalogDescr cat
+
       H.h3 $ "Filters"
       H.p $ "Query and explore a subset using the filters, download your selection using the link below, or get the full dataset above."
       H.table H.! HA.id "filt" $ mempty
-      divHistogram
+      H.div H.! HA.id "dhist" $ do
+        H.select $ do
+            H.option "Histogram"
+            forM_ (catalogFieldGroups cat) $ \f -> do
+                when (typeIsFloating (fieldType f)) $ do
+                    if isNothing (fieldSub f)
+                    then H.option $ (H.text (fieldTitle f) <> " (Heatmap)")
+                    else forM_ ( fold (fieldSub f)) $ \fs -> do
+                        H.option $ (H.text (fieldTitle (fs)) <> " (Heatmap)")
+        H.div H.! HA.id "hist-y" $
+          H.button H.! HA.id "hist-y-tog" H.! HA.onclick "return toggleLog()" $
+            "lin/log"
+        H.div H.! HA.id "hist" $ mempty
 
       H.h3 $ "Data Table"
       H.table H.! HA.id "tcat" H.! HA.class_ "compact" $ do
@@ -197,7 +203,7 @@ simulationPage = getPath R.parameter $ \sim req -> do
       H.h3 $ "Fields Dictionary"
       H.div $ do
         H.button H.! HA.class_ "show_button" H.! HA.onclick "return toggleDisplay('tdict')" $ "show/hide"
-        "Table of fields, units, and their descriptions (use checkboxes to view/hide fields above)"
+        "Table of fields, units, and their descriptions (use checkboxes to view/hide fields in the table above)"
       H.div $ H.table H.! HA.id "tdict" $ do
         H.thead $ H.tr $ do
             H.th $ H.text "Field"
@@ -236,7 +242,11 @@ comparePage = getPath "compare" $ \() req -> do
         H.tr H.! HA.id "tr-comp" $
           H.td $ H.select H.! HA.id "compf" H.! HA.onchange "return compField()" $ mempty
     H.button H.! HA.id "hist-tog" H.! HA.disabled "disabled" H.! HA.onclick "return histogram()" $ "histogram"
-    divHistogram
+    H.div H.! HA.id "dhist" $ do
+      H.div H.! HA.id "hist-y" $
+        H.button H.! HA.id "hist-y-tog" H.! HA.onclick "return toggleLog()" $
+          "lin/log"
+      H.div H.! HA.id "hist" $ mempty
 
 staticHtml :: Route [FilePathComponent]
 staticHtml = getPath ("html" R.*< R.manyI R.parameter) $ \paths q -> do

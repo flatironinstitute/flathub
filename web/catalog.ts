@@ -541,8 +541,8 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
     pageLength: 25,
     processing: true,
     language: {
-        emptyTable: "",
-        zeroRecords: ""
+      emptyTable: "",
+      zeroRecords: ""
     },
     dom: 'i<"#download">rtlp',
     deferRender: true,
