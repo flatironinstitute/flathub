@@ -19,7 +19,6 @@ var Update_aggs: number = -1;
 var Histogram: undefined|NumericFilter;
 const Histogram_bins = 100;
 var Histogram_chart: Highcharts.ChartObject|undefined;
-var Histogram_bin_width = 0;
 var Last_fields: string[] = [];
 
 function set_download(query: Dict<string>) {
@@ -43,11 +42,15 @@ function histogramRemove() {
 
 function histogram(agg: AggrTerms<number>) {
   const hist = Histogram;
+  $('#dhist').hide();
   if (!hist)
     return;
   const field = hist.field;
   const points = agg.buckets.map(d => { return {x:d.key,y:d.doc_count}; });
-  points.push({x:points[points.length-1].x+Histogram_bin_width,y:0});
+  if (points.length <= 1)
+    return;
+  const wid = points[1].x-points[0].x;
+  points.push({x:points[points.length-1].x+wid,y:0});
   const render = render_funct(hist.field);
   $('#dhist').show();
   Histogram_chart = Highcharts.chart('hist', {
@@ -60,8 +63,8 @@ function histogram(agg: AggrTerms<number>) {
             /* select one bucket? ignore? */
             return;
           }
-          left  = Histogram_bin_width*Math.floor(left/Histogram_bin_width);
-          right = Histogram_bin_width*Math.ceil(right/Histogram_bin_width);
+          left  = wid*Math.floor(left/wid);
+          right = wid*Math.ceil(right/wid);
           hist.setRange(left, right);
           hist.change();
           return false; // Don't zoom
@@ -87,7 +90,7 @@ function histogram(agg: AggrTerms<number>) {
       },
       gridLineWidth: 1,
       min: hist.lbv,
-      max: hist.ubv+Histogram_bin_width
+      max: hist.ubv+wid
     },
     yAxis: {
       type: 'linear',
@@ -99,7 +102,7 @@ function histogram(agg: AggrTerms<number>) {
     tooltip: {
       animation: false,
       formatter: function (this: {x: number, y: number}): string {
-        return ('[' + render(this.x) + ',' + render(this.x+Histogram_bin_width) + '): ' + this.y + '\n(drag to filter)');
+        return ('[' + render(this.x) + ',' + render(this.x+wid) + '): ' + this.y + '\n(drag to filter)');
       }
     },
     plotOptions: {
@@ -163,15 +166,8 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
   query.fields = Last_fields.join(' ');
   if (aggs)
     query.aggs = aggs.map((filt) => filt.name).join(' ');
-  if (Histogram) {
-    const wid = Histogram.ubv - Histogram.lbv;
-    if (wid && wid > 0) {
-      Histogram_bin_width = wid/Histogram_bins;
-      if (Histogram.field.base === "i")
-        Histogram_bin_width = Math.ceil(Histogram_bin_width);
-      query.hist = Histogram.name + ':' + Histogram_bin_width;
-    }
-  }
+  if (Histogram)
+    query.hist = Histogram.name + ':' + Histogram_bins;
   $('td.loading').show();
   $.ajax({
     method: 'GET',

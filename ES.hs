@@ -202,16 +202,19 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreFiel
   histogram' hl = "aggs" .=* histogram hl
   histsize :: (FieldSub Filter Proxy, Word) -> Maybe FieldValue
   histsize (f, n) = f' <$> case fieldType f of
-    Double    (FilterRange (Just l) (Just u)) -> return $ Double    $ Identity $ (u - l) / realToFrac n
-    Float     (FilterRange (Just l) (Just u)) -> return $ Float     $ Identity $ (u - l) / realToFrac n
-    HalfFloat (FilterRange (Just l) (Just u)) -> return $ HalfFloat $ Identity $ (u - l) / realToFrac n
-    Long      (FilterRange (Just l) (Just u)) -> return $ Long      $ Identity $ (u - l + n' - 1) `div` n' where n' = fromIntegral n
-    Integer   (FilterRange (Just l) (Just u)) -> return $ Integer   $ Identity $ (u - l + n' - 1) `div` n' where n' = fromIntegral n
-    Short     (FilterRange (Just l) (Just u)) -> return $ Short     $ Identity $ (u - l + n' - 1) `div` n' where n' = fromIntegral n
-    Byte      (FilterRange (Just l) (Just u)) -> return $ Byte      $ Identity $ (u - l + n' - 1) `div` n' where n' = fromIntegral n
+    Double    (FilterRange (Just l) (Just u)) -> return $ Double    $ checksize $ (u - l) / realToFrac n
+    Float     (FilterRange (Just l) (Just u)) -> return $ Float     $ checksize $ (u - l) / realToFrac n
+    HalfFloat (FilterRange (Just l) (Just u)) -> return $ HalfFloat $ checksize $ (u - l) / realToFrac n
+    Long      (FilterRange (Just l) (Just u)) -> return $ Long      $ checksize $ (u - l + n' - 1) `div` n' where n' = fromIntegral n
+    Integer   (FilterRange (Just l) (Just u)) -> return $ Integer   $ checksize $ (u - l + n' - 1) `div` n' where n' = fromIntegral n
+    Short     (FilterRange (Just l) (Just u)) -> return $ Short     $ checksize $ (u - l + n' - 1) `div` n' where n' = fromIntegral n
+    Byte      (FilterRange (Just l) (Just u)) -> return $ Byte      $ checksize $ (u - l + n' - 1) `div` n' where n' = fromIntegral n
     _ -> fail "invalid hist"
     where
     f' s = f{ fieldSub = Proxy, fieldType = s }
+  checksize z
+    | z <= 0 = Identity 1
+    | otherwise = Identity z
   fillhistbnd j = do
     aggs <- j J..: "aggregations"
     forM histunks $ \(f, n) -> do
