@@ -182,14 +182,12 @@ simulationPage = getPath R.parameter $ \sim req -> do
       H.p $ "Query and explore a subset using the filters, download your selection using the link below, or get the full dataset above."
       H.table H.! HA.id "filt" $ mempty
       H.div H.! HA.id "dhist" $ do
-        H.select $ do
-            H.option "Histogram"
-            forM_ (catalogFieldGroups cat) $ \f -> do
-                when (typeIsFloating (fieldType f)) $ do
-                    if isNothing (fieldSub f)
-                    then H.option $ (H.text (fieldTitle f) <> " (Heatmap)")
-                    else forM_ ( fold (fieldSub f)) $ \fs -> do
-                        H.option $ (H.text (fieldTitle (fs)) <> " (Heatmap)")
+        H.select H.! HA.id "histsel" H.! HA.onchange "return histogramSelect()" $ do
+          H.option H.! HA.value mempty $ "Histogram"
+          H.optgroup H.! HA.label "Heatmap" $
+            forM_ (catalogFields cat) $ \f ->
+              when (typeIsFloating (fieldType f)) $
+                H.option H.! HA.value (H.textValue $ fieldName f) $ H.text $ fieldTitle f
         H.div H.! HA.id "hist-y" $
           H.button H.! HA.id "hist-y-tog" H.! HA.onclick "return toggleLog()" $
             "lin/log"

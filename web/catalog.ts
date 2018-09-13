@@ -41,8 +41,10 @@ function histogramRemove() {
 }
 
 function histogram(agg: AggrTerms<number>) {
-  const hist = Histogram;
   $('#dhist').hide();
+  const hist = Histogram;
+  const sel = <HTMLSelectElement>document.getElementById('histsel');
+  sel.value = '';
   if (!hist)
     return;
   const field = hist.field;
@@ -131,7 +133,12 @@ function histogram(agg: AggrTerms<number>) {
 (<any>window).toggleLog = function toggleLog() {
   if (Histogram_chart)
     toggle_log(Histogram_chart);
-}
+};
+
+(<any>window).histogramSelect = function histogramSelect() {
+  const sel = <HTMLSelectElement>document.getElementById('histsel');
+  console.log(sel.value);
+};
 
 /* elasticsearch max_result_window */
 const displayLimit = 10000;
