@@ -21,8 +21,9 @@ import           Data.Bits (xor)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Char8 as BSC
+import           Data.Function (on)
 import qualified Data.HashMap.Strict as HM
-import           Data.List (foldl')
+import           Data.List (foldl', unionBy)
 import           Data.Maybe (listToMaybe, maybeToList)
 import           Data.Monoid ((<>))
 import qualified Data.Text as T
@@ -48,7 +49,7 @@ import Compression
 import Output.Numpy
 
 parseQuery :: Catalog -> Wai.Request -> Query
-parseQuery cat = fill . foldl' parseQueryItem mempty . Wai.queryString where
+parseQuery cat req = fill $ foldl' parseQueryItem mempty $ Wai.queryString req where
   parseQueryItem q ("offset", Just (rmbs -> Just n)) =
     q{ queryOffset = queryOffset q + n }
   parseQueryItem q ("limit",  Just (rmbs -> Just n)) =
@@ -56,13 +57,13 @@ parseQuery cat = fill . foldl' parseQueryItem mempty . Wai.queryString where
   parseQueryItem q ("sort",   Just (mapM parseSort . spld -> Just s)) =
     q{ querySort = querySort q <> s }
   parseQueryItem q ("fields", Just (mapM lookf . spld -> Just l)) =
-    q{ queryFields = queryFields q <> l }
+    q{ queryFields = unionf (queryFields q) l }
   parseQueryItem q ("sample", Just (rmbs -> Just p)) =
     q{ querySample = querySample q * p }
   parseQueryItem q ("sample", Just (spl ('@' ==) -> Just (rmbs -> Just p, rmbs -> Just s))) =
     q{ querySample = querySample q * p, querySeed = Just $ maybe id xor (querySeed q) s }
   parseQueryItem q ("aggs",   Just (mapM lookf . spld -> Just a)) =
-    q{ queryAggs = queryAggs q <> a }
+    q{ queryAggs = unionf (queryAggs q) a }
   parseQueryItem q ("hist",   Just (mapM parseHist . spld -> Just h)) =
     q{ queryHist = queryHist q <> h }
   parseQueryItem q (lookf -> Just f, Just (parseFilt f -> Just v)) =
@@ -83,7 +84,9 @@ parseQuery cat = fill . foldl' parseQueryItem mempty . Wai.queryString where
   mkHist f n
     | typeIsNumeric (fieldType f) = return (f, n)
     | otherwise = fail "non-numeric hist"
-  fill q@Query{ queryFields = [] } = q{ queryFields = catalogFields cat }
+  unionf = unionBy ((==) `on` fieldName)
+  fill q@Query{ queryFields = [] } | all (("fields" /=) . fst) (Wai.queryString req) =
+    q{ queryFields = filter fieldDisp $ catalogFields cat }
   fill q = q
   spld = BSC.splitWith delim
   delim ',' = True

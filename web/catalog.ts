@@ -466,14 +466,16 @@ function add_filter(idx: number): Filter|undefined {
 function colvisNames(box: HTMLInputElement): string[] {
   const l: string[] = [];
   for (let k of <any>box.classList as string[]) {
-    l.push(k.substr(7));
+    if (k.startsWith('colvis-'))
+      l.push(k.substr(7));
   }
   return l;
 }
 
-function colvisUpdate(box: HTMLInputElement, vis: boolean) {
+function colvisUpdate(box: HTMLInputElement, vis?: boolean) {
   const v: boolean[] = (<any>TCat.columns(colvisNames(box).map(n => n+":name")).visible() as JQuery<boolean>).toArray();
-  // vis = v.shift();
+  if (vis == null)
+    vis = v.shift() || false;
   box.checked = vis;
   box.indeterminate = v.some(x => x !== vis);
 }
@@ -566,9 +568,10 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
       topts.order = Query.sort.map((o) => {
         return [Fields_idx[o.field], o.asc ? 'asc' : 'desc'];
       });
-    if (Query.fields && Query.fields.length && topts.columns)
+    if (Query.fields && Query.fields.length && topts.columns) {
       for (let c of topts.columns)
-        c.visible = Query.fields.indexOf(<string>c.name) >= 0; // FIXME: colvis
+        c.visible = Query.fields.indexOf(<string>c.name) >= 0;
+    }
   }
   TCat = table.DataTable(topts);
   /* for debugging: */
@@ -601,5 +604,7 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
         filt.setValue(f.value);
     }
   }
+  for (let b of <any>document.getElementsByClassName('colvis') as HTMLInputElement[])
+    colvisUpdate(b);
   TCat.draw();
 }

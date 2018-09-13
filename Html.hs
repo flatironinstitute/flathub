@@ -162,7 +162,7 @@ simulationPage = getPath R.parameter $ \sim req -> do
             H.td H.! HA.class_ ("depth-" <> H.stringValue (show d)) $ do
                 H.input H.! HA.type_ "checkbox"
                     H.!? (isNothing (fieldSub g), HA.id $ H.textValue $ key f)
-                    H.! HA.class_ (H.textValue $ T.unwords $ map key fs)
+                    H.! HA.class_ (H.textValue $ T.unwords $ "colvis" : map key fs)
                     H.!? (fieldDisp g, HA.checked "checked")
                     H.! HA.onclick "return colvisSet(event)"
                 H.text (fieldTitle g)
