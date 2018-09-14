@@ -1,4 +1,5 @@
 "use strict";
+import Highcharts from "highcharts";
 
 export function assert<T>(x: undefined|null|false|T): T {
   if (!x)
@@ -37,7 +38,7 @@ export type AggrStats = {
   avg: number
 };
 export type AggrTerms<T> = {
-  buckets: Array<{ key: T, doc_count: number }>
+  buckets: Array<{ key: T, doc_count: number, hist?: AggrTerms<any> }>
 }
 
 export type Aggr = AggrStats|AggrTerms<string|number>;
@@ -47,7 +48,8 @@ export type CatalogResponse = {
     total: number,
     hits: Dict<any>[]
   },
-  aggregations?: Dict<Aggr>
+  aggregations?: Dict<Aggr>,
+  histsize: number[]
 };
 
 export function fill_select_terms(s: HTMLSelectElement, f: Field, a: AggrTerms<string>) {
@@ -74,8 +76,17 @@ export function field_option(f: Field): HTMLOptionElement {
   return o;
 }
 
+const axisProto = (<any>Highcharts).Axis.prototype;
+axisProto.allowNegativeLog = true;
+axisProto.log2lin = function (x: number) {
+  return x >= 1 ? Math.log10(x) : -1;
+};
+axisProto.lin2log = function (x: number) {
+  return Math.round(Math.pow(10, x));
+};
+
 export function toggle_log(chart: Highcharts.ChartObject) {
-  const axis = chart.yAxis[0];
+  const axis = <Highcharts.AxisObject>chart.get('tog');
   if ((<any>axis).userOptions.type !== 'linear') {
     axis.update({
       min: 0,

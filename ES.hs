@@ -165,10 +165,10 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreFiel
            ("0" <> fieldName f) .=* ("min" .=* field f)
         <> ("1" <> fieldName f) .=* ("max" .=* field f))
         histunks)
-  elasticSearch GET
+  amend hists <$> elasticSearch GET
     (catalogURL cat ++ ["_search"])
     (mwhen scroll $ [("scroll", Just scrollTime)])
-    $ JE.pairs $
+    (JE.pairs $
        (mwhen (queryOffset > 0) $ "from" J..= queryOffset)
     <> (mwhen (queryLimit  > 0 || not scroll) $ "size" J..= queryLimit)
     <> "sort" `JE.pair` JE.list (\(f, a) -> JE.pairs (fieldName f J..= if a then "asc" else "desc" :: String)) (querySort ++ [(def{ fieldName = "_doc" },True)])
@@ -186,8 +186,11 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreFiel
       (foldMap
         (\f -> fieldName f .=* ((if isTermsField f then "terms" else "stats") .=* field f))
         queryAggs
-      <> histogram hists)
+      <> histogram hists))
   where
+  amend :: [FieldValue] -> J.Value -> J.Value
+  amend h@(_:_) (J.Object o) = J.Object $ HM.insert "histsize" (J.toJSON $ map fieldType h) o
+  amend _ j = j
   filts = "bool" .=* ("filter" `JE.pair` JE.list (\f -> JE.pairs $ unTypeValue (term f) $ fieldType f) queryFilter)
   term f (FilterEQ v) = "term" .=* (fieldName f J..= v)
   term f (FilterRange l u) = "range" .=* (fieldName f .=* (bound "gte" l <> bound "lte" u)) where

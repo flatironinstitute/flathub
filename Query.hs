@@ -114,6 +114,7 @@ catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do
   where
   clean store = mapObject $ HM.mapMaybeWithKey (cleanTop store)
   cleanTop _ "aggregations" = Just
+  cleanTop _ "histsize" = Just
   cleanTop store "hits" = Just . mapObject (HM.mapMaybeWithKey $ cleanHits store)
   cleanTop _ _ = const Nothing
   cleanHits _ "total" = Just
