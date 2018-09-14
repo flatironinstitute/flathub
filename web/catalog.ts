@@ -2,12 +2,9 @@
 
 import $ from "jquery";
 import "datatables.net";
-import DataTablesScroller from "datatables.net-scroller";
 import Highcharts from "highcharts";
 import { assert, Dict, Field, Catalog, AggrStats, AggrTerms, Aggr, CatalogResponse, fill_select_terms, field_option, toggle_log } from "./common";
 System.import('highcharts/modules/heatmap').then(m => m(Highcharts));
-
-DataTablesScroller();
 
 var TCat: DataTables.Api;
 declare const Catalog: Catalog;
@@ -43,22 +40,18 @@ function histogramRemove() {
   $('#hist').empty();
 }
 
-function histogram(agg: AggrTerms<number>, size: number[], heatmap?: Field) {
-  $('#dhist').hide();
-  const hist = Histogram;
-  if (!hist)
-    return;
+function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrTerms<number>, size: number[]) {
   const field = hist.field;
   const data: number[][] = [];
   for (let x of agg.buckets) {
-    if (x.hist) // heatmap
+    if (heatmap && x.hist)
       for (let y of x.hist.buckets)
         data.push([x.key,y.key,y.doc_count]);
     else
       data.push([x.key,x.doc_count]);
   }
   if (data.length <= 1)
-    return;
+    return histogramRemove();
 
   const title = (f: Field) => { return {
     // useHTML: true, // not enough for mathjax
@@ -215,12 +208,13 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
   query.fields = Last_fields.join(' ');
   if (aggs)
     query.aggs = aggs.map((filt) => filt.name).join(' ');
+  const histogram = Histogram;
   const heatmap = Histogram && Heatmap;
-  if (Histogram) {
+  if (histogram) {
     if (heatmap)
-      query.hist = Histogram.name+':16 ' + heatmap.name+':16';
+      query.hist = histogram.name+':16 ' + heatmap.name+':16';
     else
-      query.hist = Histogram.name+':128';
+      query.hist = histogram.name+':128';
   }
   $('td.loading').show();
   $.ajax({
@@ -241,8 +235,8 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
     for (let filt of aggs)
       filt.update_aggs((res.aggregations as Dict<Aggr>)[filt.name]);
     Update_aggs = Filters.length;
-    if (res.aggregations && res.aggregations.hist)
-      histogram(res.aggregations.hist as AggrTerms<number>, res.histsize, heatmap);
+    if (histogram && res.aggregations && res.aggregations.hist)
+      histogramDraw(histogram, heatmap, res.aggregations.hist as AggrTerms<number>, res.histsize);
 
     delete query.aggs;
     delete query.hist;

@@ -49,9 +49,7 @@ SystemJS.config({
     "constants": "npm:jspm-nodelibs-constants@0.2.1",
     "crypto": "npm:jspm-nodelibs-crypto@0.2.1",
     "datatables.net": "npm:datatables.net@1.10.19",
-    "datatables.net-colreorder": "npm:datatables.net-colreorder@1.5.1",
     "datatables.net-dt": "npm:datatables.net-dt@1.10.19",
-    "datatables.net-scroller": "npm:datatables.net-scroller@1.5.1",
     "events": "npm:jspm-nodelibs-events@0.2.2",
     "fs": "npm:jspm-nodelibs-fs@0.2.1",
     "highcharts": "npm:highcharts@6.1.2",
@@ -338,19 +336,7 @@ SystemJS.config({
         "readable-stream": "npm:readable-stream@2.3.6"
       }
     },
-    "npm:datatables.net-scroller@1.5.1": {
-      "map": {
-        "jquery": "npm:jquery@3.3.1",
-        "datatables.net": "npm:datatables.net@1.10.19"
-      }
-    },
     "npm:datatables.net-dt@1.10.19": {
-      "map": {
-        "jquery": "npm:jquery@3.3.1",
-        "datatables.net": "npm:datatables.net@1.10.19"
-      }
-    },
-    "npm:datatables.net-colreorder@1.5.1": {
       "map": {
         "jquery": "npm:jquery@3.3.1",
         "datatables.net": "npm:datatables.net@1.10.19"
