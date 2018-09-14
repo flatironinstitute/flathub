@@ -1,10 +1,13 @@
 "use strict";
 
 import $ from "jquery";
-import "datatables.net";
+import Datatables from "datatables.net";
 import Highcharts from "highcharts";
+import Highcharts_heatmap from "highcharts/modules/heatmap";
 import { assert, Dict, Field, Catalog, AggrStats, AggrTerms, Aggr, CatalogResponse, fill_select_terms, field_option, toggle_log } from "./common";
-System.import('highcharts/modules/heatmap').then(m => m(Highcharts));
+
+Datatables(window, $);
+Highcharts_heatmap(Highcharts);
 
 var TCat: DataTables.Api;
 declare const Catalog: Catalog;
