@@ -13,16 +13,18 @@ module Query
   ) where
 
 import           Control.Applicative (empty, (<|>))
-import           Control.Arrow (first)
 import           Control.Monad (guard, unless)
 import           Control.Monad.IO.Class (liftIO)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Types as J
+import           Data.Bits (xor)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Char8 as BSC
+import           Data.Function (on)
 import qualified Data.HashMap.Strict as HM
-import           Data.Maybe (fromMaybe, listToMaybe, maybeToList)
+import           Data.List (foldl', unionBy)
+import           Data.Maybe (listToMaybe, maybeToList)
 import           Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -46,45 +48,65 @@ import qualified ES
 import Compression
 import Output.Numpy
 
-parseQuery :: Wai.Request -> Query
-parseQuery = foldMap parseQueryItem . Wai.queryString where
-  parseQueryItem ("offset", Just (rmbs -> Just n)) =
-    mempty{ queryOffset = n }
-  parseQueryItem ("limit",  Just (rmbs -> Just n)) =
-    mempty{ queryLimit  = n }
-  parseQueryItem ("sort",   Just s) =
-    mempty{ querySort = map ps (BSC.splitWith delim s) } where
-    ps f = case BSC.uncons f of
-      Just ('+', r) -> (TE.decodeUtf8 r, True)
-      Just ('-', r) -> (TE.decodeUtf8 r, False)
-      _             -> (TE.decodeUtf8 f, True)
-  parseQueryItem ("fields", Just s) =
-    mempty{ queryFields = map TE.decodeUtf8 (BSC.splitWith delim s) }
-  parseQueryItem ("sample", Just (rmbs -> Just p)) =
-    mempty{ querySample = p }
-  parseQueryItem ("sample", Just (spl '@' -> Just (rmbs -> Just p, rmbs -> Just s))) =
-    mempty{ querySample = p, querySeed = Just s }
-  parseQueryItem ("aggs",   Just s) =
-    mempty{ queryAggs = map TE.decodeUtf8 (BSC.splitWith delim s) }
-  parseQueryItem ("hist",   Just (mapM (spl ':') . BSC.splitWith delim -> Just fis)) =
-    mempty{ queryHist = map (first TE.decodeUtf8) fis }
-  parseQueryItem (f,        s) =
-    mempty{ queryFilter = [(TE.decodeUtf8 f, a, snd <$> BS.uncons b)] } where
-    (a, b) = BSC.break delim $ fromMaybe BS.empty s
+parseQuery :: Catalog -> Wai.Request -> Query
+parseQuery cat req = fill $ foldl' parseQueryItem mempty $ Wai.queryString req where
+  parseQueryItem q ("offset", Just (rmbs -> Just n)) =
+    q{ queryOffset = queryOffset q + n }
+  parseQueryItem q ("limit",  Just (rmbs -> Just n)) =
+    q{ queryLimit  = queryLimit q `max` n }
+  parseQueryItem q ("sort",   Just (mapM parseSort . spld -> Just s)) =
+    q{ querySort = querySort q <> s }
+  parseQueryItem q ("fields", Just (mapM lookf . spld -> Just l)) =
+    q{ queryFields = unionf (queryFields q) l }
+  parseQueryItem q ("sample", Just (rmbs -> Just p)) =
+    q{ querySample = querySample q * p }
+  parseQueryItem q ("sample", Just (spl ('@' ==) -> Just (rmbs -> Just p, rmbs -> Just s))) =
+    q{ querySample = querySample q * p, querySeed = Just $ maybe id xor (querySeed q) s }
+  parseQueryItem q ("aggs",   Just (mapM lookf . spld -> Just a)) =
+    q{ queryAggs = unionf (queryAggs q) a }
+  parseQueryItem q ("hist",   Just (mapM parseHist . spld -> Just h)) =
+    q{ queryHist = queryHist q <> h }
+  parseQueryItem q (lookf -> Just f, Just (parseFilt f -> Just v)) =
+    q{ queryFilter = queryFilter q <> [liftFilterValue f v] }
+  parseQueryItem q _ = q -- just ignore anything we can't parse
+  parseSort (BSC.uncons -> Just ('+', lookf -> Just f)) = return (f, True)
+  parseSort (BSC.uncons -> Just ('-', lookf -> Just f)) = return (f, False)
+  parseSort (lookf -> Just f) = return (f, True)
+  parseSort _ = fail "invalid sort"
+  parseHist (spl (':' ==) -> Just (lookf -> Just f, rmbs -> Just n)) = mkHist f n
+  parseHist (                      lookf -> Just f                 ) = mkHist f 16
+  parseHist _ = fail "invalid hist"
+  parseFilt f (spl delim -> Just (a, b)) = FilterRange <$> parseVal f a <*> parseVal f b
+  parseFilt f a = FilterEQ <$> parseVal' f a
+  parseVal _ "" = Nothing
+  parseVal f v = Just <$> parseVal' f v
+  parseVal' f = fmap fieldType . parseFieldValue f . TE.decodeUtf8
+  mkHist f n
+    | typeIsNumeric (fieldType f) = return (f, n)
+    | otherwise = fail "non-numeric hist"
+  unionf = unionBy ((==) `on` fieldName)
+  fill q@Query{ queryFields = [] } | all (("fields" /=) . fst) (Wai.queryString req) =
+    q{ queryFields = filter fieldDisp $ catalogFields cat }
+  fill q = q
+  spld = BSC.splitWith delim
   delim ',' = True
   delim ' ' = True
   delim _ = False
   rmbs :: Read a => BSC.ByteString -> Maybe a
   rmbs = readMaybe . BSC.unpack
   spl c s = (,) p . snd <$> BSC.uncons r
-    where (p, r) = BSC.break (c ==) s
+    where (p, r) = BSC.break c s
+  lookf n = HM.lookup (TE.decodeUtf8 n) $ catalogFieldMap cat
 
 catalog :: Route Simulation
 catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do
   cat <- askCatalog sim
-  let query = fillQuery cat $ parseQuery req
+  let query = parseQuery cat req
+      hsize = product $ map snd $ queryHist query
   unless (queryLimit query <= 100) $
     result $ response badRequest400 [] ("limit too large" :: String)
+  unless (hsize > 0 && hsize <= 256) $
+    result $ response badRequest400 [] ("hist too large" :: String)
   case catalogStore cat of
     CatalogES{ catalogStoreField = store } -> do
       res <- ES.queryIndex cat query
@@ -92,6 +114,7 @@ catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do
   where
   clean store = mapObject $ HM.mapMaybeWithKey (cleanTop store)
   cleanTop _ "aggregations" = Just
+  cleanTop _ "histsize" = Just
   cleanTop store "hits" = Just . mapObject (HM.mapMaybeWithKey $ cleanHits store)
   cleanTop _ _ = const Nothing
   cleanHits _ "total" = Just
@@ -167,15 +190,13 @@ bulk (BulkNumpy z) fields count = maybe id compressBulk z Bulk
 catalogBulk :: Route (Simulation, BulkFormat)
 catalogBulk = getPath (R.parameter R.>*< R.parameter) $ \(sim, fmt) req -> do
   cat <- askCatalog sim
-  let query = fillQuery cat $ parseQuery req
+  let query = parseQuery cat req
       enc = bulkCompression fmt <|> listToMaybe (acceptCompressionEncoding req)
-  fields <- maybe (result $ response badRequest400 [] ("unknown field name" :: String)) return $
-    mapM (`HM.lookup` catalogFieldMap cat) $ queryFields query
   unless (queryOffset query == 0 && null (queryAggs query) && null (queryHist query)) $
     result $ response badRequest400 [] ("offset,aggs not supported for download" :: String)
   nextes <- ES.queryBulk cat query
   (count, block1) <- liftIO nextes
-  let b@Bulk{..} = bulk fmt fields count
+  let b@Bulk{..} = bulk fmt (queryFields query) count
   return $ Wai.responseStream ok200 (
     [ (hContentType, bulkMimeType)
     , (hContentDisposition, "attachment; filename=" <> quoteHTTP (TE.encodeUtf8 sim <> BSC.pack ('.' : bulkExtension)))

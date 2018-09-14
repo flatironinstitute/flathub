@@ -33,16 +33,8 @@ div#dhist {
   height: 40vh;
   width: 80vw;
 }
-div#dhist-y {
-  left: 5px;
-  top: 20px;
-  z-index: 1;
-  position: absolute;
+button#hist-y-tog {
   width: 50px;
-}
-button#dhist-y-tog {
-  width: 100%;
-  height: 100%;
   padding: 2px;
   border-width: 1px;
 }

@@ -69,7 +69,6 @@ htmlResponse req hdrs body = do
       H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/MathJax.js?config=TeX-AMS_CHTML" $ mempty
       jsonVar "Catalogs" (HM.map catalogTitle $ catalogMap $ globalCatalogs glob)
     H.body $ do
-      H.h1 $ H.text "ASTROSIMS"
       H.div H.! HA.id "bar" $ do
           H.ul H.! HA.id "topbar" $ do
               H.li $ do
@@ -147,7 +146,7 @@ simulationPage = getPath R.parameter $ \sim req -> do
     row d l = do
       H.tr $ mapM_ (\(p, f) -> field d (p f) f) l
       when (d > 1) $ row (pred d) $ foldMap (\(p, f) -> foldMap (fmap (p . mappend f, ) . V.toList) $ fieldSub f) l
-    query = parseQuery req
+    query = parseQuery cat req
 
     fielddesc :: FieldGroup -> FieldGroup -> Int -> H.Html
     fielddesc f g d = do
@@ -156,7 +155,7 @@ simulationPage = getPath R.parameter $ \sim req -> do
             H.td H.! HA.class_ ("depth-" <> H.stringValue (show d)) $ do
                 H.input H.! HA.type_ "checkbox"
                     H.!? (isNothing (fieldSub g), HA.id $ H.textValue $ key f)
-                    H.! HA.class_ (H.textValue $ T.unwords $ map key fs)
+                    H.! HA.class_ (H.textValue $ T.unwords $ "colvis" : map key fs)
                     H.!? (fieldDisp g, HA.checked "checked")
                     H.! HA.onclick "return colvisSet(event)"
                 H.text (fieldTitle g)
@@ -183,17 +182,14 @@ simulationPage = getPath R.parameter $ \sim req -> do
       H.p $ "Query and explore a subset using the filters, download your selection using the link below, or get the full dataset above."
       H.table H.! HA.id "filt" $ mempty
       H.div H.! HA.id "dhist" $ do
-        H.select H.! HA.onchange "return heatmap()" $ do
-            H.option "Histogram"
-            forM_ (catalogFieldGroups cat) $ \f -> do
-                when (typeIsFloating (fieldType f)) $ do
-                    if isNothing (fieldSub f)
-                    then H.option $ (H.text (fieldTitle f) <> " (Heatmap)")
-                    else forM_ ( fold (fieldSub f)) $ \fs -> do
-                        H.option $ (H.text (fieldTitle (fs)) <> " (Heatmap)")
-        H.div H.! HA.id "dhist-y" $
-          H.button H.! HA.id "dhist-y-tog" H.! HA.onclick "return toggleLog()" $
-            "lin/log"
+        H.button H.! HA.id "hist-y-tog" H.! HA.onclick "return toggleLog()" $
+          "lin/log"
+        H.select H.! HA.id "histsel" H.! HA.onchange "return histogramSelect()" $ do
+          H.option H.! HA.value mempty H.! HA.selected "selected" $ "Histogram"
+          H.optgroup H.! HA.label "Heatmap" $
+            forM_ (catalogFields cat) $ \f ->
+              when (typeIsFloating (fieldType f)) $
+                H.option H.! HA.value (H.textValue $ fieldName f) $ H.text $ fieldTitle f
         H.div H.! HA.id "hist" $ mempty
 
       H.h3 $ "Data Table"
@@ -242,6 +238,12 @@ comparePage = getPath "compare" $ \() req -> do
           H.td $ H.select H.! HA.id "addf"  H.! HA.onchange "return addField()"  $ mempty
         H.tr H.! HA.id "tr-comp" $
           H.td $ H.select H.! HA.id "compf" H.! HA.onchange "return compField()" $ mempty
+    H.button H.! HA.id "hist-tog" H.! HA.disabled "disabled" H.! HA.onclick "return histogram()" $ "histogram"
+    H.div H.! HA.id "dhist" $ do
+      H.div H.! HA.id "hist-y" $
+        H.button H.! HA.id "hist-y-tog" H.! HA.onclick "return toggleLog()" $
+          "lin/log"
+      H.div H.! HA.id "hist" $ mempty
 
 staticHtml :: Route [FilePathComponent]
 staticHtml = getPath ("html" R.*< R.manyI R.parameter) $ \paths q -> do

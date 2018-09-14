@@ -1,39 +1,29 @@
 "use strict";
 
 import $ from "jquery";
-import "datatables.net";
-import DataTablesScroller from "datatables.net-scroller";
+import Datatables from "datatables.net";
 import Highcharts from "highcharts";
-import { assert, Dict, Field, Catalog, AggrStats, AggrTerms, Aggr, CatalogResponse, fill_select_terms, field_option } from "./types";
+import Highcharts_heatmap from "highcharts/modules/heatmap";
+import { assert, Dict, Field, Catalog, AggrStats, AggrTerms, Aggr, CatalogResponse, fill_select_terms, field_option, toggle_log } from "./common";
 
-System.import('highcharts/modules/heatmap.js').then(m => m(Highcharts));
-
-DataTablesScroller();
+Datatables(window, $);
+Highcharts_heatmap(Highcharts);
 
 var TCat: DataTables.Api;
 declare const Catalog: Catalog;
-declare const Query: {offset:number, limit:number, sort:{field:string,asc:boolean}[], fields:string[], filter:{field:string,value:string|{lb:string,ub:string}}[], aggs:string[], hist:string|null};
+declare const Query: {offset:number, limit:number, sort:{field:string,asc:boolean}[], fields:string[], filter:{field:string,value:string|{lb:number,ub:number}}[], sample:number, seed:number|undefined, aggs:string[], hist:string|null};
 const Fields_idx: Dict<number> = {};
 const Filters: Array<Filter> = [];
 var Sample: number = 1;
 var Seed: undefined|number = 0;
 var Update_aggs: number = -1;
 var Histogram: undefined|NumericFilter;
-const Histogram_bins = 100;
-var Histogram_chart: Highcharts.ChartObject | undefined;
-var Heatmap_chart: Highcharts.ChartObject | undefined; 
-var Histogram_bin_width = 0;
+var Heatmap: undefined|Field;
+var Histogram_chart: Highcharts.ChartObject|undefined;
 var Last_fields: string[] = [];
 
-var url_dict = {};
-
-var Download_query: Dict<string> = {};
-function set_download(query: Dict<string> = Download_query) {
-  delete query.limit;
-  delete query.offset;
-  delete query.aggs;
-  delete query.hist;
-  const q = '?' + $.param(Download_query = query);
+function set_download(query: Dict<string>) {
+  const q = '?' + $.param(query);
   const h = $('#download').html('download as ');
   for (let f of Catalog.bulk) {
     const a = document.createElement('a');
@@ -45,34 +35,34 @@ function set_download(query: Dict<string> = Download_query) {
   }
 }
 
-function histogram(agg: AggrTerms<number>) {
-  const hist = Histogram;
-  if (!hist)
-    return;
+function histogramRemove() {
+  Histogram = undefined;
+  Heatmap = undefined;
+  (<HTMLSelectElement>document.getElementById('histsel')).value = '';
+  $('#dhist').hide();
+  $('#hist').empty();
+}
+
+function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrTerms<number>, size: number[]) {
   const field = hist.field;
-  const points = agg.buckets.map(d => { return {x:d.key,y:d.doc_count}; });
-  points.push({x:points[points.length-1].x+Histogram_bin_width,y:0});
-  const render = render_funct(hist.field);
-  $('#dhist').show();
-  Histogram_chart = Highcharts.chart('hist', {
-    chart: {
-      events: {
-        selection: function (event: Highcharts.ChartSelectionEvent) {
-          let left = event.xAxis[0].min;
-          let right = event.xAxis[0].max;
-          if (left == null || right == null || !(left < right)) {
-            /* select one bucket? ignore? */
-            return;
-          }
-          left  = Histogram_bin_width*Math.floor(left/Histogram_bin_width);
-          right = Histogram_bin_width*Math.ceil(right/Histogram_bin_width);
-          hist.setRange(left, right);
-          hist.change();
-          return false; // Don't zoom
-        }
-      },
-      zoomType: 'x',
-      animation: false
+  const data: number[][] = [];
+  for (let x of agg.buckets) {
+    if (heatmap && x.hist)
+      for (let y of x.hist.buckets)
+        data.push([x.key,y.key,y.doc_count]);
+    else
+      data.push([x.key,x.doc_count]);
+  }
+  if (data.length <= 1)
+    return histogramRemove();
+
+  const title = (f: Field) => { return {
+    // useHTML: true, // not enough for mathjax
+    text: f.title + (f.units ? ' [' + f.units + ']' : '')
+  } };
+  const opts = {
+    chart: <Highcharts.ChartOptions>{
+      animation: false,
     },
     legend: {
       enabled: false
@@ -83,116 +73,110 @@ function histogram(agg: AggrTerms<number>) {
     credits: {
       enabled: false
     },
-    xAxis: {
+    xAxis: <Highcharts.AxisOptions>{
       type: 'linear',
-      title: {
-        // useHTML: true, // not enough for mathjax
-        text: field.title + (field.units ? ' [' + field.units + ']' : '')
-      },
-      gridLineWidth: 1,
-      min: hist.lbv,
-      max: hist.ubv+Histogram_bin_width
+      title: title(field)
     },
-    yAxis: {
-      type: 'linear',
-      title: {
-        text: 'Count'
-      },
-      min: 0
+    yAxis: <Highcharts.AxisOptions>{
+      type: 'linear'
     },
-    tooltip: {
+    colorAxis: <Highcharts.ColorAxisOptions>{
+    },
+    tooltip: <Highcharts.TooltipOptions>{
       animation: false,
-      formatter: function (this: {x: number, y: number}): string {
-        return ('[' + render(this.x) + ',' + render(this.x+Histogram_bin_width) + '): ' + this.y + '\n(drag to filter)');
-      }
     },
-    plotOptions: {
-      area: {
-        step: 'left',
-        fillOpacity: 0.5,
-        animation: { duration: 0 },
-        marker: {
-          radius: 0
-        },
-        states: {
-          hover: {
-            enabled: false
-          }
+    plotOptions: <Highcharts.PlotOptions>{
+    },
+    series: <Highcharts.IndividualSeriesOptions[]>[]
+  };
+  const renderx = render_funct(hist.field);
+  if (heatmap) {
+    const wid = size.map(s => s/2);
+    for (let d of data) {
+      for (let i = 0; i < wid.length; i++)
+        d[i] += wid[i];
+    }
+    const rendery = render_funct(heatmap);
+    opts.tooltip.formatter = function (this: {point: {x: number, y: number, value: number}}): string {
+      const p = this.point;
+      return '[' + renderx(p.x-wid[0]) + ',' + renderx(p.x+wid[0]) + ')&' + 
+             '[' + rendery(p.y-wid[1]) + ',' + rendery(p.y+wid[1]) + '): ' +
+        p.value + '\n(drag to filter)';
+    };
+    opts.yAxis.title = title(heatmap);
+    opts.colorAxis.id = 'tog';
+    opts.colorAxis.type = 'linear';
+    opts.colorAxis.min = 0;
+    opts.colorAxis.minColor = '#ffffff';
+    opts.series.push(<Highcharts.IndividualSeriesOptions>{
+      type: 'heatmap',
+      data: data,
+      colsize: size[0],
+      rowsize: size[1],
+      pointPlacement: 0.5,
+      step: 'left',
+    });
+  } else {
+    const wid = size[0];
+    data.push([data[data.length-1][0]+wid,0]);
+
+    opts.chart.zoomType = 'x';
+    opts.chart.events = {
+      selection: function (event: Highcharts.ChartSelectionEvent) {
+        let left = event.xAxis[0].min;
+        let right = event.xAxis[0].max;
+        if (left == null || right == null || !(left < right)) {
+          /* select one bucket? ignore? */
+          return;
+        }
+        left  = wid*Math.floor(left/wid);
+        right = wid*Math.ceil(right/wid);
+        hist.setRange(left, right);
+        hist.change();
+        return false; // Don't zoom
+      }
+    };
+    opts.tooltip.formatter = function (this: {x: number, y: number}): string {
+      return '[' + renderx(this.x) + ',' + renderx(this.x+wid) + '): ' + this.y + '\n(drag to filter)';
+    };
+    opts.xAxis.min = hist.lbv;
+    opts.xAxis.max = hist.ubv+wid;
+    opts.xAxis.gridLineWidth = 1;
+    opts.yAxis.id = 'tog';
+    opts.yAxis.title = { text: 'Count' };
+    opts.yAxis.min = 0;
+    opts.plotOptions.area = {
+      step: 'left',
+      fillOpacity: 0.5,
+      animation: { duration: 0 },
+      marker: {
+        radius: 0
+      },
+      states: {
+        hover: {
+          enabled: false
         }
       }
-    },
-    series: [{
+    };
+    opts.series.push(<Highcharts.IndividualSeriesOptions>{
       type: 'area',
-      data: points,
-      color: '#555555',
-    }]
-  });
-}
-function heatmapChart() {
-  console.log('heatmap');
-  let fake_data = generateData();
-  Heatmap_chart = Highcharts.chart('hist', {
-    chart: {
-      inverted: true
-    },
-    yAxis: {
-      title: {
-        text: null
-      },
-      minPadding: 0,
-      maxPadding: 0,
-      startOnTick: false,
-      endOnTick: false
-    },
-
-    colorAxis: {
-      stops: [
-        [0.0, '00000'],
-        [0.25, '#3060cf'],
-        [0.5, '#fffbbc'],
-        [0.9, '#c4463a']
-      ],
-    },
-    series: [{
-      type: 'heatmap',
-      data: fake_data,
-      borderWidth: 0
-    }]
-  });
-}
-
-(<any>window).heatmap = function heatmap() {
-  console.log('chart');
-  heatmapChart();
-}
-
-function generateData() {
-  let data = [];
-  for (let i = 0; i < 100; i++) {
-    for (let j = 0; j <100; j++) { 
-      data.push([i, j, Math.floor(Math.random() * Math.floor(100))]);
+      data: data,
+    });
   }
-  }
-  return data;
+  $('#dhist').show();
+  Histogram_chart = Highcharts.chart('hist', opts);
 }
 
 (<any>window).toggleLog = function toggleLog() {
-  if (!Histogram_chart)
-    return;
-  const axis = Histogram_chart.yAxis[0];
-  if ((<any>axis).userOptions.type !== 'linear') {
-    axis.update({
-      min: 0,
-      type: 'linear'
-    });
-  }
-  else {
-    axis.update({
-      min: 0.1, 
-      type: 'logarithmic'
-    });
-  }
-}
+  if (Histogram_chart)
+    toggle_log(Histogram_chart);
+};
+
+(<any>window).histogramSelect = function histogramSelect() {
+  const sel = <HTMLSelectElement>document.getElementById('histsel');
+  Heatmap = Catalog.fields[Fields_idx[sel.value]];
+  TCat.draw();
+};
 
 /* elasticsearch max_result_window */
 const displayLimit = 10000;
@@ -227,14 +211,13 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
   query.fields = Last_fields.join(' ');
   if (aggs)
     query.aggs = aggs.map((filt) => filt.name).join(' ');
-  if (Histogram) {
-    const wid = Histogram.ubv - Histogram.lbv;
-    if (wid && wid > 0) {
-      Histogram_bin_width = wid/Histogram_bins;
-      if (Histogram.field.base === "i")
-        Histogram_bin_width = Math.ceil(Histogram_bin_width);
-      query.hist = Histogram.name + ':' + Histogram_bin_width;
-    }
+  const histogram = Histogram;
+  const heatmap = Histogram && Heatmap;
+  if (histogram) {
+    if (heatmap)
+      query.hist = histogram.name+':16 ' + heatmap.name+':16';
+    else
+      query.hist = histogram.name+':128';
   }
   $('td.loading').show();
   $.ajax({
@@ -255,8 +238,8 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
     for (let filt of aggs)
       filt.update_aggs((res.aggregations as Dict<Aggr>)[filt.name]);
     Update_aggs = Filters.length;
-    if (res.aggregations && res.aggregations.hist)
-      histogram(res.aggregations.hist as AggrTerms<number>);
+    if (histogram && res.aggregations && res.aggregations.hist)
+      histogramDraw(histogram, heatmap, res.aggregations.hist as AggrTerms<number>, res.histsize);
 
     delete query.aggs;
     delete query.hist;
@@ -275,8 +258,8 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
 }
 
 function add_filt_row(name: string, ...nodes: Array<JQuery.htmlString | JQuery.TypeOrArray<JQuery.Node | JQuery<JQuery.Node>>>) {
-  const id = 'filt-' + name;
-  let tr = <HTMLTableRowElement | null>document.getElementById(id);
+  const id = 'filt-'+name;
+  let tr = <HTMLTableRowElement|null>document.getElementById(id);
   if (tr) return;
   const tab = <HTMLTableElement>document.getElementById('filt');
   tr = document.createElement('tr');
@@ -328,18 +311,20 @@ function add_sample() {
 }
 
 abstract class Filter {
-  name: string
   protected tcol: DataTables.ColumnMethods
   private label: JQuery<HTMLSpanElement>
 
   constructor(public field: Field) {
-    this.name = this.field.name
-    this.tcol = TCat.column(this.name + ':name');
+    this.tcol = TCat.column(this.name+':name');
     // columnVisible(this.name, true);
     this.label = $(document.createElement('span'));
     this.label.append($('<button class="remove">&times;</button>')
       .on('click', this.remove.bind(this)),
       this.field.title);
+  }
+
+  get name(): string {
+    return this.field.name;
   }
 
   protected add(...nodes: Array<JQuery.TypeOrArray<JQuery.Node | JQuery<JQuery.Node>>>) {
@@ -352,7 +337,7 @@ abstract class Filter {
   protected change(search: any, vis: boolean) {
     const i = Filters.indexOf(this);
     if (i >= 0 && Update_aggs > i)
-      Update_aggs = i + 1;
+      Update_aggs = i+1;
     columnVisible(this.name, vis);
     this.tcol.draw();
   }
@@ -362,14 +347,14 @@ abstract class Filter {
     const i = Filters.indexOf(this);
     if (i < 0) return;
     Filters.splice(i, 1);
-    $('tr#filt-' + this.name).remove();
+    $('tr#filt-'+this.name).remove();
     Update_aggs = i;
     columnVisible(this.name, true);
     this.tcol.draw();
   }
 
-  abstract query(): string | undefined
-  abstract pyQuery(): string | undefined
+  abstract query(): string|undefined
+  abstract pyQuery(): string|undefined
 }
 
 class SelectFilter extends Filter {
@@ -408,13 +393,13 @@ class SelectFilter extends Filter {
       this.select.value = val;
   }
 
-  query(): string | undefined {
+  query(): string|undefined {
     const val = this.select.value;
     if (val)
       return val;
   }
 
-  pyQuery(): string | undefined {
+  pyQuery(): string|undefined {
     const val = this.select.value;
     if (val)
       return JSON.stringify(val);
@@ -428,8 +413,8 @@ class NumericFilter extends Filter {
 
   private makeBound(w: boolean): HTMLInputElement {
     const b = <HTMLInputElement>document.createElement('input');
-    b.name = this.name + "." + (w ? "u" : "l") + "b";
-    b.title = (w ? "Upper" : "Lower") + " bound for " + this.field.title + " values"
+    b.name = this.name+"."+(w?"u":"l")+"b";
+    b.title = (w?"Upper":"Lower")+" bound for " + this.field.title + " values"
     b.type = "number";
     b.step = this.field.base == "i" ? <any>1 : "any";
     b.disabled = true;
@@ -467,16 +452,16 @@ class NumericFilter extends Filter {
   }
 
   change() {
-    super.change(this.lbv + " TO " + this.ubv, this.lbv != this.ubv);
+    super.change(this.lbv+" TO "+this.ubv, this.lbv!=this.ubv);
   }
 
   query(): string {
     const lbv = this.lbv;
-    const ubv = this.ubv;
+    const ubv =  this.ubv;
     if (lbv == ubv)
       return <any>lbv;
     else
-      return lbv + ' ' + ubv;
+      return lbv+' '+ubv;
   }
 
   pyQuery(): string {
@@ -488,14 +473,17 @@ class NumericFilter extends Filter {
       return '(' + JSON.stringify(lbv) + ', ' + JSON.stringify(ubv) + ')';
   }
 
+  private histogramRemove(): boolean {
+    if (Histogram !== this)
+      return false;
+    histogramRemove();
+    return true;
+  }
+
   private histogram() {
-    if (Histogram !== this) {
+    if (!this.histogramRemove()) {
       Histogram = this;
       this.tcol.draw(false);
-    }
-    else {
-      Histogram = undefined;
-      $('#dhist').hide();
     }
   }
 
@@ -506,11 +494,8 @@ class NumericFilter extends Filter {
   }
 
   protected remove() {
+    this.histogramRemove();
     super.remove();
-    if (Histogram === this) {
-      Histogram = undefined;
-      $('#dhist').hide();
-    }
   }
 
   setRange(lbv: number, ubv: number) {
@@ -519,7 +504,7 @@ class NumericFilter extends Filter {
   }
 }
 
-function add_filter(idx: number): Filter | undefined {
+function add_filter(idx: number): Filter|undefined {
   const field = Catalog.fields[idx];
   if (!TCat || !field)
     return;
@@ -534,21 +519,23 @@ function add_filter(idx: number): Filter | undefined {
 function colvisNames(box: HTMLInputElement): string[] {
   const l: string[] = [];
   for (let k of <any>box.classList as string[]) {
-    l.push(k.substr(7));
+    if (k.startsWith('colvis-'))
+      l.push(k.substr(7));
   }
   return l;
 }
 
-function colvisUpdate(box: HTMLInputElement, vis: boolean) {
-  const v: boolean[] = (<any>TCat.columns(colvisNames(box).map(n => n + ":name")).visible() as JQuery<boolean>).toArray();
-  // vis = v.shift();
+function colvisUpdate(box: HTMLInputElement, vis?: boolean) {
+  const v: boolean[] = (<any>TCat.columns(colvisNames(box).map(n => n+":name")).visible() as JQuery<boolean>).toArray();
+  if (vis == null)
+    vis = v.shift() || false;
   box.checked = vis;
   box.indeterminate = v.some(x => x !== vis);
 }
 
 function columnVisible(name: string, vis: boolean) {
-  TCat.column(name + ":name").visible(vis);
-  for (let b of <any>document.getElementsByClassName('colvis-' + name) as Element[])
+  TCat.column(name+":name").visible(vis);
+  for (let b of <any>document.getElementsByClassName('colvis-'+name) as Element[])
     colvisUpdate(<HTMLInputElement>b, vis);
   if (vis && Last_fields.indexOf(name) < 0)
     TCat.draw();
@@ -634,9 +621,10 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
       topts.order = Query.sort.map((o) => {
         return [Fields_idx[o.field], o.asc ? 'asc' : 'desc'];
       });
-    if (Query.fields && Query.fields.length && topts.columns)
+    if (Query.fields && Query.fields.length && topts.columns) {
       for (let c of topts.columns)
-        c.visible = Query.fields.indexOf(<string>c.name) >= 0; // FIXME: colvis
+        c.visible = Query.fields.indexOf(<string>c.name) >= 0;
+    }
   }
   TCat = table.DataTable(topts);
   /* for debugging: */
@@ -663,11 +651,13 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
       if (fi == null)
         continue;
       const filt = add_filter(fi);
-      if (filt instanceof NumericFilter && typeof (f.value) === 'object')
+      if (filt instanceof NumericFilter && typeof(f.value) === 'object')
         filt.setRange(f.value.lb, f.value.ub);
-      if (filt instanceof SelectFilter && typeof (f.value) !== 'object')
+      if (filt instanceof SelectFilter && typeof(f.value) !== 'object')
         filt.setValue(f.value);
     }
   }
+  for (let b of <any>document.getElementsByClassName('colvis') as HTMLInputElement[])
+    colvisUpdate(b);
   TCat.draw();
 }
