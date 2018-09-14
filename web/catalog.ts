@@ -6,6 +6,8 @@ import DataTablesScroller from "datatables.net-scroller";
 import Highcharts from "highcharts";
 import { assert, Dict, Field, Catalog, AggrStats, AggrTerms, Aggr, CatalogResponse, fill_select_terms, field_option } from "./types";
 
+System.import('highcharts/modules/heatmap.js').then(m => m(Highcharts));
+
 DataTablesScroller();
 
 var TCat: DataTables.Api;
@@ -18,7 +20,8 @@ var Seed: undefined|number = 0;
 var Update_aggs: number = -1;
 var Histogram: undefined|NumericFilter;
 const Histogram_bins = 100;
-var Histogram_chart: Highcharts.ChartObject|undefined;
+var Histogram_chart: Highcharts.ChartObject | undefined;
+var Heatmap_chart: Highcharts.ChartObject | undefined; 
 var Histogram_bin_width = 0;
 var Last_fields: string[] = [];
 
@@ -125,6 +128,53 @@ function histogram(agg: AggrTerms<number>) {
     }]
   });
 }
+function heatmapChart() {
+  console.log('heatmap');
+  let fake_data = generateData();
+  Heatmap_chart = Highcharts.chart('hist', {
+    chart: {
+      inverted: true
+    },
+    yAxis: {
+      title: {
+        text: null
+      },
+      minPadding: 0,
+      maxPadding: 0,
+      startOnTick: false,
+      endOnTick: false
+    },
+
+    colorAxis: {
+      stops: [
+        [0.0, '00000'],
+        [0.25, '#3060cf'],
+        [0.5, '#fffbbc'],
+        [0.9, '#c4463a']
+      ],
+    },
+    series: [{
+      type: 'heatmap',
+      data: fake_data,
+      borderWidth: 0
+    }]
+  });
+}
+
+(<any>window).heatmap = function heatmap() {
+  console.log('chart');
+  heatmapChart();
+}
+
+function generateData() {
+  let data = [];
+  for (let i = 0; i < 100; i++) {
+    for (let j = 0; j <100; j++) { 
+      data.push([i, j, Math.floor(Math.random() * Math.floor(100))]);
+  }
+  }
+  return data;
+}
 
 (<any>window).toggleLog = function toggleLog() {
   if (!Histogram_chart)
@@ -180,13 +230,8 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
   if (Histogram) {
     const wid = Histogram.ubv - Histogram.lbv;
     if (wid && wid > 0) {
-<<<<<<< HEAD
-      Histogram_bin_width = wid / Histogram_bins;
-      if (Histogram.field.base == "i")
-=======
       Histogram_bin_width = wid/Histogram_bins;
       if (Histogram.field.base === "i")
->>>>>>> upstream/highcharts
         Histogram_bin_width = Math.ceil(Histogram_bin_width);
       query.hist = Histogram.name + ':' + Histogram_bin_width;
     }

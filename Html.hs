@@ -183,7 +183,7 @@ simulationPage = getPath R.parameter $ \sim req -> do
       H.p $ "Query and explore a subset using the filters, download your selection using the link below, or get the full dataset above."
       H.table H.! HA.id "filt" $ mempty
       H.div H.! HA.id "dhist" $ do
-        H.select $ do
+        H.select H.! HA.onchange "return heatmap()" $ do
             H.option "Histogram"
             forM_ (catalogFieldGroups cat) $ \f -> do
                 when (typeIsFloating (fieldType f)) $ do
