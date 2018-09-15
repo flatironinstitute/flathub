@@ -4,7 +4,7 @@ import $ from "jquery";
 import Datatables from "datatables.net";
 import Highcharts from "highcharts";
 import Highcharts_heatmap from "highcharts/modules/heatmap";
-import { assert, Dict, Field, Catalog, AggrStats, AggrTerms, Aggr, CatalogResponse, fill_select_terms, field_option, toggle_log } from "./common";
+import { assert, Dict, Field, Catalog, AggrStats, AggrTerms, Aggr, CatalogResponse, fill_select_terms, field_option, toggle_log, axis_title, render_funct, histogram_options } from "./common";
 
 Datatables(window, $);
 Highcharts_heatmap(Highcharts);
@@ -36,6 +36,9 @@ function set_download(query: Dict<string>) {
 }
 
 function histogramRemove() {
+  if (Histogram_chart)
+    Histogram_chart.destroy();
+  Histogram_chart = undefined;
   Histogram = undefined;
   Heatmap = undefined;
   (<HTMLSelectElement>document.getElementById('histsel')).value = '';
@@ -56,39 +59,7 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrT
   if (data.length <= 1)
     return histogramRemove();
 
-  const title = (f: Field) => { return {
-    // useHTML: true, // not enough for mathjax
-    text: f.title + (f.units ? ' [' + f.units + ']' : '')
-  } };
-  const opts = {
-    chart: <Highcharts.ChartOptions>{
-      animation: false,
-    },
-    legend: {
-      enabled: false
-    },
-    title: {
-      text: null
-    },
-    credits: {
-      enabled: false
-    },
-    xAxis: <Highcharts.AxisOptions>{
-      type: 'linear',
-      title: title(field)
-    },
-    yAxis: <Highcharts.AxisOptions>{
-      type: 'linear'
-    },
-    colorAxis: <Highcharts.ColorAxisOptions>{
-    },
-    tooltip: <Highcharts.TooltipOptions>{
-      animation: false,
-    },
-    plotOptions: <Highcharts.PlotOptions>{
-    },
-    series: <Highcharts.IndividualSeriesOptions[]>[]
-  };
+  const opts: Highcharts.Options = histogram_options(field);
   const renderx = render_funct(hist.field);
   if (heatmap) {
     const wid = size.map(s => s/2);
@@ -96,32 +67,31 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrT
       for (let i = 0; i < wid.length; i++)
         d[i] += wid[i];
     }
+    (<Highcharts.ChartOptions>opts.chart).zoomType = undefined;
     const rendery = render_funct(heatmap);
-    opts.tooltip.formatter = function (this: {point: {x: number, y: number, value: number}}): string {
+    (<Highcharts.TooltipOptions>opts.tooltip).formatter = function (this: {point: {x: number, y: number, value: number}}): string {
       const p = this.point;
       return '[' + renderx(p.x-wid[0]) + ',' + renderx(p.x+wid[0]) + ')&' + 
              '[' + rendery(p.y-wid[1]) + ',' + rendery(p.y+wid[1]) + '): ' +
         p.value + '\n(drag to filter)';
     };
-    opts.yAxis.title = title(heatmap);
-    opts.colorAxis.id = 'tog';
-    opts.colorAxis.type = 'linear';
-    opts.colorAxis.min = 0;
+    opts.colorAxis = <Highcharts.ColorAxisOptions>opts.yAxis;
     opts.colorAxis.minColor = '#ffffff';
-    opts.series.push(<Highcharts.IndividualSeriesOptions>{
+    opts.yAxis = {
+      type: 'linear',
+      title: axis_title(heatmap)
+    };
+    opts.series = [<Highcharts.IndividualSeriesOptions>{
       type: 'heatmap',
       data: data,
       colsize: size[0],
-      rowsize: size[1],
-      pointPlacement: 0.5,
-      step: 'left',
-    });
+      rowsize: size[1]
+    }];
   } else {
     const wid = size[0];
     data.push([data[data.length-1][0]+wid,0]);
 
-    opts.chart.zoomType = 'x';
-    opts.chart.events = {
+    (<Highcharts.ChartOptions>opts.chart).events = {
       selection: function (event: Highcharts.ChartSelectionEvent) {
         let left = event.xAxis[0].min;
         let right = event.xAxis[0].max;
@@ -136,32 +106,15 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrT
         return false; // Don't zoom
       }
     };
-    opts.tooltip.formatter = function (this: {x: number, y: number}): string {
+    (<Highcharts.TooltipOptions>opts.tooltip).formatter = function (this: {x: number, y: number}): string {
       return '[' + renderx(this.x) + ',' + renderx(this.x+wid) + '): ' + this.y + '\n(drag to filter)';
     };
-    opts.xAxis.min = hist.lbv;
-    opts.xAxis.max = hist.ubv+wid;
-    opts.xAxis.gridLineWidth = 1;
-    opts.yAxis.id = 'tog';
-    opts.yAxis.title = { text: 'Count' };
-    opts.yAxis.min = 0;
-    opts.plotOptions.area = {
-      step: 'left',
-      fillOpacity: 0.5,
-      animation: { duration: 0 },
-      marker: {
-        radius: 0
-      },
-      states: {
-        hover: {
-          enabled: false
-        }
-      }
-    };
-    opts.series.push(<Highcharts.IndividualSeriesOptions>{
+    (<Highcharts.AxisOptions>opts.xAxis).min = hist.lbv;
+    (<Highcharts.AxisOptions>opts.xAxis).max = hist.ubv+wid;
+    opts.series = [<Highcharts.IndividualSeriesOptions>{
       type: 'area',
       data: data,
-    });
+    }];
   }
   $('#dhist').show();
   Histogram_chart = Highcharts.chart('hist', opts);
@@ -428,9 +381,10 @@ class NumericFilter extends Filter {
     this.ub = this.makeBound(true);
     this.avg = document.createElement('span');
     this.avg.innerHTML = "<em>loading...</em>";
+    const render = render_funct(this.field);
     this.add(
       $('<span>').append(this.lb).append(' &ndash; ').append(this.ub),
-      $('<span><em>&mu;</em> = </span>').append(this.avg),
+      $('<span><em>&mu;</em> = </span>').append(render(this.avg)),
       $('<button>histogram</button>').on('click', this.histogram.bind(this)),
       $('<button>reset</button>').on('click', this.reset.bind(this))
     );
@@ -567,16 +521,6 @@ function py_text() {
 
 function url_update(query: Dict<string>) {
   history.replaceState({}, '', location.origin + location.pathname + '?' + $.param(query));
-}
-
-function render_funct(field: Field): (data: any) => string {
-  if (field.base === 'f')
-    return (data) => data != undefined ? parseFloat(data).toPrecision(8) : data;
-  if (field.enum) {
-    const e: string[] = field.enum;
-    return (data) => data in e ? e[data] : data;
-  }
-  return (data) => data;
 }
 
 (<any>window).toggleDisplay = function toggleDisplay(ele: string) {

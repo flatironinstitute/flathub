@@ -1,7 +1,8 @@
 "use strict";
 
 import $ from "jquery";
-import { assert, Dict, Field, Catalog, Aggr, AggrTerms, AggrStats, CatalogResponse, fill_select_terms, field_option, toggle_log } from "./common";
+import Highcharts from "highcharts";
+import { assert, Dict, Field, Catalog, Aggr, AggrTerms, AggrStats, CatalogResponse, fill_select_terms, field_option, toggle_log, axis_title, render_funct, histogram_options } from "./common";
 
 const Max_compare = 4;
 
@@ -16,6 +17,7 @@ var TComp: HTMLTableElement;
 const Aggs: Dict<Dict<Aggr>> = {};
 const Aggs_req: Dict<Dict<(a: Aggr) => void>> = {};
 
+var CompField: undefined|CField;
 var Histogram: Highcharts.ChartObject|undefined;
 
 var Aggs_timeout: number|undefined;
@@ -135,7 +137,7 @@ class CField {
       return this.field;
     if (!this.cat)
       return catalog.fields.find((f: Field) => f.dict === this.field.name);
-    return undefined;
+    return;
   }
 
   add() {
@@ -209,6 +211,8 @@ class Compare {
       Compares.every(c => !c.filters[i]));
     for (let f of old)
       f.remove();
+
+    /* TODO: histogram */
   }
 
   fillField(cf: CField, add: boolean = false): boolean {
@@ -249,20 +253,21 @@ class Compare {
     return filt;
   }
 
-  updateResults(r: HTMLTableRowElement, cf: CField|null): boolean {
+  updateResults(r: HTMLTableRowElement): boolean {
     const cell = tr_cell(r, this.col);
-    let f = cf && cf.onCatalog(this.catalog);
+    let f = CompField && CompField.onCatalog(this.catalog);
     while (cell.lastChild)
       cell.removeChild(cell.lastChild);
     if (!f)
       return false;
     const n = f.name;
+    const render = render_funct(f);
 
     const q = this.query();
     q.limit = <any>0;
     q.aggs = n;
-    /* if (Histogram)
-      q.hist = n; */
+    if (Histogram)
+      q.hist = n+':128';
     $.ajax({
       method: 'GET',
       url: '/' + this.catalog.name + '/catalog',
@@ -272,10 +277,25 @@ class Compare {
       if (!r)
         return;
       let a = r[n] as AggrStats;
-      cell.appendChild(document.createTextNode(a.min + ' \u2013 ' + a.max));
+      cell.appendChild(document.createTextNode(render(a.min) + ' \u2013 ' + render(a.max)));
       cell.appendChild(document.createElement('br'));
       cell.appendChild(document.createElement('em')).appendChild(document.createTextNode('\u03bc'));
-      cell.appendChild(document.createTextNode(' = ' + a.avg));
+      cell.appendChild(document.createTextNode(' = ' + render(a.avg)));
+      if (r.hist && Histogram) {
+        const idx = this.idx;
+        const data = (<AggrTerms<number>>r.hist).buckets.map(x => [x.key,x.doc_count] as [number,number]);
+        const opts = {
+          id: idx.toString(),
+          index: idx,
+          type: 'area',
+          name: this.catalog.name,
+          data: data
+        };
+        if (Histogram.series[idx])
+          Histogram.update({series: [opts]}, true, false, false);
+        else
+          Histogram.addSeries(opts, true, false);
+      }
     });
     return true;
   }
@@ -361,7 +381,6 @@ class NumericFilter extends Filter {
 function update_fields() {
   const asel = <HTMLSelectElement>document.getElementById('addf');
   const csel = <HTMLSelectElement>document.getElementById('compf');
-  let cval = csel.value;
   while (asel.lastChild)
     asel.removeChild(asel.lastChild);
   while (csel.lastChild)
@@ -421,13 +440,14 @@ function update_fields() {
       }
     }
   }
-  csel.value = cval;
+  csel.value = CompField ? CompField.id : '';
+  CompField = selected_field(csel);
 }
 
-function selected_field(sel: HTMLSelectElement): CField|null {
+function selected_field(sel: HTMLSelectElement): CField|undefined {
   const v = sel.value;
   if (!v)
-    return null;
+    return;
   const [c,n] = v.split('.', 2);
   return new CField(c, n);
 }
@@ -444,14 +464,20 @@ function update_comp(...comps: Compare[]) {
   if (!comps.length)
     comps = Compares;
   const sel = <HTMLSelectElement>document.getElementById('compf');
-  const cf = selected_field(sel);
+  CompField = selected_field(sel);
   const r = <HTMLTableRowElement>document.getElementById('tr-comp');
   let valid = false;
   for (let c of comps) {
-    if (c.updateResults(r, cf))
+    if (c.updateResults(r))
       valid = true;
   }
-  if (comps === Compares) {
+  if (CompField && Histogram)
+    Histogram.update({
+      xAxis: {
+        title: axis_title(CompField.field)
+      }
+    });
+  else if (comps === Compares) {
     const histTog = <HTMLButtonElement>document.getElementById('hist-tog');
     histTog.disabled = !valid;
   }
@@ -475,6 +501,21 @@ function selectCat(sel: HTMLSelectElement) {
 (<any>window).selectCat = selectCat;
 
 (<any>window).histogram = function histogram() {
+  if (Histogram) {
+    Histogram.destroy();
+    Histogram = undefined;
+    $('#dhist').hide();
+    $('#hist').empty();
+    return;
+  }
+  if (!CompField)
+    return;
+
+  $('#dhist').show();
+  const opts = histogram_options(CompField.field);
+  (<Highcharts.LegendOptions>opts.legend).enabled = true;
+  Histogram = Highcharts.chart('hist', opts);
+  update_comp();
 }
 
 export function initCompare(table: HTMLTableElement) {
