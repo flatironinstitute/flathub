@@ -119,6 +119,7 @@ export function axis_title(f: Field) {
 }
 
 export function histogram_options(f: Field): Highcharts.Options {
+  const render = render_funct(f);
   return {
     chart: {
       animation: false,
@@ -146,10 +147,14 @@ export function histogram_options(f: Field): Highcharts.Options {
     },
     tooltip: {
       animation: false,
+      formatter: function (this: Highcharts.PointObject): string {
+        return '[' + render(this.x) + ',' + render(this.x+<number>(<Highcharts.AreaChartSeriesOptions>this.series.options).pointInterval) + '): ' + this.y;
+      }
     },
     plotOptions: {
       area: {
         step: 'left',
+        pointPlacement: 'between',
         fillOpacity: 0.5,
         animation: { duration: 0 },
         marker: {
@@ -163,4 +168,8 @@ export function histogram_options(f: Field): Highcharts.Options {
       }
     }
   };
+}
+
+(<any>window).toggleDisplay = function toggleDisplay(ele: string) {
+  $('#'+ele).toggle();
 }

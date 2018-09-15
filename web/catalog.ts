@@ -60,7 +60,6 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrT
     return histogramRemove();
 
   const opts: Highcharts.Options = histogram_options(field);
-  const renderx = render_funct(hist.field);
   if (heatmap) {
     const wid = size.map(s => s/2);
     for (let d of data) {
@@ -68,12 +67,13 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrT
         d[i] += wid[i];
     }
     (<Highcharts.ChartOptions>opts.chart).zoomType = undefined;
+    const renderx = render_funct(hist.field);
     const rendery = render_funct(heatmap);
     (<Highcharts.TooltipOptions>opts.tooltip).formatter = function (this: {point: {x: number, y: number, value: number}}): string {
       const p = this.point;
-      return '[' + renderx(p.x-wid[0]) + ',' + renderx(p.x+wid[0]) + ')&' + 
+      return '[' + renderx(p.x-wid[0]) + ',' + renderx(p.x+wid[0]) + ') & ' + 
              '[' + rendery(p.y-wid[1]) + ',' + rendery(p.y+wid[1]) + '): ' +
-        p.value + '\n(drag to filter)';
+             p.value;
     };
     opts.colorAxis = <Highcharts.ColorAxisOptions>opts.yAxis;
     opts.colorAxis.minColor = '#ffffff';
@@ -106,21 +106,20 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrT
         return false; // Don't zoom
       }
     };
-    (<Highcharts.TooltipOptions>opts.tooltip).formatter = function (this: {x: number, y: number}): string {
-      return '[' + renderx(this.x) + ',' + renderx(this.x+wid) + '): ' + this.y + '\n(drag to filter)';
-    };
+    (<Highcharts.TooltipOptions>opts.tooltip).footerFormat = 'drag to filter';
     (<Highcharts.AxisOptions>opts.xAxis).min = hist.lbv;
     (<Highcharts.AxisOptions>opts.xAxis).max = hist.ubv+wid;
     opts.series = [<Highcharts.IndividualSeriesOptions>{
       type: 'area',
       data: data,
+      pointInterval: wid,
     }];
   }
   $('#dhist').show();
   Histogram_chart = Highcharts.chart('hist', opts);
 }
 
-(<any>window).toggleLog = function toggleLog() {
+function toggleLog() {
   if (Histogram_chart)
     toggle_log(Histogram_chart);
 };
@@ -133,8 +132,11 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrT
 
 /* elasticsearch max_result_window */
 const displayLimit = 10000;
+var pending = false;
 
 function ajax(data: any, callback: ((data: any) => void), opts: any) {
+  if (pending)
+    return;
   const query: Dict<string> = {
     sort: data.order.map((o: any) => {
       return (o.dir == "asc" ? '' : '-') + data.columns[o.column].data;
@@ -173,11 +175,13 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
       query.hist = histogram.name+':128';
   }
   $('td.loading').show();
+  pending = true;
   $.ajax({
     method: 'GET',
     url: '/' + Catalog.name + '/catalog',
     data: query
   }).then((res: CatalogResponse) => {
+    pending = false;
     $('td.loading').hide();
     Catalog.count = Math.max(Catalog.count || 0, res.hits.total);
     const settings = (<any>TCat.settings())[0];
@@ -201,6 +205,7 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
     delete query.offset;
     set_download(query);
   }, (xhr, msg, err) => {
+    pending = false;
     callback({
       draw: data.draw,
       data: [],
@@ -381,10 +386,9 @@ class NumericFilter extends Filter {
     this.ub = this.makeBound(true);
     this.avg = document.createElement('span');
     this.avg.innerHTML = "<em>loading...</em>";
-    const render = render_funct(this.field);
     this.add(
       $('<span>').append(this.lb).append(' &ndash; ').append(this.ub),
-      $('<span><em>&mu;</em> = </span>').append(render(this.avg)),
+      $('<span><em>&mu;</em> = </span>').append(this.avg),
       $('<button>histogram</button>').on('click', this.histogram.bind(this)),
       $('<button>reset</button>').on('click', this.reset.bind(this))
     );
@@ -402,7 +406,7 @@ class NumericFilter extends Filter {
     this.lb.defaultValue = this.lb.min = this.ub.min = <any>aggs.min;
     this.ub.defaultValue = this.lb.max = this.ub.max = <any>aggs.max;
     this.lb.disabled = this.ub.disabled = false;
-    this.avg.textContent = <any>aggs.avg;
+    this.avg.textContent = render_funct(this.field)(aggs.avg);
   }
 
   change() {
@@ -523,10 +527,6 @@ function url_update(query: Dict<string>) {
   history.replaceState({}, '', location.origin + location.pathname + '?' + $.param(query));
 }
 
-(<any>window).toggleDisplay = function toggleDisplay(ele: string) {
-  $('#'+ele).toggle();
-}
-
 export function initCatalog(table: JQuery<HTMLTableElement>) {
   for (let i = 0; i < Catalog.fields.length; i++)
     Fields_idx[Catalog.fields[i].name] = i;
@@ -604,4 +604,5 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
   for (let b of <any>document.getElementsByClassName('colvis') as HTMLInputElement[])
     colvisUpdate(b);
   TCat.draw();
+  (<any>window).toggleLog = toggleLog;
 }

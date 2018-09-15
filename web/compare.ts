@@ -178,10 +178,15 @@ class CField {
   }
 }
 
+var Compare_unique = 1;
+
 class Compare {
   public filters: Array<Filter> = []
+  private unique: string;
+  private pending: boolean = false;
 
   constructor(public catalog: Catalog, idx: number) {
+    this.unique = String(Compare_unique++);
     Compares[idx] = this;
 
     for (let f of this.catalog.fields) {
@@ -200,19 +205,15 @@ class Compare {
   }
 
   remove() {
-    let col = this.col;
-    Compares.splice(this.idx, 1);
-    for (let r of <any>TComp.rows as HTMLTableRowElement[])
-      if (r.cells.length > col)
-        r.deleteCell(col);
-
     /* remove unnecessary fields */
     const old = Fields.filter((f: CField, i: number) =>
       Compares.every(c => !c.filters[i]));
     for (let f of old)
       f.remove();
 
-    /* TODO: histogram */
+    const series = Histogram && Histogram.get(this.unique);
+    if (series)
+      series.remove();
   }
 
   fillField(cf: CField, add: boolean = false): boolean {
@@ -260,6 +261,9 @@ class Compare {
       cell.removeChild(cell.lastChild);
     if (!f)
       return false;
+    if (this.pending)
+      return true;
+    this.pending = true;
     const n = f.name;
     const render = render_funct(f);
 
@@ -273,6 +277,7 @@ class Compare {
       url: '/' + this.catalog.name + '/catalog',
       data: q
     }).then((res: CatalogResponse) => {
+      this.pending = false;
       const r = res.aggregations;
       if (!r)
         return;
@@ -281,21 +286,27 @@ class Compare {
       cell.appendChild(document.createElement('br'));
       cell.appendChild(document.createElement('em')).appendChild(document.createTextNode('\u03bc'));
       cell.appendChild(document.createTextNode(' = ' + render(a.avg)));
+
       if (r.hist && Histogram) {
-        const idx = this.idx;
+        const wid = res.histsize[0];
         const data = (<AggrTerms<number>>r.hist).buckets.map(x => [x.key,x.doc_count] as [number,number]);
+        data.push([data[data.length-1][0]+wid,0]);
         const opts = {
-          id: idx.toString(),
-          index: idx,
+          id: this.unique,
+          index: this.idx,
           type: 'area',
           name: this.catalog.name,
-          data: data
+          data: data,
+          pointInterval: wid,
         };
-        if (Histogram.series[idx])
-          Histogram.update({series: [opts]}, true, false, false);
+        const series = <Highcharts.SeriesObject|undefined>Histogram.get(this.unique);
+        if (series)
+          series.update(opts);
         else
-          Histogram.addSeries(opts, true, false);
+          Histogram.addSeries(opts);
       }
+    }, () => {
+      this.pending = false;
     });
     return true;
   }
@@ -440,8 +451,11 @@ function update_fields() {
       }
     }
   }
-  csel.value = CompField ? CompField.id : '';
-  CompField = selected_field(csel);
+  if (CompField) {
+    csel.value = CompField.id;
+    if (csel.value !== CompField.id)
+      update_comp();
+  }
 }
 
 function selected_field(sel: HTMLSelectElement): CField|undefined {
@@ -471,12 +485,16 @@ function update_comp(...comps: Compare[]) {
     if (c.updateResults(r))
       valid = true;
   }
-  if (CompField && Histogram)
-    Histogram.update({
-      xAxis: {
-        title: axis_title(CompField.field)
-      }
-    });
+  if (Histogram) {
+    if (CompField)
+      Histogram.update({
+        xAxis: {
+          title: axis_title(CompField.field)
+        }
+      });
+    else
+      histogramToggle();
+  }
   else if (comps === Compares) {
     const histTog = <HTMLButtonElement>document.getElementById('hist-tog');
     histTog.disabled = !valid;
@@ -489,10 +507,18 @@ function selectCat(sel: HTMLSelectElement) {
   const idx = tsel.cellIndex-1;
   const rsel = <HTMLTableRowElement>tsel.parentElement;
   const cat = Catalogs[sel.value];
+  const cur = Compares[idx];
+  if (cur && !cat) {
+    let col = cur.col;
+    Compares.splice(cur.idx, 1);
+    for (let r of <any>TComp.rows as HTMLTableRowElement[])
+      if (r.cells.length > col)
+        r.deleteCell(col);
+  }
   if (cat)
     new Compare(cat, idx);
-  else if (Compares[idx])
-    Compares[idx].remove();
+  if (cur)
+    cur.remove();
   let n = rsel.cells.length-1;
   if (Compares.length >= n && n < Max_compare)
     rsel.insertCell().appendChild(sel.cloneNode(true));
@@ -500,7 +526,7 @@ function selectCat(sel: HTMLSelectElement) {
 }
 (<any>window).selectCat = selectCat;
 
-(<any>window).histogram = function histogram() {
+function histogramToggle() {
   if (Histogram) {
     Histogram.destroy();
     Histogram = undefined;
@@ -517,6 +543,12 @@ function selectCat(sel: HTMLSelectElement) {
   Histogram = Highcharts.chart('hist', opts);
   update_comp();
 }
+(<any>window).histogramComp = histogramToggle;
+
+function toggleLog() {
+  if (Histogram)
+    toggle_log(Histogram);
+};
 
 export function initCompare(table: HTMLTableElement) {
   TComp = table;
@@ -531,4 +563,5 @@ export function initCompare(table: HTMLTableElement) {
       selectCat(sel);
 
   update_fields();
+  (<any>window).toggleLog = toggleLog;
 }

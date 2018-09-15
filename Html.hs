@@ -83,9 +83,9 @@ htmlResponse req hdrs body = do
                         forM_ (catalogsSorted $ globalCatalogs glob) $ \(key, cat) ->
                             H.a H.! HA.href (WH.routeActionValue simulationPage key mempty) $ H.text (catalogTitle cat)
               H.li $
-                H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) $ H.text "CANDELS"
+                H.a H.! HA.href (WH.routeActionValue comparePage () mempty) $ H.text "Compare"
               H.li $
-                H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "About"
+                H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) $ H.text "CANDELS"
       body
       H.footer $ do
         H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto" $
@@ -238,7 +238,7 @@ comparePage = getPath "compare" $ \() req -> do
           H.td $ H.select H.! HA.id "addf"  H.! HA.onchange "return addField()"  $ mempty
         H.tr H.! HA.id "tr-comp" $
           H.td $ H.select H.! HA.id "compf" H.! HA.onchange "return compField()" $ mempty
-    H.button H.! HA.id "hist-tog" H.! HA.disabled "disabled" H.! HA.onclick "return histogram()" $ "histogram"
+    H.button H.! HA.id "hist-tog" H.! HA.disabled "disabled" H.! HA.onclick "return histogramComp()" $ "histogram"
     H.div H.! HA.id "dhist" $ do
       H.div H.! HA.id "hist-y" $
         H.button H.! HA.id "hist-y-tog" H.! HA.onclick "return toggleLog()" $
