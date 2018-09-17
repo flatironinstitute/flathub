@@ -396,8 +396,14 @@ function update_fields() {
     asel.removeChild(asel.lastChild);
   while (csel.lastChild)
     csel.removeChild(csel.lastChild);
-  asel.add(document.createElement('option'));
-  csel.add(document.createElement('option'));
+  const aopt = document.createElement('option');
+  aopt.value = '';
+  aopt.text = 'Add filter...';
+  asel.add(aopt);
+  const copt = document.createElement('option');
+  copt.value = '';
+  copt.text = 'Compare field...';
+  csel.add(copt);
 
   const add = (g: HTMLElement, cf: CField) => {
     if (cf.tr)

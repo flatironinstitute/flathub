@@ -574,7 +574,10 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
   /* for debugging: */
   (<any>window).TCat = TCat;
   const addfilt = <HTMLSelectElement>document.createElement('select');
-  addfilt.appendChild(document.createElement('option'));
+  const aopt = document.createElement('option');
+  aopt.value = '';
+  aopt.text = 'Add filter...';
+  addfilt.appendChild(aopt);
   add_filt_row('', addfilt, 'Select field to filter');
   add_sample();
   for (let i = 0; i < Catalog.fields.length; i++) {
@@ -586,8 +589,8 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
       add_filter(i);
   }
   addfilt.onchange = function () {
-    add_filter(<any>addfilt.value);
-    TCat.draw(false);
+    if (add_filter(<any>addfilt.value))
+      TCat.draw(false);
   };
   if ((<any>window).Query && Query.filter) {
     for (let f of Query.filter) {

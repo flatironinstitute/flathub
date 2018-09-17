@@ -229,7 +229,7 @@ comparePage = getPath "compare" $ \() req -> do
       H.thead $ H.tr $ do
         H.th "catalog"
         H.td $ H.select H.! HA.name "selcat" H.! HA.onchange "return selectCat(event.target)" $ do
-          H.option H.! HA.selected "selected" $ mempty
+          H.option H.! HA.value mempty H.! HA.selected "selected" $ "Choose catalog..."
           forM_ (catalogsSorted cats) $ \(sim, cat) ->
             H.option H.! HA.value (H.textValue sim) $ H.text $ catalogTitle cat
       H.tbody $ mempty
