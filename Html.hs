@@ -234,7 +234,7 @@ comparePage = getPath "compare" $ \() req -> do
             H.option H.! HA.value (H.textValue sim) $ H.text $ catalogTitle cat
       H.tbody $ mempty
       H.tfoot $ do
-        H.tr $
+        H.tr H.! HA.id "tr-add" $
           H.td $ H.select H.! HA.id "addf"  H.! HA.onchange "return addField()"  $ mempty
         H.tr H.! HA.id "tr-comp" $
           H.td $ H.select H.! HA.id "compf" H.! HA.onchange "return compField()" $ mempty

@@ -254,11 +254,14 @@ class Compare {
     return filt;
   }
 
-  updateResults(r: HTMLTableRowElement): boolean {
+  updateResults(r: HTMLTableRowElement, ra: HTMLTableRowElement): boolean {
     const cell = tr_cell(r, this.col);
+    const acell = tr_cell(ra, this.col);
     let f = CompField && CompField.onCatalog(this.catalog);
     while (cell.lastChild)
       cell.removeChild(cell.lastChild);
+    while (acell.lastChild)
+      acell.removeChild(acell.lastChild);
     if (!f)
       return false;
     if (this.pending)
@@ -286,6 +289,14 @@ class Compare {
       cell.appendChild(document.createElement('br'));
       cell.appendChild(document.createElement('em')).appendChild(document.createTextNode('\u03bc'));
       cell.appendChild(document.createTextNode(' = ' + render(a.avg)));
+
+      const l = document.createElement('a');
+      delete q.limit;
+      delete q.aggs;
+      delete q.hist;
+      l.href = '/' + this.catalog.name + '?' + $.param(q);
+      l.appendChild(document.createTextNode(res.hits.total.toString()));
+      acell.appendChild(l);
 
       if (r.hist && Histogram) {
         const wid = res.histsize[0];
@@ -486,9 +497,10 @@ function update_comp(...comps: Compare[]) {
   const sel = <HTMLSelectElement>document.getElementById('compf');
   CompField = selected_field(sel);
   const r = <HTMLTableRowElement>document.getElementById('tr-comp');
+  const ra = <HTMLTableRowElement>document.getElementById('tr-add');
   let valid = false;
   for (let c of comps) {
-    if (c.updateResults(r))
+    if (c.updateResults(r, ra))
       valid = true;
   }
   if (Histogram) {
