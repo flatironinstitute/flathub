@@ -46,6 +46,12 @@ function histogramRemove() {
   $('#hist').empty();
 }
 
+function zoomRange(f: NumericFilter, wid: number, axis: Highcharts.AxisOptions) {
+  f.setRange(wid*Math.floor((<number>axis.min)/wid),
+             wid*Math.ceil( (<number>axis.max)/wid));
+  f.change();
+}
+
 function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrTerms<number>, size: number[]) {
   const field = hist.field;
   const data: number[][] = [];
@@ -66,7 +72,17 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrT
       for (let i = 0; i < wid.length; i++)
         d[i] += wid[i];
     }
-    (<Highcharts.ChartOptions>opts.chart).zoomType = undefined;
+    (<Highcharts.ChartOptions>opts.chart).zoomType = 'xy';
+    (<Highcharts.ChartOptions>opts.chart).events = {
+      selection: function (event: Highcharts.ChartSelectionEvent) {
+        event.preventDefault();
+        zoomRange(hist, wid[0], event.xAxis[0]);
+        const hm = add_filter(Fields_idx[heatmap.name]);
+        if (hm instanceof NumericFilter)
+          zoomRange(hm, wid[1], event.yAxis[0]);
+        return false; // Don't zoom
+      }
+    };
     const renderx = render_funct(hist.field);
     const rendery = render_funct(heatmap);
     (<Highcharts.TooltipOptions>opts.tooltip).formatter = function (this: {point: {x: number, y: number, value: number}}): string {
@@ -93,16 +109,8 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrT
 
     (<Highcharts.ChartOptions>opts.chart).events = {
       selection: function (event: Highcharts.ChartSelectionEvent) {
-        let left = event.xAxis[0].min;
-        let right = event.xAxis[0].max;
-        if (left == null || right == null || !(left < right)) {
-          /* select one bucket? ignore? */
-          return;
-        }
-        left  = wid*Math.floor(left/wid);
-        right = wid*Math.ceil(right/wid);
-        hist.setRange(left, right);
-        hist.change();
+        event.preventDefault();
+        zoomRange(hist, wid, event.xAxis[0]);
         return false; // Don't zoom
       }
     };
