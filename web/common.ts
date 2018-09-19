@@ -148,18 +148,18 @@ export function histogram_options(f: Field): Highcharts.Options {
     tooltip: {
       animation: false,
       formatter: function (this: Highcharts.PointObject): string {
-        return '[' + render(this.x) + ',' + render(this.x+<number>(<Highcharts.AreaChartSeriesOptions>this.series.options).pointInterval) + '): ' + this.y;
+        return '[' + render(this.x) + ',' + render(this.x+<number>(<Highcharts.ColumnChartSeriesOptions>this.series.options).pointInterval) + '): ' + this.y;
       }
     },
     plotOptions: {
-      area: {
-        step: 'left',
-        pointPlacement: 'between',
-        fillOpacity: 0.5,
+      column: {
+        grouping: false,
+        groupPadding: 0,
+        pointPadding: 0,
+        borderWidth: 0,
+        shadow: false,
+        pointPlacement: 0.5,
         animation: { duration: 0 },
-        marker: {
-          radius: 0
-        },
         states: {
           hover: {
             enabled: false

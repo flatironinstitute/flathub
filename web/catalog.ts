@@ -97,7 +97,7 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrT
       type: 'linear',
       title: axis_title(heatmap)
     };
-    opts.series = [<Highcharts.IndividualSeriesOptions>{
+    opts.series = [<Highcharts.HeatMapSeriesOptions>{
       type: 'heatmap',
       data: data,
       colsize: size[0],
@@ -105,8 +105,6 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrT
     }];
   } else {
     const wid = size[0];
-    data.push([data[data.length-1][0]+wid,0]);
-
     (<Highcharts.ChartOptions>opts.chart).events = {
       selection: function (event: Highcharts.ChartSelectionEvent) {
         event.preventDefault();
@@ -117,10 +115,10 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrT
     (<Highcharts.TooltipOptions>opts.tooltip).footerFormat = 'drag to filter';
     (<Highcharts.AxisOptions>opts.xAxis).min = hist.lbv;
     (<Highcharts.AxisOptions>opts.xAxis).max = hist.ubv+wid;
-    opts.series = [<Highcharts.IndividualSeriesOptions>{
-      type: 'area',
+    opts.series = [<Highcharts.ColumnChartSeriesOptions>{
+      type: 'column',
       data: data,
-      pointInterval: wid,
+      pointInterval: wid
     }];
   }
   $('#dhist').show();
