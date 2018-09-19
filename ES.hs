@@ -199,7 +199,8 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreFiel
   histogram [] = mempty
   histogram (f:hl) = "hist" .=* (
     "histogram" .=* (field f
-      <> "interval" J..= fieldType f)
+      <> "interval" J..= fieldType f
+      <> "min_doc_count" J..= J.Number 1)
     <> histogram' hl)
   histogram' [] = mempty
   histogram' hl = "aggs" .=* histogram hl

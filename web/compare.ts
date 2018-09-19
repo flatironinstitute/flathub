@@ -301,11 +301,10 @@ class Compare {
       if (r.hist && Histogram) {
         const wid = res.histsize[0];
         const data = (<AggrTerms<number>>r.hist).buckets.map(x => [x.key,x.doc_count] as [number,number]);
-        data.push([data[data.length-1][0]+wid,0]);
         const opts = {
           id: this.unique,
           index: this.idx,
-          type: 'area',
+          type: 'column',
           name: this.catalog.name,
           data: data,
           pointInterval: wid,
