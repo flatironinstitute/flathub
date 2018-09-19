@@ -118,7 +118,9 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrT
     opts.series = [<Highcharts.ColumnChartSeriesOptions>{
       type: 'column',
       data: data,
-      pointInterval: wid
+      pointInterval: wid,
+      pointRange: wid,
+      color: '#0008'
     }];
   }
   $('#dhist').show();

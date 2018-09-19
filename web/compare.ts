@@ -5,6 +5,7 @@ import Highcharts from "highcharts";
 import { assert, Dict, Field, Catalog, Aggr, AggrTerms, AggrStats, CatalogResponse, fill_select_terms, field_option, toggle_log, axis_title, render_funct, histogram_options } from "./common";
 
 const Max_compare = 4;
+const Colors = ['#0008', '#f008', '#0f08', '#00f8'];
 
 declare const Catalogs: Dict<Catalog>;
 declare const Dict: Field[];
@@ -308,6 +309,8 @@ class Compare {
           name: this.catalog.name,
           data: data,
           pointInterval: wid,
+          pointRange: wid,
+          color: Colors[this.idx]
         };
         const series = <Highcharts.SeriesObject|undefined>Histogram.get(this.unique);
         if (series)
