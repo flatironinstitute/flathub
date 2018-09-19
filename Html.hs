@@ -225,6 +225,7 @@ comparePage = getPath "compare" $ \() req -> do
     jsonVar "Catalogs" $ catalogMap cats
     jsonVar "Dict" $ catalogDict cats
     H.h2 "Compare"
+    H.p $ "Compare common (shared) and unique fields across multiple catalogues. Select a common field to compare statistics across all displayed catalogues, coupled with the option of generating layered histograms of that specific field."
     H.table H.! HA.id "tcompare" $ do
       H.thead $ H.tr $ do
         H.th "catalog"

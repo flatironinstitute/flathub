@@ -214,3 +214,20 @@ a#flaticon{
   width: 40px;
   height: 40px;
 }
+input{
+  width:100px;
+}
+#tcompare td:not(:first-child){
+  width:250px;
+}
+#tcompare td{
+  border: solid;
+  border-width: 0px 1px;
+  padding: 4px 10px;
+}
+#tcompare {
+  display: block;
+  overflow: scroll;
+  overflow-y: hidden;
+  border-collapse: collapse;
+}
