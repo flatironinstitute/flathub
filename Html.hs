@@ -242,6 +242,7 @@ comparePage = getPath "compare" $ \() req -> do
     jsonVar "Catalogs" $ catalogMap cats
     jsonVar "Dict" $ catalogDict cats
     H.h2 "Compare"
+    H.p $ "Select catalogs across the top to compare, and fields down the left to apply filters and compare statistics and distributions from these catalogs."
     H.table H.! HA.id "tcompare" $ do
       H.thead $ H.tr $ do
         H.th "catalog"

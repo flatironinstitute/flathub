@@ -214,3 +214,18 @@ a#flaticon{
   width: 40px;
   height: 40px;
 }
+input[type="number"]{
+  width:100px;
+}
+#tcompare th{
+  min-width:250px;
+}
+#tcompare td{
+  border: solid;
+  border-width: 0px 1px;
+  padding: 4px 10px;
+  min-width:250px;
+}
+#tcompare {
+  border-collapse: collapse;
+}
