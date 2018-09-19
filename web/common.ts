@@ -76,6 +76,16 @@ export function field_option(f: Field): HTMLOptionElement {
   return o;
 }
 
+export function render_funct(field: Field): (data: any) => string {
+  if (field.base === 'f')
+    return (data) => data != undefined ? parseFloat(data).toPrecision(8) : data;
+  if (field.enum) {
+    const e: string[] = field.enum;
+    return (data) => data in e ? e[data] : data;
+  }
+  return (data) => data;
+}
+
 const axisProto = (<any>Highcharts).Axis.prototype;
 axisProto.allowNegativeLog = true;
 axisProto.log2lin = function (x: number) {
@@ -99,4 +109,67 @@ export function toggle_log(chart: Highcharts.ChartObject) {
       type: 'logarithmic'
     });
   }
+}
+
+export function axis_title(f: Field) {
+  return {
+    // useHTML: true, // not enough for mathjax
+    text: f.title + (f.units ? ' [' + f.units + ']' : '')
+  };
+}
+
+export function histogram_options(f: Field): Highcharts.Options {
+  const render = render_funct(f);
+  return {
+    chart: {
+      animation: false,
+      zoomType: 'x',
+    },
+    legend: {
+      enabled: false
+    },
+    title: {
+      text: null
+    },
+    credits: {
+      enabled: false
+    },
+    xAxis: {
+      type: 'linear',
+      title: axis_title(f),
+      gridLineWidth: 1,
+    },
+    yAxis: {
+      id: 'tog',
+      type: 'linear',
+      title: { text: 'Count' },
+      min: 0,
+    },
+    tooltip: {
+      animation: false,
+      formatter: function (this: Highcharts.PointObject): string {
+        return '[' + render(this.x) + ',' + render(this.x+<number>(<Highcharts.AreaChartSeriesOptions>this.series.options).pointInterval) + '): ' + this.y;
+      }
+    },
+    plotOptions: {
+      area: {
+        step: 'left',
+        pointPlacement: 'between',
+        fillOpacity: 0.5,
+        animation: { duration: 0 },
+        marker: {
+          radius: 0
+        },
+        states: {
+          hover: {
+            enabled: false
+          }
+        }
+      }
+    }
+  };
+}
+
+(<any>window).toggleDisplay = function toggleDisplay(ele: string) {
+  $('#'+ele).toggle();
 }
