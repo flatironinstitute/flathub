@@ -1,5 +1,8 @@
 "use strict";
 import Highcharts from "highcharts";
+import Highcharts_exporting from "highcharts/modules/exporting";
+
+Highcharts_exporting(Highcharts);
 
 export function assert<T>(x: undefined|null|false|T): T {
   if (!x)
@@ -150,6 +153,9 @@ export function histogram_options(f: Field): Highcharts.Options {
       formatter: function (this: Highcharts.PointObject): string {
         return '[' + render(this.x) + ',' + render(this.x+<number>(<Highcharts.ColumnChartSeriesOptions>this.series.options).pointInterval) + '): ' + this.y;
       }
+    },
+    exporting: {
+      enabled: true
     },
     plotOptions: {
       column: {
