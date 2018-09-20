@@ -162,17 +162,21 @@ class CField {
   }
 
   cdict_update(state: String) {
+    let table = document.getElementById('cdict');
+    let f = this.field;
     if (state === 'add') {
-      let table = document.getElementById('cdict');
       let row = table.insertRow(-1);
-      console.log(this);
-      let f = this.field;
-      let arr = [f.name, f.title, f.type, f.units, f.descr];
+      let arr = [f.title, f.name, f.type, f.units, f.descr];
       for (let i = 0; i < arr.length; i++) {
         let cell = row.insertCell(i);
-        cell.innerHTML = (arr[i] !== 'undefined') ? arr[i] : "";
+        cell.innerHTML = (arr[i] !== undefined) ? arr[i] : "";
       }
+      row.id = 'cdict-' + f.title;
       table.appendChild(row);
+    }
+    else {
+      let row = document.getElementById('cdict-' + f.title);
+      row.parentNode.removeChild(row);
     }
   }
 

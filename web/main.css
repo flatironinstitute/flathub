@@ -217,20 +217,35 @@ a#flaticon{
 input[type="number"]{
   width:100px;
 }
-#tcompare td:not(:first-child){
-  width:250px;
-}
-#tcompare td:first-child{
-  width: 230px;
+#tcompare th{
+  table-layout: fixed;
+  min-width:250px;
 }
 #tcompare td{
   border: solid;
   border-width: 0px 1px;
   padding: 4px 10px;
+  min-width:250px;
 }
 #tcompare {
   display: block;
   overflow: scroll;
   overflow-y: hidden;
   border-collapse: collapse;
+}
+.tooltip {
+  position: relative;
+}
+.tooltip .tooltiptext {
+  visibility: hidden;
+  background-color: black;
+  color: white;
+  text-align: center;
+  padding: 5px 10px;
+  position: absolute;
+  font-weight: normal;
+  font-size: small;
+}
+.tooltip:hover .tooltiptext {
+  visibility: visible;
 }
