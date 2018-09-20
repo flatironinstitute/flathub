@@ -121,10 +121,9 @@ simulationPage = getPath R.parameter $ \sim req -> do
       <> "bulk" J..= map (J.String . R.renderParameter) [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)]
       <> "fields" J..= fields'
     fieldBody :: Word -> FieldGroup -> H.Html
-    fieldBody d f = H.span WH.!? (HA.title . H.textValue <$> fieldDescr f) $ do
-      -- Writes the title to the span
+    fieldBody d f = H.span H.! HA.class_ "tooltip" $ do
+      H.div H.! HA.class_ "tooltiptext" $ foldMap H.text (fieldDescr f)
       H.text $ fieldTitle f
-      -- Writes the unit to the span
       forM_ (fieldUnits f) $ \u -> do
         if d > 1 then H.br else " "
         H.span H.! HA.class_ "units" $ "[" <> H.preEscapedText u <> "]"
@@ -243,8 +242,8 @@ comparePage = getPath "compare" $ \() req -> do
           H.td $ H.select H.! HA.id "compf" H.! HA.onchange "return compField()" $ mempty
 
     H.h3 "Histogram"
-    H.p $ "Generate a histogram of a field common to all selected catalogs. Zoom querying is not enabled for this feature."
     H.button H.! HA.id "hist-tog" H.! HA.disabled "disabled" H.! HA.onclick "return histogramComp()" $ "histogram"
+    "Generate a histogram of a field common to all selected catalogs. Zoom querying is not enabled for this feature."
     H.div H.! HA.id "dhist" $ do
       H.div H.! HA.id "hist-y" $
         H.button H.! HA.id "hist-y-tog" H.! HA.onclick "return toggleLog()" $
