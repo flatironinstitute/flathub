@@ -135,16 +135,27 @@ function toggleLog() {
 (<any>window).histogramSelect = function histogramSelect() {
   const sel = <HTMLSelectElement>document.getElementById('histsel');
   Heatmap = Catalog.fields[Fields_idx[sel.value]];
-  TCat.draw();
+  update(false);
 };
 
 /* elasticsearch max_result_window */
-const displayLimit = 10000;
-var pending = false;
+const DisplayLimit = 10000;
+var Update: boolean|number = false;
+var Update_paging: boolean = false;
+
+function update(paging: boolean = true) {
+  if (Update)
+    return;
+  if (paging)
+    Update_paging = paging;
+  Update = setTimeout(() => {
+    Update = true;
+    TCat.draw(Update_paging);
+    Update_paging = false;
+  });
+}
 
 function ajax(data: any, callback: ((data: any) => void), opts: any) {
-  if (pending)
-    return;
   const query: Dict<string> = {
     sort: data.order.map((o: any) => {
       return (o.dir == "asc" ? '' : '-') + data.columns[o.column].data;
@@ -183,13 +194,12 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
       query.hist = histogram.name+':128';
   }
   $('td.loading').show();
-  pending = true;
   $.ajax({
     method: 'GET',
     url: '/' + Catalog.name + '/catalog',
     data: query
   }).then((res: CatalogResponse) => {
-    pending = false;
+    Update = false;
     $('td.loading').hide();
     Catalog.count = Math.max(Catalog.count || 0, res.hits.total);
     const settings = (<any>TCat.settings())[0];
@@ -197,7 +207,7 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
     callback({
       draw: data.draw,
       recordsTotal: Catalog.count,
-      recordsFiltered: Math.min(res.hits.total, displayLimit),
+      recordsFiltered: Math.min(res.hits.total, DisplayLimit),
       data: res.hits.hits
     });
     for (let filt of aggs)
@@ -213,7 +223,7 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
     delete query.offset;
     set_download(query);
   }, (xhr, msg, err) => {
-    pending = false;
+    Update = false;
     callback({
       draw: data.draw,
       data: [],
@@ -268,7 +278,7 @@ function add_sample() {
     Seed = seed.valueAsNumber;
     if (!isFinite(Seed))
       Seed = 0;
-    TCat.draw();
+    update();
   };
 
   add_filt_row('sample', 'random sample',
@@ -305,7 +315,7 @@ abstract class Filter {
     if (i >= 0 && Update_aggs > i)
       Update_aggs = i+1;
     columnVisible(this.name, vis);
-    this.tcol.draw();
+    update();
   }
 
   protected remove() {
@@ -316,7 +326,7 @@ abstract class Filter {
     $('tr#filt-'+this.name).remove();
     Update_aggs = i;
     columnVisible(this.name, true);
-    this.tcol.draw();
+    update();
   }
 
   abstract query(): string|undefined
@@ -449,7 +459,7 @@ class NumericFilter extends Filter {
   private histogram() {
     if (!this.histogramRemove()) {
       Histogram = this;
-      this.tcol.draw(false);
+      update(false);
     }
   }
 
@@ -504,7 +514,7 @@ function columnVisible(name: string, vis: boolean) {
   for (let b of <any>document.getElementsByClassName('colvis-'+name) as Element[])
     colvisUpdate(<HTMLInputElement>b, vis);
   if (vis && Last_fields.indexOf(name) < 0)
-    TCat.draw();
+    update(false);
 }
 
 (<any>window).colvisSet = function colvisSet(event: Event) {
@@ -598,7 +608,7 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
   }
   addfilt.onchange = function () {
     if (add_filter(<any>addfilt.value))
-      TCat.draw(false);
+      update(false);
   };
   if ((<any>window).Query && Query.filter) {
     for (let f of Query.filter) {
@@ -614,6 +624,6 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
   }
   for (let b of <any>document.getElementsByClassName('colvis') as HTMLInputElement[])
     colvisUpdate(b);
-  TCat.draw();
+  update();
   (<any>window).toggleLog = toggleLog;
 }
