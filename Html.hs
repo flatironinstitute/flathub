@@ -121,12 +121,12 @@ simulationPage = getPath R.parameter $ \sim req -> do
       <> "bulk" J..= map (J.String . R.renderParameter) [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)]
       <> "fields" J..= fields'
     fieldBody :: Word -> FieldGroup -> H.Html
-    fieldBody d f = H.span H.! HA.class_ "tooltip" $ do
-      H.div H.! HA.class_ "tooltiptext" $ foldMap H.text (fieldDescr f)
+    fieldBody d f = H.div H.! HA.class_ "tooltip" $ do
       H.text $ fieldTitle f
       forM_ (fieldUnits f) $ \u -> do
         if d > 1 then H.br else " "
         H.span H.! HA.class_ "units" $ "[" <> H.preEscapedText u <> "]"
+      H.span H.! HA.class_ "tooltiptext" $ foldMap H.text (fieldDescr f)
     field :: Word -> FieldGroup -> FieldGroup -> H.Html
     field d f' f@Field{ fieldSub = Nothing } = do
       H.th

@@ -552,7 +552,6 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
     serverSide: true,
     ajax: ajax,
     deferLoading: 1,
-    scrollX: true,
     pageLength: 25,
     processing: true,
     language: {
