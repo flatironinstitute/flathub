@@ -253,3 +253,9 @@ input[type="number"]{
 .tooltip:hover .tooltiptext {
   visibility: visible;
 }
+#tcat{
+  display: block;
+  width: 100% !important;
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
