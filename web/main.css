@@ -146,7 +146,7 @@ h3{
   margin-top: 5px;
   margin-bottom: 5px;
 }
-table#tdict{
+.dict{
   display: none;
   margin: 0 auto;
   border-collapse: collapse;
@@ -154,22 +154,22 @@ table#tdict{
   margin-top: 10px;
   margin-bottom: 10px;
 }
-#tdict th{
+.dict th{
   background-color: lightgrey;
   border-top: solid;
   border-width: 1px;
   border-color: #bfbfbf;
 }
-#tdict tr:nth-child(odd){
+.dict tr:nth-child(odd){
   background-color: #ededed;
 }
-#tdict td{
+.dict td{
   border: solid;
   border-width: 1px 1px;
   border-color: #bfbfbf;
   padding: 4px 10px;
 }
-#tdict td:first-child, td:nth-child(2){
+.dict td:first-child, td:nth-child(2){
   text-align: left; !important;
 }
 .depth-1{
@@ -214,11 +214,14 @@ a#flaticon{
   width: 40px;
   height: 40px;
 }
-input{
+input[type="number"]{
   width:100px;
 }
 #tcompare td:not(:first-child){
   width:250px;
+}
+#tcompare td:first-child{
+  width: 230px;
 }
 #tcompare td{
   border: solid;

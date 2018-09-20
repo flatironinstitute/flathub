@@ -157,8 +157,23 @@ class CField {
 
     for (let idx = 0; idx < Compares.length; idx++)
       Compares[idx].fillField(this);
-
+    this.cdict_update('add');
     update_fields();
+  }
+
+  cdict_update(state: String) {
+    if (state === 'add') {
+      let table = document.getElementById('cdict');
+      let row = table.insertRow(-1);
+      console.log(this);
+      let f = this.field;
+      let arr = [f.name, f.title, f.type, f.units, f.descr];
+      for (let i = 0; i < arr.length; i++) {
+        let cell = row.insertCell(i);
+        cell.innerHTML = (arr[i] !== 'undefined') ? arr[i] : "";
+      }
+      table.appendChild(row);
+    }
   }
 
   remove() {
@@ -168,7 +183,7 @@ class CField {
     let idx = this.idx;
     if (idx >= 0)
       Fields.splice(idx, 1);
-
+    this.cdict_update('remove');
     update_fields();
     update_comp();
   }

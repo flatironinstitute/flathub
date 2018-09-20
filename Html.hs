@@ -201,7 +201,7 @@ simulationPage = getPath R.parameter $ \sim req -> do
       H.div $ do
         H.button H.! HA.class_ "show_button" H.! HA.onclick "return toggleDisplay('tdict')" $ "show/hide"
         "Table of fields, units, and their descriptions (use checkboxes to view/hide fields in the table above)"
-      H.div $ H.table H.! HA.id "tdict" $ do
+      H.div $ H.table H.! HA.class_ "dict" H.! HA.id "tdict" $ do
         H.thead $ H.tr $ do
             H.th $ H.text "Field"
             H.th $ H.text "Variable"
@@ -224,8 +224,10 @@ comparePage = getPath "compare" $ \() req -> do
   htmlResponse req [] $ do
     jsonVar "Catalogs" $ catalogMap cats
     jsonVar "Dict" $ catalogDict cats
-    H.h2 "Compare"
-    H.p $ "Compare common (shared) and unique fields across multiple catalogues. Select a common field to compare statistics across all displayed catalogues, coupled with the option of generating layered histograms of that specific field."
+    H.h2 "Catalog Comparer"
+    H.p $ "Compare common (shared) and unique fields across multiple catalogs. Select a common field to compare statistics across all displayed catalogs. Clicking on count will direct you to the catalog's page with that query."
+
+    H.h3 $ "Table"
     H.table H.! HA.id "tcompare" $ do
       H.thead $ H.tr $ do
         H.th "catalog"
@@ -239,12 +241,28 @@ comparePage = getPath "compare" $ \() req -> do
           H.td $ H.select H.! HA.id "addf"  H.! HA.onchange "return addField()"  $ mempty
         H.tr H.! HA.id "tr-comp" $
           H.td $ H.select H.! HA.id "compf" H.! HA.onchange "return compField()" $ mempty
+
+    H.h3 "Histogram"
+    H.p $ "Generate a histogram of a field common to all selected catalogs. Zoom querying is not enabled for this feature."
     H.button H.! HA.id "hist-tog" H.! HA.disabled "disabled" H.! HA.onclick "return histogramComp()" $ "histogram"
     H.div H.! HA.id "dhist" $ do
       H.div H.! HA.id "hist-y" $
         H.button H.! HA.id "hist-y-tog" H.! HA.onclick "return toggleLog()" $
           "lin/log"
       H.div H.! HA.id "hist" $ mempty
+
+    H.h3 "Common Fields Dictionary"
+    H.div $ do
+        H.button H.! HA.class_ "show_button" H.! HA.onclick "return toggleDisplay('cdict')" $ "show/hide"
+        "Table of the compared fields, accompanied with their units and their descriptions."
+        H.div $ H.table H.! HA.class_ "dict" H.! HA.id "cdict" $ do
+            H.thead $ H.tr $ do
+                H.th $ H.text "Field"
+                H.th $ H.text "Variable"
+                H.th $ H.text "Type"
+                H.th $ H.text "Units"
+                H.th $ H.text "Description"
+            H.tr $ mempty
 
 staticHtml :: Route [FilePathComponent]
 staticHtml = getPath ("html" R.*< R.manyI R.parameter) $ \paths q -> do
