@@ -444,7 +444,7 @@ function update_fields() {
   } else {
     const dict: Dict<number> = {};
     const dg = document.createElement('optgroup');
-    dg.label = "Common fields";
+    dg.label = "Standard fields";
     asel.add(dg);
 
     for (let c of cl) {
