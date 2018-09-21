@@ -2,7 +2,7 @@ version: '2.4'
 
 x-es:
   &es
-  image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.4
+  image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.4.0
   environment:
     - cluster.name=astrosims
     - bootstrap.memory_lock=true
@@ -15,33 +15,33 @@ x-es:
       soft: -1
       hard: -1
   networks:
-    - esnet
+    - astrosims-esnet
   volumes:
-    - esdata:/usr/share/elasticsearch/data
+    - astrosims-esdata:/usr/share/elasticsearch/data
 
 services:
-  es0:
+  astrosims-es:
     << : *es
-    container_name: es0
+    container_name: astrosims-es
     expose:
       - "9200"
     ports:
       - "127.0.0.1:9200:9200"
-  es:
+  astrosims-es:
     << : *es
     scale: 4
   astrosims:
     build: .
     image: flatironinstitute/astrosims
     networks:
-      - esnet
+      - astrosims-esnet
     ports:
       - "80:8092"
     depends_on:
-      - es0
+      - astrosims-es
 
 volumes:
-  esdata:
+  astrosims-esdata:
 
 networks:
-  esnet:
+  astrosims-esnet:
