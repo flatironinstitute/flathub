@@ -43,10 +43,10 @@ spec:
           - name: TAKE_FILE_OWNERSHIP
             value: "true"
         resources:
-          limits:
-            memory: 32Gi
           requests:
             cpu: 4
+            memory: 28Gi
+          limits:
             memory: 32Gi
         ports:
           - containerPort: 9200
@@ -57,13 +57,14 @@ spec:
           tcpSocket:
             port: transport
           initialDelaySeconds: 15
-          periodSeconds: 30
+          periodSeconds: 15
         readinessProbe:
           httpGet:
             path: /_cluster/health
             port: http
           initialDelaySeconds: 30
-          timeoutSeconds: 10
+          timeoutSeconds: 15
+          periodSeconds: 60
         volumeMounts:
         - name: esdata
           mountPath: /usr/share/elasticsearch/data

@@ -32,7 +32,7 @@ services:
     scale: 4
   astrosims:
     build: .
-    image: flatironinstitute/astrosims
+    image: flatironinstitute/astrosims-reproto
     networks:
       - astrosims-esnet
     ports:
