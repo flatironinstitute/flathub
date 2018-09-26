@@ -7,7 +7,7 @@ x-es:
     - cluster.name=astrosims
     - bootstrap.memory_lock=true
     - "ES_JAVA_OPTS=-Xms20g -Xmx20g"
-    - "discovery.zen.ping.unicast.hosts=es0"
+    - "discovery.zen.ping.unicast.hosts=astrosims-es"
     - "discovery.zen.minimum_master_nodes=3"
     - "node.max_local_storage_nodes=8"
   ulimits:
@@ -15,9 +15,9 @@ x-es:
       soft: -1
       hard: -1
   networks:
-    - astrosims-esnet
+    - esnet
   volumes:
-    - astrosims-esdata:/usr/share/elasticsearch/data
+    - esdata:/usr/share/elasticsearch/data
 
 services:
   astrosims-es:
@@ -27,21 +27,21 @@ services:
       - "9200"
     ports:
       - "127.0.0.1:9200:9200"
-  astrosims-es:
+  es:
     << : *es
     scale: 4
   astrosims:
     build: .
     image: flatironinstitute/astrosims-reproto
     networks:
-      - astrosims-esnet
+      - esnet
     ports:
       - "80:8092"
     depends_on:
       - astrosims-es
 
 volumes:
-  astrosims-esdata:
+  esdata:
 
 networks:
-  astrosims-esnet:
+  esnet:
