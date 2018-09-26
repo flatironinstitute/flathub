@@ -71,7 +71,7 @@ ingestDelim delim cat consts blockSize fn off = do
       | otherwise = \i _ -> fnb ++ '_' : show i
     val Nothing _ = mempty
     val (Just f) x
-      | typeIsFloating (fieldType f) && x `elem` ["Inf", "-Inf", "+Inf"] = mempty
+      | typeIsFloating (fieldType f) && x `elem` ["Inf", "-Inf", "+Inf", "inf"] = mempty
       | BSC.null x = mempty
       | otherwise = fieldName f J..= TE.decodeLatin1 x
     loop o [] = return o
