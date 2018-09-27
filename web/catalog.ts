@@ -426,7 +426,14 @@ class NumericFilter extends Filter {
   update_aggs(aggs: AggrStats) {
     this.lb.defaultValue = this.lb.min = this.ub.min = <any>aggs.min;
     this.ub.defaultValue = this.lb.max = this.ub.max = <any>aggs.max;
-    this.lb.disabled = this.ub.disabled = false;
+    if (this.lb.disabled)
+      this.lb.disabled = false;
+    else
+      this.lb.value = <any>aggs.min;
+    if (this.ub.disabled)
+      this.ub.disabled = false;
+    else
+      this.ub.value = <any>aggs.max;
     this.avg.textContent = render_funct(this.field)(aggs.avg);
   }
 
