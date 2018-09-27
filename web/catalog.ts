@@ -94,7 +94,7 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrT
     opts.colorAxis = <Highcharts.ColorAxisOptions>opts.yAxis;
     opts.colorAxis.minColor = '#ffffff';
     opts.colorAxis.reversed = false;
-    opts.legend.enabled = true;
+    (<Highcharts.LegendOptions>opts.legend).enabled = true;
     opts.yAxis = {
       type: 'linear',
       title: axis_title(heatmap)
