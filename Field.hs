@@ -18,6 +18,7 @@ module Field
   , baseType
   , typeIsFloating, typeIsIntegral, typeIsNumeric, typeIsString
   , numpySize, numpyDtype
+  , sqlType
   , FieldSub(..)
   , Field, FieldGroup
   , Fields, FieldGroups
@@ -251,6 +252,18 @@ numpySize (Text      _) = 16
 numpyDtype :: Type -> String
 numpyDtype (Boolean _) = "?"
 numpyDtype t = '<' : baseType ('f','i','?','S') t : show (numpySize t) where
+
+sqlType :: Type -> T.Text
+sqlType (Text _)      = "text"
+sqlType (Keyword _)   = "text"
+sqlType (Long _)      = "bigint"
+sqlType (Integer _)   = "integer"
+sqlType (Short _)     = "smallint"
+sqlType (Byte _)      = "smallint"
+sqlType (Double _)    = "double precision"
+sqlType (Float _)     = "real"
+sqlType (HalfFloat _) = "real"
+sqlType (Boolean _)   = "boolean"
 
 data FieldSub t m = Field
   { fieldName :: T.Text
