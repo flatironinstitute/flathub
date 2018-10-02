@@ -181,8 +181,8 @@ simulationPage = getPath R.parameter $ \sim req -> do
       H.p $ "Query and explore a subset using the filters, download your selection using the link below, or get the full dataset above."
       H.table H.! HA.id "filt" $ mempty
       H.div H.! HA.id "plotspace" $ do
-          H.div H.! HA.id "dhist_up" $ do
-            H.div H.! HA.id "hist_up" $ mempty
+          H.div H.! HA.id "dhist_x" $ do
+            H.div H.! HA.id "hist_x" $ mempty
           H.div H.! HA.id "dhist" $ do
             H.button H.! HA.id "hist-y-tog" H.! HA.onclick "return toggleLog()" $
               "lin/log"
@@ -193,8 +193,8 @@ simulationPage = getPath R.parameter $ \sim req -> do
                   when (typeIsFloating (fieldType f)) $
                     H.option H.! HA.value (H.textValue $ fieldName f) $ H.text $ fieldTitle f
             H.div H.! HA.id "hist" $ mempty
-          H.div H.! HA.id "dhist_left" $ do
-            H.div H.! HA.id "hist_left" $ mempty
+          H.div H.! HA.id "dhist_y" $ do
+            H.div H.! HA.id "hist_y" $ mempty
 
       H.h3 $ "Data Table"
       H.table H.! HA.id "tcat" H.! HA.class_ "compact" $ do

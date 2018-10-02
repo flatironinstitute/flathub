@@ -20,7 +20,8 @@ var Update_aggs: number = -1;
 var Histogram: undefined|NumericFilter;
 var Heatmap: undefined|Field;
 var Histogram_chart: Highcharts.ChartObject | undefined;
-var Hist_chart_up: Highcharts.ChartObject | undefined; 
+var Hist_chart_x: Highcharts.ChartObject | undefined;
+var Hist_chart_y: Highcharts.ChartObject | undefined;
 var Last_fields: string[] = [];
 
 function set_download(query: Dict<string>) {
@@ -53,7 +54,8 @@ function zoomRange(f: NumericFilter, wid: number, axis: Highcharts.AxisOptions) 
   f.change();
 }
 
-function histDraw(hist: NumericFilter, size: number[], data, f) {
+function histDraw(hist: NumericFilter, data, size: number[]) {
+  const f = hist.field;
   const opts: Highcharts.Options = histogram_options(f);
   const wid = size[0];
   (<Highcharts.ChartOptions>opts.chart).events = {
@@ -80,22 +82,24 @@ function histDraw(hist: NumericFilter, size: number[], data, f) {
 function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrTerms<number>, size: number[]) {
   const field = hist.field;
   const data: number[][] = [];
-  const hy_data: number[][] = [];
-  const hx_data: number[][] = [];
+  const hist_x_data: number[][] = [];
+  const hist_y_data: number[][] = [];
+  console.log(agg, agg.buckets);
   for (let x of agg.buckets) {
-    hx_data.push([x.key, x.doc_count]);
     if (heatmap && x.hist)
-      for (let y of x.hist.buckets) {
+      for (let y of x.hist.buckets)
         data.push([x.key, y.key, y.doc_count]);
-        hy_data.push([y.key, y.doc_count]);
-      }
+      hist_x_data.push([x.key, x.doc_count]);
   }
-  if (data.length <= 1 && hx_data.length <= 1)
+  console.log(data.length);
+  if (data.length <= 1 && hist_x_data.length <= 1)
     return histogramRemove();
   const opts: Highcharts.Options = histogram_options(field);
   if (heatmap) {
-    $('#hist_up').show();
-    Hist_chart_up = Highcharts.chart('hist_up', histDraw(hist, size, hx_data, field));
+    $('#hist_x').show();
+    $('#hist_y').show();
+    Hist_chart_x = Highcharts.chart('hist_x', histDraw(hist, hist_x_data, size));
+    Hist_chart_y = Highcharts.chart('hist_y', histDraw(hist, hist_y_data, size));
     const wid = size.map(s => s/2);
     for (let d of data) {
       for (let i = 0; i < wid.length; i++)
@@ -134,11 +138,13 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrT
       colsize: size[0],
       rowsize: size[1]
     }];
+    Histogram_chart = Highcharts.chart('hist', opts);
   } else {
-    $('#hist_up').hide();
+    $('#hist_x').hide();
+    $('#hist_y').hide();
+    Histogram_chart = Highcharts.chart('hist', histDraw(hist, hist_x_data, size));
   }
   $('#dhist').show();
-  Histogram_chart = (heatmap) ? Highcharts.chart('hist', opts) : Highcharts.chart('hist', histDraw(hist, size, hx_data, field));
 }
 
 function toggleLog() {
