@@ -46,6 +46,10 @@ function histogramRemove() {
   (<HTMLSelectElement>document.getElementById('histsel')).value = '';
   $('#dhist').hide();
   $('#hist').empty();
+  $('#dhist_x').hide();
+  $('#hist_x').empty();
+  $('#dhist_y').hide();
+  $('#hist_y').empty();
 }
 
 function zoomRange(f: NumericFilter, wid: number, axis: Highcharts.AxisOptions) {
@@ -84,20 +88,27 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrT
   const data: number[][] = [];
   const hist_x_data: number[][] = [];
   const hist_y_data: number[][] = [];
-  console.log(agg, agg.buckets);
+  let hist_y_dict = [];
   for (let x of agg.buckets) {
     if (heatmap && x.hist)
-      for (let y of x.hist.buckets)
+      for (let y of x.hist.buckets) {
         data.push([x.key, y.key, y.doc_count]);
+        if (y.key in hist_y_dict) 
+          hist_y_dict[y.key] = hist_y_dict[y.key] + y.doc_count;
+        else 
+          hist_y_dict[y.key] = y.doc_count;
+      }
       hist_x_data.push([x.key, x.doc_count]);
   }
-  console.log(data.length);
+  for (var key in hist_y_dict) {
+    hist_y_data.push([key, hist_y_dict[key]]);
+  }
   if (data.length <= 1 && hist_x_data.length <= 1)
     return histogramRemove();
   const opts: Highcharts.Options = histogram_options(field);
   if (heatmap) {
-    $('#hist_x').show();
-    $('#hist_y').show();
+    $('#dhist_x').show();
+    $('#dhist_y').show();
     Hist_chart_x = Highcharts.chart('hist_x', histDraw(hist, hist_x_data, size));
     Hist_chart_y = Highcharts.chart('hist_y', histDraw(hist, hist_y_data, size));
     const wid = size.map(s => s/2);
@@ -140,30 +151,11 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrT
     }];
     Histogram_chart = Highcharts.chart('hist', opts);
   } else {
-    /*
-    $('#hist_x').hide();
-    $('#hist_y').hide();
+    $('#dhist_x').hide();
+    $('#hist_x').empty();
+    $('#dhist_y').hide();
+    $('#hist_y').empty();
     Histogram_chart = Highcharts.chart('hist', histDraw(hist, hist_x_data, size));
-    */
-    const wid = size[0];
-    (<Highcharts.ChartOptions>opts.chart).events = {
-      selection: function (event: Highcharts.ChartSelectionEvent) {
-        event.preventDefault();
-        zoomRange(hist, wid, event.xAxis[0]);
-        return false; // Don't zoom
-      }
-    };
-    (<Highcharts.TooltipOptions>opts.tooltip).footerFormat = 'drag to filter';
-    (<Highcharts.AxisOptions>opts.xAxis).min = hist.lbv;
-    (<Highcharts.AxisOptions>opts.xAxis).max = hist.ubv+wid;
-    opts.series = [<Highcharts.ColumnChartSeriesOptions>{
-      showInLegend: true,
-      type: 'column',
-      data: data,
-      pointInterval: wid,
-      pointRange: wid,
-      color: '#0008'
-    }];
   }
   $('#dhist').show();
 }
