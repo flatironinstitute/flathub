@@ -1649,6 +1649,7 @@ unimach:
       type: float
       descr: Halo mass (Bryan & Norman (BN98) 1998 virial mass)
       units: '\( M_\odot\)'
+      scale: 1 / 10^10
     - name: V
       type: float
       descr: 'Halo \(v_{max}\) (physical \(km/s\))'
@@ -1657,6 +1658,7 @@ unimach:
       type: float
       descr: Halo peak historical mass (BN98 virial mass)
       units: '\( M_\odot \)'
+      scale: 1 / 10^10
     - name: VMP
       type: float
       descr: Halo vmax at the time when peak mass was reached
@@ -1673,19 +1675,23 @@ unimach:
       type: float
       descr: True stellar mass
       units: '\( M_\odot\)'
+      scale: 10^10
     - name: ICL
       type: float
       descr: True intracluster stellar mass
       units: '\( M_\odot\)'
+      scale: 1 / 10^10
     - name: SFR
       dict: SFR
       type: float
       descr: True star formation rate
       units: '\( M_\odot /yr \)'
+      scale: 1 / 10^10
     - name: obs_SM
       type: float
       descr: Observed stellar mass, including random & systematic errors
       units: '\( M_\odot\)'
+      scale: 1 / 10^10
     - name: obs_SFR
       type: float
       descr: Observed star formation rate (SFR), including random & systemic errors
