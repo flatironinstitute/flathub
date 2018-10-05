@@ -38,6 +38,7 @@ routes = R.routes
   , R.routeNormCase comparePage
   , R.routeNormCase catalog
   , R.routeNormCase catalogBulk
+  , R.routeNormCase sqlSchema
   ]
 
 data Opts = Opts
