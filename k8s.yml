@@ -1,0 +1,58 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: astrosims
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      name: astrosims
+  template:
+    metadata:
+      labels:
+        name: astrosims
+    spec:
+      initContainers:
+      - name: wait-es
+        image: busybox
+        command:
+          - sh
+          - '-c'
+          - for (( i=0 ; i<30 ; i++ )) ; do nslookup astrosims-es && exit ; sleep 5 ; done ; exit 1
+      containers:
+      - image: flatironinstitute/astrosims-reproto:latest
+        name: astrosims
+        resources:
+          requests:
+            cpu: 2
+            memory: 1Gi
+          limits:
+            cpu: 2
+            memory: 8Gi
+        ports:
+        - containerPort: 8092
+          name: http
+        activeDeadlineSeconds: 300
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+            httpHeaders:
+              - name: accept
+                value: application/json
+          initialDelaySeconds: 30
+          timeoutSeconds: 15
+          periodSeconds: 60
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: astrosims
+spec:
+  selector:
+    name: astrosims
+  ports:
+  - name: http
+    port: 80
+  #externalIPs:
