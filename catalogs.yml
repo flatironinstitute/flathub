@@ -44,9 +44,27 @@ dict:
     type: float
     descr: host halo virial mass
     units: '\(10^{10} M_\odot\)'
+  - name: V_vir
+    type: float
+    descr: Host halo virial velocity
+  - name: c_NFW
+    type: float
+    descr: NFW concentration (host halo)
+  - name: spin
+    type: float
+    descr: Dimensionless spin parameter (host halo)
   - name: R
     type: float
-  - name: SM
+  - name: r_disk
+    type: float
+    descr: scale length of a disk
+  - name: r_bulge
+    type: float
+    descr: effective radius of bulge (projected)
+  - name: sigma_bulge
+    type: float
+    descr: line-of-sight velocity dispersion of bulge
+  - name: M_stellar
     type: float
     descr: stellar mass
     units: '\(10^{10} M_\odot\)'
@@ -54,10 +72,33 @@ dict:
     type: float
     descr: mass of sub-halo
     units: '\(10^{10} M_\odot\)'
+  - name: M_star_diffuse
+    type: float
+  - name: M_hot_halo
+    type: float
+    descr: Mass of hot gas in host halo
+  - name: M_cold
+    descr: Mass of cold gas
+    type: float
+  - name: M_bulge
+    descr: Stellar mass of bulge component
+    type: float
+  - name: Z_star
+    type: float
+    descr: Mass weighted metallicity of stars
+  - name: Z_cold
+    type: float
+  - name: Z_hot_halo
+    type: float
+  - name: SFR_inst
+    descr: Instantaneous star formation rate (SFR)
+    type: float
   - name: SFR
     type: float
     descr: star formation rate
     units: '\(M_\odot\)/yr'
+  - name: cosi
+  - name: age_mean
   - name: UV1500_rest
     type: float
 
@@ -1035,6 +1076,7 @@ lusam:
       dict: halo_mass
       type: float
     - name: V_vir
+      dict: V_vir
       type: float
       descr: host halo virial velocity
       units: '\(km/s\)'
@@ -1045,36 +1087,45 @@ lusam:
       descr: host halo virial radius (physical coordinates)
       units: 'Mpc'
     - name: c_NFW
+      dict: c_NFW
       type: float
       descr: NFW concentration (host halo)
     - name: spin
+      dict: spin
       type: float
       descr: dimensionless spin parameter (host halo)
     - name: mstar_diffuse
+      dict: M_star_diffuse
       type: float
       descr: mass of stars in a 'diffuse stellar halo'
       units: '\(10^{10} M_\odot\)'
     - name: m_hot_halo
+      dict: M_hot_halo
       type: float
       descr: mass of hot gas in host halo
       units: '\(10^{10} M_\odot\)'
     - name: Z_hot_halo
+      dict: Z_hot_halo
       type: float
       descr: metallicity of hot gas in host halo
       units: '\( Z_\odot\)'
     - name: v_disk
+      dict: v_disk
       type: float
       descr: maximum rotation velocity of disk
       units: '\(km/s\)'
     - name: r_disk
+      dict: r_disk
       type: float
       descr: scale length of disk
       units: '\(kpc\)'
     - name: sigma_bulge
+      dict: sigma_bulge
       type: float
       descr: line-of-sight velocity dispersion of bulge
       units: '\(km/s\)'
     - name: r_bulge
+      dict: r_bulge
       type: float
       descr: effective radius of bulge (projected)
       units: '\(kpc\)'
@@ -1084,39 +1135,47 @@ lusam:
       descr: mass of sub-halo (at the time it became a sub)
       units: '\(10^{10} M_\odot\)'
     - name: mstar
-      dict: SM
+      dict: M_stellar
       type: float
       descr: stellar mass
       units: '\(10^{10} M_\odot\)'
     - name: mcold
+      dict: M_cold
       type: float
       descr: mass of cold gas
       units: '\(10^{10} M_\odot\)'
     - name: mbulge
+      dict: M_bulge
       type: float
       descr: stellar mass of bulge component
       units: '\(10^{10} M_\odot\)'
     - name: mBH
+      dict: M_BH
       type: float
       descr: mass of black hole
       units: '\(10^{10} M_\odot\)'
     - name: maccdot
+      dict: BHAR
       type: float
       descr: total accretion rate onto black hole
       units: '\( M_\odot\)/yr'
     - name: maccdot_radio
+      dict: BHAR_radio
       type: float
       descr: BHAR associated with 'radio mode'
       units: '\( M_\odot\)/yr'
     - name: Zstar
+      dict: Z_star
       type: float
       descr: mass weighted metallicity of stars
       units: '\( Z_\odot\)'
     - name: Zcold
+      dict: Z_cold
       type: float
       descr: mass weighted metallicity of cold gas
       units: '\( Z_\odot\)'
     - name: mstardot
+      dict: SFR_inst
       type: float
       descr: instantaneous star formation rate
       units: '\( M_\odot /yr\)'
@@ -1126,14 +1185,17 @@ lusam:
       descr: star formation rate averaged over past 1E8 yr
       units: '\( M_\odot /yr \)'
     - name: meanage
+      dict: age_mean
       type: float
       descr: mean stellar mass weighted age of stars
       units: '\(Gyr\)'
     - name: tmerge
+      dict: t_merge
       type: float
       descr: time since last merger greater than 1:10
       units: '\(Gyr\)'
     - name: tmajmerge
+      dict: t_major_merge
       type: float
       descr: time since last merger greater than 1:4
       units: '\(Gyr\)'
@@ -1648,6 +1710,7 @@ unimach:
       type: float
       descr: Halo mass (Bryan & Norman (BN98) 1998 virial mass)
       units: '\( M_\odot\)'
+      scale: 1 / 10^10
     - name: V
       type: float
       descr: 'Halo \(v_{max}\) (physical \(km/s\))'
@@ -1656,6 +1719,7 @@ unimach:
       type: float
       descr: Halo peak historical mass (BN98 virial mass)
       units: '\( M_\odot \)'
+      scale: 1 / 10^10
     - name: VMP
       type: float
       descr: Halo vmax at the time when peak mass was reached
@@ -1668,23 +1732,27 @@ unimach:
       type: float
       descr: 'Halo rank in \(\Delta v_{max}\) (see UniverseMachine paper)'
     - name: SM
-      dict: SM
+      dict: M_stellar
       type: float
       descr: True stellar mass
       units: '\( M_\odot\)'
+      scale: 10^10
     - name: ICL
       type: float
       descr: True intracluster stellar mass
       units: '\( M_\odot\)'
+      scale: 1 / 10^10
     - name: SFR
       dict: SFR
       type: float
       descr: True star formation rate
       units: '\( M_\odot /yr \)'
+      scale: 1 / 10^10
     - name: obs_SM
       type: float
       descr: Observed stellar mass, including random & systematic errors
       units: '\( M_\odot\)'
+      scale: 1 / 10^10
     - name: obs_SFR
       type: float
       descr: Observed star formation rate (SFR), including random & systemic errors
@@ -1751,6 +1819,7 @@ scsam:
       dict: halo_mass
       type: float
     - name: V_vir
+      dict: V_vir
       type: float
       descr: host halo virial velocity
       units: '\(km/s\)'
@@ -1761,36 +1830,45 @@ scsam:
       descr: host halo virial radius (physical coordinates)
       units: 'Mpc'
     - name: c_NFW
+      dict: c_NFW
       type: float
       descr: NFW concentration (host halo)
     - name: spin
+      dict: spin
       type: float
       descr: dimensionless spin parameter (host halo)
     - name: mstar_diffuse
+      dict: M_star_diffuse
       type: float
       descr: mass of stars in a 'diffuse stellar halo'
       units: '\(10^{10} M_\odot\)'
     - name: m_hot_halo
+      dict: M_hot_halo
       type: float
       descr: mass of hot gas in host halo
       units: '\(10^{10} M_\odot\)'
     - name: Z_hot_halo
+      dict: Z_hot_halo
       type: float
       descr: metallicity of hot gas in host halo
       units: '\( Z_\odot\)'
     - name: v_disk
+      dict: v_disk
       type: float
       descr: maximum rotation velocity of disk
       units: '\(km/s\)'
     - name: r_disk
+      dict: r_disk
       type: float
       descr: scale length of disk
       units: '\(kpc\)'
     - name: sigma_bulge
+      dict: sigma_bulge
       type: float
       descr: line-of-sight velocity dispersion of bulge
       units: '\(km/s\)'
     - name: rbulge
+      dict: r_bulge
       type: float
       descr: effective radius of bulge (projected)
       units: '\(kpc\)'
@@ -1800,39 +1878,47 @@ scsam:
       descr: mass of sub-halo (at the time it became a sub)
       units: '\(10^{10} M_\odot\)'
     - name: mstar
-      dict: SM
+      dict: M_stellar
       type: float
       descr: stellar mass
       units: '\(10^{10} M_\odot\)'
     - name: mcold
+      dict: M_cold
       type: float
       descr: mass of cold gas
       units: '\(10^{10} M_\odot\)'
     - name: mbulge
+      dict: M_bulge
       type: float
       descr: stellar mass of bulge component
       units: '\(10^{10} M_\odot\)'
     - name: mbh #mbh in SU SAM
+      dict: M_BH
       type: float
       descr: mass of black hole
       units: '\(10^{10} M_\odot\)'
     - name: maccdot
+      dict: BHAR
       type: float
       descr: total accretion rate onto black hole
       units: '\( M_\odot\)/yr'
     - name: maccdot_radio
+      dict: BHAR_radio
       type: float
       descr: BHAR associated with 'radio mode'
       units: '\( M_\odot\)/yr'
     - name: Zstar
+      dict: Z_star
       type: float
       descr: mass weighted metallicity of stars
       units: '\( Z_\odot\)'
     - name: Zcold
+      dict: Z_cold
       type: float
       descr: mass weighted metallicity of cold gas
       units: '\( Z_\odot\)'
     - name: mstardot
+      dict: SFR_inst
       type: float
       descr: instantaneous star formation rate
       units: '\( M_\odot /yr\)'
@@ -1842,18 +1928,22 @@ scsam:
       descr: star formation rate averaged over past 1E8 yr
       units: '\( M_\odot /yr \)'
     - name: meanage
+      dict: age_mean
       type: float
       descr: mean stellar mass weighted age of stars
       units: '\(Gyr\)'
     - name: tmerge
+      dict: t_merge
       type: float
       descr: time since last merger greater than 1:10
       units: '\(Gyr\)'
     - name: tmajmerge
+      dict: t_major_merge
       type: float
       descr: time since last merger greater than 1:4
       units: '\(Gyr\)'
     - name: cosi
+      dict: cosi
       type: float
       descr: cosine of disk inclination angle
     - name: UV1500_rest
