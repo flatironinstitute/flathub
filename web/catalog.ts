@@ -93,6 +93,8 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrT
     };
     opts.colorAxis = <Highcharts.ColorAxisOptions>opts.yAxis;
     opts.colorAxis.minColor = '#ffffff';
+    opts.colorAxis.reversed = false;
+    (<Highcharts.LegendOptions>opts.legend).enabled = true;
     opts.yAxis = {
       type: 'linear',
       title: axis_title(heatmap)
@@ -116,6 +118,7 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrT
     (<Highcharts.AxisOptions>opts.xAxis).min = hist.lbv;
     (<Highcharts.AxisOptions>opts.xAxis).max = hist.ubv+wid;
     opts.series = [<Highcharts.ColumnChartSeriesOptions>{
+      showInLegend: true,
       type: 'column',
       data: data,
       pointInterval: wid,
@@ -423,7 +426,14 @@ class NumericFilter extends Filter {
   update_aggs(aggs: AggrStats) {
     this.lb.defaultValue = this.lb.min = this.ub.min = <any>aggs.min;
     this.ub.defaultValue = this.lb.max = this.ub.max = <any>aggs.max;
-    this.lb.disabled = this.ub.disabled = false;
+    if (this.lb.disabled)
+      this.lb.disabled = false;
+    else
+      this.lb.value = <any>aggs.min;
+    if (this.ub.disabled)
+      this.ub.disabled = false;
+    else
+      this.ub.value = <any>aggs.max;
     this.avg.textContent = render_funct(this.field)(aggs.avg);
   }
 

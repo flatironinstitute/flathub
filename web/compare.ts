@@ -296,7 +296,7 @@ class Compare {
       delete q.aggs;
       delete q.hist;
       l.href = '/' + this.catalog.name + '?' + $.param(q);
-      l.appendChild(document.createTextNode(res.hits.total.toString()));
+      l.appendChild(document.createTextNode("Count: " + res.hits.total.toString()));
       acell.appendChild(l);
 
       if (r.hist && Histogram) {

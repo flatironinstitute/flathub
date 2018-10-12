@@ -4,6 +4,7 @@
 module Html
   ( topPage
   , simulationPage
+  , sqlSchema
   , comparePage
   , staticHtml
   ) where
@@ -40,6 +41,7 @@ import Catalog
 import Global
 import Compression
 import Query
+import Monoid
 import Static
 
 jsonEncodingVar :: T.Text -> J.Encoding -> H.Html
@@ -218,6 +220,21 @@ simulationPage = getPath R.parameter $ \sim req -> do
         H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto/tree/master/py" $ "this module."
       H.div H.! HA.id "div-py" $ H.pre H.! HA.id "code-py" $ mempty
 
+sqlSchema :: Route Simulation
+sqlSchema = getPath (R.parameter R.>* "schema.sql") $ \sim _ -> do
+  cat <- askCatalog sim
+  let tab = catalogIndex (catalogStore cat)
+  return $ okResponse [] $
+    foldMap (\f -> foldMap (\e -> "CREATE TYPE " <> tab <> "_" <> fieldName f <> " AS ENUM(" <> mintersperseMap ", " sqls (V.toList e) <> ");\n") (fieldEnum f)) (catalogFields cat)
+    <> "CREATE TABLE " <> tab <> " ("
+    <> mintersperseMap "," (\f -> "\n  " <> fieldName f <> " " <> maybe (sqlType (fieldType f)) (\_ -> tab <> "_" <> fieldName f) (fieldEnum f)) (catalogFields cat)
+    <> foldMap (\k -> ",\n PRIMARY KEY (" <> k <> ")") (catalogKey cat)
+    <> "\n);\n"
+    <> "COMMENT ON TABLE " <> tab <> " IS " <> sqls (catalogTitle cat <> foldMap (": " <>) (catalogDescr cat)) <> ";\n"
+    <> foldMap (\f -> "COMMENT ON COLUMN " <> tab <> "." <> fieldName f <> " IS " <> sqls (fieldTitle f <> foldMap ((" [" <>) . (<> "]")) (fieldUnits f) <> foldMap (": " <>) (fieldDescr f)) <> ";\n") (catalogFields cat)
+  where
+  sqls s = "$SqL$" <> s <> "$SqL$" -- hacky dangerous
+
 comparePage :: Route ()
 comparePage = getPath "compare" $ \() req -> do
   cats <- asks globalCatalogs
@@ -225,6 +242,7 @@ comparePage = getPath "compare" $ \() req -> do
     jsonVar "Catalogs" $ catalogMap cats
     jsonVar "Dict" $ catalogDict cats
     H.h2 "Compare"
+    H.p $ "Select catalogs across the top to compare, and fields down the left to apply filters and compare statistics and distributions from these catalogs."
     H.table H.! HA.id "tcompare" $ do
       H.thead $ H.tr $ do
         H.th "catalog"
