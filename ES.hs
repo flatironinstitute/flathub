@@ -30,7 +30,7 @@ import           Data.Foldable (fold)
 import           Data.Functor.Identity (Identity(Identity))
 import qualified Data.HashMap.Strict as HM
 import           Data.IORef (newIORef, readIORef, writeIORef)
-import           Data.List (find, intercalate)
+import           Data.List (find)
 import           Data.Maybe (mapMaybe)
 import           Data.Monoid ((<>))
 import           Data.Proxy (Proxy(Proxy))
@@ -127,18 +127,14 @@ createIndex cat@Catalog{ catalogStore = ~CatalogES{..} } = elasticSearch PUT [T.
     , "store" J..= (catalogStoreField == ESStoreStore)
     ]
 
-checkIndices :: M ()
+checkIndices :: M (HM.HashMap Simulation String)
 checkIndices = do
-  cats <- asks $ filter ises . HM.elems . catalogMap . globalCatalogs
-  indices <- elasticSearch GET [intercalate "," $ map catalogIndex' cats] [] ()
-  either
-    (fail . ("ES index mismatch: " ++))
-    return
-    $ J.parseEither (J.withObject "indices" $ forM_ cats . catalog) indices
+  indices <- elasticSearch GET ["*"] [] ()
+  HM.mapMaybe (\cat -> either Just (const Nothing) $ J.parseEither (catalog cat) indices)
+    <$> asks (catalogMap . globalCatalogs)
   where
-  ises Catalog{ catalogStore = ~CatalogES{} } = True
-  catalogIndex' ~Catalog{ catalogStore = CatalogES{ catalogIndex = idxn} } = T.unpack idxn
-  catalog is ~cat@Catalog{ catalogStore = CatalogES{ catalogIndex = idxn, catalogMapping = mapn } } = parseJSONField idxn (idx cat mapn) is
+  catalog ~cat@Catalog{ catalogStore = CatalogES{ catalogIndex = idxn, catalogMapping = mapn } } =
+    parseJSONField idxn (idx cat mapn)
   idx :: Catalog -> T.Text -> J.Value -> J.Parser ()
   idx cat mapn = J.withObject "index" $ parseJSONField "mappings" $ J.withObject "mappings" $
     parseJSONField mapn (mapping $ catalogFields cat)
@@ -151,7 +147,7 @@ checkIndices = do
     unless (t == fieldType field) $ fail $ "incorrect field type; should be " ++ show (fieldType field)
 
 scrollTime :: IsString s => s
-scrollTime = "10s"
+scrollTime = "60s"
 
 queryIndexScroll :: Bool -> Catalog -> Query -> M J.Value
 queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreField = store } } Query{..} = do
