@@ -106,8 +106,8 @@ catalogURL Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn, catalogMappi
 defaultSettings :: Catalog -> J.Object
 defaultSettings cat = HM.fromList
   [ "index" J..= J.object
-    [ "number_of_shards" J..= J.Number 10
-    , "number_of_replicas" J..= J.Number 0
+    [ "number_of_shards" J..= J.Number 12
+    , "number_of_replicas" J..= J.Number 1
     , "refresh_interval" J..= J.Number (-1)
     , "max_docvalue_fields_search" J..= (8 + length (catalogFields cat))
     ]
