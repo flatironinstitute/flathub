@@ -279,5 +279,5 @@ createBulk cat@Catalog{ catalogStore = ~CatalogES{} } docs = do
   nl = B.char7 '\n'
 
 flushIndex :: Catalog -> M ()
-flushIndex cat@Catalog{ catalogStore = ~CatalogES{} } =
-  (void :: M J.Value -> M ()) $ elasticSearch POST (catalogURL cat ++ ["_flush"]) [] EmptyJSON
+flushIndex Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } =
+  (void :: M J.Value -> M ()) $ elasticSearch POST ([T.unpack idxn, "_flush"]) [] EmptyJSON
