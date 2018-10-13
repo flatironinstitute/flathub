@@ -14,6 +14,7 @@ import qualified Network.HTTP.Client as HTTP
 import qualified System.Console.GetOpt as Opt
 import           System.Environment (getProgName, getArgs)
 import           System.Exit (exitFailure)
+import           System.IO (hPutStrLn, stderr)
 import qualified Waimwork.Config as C
 import           Waimwork.Response (response)
 import           Waimwork.Warp (runWaimwork)
@@ -70,7 +71,7 @@ main = do
     (foldr ($) def -> o, a, [])
       | null a || isJust (optIngest o) -> return (o, a)
     (_, _, e) -> do
-      mapM_ putStrLn e
+      mapM_ (hPutStrLn stderr) e
       putStrLn $ Opt.usageInfo ("Usage: " ++ prog ++ " [OPTION...]\n       " ++ prog ++ " [OPTION...] -i SIM FILE[@OFFSET] ...") optDescr
       exitFailure
   conf <- C.load $ optConfig opts
@@ -81,16 +82,18 @@ main = do
         { globalConfig = conf
         , globalHTTP = httpmgr
         , globalES = es
-        , globalCatalogs = catalogs{ catalogMap = HM.filter catalogEnabled $ catalogMap catalogs }
+        , globalCatalogs = catalogs
         , globalDevMode = fromMaybe False $ conf C.! "dev"
         }
 
-  runGlobal global $ do
+  catalogs' <- runGlobal global $ do
     -- create
-    mapM_ (liftIO . putStrLn <=< createCatalog . (catalogMap catalogs HM.!)) $ optCreate opts
+    mapM_ (liftIO . hPutStrLn stderr <=< createCatalog . (catalogMap catalogs HM.!)) $ optCreate opts
 
     -- check catalogs against dbs
-    ES.checkIndices
+    errs <- ES.checkIndices
+    liftIO $ forM_ (HM.toList errs) $ \(k, e) ->
+      hPutStrLn stderr $ T.unpack k ++ ": " ++ e
 
     -- ingest
     forM_ (optIngest opts) $ \sim -> do
@@ -106,6 +109,8 @@ main = do
         liftIO $ print n
       ES.flushIndex cat
 
+    return catalogs{ catalogMap = HM.filter catalogEnabled $ catalogMap catalogs `HM.difference` errs }
+
   when (null (optCreate opts) && isNothing (optIngest opts)) $
-    runWaimwork conf $ runGlobal global
+    runWaimwork conf $ runGlobal global{ globalCatalogs = catalogs' }
       . routeWaiError (\s h _ -> return $ response s h ()) routes
