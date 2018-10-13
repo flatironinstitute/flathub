@@ -2,6 +2,6 @@ http {
   port = 8092
 }
 elasticsearch {
-  server = "http://es0:9200/"
+  server = "http://astrosims-es:9200/"
 }
 dev = true

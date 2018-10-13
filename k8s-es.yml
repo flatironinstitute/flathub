@@ -1,0 +1,100 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: astrosims-es
+spec:
+  selector:
+    matchLabels:
+      name: astrosims-es
+  template:
+    metadata:
+      labels:
+        name: astrosims-es
+    spec:
+      containers:
+      - name: astrosims-es
+        image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.4.2
+        env:
+          - name: cluster.name
+            value: "astrosims"
+          #- name: bootstrap.memory_lock
+          #  value: "true"
+          - name: ES_JAVA_OPTS
+            value: "-Xms24g -Xmx24g"
+          - name: discovery.zen.ping.unicast.hosts
+            value: "astrosims-es-trans"
+          - name: discovery.zen.minimum_master_nodes
+            value: "4"
+          - name: node.max_local_storage_nodes
+            value: "8"
+          - name: node.master
+            value: "true"
+          - name: node.data
+            value: "true"
+          - name: node.name
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: processors
+            valueFrom:
+              resourceFieldRef:
+                resource: requests.cpu
+          - name: TAKE_FILE_OWNERSHIP
+            value: "true"
+        resources:
+          requests:
+            cpu: 4
+            memory: 28Gi
+          limits:
+            memory: 32Gi
+        ports:
+          - containerPort: 9200
+            name: http
+          - containerPort: 9300
+            name: transport
+        livenessProbe:
+          tcpSocket:
+            port: transport
+          initialDelaySeconds: 15
+          periodSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /_cluster/health
+            port: http
+          initialDelaySeconds: 30
+          timeoutSeconds: 15
+          periodSeconds: 60
+        volumeMounts:
+        - name: esdata
+          mountPath: /usr/share/elasticsearch/data
+      terminationGracePeriodSeconds: 60
+      volumes:
+      - name: esdata
+        hostPath:
+          path: /nvme/esdata
+          type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: astrosims-es-trans
+spec:
+  selector:
+    name: astrosims-es
+  publishNotReadyAddresses: true
+  ports:
+  - name: transport
+    port: 9300
+  clusterIP: None
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: astrosims-es
+spec:
+  selector:
+    name: astrosims-es
+  ports:
+  - name: http
+    port: 9200
