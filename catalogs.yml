@@ -1110,7 +1110,7 @@ lusam:
       descr: metallicity of hot gas in host halo
       units: '\( Z_\odot\)'
     - name: v_disk
-      dict: v_disk
+      #dict: v_disk
       type: float
       descr: maximum rotation velocity of disk
       units: '\(km/s\)'
@@ -1150,17 +1150,17 @@ lusam:
       descr: stellar mass of bulge component
       units: '\(10^{10} M_\odot\)'
     - name: mBH
-      dict: M_BH
+      #dict: M_BH
       type: float
       descr: mass of black hole
       units: '\(10^{10} M_\odot\)'
     - name: maccdot
-      dict: BHAR
+      #dict: BHAR
       type: float
       descr: total accretion rate onto black hole
       units: '\( M_\odot\)/yr'
     - name: maccdot_radio
-      dict: BHAR_radio
+      #dict: BHAR_radio
       type: float
       descr: BHAR associated with 'radio mode'
       units: '\( M_\odot\)/yr'
@@ -1190,12 +1190,12 @@ lusam:
       descr: mean stellar mass weighted age of stars
       units: '\(Gyr\)'
     - name: tmerge
-      dict: t_merge
+      #dict: t_merge
       type: float
       descr: time since last merger greater than 1:10
       units: '\(Gyr\)'
     - name: tmajmerge
-      dict: t_major_merge
+      #dict: t_major_merge
       type: float
       descr: time since last merger greater than 1:4
       units: '\(Gyr\)'
@@ -1853,7 +1853,7 @@ scsam:
       descr: metallicity of hot gas in host halo
       units: '\( Z_\odot\)'
     - name: v_disk
-      dict: v_disk
+      #dict: v_disk
       type: float
       descr: maximum rotation velocity of disk
       units: '\(km/s\)'
@@ -1893,17 +1893,17 @@ scsam:
       descr: stellar mass of bulge component
       units: '\(10^{10} M_\odot\)'
     - name: mbh #mbh in SU SAM
-      dict: M_BH
+      #dict: M_BH
       type: float
       descr: mass of black hole
       units: '\(10^{10} M_\odot\)'
     - name: maccdot
-      dict: BHAR
+      #dict: BHAR
       type: float
       descr: total accretion rate onto black hole
       units: '\( M_\odot\)/yr'
     - name: maccdot_radio
-      dict: BHAR_radio
+      #dict: BHAR_radio
       type: float
       descr: BHAR associated with 'radio mode'
       units: '\( M_\odot\)/yr'
@@ -1933,12 +1933,12 @@ scsam:
       descr: mean stellar mass weighted age of stars
       units: '\(Gyr\)'
     - name: tmerge
-      dict: t_merge
+      #dict: t_merge
       type: float
       descr: time since last merger greater than 1:10
       units: '\(Gyr\)'
     - name: tmajmerge
-      dict: t_major_merge
+      #dict: t_major_merge
       type: float
       descr: time since last merger greater than 1:4
       units: '\(Gyr\)'
