@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: astrosims
@@ -54,4 +54,5 @@ spec:
   ports:
   - name: http
     port: 80
+    targetPort: http
   #externalIPs:

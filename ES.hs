@@ -106,8 +106,8 @@ catalogURL Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn, catalogMappi
 defaultSettings :: Catalog -> J.Object
 defaultSettings cat = HM.fromList
   [ "index" J..= J.object
-    [ "number_of_shards" J..= J.Number 10
-    , "number_of_replicas" J..= J.Number 0
+    [ "number_of_shards" J..= J.Number 12
+    , "number_of_replicas" J..= J.Number 1
     , "refresh_interval" J..= J.Number (-1)
     , "max_docvalue_fields_search" J..= (8 + length (catalogFields cat))
     ]
@@ -279,5 +279,5 @@ createBulk cat@Catalog{ catalogStore = ~CatalogES{} } docs = do
   nl = B.char7 '\n'
 
 flushIndex :: Catalog -> M ()
-flushIndex cat@Catalog{ catalogStore = ~CatalogES{} } =
-  (void :: M J.Value -> M ()) $ elasticSearch POST (catalogURL cat ++ ["_flush"]) [] EmptyJSON
+flushIndex Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } =
+  (void :: M J.Value -> M ()) $ elasticSearch POST ([T.unpack idxn, "_flush"]) [] EmptyJSON
