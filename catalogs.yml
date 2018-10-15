@@ -568,9 +568,7 @@ gaea:
     WARNING: This is one of the first all sky catalogs we have produced, and there could be some issues/bugs we did not notice. Any bug report will be useful to correct and improve this work! So please let us know if you find anything "strange".
     The full dataset is available <a href='http://voms.simonsfoundation.org:50013/KZiLTE5keWT4N535B3Zd2aHibbjju6n/HI_lightcone_Anna3/'>here</a>.
   index: gaea
-  settings:
-    index:
-      number_of_shards: 40
+  count: 201238825
   fields:
     - name: PPos
       type: double
@@ -675,6 +673,7 @@ gaiadr2:
   title: GAIA DR2
   index: gaiadr2
   key: source_id
+  count: 1692919135
   enabled: false
   fields:
 #    - name: solution_id
@@ -1036,6 +1035,7 @@ lusam:
     Lu-SAM Lightcones for the CANDELS project.
     The full data release will be available shortly.
   index: lusam
+  count: 12380047
   sort: 'candels-3'
   fields:
     - name: field
@@ -1780,6 +1780,7 @@ scsam:
     The full data release will be available shortly.
   index: scsam
   sort: 'candels-1'
+  count: 34168952
   fields:
     - name: field
       dict: candels_field

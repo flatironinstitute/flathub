@@ -3,7 +3,7 @@
 
 import           Control.Arrow (first, second)
 import           Control.Exception (throwIO)
-import           Control.Monad ((<=<), forM_, when)
+import           Control.Monad ((<=<), forM_, when, unless)
 import           Control.Monad.IO.Class (liftIO)
 import           Data.Default (Default(def))
 import qualified Data.HashMap.Strict as HM
@@ -45,17 +45,19 @@ routes = R.routes
 data Opts = Opts
   { optConfig :: FilePath
   , optCreate :: [Simulation]
+  , optClose :: [Simulation]
   , optIngest :: Maybe Simulation
   , optConstFields :: [(T.Text, T.Text)]
   }
 
 instance Default Opts where
-  def = Opts "config" [] Nothing []
+  def = Opts "config" [] [] Nothing []
 
 optDescr :: [Opt.OptDescr (Opts -> Opts)]
 optDescr =
   [ Opt.Option "f" ["config"] (Opt.ReqArg (\c o -> o{ optConfig = c }) "FILE") "Configuration file [config]"
   , Opt.Option "s" ["create"] (Opt.ReqArg (\i o -> o{ optCreate = T.pack i : optCreate o }) "SIM") "Create storage schema for the simulation"
+  , Opt.Option "e" ["close" ] (Opt.ReqArg (\i o -> o{ optClose  = T.pack i : optClose o  }) "SIM") "Finalize (flush and make read-only) simulation storage"
   , Opt.Option "i" ["ingest"] (Opt.ReqArg (\i o -> o{ optIngest = Just (T.pack i) }) "SIM") "Ingest file(s) into the simulation store"
   , Opt.Option "c" ["const"] (Opt.ReqArg (\f o -> o{ optConstFields = (second T.tail $ T.break ('=' ==) $ T.pack f) : optConstFields o }) "FIELD=VALUE") "Field value to add to every ingested record"
   ]
@@ -109,8 +111,16 @@ main = do
         liftIO $ print n
       ES.flushIndex cat
 
+    forM_ (optClose opts) $ \sim -> do
+      let cat = catalogMap catalogs HM.! sim
+      liftIO . print =<< ES.flushIndex cat
+      n <- ES.countIndex cat
+      liftIO $ print n
+      unless (all (n ==) $ catalogCount cat) $ fail $ T.unpack sim ++ ": incorrect document count"
+      liftIO . print =<< ES.closeIndex cat
+
     return catalogs{ catalogMap = HM.filter catalogEnabled $ catalogMap catalogs `HM.difference` errs }
 
-  when (null (optCreate opts) && isNothing (optIngest opts)) $
+  when (null (optCreate opts ++ optClose opts) && isNothing (optIngest opts)) $
     runWaimwork conf $ runGlobal global{ globalCatalogs = catalogs' }
       . routeWaiError (\s h _ -> return $ response s h ()) routes

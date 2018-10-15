@@ -22,7 +22,7 @@ import qualified Data.Aeson.Types as J
 import           Data.Bits (xor)
 import           Data.Functor.Identity (Identity(runIdentity))
 import qualified Data.HashMap.Strict as HM
-import           Data.Maybe (catMaybes)
+import           Data.Maybe (catMaybes, maybeToList)
 import           Data.Proxy (Proxy(Proxy))
 import           Data.Semigroup (Semigroup((<>)))
 import qualified Data.Text as T
@@ -65,6 +65,7 @@ data Catalog = Catalog
   , catalogFields :: Fields
   , catalogFieldMap :: HM.HashMap T.Text Field
   , catalogKey :: Maybe T.Text
+  , catalogCount :: Maybe Word
   }
 
 parseCatalog :: HM.HashMap T.Text FieldGroup -> J.Value -> J.Parser Catalog
@@ -75,6 +76,7 @@ parseCatalog dict = J.withObject "catalog" $ \c -> do
   catalogSort <- c J..:? "sort" J..!= T.empty
   catalogDescr <- c J..:? "descr"
   catalogKey <- c J..:? "key"
+  catalogCount <- c J..:? "count"
   catalogStore <- CatalogES
       <$> (c J..: "index")
       <*> (c J..:! "mapping" J..!= "catalog")
@@ -89,11 +91,13 @@ instance J.FromJSON Catalog where
   parseJSON = parseCatalog mempty
 
 instance J.ToJSON Catalog where
-  toJSON Catalog{..} = J.object
+  toJSON Catalog{..} = J.object $
     [ "title" J..= catalogTitle
     , "descr"  J..= catalogDescr
     , "fields" J..= catalogFields
-    ] where
+    ] ++ concatMap maybeToList
+    [ ("count" J..=) <$> catalogCount
+    ]
 
 takeCatalogField :: T.Text -> Catalog -> Maybe (Field, Catalog)
 takeCatalogField n c = (, c
