@@ -149,11 +149,18 @@ class CField {
 
     const h = r.insertCell();
     h.textContent = this.field.title;
-    let rm = document.createElement('button');
+    const rm = document.createElement('button');
     rm.className = 'remove';
     rm.innerHTML = '&times;';
     rm.onclick = this.remove.bind(this);
     h.insertBefore(rm, h.firstChild);
+    if (this.field.descr) {
+      h.className = 'tooltip';
+      const tt = document.createElement('span');
+      tt.className = 'tooltiptext';
+      tt.innerHTML = this.field.descr;
+      h.appendChild(tt);
+    }
 
     for (let idx = 0; idx < Compares.length; idx++)
       Compares[idx].fillField(this);

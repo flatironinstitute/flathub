@@ -1653,11 +1653,11 @@ unimach:
     - name: RA
       dict: ppos_x
       type: float
-      units: '\(deg)\'
+      units: '\(deg\)'
     - name: Dec
       dict: ppos_y
       type: float
-      units: '\(deg)\'
+      units: '\(deg\)'
     - name: Z(los)
       dict: redshift
       type: float
