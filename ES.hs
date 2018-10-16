@@ -302,5 +302,5 @@ countIndex Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } =
 
 closeIndex :: Catalog -> M J.Value
 closeIndex Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } =
-  elasticSearch POST ([T.unpack idxn, "_settings"]) [] $ JE.pairs $
+  elasticSearch PUT ([T.unpack idxn, "_settings"]) [] $ JE.pairs $
     "index" .=* ("blocks" .=* ("read_only" J..= True))
