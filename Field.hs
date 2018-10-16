@@ -42,6 +42,7 @@ import qualified Data.HashMap.Strict as HM
 import           Data.Int (Int64, Int32, Int16, Int8)
 import           Data.Maybe (maybeToList)
 import           Data.Proxy (Proxy(Proxy))
+import           Data.Scientific (Scientific)
 import           Data.Semigroup (Max(getMax), Semigroup((<>)))
 import qualified Data.Text as T
 import           Data.Typeable (Typeable)
@@ -275,6 +276,7 @@ data FieldSub t m = Field
   , fieldTop, fieldDisp :: Bool
   , fieldSub :: m (FieldsSub t m)
   , fieldDict :: Maybe T.Text
+  , fieldScale :: Maybe Scientific
   }
 
 type FieldGroup = FieldSub Proxy Maybe
@@ -297,6 +299,7 @@ instance Alternative m => Default (FieldSub Proxy m) where
     , fieldDisp = True
     , fieldSub = empty
     , fieldDict = Nothing
+    , fieldScale = Nothing
     }
 
 instance J.ToJSON Field where
@@ -314,6 +317,7 @@ instance J.ToJSON Field where
     , bool "top" fieldTop
     , bool "terms" $ isTermsField f
     , ("dict" J..=) <$> fieldDict
+    , ("scale" J..=) <$> fieldScale
     ] where
     bool _ False = Nothing
     bool n b = Just $ n J..= b
@@ -334,6 +338,7 @@ parseFieldGroup dict = parseFieldDefs def where
     fieldUnits <- (<|> fieldUnits d) <$> f J..:? "units"
     fieldTop <- f J..:? "top" J..!= fieldTop d
     fieldDisp <- f J..:! "disp" J..!= fieldDisp d
+    fieldScale <- f J..:! "scale"
     fieldSub <- (<|> fieldSub d) <$> J.explicitParseFieldMaybe' (J.withArray "subfields" $ V.mapM $
         parseFieldDefs defd
           { fieldType = fieldType

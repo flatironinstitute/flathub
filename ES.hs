@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TupleSections #-}
@@ -11,9 +12,11 @@ module ES
   , queryBulk
   , createBulk
   , flushIndex
+  , countIndex
+  , closeIndex
   ) where
 
-import           Control.Monad ((<=<), forM, forM_, unless, void)
+import           Control.Monad ((<=<), forM, forM_, unless)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (ask, asks)
 import qualified Data.Aeson as J
@@ -42,6 +45,7 @@ import           Network.HTTP.Types.Header (hAccept, hContentType)
 import           Network.HTTP.Types.Method (StdMethod(GET, PUT, POST), renderStdMethod)
 import qualified Network.HTTP.Types.URI as HTTP (Query)
 import qualified Network.URI as URI
+import           Text.Read (readEither)
 import qualified Waimwork.Config as C
 
 import Monoid
@@ -106,12 +110,16 @@ catalogURL Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn, catalogMappi
 defaultSettings :: Catalog -> J.Object
 defaultSettings cat = HM.fromList
   [ "index" J..= J.object
-    [ "number_of_shards" J..= J.Number 12
+    [ "number_of_shards" J..= (clusterSize * maybe 2 (succ . (`div` (clusterSize * docsPerShard))) (catalogCount cat))
     , "number_of_replicas" J..= J.Number 1
     , "refresh_interval" J..= J.Number (-1)
     , "max_docvalue_fields_search" J..= (8 + length (catalogFields cat))
     ]
-  ]
+  ] where
+  -- elastic search cluster size to optimize for (should really be determined dynamicaly)
+  clusterSize = 4
+  -- target number of docs per shard
+  docsPerShard = 16000000
 
 createIndex :: Catalog -> M J.Value
 createIndex cat@Catalog{ catalogStore = ~CatalogES{..} } = elasticSearch PUT [T.unpack catalogIndex] [] $ JE.pairs $
@@ -278,6 +286,21 @@ createBulk cat@Catalog{ catalogStore = ~CatalogES{} } docs = do
     <> nl <> J.fromEncoding (J.pairs d) <> nl
   nl = B.char7 '\n'
 
-flushIndex :: Catalog -> M ()
+flushIndex :: Catalog -> M J.Value
 flushIndex Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } =
-  (void :: M J.Value -> M ()) $ elasticSearch POST ([T.unpack idxn, "_flush"]) [] EmptyJSON
+  elasticSearch POST ([T.unpack idxn, "_flush"]) [] EmptyJSON
+
+newtype ESCount = ESCount{ esCount :: Word } deriving (Show)
+instance J.FromJSON ESCount where
+  parseJSON = fmap ESCount <$> J.withObject "count" (parseJSONField "count" $ \case
+    J.String t -> either fail return $ readEither (T.unpack t)
+    v -> J.parseJSON v)
+
+countIndex :: Catalog -> M Word
+countIndex Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } =
+  sum . map esCount <$> elasticSearch GET (["_cat", "count", T.unpack idxn]) [] EmptyJSON
+
+closeIndex :: Catalog -> M J.Value
+closeIndex Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } =
+  elasticSearch POST ([T.unpack idxn, "_settings"]) [] $ JE.pairs $
+    "index" .=* ("blocks" .=* ("read_only" J..= True))
