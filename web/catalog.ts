@@ -261,7 +261,7 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
 
     delete query.aggs;
     delete query.hist;
-    //url_update(query);
+    url_update(query);
     delete query.limit;
     delete query.offset;
     set_download(query);
