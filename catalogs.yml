@@ -83,6 +83,9 @@ dict:
   - name: M_bulge
     descr: Stellar mass of bulge component
     type: float
+  - name: M_BH
+  - name: BHAR
+  - name: BHAR_radio
   - name: Z_star
     type: float
     descr: Mass weighted metallicity of stars
@@ -98,7 +101,10 @@ dict:
     descr: star formation rate
     units: '\(M_\odot\)/yr'
   - name: cosi
+  - name: t_merge
+  - name: t_major_merge
   - name: age_mean
+  - name: v_disk
   - name: UV1500_rest
     type: float
 
