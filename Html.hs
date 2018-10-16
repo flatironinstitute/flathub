@@ -123,13 +123,14 @@ simulationPage = getPath R.parameter $ \sim req -> do
       <> "bulk" J..= map (J.String . R.renderParameter) [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)]
       <> "fields" J..= fields'
     fieldBody :: Word -> FieldGroup -> H.Html
-    fieldBody d f = H.span WH.!? (HA.title . H.textValue <$> fieldDescr f) $ do
+    fieldBody d f = H.span $ do
       -- Writes the title to the span
       H.text $ fieldTitle f
       -- Writes the unit to the span
       forM_ (fieldUnits f) $ \u -> do
         if d > 1 then H.br else " "
         H.span H.! HA.class_ "units" $ "[" <> H.preEscapedText u <> "]"
+      mapM_ ((H.span H.! HA.class_ "tooltiptext") . H.text) (fieldDescr f)
     field :: Word -> FieldGroup -> FieldGroup -> H.Html
     field d f' f@Field{ fieldSub = Nothing } = do
       H.th
@@ -138,11 +139,13 @@ simulationPage = getPath R.parameter $ \sim req -> do
           H.! H.dataAttribute "name" (H.textValue $ fieldName f')
           H.! H.dataAttribute "type" (baseType ("num","num","string","string") $ fieldType f)
           H.!? (not (fieldDisp f), H.dataAttribute "visible" "false")
-          H.! H.dataAttribute "default-content" mempty $ do
+          H.! H.dataAttribute "default-content" mempty
+          H.! HA.class_ "tooltip" $
         fieldBody d f
     field _ _ f@Field{ fieldSub = Just s } = do
       H.th
-          H.! HA.colspan (H.toValue $ length $ expandFields s) $
+          H.! HA.colspan (H.toValue $ length $ expandFields s)
+          H.! HA.class_ "tooltip" $
         fieldBody 1 f
     row :: Word -> [(FieldGroup -> FieldGroup, FieldGroup)] -> H.Html
     row d l = do
