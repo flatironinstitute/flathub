@@ -81,7 +81,7 @@ htmlResponse req hdrs body = do
               H.li $
                 H.div H.! HA.class_ "dropdown" $ do
                     H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Catalogs"
-                    H.div H.! HA.class_"dropdown-content" $ do
+                    H.div H.! HA.class_ "dropdown-content" $ do
                         forM_ (catalogsSorted $ globalCatalogs glob) $ \(key, cat) ->
                             H.a H.! HA.href (WH.routeActionValue simulationPage key mempty) $ H.text (catalogTitle cat)
               H.li $
@@ -153,7 +153,6 @@ simulationPage = getPath R.parameter $ \sim req -> do
     fielddesc :: FieldGroup -> FieldGroup -> Int -> H.Html
     fielddesc f g d = do
         H.tr $ do
-          --  H.td H.! HA.id "checkbox" $ H.div $ do
             H.td H.! HA.class_ ("depth-" <> H.stringValue (show d)) $ do
                 H.input H.! HA.type_ "checkbox"
                     H.!? (isNothing (fieldSub g), HA.id $ H.textValue $ key f)
@@ -197,7 +196,6 @@ simulationPage = getPath R.parameter $ \sim req -> do
       H.h3 $ "Data Table"
       H.table H.! HA.id "tcat" H.! HA.class_ "compact" $ do
         H.thead $ row (fieldsDepth fields) ((id ,) <$> V.toList fields)
-        H.tfoot $ H.tr $ H.td H.! HA.colspan (H.toValue $ length fields') H.! HA.class_ "loading" $ "loading..."
 
       H.h3 $ "Fields Dictionary"
       H.div $ do
@@ -210,7 +208,7 @@ simulationPage = getPath R.parameter $ \sim req -> do
             H.th $ H.text "Type"
             H.th $ H.text "Units"
             H.th $ H.text "Description"
-        forM_ (catalogFieldGroups cat) $ \f -> do
+        H.tbody $ forM_ (catalogFieldGroups cat) $ \f -> do
             fielddesc f f 0
 
       H.h3 $ "Python Query"
