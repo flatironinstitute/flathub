@@ -30,7 +30,7 @@ To start off, create a Simulation object based off the simulation you want to qu
 
 ```
 gaea = fi_astrosims.client.Simulation('gaea')
-q = gaea.query(fields = ['RA', 'Dec', 'z'], Mvir = (4700, 4900), sample = 0.01, seed = 0)
+q = gaea.query(fields = ['PPos_x', 'PPos_y', 'z'], Mvir = (4700, 4900), sample = 0.01, seed = 0)
 ```
 
 A dict of available fields is available on the Simulation:
