@@ -81,7 +81,7 @@ htmlResponse req hdrs body = do
               H.li $
                 H.div H.! HA.class_ "dropdown" $ do
                     H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Catalogs"
-                    H.div H.! HA.class_"dropdown-content" $ do
+                    H.div H.! HA.class_ "dropdown-content" $ do
                         forM_ (catalogsSorted $ globalCatalogs glob) $ \(key, cat) ->
                             H.a H.! HA.href (WH.routeActionValue simulationPage key mempty) $ H.text (catalogTitle cat)
               H.li $
@@ -123,12 +123,14 @@ simulationPage = getPath R.parameter $ \sim req -> do
       <> "bulk" J..= map (J.String . R.renderParameter) [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)]
       <> "fields" J..= fields'
     fieldBody :: Word -> FieldGroup -> H.Html
-    fieldBody d f = H.div H.! HA.class_ "tooltip" $ do
+
+    fieldBody d f = H.span $ do
+      -- Writes the title to the span
       H.text $ fieldTitle f
       forM_ (fieldUnits f) $ \u -> do
         if d > 1 then H.br else " "
         H.span H.! HA.class_ "units" $ "[" <> H.preEscapedText u <> "]"
-      H.span H.! HA.class_ "tooltiptext" $ foldMap H.text (fieldDescr f)
+      mapM_ ((H.span H.! HA.class_ "tooltiptext") . H.text) (fieldDescr f)
     field :: Word -> FieldGroup -> FieldGroup -> H.Html
     field d f' f@Field{ fieldSub = Nothing } = do
       H.th
@@ -137,11 +139,13 @@ simulationPage = getPath R.parameter $ \sim req -> do
           H.! H.dataAttribute "name" (H.textValue $ fieldName f')
           H.! H.dataAttribute "type" (baseType ("num","num","string","string") $ fieldType f)
           H.!? (not (fieldDisp f), H.dataAttribute "visible" "false")
-          H.! H.dataAttribute "default-content" mempty $ do
+          H.! H.dataAttribute "default-content" mempty
+          H.! HA.class_ "tooltip" $
         fieldBody d f
     field _ _ f@Field{ fieldSub = Just s } = do
       H.th
-          H.! HA.colspan (H.toValue $ length $ expandFields s) $
+          H.! HA.colspan (H.toValue $ length $ expandFields s)
+          H.! HA.class_ "tooltip" $
         fieldBody 1 f
     row :: Word -> [(FieldGroup -> FieldGroup, FieldGroup)] -> H.Html
     row d l = do
@@ -152,7 +156,6 @@ simulationPage = getPath R.parameter $ \sim req -> do
     fielddesc :: FieldGroup -> FieldGroup -> Int -> H.Html
     fielddesc f g d = do
         H.tr $ do
-          --  H.td H.! HA.id "checkbox" $ H.div $ do
             H.td H.! HA.class_ ("depth-" <> H.stringValue (show d)) $ do
                 H.input H.! HA.type_ "checkbox"
                     H.!? (isNothing (fieldSub g), HA.id $ H.textValue $ key f)
@@ -208,7 +211,6 @@ simulationPage = getPath R.parameter $ \sim req -> do
       H.h3 $ "Data Table"
       H.table H.! HA.id "tcat" H.! HA.class_ "compact" $ do
         H.thead $ row (fieldsDepth fields) ((id ,) <$> V.toList fields)
-        H.tfoot $ H.tr $ H.td H.! HA.colspan (H.toValue $ length fields') H.! HA.class_ "loading" $ "loading..."
 
       H.h3 $ "Fields Dictionary"
       H.div $ do
@@ -221,7 +223,7 @@ simulationPage = getPath R.parameter $ \sim req -> do
             H.th $ H.text "Type"
             H.th $ H.text "Units"
             H.th $ H.text "Description"
-        forM_ (catalogFieldGroups cat) $ \f -> do
+        H.tbody $ forM_ (catalogFieldGroups cat) $ \f -> do
             fielddesc f f 0
 
       H.h3 $ "Python Query"

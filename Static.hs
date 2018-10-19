@@ -58,7 +58,7 @@ findM f (a:l) = do
   if r then return $ Just a else findM f l
 
 cacheControl :: Global -> Wai.Request -> Header
-cacheControl glob q = (hCacheControl, "public, max-age=" <> (if isdev then "10, must-revalidate" else "1000000")) where
+cacheControl glob q = (hCacheControl, "public, max-age=" <> (if isdev then "10, must-revalidate" else "86400")) where
   isdev = globalDevMode glob && length (Wai.pathInfo q) <= 2 -- only un-cache "top-level" web/html files
 
 static :: Route [FilePathComponent]

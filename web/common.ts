@@ -23,7 +23,8 @@ export type Field = {
   base: 'f'|'i'|'b'|'s',
   terms?: boolean,
   enum?: null|string[],
-  dict?: null|string
+  dict?: null|string,
+  scale?: number
 };
 
 export type Catalog = {

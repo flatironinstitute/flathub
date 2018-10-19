@@ -2,7 +2,7 @@ FROM fpco/stack-build:lts-11.22
 RUN apt-get update && \
     apt-get install -y libhdf5-dev && \
     rm -rf /var/lib/apt/lists/*
-RUN useradd -m astrosims
+RUN useradd -u 999 -m astrosims
 USER astrosims
 
 COPY --chown=astrosims stack.yaml astrosims.cabal /home/astrosims/astrosims/

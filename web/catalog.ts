@@ -237,14 +237,12 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
     else
       query.hist = histogram.name+':128';
   }
-  $('td.loading').show();
   $.ajax({
     method: 'GET',
     url: '/' + Catalog.name + '/catalog',
     data: query
   }).then((res: CatalogResponse) => {
     Update = false;
-    $('td.loading').hide();
     Catalog.count = Math.max(Catalog.count || 0, res.hits.total);
     const settings = (<any>TCat.settings())[0];
     settings.oLanguage.sInfo = "Showing _START_ to _END_ of " + settings.fnFormatNumber(res.hits.total);

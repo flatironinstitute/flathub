@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: astrosims
@@ -18,7 +18,7 @@ spec:
         command:
           - sh
           - '-c'
-          - for (( i=0 ; i<30 ; i++ )) ; do nslookup astrosims-es && exit ; sleep 5 ; done ; exit 1
+          - until wget http://astrosims-es:9200/ ; do sleep 5 ; done
       containers:
       - image: flatironinstitute/astrosims-reproto:latest
         name: astrosims
@@ -32,7 +32,6 @@ spec:
         ports:
         - containerPort: 8092
           name: http
-        activeDeadlineSeconds: 300
         readinessProbe:
           httpGet:
             path: /
@@ -55,4 +54,5 @@ spec:
   ports:
   - name: http
     port: 80
+    targetPort: http
   #externalIPs:

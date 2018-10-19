@@ -149,12 +149,18 @@ class CField {
 
     const h = r.insertCell();
     h.textContent = (this.field.units) ? this.field.title + ' (' + this.field.units + ')' : this.field.title;
-    console.log(h.textContent);
-    let rm = document.createElement('button');
+    const rm = document.createElement('button');
     rm.className = 'remove';
     rm.innerHTML = '&times;';
     rm.onclick = this.remove.bind(this);
     h.insertBefore(rm, h.firstChild);
+    if (this.field.descr) {
+      h.className = 'tooltip';
+      const tt = document.createElement('span');
+      tt.className = 'tooltiptext';
+      tt.innerHTML = this.field.descr;
+      h.appendChild(tt);
+    }
 
     for (let idx = 0; idx < Compares.length; idx++)
       Compares[idx].fillField(this);
@@ -290,6 +296,7 @@ class Compare {
     this.pending = true;
     const n = f.name;
     const render = render_funct(f);
+    const scale = f.scale || 1;
 
     const q = this.query();
     q.limit = <any>0;
@@ -306,10 +313,10 @@ class Compare {
       if (!r)
         return;
       let a = r[n] as AggrStats;
-      cell.appendChild(document.createTextNode(render(a.min) + ' \u2013 ' + render(a.max)));
+      cell.appendChild(document.createTextNode(render(a.min*scale) + ' \u2013 ' + render(a.max*scale)));
       cell.appendChild(document.createElement('br'));
       cell.appendChild(document.createElement('em')).appendChild(document.createTextNode('\u03bc'));
-      cell.appendChild(document.createTextNode(' = ' + render(a.avg)));
+      cell.appendChild(document.createTextNode(' = ' + render(a.avg*scale)));
 
       const l = document.createElement('a');
       delete q.limit;
@@ -320,8 +327,8 @@ class Compare {
       acell.appendChild(l);
 
       if (r.hist && Histogram) {
-        const wid = res.histsize[0];
-        const data = (<AggrTerms<number>>r.hist).buckets.map(x => [x.key,x.doc_count] as [number,number]);
+        const wid = res.histsize[0]*scale;
+        const data = (<AggrTerms<number>>r.hist).buckets.map(x => [x.key*scale,x.doc_count] as [number,number]);
         const opts = {
           id: this.unique,
           index: this.idx,
@@ -385,6 +392,7 @@ class SelectFilter extends Filter {
 class NumericFilter extends Filter {
   lb: HTMLInputElement
   ub: HTMLInputElement
+  private scale: number
 
   private makeBound(w: boolean): HTMLInputElement {
     const b = <HTMLInputElement>document.createElement('input');
@@ -399,6 +407,7 @@ class NumericFilter extends Filter {
   constructor(compare: Compare, field: Field, cell: HTMLTableCellElement) {
     super(compare, field, cell);
 
+    this.scale = field.scale || 1;
     this.lb = this.makeBound(false);
     this.ub = this.makeBound(true);
     cell.appendChild(this.lb);
@@ -407,14 +416,14 @@ class NumericFilter extends Filter {
   }
 
   protected fillAggs(a: AggrStats) {
-    this.lb.defaultValue = this.lb.value = this.lb.min = this.ub.min = <any>a.min;
-    this.ub.defaultValue = this.ub.value = this.lb.max = this.ub.max = <any>a.max;
+    this.lb.defaultValue = this.lb.value = this.lb.min = this.ub.min = <any>(a.min*this.scale);
+    this.ub.defaultValue = this.ub.value = this.lb.max = this.ub.max = <any>(a.max*this.scale);
     this.lb.disabled = this.ub.disabled = false;
   }
 
   query(): string {
-    const lbv = this.lb.valueAsNumber;
-    const ubv = this.ub.valueAsNumber;
+    const lbv = this.lb.valueAsNumber/this.scale;
+    const ubv = this.ub.valueAsNumber/this.scale;
     if (lbv == ubv)
       return <any>lbv;
     else

@@ -4,4 +4,4 @@ http {
 elasticsearch {
   server = "http://astrosims-es:9200/"
 }
-dev = false
+dev = true
