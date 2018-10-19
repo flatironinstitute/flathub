@@ -284,3 +284,9 @@ input[type="number"]{
   overflow-y: hidden;
 }
 
+#dhist_table{
+  width: 90vw;
+}
+.matrix_cell{
+  width: 45vw;
+}

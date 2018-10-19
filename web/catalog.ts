@@ -46,10 +46,10 @@ function histogramRemove() {
   (<HTMLSelectElement>document.getElementById('histsel')).value = '';
   $('#dhist').hide();
   $('#hist').empty();
-  $('#dhist_x').hide();
+  $('#dhist_table').hide();
   $('#hist_x').empty();
-  $('#dhist_y').hide();
   $('#hist_y').empty();
+  $('#scatter_xy').empty();
 }
 
 function zoomRange(f: NumericFilter, wid: number, axis: Highcharts.AxisOptions) {
@@ -116,6 +116,8 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrT
     return histogramRemove();
   const opts: Highcharts.Options = histogram_options(field);
   if (heatmap) {
+    $('#dhist').hide();
+    $('#hist').empty();
     const wid = size.map(s => s/2);
     for (let d of data) {
       for (let i = 0; i < wid.length; i++)
@@ -155,19 +157,18 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrT
       colsize: size[0],
       rowsize: size[1]
     }];
-    Histogram_chart = Highcharts.chart('hist', opts);
+    Histogram_chart = Highcharts.chart('scatter_xy', opts);
     Hist_chart_x = Highcharts.chart('hist_x', histDraw(hist, hist_x_data, size, field, false));
     Hist_chart_y = Highcharts.chart('hist_y', histDraw(hist, hist_y_data, size, heatmap, true));
-    $('#dhist_x').show();
-    $('#dhist_y').show();
+    $('#dhist_table').show();
   } else {
-    $('#dhist_x').hide();
+    $('#dhist_table').hide();
     $('#hist_x').empty();
-    $('#dhist_y').hide();
     $('#hist_y').empty();
+    $("scatter_xy").empty();
     Histogram_chart = Highcharts.chart('hist', histDraw(hist, hist_x_data, size, field, false));
+    $('#dhist').show();
   }
-  $('#dhist').show();
 }
 
 function toggleLog() {
@@ -261,7 +262,7 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
 
     delete query.aggs;
     delete query.hist;
-    url_update(query);
+   // url_update(query);
     delete query.limit;
     delete query.offset;
     set_download(query);
