@@ -47,6 +47,7 @@ dict:
   - name: V_vir
     type: float
     descr: Host halo virial velocity
+    units: '\(km/s\)'
   - name: c_NFW
     type: float
     descr: NFW concentration (host halo)
@@ -58,9 +59,11 @@ dict:
   - name: r_disk
     type: float
     descr: scale length of a disk
+    units: '\(kpc\)'
   - name: r_bulge
     type: float
     descr: effective radius of bulge (projected)
+    units: '\(kpc\)'
   - name: sigma_bulge
     type: float
     descr: line-of-sight velocity dispersion of bulge
@@ -73,38 +76,71 @@ dict:
     descr: mass of sub-halo
     units: '\(10^{10} M_\odot\)'
   - name: M_star_diffuse
+    descr: Mass of stars in a 'diffuse stellar halo'
+    units: '\(10^{10} M_\odot\)'
     type: float
   - name: M_hot_halo
+    descr: Mass of stars in a 'diffuse stellar halo'
+    units: '\(10^{10} M_\odot\)'
     type: float
     descr: Mass of hot gas in host halo
   - name: M_cold
     descr: Mass of cold gas
+    units: '\(10^{10} M_\odot\)'
     type: float
   - name: M_bulge
     descr: Stellar mass of bulge component
+    units: '\(10^{10} M_\odot\)'
     type: float
   - name: M_BH
+    descr: Mass of black hole
+    units: '\(10^{10} M_\odot\)'
+    type: float
   - name: BHAR
+    descr: Total accretion rate onto black hole
+    units: '\(10^{10} M_\odot\)/yr'
+    type: float
   - name: BHAR_radio
+    descr: Black hole accretion rate onto black hole
+    units: '\(10^{10} M_\odot\)'
+    type: float
   - name: Z_star
     type: float
     descr: Mass weighted metallicity of stars
+    units: '\( Z_\odot\)'
   - name: Z_cold
     type: float
+    descr: Mass weighted metallicity of cold gas
+    units: '\( Z_\odot\)'
   - name: Z_hot_halo
+    descr: Metallicity of hot gas in host halo
+    units: '\Z_\odot\)'
     type: float
   - name: SFR_inst
     descr: Instantaneous star formation rate (SFR)
+    units: '\(M_\odot\)/yr'
     type: float
   - name: SFR
     type: float
-    descr: star formation rate
+    descr: star formation rate averaged over past 1E8 yr
     units: '\(M_\odot\)/yr'
   - name: cosi
   - name: t_merge
+    descr: Time since last merger greater than 1:10
+    units: '\(Gyr\'
+    type: float
   - name: t_major_merge
+    descr: Time since last merger greater than 1:4
+    type: float
+    units: '\(Gyr\'
   - name: age_mean
+    units: '\(Gyr\'
+    descr: Mean stellar mass weighted age of stars
+    type: float
   - name: v_disk
+    type: float
+    descr: Maximum rotation velocity of disk
+    units: '\(km/s\)'
   - name: UV1500_rest
     type: float
 
@@ -1743,7 +1779,7 @@ unimach:
       type: float
       descr: True stellar mass
       units: '\( M_\odot\)'
-      scale: 10^10
+      scale: 1 / 10^10
     - name: ICL
       type: float
       descr: True intracluster stellar mass
