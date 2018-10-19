@@ -82,7 +82,6 @@ dict:
     units: '\(10^{10} M_\odot\)'
     type: float
   - name: M_hot_halo
-    descr: Mass of stars in a 'diffuse stellar halo'
     units: '\(10^{10} M_\odot\)'
     type: float
     descr: Mass of hot gas in host halo
