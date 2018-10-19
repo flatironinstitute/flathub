@@ -206,9 +206,9 @@ class Query:
         :param bins: (int) number of bins, defaults to 100
         :return: dataframe (pandas) with index-able fields 'bucket', 'count'
         """
-        if not width:
-            width = (self.max(field) - self.min(field))/bins
-        res = getJSON(self.makeurl('catalog', limit=0, hist=field+':'+str(width)))
+
+        res = getJSON(self.makeurl('catalog', limit=0, hist=field+':'+str(bins)))
+        print(res)
         return numpy.array([ (b['key'], b['doc_count']) for b in res['aggregations']['hist']['buckets'] ],
                 [('bucket', self.simulation.fields[field]['dtype']), ('count', 'u8')])
 

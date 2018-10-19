@@ -82,7 +82,7 @@ dict:
     units: '\(10^{10} M_\odot\)'
     type: float
   - name: M_hot_halo
-    descr: Mass of stars in a 'diffuse stellar halo'
+    descr: mass of hot gas in host halo
     units: '\(10^{10} M_\odot\)'
     type: float
   - name: M_cold
@@ -1778,7 +1778,7 @@ unimach:
       type: float
       descr: True stellar mass
       units: '\( M_\odot\)'
-      scale: 1e10
+      scale: 1e-10
     - name: ICL
       type: float
       descr: True intracluster stellar mass
