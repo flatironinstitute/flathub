@@ -38,7 +38,7 @@ ul#topbar > li {
   border-right: 1px solid #bbb;
 }
 ul#topbar > li:first-child {
-  width: 30px;
+  width: 40px;
   height: 40px;
 }
 ul#topbar > li:last-child {
@@ -51,11 +51,14 @@ ul#topbar > li a {
   padding: 11px 16px;
   text-decoration: none;
 }
+ul#topbar > li a:hover {
+  color: black;
+}
 ul#topbar > li a#flaticon {
   padding: 0;
 }
 ul#topbar > li > div.dropdown:hover, a:hover:not(.active) {
-  background-color: white;
+  background-color: #f1f1f1;
   color: black;
 }
 ul#topbar > li > div.dropdown > div.dropdown-content {
@@ -79,7 +82,8 @@ ul#topbar > li > div.dropdown > div.dropdown-content > a {
   text-align: left;
 }
 ul#topbar > li > div.dropdown > div.dropdown-content > a:hover {
-  background-color: #f1f1f1
+  background-color: #f1f1f1;
+  color: black;
 }
 
 /* bits */
@@ -180,7 +184,6 @@ div#div-py{
   padding-bottom: 10px;
 }
 
-<<<<<<< HEAD
 dd{
     padding-bottom: 10px;
 }
@@ -199,6 +202,16 @@ h1{
 h3{
   margin-top: 5px;
   margin-bottom: 5px;
+}
+
+/* dict */
+table#tdict {
+  display: none;
+  margin: 0 auto;
+  border-collapse: collapse;
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 #tdict > tbody > tr:nth-child(odd) {
   background-color: #ededed;
