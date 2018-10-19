@@ -208,7 +208,6 @@ class Query:
         """
 
         res = getJSON(self.makeurl('catalog', limit=0, hist=field+':'+str(bins)))
-        print(res)
         return numpy.array([ (b['key'], b['doc_count']) for b in res['aggregations']['hist']['buckets'] ],
                 [('bucket', self.simulation.fields[field]['dtype']), ('count', 'u8')])
 
