@@ -56,6 +56,8 @@ dict:
     descr: Dimensionless spin parameter (host halo)
   - name: R
     type: float
+    descr: host halo virial radius (physical coordinates)
+    units: 'Mpc'
   - name: r_disk
     type: float
     descr: scale length of a disk

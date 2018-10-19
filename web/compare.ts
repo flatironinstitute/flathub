@@ -148,7 +148,8 @@ class CField {
     r.id = 'cf-'+this.id;
 
     const h = r.insertCell();
-    h.textContent = this.field.title;
+    h.textContent = (this.field.units) ? this.field.title + ' (' + this.field.units + ')' : this.field.title;
+    console.log(h.textContent);
     let rm = document.createElement('button');
     rm.className = 'remove';
     rm.innerHTML = '&times;';
