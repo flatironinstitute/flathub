@@ -196,16 +196,13 @@ class Query:
         """
         return self.aggs(field)['max']
 
-    def hist(self, field, width=None, bins=100):
+    def hist(self, field, bins=100):
         """
         :param field: (string) field that you want a histogram produced of
-        :param width: (float) width of each bin, either specified or calculated
         :param bins: (int) number of bins, defaults to 100
         :return: dataframe (pandas) with index-able fields 'bucket', 'count'
         """
-        if not width:
-            width = (self.max(field) - self.min(field))/bins
-        res = getJSON(self.makeurl('catalog', limit=0, hist=field+':'+str(width)))
+        res = getJSON(self.makeurl('catalog', limit=0, hist=field+':'+str(bins)))
         return numpy.array([ (b['key'], b['doc_count']) for b in res['aggregations']['hist']['buckets'] ],
                 [('bucket', self.simulation.fields[field]['dtype']), ('count', 'u8')])
 
