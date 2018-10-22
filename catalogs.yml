@@ -115,7 +115,7 @@ dict:
     units: '\( Z_\odot\)'
   - name: Z_hot_halo
     descr: Metallicity of hot gas in host halo
-    units: '\Z_\odot\)'
+    units: '\(Z_\odot\)'
     type: float
   - name: SFR_inst
     descr: Instantaneous star formation rate (SFR)
@@ -128,14 +128,14 @@ dict:
   - name: cosi
   - name: t_merge
     descr: Time since last merger greater than 1:10
-    units: '\(Gyr\'
+    units: '\(Gyr\)'
     type: float
   - name: t_major_merge
     descr: Time since last merger greater than 1:4
     type: float
-    units: '\(Gyr\'
+    units: '\(Gyr\)'
   - name: age_mean
-    units: '\(Gyr\'
+    units: '\(Gyr\)'
     descr: Mean stellar mass weighted age of stars
     type: float
   - name: v_disk

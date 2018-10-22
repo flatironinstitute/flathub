@@ -87,8 +87,6 @@ class Query:
     See *update* for other parameters.
     """
     def __init__(self, simulation, fields = None, sort = None, sample = 1, seed = None, **filters):
-        if seed is None:
-            seed = random.randrange(0, 2**32-1)
         if type(simulation) is str:
             simulation = Simulation(simulation)
         self.simulation = simulation
@@ -110,9 +108,8 @@ class Query:
         :param sample: (float) sets the fraction of results to return as a
         random subset(0,1]. If sample is set to a value > 1, the value will be
         converted into a fraction within (0,1].
-        :param seed: (int) specifies the random seed for this selection, which
-        defaults to a different random set each time. If seed is None, a random
-        seed is assigned.
+        :param seed: (int) specifies the random seed for this selection. If
+        seed is None, a different random seed is used each time.
         Note that each item is independently selected with the sample fraction,
         so the result set may not be exactly this fraction of the original size.
         :param filters: (dict) parameters specify restrictions on fields to
