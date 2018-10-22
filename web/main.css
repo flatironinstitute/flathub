@@ -94,6 +94,12 @@ span.units {
   font-size: small;
   font-weight: normal;
 }
+span.units::before {
+  content: ' [';
+}
+span.units::after {
+  content: ']';
+}
 button.remove {
   padding: 0px;
   border-width: 1px;

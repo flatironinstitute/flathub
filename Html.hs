@@ -68,7 +68,7 @@ htmlResponse req hdrs body = do
       -- TODO: use System.resolve:
       forM_ [["jspm_packages", "npm", "datatables.net-dt@1.10.19", "css", "jquery.dataTables.css"], ["main.css"]] $ \src ->
         H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
-      H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/MathJax.js?config=TeX-AMS_CHTML" $ mempty
+      H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML" $ mempty
       jsonVar "Catalogs" (HM.map catalogTitle $ catalogMap $ globalCatalogs glob)
     H.body $ do
       H.div H.! HA.id "bar" $ do
@@ -128,8 +128,8 @@ simulationPage = getPath R.parameter $ \sim req -> do
       H.text $ fieldTitle f
       -- Writes the unit to the span
       forM_ (fieldUnits f) $ \u -> do
-        if d > 1 then H.br else " "
-        H.span H.! HA.class_ "units" $ "[" <> H.preEscapedText u <> "]"
+        when (d > 1) H.br
+        H.span H.! HA.class_ "units" $ H.preEscapedText u
       mapM_ ((H.span H.! HA.class_ "tooltiptext") . H.text) (fieldDescr f)
     field :: Word -> FieldGroup -> FieldGroup -> H.Html
     field d f' f@Field{ fieldSub = Nothing } = do

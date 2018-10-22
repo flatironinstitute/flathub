@@ -4,7 +4,7 @@ import $ from "jquery";
 import Datatables from "datatables.net";
 import Highcharts from "highcharts";
 import Highcharts_heatmap from "highcharts/modules/heatmap";
-import { assert, Dict, Field, Catalog, AggrStats, AggrTerms, Aggr, CatalogResponse, fill_select_terms, field_option, toggle_log, axis_title, render_funct, histogram_options } from "./common";
+import { assert, Dict, Field, Catalog, AggrStats, AggrTerms, Aggr, CatalogResponse, fill_select_terms, field_option, field_title, toggle_log, axis_title, render_funct, histogram_options } from "./common";
 
 Datatables(window, $);
 Highcharts_heatmap(Highcharts);
@@ -289,15 +289,11 @@ function add_sample() {
 
 abstract class Filter {
   protected tcol: DataTables.ColumnMethods
-  private label: JQuery<HTMLSpanElement>
+  private label: HTMLSpanElement
 
   constructor(public field: Field) {
     this.tcol = TCat.column(this.name+':name');
-    // columnVisible(this.name, true);
-    this.label = $(document.createElement('span'));
-    this.label.append($('<button class="remove">&times;</button>')
-      .on('click', this.remove.bind(this)),
-      this.field.title);
+    this.label = field_title(this.field, this.remove.bind(this));
   }
 
   get name(): string {
