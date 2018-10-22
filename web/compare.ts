@@ -2,7 +2,7 @@
 
 import $ from "jquery";
 import Highcharts from "highcharts";
-import { assert, Dict, Field, Catalog, Aggr, AggrTerms, AggrStats, CatalogResponse, fill_select_terms, field_option, toggle_log, axis_title, render_funct, histogram_options } from "./common";
+import { assert, Dict, Field, Catalog, Aggr, AggrTerms, AggrStats, CatalogResponse, fill_select_terms, field_option, field_title, toggle_log, axis_title, render_funct, histogram_options } from "./common";
 
 const Max_compare = 4;
 const Colors = ['#0008', '#f008', '#0f08', '#00f8'];
@@ -147,20 +147,7 @@ class CField {
     Fields[this.idx] = this;
     r.id = 'cf-'+this.id;
 
-    const h = r.insertCell();
-    h.textContent = this.field.title;
-    const rm = document.createElement('button');
-    rm.className = 'remove';
-    rm.innerHTML = '&times;';
-    rm.onclick = this.remove.bind(this);
-    h.insertBefore(rm, h.firstChild);
-    if (this.field.descr) {
-      h.className = 'tooltip';
-      const tt = document.createElement('span');
-      tt.className = 'tooltiptext';
-      tt.innerHTML = this.field.descr;
-      h.appendChild(tt);
-    }
+    r.insertCell().appendChild(field_title(this.field, this.remove.bind(this)));
 
     for (let idx = 0; idx < Compares.length; idx++)
       Compares[idx].fillField(this);
