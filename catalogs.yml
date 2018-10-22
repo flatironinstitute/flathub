@@ -1721,17 +1721,20 @@ unimach:
       units: '\(Mpc/h \)'
       sub:
       - name: 'X'
+        title: 'X'
         dict: pos_x
         type: float
-        descr: 'Position of halo relative to axes of lightcone (distance along lightcone) in comoving \(Mpc/h \)'
+        descr: 'Position of halo relative to axes of lightcone (distance along lightcone) in comoving'
       - name: 'Y'
+        title: 'Y'
         dict: pos_y
         type: float
-        descr: 'Position of halo relative to axes of lightcone (distance perpendicular to lightcone X-axis) in comoving \(Mpc/h \)'
+        descr: 'Position of halo relative to axes of lightcone (distance perpendicular to lightcone X-axis) in comoving'
       - name: 'Z'
+        title: 'Z'
         dict: pos_z
         type: float
-        descr: 'Position of halo relative to axes of lightcone (distance perpendicular to lightcone X-axis) in comoving \(Mpc/h \)'
+        descr: 'Position of halo relative to axes of lightcone (distance perpendicular to lightcone X-axis) in comoving'
     - name: ""
       title: Velocity
       units: '\(km/s\)'
@@ -1756,7 +1759,7 @@ unimach:
       scale: 1e-10
     - name: V
       type: float
-      descr: 'Halo \(v_{max}\) (physical \(km/s\))'
+      descr: 'Halo \(v_{max}\) (physical)'
       units: '\( km/s \)'
     - name: MP
       type: float
@@ -1770,10 +1773,12 @@ unimach:
     - name: R
       dict: R
       type: float
-      descr: 'Halo raidus (BN98 vir, co-moving \(kpc/h\))'
+      descr: 'Halo raidus (BN98 vir, co-moving)'
+      units: '\(kpc/h\)'
     - name: Rank1
       type: float
-      descr: 'Halo rank in \(\Delta v_{max}\) (see UniverseMachine paper)'
+      descr: 'Halo rank (see UniverseMachine paper)'
+      units: '\(\Delta v_{max}\)'
     - name: SM
       dict: M_stellar
       type: float
