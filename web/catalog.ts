@@ -15,7 +15,7 @@ declare const Query: {offset:number, limit:number, sort:{field:string,asc:boolea
 const Fields_idx: Dict<number> = {};
 const Filters: Array<Filter> = [];
 var Sample: number = 1;
-var Seed: undefined|number = 0;
+var Seed: undefined|number;
 var Update_aggs: number = -1;
 var Histogram: undefined|NumericFilter;
 var Heatmap: undefined|Field;
@@ -223,6 +223,7 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
     delete query.limit;
     delete query.offset;
     set_download(query);
+    py_text(query);
   }, (xhr, msg, err) => {
     Update = false;
     callback({
@@ -231,7 +232,6 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
       error: msg + ": " + err
     });
   });
-  py_text();
 }
 
 function add_filt_row(name: string, ...nodes: Array<JQuery.htmlString | JQuery.TypeOrArray<JQuery.Node | JQuery<JQuery.Node>>>) {
@@ -278,7 +278,7 @@ function add_sample() {
       seed.value = '';
     Seed = seed.valueAsNumber;
     if (!isFinite(Seed))
-      Seed = 0;
+      Seed = undefined;
     update();
   };
 
@@ -528,14 +528,18 @@ function columnVisible(name: string, vis: boolean) {
       columnVisible(n, box.checked);
 }
 
-function py_text() {
+function py_text(query: Dict<string>) {
   const cat = Catalog.name;
-  let st = "import fi_astrosims.client\n" + cat + " = fi_astrosims.client.Simulation(" + JSON.stringify(cat) + ")\nq = fi_astrosims.client.Query(" + cat;
+  let st = "import fi_astrosims.client\n"
+    + cat + " = fi_astrosims.client.Simulation(" + JSON.stringify(cat) + ", host = " + JSON.stringify(location.origin) + ")\n"
+    + "q = " + cat + ".Query(fields = " + JSON.stringify(query.fields.split(' '));
   for (let i = 0; i < Filters.length; i++) {
     const q = Filters[i].pyQuery();
     if (q != null)
       st += ", " + Filters[i].name + ' = ' + q;
   }
+  if (query.sort)
+    st += ", sort = " + JSON.stringify(query.sort.split(' '));
   if (Sample < 1) {
     st += ", sample = " + Sample;
     if (Seed != undefined)

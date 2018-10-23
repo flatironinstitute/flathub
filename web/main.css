@@ -188,6 +188,7 @@ div#div-py{
   padding-right: 2%;
   padding-top: 10px;
   padding-bottom: 10px;
+  overflow-x: scroll;
 }
 
 /* dict */
