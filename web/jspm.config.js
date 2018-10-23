@@ -52,7 +52,7 @@ SystemJS.config({
     "datatables.net-dt": "npm:datatables.net-dt@1.10.19",
     "events": "npm:jspm-nodelibs-events@0.2.2",
     "fs": "npm:jspm-nodelibs-fs@0.2.1",
-    "highcharts": "npm:highcharts@6.1.2",
+    "highcharts": "npm:highcharts@6.2.0",
     "http": "npm:jspm-nodelibs-http@0.2.0",
     "https": "npm:jspm-nodelibs-https@0.2.2",
     "jquery": "npm:jquery@3.3.1",
@@ -87,12 +87,12 @@ SystemJS.config({
         "create-ecdh": "npm:create-ecdh@4.0.3",
         "browserify-cipher": "npm:browserify-cipher@1.0.1",
         "create-hash": "npm:create-hash@1.2.0",
-        "public-encrypt": "npm:public-encrypt@4.0.2",
+        "public-encrypt": "npm:public-encrypt@4.0.3",
         "create-hmac": "npm:create-hmac@1.1.7",
         "inherits": "npm:inherits@2.0.3",
         "randombytes": "npm:randombytes@2.0.6",
         "diffie-hellman": "npm:diffie-hellman@5.0.3",
-        "pbkdf2": "npm:pbkdf2@3.0.16",
+        "pbkdf2": "npm:pbkdf2@3.0.17",
         "randomfill": "npm:randomfill@1.0.4",
         "browserify-sign": "npm:browserify-sign@4.0.4"
       }
@@ -128,7 +128,7 @@ SystemJS.config({
     "npm:evp_bytestokey@1.0.3": {
       "map": {
         "safe-buffer": "npm:safe-buffer@5.1.2",
-        "md5.js": "npm:md5.js@1.3.4"
+        "md5.js": "npm:md5.js@1.3.5"
       }
     },
     "npm:miller-rabin@4.0.1": {
@@ -146,12 +146,6 @@ SystemJS.config({
       "map": {
         "inherits": "npm:inherits@2.0.3",
         "minimalistic-assert": "npm:minimalistic-assert@1.0.1"
-      }
-    },
-    "npm:md5.js@1.3.4": {
-      "map": {
-        "hash-base": "npm:hash-base@3.0.4",
-        "inherits": "npm:inherits@2.0.3"
       }
     },
     "npm:hash-base@3.0.4": {
@@ -233,15 +227,6 @@ SystemJS.config({
         "safe-buffer": "npm:safe-buffer@5.1.2"
       }
     },
-    "npm:pbkdf2@3.0.16": {
-      "map": {
-        "create-hash": "npm:create-hash@1.2.0",
-        "create-hmac": "npm:create-hmac@1.1.7",
-        "safe-buffer": "npm:safe-buffer@5.1.2",
-        "ripemd160": "npm:ripemd160@2.0.2",
-        "sha.js": "npm:sha.js@2.4.11"
-      }
-    },
     "npm:diffie-hellman@5.0.3": {
       "map": {
         "randombytes": "npm:randombytes@2.0.6",
@@ -259,22 +244,13 @@ SystemJS.config({
         "cipher-base": "npm:cipher-base@1.0.4"
       }
     },
-    "npm:public-encrypt@4.0.2": {
-      "map": {
-        "create-hash": "npm:create-hash@1.2.0",
-        "randombytes": "npm:randombytes@2.0.6",
-        "bn.js": "npm:bn.js@4.11.8",
-        "browserify-rsa": "npm:browserify-rsa@4.0.1",
-        "parse-asn1": "npm:parse-asn1@5.1.1"
-      }
-    },
     "npm:create-hash@1.2.0": {
       "map": {
         "inherits": "npm:inherits@2.0.3",
         "ripemd160": "npm:ripemd160@2.0.2",
         "sha.js": "npm:sha.js@2.4.11",
         "cipher-base": "npm:cipher-base@1.0.4",
-        "md5.js": "npm:md5.js@1.3.4"
+        "md5.js": "npm:md5.js@1.3.5"
       }
     },
     "npm:randomfill@1.0.4": {
@@ -317,7 +293,7 @@ SystemJS.config({
         "browserify-aes": "npm:browserify-aes@1.2.0",
         "evp_bytestokey": "npm:evp_bytestokey@1.0.3",
         "create-hash": "npm:create-hash@1.2.0",
-        "pbkdf2": "npm:pbkdf2@3.0.16",
+        "pbkdf2": "npm:pbkdf2@3.0.17",
         "asn1.js": "npm:asn1.js@4.10.1"
       }
     },
@@ -387,6 +363,32 @@ SystemJS.config({
     "npm:typescript@2.8.4": {
       "map": {
         "source-map-support": "npm:source-map-support@0.5.9"
+      }
+    },
+    "npm:public-encrypt@4.0.3": {
+      "map": {
+        "create-hash": "npm:create-hash@1.2.0",
+        "randombytes": "npm:randombytes@2.0.6",
+        "safe-buffer": "npm:safe-buffer@5.1.2",
+        "browserify-rsa": "npm:browserify-rsa@4.0.1",
+        "bn.js": "npm:bn.js@4.11.8",
+        "parse-asn1": "npm:parse-asn1@5.1.1"
+      }
+    },
+    "npm:pbkdf2@3.0.17": {
+      "map": {
+        "create-hash": "npm:create-hash@1.2.0",
+        "create-hmac": "npm:create-hmac@1.1.7",
+        "safe-buffer": "npm:safe-buffer@5.1.2",
+        "sha.js": "npm:sha.js@2.4.11",
+        "ripemd160": "npm:ripemd160@2.0.2"
+      }
+    },
+    "npm:md5.js@1.3.5": {
+      "map": {
+        "inherits": "npm:inherits@2.0.3",
+        "safe-buffer": "npm:safe-buffer@5.1.2",
+        "hash-base": "npm:hash-base@3.0.4"
       }
     }
   }
