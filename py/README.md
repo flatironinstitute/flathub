@@ -4,6 +4,8 @@ A query module created to access any of the simulation catalogs hosted on astros
 
 ## Getting Started
 
+[![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/flatironinstitute/astrosims-reproto/binder)
+
 ### Prerequisites
 
 To install the module, you just need Python and numpy.
