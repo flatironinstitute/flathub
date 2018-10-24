@@ -53,16 +53,13 @@ def getJSON(url):
     return json.loads(data)
 
 defaultHost = "http://astrosims.flatironinstitute.org"
-catalogs = None
 
 def getCatalogs(host = defaultHost):
     """
     :return: (dict) dictionary of hosted Catalogs
     Function to create a dict of available catalogs for querying. 
     """
-    if not catalogs:
-        catalogs = getJSON(host)
-    return catalogs
+    return getJSON(host)
 
 class Simulation:
     """
