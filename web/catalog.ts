@@ -532,7 +532,7 @@ function py_text(query: Dict<string>) {
   const cat = Catalog.name;
   let st = "import fi_astrosims.client\n"
     + cat + " = fi_astrosims.client.Simulation(" + JSON.stringify(cat) + ", host = " + JSON.stringify(location.origin) + ")\n"
-    + "q = " + cat + ".Query(fields = " + JSON.stringify(query.fields.split(' '));
+    + "q = " + cat + ".query(fields = " + JSON.stringify(query.fields.split(' '));
   for (let i = 0; i < Filters.length; i++) {
     const q = Filters[i].pyQuery();
     if (q != null)
