@@ -21,7 +21,7 @@ h3 {
 /* menu bar */
 div#bar{
   margin-left: -40px;
-  margin-right: -3%;
+  margin-right: -40px;
   background-color: black;
 }
 ul#topbar {
@@ -31,7 +31,6 @@ ul#topbar {
   background-color: black;
   margin-top: 0;
   height: 40px;
-
 }
 ul#topbar > li {
   float: left;

@@ -108,7 +108,9 @@ topPage = getPath R.unit $ \() req -> do
         forM_ (catalogsSorted cats) $ \(sim, cat) -> do
           H.dt $ H.a H.! HA.href (WH.routeActionValue simulationPage sim mempty) $
             H.text $ catalogTitle cat
-          mapM_ (H.dd . H.preEscapedText) $ catalogDescr cat
+          H.dd $ do
+            mapM_ H.preEscapedText $ catalogDescr cat
+            mapM_ ((" " <>) . (<> " rows.") . H.toMarkup) $ catalogCount cat
 
 simulationPage :: Route Simulation
 simulationPage = getPath R.parameter $ \sim req -> do
