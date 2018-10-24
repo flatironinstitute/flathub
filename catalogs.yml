@@ -1125,7 +1125,7 @@ lusam:
       units: '\(km/s\)'
     - name: r_vir
       dict: R
-      title: '\(r_{vir}\)'
+      title: r_vir
       type: float
       descr: host halo virial radius (physical coordinates)
       units: 'Mpc'
@@ -1875,7 +1875,7 @@ scsam:
       units: '\(km/s\)'
     - name: r_vir
       dict: R
-      title: '\(r_{vir}\)'
+      title: r_vir
       type: float
       descr: host halo virial radius (physical coordinates)
       units: 'Mpc'
