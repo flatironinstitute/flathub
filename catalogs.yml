@@ -1071,6 +1071,307 @@ gaiadr2:
       descr: lum_val upper uncertainty
       type: float
       units: Luminosity[Solar Luminosity]
+ananke:
+  title: Ananke
+  index: ananke
+  key: source_id
+  fields:
+      # indices
+    - name: source_id
+      descr: Unique source identifier (per mock catalog)
+      type: long
+    - name: random_index
+      descr: Random index used to select subsets
+      type: long
+    - name: parentid
+      descr: array index of the generating star particle in the snapshot file
+      type: long
+    - name: partid
+      descr: 0 if phase-space coordinates are identical to generating star particle, 1 otherwise
+      type: short
+      # astrometry
+    - name: ra
+      descr: Right ascension
+      type: double
+      units: Angle[deg]
+      dict: ppos_x
+    - name: ra_error
+      descr: Standard error of right ascension
+      type: double
+      units: Angle[deg]
+    - name: ra_true
+      descr: true right ascension
+      type: double
+      units: Angle[deg]
+    - name: dec
+      descr: Declination
+      type: double
+      units: Angle[deg]
+      dict: ppos_y
+    - name: dec_error
+      descr: Standard error of declination
+      type: double
+      units: Angle[deg]
+    - name: dec_true
+      descr: true declination
+      type: double
+      units: Angle[deg]
+    - name: dmod_true
+      descr: true distance modulus
+      type: double
+      units: Magnitude[mag]
+    - name: rad_true
+      descr: true LSR-centric distance
+      type: double
+      units: Distance[kpc]
+    - name: parallax
+      descr: Parallax
+      type: double
+      units: Angle[mas]
+    - name: parallax_error
+      descr: Standard error of parallax
+      type: double
+      units: Angle[mas]
+    - name: parallax_over_error
+      descr: Parallax divided by its error
+      type: float
+    - name: parallax_true
+      descr: true parallax
+      type: double
+      units: Angle[mas]
+    - name: pmra
+      descr: Proper motion in right ascension direction
+      type: double
+      units: Angular Velocity[mas/year]
+    - name: pmra_error
+      descr: Standard error of proper motion in right ascension direction
+      type: double
+      units: Angular Velocity[mas/year]
+    - name: pmra_true
+      descr: true proper motion in right ascension direction
+      type: double
+      units: Angular Velocity[mas/year]
+    - name: pmdec
+      descr: Proper motion in declination direction
+      type: double
+      units: Angular Velocity[mas/year]
+    - name: pmdec_error
+      descr: Standard error of proper motion in declination direction
+      type: double
+      units: Angular Velocity[mas/year]
+    - name: pmdec_true
+      descr: true proper motion in declination direction
+      type: double
+      units: Angular Velocity[mas/year]
+    - name: radial_velocity_true
+      descr: true radial velocity
+      type: double
+      units: Velocity[km/s]
+    - name: l
+      descr: Galactic longitude
+      type: double
+      units: Angle[deg]
+    - name: l_true
+      descr: true galactic longitude
+      type: double
+      units: Angle[deg]
+    - name: b
+      descr: Galactic latitude
+      type: double
+      units: Angle[deg]
+    - name: b_true
+      descr: true galactic latitude
+      type: double
+      units: Angle[deg]
+      # photometry
+    - name: phot_g_mean_mag
+      descr: Extincted apparent G-band mean magnitude
+      type: float
+      units: Magnitude[mag]
+    - name: phot_g_mean_mag_error
+      descr: Standard error of G-band mean magnitude
+      type: float
+      units: Magnitude[mag]
+    - name: phot_g_mean_mag_true
+      descr: true (i.e. after extinction, but before eror convolution) apparent G-Band mean magnitude
+      type: float
+      units: Magnitude[mag]
+    - name: phot_g_mean_mag_int
+      descr: intrinsic (i.e. after extinction, but before eror convolution) apparent G-Band mean magnitude
+      type: float
+      units: Magnitude[mag]
+    - name: phot_bp_mean_mag
+      descr: Extincted apparent G_Bp-band mean magnitude
+      type: float
+      units: Magnitude[mag]
+    - name: phot_bp_mean_mag_error
+      descr: Standard error of G_Bp-band mean magnitude
+      type: float
+      units: Magnitude[mag]
+    - name: phot_bp_mean_mag_true
+      descr: true apparent of G_Bp-band mean magnitude
+      type: float
+      units: Magnitude[mag]
+    - name: phot_bp_mean_mag_int
+      descr: intrinsic apparent of G_Bp-band mean magnitude
+      type: float
+      units: Magnitude[mag]
+    - name: phot_rp_mean_mag
+      descr: Extincted apparent G_Rp-band mean magnitude
+      type: float
+      units: Magnitude[mag]
+    - name: phot_rp_mean_mag_error
+      descr: Standard error of G_Rp-band mean magnitude
+      type: float
+      units: Magnitude[mag]
+    - name: phot_rp_mean_mag_true
+      descr: true apparent of G_Rp-band mean magnitude
+      type: float
+      units: Magnitude[mag]
+    - name: phot_rp_mean_mag_int
+      descr: intrinsic apparent of G_Rp-band mean magnitude
+      type: float
+      units: Magnitude[mag]
+    - name: bp_rp
+      descr: BP - RP colour
+      type: float
+      units: Magnitude[mag]
+    - name: bp_rp_true
+      descr: true BP - RP colour
+      type: float
+      units: Magnitude[mag]
+    - name: bp_rp_int
+      descr: intrinsic BP - RP colour
+      type: float
+      units: Magnitude[mag]
+    - name: bp_g
+      descr: BP - G colour
+      type: float
+      units: Magnitude[mag]
+    - name: bp_g_true
+      descr: true BP - G colour
+      type: float
+      units: Magnitude[mag]
+    - name: bp_g_int
+      descr: intrinsic BP - G colour
+      type: float
+      units: Magnitude[mag]
+    - name: g_rp
+      descr: G - RP colour
+      type: float
+      units: Magnitude[mag]
+    - name: g_rp_true
+      descr: true G - RP colour
+      type: float
+      units: Magnitude[mag]
+    - name: g_rp_int
+      descr: intrinsic G - RP colour
+      type: float
+      units: Magnitude[mag]
+    - name: a_g_val
+      descr: line-of-sight extinction in the G band, A_G
+      type: float
+      units: Magnitude[mag]
+    - name: e_bp_min_rp_val
+      descr: line-of-sight reddening E(BP-RP)
+      type: float
+      units: Magnitude[mag]
+      # extinction
+    - name: lognh
+      descr: log_10 equivalent H column density along line of sight to star
+      type: float
+      units: cm-2
+    - name: ebv
+      descr: E(B-V) reddening, calculated from equivalent N_H
+      type: float
+      units: Magnitude[mag]
+    - name: A0
+      descr: A_0 extinction at 550 nm, assuming R_v = 3.1
+      type: float
+      units: Magnitude[mag]
+      # spectroscopy
+    - name: radial_velocity
+      descr: Radial velocity
+      type: double
+      units: Velocity[km/s]
+    - name: radial_velocity_error
+      descr: Radial velocity error
+      type: double
+      units: Velocity[km/s]
+      # stellar parameters
+    - name: teff_val
+      descr: stellar effective temperature
+      type: float
+      units: Temperature[K]
+    - name: lum_val
+      descr: stellar luminosity
+      type: float
+      units: Luminosity[Solar Luminosity]
+    - name: mact
+      descr: current stellar mass
+      type: float
+      units: Mass[Solar Mass]
+    - name: mtip
+      descr: mass of a star at tip of giant branch for given age, metallicity
+      type: float
+      units: Mass[Solar Mass]
+    - name: mini
+      descr: stellar mass on zero-age main sequence
+      type: float
+      units: Mass[Solar Mass]
+    - name: age
+      descr: log_10 stellar age; identical for all stars generated from the same particle
+      type: float
+      units: Time[log yr]
+    - name: logg
+      descr: surface gravity
+      type: float
+      units: Surface Gravity[log cgs]
+      # abundances
+    - name: feh
+      descr: "[Fe/H]"
+      type: float
+      units: Abundances[dex]
+    - name: alpha
+      descr: "[Mg/Fe]"
+      type: float
+      units: Abundances[dex]
+    - name: carbon
+      descr: "[C/H]"
+      type: float
+      units: Abundances[dex]
+    - name: helium
+      descr: "[He/H]"
+      type: float
+      units: Abundances[dex]
+    - name: nitrogen
+      descr: "[N/H]"
+      type: float
+      units: Abundances[dex]
+    - name: sulphur
+      descr: "[S/H]"
+      type: float
+      units: Abundances[dex]
+    - name: oxygen
+      descr: "[O/H]"
+      type: float
+      units: Abundances[dex]
+    - name: silicon
+      descr: "[Si/H]"
+      type: float
+      units: Abundances[dex]
+    - name: calcium
+      descr: "[Ca/H]"
+      type: float
+      units: Abundances[dex]
+    - name: magnesium
+      descr: "[Mg/H]"
+      type: float
+      units: Abundances[dex]
+    - name: neon
+      descr: "[Ne/H]"
+      type: float
+      units: Abundances[dex]
 lusam:
   title: Lu-SAM
   descr: >
@@ -1125,7 +1426,7 @@ lusam:
       units: '\(km/s\)'
     - name: r_vir
       dict: R
-      title: '\(r_{vir}\)'
+      title: r_vir
       type: float
       descr: host halo virial radius (physical coordinates)
       units: 'Mpc'
@@ -1678,6 +1979,7 @@ unimach:
     UniverseMachine Lightcones for the CANDELS project, provided by Dr. Peter Behroozi, PhD.
     The full data release is available <a href="https://www.peterbehroozi.com/data.html">here</a>.
   index: unimach
+  count: 253884907
   sort: 'candels-2'
   fields:
     - name: field
@@ -1721,17 +2023,20 @@ unimach:
       units: '\(Mpc/h \)'
       sub:
       - name: 'X'
+        title: 'X'
         dict: pos_x
         type: float
-        descr: 'Position of halo relative to axes of lightcone (distance along lightcone) in comoving \(Mpc/h \)'
+        descr: 'Position of halo relative to axes of lightcone (distance along lightcone) in comoving'
       - name: 'Y'
+        title: 'Y'
         dict: pos_y
         type: float
-        descr: 'Position of halo relative to axes of lightcone (distance perpendicular to lightcone X-axis) in comoving \(Mpc/h \)'
+        descr: 'Position of halo relative to axes of lightcone (distance perpendicular to lightcone X-axis) in comoving'
       - name: 'Z'
+        title: 'Z'
         dict: pos_z
         type: float
-        descr: 'Position of halo relative to axes of lightcone (distance perpendicular to lightcone X-axis) in comoving \(Mpc/h \)'
+        descr: 'Position of halo relative to axes of lightcone (distance perpendicular to lightcone X-axis) in comoving'
     - name: ""
       title: Velocity
       units: '\(km/s\)'
@@ -1756,7 +2061,7 @@ unimach:
       scale: 1e-10
     - name: V
       type: float
-      descr: 'Halo \(v_{max}\) (physical \(km/s\))'
+      descr: 'Halo \(v_{max}\) (physical)'
       units: '\( km/s \)'
     - name: MP
       type: float
@@ -1769,10 +2074,12 @@ unimach:
     - name: R
       dict: R
       type: float
-      descr: 'Halo raidus (BN98 vir, co-moving \(kpc/h\))'
+      descr: 'Halo raidus (BN98 vir, co-moving)'
+      units: '\(kpc/h\)'
     - name: Rank1
       type: float
-      descr: 'Halo rank in \(\Delta v_{max}\) (see UniverseMachine paper)'
+      descr: 'Halo rank (see UniverseMachine paper)'
+      units: '\(\Delta v_{max}\)'
     - name: SM
       dict: M_stellar
       type: float
@@ -1868,7 +2175,7 @@ scsam:
       units: '\(km/s\)'
     - name: r_vir
       dict: R
-      title: '\(r_{vir}\)'
+      title: r_vir
       type: float
       descr: host halo virial radius (physical coordinates)
       units: 'Mpc'
