@@ -3,9 +3,13 @@
 This is a web-based interface for querying large numeric tabular datasets, designed primarily for halo object catalogs from astrophysical simulations.
 It is built on Elasticsearch to allow efficient filtering and aggregation of datasets with billions of objects.
 
-## Installation
+## [Python client](py/README.md)
 
-There is a [docker-compose](docker-compose.yml) definition for installing everything you need.  To use it:
+## Server Installation
+
+These are kubernetes definitions for [elastic search](k8s-es.yml) and the [web server](k8s.yml) as used in production.
+
+There is also a [docker-compose](docker-compose.yml) definition for installing everything you need on a single machine.  To use it:
 
 - Edit the [catalog definitions](catalogs.yml) to define the object catalog(s) and fields.  There are a number of examples there already.
 - Change `ES_JAVA_OPTS` and `scale` in docker-compose.yml as appropriate for your environment and needs

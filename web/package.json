@@ -4,7 +4,7 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "postinstall": "sed -i 's/\\r$//' node_modules/.bin/jspm && jspm install",
+    "postinstall": "sed -i 's/\\r$//' node_modules/.bin/jspm ; jspm install",
     "build": "jspm build --minify main.ts index.js"
   },
   "author": "Dylan Simon",
@@ -14,8 +14,8 @@
   },
   "devDependencies": {
     "@types/datatables.net": "^1.10.13",
-    "@types/highcharts": "^5.0.27",
-    "@types/jquery": "^3.3.6",
+    "@types/highcharts": "^5.0.31",
+    "@types/jquery": "^3.3.22",
     "@types/systemjs": "^0.20.6",
     "typescript": "~2.8.0"
   },
@@ -73,7 +73,7 @@
       "npm:jquery@3.3.1": {
         "format": "amd"
       },
-      "npm:pbkdf2@3.0.16": {
+      "npm:pbkdf2@3.0.17": {
         "main": "browser.js"
       },
       "npm:safe-buffer@5.1.2": {

@@ -21,7 +21,7 @@ h3 {
 /* menu bar */
 div#bar{
   margin-left: -40px;
-  margin-right: -3%;
+  margin-right: -40px;
   background-color: black;
 }
 ul#topbar {
@@ -31,7 +31,6 @@ ul#topbar {
   background-color: black;
   margin-top: 0;
   height: 40px;
-
 }
 ul#topbar > li {
   float: left;
@@ -56,6 +55,9 @@ ul#topbar > li a:hover {
 }
 ul#topbar > li a#flaticon {
   padding: 0;
+}
+ul#topbar > li a:hover {
+  color: black;
 }
 ul#topbar > li > div.dropdown:hover, a:hover:not(.active) {
   background-color: #f1f1f1;
@@ -93,6 +95,12 @@ input[type="number"]{
 span.units {
   font-size: small;
   font-weight: normal;
+}
+span.units::before {
+  content: ' [';
+}
+span.units::after {
+  content: ']';
 }
 button.remove {
   padding: 0px;
@@ -182,6 +190,7 @@ div#div-py{
   padding-right: 2%;
   padding-top: 10px;
   padding-bottom: 10px;
+  overflow-x: scroll;
 }
 
 dd{

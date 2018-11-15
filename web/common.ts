@@ -80,6 +80,37 @@ export function field_option(f: Field): HTMLOptionElement {
   return o;
 }
 
+export function field_title(field: Field, rmf?: (ev: MouseEvent) => any): HTMLSpanElement {
+  const h = document.createElement('span');
+  h.textContent = field.title;
+  if (rmf) {
+    const rm = document.createElement('button');
+    rm.className = 'remove';
+    rm.innerHTML = '&times;';
+    rm.onclick = rmf;
+    h.insertBefore(rm, h.firstChild);
+  }
+  if (field.units) {
+    const units = document.createElement('span');
+    units.className = 'units';
+    units.appendChild(document.createTextNode(field.units));
+    h.appendChild(units);
+  }
+  if (field.descr) {
+    h.className = 'tooltip';
+    const tt = document.createElement('span');
+    tt.className = 'tooltiptext';
+    tt.innerHTML = field.descr;
+    h.appendChild(tt);
+  }
+  let MathJax = (<any>window).MathJax;
+  if (MathJax) setTimeout(() => {
+    if (!MathJax.Hub.queue.pending)
+      MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+  });
+  return h;
+}
+
 export function render_funct(field: Field): (data: any) => string {
   if (field.base === 'f')
     return (data) => data != undefined ? parseFloat(data).toPrecision(8) : data;

@@ -4,7 +4,7 @@ import $ from "jquery";
 import Datatables from "datatables.net";
 import Highcharts from "highcharts";
 import Highcharts_heatmap from "highcharts/modules/heatmap";
-import { assert, Dict, Field, Catalog, AggrStats, AggrTerms, Aggr, CatalogResponse, fill_select_terms, field_option, toggle_log, axis_title, render_funct, histogram_options } from "./common";
+import { assert, Dict, Field, Catalog, AggrStats, AggrTerms, Aggr, CatalogResponse, fill_select_terms, field_option, field_title, toggle_log, axis_title, render_funct, histogram_options } from "./common";
 
 Datatables(window, $);
 Highcharts_heatmap(Highcharts);
@@ -15,7 +15,7 @@ declare const Query: {offset:number, limit:number, sort:{field:string,asc:boolea
 const Fields_idx: Dict<number> = {};
 const Filters: Array<Filter> = [];
 var Sample: number = 1;
-var Seed: undefined|number = 0;
+var Seed: undefined|number;
 var Update_aggs: number = -1;
 var Histogram: undefined|NumericFilter;
 var Heatmap: undefined|Field;
@@ -62,6 +62,7 @@ function histDraw(hist: NumericFilter, data: number[][], size: number[], field: 
   const f = field;
   const opts: Highcharts.Options = histogram_options(f);
   const wid = (inv) ? size[1] : size[0];
+  const chart_type = (inv) ? "bar" : "column"; 
   (<Highcharts.ChartOptions>opts.chart).events = {
     selection: function (event: Highcharts.ChartSelectionEvent) {
       if (inv)
@@ -75,16 +76,16 @@ function histDraw(hist: NumericFilter, data: number[][], size: number[], field: 
   if (!inv) {
     (<Highcharts.AxisOptions>opts.xAxis).min = hist.lbv;
     (<Highcharts.AxisOptions>opts.xAxis).max = hist.ubv + wid;
-  }
+  } 
+  (<Highcharts.AxisOptions>opts.xAxis).opposite = true;
   opts.series = [<Highcharts.ColumnChartSeriesOptions>{
     showInLegend: true,
-    type: 'column',
+    type: chart_type,
     data: data,
     pointInterval: wid,
     pointRange: wid,
     color: '#0008'
   }];
- // opts.chart.inverted = inv;
   return (opts);
 }
 
@@ -264,6 +265,7 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
     delete query.limit;
     delete query.offset;
     set_download(query);
+    py_text(query);
   }, (xhr, msg, err) => {
     Update = false;
     callback({
@@ -272,7 +274,6 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
       error: msg + ": " + err
     });
   });
-  py_text();
 }
 
 function add_filt_row(name: string, ...nodes: Array<JQuery.htmlString | JQuery.TypeOrArray<JQuery.Node | JQuery<JQuery.Node>>>) {
@@ -319,7 +320,7 @@ function add_sample() {
       seed.value = '';
     Seed = seed.valueAsNumber;
     if (!isFinite(Seed))
-      Seed = 0;
+      Seed = undefined;
     update();
   };
 
@@ -330,15 +331,11 @@ function add_sample() {
 
 abstract class Filter {
   protected tcol: DataTables.ColumnMethods
-  private label: JQuery<HTMLSpanElement>
+  private label: HTMLSpanElement
 
   constructor(public field: Field) {
     this.tcol = TCat.column(this.name+':name');
-    // columnVisible(this.name, true);
-    this.label = $(document.createElement('span'));
-    this.label.append($('<button class="remove">&times;</button>')
-      .on('click', this.remove.bind(this)),
-      this.field.title);
+    this.label = field_title(this.field, this.remove.bind(this));
   }
 
   get name(): string {
@@ -573,14 +570,18 @@ function columnVisible(name: string, vis: boolean) {
       columnVisible(n, box.checked);
 }
 
-function py_text() {
+function py_text(query: Dict<string>) {
   const cat = Catalog.name;
-  let st = "import fi_astrosims.client\n" + cat + " = fi_astrosims.client.Simulation(" + JSON.stringify(cat) + ")\nq = fi_astrosims.client.Query(" + cat;
+  let st = "import fi_astrosims.client\n"
+    + cat + " = fi_astrosims.client.Simulation(" + JSON.stringify(cat) + ", host = " + JSON.stringify(location.origin) + ")\n"
+    + "q = " + cat + ".query(fields = " + JSON.stringify(query.fields.split(' '));
   for (let i = 0; i < Filters.length; i++) {
     const q = Filters[i].pyQuery();
     if (q != null)
       st += ", " + Filters[i].name + ' = ' + q;
   }
+  if (query.sort)
+    st += ", sort = " + JSON.stringify(query.sort.split(' '));
   if (Sample < 1) {
     st += ", sample = " + Sample;
     if (Seed != undefined)
