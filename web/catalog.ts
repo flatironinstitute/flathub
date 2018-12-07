@@ -50,6 +50,7 @@ function histogramRemove() {
   $('#hist_x').empty();
   $('#hist_y').empty();
   $('#scatter_xy').empty();
+  $('#plotspace').hide();
 }
 
 function zoomRange(f: NumericFilter, wid: number, axis: Highcharts.AxisOptions) {
@@ -58,26 +59,26 @@ function zoomRange(f: NumericFilter, wid: number, axis: Highcharts.AxisOptions) 
   f.change();
 }
 
-function histDraw(hist: NumericFilter, data: number[][], size: number[], field: Field, inv: boolean) {
+function histDraw(hist: NumericFilter, data: number[][], size: number[], field: Field, inv: boolean, xLab: boolean) {
   const f = field;
   const opts: Highcharts.Options = histogram_options(f);
   const wid = (inv) ? size[1] : size[0];
   const chart_type = (inv) ? "bar" : "column"; 
+  if (inv) {
+    (<Highcharts.AxisOptions>opts.xAxis).reversed = false;
+  }
+  else { // the resizing issue for the y axis plot
+    (<Highcharts.AxisOptions>opts.xAxis).min = hist.lbv;
+    (<Highcharts.AxisOptions>opts.xAxis).max = hist.ubv + wid;
+  }
   (<Highcharts.ChartOptions>opts.chart).events = {
     selection: function (event: Highcharts.ChartSelectionEvent) {
-      if (inv)
-        hist = add_filter(Fields_idx[field.name]);
       event.preventDefault();
       zoomRange(hist, wid, event.xAxis[0]);
       return false; // Don't zoom
     }
   };
   (<Highcharts.TooltipOptions>opts.tooltip).footerFormat = 'drag to filter';
-  if (!inv) {
-    (<Highcharts.AxisOptions>opts.xAxis).min = hist.lbv;
-    (<Highcharts.AxisOptions>opts.xAxis).max = hist.ubv + wid;
-  } 
-  (<Highcharts.AxisOptions>opts.xAxis).opposite = true;
   opts.series = [<Highcharts.ColumnChartSeriesOptions>{
     showInLegend: true,
     type: chart_type,
@@ -86,10 +87,15 @@ function histDraw(hist: NumericFilter, data: number[][], size: number[], field: 
     pointRange: wid,
     color: '#0008'
   }];
+  if (!xLab) {
+    (<Highcharts.AxisOptions>opts.xAxis).title = false;
+    (<Highcharts.AxisOptions>opts.xAxis).opposite = true;
+  }
   return (opts);
 }
 
-function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrTerms<number>, size: number[]) {
+function histogramDraw(hist: NumericFilter, heatmap: undefined | Field, agg: AggrTerms<number>, size: number[]) {
+  $('#plotspace').show();
   const field = hist.field;
   const data: number[][] = [];
   const hist_x_data: number[][] = [];
@@ -147,7 +153,7 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrT
     opts.colorAxis = <Highcharts.ColorAxisOptions>opts.yAxis;
     opts.colorAxis.minColor = '#ffffff';
     opts.colorAxis.reversed = false;
-    (<Highcharts.LegendOptions>opts.legend).enabled = true;
+   // (<Highcharts.LegendOptions>opts.legend).enabled = true;
     opts.yAxis = {
       type: 'linear',
       title: axis_title(heatmap)
@@ -159,15 +165,17 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrT
       rowsize: size[1]
     }];
     Histogram_chart = Highcharts.chart('scatter_xy', opts);
-    Hist_chart_x = Highcharts.chart('hist_x', histDraw(hist, hist_x_data, size, field, false));
-    Hist_chart_y = Highcharts.chart('hist_y', histDraw(hist, hist_y_data, size, heatmap, true));
+    Hist_chart_x = Highcharts.chart('hist_x', histDraw(hist, hist_x_data, size, field, false, false));
+    // fix resizing issue -> hm only adds the filter when the query is called so can't resize based on the filter
+    Hist_chart_y = Highcharts.chart('hist_y', histDraw(hist, hist_y_data, size, heatmap, true, false));
+    console.log(Filters);
     $('#dhist_table').show();
   } else {
     $('#dhist_table').hide();
     $('#hist_x').empty();
     $('#hist_y').empty();
     $("scatter_xy").empty();
-    Histogram_chart = Highcharts.chart('hist', histDraw(hist, hist_x_data, size, field, false));
+    Histogram_chart = Highcharts.chart('hist', histDraw(hist, hist_x_data, size, field, false, true));
     $('#dhist').show();
   }
 }
@@ -175,6 +183,14 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrT
 function toggleLog() {
   if (Histogram_chart)
     toggle_log(Histogram_chart);
+};
+
+(<any>window).toggleLogHeat = function toggleLogHeat() {
+  if (Hist_chart_x)
+    toggle_log(Hist_chart_x);
+  if (Hist_chart_y)
+    toggle_log(Hist_chart_y);
+  toggleLog();
 };
 
 (<any>window).histogramSelect = function histogramSelect() {

@@ -159,6 +159,7 @@ export function histogram_options(f: Field): Highcharts.Options {
     chart: {
       animation: false,
       zoomType: 'x',
+
     },
     legend: {
       enabled: false
@@ -173,6 +174,7 @@ export function histogram_options(f: Field): Highcharts.Options {
       type: 'linear',
       title: axis_title(f),
       gridLineWidth: 1,
+
     },
     yAxis: {
       id: 'tog',
@@ -190,7 +192,21 @@ export function histogram_options(f: Field): Highcharts.Options {
       enabled: true
     },
     plotOptions: {
-      column: {
+      bar: {
+        grouping: false,
+        groupPadding: 0,
+        pointPadding: 0,
+        borderWidth: 0,
+        shadow: false,
+        pointPlacement: 0.5,
+        animation: { duration: 0 },
+        states: {
+          hover: {
+            enabled: false
+          }
+        }
+      },
+       column: {
         grouping: false,
         groupPadding: 0,
         pointPadding: 0,

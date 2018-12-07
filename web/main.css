@@ -163,6 +163,10 @@ table#tcat td {
 }
 
 /* histogram */
+div#plotspace{
+    display: none;
+    padding-top: 10px;
+}
 div#dhist {
   display: none;
   position: relative;
