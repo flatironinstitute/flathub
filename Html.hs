@@ -88,6 +88,8 @@ htmlResponse req hdrs body = do
                 H.a H.! HA.href (WH.routeActionValue comparePage () mempty) $ H.text "Compare"
               H.li $
                 H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) $ H.text "CANDELS"
+              H.li $
+                H.a H.! HA.href (WH.routeActionValue staticHtml ["ananke"] mempty) $ H.text "ANANKE"
       body
       H.footer $ do
         H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto" $
