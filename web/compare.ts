@@ -556,6 +556,7 @@ function histogramToggle() {
   $('#dhist').show();
   const opts = histogram_options(CompField.field);
   (<Highcharts.LegendOptions>opts.legend).enabled = true;
+  (<Highcharts.AxisTitle>(<Highcharts.AxisOptions>opts.yAxis).title).text = 'Fraction';
   Histogram = Highcharts.chart('hist', opts);
   update_comp();
 }

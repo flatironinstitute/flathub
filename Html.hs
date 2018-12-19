@@ -262,9 +262,6 @@ comparePage = getPath "compare" $ \() req -> do
           H.td $ H.select H.! HA.id "compf" H.! HA.onchange "return compField()" $ mempty
     H.button H.! HA.id "hist-tog" H.! HA.disabled "disabled" H.! HA.onclick "return histogramComp()" $ "histogram"
     H.div H.! HA.id "dhist" $ do
-      H.div H.! HA.id "hist-y" $
-        H.button H.! HA.id "hist-y-tog" H.! HA.onclick "return toggleLog()" $
-          "lin/log"
       H.div H.! HA.id "hist" $ mempty
 
 staticHtml :: Route [FilePathComponent]
