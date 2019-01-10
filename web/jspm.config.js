@@ -163,7 +163,7 @@ SystemJS.config({
     },
     "npm:hmac-drbg@1.0.1": {
       "map": {
-        "hash.js": "npm:hash.js@1.1.5",
+        "hash.js": "npm:hash.js@1.1.7",
         "minimalistic-assert": "npm:minimalistic-assert@1.0.1",
         "minimalistic-crypto-utils": "npm:minimalistic-crypto-utils@1.0.1"
       }
@@ -331,12 +331,6 @@ SystemJS.config({
         "des.js": "npm:des.js@1.0.0"
       }
     },
-    "npm:hash.js@1.1.5": {
-      "map": {
-        "inherits": "npm:inherits@2.0.3",
-        "minimalistic-assert": "npm:minimalistic-assert@1.0.1"
-      }
-    },
     "npm:source-map-support@0.5.9": {
       "map": {
         "buffer-from": "npm:buffer-from@1.1.1",
@@ -351,7 +345,7 @@ SystemJS.config({
         "minimalistic-assert": "npm:minimalistic-assert@1.0.1",
         "minimalistic-crypto-utils": "npm:minimalistic-crypto-utils@1.0.1",
         "brorand": "npm:brorand@1.1.0",
-        "hash.js": "npm:hash.js@1.1.5"
+        "hash.js": "npm:hash.js@1.1.7"
       }
     },
     "npm:buffer@5.2.1": {
@@ -389,6 +383,12 @@ SystemJS.config({
         "inherits": "npm:inherits@2.0.3",
         "safe-buffer": "npm:safe-buffer@5.1.2",
         "hash-base": "npm:hash-base@3.0.4"
+      }
+    },
+    "npm:hash.js@1.1.7": {
+      "map": {
+        "inherits": "npm:inherits@2.0.3",
+        "minimalistic-assert": "npm:minimalistic-assert@1.0.1"
       }
     }
   }
