@@ -1077,7 +1077,6 @@ ananke:
   index: ananke
   descr: >
     <a href='https://arxiv.org/abs/1806.10564'>Sanderson et al 2018</a>. <br>
-
     Data release v- ____-__-__. <br>
     The ananke framework, which generates realistic synthetic stellar surveys from cosmological baryonic simulations, was used to create a
     set of synthetic phase-space surveys designed to resemble Data Release 2 of the Gaia astrometric survey from different solar viewpoints
