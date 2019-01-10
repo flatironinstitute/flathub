@@ -58,6 +58,9 @@ export type CatalogResponse = {
 
 export function fill_select_terms(s: HTMLSelectElement, f: Field, a: AggrTerms<string>) {
   s.add(document.createElement('option'));
+  a.buckets.sort(function (c, d) {
+    return c.key - d.key;
+  });
   for (let b of a.buckets) {
     const opt = document.createElement('option');
     opt.value = b.key;
