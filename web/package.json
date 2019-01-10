@@ -17,7 +17,7 @@
     "@types/highcharts": "^5.0.36",
     "@types/jquery": "^3.3.29",
     "@types/systemjs": "^0.20.6",
-    "typescript": "^3.2.2"
+    "typescript": "~2.8.0"
   },
   "jspm": {
     "name": "astrosims",
@@ -35,7 +35,6 @@
     "peerDependencies": {
       "assert": "npm:jspm-nodelibs-assert@^0.2.0",
       "buffer": "npm:jspm-nodelibs-buffer@^0.2.0",
-      "child_process": "npm:jspm-nodelibs-child_process@^0.2.0",
       "constants": "npm:jspm-nodelibs-constants@^0.2.0",
       "crypto": "npm:jspm-nodelibs-crypto@^0.2.0",
       "events": "npm:jspm-nodelibs-events@^0.2.0",
@@ -48,10 +47,9 @@
       "path": "npm:jspm-nodelibs-path@^0.2.0",
       "process": "npm:jspm-nodelibs-process@^0.2.0",
       "querystring": "npm:jspm-nodelibs-querystring@^0.2.0",
-      "readline": "npm:jspm-nodelibs-readline@^0.2.0",
       "stream": "npm:jspm-nodelibs-stream@^0.2.0",
       "string_decoder": "npm:jspm-nodelibs-string_decoder@^0.2.0",
-      "typescript": "npm:typescript@^3.2.2",
+      "typescript": "npm:typescript@~2.8.0",
       "url": "npm:jspm-nodelibs-url@^0.2.0",
       "util": "npm:jspm-nodelibs-util@^0.2.0",
       "vm": "npm:jspm-nodelibs-vm@^0.2.0",
@@ -80,6 +78,20 @@
       },
       "npm:safe-buffer@5.1.2": {
         "browser": "index.js"
+      },
+      "npm:typescript@2.8.4": {
+        "browser": {},
+        "map": {
+          "buffer": "@empty",
+          "child_process": "@empty",
+          "fs": "@empty",
+          "path": "@empty",
+          "process": "@empty",
+          "readline": "@empty"
+        },
+        "dependencies": {
+          "source-map-support": "*"
+        }
       }
     }
   }
