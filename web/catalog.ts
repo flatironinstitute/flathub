@@ -173,7 +173,6 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined | Field, agg: Agg
     Hist_chart_x = Highcharts.chart('hist_x', histDraw(hist, hist_x_data, size, field, false, false));
     // fix resizing issue -> hm only adds the filter when the query is called so can't resize based on the filter
     Hist_chart_y = Highcharts.chart('hist_y', histDraw(hist, hist_y_data, size, heatmap, true, false));
-    console.log(Filters);
     $('#dhist_table').show();
   } else {
     $('#dhist_table').hide();
