@@ -21,6 +21,23 @@ const Aggs_req: Dict<Dict<(a: Aggr) => void>> = {};
 var CompField: undefined|CField;
 var Histogram: Highcharts.ChartObject|undefined;
 
+var Comp_dict: Array<String> = [];
+
+function dictCheck(name: string, i: number) {
+  console.log(name);
+  if (Comp_dict.indexOf(name) > -1) {
+    if (name.indexOf("-") > -1) {
+      name = name.substring(0, name.indexOf("-"));
+    }
+    i++;
+    return dictCheck(name + "-" + i, i);
+  }
+  else {
+    Comp_dict.push(name);
+    return Comp_dict.indexOf(name);
+  }
+}
+
 var Aggs_timeout: number|undefined;
 function update_aggs() {
   Aggs_timeout = undefined;
@@ -331,6 +348,7 @@ class Compare {
       if (r.hist && Histogram) {
         const wid = res.histsize[0]*scale;
         const data = (<AggrTerms<number>>r.hist).buckets.map(x => [x.key * scale, x.doc_count / res.hits.total] as [number, number]);
+      //  let chart_name = dictCheck(this.catalog.name, 0);
         const opts = {
           id: this.unique,
           index: this.idx,
