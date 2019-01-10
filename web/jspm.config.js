@@ -44,6 +44,7 @@ SystemJS.config({
     "npm:*.json"
   ],
   map: {
+    "child_process": "npm:jspm-nodelibs-child_process@0.2.1",
     "assert": "npm:jspm-nodelibs-assert@0.2.1",
     "buffer": "npm:jspm-nodelibs-buffer@0.2.3",
     "constants": "npm:jspm-nodelibs-constants@0.2.1",
@@ -62,10 +63,11 @@ SystemJS.config({
     "path": "npm:jspm-nodelibs-path@0.2.3",
     "process": "npm:jspm-nodelibs-process@0.2.1",
     "querystring": "npm:jspm-nodelibs-querystring@0.2.2",
+    "readline": "npm:jspm-nodelibs-readline@0.2.1",
     "stream": "npm:jspm-nodelibs-stream@0.2.1",
     "string_decoder": "npm:jspm-nodelibs-string_decoder@0.2.2",
     "ts": "github:frankwallis/plugin-typescript@9.0.0",
-    "typescript": "npm:typescript@2.8.4",
+    "typescript": "npm:typescript@3.2.2",
     "url": "npm:jspm-nodelibs-url@0.2.1",
     "util": "npm:jspm-nodelibs-util@0.2.2",
     "vm": "npm:jspm-nodelibs-vm@0.2.1",
@@ -163,7 +165,7 @@ SystemJS.config({
     },
     "npm:hmac-drbg@1.0.1": {
       "map": {
-        "hash.js": "npm:hash.js@1.1.5",
+        "hash.js": "npm:hash.js@1.1.7",
         "minimalistic-assert": "npm:minimalistic-assert@1.0.1",
         "minimalistic-crypto-utils": "npm:minimalistic-crypto-utils@1.0.1"
       }
@@ -331,18 +333,6 @@ SystemJS.config({
         "des.js": "npm:des.js@1.0.0"
       }
     },
-    "npm:hash.js@1.1.5": {
-      "map": {
-        "inherits": "npm:inherits@2.0.3",
-        "minimalistic-assert": "npm:minimalistic-assert@1.0.1"
-      }
-    },
-    "npm:source-map-support@0.5.9": {
-      "map": {
-        "buffer-from": "npm:buffer-from@1.1.1",
-        "source-map": "npm:source-map@0.6.1"
-      }
-    },
     "npm:elliptic@6.4.1": {
       "map": {
         "bn.js": "npm:bn.js@4.11.8",
@@ -351,18 +341,13 @@ SystemJS.config({
         "minimalistic-assert": "npm:minimalistic-assert@1.0.1",
         "minimalistic-crypto-utils": "npm:minimalistic-crypto-utils@1.0.1",
         "brorand": "npm:brorand@1.1.0",
-        "hash.js": "npm:hash.js@1.1.5"
+        "hash.js": "npm:hash.js@1.1.7"
       }
     },
     "npm:buffer@5.2.1": {
       "map": {
         "ieee754": "npm:ieee754@1.1.12",
         "base64-js": "npm:base64-js@1.3.0"
-      }
-    },
-    "npm:typescript@2.8.4": {
-      "map": {
-        "source-map-support": "npm:source-map-support@0.5.9"
       }
     },
     "npm:public-encrypt@4.0.3": {
@@ -389,6 +374,12 @@ SystemJS.config({
         "inherits": "npm:inherits@2.0.3",
         "safe-buffer": "npm:safe-buffer@5.1.2",
         "hash-base": "npm:hash-base@3.0.4"
+      }
+    },
+    "npm:hash.js@1.1.7": {
+      "map": {
+        "inherits": "npm:inherits@2.0.3",
+        "minimalistic-assert": "npm:minimalistic-assert@1.0.1"
       }
     }
   }
