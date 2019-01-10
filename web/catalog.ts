@@ -154,6 +154,11 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined | Field, agg: Agg
     opts.colorAxis.minColor = '#ffffff';
     opts.colorAxis.reversed = false;
    // (<Highcharts.LegendOptions>opts.legend).enabled = true;
+    opts.xAxis = {
+      min: hist.lbv,
+      max: hist.ubv + size[0],
+      gridLineWidth: 1
+    },
     opts.yAxis = {
       type: 'linear',
       title: axis_title(heatmap)
