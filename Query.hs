@@ -44,6 +44,7 @@ import Catalog
 import Global
 import JSON
 import Output.CSV
+import Output.ECSV
 import qualified ES
 import Compression
 import Output.Numpy
@@ -134,6 +135,9 @@ data BulkFormat
   = BulkCSV
     { bulkCompression :: Maybe CompressionFormat
     }
+  | BulkECSV
+    { bulkCompression :: Maybe CompressionFormat
+    }
   | BulkNumpy
     { bulkCompression :: Maybe CompressionFormat
     }
@@ -142,17 +146,18 @@ data BulkFormat
 instance R.Parameter R.PathString BulkFormat where
   parseParameter s = case decompressExtension (T.unpack s) of
     ("csv", z) -> return $ BulkCSV z
+    ("ecsv", z) -> return $ BulkECSV z
     ("npy", z) -> return $ BulkNumpy z
     ("numpy", z) -> return $ BulkNumpy z
     _ -> empty
   renderParameter = T.pack . formatExtension
 
 formatExtension :: BulkFormat -> String
-formatExtension b = bulkExtension $ bulk b [] 0
+formatExtension b = bulkExtension $ bulk b undefined undefined 0
 
 data Bulk = Bulk
-  { bulkMimeType :: BS.ByteString
-  , bulkExtension :: String
+  { bulkMimeType :: !BS.ByteString
+  , bulkExtension :: !String
   , bulkSize :: Maybe Word
   , bulkHeader :: B.Builder
   , bulkRow :: [J.Value] -> B.Builder
@@ -169,23 +174,31 @@ compressBulk z b = b
   , bulkSize = Nothing
   }
 
-bulk :: BulkFormat -> [Field] -> Word -> Bulk
-bulk (BulkCSV z) fields _ = maybe id compressBulk z Bulk
+bulk :: BulkFormat -> Catalog -> Query -> Word -> Bulk
+bulk (BulkCSV z) _ query _ = maybe id compressBulk z Bulk
   { bulkMimeType = "text/csv"
   , bulkExtension = "csv"
   , bulkSize = Nothing
-  , bulkHeader = csvTextRow $ map fieldName fields
+  , bulkHeader = csvTextRow $ map fieldName $ queryFields query
   , bulkRow = csvJSONRow
   , bulkFooter = mempty
   }
-bulk (BulkNumpy z) fields count = maybe id compressBulk z Bulk
+bulk (BulkECSV z) cat query _ = maybe id compressBulk z Bulk
+  { bulkMimeType = "text/x-ecsv"
+  , bulkExtension = "ecsv"
+  , bulkSize = Nothing
+  , bulkHeader = ecsvHeader cat query
+  , bulkRow = csvJSONRow
+  , bulkFooter = mempty
+  }
+bulk (BulkNumpy z) _ query count = maybe id compressBulk z Bulk
   { bulkMimeType = "application/octet-stream"
   , bulkExtension = "npy"
   , bulkSize = Just size
   , bulkHeader = header
-  , bulkRow = numpyRow fields
+  , bulkRow = numpyRow $ queryFields query
   , bulkFooter = mempty
-  } where (header, size) = numpyHeader fields count
+  } where (header, size) = numpyHeader (queryFields query) count
 
 catalogBulk :: Route (Simulation, BulkFormat)
 catalogBulk = getPath (R.parameter R.>*< R.parameter) $ \(sim, fmt) req -> do
@@ -196,7 +209,7 @@ catalogBulk = getPath (R.parameter R.>*< R.parameter) $ \(sim, fmt) req -> do
     result $ response badRequest400 [] ("offset,aggs not supported for download" :: String)
   nextes <- ES.queryBulk cat query
   (count, block1) <- liftIO nextes
-  let b@Bulk{..} = bulk fmt (queryFields query) count
+  let b@Bulk{..} = bulk fmt cat query count
   return $ Wai.responseStream ok200 (
     [ (hContentType, bulkMimeType)
     , (hContentDisposition, "attachment; filename=" <> quoteHTTP (TE.encodeUtf8 sim <> BSC.pack ('.' : bulkExtension)))
