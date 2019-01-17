@@ -29,6 +29,7 @@ executable astrosims
     JSON
     Monoid
     Output.CSV
+    Output.ECSV
     Output.Numpy
     Query
     Static

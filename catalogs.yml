@@ -607,8 +607,8 @@ gaea:
     <a href='http://adsabs.harvard.edu/abs/2014MNRAS.445..970D'>De Lucia et al. 2014</a>,
     <a href='http://adsabs.harvard.edu/abs/2016MNRAS.461.1760H'>Hirschmann et al. 2016</a>,
     <a href='http://adsabs.harvard.edu/abs/2017MNRAS.469..968X'>Xie et al. 2017</a>,
-    <a href='http://adsabs.harvard.edu/abs/2017MNRAS.465.2236Z'>Zoldan et al. 2017</a>. <br>
-    Data release v3 2018-06-26. <br>
+    <a href='http://adsabs.harvard.edu/abs/2017MNRAS.465.2236Z'>Zoldan et al. 2017</a>.<br>
+    Data release v3 2018-06-26.<br>
     WARNING: This is one of the first all sky catalogs we have produced, and there could be some issues/bugs we did not notice. Any bug report will be useful to correct and improve this work! So please let us know if you find anything "strange".
     The full dataset is available <a href='http://voms.simonsfoundation.org:50013/KZiLTE5keWT4N535B3Zd2aHibbjju6n/HI_lightcone_Anna3/'>here</a>. <br>
   index: gaea
@@ -1076,12 +1076,12 @@ ananke:
   title: Ananke
   index: ananke
   descr: >
-    <a href='https://arxiv.org/abs/1806.10564'>Sanderson et al 2018</a>. <br>
-    Data release v- ____-__-__. <br>
+    <a href='https://arxiv.org/abs/1806.10564'>Sanderson et al 2018</a>.<br>
+    Data release v- ____-__-__.<br>
     The ananke framework, which generates realistic synthetic stellar surveys from cosmological baryonic simulations, was used to create a
     set of synthetic phase-space surveys designed to resemble Data Release 2 of the Gaia astrometric survey from different solar viewpoints
     in the Latte suite of FIRE-2 simulations of Milky Way-mass galaxies. The synthetic surveys are described in detail in <a href='https://arxiv.org/abs/1806.10564'>Sanderson et al 2018</a>.
-    The full dataset is available <a href='https://girder.hub.yt/#collection/5b0427b2e9914800018237da'>here</a>. <br>
+    The full dataset is available <a href='https://girder.hub.yt/#collection/5b0427b2e9914800018237da'>here</a>.
   key: source_id
   fields:
     - name: galaxy
@@ -1418,10 +1418,10 @@ ananke:
 lusam:
   title: Lu-SAM
   descr: >
-    <a href='http://adsabs.harvard.edu/abs/2018arXiv180607893B'>Lu et al. 2014</a>. <br>
+    <a href='http://adsabs.harvard.edu/abs/2018arXiv180607893B'>Lu et al. 2014</a>.<br>
     Data Release v0.5 2018-06-20.<br>
     Lu-SAM lightcones for the CANDELS project (based on models presented in Lu et al. 2014)
-    The full data release will be available shortly. <br>
+    The full data release will be available shortly.
   index: lusam
   count: 12380047
   sort: 'candels-3'
@@ -2019,10 +2019,10 @@ lusam:
 unimach:
   title: UniverseMachine
   descr: >
-    <a href='http://adsabs.harvard.edu/abs/2018arXiv180607893B'>Behroozi et al. 2018</a>. <br>
+    <a href='http://adsabs.harvard.edu/abs/2018arXiv180607893B'>Behroozi et al. 2018</a>.<br>
     Data Release v0.5 2018-06-05.<br>
     UniverseMachine Lightcones for the CANDELS project (based on Early Data Release models presented in Behroozi et al. 2018).
-    The full data release is available <a href="https://www.peterbehroozi.com/data.html">here</a>. <br>
+    The full data release is available <a href="https://www.peterbehroozi.com/data.html">here</a>.
   index: unimach
   count: 253884907
   sort: 'candels-2'
@@ -2170,10 +2170,10 @@ scsam:
   title: SC-SAM
   descr: >
     <a href='http://adsabs.harvard.edu/abs/2015MNRAS.453.4337S'>Somerville et al. 2015</a>,
-    <a href='http://adsabs.harvard.edu/abs/2019MNRAS.483.2983Y'>Yung et al. 2019</a>. <br>
+    <a href='http://adsabs.harvard.edu/abs/2019MNRAS.483.2983Y'>Yung et al. 2019</a>.<br>
     Data Release v1 2018-08-17.<br>
     SC-SAM Lightcones for the CANDELS project (based on models presented in Yung et al. 2018 and Somerville et al. 2015 SAMs).
-    The full data release will be available shortly. <br>
+    The full data release will be available shortly.
   index: scsam
   sort: 'candels-1'
   count: 34168952
