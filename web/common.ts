@@ -57,7 +57,10 @@ export type CatalogResponse = {
 };
 
 export function fill_select_terms(s: HTMLSelectElement, f: Field, a: AggrTerms<string>) {
-  s.add(document.createElement('option'));
+  const def = document.createElement('option');
+  def.text = 'all';
+  s.add(def);
+  a.buckets.sort((c, d) => -(c.key < d.key) || +(c.key > d.key));
   for (let b of a.buckets) {
     const opt = document.createElement('option');
     opt.value = b.key;
@@ -121,15 +124,6 @@ export function render_funct(field: Field): (data: any) => string {
   return (data) => data;
 }
 
-const axisProto = (<any>Highcharts).Axis.prototype;
-axisProto.allowNegativeLog = true;
-axisProto.log2lin = function (x: number) {
-  return x >= 1 ? Math.log10(x) : -1;
-};
-axisProto.lin2log = function (x: number) {
-  return Math.round(Math.pow(10, x));
-};
-
 export function toggle_log(chart: Highcharts.ChartObject) {
   const axis = <Highcharts.AxisObject>chart.get('tog');
   if ((<any>axis).userOptions.type !== 'linear') {
@@ -140,7 +134,7 @@ export function toggle_log(chart: Highcharts.ChartObject) {
   }
   else {
     axis.update({
-      min: 0.1, 
+      min: null,
       type: 'logarithmic'
     });
   }

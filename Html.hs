@@ -73,21 +73,19 @@ htmlResponse req hdrs body = do
     H.body $ do
       H.div H.! HA.id "bar" $ do
           H.ul H.! HA.id "topbar" $ do
-              H.li $ do
-                  H.a H.! HA.href "https://www.simonsfoundation.org/flatiron/" H.! HA.id "flaticon" $
-                      H.img H.! HA.src (staticURI ["flatiron.svg"]) H.! HA.height "40" H.! HA.width "40"
-              H.li $
-                H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Home"
-              H.li $
-                H.div H.! HA.class_ "dropdown" $ do
-                    H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Catalogs"
-                    H.div H.! HA.class_ "dropdown-content" $ do
-                        forM_ (catalogsSorted $ globalCatalogs glob) $ \(key, cat) ->
-                            H.a H.! HA.href (WH.routeActionValue simulationPage key mempty) $ H.text (catalogTitle cat)
-              H.li $
-                H.a H.! HA.href (WH.routeActionValue comparePage () mempty) $ H.text "Compare"
-              H.li $
-                H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) $ H.text "CANDELS"
+              H.li $ H.a H.! HA.href "https://www.simonsfoundation.org/flatiron/" H.! HA.id "flaticon" $
+                H.img H.! HA.src (staticURI ["flatiron.svg"]) H.! HA.height "40" H.! HA.width "40"
+              H.li $ H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Home"
+              H.li $ H.div H.! HA.class_ "dropdown" $ do
+                H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Catalogs"
+                H.div H.! HA.class_ "dropdown-content" $
+                  forM_ (catalogsSorted $ globalCatalogs glob) $ \(key, cat) ->
+                    H.a H.! HA.href (WH.routeActionValue simulationPage key mempty) $ H.text (catalogTitle cat)
+              H.li $ H.a H.! HA.href (WH.routeActionValue comparePage () mempty) $ H.text "Compare"
+              when (HM.member "scsam" $ catalogMap $ globalCatalogs glob) $
+                H.li $ H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) $ H.text "CANDELS"
+              when (HM.member "ananke" $ catalogMap $ globalCatalogs glob) $
+                H.li $ H.a H.! HA.href (WH.routeActionValue staticHtml ["ananke"] mempty) $ H.text "ANANKE"
       body
       H.footer $ do
         H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto" $
@@ -122,7 +120,7 @@ simulationPage = getPath R.parameter $ \sim req -> do
          "name" J..= sim
       <> "title" J..= catalogTitle cat
       <> "descr" J..= catalogDescr cat
-      <> "bulk" J..= map (J.String . R.renderParameter) [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)]
+      <> "bulk" J..= map (J.String . R.renderParameter) [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkECSV Nothing, BulkECSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)]
       <> "fields" J..= fields'
     fieldBody :: Word -> FieldGroup -> H.Html
     fieldBody d f = H.span $ do
@@ -262,9 +260,8 @@ comparePage = getPath "compare" $ \() req -> do
           H.td $ H.select H.! HA.id "compf" H.! HA.onchange "return compField()" $ mempty
     H.button H.! HA.id "hist-tog" H.! HA.disabled "disabled" H.! HA.onclick "return histogramComp()" $ "histogram"
     H.div H.! HA.id "dhist" $ do
-      H.div H.! HA.id "hist-y" $
-        H.button H.! HA.id "hist-y-tog" H.! HA.onclick "return toggleLog()" $
-          "lin/log"
+      H.button H.! HA.id "hist-y-tog" H.! HA.onclick "return toggleLog()" $
+        "lin/log"
       H.div H.! HA.id "hist" $ mempty
 
 staticHtml :: Route [FilePathComponent]

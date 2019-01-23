@@ -2,7 +2,7 @@ version: '2.4'
 
 x-es:
   &es
-  image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.4.2
+  image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.5.4
   environment:
     - cluster.name=astrosims
     - bootstrap.memory_lock=true

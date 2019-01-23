@@ -296,7 +296,7 @@ class Compare {
 
       if (r.hist && Histogram) {
         const wid = res.histsize[0]*scale;
-        const data = (<AggrTerms<number>>r.hist).buckets.map(x => [x.key*scale,x.doc_count] as [number,number]);
+        const data = (<AggrTerms<number>>r.hist).buckets.map(x => [x.key * scale, x.doc_count / res.hits.total] as [number, number]);
         const opts = {
           id: this.unique,
           index: this.idx,
@@ -553,10 +553,10 @@ function histogramToggle() {
   }
   if (!CompField)
     return;
-
   $('#dhist').show();
   const opts = histogram_options(CompField.field);
   (<Highcharts.LegendOptions>opts.legend).enabled = true;
+  (<Highcharts.AxisTitle>(<Highcharts.AxisOptions>opts.yAxis).title).text = 'Fraction';
   Histogram = Highcharts.chart('hist', opts);
   update_comp();
 }
