@@ -73,23 +73,19 @@ htmlResponse req hdrs body = do
     H.body $ do
       H.div H.! HA.id "bar" $ do
           H.ul H.! HA.id "topbar" $ do
-              H.li $ do
-                  H.a H.! HA.href "https://www.simonsfoundation.org/flatiron/" H.! HA.id "flaticon" $
-                      H.img H.! HA.src (staticURI ["flatiron.svg"]) H.! HA.height "40" H.! HA.width "40"
-              H.li $
-                H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Home"
-              H.li $
-                H.div H.! HA.class_ "dropdown" $ do
-                    H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Catalogs"
-                    H.div H.! HA.class_ "dropdown-content" $ do
-                        forM_ (catalogsSorted $ globalCatalogs glob) $ \(key, cat) ->
-                            H.a H.! HA.href (WH.routeActionValue simulationPage key mempty) $ H.text (catalogTitle cat)
-              H.li $
-                H.a H.! HA.href (WH.routeActionValue comparePage () mempty) $ H.text "Compare"
-              H.li $
-                H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) $ H.text "CANDELS"
-              H.li $
-                H.a H.! HA.href (WH.routeActionValue staticHtml ["ananke"] mempty) $ H.text "ANANKE"
+              H.li $ H.a H.! HA.href "https://www.simonsfoundation.org/flatiron/" H.! HA.id "flaticon" $
+                H.img H.! HA.src (staticURI ["flatiron.svg"]) H.! HA.height "40" H.! HA.width "40"
+              H.li $ H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Home"
+              H.li $ H.div H.! HA.class_ "dropdown" $ do
+                H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Catalogs"
+                H.div H.! HA.class_ "dropdown-content" $
+                  forM_ (catalogsSorted $ globalCatalogs glob) $ \(key, cat) ->
+                    H.a H.! HA.href (WH.routeActionValue simulationPage key mempty) $ H.text (catalogTitle cat)
+              H.li $ H.a H.! HA.href (WH.routeActionValue comparePage () mempty) $ H.text "Compare"
+              when (HM.member "scsam" $ catalogMap $ globalCatalogs glob) $
+                H.li $ H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) $ H.text "CANDELS"
+              when (HM.member "ananke" $ catalogMap $ globalCatalogs glob) $
+                H.li $ H.a H.! HA.href (WH.routeActionValue staticHtml ["ananke"] mempty) $ H.text "ANANKE"
       body
       H.footer $ do
         H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto" $
