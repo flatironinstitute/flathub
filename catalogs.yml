@@ -1089,7 +1089,7 @@ ananke:
       top: true
       descr: "Simulated galaxy"
       enum: ['m12i', 'm12f', 'm12m']
-    - name: LSR
+    - name: lsr
       type: byte
       top: true
       descr: "Local Standard of Rest (LSR) between 0-2"
@@ -1179,10 +1179,10 @@ ananke:
         descr: true declination
         type: double
         units: deg
-      - name: rad_true
-        descr: true LSR-centric distance
-        type: double
-        units: kpc
+      #- name: rad_true
+      #  descr: true LSR-centric distance
+      #  type: double
+      #  units: kpc
       - name: dmod_true
         descr: true distance modulus
         type: double
@@ -1238,44 +1238,44 @@ ananke:
     - name: ""
       title: Photometry
       sub:
-      - name: phot_g_mean_mag
+      - name: ""
         type: float
         units: mag
         sub:
-          - name: ""
+          - name: phot_g_mean_mag
             title: mag
             descr: Extincted apparent G-band mean magnitude
-          - name: "error"
+          - name: phot_g_mean_mag_error
             descr: Standard error of G-band mean magnitude
-          - name: "true"
+          - name: phot_g_mean_mag_true
             descr: true (i.e. after extinction, but before eror convolution) apparent G-Band mean magnitude
-          - name: "int"
+          - name: phot_g_mean_mag_int
             descr: intrinsic (i.e. after extinction, but before eror convolution) apparent G-Band mean magnitude
-      - name: phot_bp_mean_mag
+      - name: ""
         type: float
         units: mag
         sub:
-          - name: ""
+          - name: phot_bp_mean_mag
             title: mag
             descr: Extincted apparent G_Bp-band mean magnitude
-          - name: "error"
+          - name: phot_bp_mean_mag_error
             descr: Standard error of G_Bp-band mean magnitude
-          - name: "true"
+          - name: phot_bp_mean_mag_true
             descr: true apparent of G_Bp-band mean magnitude
-          - name: "int"
+          - name: phot_bp_mean_mag_int
             descr: intrinsic apparent of G_Bp-band mean magnitude
-      - name: phot_rp_mean_mag
+      - name: ""
         type: float
         units: mag
         sub:
-          - name: ""
+          - name: phot_rp_mean_mag
             title: mag
             descr: Extincted apparent G_Rp-band mean magnitude
-          - name: "error"
+          - name: phot_rp_mean_mag_error
             descr: Standard error of G_Rp-band mean magnitude
-          - name: "true"
+          - name: phot_rp_mean_mag_true
             descr: true apparent of G_Rp-band mean magnitude
-          - name: "int"
+          - name: phot_rp_mean_mag_int
             descr: intrinsic apparent of G_Rp-band mean magnitude
       - name: bp_rp
         descr: BP - RP colour
