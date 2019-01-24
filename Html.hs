@@ -66,33 +66,44 @@ htmlResponse req hdrs body = do
       forM_ ([["jspm_packages", if isdev then "system.src.js" else "system.js"], ["jspm.config.js"]] ++ if isdev then [["dev.js"]] else [["index.js"]]) $ \src ->
         H.script H.! HA.type_ "text/javascript" H.! HA.src (staticURI src) $ mempty
       -- TODO: use System.resolve:
-      forM_ [["jspm_packages", "npm", "datatables.net-dt@1.10.19", "css", "jquery.dataTables.css"], ["main.css"]] $ \src ->
+      forM_ [["jspm_packages", "npm", "datatables.net-dt@1.10.19", "css", "jquery.dataTables.css"], ["base.css"]] $ \src ->
         H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
       H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML" $ mempty
       jsonVar "Catalogs" (HM.map catalogTitle $ catalogMap $ globalCatalogs glob)
     H.body $ do
-      H.div H.! HA.id "bar" $ do
-          H.ul H.! HA.id "topbar" $ do
-              H.li $ do
-                  H.a H.! HA.href "https://www.simonsfoundation.org/flatiron/" H.! HA.id "flaticon" $
-                      H.img H.! HA.src (staticURI ["flatiron.svg"]) H.! HA.height "40" H.! HA.width "40"
-              H.li $
-                H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Home"
-              H.li $
-                H.div H.! HA.class_ "dropdown" $ do
-                    H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Catalogs"
-                    H.div H.! HA.class_ "dropdown-content" $ do
-                        forM_ (catalogsSorted $ globalCatalogs glob) $ \(key, cat) ->
-                            H.a H.! HA.href (WH.routeActionValue simulationPage key mempty) $ H.text (catalogTitle cat)
-              H.li $
-                H.a H.! HA.href (WH.routeActionValue comparePage () mempty) $ H.text "Compare"
-              H.li $
-                H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) $ H.text "CANDELS"
-      body
-      H.footer $ do
-        H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto" $
-            H.img H.! HA.src (staticURI ["github.png"])
-
+      H.header $ do
+        H.div H.! HA.class_ "container nav" $ do
+            H.ul H.! HA.id "topbar" $ do
+                H.li $ do
+                  H.img H.! HA.src (staticURI ["cca-logo.jpg"]) H.! HA.height "40" H.! HA.width "40"
+                H.li $
+                  H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Home"
+                H.li $
+                  H.div H.! HA.class_ "dropdown" $ do
+                      H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Catalogs"
+                      H.div H.! HA.class_ "dropdown-content" $ do
+                          forM_ (catalogsSorted $ globalCatalogs glob) $ \(key, cat) ->
+                              H.a H.! HA.href (WH.routeActionValue simulationPage key mempty) $ H.text (catalogTitle cat)
+                H.li $
+                  H.a H.! HA.href (WH.routeActionValue comparePage () mempty) $ H.text "Compare"
+                H.li $
+                  H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) $ H.text "CANDELS"
+      H.div H.! HA.class_ "container container--main" $ do         
+        body
+      H.footer H.! HA.class_"footer-distributed" $ do
+        H.div H.! HA.class_ "container" $ do
+          H.div H.! HA.class_ "footer-left" $ do
+            H.h3 $ "Center for Computational Astrophysics"
+            H.p H.! HA.class_ "footer-links" $ do
+              H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Home"
+              H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Catalogs"
+              H.a H.! HA.href (WH.routeActionValue comparePage () mempty) $ H.text "Compare"
+              H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) $ H.text "About"
+            H.p H.! HA.class_ "footer-company-name" $ "Flatiron Institute, 2019"
+          -- H.div H.! HA.class_ "footer-icons" $ do
+          --   H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto" H.! HA.id "flaticon" $
+          --   H.img H.! HA.src (staticURI ["github.png"]) H.! HA.height "40" H.! HA.width "40"
+ 
 acceptable :: [BS.ByteString] -> Wai.Request -> Maybe BS.ByteString
 acceptable l = find (`elem` l) . foldMap parseHttpAccept . lookup hAccept . Wai.requestHeaders
 
@@ -181,48 +192,49 @@ simulationPage = getPath R.parameter $ \sim req -> do
     _ -> htmlResponse req [] $ do
       jsonEncodingVar "Catalog" jcat
       jsonVar "Query" query
-      H.h2 $ H.text $ catalogTitle cat
-      mapM_ (H.p . H.preEscapedText) $ catalogDescr cat
-
-      H.h3 $ "Filters"
-      H.p $ "Query and explore a subset using the filters, download your selection using the link below, or get the full dataset above."
-      H.table H.! HA.id "filt" $ mempty
-      H.div H.! HA.id "dhist" $ do
-        H.button H.! HA.id "hist-y-tog" H.! HA.onclick "return toggleLog()" $
-          "lin/log"
-        H.select H.! HA.id "histsel" H.! HA.onchange "return histogramSelect()" $ do
-          H.option H.! HA.value mempty H.! HA.selected "selected" $ "Histogram"
-          H.optgroup H.! HA.label "Heatmap" $
-            forM_ (catalogFields cat) $ \f ->
-              when (typeIsFloating (fieldType f)) $
-                H.option H.! HA.value (H.textValue $ fieldName f) $ H.text $ fieldTitle f
-        H.div H.! HA.id "hist" $ mempty
-
-      H.h3 $ "Data Table"
-      H.table H.! HA.id "tcat" H.! HA.class_ "compact" $ do
-        H.thead $ row (fieldsDepth fields) ((id ,) <$> V.toList fields)
-
-      H.h3 $ "Fields Dictionary"
       H.div $ do
-        H.button H.! HA.class_ "show_button" H.! HA.onclick "return toggleDisplay('tdict')" $ "show/hide"
-        "Table of fields, units, and their descriptions (use checkboxes to view/hide fields in the table above)"
-      H.div $ H.table H.! HA.id "tdict" $ do
-        H.thead $ H.tr $ do
-            H.th $ H.text "Field"
-            H.th $ H.text "Variable"
-            H.th $ H.text "Type"
-            H.th $ H.text "Units"
-            H.th $ H.text "Description"
-        H.tbody $ forM_ (catalogFieldGroups cat) $ \f -> do
-            fielddesc f f 0
+        H.h2 $ H.text $ catalogTitle cat
+        mapM_ (H.p . H.preEscapedText) $ catalogDescr cat
 
-      H.h3 $ "Python Query"
-      H.div $ do
-        H.button H.! HA.class_ "show_button" H.! HA.onclick "return toggleDisplay('div-py')" $ "show/hide"
-        "Example python code to apply the above filters and retrieve data. To use, download and install "
-        H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto/tree/master/py" $ "this module"
-        "."
-      H.div H.! HA.id "div-py" $ H.pre H.! HA.id "code-py" $ mempty
+        H.h3 $ "Filters"
+        H.p $ "Query and explore a subset using the filters, download your selection using the link below, or get the full dataset above."
+        H.table H.! HA.id "filt" $ mempty
+        H.div H.! HA.id "dhist" $ do
+          H.button H.! HA.id "hist-y-tog" H.! HA.onclick "return toggleLog()" $
+            "lin/log"
+          H.select H.! HA.id "histsel" H.! HA.onchange "return histogramSelect()" $ do
+            H.option H.! HA.value mempty H.! HA.selected "selected" $ "Histogram"
+            H.optgroup H.! HA.label "Heatmap" $
+              forM_ (catalogFields cat) $ \f ->
+                when (typeIsFloating (fieldType f)) $
+                  H.option H.! HA.value (H.textValue $ fieldName f) $ H.text $ fieldTitle f
+          H.div H.! HA.id "hist" $ mempty
+
+        H.h3 $ "Data Table"
+        H.table H.! HA.id "tcat" H.! HA.class_ "compact" $ do
+          H.thead $ row (fieldsDepth fields) ((id ,) <$> V.toList fields)
+
+        H.h3 $ "Fields Dictionary"
+        H.div $ do
+          H.button H.! HA.class_ "show_button" H.! HA.onclick "return toggleDisplay('tdict')" $ "show/hide"
+          "Table of fields, units, and their descriptions (use checkboxes to view/hide fields in the table above)"
+        H.div $ H.table H.! HA.id "tdict" $ do
+          H.thead $ H.tr $ do
+              H.th $ H.text "Field"
+              H.th $ H.text "Variable"
+              H.th $ H.text "Type"
+              H.th $ H.text "Units"
+              H.th $ H.text "Description"
+          H.tbody $ forM_ (catalogFieldGroups cat) $ \f -> do
+              fielddesc f f 0
+
+        H.h3 $ "Python Query"
+        H.div $ do
+          H.button H.! HA.class_ "show_button" H.! HA.onclick "return toggleDisplay('div-py')" $ "show/hide"
+          "Example python code to apply the above filters and retrieve data. To use, download and install "
+          H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto/tree/master/py" $ "this module"
+          "."
+        H.div H.! HA.id "div-py" $ H.pre H.! HA.id "code-py" $ mempty
 
 sqlSchema :: Route Simulation
 sqlSchema = getPath (R.parameter R.>* "schema.sql") $ \sim _ -> do

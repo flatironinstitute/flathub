@@ -10,4 +10,4 @@ node_modules/.bin/%:
 	npm install
 
 %.gz: %
-	gzip -fk $< || gzip -c $< > $@
+	gzip -fk $<

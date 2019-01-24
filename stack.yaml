@@ -5,9 +5,7 @@ packages:
     git: git://github.com/dylex/waimwork
     commit: 08ce12a8fbeffd7efbf5e1b1b2748893e58f7fc4
   extra-dep: true
-- location:
-    git: git://github.com/dylex/hs-hdf5
-    commit: 7f3da0a759d69326031c0ff7a4c6419da57c39fb
+- location: hs-hdf5
   extra-dep: true
 extra-deps:
   - web-inv-route-0.1.2.1
