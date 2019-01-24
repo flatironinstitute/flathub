@@ -718,7 +718,7 @@ gaiadr2:
   index: gaiadr2
   key: source_id
   count: 1692919135
-  enabled: false
+  #enabled: false
   fields:
 #    - name: solution_id
 #      descr: Solution Identifier
@@ -735,150 +735,141 @@ gaiadr2:
       descr: Random index used to select subsets
       type: long
     - name: ref_epoch
-      descr: Reference epoch
+      descr: Reference epoch (J2015.5) in Julian years
+      disp: false
       type: double
-      units: Time[Julian Years]
+      units: '\(year\)'
     - name: ra
-      descr: Right ascension
+      descr: Barycentric right ascension of the source
       type: double
-      units: deg
+      units: '\(deg\)'
       dict: ppos_x
     - name: ra_error
       descr: Standard error of right ascension
       type: double
-      units: Angle[mas]
+      units: '\(mas\)'
     - name: dec
-      descr: Declination
+      descr: Barycentric declination of the source
       type: double
-      units: deg
+      units: '\(deg\)'
       dict: ppos_y
     - name: dec_error
       descr: Standard error of declination
       type: double
-      units: Angle[mas]
+      units: '\(mas\)'
     - name: parallax
-      descr: Parallax
+      descr: Absolute parallax of the source
       type: double
-      units: Angle[mas]
+      units: '\(mas\)'
     - name: parallax_error
       descr: Standard error of parallax
       type: double
-      units: Angle[mas]
+      units: '\(mas\)'
     - name: parallax_over_error
-      descr: Parallax divided by its error
+      descr: Parallax divided by its standard error
       type: float
     - name: pmra
-      descr: Proper motion in right ascension direction
+      descr: Proper motion in right ascension (pmra) direction
       type: double
-      units: mas/year
+      units: '\(mas/year\)'
     - name: pmra_error
-      descr: Standard error of proper motion in right ascension direction
+      descr: Standard error of pmra direction
       type: double
-      units: mas/year
+      units: '\(mas/year\)'
     - name: pmdec
       descr: Proper motion in declination direction
       type: double
-      units: mas/year
+      units: '\(mas/year\)'
     - name: pmdec_error
       descr: Standard error of proper motion in declination direction
       type: double
-      units: mas/year
+      units: '\(mas/year\)'
     - name: ra_dec_corr
       descr: Correlation between right ascension and declination
       type: float
-      units: Dimensionless[see description]
     - name: ra_parallax_corr
       descr: Correlation between right ascension and parallax
       type: float
-      units: Dimensionless[see description]
     - name: ra_pmra_corr
-      descr: Correlation between right ascension and proper motion in right ascension
+      descr: Correlation between right ascension and pmra
       type: float
-      units: Dimensionless[see description]
     - name: ra_pmdec_corr
       descr: Correlation between right ascension and proper motion in declination
       type: float
-      units: Dimensionless[see description]
     - name: dec_parallax_corr
       descr: Correlation between declination and parallax
       type: float
-      units: Dimensionless[see description]
     - name: dec_pmra_corr
-      descr: Correlation between declination and proper motion in right ascension
+      descr: Correlation between declination and pmra
       type: float
-      units: Dimensionless[see description]
     - name: dec_pmdec_corr
       descr: Correlation between declination and proper motion in declination
       type: float
-      units: Dimensionless[see description]
     - name: parallax_pmra_corr
-      descr: Correlation between parallax and proper motion in right ascension
+      descr: Correlation between parallax and pmra
       type: float
-      units: Dimensionless[see description]
     - name: parallax_pmdec_corr
       descr: Correlation between parallax and proper motion in declination
       type: float
-      units: Dimensionless[see description]
     - name: pmra_pmdec_corr
-      descr: Correlation between proper motion in right ascension and proper motion in declination
+      descr: Correlation between pmra and proper motion in declination
       type: float
-      units: Dimensionless[see description]
     - name: astrometric_n_obs_al
-      descr: Total number of observations AL
+      descr: Total number of AL observations (=CCD transits), independent of their weight
       type: int
     - name: astrometric_n_obs_ac
-      descr: Total number of observations AC
+      descr: Total number of AC observations (=CCD transits), independent of their weight
       type: int
     - name: astrometric_n_good_obs_al
-      descr: Number of good observations AL
+      descr: Number of good AL observations (not strongly downweighted)
       type: int
     - name: astrometric_n_bad_obs_al
-      descr: Number of bad observations AL
+      descr: Number of bad AL observations (strongly downweighted)
       type: int
     - name: astrometric_gof_al
       descr: Goodness of fit statistic of model wrt along-scan observations
       type: float
     - name: astrometric_chi2_al
-      descr: AL chi-square value
+      descr: '\({\chi}^2\) value in the AL direction'
       type: float
     - name: astrometric_excess_noise
       descr: Excess noise of the source
       type: double
-      units: Angle[mas]
+      units: '\(mas\)'
     - name: astrometric_excess_noise_sig
       descr: Significance of excess noise
       type: double
     - name: astrometric_params_solved
-      descr: Which parameters have been solved for?
+      descr: Binary code indicating which parameters were estimated for the source
       type: byte
     - name: astrometric_primary_flag
-      descr: Primary or seconday
+      descr: Indicator if this source was used as a primary (true) or secondary (false)
       type: boolean
     - name: astrometric_weight_al
-      descr: Mean astrometric weight of the source
+      descr: Mean astrometric weight of the source in the AL direction
       type: float
-      units: Angle[\(mas^{-2}\)]
+      units: '\(mas^{-2}\)'
     - name: astrometric_pseudo_colour
       descr: Astrometrically determined pseudocolour of the source
       type: double
-      units: Misc[\(\mu m^{-1}\)]
+      units: '\(\mu m^{-1}\)'
     - name: astrometric_pseudo_colour_error
       descr: Standard error of the pseudocolour of the source
       type: double
-      units: Misc[\(\mu m^{-1}\)]
+      units: '\(\mu m^{-1}\)'
     - name: mean_varpi_factor_al
-      descr: Mean Parallax factor AL
+      descr: Mean Parallax factor in the AL direction
       type: float
     - name: astrometric_matched_observations
       descr: Matched FOV transits used in the AGIS solution
       type: short
     - name: visibility_periods_used
-      descr: Number of visibility periods used in Astrometric solution
+      descr: Number of visibility periods used in astrometric solution
       type: short
     - name: astrometric_sigma5d_max
       descr: The longest semi-major axis of the 5-d error ellipsoid
       type: float
-      units: Angle[mas]
+      units: '\(mas\)'
     - name: frame_rotator_object_type
       descr: The type of the source mainly used for frame rotation
       type: int
@@ -894,184 +885,181 @@ gaiadr2:
     - name: phot_g_mean_flux
       descr: G-band mean flux
       type: double
-      units: Flux[e-/s]
+      units: '\({e^-}/s\)'
     - name: phot_g_mean_flux_error
       descr: Error on G-band mean flux
       type: double
-      units: Flux[e-/s]
+      units: '\({e^-}/s\)'
     - name: phot_g_mean_flux_over_error
       descr: G-band mean flux divided by its error
       type: float
     - name: phot_g_mean_mag
       descr: G-band mean magnitude
       type: float
-      units: mag
+      units: '\(mag\)'
     - name: phot_bp_n_obs
       descr: Number of observations contributing to BP photometry
       type: int
     - name: phot_bp_mean_flux
       descr: Integrated BP mean flux
       type: double
-      units: Flux[e-/s]
+      units: '\({e^-}/s\)'
     - name: phot_bp_mean_flux_error
       descr: Error on the integrated BP mean flux
       type: double
-      units: Flux[e-/s]
+      units: '\({e^-}/s\)'
     - name: phot_bp_mean_flux_over_error
       descr: Integrated BP mean flux divided by its error
       type: float
     - name: phot_bp_mean_mag
       descr: Integrated BP mean magnitude
       type: float
-      units: mag
+      units: '\(mag\)'
     - name: phot_rp_n_obs
       descr: Number of observations contributing to RP photometry
       type: int
     - name: phot_rp_mean_flux
       descr: Integrated RP mean flux
       type: double
-      units: Flux[e-/s]
+      units: '\({e^-}/s\)'
     - name: phot_rp_mean_flux_error
       descr: Error on the integrated RP mean flux
       type: double
-      units: Flux[e-/s]
+      units: '\({e^-}/s\)'
     - name: phot_rp_mean_flux_over_error
       descr: Integrated RP mean flux divided by its error
       type: float
     - name: phot_rp_mean_mag
       descr: Integrated RP mean magnitude
       type: float
-      units: mag
+      units: '\(mag\)'
     - name: phot_bp_rp_excess_factor
       descr: BP/RP excess factor
       type: float
     - name: phot_proc_mode
-      descr: Photometry processing mode
+      descr: Photometry processing mode (0=gold, 1=silver, 2=bronze)
       type: byte
     - name: bp_rp
       descr: BP - RP colour
       type: float
-      units: mag
+      units: '\(mag\)'
     - name: bp_g
       descr: BP - G colour
       type: float
-      units: mag
+      units: '\(mag\)'
     - name: g_rp
       descr: G - RP colour
       type: float
-      units: mag
+      units: '\(mag\)'
     - name: radial_velocity
       descr: Radial velocity
       type: double
-      units: km/s
+      units: '\(km/s\)'
     - name: radial_velocity_error
       descr: Radial velocity error
       type: double
-      units: km/s
+      units: '\(km/s\)'
     - name: rv_nb_transits
       descr: Number of transits used to compute radial velocity
       type: int
     - name: rv_template_teff
       descr: Teff of the template used to compute radial velocity
       type: float
-      units: K
+      units: '\(K\)'
     - name: rv_template_logg
       descr: logg of the template used to compute radial velocity
       type: float
-      units: GravitySurface[log cgs]
+      units: '\(\log cgs\)'
     - name: rv_template_fe_h
       descr: Fe/H of the template used to compute radial velocity
       type: float
-      units: dex
+      units: '\(dex\)'
     - name: phot_variable_flag
-      descr: Photometric variability flag (NOT_AVALIABLE=-1,CONSTANT=0,VARIABLE=1)
+      descr: Photometric variability flag (-1=NOT_AVALIABLE, 0=CONSTANT, 1=VARIABLE)
       #type: byte
       type: keyword
-      units: Dimensionless[see description]
     - name: l
       descr: Galactic longitude
       type: double
-      units: deg
+      units: '\(deg\)'
     - name: b
       descr: Galactic latitude
       type: double
-      units: deg
+      units: '\(deg\)'
     - name: ecl_lon
       descr: Ecliptic longitude
       type: double
-      units: deg
+      units: '\(deg\)'
     - name: ecl_lat
       descr: Ecliptic latitude
       type: double
-      units: deg
+      units: '\(deg\)'
     - name: priam_flags
       descr: flags for the Apsis-Priam results
       type: long
-      units: Dimensionless[see description]
     - name: teff_val
       descr: stellar effective temperature
       type: float
-      units: K
+      units: '\(K\)'
     - name: teff_percentile_lower
       descr: teff_val lower uncertainty
       type: float
-      units: K
+      units: '\(K\)'
     - name: teff_percentile_upper
       descr: teff_val upper uncertainty
       type: float
-      units: K
+      units: '\(K\)'
     - name: a_g_val
       descr: line-of-sight extinction in the G band, A_G
       type: float
-      units: mag
+      units: '\(mag\)'
     - name: a_g_percentile_lower
       descr: a_g_val lower uncertainty
       type: float
-      units: mag
+      units: '\(mag\)'
     - name: a_g_percentile_upper
       descr: a_g_val upper uncertainty
       type: float
-      units: mag
+      units: '\(mag\)'
     - name: e_bp_min_rp_val
       descr: line-of-sight reddening E(BP-RP)
       type: float
-      units: mag
+      units: '\(mag\)'
     - name: e_bp_min_rp_percentile_lower
       descr: e_bp_min_rp_val lower uncertainty
       type: float
-      units: mag
+      units: '\(mag\)'
     - name: e_bp_min_rp_percentile_upper
       descr: e_bp_min_rp_val upper uncertainty
       type: float
-      units: mag
+      units: '\(mag\)'
     - name: flame_flags
       descr: Flags for the Apsis-FLAME results
       type: long
-      units: Dimensionless[see description]
     - name: radius_val
       descr: stellar radius
       type: float
-      units: Length & Distance[Solar Radius]
+      units: '\(r_\odot\)'
     - name: radius_percentile_lower
       descr: radius_val lower uncertainty
       type: float
-      units: Length & Distance[Solar Radius]
+      units: '\(r_\odot\)'
     - name: radius_percentile_upper
       descr: radius_val upper uncertainty
       type: float
-      units: Length & Distance[Solar Radius]
+      units: '\(r_\odot\)'
     - name: lum_val
       descr: stellar luminosity
       type: float
-      units: L_sun
+      units: '\(L_\odot\)'
     - name: lum_percentile_lower
       descr: lum_val lower uncertainty
       type: float
-      units: L_sun
+      units: '\(L_\odot\)'
     - name: lum_percentile_upper
       descr: lum_val upper uncertainty
       type: float
-      units: L_sun
+      units: '\(L_\odot\)'
 ananke:
   title: Ananke
   index: ananke
@@ -1239,6 +1227,7 @@ ananke:
       title: Photometry
       sub:
       - name: ""
+        title: phot_g_mean_mag
         type: float
         units: mag
         sub:
@@ -1246,12 +1235,16 @@ ananke:
             title: mag
             descr: Extincted apparent G-band mean magnitude
           - name: phot_g_mean_mag_error
+            title: mag_error
             descr: Standard error of G-band mean magnitude
           - name: phot_g_mean_mag_true
+            title: mag_true
             descr: true (i.e. after extinction, but before eror convolution) apparent G-Band mean magnitude
           - name: phot_g_mean_mag_int
+            title: mag_int
             descr: intrinsic (i.e. after extinction, but before eror convolution) apparent G-Band mean magnitude
       - name: ""
+        title: phot_bp_mean_mag
         type: float
         units: mag
         sub:
@@ -1259,23 +1252,30 @@ ananke:
             title: mag
             descr: Extincted apparent G_Bp-band mean magnitude
           - name: phot_bp_mean_mag_error
+            title: mag_error
             descr: Standard error of G_Bp-band mean magnitude
           - name: phot_bp_mean_mag_true
+            title: mag_true
             descr: true apparent of G_Bp-band mean magnitude
           - name: phot_bp_mean_mag_int
+            title: mag_int
             descr: intrinsic apparent of G_Bp-band mean magnitude
       - name: ""
         type: float
+        title: phot_rp_mean_mag
         units: mag
         sub:
           - name: phot_rp_mean_mag
             title: mag
             descr: Extincted apparent G_Rp-band mean magnitude
           - name: phot_rp_mean_mag_error
+            title: mag_error
             descr: Standard error of G_Rp-band mean magnitude
           - name: phot_rp_mean_mag_true
+            title: mag_true
             descr: true apparent of G_Rp-band mean magnitude
           - name: phot_rp_mean_mag_int
+            title: mag_int
             descr: intrinsic apparent of G_Rp-band mean magnitude
       - name: bp_rp
         descr: BP - RP colour
