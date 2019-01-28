@@ -718,7 +718,6 @@ gaiadr2:
   index: gaiadr2
   key: source_id
   count: 1692919135
-  #enabled: false
   fields:
 #    - name: solution_id
 #      descr: Solution Identifier
@@ -975,9 +974,9 @@ gaiadr2:
       type: float
       units: '\(dex\)'
     - name: phot_variable_flag
-      descr: Photometric variability flag (-1=NOT_AVALIABLE, 0=CONSTANT, 1=VARIABLE)
-      #type: byte
-      type: keyword
+      descr: Photometric variability flag
+      type: byte
+      enum: ['CONSTANT', 'VARIABLE']
     - name: l
       descr: Galactic longitude
       type: double

@@ -5,7 +5,7 @@ module Ingest.HDF5
   ) where
 
 import           Control.Exception (bracket)
-import           Control.Monad (when)
+import           Control.Monad (when, unless)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Trans.Control (liftBaseOp)
 import qualified Bindings.HDF5 as H5
@@ -18,7 +18,7 @@ import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V
 import qualified Data.Vector.Storable as VS
 import qualified Data.Vector.Storable.Mutable as VSM
-import           Data.Word (Word64)
+import           Data.Word (Word64, Word8)
 import           System.FilePath (takeBaseName)
 import           System.IO (hFlush, stdout)
 
@@ -30,8 +30,8 @@ import qualified ES
 type DataBlock = [(T.Text, TypeValue V.Vector)]
 
 hdf5ReadVector :: H5.NativeType a => H5.Dataset -> [H5.HSize] -> Word64 -> IO (V.Vector a)
-hdf5ReadVector d o l =
-  bracket (H5.getDatasetSpace d) H5.closeDataspace $ \s -> do
+hdf5ReadVector d o l = do
+  v <- bracket (H5.getDatasetSpace d) H5.closeDataspace $ \s -> do
     (b@(b1:_), _) <- H5.getSimpleDataspaceExtent s
     let o1:os = pad o b
         l' | o1 >= b1 = 0
@@ -42,10 +42,21 @@ hdf5ReadVector d o l =
       bracket (H5.createSimpleDataspace [l']) H5.closeDataspace $ \m ->
         H5.readDatasetInto d (Just m) (Just s) Nothing v
     V.convert <$> VS.unsafeFreeze v
+  t <- H5.getDatasetType d
+  tc <- H5.getTypeClass t
+  ts <- H5.getTypeSize t
+  let nt = H5.nativeTypeOf1 v
+  ntc <- H5.getTypeClass nt
+  nts <- H5.getTypeSize nt
+  unless (tc == ntc && ts == nts) $ fail $ "HDF5 type mismatch: " ++ show ((tc, ts), (ntc, nts))
+  return v
   where
   pad s [] = s
   pad (x:s) (_:n) = x : pad s n
   pad    s  (_:n) = 0 : pad s n -- replicate n 0
+
+toBool :: Word8 -> Bool
+toBool = (0 /=)
 
 hdf5ReadType :: Type -> H5.Dataset -> [H5.HSize] -> Word64 -> IO (TypeValue V.Vector)
 hdf5ReadType (Long    _) d o l = Long    <$> hdf5ReadVector d o l
@@ -54,6 +65,7 @@ hdf5ReadType (Short   _) d o l = Short   <$> hdf5ReadVector d o l
 hdf5ReadType (Byte    _) d o l = Byte    <$> hdf5ReadVector d o l
 hdf5ReadType (Double  _) d o l = Double  <$> hdf5ReadVector d o l
 hdf5ReadType (Float   _) d o l = Float   <$> hdf5ReadVector d o l
+hdf5ReadType (Boolean _) d o l = Boolean . fmap toBool <$> hdf5ReadVector d o l
 hdf5ReadType t           _ _ _ = fail $ "Unsupported HDF5 type: " ++ show t
 
 loadBlock :: Catalog -> Word64 -> Word64 -> H5.File -> IO DataBlock
