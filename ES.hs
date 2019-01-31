@@ -110,7 +110,7 @@ catalogURL Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn, catalogMappi
 defaultSettings :: Catalog -> J.Object
 defaultSettings cat = HM.fromList
   [ "index" J..= J.object
-    [ "number_of_shards" J..= (clusterSize * maybe 2 (succ . (`div` (clusterSize * docsPerShard))) (catalogCount cat))
+    [ "number_of_shards" J..= (clusterSize * min 100 (maybe 2 (succ . (`div` (clusterSize * docsPerShard))) (catalogCount cat)))
     , "number_of_replicas" J..= J.Number 1
     , "refresh_interval" J..= J.Number (-1)
     , "max_docvalue_fields_search" J..= (8 + length (catalogFields cat))
@@ -119,7 +119,7 @@ defaultSettings cat = HM.fromList
   -- elastic search cluster size to optimize for (should really be determined dynamicaly)
   clusterSize = 4
   -- target number of docs per shard
-  docsPerShard = 16000000
+  docsPerShard = 100000000
 
 createIndex :: Catalog -> M J.Value
 createIndex cat@Catalog{ catalogStore = ~CatalogES{..} } = elasticSearch PUT [T.unpack catalogIndex] [] $ JE.pairs $
