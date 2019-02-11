@@ -8,7 +8,10 @@ System.register(["highcharts", "highcharts/modules/exporting"], function (export
     }
     exports_1("assert", assert);
     function fill_select_terms(s, f, a) {
-        s.add(document.createElement('option'));
+        var def = document.createElement('option');
+        def.text = 'all';
+        s.add(def);
+        a.buckets.sort(function (c, d) { return -(c.key < d.key) || +(c.key > d.key); });
         for (var _i = 0, _a = a.buckets; _i < _a.length; _i++) {
             var b = _a[_i];
             var opt = document.createElement('option');

@@ -73,8 +73,8 @@ htmlResponse req hdrs body = do
     H.body $ do
       H.header $ do
         H.div H.! HA.class_ "container nav" $ do
-            H.ul H.! HA.id "topbar" $ do
-                H.li $ do
+            H.ul H.! HA.id "topbar" H.! HA.class_ "navbar" $ do
+                H.li H.! HA.class_ "brand" $ do
                   H.img H.! HA.src (staticURI ["cca-logo.jpg"]) H.! HA.height "40" H.! HA.width "40"
                 H.li $
                   H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Home"
@@ -86,8 +86,10 @@ htmlResponse req hdrs body = do
                               H.a H.! HA.href (WH.routeActionValue simulationPage key mempty) $ H.text (catalogTitle cat)
                 H.li $
                   H.a H.! HA.href (WH.routeActionValue comparePage () mempty) $ H.text "Compare"
-                H.li $
-                  H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) $ H.text "CANDELS"
+                when (HM.member "scsam" $ catalogMap $ globalCatalogs glob) $
+                  H.li $ H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) $ H.text "CANDELS"
+                when (HM.member "ananke" $ catalogMap $ globalCatalogs glob) $
+                  H.li $ H.a H.! HA.href (WH.routeActionValue staticHtml ["ananke"] mempty) $ H.text "ANANKE"
       H.div H.! HA.class_ "container container--main" $ do         
         body
       H.footer H.! HA.class_"footer-distributed" $ do
@@ -100,10 +102,7 @@ htmlResponse req hdrs body = do
               H.a H.! HA.href (WH.routeActionValue comparePage () mempty) $ H.text "Compare"
               H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) $ H.text "About"
             H.p H.! HA.class_ "footer-company-name" $ "Flatiron Institute, 2019"
-          -- H.div H.! HA.class_ "footer-icons" $ do
-          --   H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto" H.! HA.id "flaticon" $
-          --   H.img H.! HA.src (staticURI ["github.png"]) H.! HA.height "40" H.! HA.width "40"
- 
+
 acceptable :: [BS.ByteString] -> Wai.Request -> Maybe BS.ByteString
 acceptable l = find (`elem` l) . foldMap parseHttpAccept . lookup hAccept . Wai.requestHeaders
 
@@ -133,7 +132,7 @@ simulationPage = getPath R.parameter $ \sim req -> do
          "name" J..= sim
       <> "title" J..= catalogTitle cat
       <> "descr" J..= catalogDescr cat
-      <> "bulk" J..= map (J.String . R.renderParameter) [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)]
+      <> "bulk" J..= map (J.String . R.renderParameter) [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkECSV Nothing, BulkECSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)]
       <> "fields" J..= fields'
     fieldBody :: Word -> FieldGroup -> H.Html
     fieldBody d f = H.span $ do

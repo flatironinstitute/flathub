@@ -11,6 +11,7 @@ import           Control.Monad.Trans.Control (liftBaseOp)
 import qualified Bindings.HDF5 as H5
 import qualified Data.Aeson as J
 import qualified Data.ByteString.Char8 as BSC
+import           Data.Foldable (fold)
 import           Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -56,15 +57,16 @@ hdf5ReadType (Float   _) d o l = Float   <$> hdf5ReadVector d o l
 hdf5ReadType t           _ _ _ = fail $ "Unsupported HDF5 type: " ++ show t
 
 loadBlock :: Catalog -> Word64 -> Word64 -> H5.File -> IO DataBlock
-loadBlock Catalog{ catalogFieldGroups = cat } off len hf = concat <$> mapM (\f ->
-    bracket (H5.openDataset hf (TE.encodeUtf8 $ fieldName f) Nothing) H5.closeDataset $ \hd -> do
+loadBlock Catalog{ catalogFieldGroups = cat } off len hf = concat <$> mapM loadf cat where
+  loadf f
+    | T.null (fieldName f) = concat <$> mapM (loadf . mappend f) (fold $ fieldSub f)
+    | otherwise = bracket (H5.openDataset hf (TE.encodeUtf8 $ fieldName f) Nothing) H5.closeDataset $ \hd -> do
       let
         loop _ [] = return []
         loop i (f':fs') = do
           x <- hdf5ReadType (fieldType f') hd (fromIntegral off : if i == 0 then [] else [i]) len
           ((fieldName f', x) :) <$> loop (succ i) fs'
-      loop 0 $ expandFields (V.singleton f))
-  cat
+      loop 0 $ expandFields (V.singleton f)
 
 blockLength :: DataBlock -> Int
 blockLength = maximum . map (unTypeValue V.length . snd)

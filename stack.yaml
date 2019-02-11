@@ -1,14 +1,15 @@
-resolver: lts-11.22
+resolver: lts-13.4
 packages:
 - '.'
 - location:
     git: git://github.com/dylex/waimwork
-    commit: 08ce12a8fbeffd7efbf5e1b1b2748893e58f7fc4
+    commit: 5c6c01f1b3c3f69bae7cc8c409c9a2928dc4c53d
   extra-dep: true
 - location: hs-hdf5
   extra-dep: true
 extra-deps:
-  - web-inv-route-0.1.2.1
+  - postgresql-typed-0.5.3.0
+  - web-inv-route-0.1.2.2
 flags:
   web-inv-route:
     snap: false
