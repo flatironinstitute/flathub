@@ -735,6 +735,7 @@ gaiadr2:
     - name: random_index
       descr: Random index used to select subsets
       type: long
+      disp: false
     - name: ref_epoch
       descr: Reference epoch (J2015.5) in Julian years
       disp: false
