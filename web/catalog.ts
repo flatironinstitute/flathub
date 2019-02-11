@@ -21,6 +21,7 @@ var Histogram: undefined|NumericFilter;
 var Heatmap: undefined|Field;
 var Histogram_chart: Highcharts.ChartObject|undefined;
 var Last_fields: string[] = [];
+var Last_query: undefined|Dict<string>;
 
 function set_download(query: Dict<string>) {
   const q = '?' + $.param(query);
@@ -33,6 +34,7 @@ function set_download(query: Dict<string>) {
     a.appendChild(document.createTextNode(f));
     h.append(document.createTextNode(' '));
   }
+  py_text(query);
 }
 
 function histogramRemove() {
@@ -222,8 +224,7 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
     url_update(query);
     delete query.limit;
     delete query.offset;
-    set_download(query);
-    py_text(query);
+    set_download(Last_query = query);
   }, (xhr, msg, err) => {
     Update = false;
     callback({
@@ -526,6 +527,10 @@ function columnVisible(name: string, vis: boolean) {
   if (!box.indeterminate)
     for (let n of colvisNames(box))
       columnVisible(n, box.checked);
+  if (Last_query) {
+    Last_query.fields = TCat.columns(':visible').dataSrc().toArray().join(' ');
+    set_download(Last_query);
+  }
 }
 
 function py_text(query: Dict<string>) {
