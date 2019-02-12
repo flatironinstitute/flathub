@@ -71,25 +71,25 @@ htmlResponse req hdrs body = do
       H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML" $ mempty
       jsonVar "Catalogs" (HM.map catalogTitle $ catalogMap $ globalCatalogs glob)
     H.body $ do
-      H.header $ do
-        H.div H.! HA.class_ "container nav" $ do
-            H.ul H.! HA.id "topbar" H.! HA.class_ "navbar" $ do
-                H.li H.! HA.class_ "brand" $ do
-                  H.img H.! HA.src (staticURI ["cca-logo.jpg"]) H.! HA.height "40" H.! HA.width "40"
-                H.li $
-                  H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Home"
-                H.li $
-                  H.div H.! HA.class_ "dropdown" $ do
-                      H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Catalogs"
-                      H.div H.! HA.class_ "dropdown-content" $ do
-                          forM_ (catalogsSorted $ globalCatalogs glob) $ \(key, cat) ->
-                              H.a H.! HA.href (WH.routeActionValue simulationPage key mempty) $ H.text (catalogTitle cat)
-                H.li $
-                  H.a H.! HA.href (WH.routeActionValue comparePage () mempty) $ H.text "Compare"
-                when (HM.member "scsam" $ catalogMap $ globalCatalogs glob) $
-                  H.li $ H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) $ H.text "CANDELS"
-                when (HM.member "ananke" $ catalogMap $ globalCatalogs glob) $
-                  H.li $ H.a H.! HA.href (WH.routeActionValue staticHtml ["ananke"] mempty) $ H.text "ANANKE"
+      H.header H.! HA.class_ "header" $ do
+        H.div H.! HA.class_ "header__logo" $ do
+          H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ do
+            H.img H.! HA.src (staticURI ["logo.svg"]) H.! HA.height "55" H.! HA.width "200"
+        H.nav H.! HA.class_ "header__nav" $ do
+          H.ul H.! HA.id "topbar" $ do
+            H.li H.! HA.class_ "header__link--dropdown" $ do
+              H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Catalogs"
+              H.div H.! HA.class_ "dropdown-content" $ do
+                forM_ (catalogsSorted $ globalCatalogs glob) $ \(key, cat) ->
+                  H.a H.! HA.href (WH.routeActionValue simulationPage key mempty) $ H.text (catalogTitle cat)    
+            H.li H.! HA.class_ "header__link" $ do
+              H.a H.! HA.href (WH.routeActionValue comparePage () mempty) $ H.text "Compare"
+            when (HM.member "scsam" $ catalogMap $ globalCatalogs glob) $
+              H.li H.! HA.class_ "header__link" $ do
+                H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) $ H.text "CANDELS"
+            when (HM.member "ananke" $ catalogMap $ globalCatalogs glob) $
+              H.li H.! HA.class_ "header__link" $ do
+                H.a H.! HA.href (WH.routeActionValue staticHtml ["ananke"] mempty) $ H.text "ANANKE"
       H.div H.! HA.class_ "container container--main" $ do         
         body
       H.footer H.! HA.class_"footer-distributed" $ do
