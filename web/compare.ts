@@ -183,14 +183,14 @@ class CField {
 
     for (let idx = 0; idx < Compares.length; idx++)
       Compares[idx].fillField(this);
-    this.cdict_update('add');
+    this.cdict_update(true);
     update_fields();
   }
 
-  cdict_update(state: String) {
-    let table = document.getElementById('cdict');
+  cdict_update(state: Boolean) {
+    let table = <HTMLTableElement> document.getElementById('cdict');
     let f = this.field;
-    if (state === 'add') {
+    if (state) {
       let row = table.insertRow(-1);
       let arr = [f.title, f.name, f.type, f.units, f.descr];
       for (let i = 0; i < arr.length; i++) {
@@ -201,8 +201,10 @@ class CField {
       table.appendChild(row);
     }
     else {
-      let row = document.getElementById('cdict-' + f.title);
-      row.parentNode.removeChild(row);
+      let row = document.getElementById('cdict-' + f.name);
+      if (row) {
+        row.parentNode.removeChild(row);
+      }
     }
   }
 
@@ -213,7 +215,7 @@ class CField {
     let idx = this.idx;
     if (idx >= 0)
       Fields.splice(idx, 1);
-    this.cdict_update('remove');
+    this.cdict_update(false);
     update_fields();
     update_comp();
   }
