@@ -145,6 +145,132 @@ dict:
     units: 'km/s'
   - name: UV1500_rest
     type: float
+  - name: GAIA_source_id
+    title: source_id
+    type: long
+    descr: Unique source Identifier
+  - name: GAIA_random_index
+    title: random_index
+    type: long
+    descr: Random index used to select subsets
+  - name: GAIA_ppos_x_error
+    title: ra_error
+    type: double
+    descr: Standard error of right ascension
+  - name: GAIA_ppos_y_error
+    title: dec_error
+    type: double
+    descr: Standard error of declination
+  - name: parallax
+    type: double
+    descr: Parallax
+    units: mas
+  - name: GAIA_parallax_error
+    title: parallax_error
+    type: double
+    descr: Standard error of parallax
+    units: mas
+  - name: GAIA_parallax_over_error
+    title: parallax_over_error
+    type: float
+    descr: Parallax divided by its error
+  - name: pmra
+    type: double
+    descr: Proper motion in right ascension direction
+    units: mas/year
+  - name: GAIA_pmra_error
+    title: pmra_error
+    type: double
+    descr: Standard error of proper motion in right ascension direction
+    units: mas/year
+  - name: pmdec
+    type: double
+    descr: Proper motion in declination direction
+    units: mas/year
+  - name: GAIA_pmdec_error
+    title: pmdec_error
+    type: double
+    descr: Standard error of proper motion in declination direction
+    units: mas/year
+  - name: GAIA_l
+    title: l
+    type: double
+    descr: Galactic longitude
+    units: deg
+  - name: GAIA_b
+    title: b
+    type: double
+    descr: Galactic latitude
+    units: deg
+  - name: GAIA_phot_g_mean_mag
+    title: phot_g_mean_mag
+    type: float
+    descr: Extincted apparent G-band mean magnitude
+  - name: GAIA_phot_g_mean_mag_error
+    title: phot_g_mean_mag_error
+    type: float
+    descr: true (i.e. after extinction, but before error convolution) apparent G-Band mean magnitude
+  - name: GAIA_phot_bp_mean_mag
+    title: phot_bp_mean_mag
+    type: float
+    descr: Extincted apparent G_Bp-band mean magnitude
+  - name: GAIA_phot_bp_mean_mag_error
+    title: phot_bp_mean_mag_error
+    type: float
+    descr: Standard error of G_Bp-band mean magnitude
+  - name: GAIA_phot_rp_mean_mag
+    title: phot_rp_mean_mag
+    type: float
+    descr: Extincted apparent G_Rp-band mean magnitude
+  - name: GAIA_phot_rp_mean_mag_error
+    title: phot_rp_mean_mag_error
+    type: float
+    descr: Standard error of G_Rp-band mean magnitude
+  - name: GAIA_bp_rp
+    title: bp_rp
+    type: float
+    descr: true BP - RP colour
+    units: mag
+  - name: GAIA_bp_g
+    title: bp_g
+    type: float
+    descr: BP - G colour 
+    units: mag
+  - name: GAIA_g_rp
+    title: g_rp
+    type: float 
+    descr: true G - RP colour
+    units: mag
+  - name: GAIA_a_g_val
+    title: a_g_val
+    type: float
+    descr: line-of-sight extinction in the G band, A_G  
+    units: mag  
+  - name: GAIA_e_bp_min_rp_val
+    title: e_bp_min_rp_val
+    type: float
+    descr: line-of-sight reddening E(BP-RP)
+    units: mag
+  - name: GAIA_teff_val
+    title: teff_val
+    type: float
+    descr: Stellar effective temperature
+    units: K
+  - name: GAIA_lum_val
+    title: lum_val
+    type: float
+    descr: Stellar luminosity
+    units: L_sun
+  - name: GAIA_radial_velocity
+    title: radial_velocity
+    type: double
+    descr: Radial velocity
+    units: km/s
+  - name: GAIA_radial_velocity_error
+    title: radial_velocity_error
+    type: double
+    descr: km/s
+    units: Radial velocity error
 
 illustris:
   title: Illustris
@@ -732,10 +858,12 @@ gaiadr2:
     - name: source_id
       descr: Unique source identifier
       type: long
+      dict: GAIA_source_id
     - name: random_index
       descr: Random index used to select subsets
       type: long
       disp: false
+      dict: GAIA_random_index
     - name: ref_epoch
       descr: Reference epoch (J2015.5) in Julian years
       disp: false
@@ -766,14 +894,17 @@ gaiadr2:
         type: double
         units: mas
     - name: parallax
+      dict: parallax
       descr: Absolute parallax of the source
       type: double
       units: mas
     - name: parallax_error
+      dict: GAIA_parallax_error
       descr: Standard error of parallax
       type: double
       units: mas
     - name: parallax_over_error
+      dict: GAIA_parallax_over_error
       descr: Parallax divided by its standard error
       type: float
     - name: ''
@@ -783,19 +914,19 @@ gaiadr2:
       units: mas/year
       sub:
       - name: pmra
-        title: ra
+        dict: pmra
         descr: Proper motion in right ascension (pmra) direction
         type: double
       - name: pmra_error
+        dict: GAIA_pmra_error
         title: ra_error
-        descr: Standard error of pmra direction
         type: double
       - name: pmdec
-        title: dec
+        dict: pmdec
         descr: Proper motion in declination direction
         type: double
       - name: pmdec_error
-        title: dec_error
+        dict: GAIA_pmdec_error
         descr: Standard error of proper motion in declination direction
         type: double
     - name: ''
@@ -949,6 +1080,7 @@ gaiadr2:
         descr: G-band mean flux divided by its error
         type: float
       - name: phot_g_mean_mag
+        dict: GAIA_phot_g_mean_mag
         title: mean_mag
         descr: G-band mean magnitude
         type: float
@@ -976,6 +1108,7 @@ gaiadr2:
         descr: Integrated BP mean flux divided by its error
         type: float
       - name: phot_bp_mean_mag
+        dict: GAIA_phot_bp_mean_mag_error
         title: mean_mag
         descr: Integrated BP mean magnitude
         type: float
@@ -1003,6 +1136,7 @@ gaiadr2:
         descr: Integrated RP mean flux divided by its error
         type: float
       - name: phot_rp_mean_mag
+        dict: GAIA_phot_rp_mean_mag
         title: mean_mag
         descr: Integrated RP mean magnitude
         type: float
@@ -1014,6 +1148,7 @@ gaiadr2:
       descr: Photometry processing mode (0=gold, 1=silver, 2=bronze)
       type: byte
     - name: bp_rp
+      dict: GAIA_bp_rp
       descr: BP - RP colour
       type: float
       units: mag
@@ -1022,14 +1157,17 @@ gaiadr2:
       type: float
       units: mag
     - name: g_rp
+      dict: GAIA_g_rp
       descr: G - RP colour
       type: float
       units: mag
     - name: radial_velocity
+      dict: GAIA_radial_velocity
       descr: Radial velocity
       type: double
       units: km/s
     - name: radial_velocity_error
+      dict: GAIA_radial_velocity_error
       descr: Radial velocity error
       type: double
       units: km/s
@@ -1053,10 +1191,12 @@ gaiadr2:
       type: byte
       enum: ['CONSTANT', 'VARIABLE']
     - name: l
+      dict: GAIA_l
       descr: Galactic longitude
       type: double
       units: deg
     - name: b
+      dict: GAIA_b
       descr: Galactic latitude
       type: double
       units: deg
@@ -1078,6 +1218,7 @@ gaiadr2:
       units: K
       sub:
       - name: teff_val
+        dict: GAIA_teff_val
         title: val
         type: float
       - name: teff_percentile_lower
@@ -1095,6 +1236,7 @@ gaiadr2:
       units: 'mag'
       sub:
       - name: a_g_val
+        dict: GAIA_a_g_val
         title: val
         type: float
       - name: a_g_percentile_lower
@@ -1112,6 +1254,7 @@ gaiadr2:
       units: 'mag'
       sub:
       - name: e_bp_min_rp_val
+        dict: GAIA_e_bp_min_rp_val
         title: val
         type: float
       - name: e_bp_min_rp_percentile_lower
@@ -1149,6 +1292,7 @@ gaiadr2:
       type: float
       sub:
       - name: lum_val
+        dict: GAIA_lum_val
         title: val
         type: float
       - name: lum_percentile_lower
@@ -1190,15 +1334,19 @@ ananke:
       - name: source_id
         descr: Unique source identifier (per mock catalog)
         type: long
+        dict: GAIA_source_id
       - name: random_index
         descr: Random index used to select subsets
         type: long
+        dict: GAIA_random_index
       - name: parentid
         descr: array index of the generating star particle in the snapshot file
         type: long
+        disp: false
       - name: partid
         descr: 0 if phase-space coordinates are identical to generating star particle, 1 otherwise
         type: short
+        disp: false
     - name: ""
       title: Astrometry
       sub:
@@ -1213,6 +1361,7 @@ ananke:
         - name: ra_error
           descr: Standard error of right ascension
           type: double
+          dict: GAIA_ppos_x_error
         - name: dec
           descr: Declination
           type: double
@@ -1220,41 +1369,51 @@ ananke:
         - name: dec_error
           descr: Standard error of declination
           type: double
+          dict: GAIA_ppos_y_error
       - name: parallax
         descr: Parallax
         type: double
         units: mas
+        dict: parallax
       - name: parallax_error
         descr: Standard error of parallax
         type: double
         units: mas
+        dict: GAIA_parallax_error
       - name: parallax_over_error
         descr: Parallax divided by its error
         type: float
+        dict: GAIA_parallax_over_error
       - name: pmra
         descr: Proper motion in right ascension direction
         type: double
         units: mas/year
+        dict: pmra
       - name: pmra_error
         descr: Standard error of proper motion in right ascension direction
         type: double
         units: mas/year
+        dict: GAIA_pmra_error
       - name: pmdec
         descr: Proper motion in declination direction
         type: double
         units: mas/year
+        dict: pmdec
       - name: pmdec_error
         descr: Standard error of proper motion in declination direction
         type: double
         units: mas/year
+        dict: GAIA_pmdec_error
       - name: l
         descr: Galactic longitude
         type: double
         units: deg
+        dict: GAIA_l
       - name: b
         descr: Galactic latitude
         type: double
         units: deg
+        dict: GAIA_b
     - name: ""
       title: Phase Space
       sub:
@@ -1262,65 +1421,81 @@ ananke:
         descr: true right ascension
         type: double
         units: deg
+        disp: false
       - name: dec_true
         descr: true declination
         type: double
         units: deg
+        disp: false
       #- name: rad_true
       #  descr: true LSR-centric distance
       #  type: double
       #  units: kpc
+      #  disp: false
       - name: dmod_true
         descr: true distance modulus
         type: double
         units: mag
+        disp: false
       - name: parallax_true
         descr: true parallax
         type: double
         units: mas
+        disp: false
       - name: pmra_true
         descr: true proper motion in right ascension direction
         type: double
         units: mas/year
+        disp: false
       - name: pmdec_true
         descr: true proper motion in declination direction
         type: double
         units: mas/year
+        disp: false
       - name: radial_velocity_true
         descr: true radial velocity
         type: double
         units: km/s
+        disp: false
       - name: l_true
         descr: true galactic longitude
         type: double
         units: deg
+        disp: false
       - name: b_true
         descr: true galactic latitude
         type: double
         units: deg
+        disp: false
       - name: px_true
         type: double
         units: kpc
+        disp: false
         descr: true position relative to LSR
       - name: py_true
         type: double
         units: kpc
+        disp: false
         descr: true position relative to LSR
       - name: pz_true
         type: double
         units: kpc
+        disp: false
         descr: true position relative to LSR
       - name: vx_true
         type: double
         units: km/s
+        disp: false
         descr: true velocity relative to LSR
       - name: vy_true
         type: double
         units: km/s
+        disp: false
         descr: true velocity relative to LSR
       - name: vz_true
         type: double
         units: km/s
+        disp: false
         descr: true velocity relative to LSR
     - name: ""
       title: Photometry
@@ -1333,15 +1508,19 @@ ananke:
           - name: phot_g_mean_mag
             title: mag
             descr: Extincted apparent G-band mean magnitude
+            dict: GAIA_phot_g_mean_mag
           - name: phot_g_mean_mag_error
             title: mag_error
             descr: Standard error of G-band mean magnitude
+            dict: GAIA_phot_g_mean_mag_error
           - name: phot_g_mean_mag_true
             title: mag_true
-            descr: true (i.e. after extinction, but before eror convolution) apparent G-Band mean magnitude
+            descr: true (i.e. after extinction, but before error convolution) apparent G-Band mean magnitude
+            disp: false
           - name: phot_g_mean_mag_int
             title: mag_int
-            descr: intrinsic (i.e. after extinction, but before eror convolution) apparent G-Band mean magnitude
+            descr: intrinsic (i.e. after extinction, but before error convolution) apparent G-Band mean magnitude
+            disp: false
       - name: ""
         title: phot_bp_mean_mag
         type: float
@@ -1350,15 +1529,19 @@ ananke:
           - name: phot_bp_mean_mag
             title: mag
             descr: Extincted apparent G_Bp-band mean magnitude
+            dict: GAIA_phot_bp_mean_mag
           - name: phot_bp_mean_mag_error
             title: mag_error
             descr: Standard error of G_Bp-band mean magnitude
+            dict: GAIA_phot_bp_mean_mag_error
           - name: phot_bp_mean_mag_true
             title: mag_true
             descr: true apparent of G_Bp-band mean magnitude
+            disp: false
           - name: phot_bp_mean_mag_int
             title: mag_int
             descr: intrinsic apparent of G_Bp-band mean magnitude
+            disp: false
       - name: ""
         type: float
         title: phot_rp_mean_mag
@@ -1367,59 +1550,74 @@ ananke:
           - name: phot_rp_mean_mag
             title: mag
             descr: Extincted apparent G_Rp-band mean magnitude
+            dict: GAIA_phot_rp_mean_mag
           - name: phot_rp_mean_mag_error
             title: mag_error
             descr: Standard error of G_Rp-band mean magnitude
+            dict: GAIA_phot_rp_mean_mag_error
           - name: phot_rp_mean_mag_true
             title: mag_true
             descr: true apparent of G_Rp-band mean magnitude
+            disp: false
           - name: phot_rp_mean_mag_int
             title: mag_int
             descr: intrinsic apparent of G_Rp-band mean magnitude
+            disp: false
       - name: bp_rp
         descr: BP - RP colour
         type: float
         units: mag
+        dict: GAIA_bp_rp
       - name: bp_rp_true
         descr: true BP - RP colour
         type: float
         units: mag
+        disp: false
       - name: bp_rp_int
         descr: intrinsic BP - RP colour
         type: float
         units: mag
+        disp: false
       - name: bp_g
         descr: BP - G colour
         type: float
         units: mag
+        dict: GAIA_bp_g
       - name: bp_g_true
         descr: true BP - G colour
         type: float
         units: mag
+        disp: false
       - name: bp_g_int
         descr: intrinsic BP - G colour
         type: float
         units: mag
+        disp: false
       - name: g_rp
         descr: G - RP colour
         type: float
         units: mag
+        dict: GAIA_g_rp
       - name: g_rp_true
         descr: true G - RP colour
         type: float
         units: mag
+        disp: false
       - name: g_rp_int
         descr: intrinsic G - RP colour
         type: float
         units: mag
+        disp: false
       - name: a_g_val
         descr: line-of-sight extinction in the G band, A_G
         type: float
         units: mag
+        dict: GAIA_a_g_val
       - name: e_bp_min_rp_val
         descr: line-of-sight reddening E(BP-RP)
         type: float
         units: mag
+        dict: GAIA_e_bp_min_rp_val
     - name: ""
       title: Extinction
       sub:
@@ -1427,14 +1625,17 @@ ananke:
         descr: log_10 equivalent H column density along line of sight to star
         type: float
         units: cm-2
+        disp: false
       - name: ebv
         descr: E(B-V) reddening, calculated from equivalent N_H
         type: float
         units: mag
+        disp: false
       - name: A0
         descr: A_0 extinction at 550 nm, assuming R_v = 3.1
         type: float
         units: mag
+        disp: false
     - name: ""
       title: Spectroscopy
       sub:
@@ -1442,10 +1643,12 @@ ananke:
         descr: Radial velocity
         type: double
         units: km/s
+        dict: GAIA_radial_velocity
       - name: radial_velocity_error
         descr: Radial velocity error
         type: double
         units: km/s
+        dict: GAIA_radial_velocity_error
     - name: ""
       title: Stellar Parameters
       sub:
@@ -1453,30 +1656,37 @@ ananke:
         descr: stellar effective temperature
         type: float
         units: K
+        dict: GAIA_teff_val
       - name: lum_val
         descr: stellar luminosity
         type: float
         units: L_sun
+        dict: GAIA_lum_val
       - name: mact
         descr: current stellar mass
         type: float
         units: M_sun
+        disp: false
       - name: mtip
         descr: mass of a star at tip of giant branch for given age, metallicity
         type: float
         units: M_sun
+        disp: false
       - name: mini
         descr: stellar mass on zero-age main sequence
         type: float
         units: M_sun
+        disp: false
       - name: age
         descr: log_10 stellar age; identical for all stars generated from the same particle
         type: float
         units: log yr
+        disp: false
       - name: logg
         descr: surface gravity
         type: float
         units: log cgs
+        disp: false
     - name: ""
       title: Abundances
       units: dex
@@ -1484,36 +1694,47 @@ ananke:
       - name: feh
         descr: "[Fe/H]"
         type: float
+        disp: false
       - name: alpha
         descr: "[Mg/Fe]"
         type: float
+        disp: false
       - name: carbon
         descr: "[C/H]"
         type: float
+        disp: false
       - name: helium
         descr: "[He/H]"
         type: float
+        disp: false
       - name: nitrogen
         descr: "[N/H]"
         type: float
+        disp: false
       - name: sulphur
         descr: "[S/H]"
         type: float
+        disp: false
       - name: oxygen
         descr: "[O/H]"
         type: float
+        disp: false
       - name: silicon
         descr: "[Si/H]"
         type: float
+        disp: false
       - name: calcium
         descr: "[Ca/H]"
         type: float
+        disp: false
       - name: magnesium
         descr: "[Mg/H]"
         type: float
+        disp: false
       - name: neon
         descr: "[Ne/H]"
         type: float
+        disp: false
 lusam:
   title: Lu-SAM
   descr: >
