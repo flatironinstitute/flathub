@@ -190,7 +190,8 @@ html {
   --cooler-black: rgba(34, 34, 34, 1);
   --cooler-white: rgba(254, 254, 255, 1);
   --cooler-platinum: #e7e7e8;
-  --cooler-red: rgba(205, 52, 55, 1);
+  /* --cooler-red: rgba(205, 52, 55, 1); */
+  --cooler-red: #ff533d;
   --cooler-azure: rgba(214, 239, 255, 1);
   --cooler-blue: rgba(164, 222, 249, 1);
   --cooler-gray: rgba(143, 146, 150, 1);
@@ -277,10 +278,10 @@ p {
 /* Links
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
 a {
-  color: var(--cooler-blue);
+  color: var(--cooler-black);
 }
 a:hover {
-  color: var(--cooler-azure);
+  color: var(--cooler-red);
 }
 /* Navbar 
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
@@ -288,9 +289,9 @@ a:hover {
 .header {
   display: flex;
   flex-direction: column;
-  background-color: var(--cooler-red);
   box-shadow: rgba(31, 53, 78, 0.11) 0 1px;
-  height: 55px;
+  border-bottom: 5px solid var(--cooler-red);
+  height: 125px;
 }
 
 .header__logo {
@@ -369,6 +370,7 @@ a:hover:not(.active) {
   .header {
     flex-direction: row;
     justify-content: space-between;
+    height: 55px;
   }
 
   .header__logo {
@@ -519,8 +521,6 @@ a:hover:not(.active) {
   font-weight: bold;
   float: right;
 }
-
-/* If you don't want the footer to be responsive, remove these media queries */
 
 @media (max-width: 1000px) {
   .footer-distributed {

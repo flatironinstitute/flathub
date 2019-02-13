@@ -82,14 +82,18 @@ htmlResponse req hdrs body = do
               H.div H.! HA.class_ "dropdown-content" $ do
                 forM_ (catalogsSorted $ globalCatalogs glob) $ \(key, cat) ->
                   H.a H.! HA.href (WH.routeActionValue simulationPage key mempty) $ H.text (catalogTitle cat)    
+            H.li H.! HA.class_ "header__link--dropdown" $ do 
+              H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Collections"
+
             H.li H.! HA.class_ "header__link" $ do
               H.a H.! HA.href (WH.routeActionValue comparePage () mempty) $ H.text "Compare"
-            when (HM.member "scsam" $ catalogMap $ globalCatalogs glob) $
-              H.li H.! HA.class_ "header__link" $ do
-                H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) $ H.text "CANDELS"
-            when (HM.member "ananke" $ catalogMap $ globalCatalogs glob) $
-              H.li H.! HA.class_ "header__link" $ do
-                H.a H.! HA.href (WH.routeActionValue staticHtml ["ananke"] mempty) $ H.text "ANANKE"
+              
+            -- when (HM.member "scsam" $ catalogMap $ globalCatalogs glob) $
+            --   H.li H.! HA.class_ "header__link" $ do
+            --     H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) $ H.text "CANDELS"
+            -- when (HM.member "ananke" $ catalogMap $ globalCatalogs glob) $
+            --   H.li H.! HA.class_ "header__link" $ do
+            --     H.a H.! HA.href (WH.routeActionValue staticHtml ["ananke"] mempty) $ H.text "ANANKE"
       H.div H.! HA.class_ "container container--main" $ do         
         body
       H.footer H.! HA.class_"footer-distributed" $ do
