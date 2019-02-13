@@ -1665,17 +1665,17 @@ ananke:
       - name: mact
         descr: current stellar mass
         type: float
-        units: M_sun
+        units: '\(M_\odot\)'
         disp: false
       - name: mtip
         descr: mass of a star at tip of giant branch for given age, metallicity
         type: float
-        units: M_sun
+        units: '\(M_\odot\)'
         disp: false
       - name: mini
         descr: stellar mass on zero-age main sequence
         type: float
-        units: M_sun
+        units: '\(M_\odot\)'
         disp: false
       - name: age
         descr: log_10 stellar age; identical for all stars generated from the same particle
