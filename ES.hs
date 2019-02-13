@@ -137,15 +137,20 @@ createIndex cat@Catalog{ catalogStore = ~CatalogES{..} } = elasticSearch PUT [T.
 
 checkIndices :: M (HM.HashMap Simulation String)
 checkIndices = do
+  isdev <- asks globalDevMode
   indices <- elasticSearch GET ["*"] [] ()
-  HM.mapMaybe (\cat -> either Just (const Nothing) $ J.parseEither (catalog cat) indices)
+  HM.mapMaybe (\cat -> either Just (const Nothing) $ J.parseEither (catalog isdev cat) indices)
     <$> asks (catalogMap . globalCatalogs)
   where
-  catalog ~cat@Catalog{ catalogStore = CatalogES{ catalogIndex = idxn, catalogMapping = mapn } } =
-    parseJSONField idxn (idx cat mapn)
-  idx :: Catalog -> T.Text -> J.Value -> J.Parser ()
-  idx cat mapn = J.withObject "index" $ parseJSONField "mappings" $ J.withObject "mappings" $
-    parseJSONField mapn (mapping $ catalogFields cat)
+  catalog isdev ~cat@Catalog{ catalogStore = CatalogES{ catalogIndex = idxn, catalogMapping = mapn } } =
+    parseJSONField idxn (idx isdev cat mapn)
+  idx :: Bool -> Catalog -> T.Text -> J.Value -> J.Parser ()
+  idx isdev cat mapn = J.withObject "index" $ \i -> do
+    sets <- i J..: "settings" >>= (J..: "index")
+    ro <- or <$> (sets J..:? "blocks" >>= maybe (return Nothing) (J..:? "read_only"))
+    unless (isdev || ro) $ fail "open (not read_only)"
+    parseJSONField "mappings" (J.withObject "mappings" $
+      parseJSONField mapn (mapping $ catalogFields cat)) i
   mapping :: Fields -> J.Value -> J.Parser ()
   mapping fields = J.withObject "mapping" $ parseJSONField "properties" $ J.withObject "properties" $ \ps ->
     forM_ fields $ \field -> parseJSONField (fieldName field) (prop field) ps
