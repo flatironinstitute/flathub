@@ -21,7 +21,7 @@ import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (ask, asks)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
-import qualified Data.Aeson.Types as J (Parser, parseEither, parseMaybe)
+import qualified Data.Aeson.Types as J (Parser, parseEither, parseMaybe, typeMismatch)
 import qualified Data.Attoparsec.ByteString as AP
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
@@ -41,7 +41,7 @@ import           Data.String (IsString)
 import qualified Data.Text as T
 import qualified Data.Vector as V
 import qualified Network.HTTP.Client as HTTP
-import           Network.HTTP.Types.Header (hAccept, hAcceptEncoding, hContentType)
+import           Network.HTTP.Types.Header (hAccept, hContentType)
 import           Network.HTTP.Types.Method (StdMethod(GET, PUT, POST), renderStdMethod)
 import qualified Network.HTTP.Types.URI as HTTP (Query)
 import qualified Network.URI as URI
@@ -90,7 +90,6 @@ elasticSearch meth url query body = do
         , HTTP.path = HTTP.path req <> BS.intercalate "/" (map (BSC.pack . URI.escapeURIString URI.isUnescapedInURIComponent) url)
         , HTTP.requestHeaders = maybe id ((:) . (,) hContentType) (bodyContentType body)
             $ (hAccept, "application/json")
-            : (hAcceptEncoding, mempty)
             : HTTP.requestHeaders req
         , HTTP.requestBody = bodyRequest body
         }
@@ -148,7 +147,7 @@ checkIndices = do
   idx :: Bool -> Catalog -> T.Text -> J.Value -> J.Parser ()
   idx isdev cat mapn = J.withObject "index" $ \i -> do
     sets <- i J..: "settings" >>= (J..: "index")
-    ro <- or <$> (sets J..:? "blocks" >>= maybe (return Nothing) (J..:? "read_only"))
+    ro <- sets J..:? "blocks" >>= maybe (return Nothing) (J..:? "read_only") >>= maybe (return False) boolish
     unless (isdev || ro) $ fail "open (not read_only)"
     parseJSONField "mappings" (J.withObject "mappings" $
       parseJSONField mapn (mapping $ catalogFields cat)) i
@@ -159,6 +158,11 @@ checkIndices = do
   prop field = J.withObject "property" $ \p -> do
     t <- p J..: "type"
     unless (t == fieldType field) $ fail $ "incorrect field type; should be " ++ show (fieldType field)
+  boolish :: J.Value -> J.Parser Bool
+  boolish (J.Bool b) = return b
+  boolish (J.String "true") = return True
+  boolish (J.String "false") = return False
+  boolish v = J.typeMismatch "bool" v
 
 scrollTime :: IsString s => s
 scrollTime = "60s"
