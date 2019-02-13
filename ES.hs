@@ -41,7 +41,7 @@ import           Data.String (IsString)
 import qualified Data.Text as T
 import qualified Data.Vector as V
 import qualified Network.HTTP.Client as HTTP
-import           Network.HTTP.Types.Header (hAccept, hContentType)
+import           Network.HTTP.Types.Header (hAccept, hAcceptEncoding, hContentType)
 import           Network.HTTP.Types.Method (StdMethod(GET, PUT, POST), renderStdMethod)
 import qualified Network.HTTP.Types.URI as HTTP (Query)
 import qualified Network.URI as URI
@@ -90,6 +90,7 @@ elasticSearch meth url query body = do
         , HTTP.path = HTTP.path req <> BS.intercalate "/" (map (BSC.pack . URI.escapeURIString URI.isUnescapedInURIComponent) url)
         , HTTP.requestHeaders = maybe id ((:) . (,) hContentType) (bodyContentType body)
             $ (hAccept, "application/json")
+            : (hAcceptEncoding, mempty)
             : HTTP.requestHeaders req
         , HTTP.requestBody = bodyRequest body
         }
@@ -101,7 +102,7 @@ elasticSearch meth url query body = do
     -- print r
     return r
   where
-  parse r = AP.parseWith (HTTP.responseBody r) J.json BS.empty
+  parse r = AP.parseWith (HTTP.responseBody r) (J.json <* AP.endOfInput) BS.empty
 
 catalogURL :: Catalog -> [String]
 catalogURL Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn, catalogMapping = mapn } } =
