@@ -4,7 +4,7 @@ import $ from "jquery";
 import Datatables from "datatables.net";
 import Highcharts from "highcharts";
 import Highcharts_heatmap from "highcharts/modules/heatmap";
-import { assert, Dict, Field, Catalog, AggrStats, AggrTerms, Aggr, CatalogResponse, fill_select_terms, field_option, field_title, toggle_log, axis_title, render_funct, histogram_options } from "./common";
+import { assert, Dict, Field, Catalog, AggrStats, AggrTerms, Aggr, CatalogResponse, fill_select_terms, field_option, field_title, toggle_log, axis_title, render_funct, histogram_options, updateMathJax } from "./common";
 
 Datatables(window, $);
 Highcharts_heatmap(Highcharts);
@@ -218,7 +218,6 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
     Update_aggs = Filters.length;
     if (histogram && res.aggregations && res.aggregations.hist)
       histogramDraw(histogram, heatmap, res.aggregations.hist as AggrTerms<number>, res.histsize);
-
     delete query.aggs;
     delete query.hist;
     url_update(query);
@@ -518,8 +517,10 @@ function columnVisible(name: string, vis: boolean) {
   TCat.column(name+":name").visible(vis);
   for (let b of <any>document.getElementsByClassName('colvis-'+name) as Element[])
     colvisUpdate(<HTMLInputElement>b, vis);
-  if (vis && Last_fields.indexOf(name) < 0)
+  if (vis && Last_fields.indexOf(name) < 0) {
     update(false);
+    updateMathJax();
+  }
 }
 
 (<any>window).colvisSet = function colvisSet(event: Event) {
