@@ -83,6 +83,15 @@ export function field_option(f: Field): HTMLOptionElement {
   return o;
 }
 
+export function updateMathJax() {
+  let MathJax = (<any>window).MathJax;
+
+  if (MathJax) setTimeout(() => {
+    if (!MathJax.Hub.queue.pending)
+      MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+  });
+}
+
 export function field_title(field: Field, rmf?: (ev: MouseEvent) => any): HTMLSpanElement {
   const h = document.createElement('span');
   h.textContent = field.title;
@@ -106,11 +115,9 @@ export function field_title(field: Field, rmf?: (ev: MouseEvent) => any): HTMLSp
     tt.innerHTML = field.descr;
     h.appendChild(tt);
   }
-  let MathJax = (<any>window).MathJax;
-  if (MathJax) setTimeout(() => {
-    if (!MathJax.Hub.queue.pending)
-      MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
-  });
+
+  updateMathJax();
+
   return h;
 }
 
