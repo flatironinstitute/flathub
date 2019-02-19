@@ -35,6 +35,15 @@ System.register(["highcharts", "highcharts/modules/exporting"], function (export
         return o;
     }
     exports_1("field_option", field_option);
+    function updateMathJax() {
+        var MathJax = window.MathJax;
+        if (MathJax)
+            setTimeout(function () {
+                if (!MathJax.Hub.queue.pending)
+                    MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+            });
+    }
+    exports_1("updateMathJax", updateMathJax);
     function field_title(field, rmf) {
         var h = document.createElement('span');
         h.textContent = field.title;
@@ -58,12 +67,7 @@ System.register(["highcharts", "highcharts/modules/exporting"], function (export
             tt.innerHTML = field.descr;
             h.appendChild(tt);
         }
-        var MathJax = window.MathJax;
-        if (MathJax)
-            setTimeout(function () {
-                if (!MathJax.Hub.queue.pending)
-                    MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
-            });
+        updateMathJax();
         return h;
     }
     exports_1("field_title", field_title);
