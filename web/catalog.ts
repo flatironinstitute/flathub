@@ -4,7 +4,7 @@ import $ from "jquery";
 import Datatables from "datatables.net";
 import Highcharts from "highcharts";
 import Highcharts_heatmap from "highcharts/modules/heatmap";
-import { assert, Dict, Field, Catalog, AggrStats, AggrTerms, Aggr, CatalogResponse, fill_select_terms, field_option, field_title, toggle_log, axis_title, render_funct, histogram_options } from "./common";
+import { assert, Dict, Field, Catalog, AggrStats, AggrTerms, Aggr, CatalogResponse, fill_select_terms, field_option, field_title, toggle_log, axis_title, render_funct, histogram_options, updateMathJax } from "./common";
 
 Datatables(window, $);
 Highcharts_heatmap(Highcharts);
@@ -21,6 +21,7 @@ var Histogram: undefined|NumericFilter;
 var Heatmap: undefined|Field;
 var Histogram_chart: Highcharts.ChartObject|undefined;
 var Last_fields: string[] = [];
+var Last_query: undefined|Dict<string>;
 
 function set_download(query: Dict<string>) {
   const q = '?' + $.param(query);
@@ -33,6 +34,7 @@ function set_download(query: Dict<string>) {
     a.appendChild(document.createTextNode(f));
     h.append(document.createTextNode(' '));
   }
+  py_text(query);
 }
 
 function histogramRemove() {
@@ -216,14 +218,12 @@ function ajax(data: any, callback: ((data: any) => void), opts: any) {
     Update_aggs = Filters.length;
     if (histogram && res.aggregations && res.aggregations.hist)
       histogramDraw(histogram, heatmap, res.aggregations.hist as AggrTerms<number>, res.histsize);
-
     delete query.aggs;
     delete query.hist;
     url_update(query);
     delete query.limit;
     delete query.offset;
-    set_download(query);
-    py_text(query);
+    set_download(Last_query = query);
   }, (xhr, msg, err) => {
     Update = false;
     callback({
@@ -517,8 +517,10 @@ function columnVisible(name: string, vis: boolean) {
   TCat.column(name+":name").visible(vis);
   for (let b of <any>document.getElementsByClassName('colvis-'+name) as Element[])
     colvisUpdate(<HTMLInputElement>b, vis);
-  if (vis && Last_fields.indexOf(name) < 0)
+  if (vis && Last_fields.indexOf(name) < 0) {
     update(false);
+    updateMathJax();
+  }
 }
 
 (<any>window).colvisSet = function colvisSet(event: Event) {
@@ -526,6 +528,10 @@ function columnVisible(name: string, vis: boolean) {
   if (!box.indeterminate)
     for (let n of colvisNames(box))
       columnVisible(n, box.checked);
+  if (Last_query) {
+    Last_query.fields = TCat.columns(':visible').dataSrc().toArray().join(' ');
+    set_download(Last_query);
+  }
 }
 
 function py_text(query: Dict<string>) {

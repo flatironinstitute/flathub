@@ -48,7 +48,7 @@ dict:
   - name: V_vir
     type: float
     descr: Host halo virial velocity
-    units: '\(km/s\)'
+    units: 'km/s'
   - name: c_NFW
     type: float
     descr: NFW concentration (host halo)
@@ -62,11 +62,11 @@ dict:
   - name: r_disk
     type: float
     descr: scale length of a disk
-    units: '\(kpc\)'
+    units: 'kpc'
   - name: r_bulge
     type: float
     descr: effective radius of bulge (projected)
-    units: '\(kpc\)'
+    units: 'kpc'
   - name: sigma_bulge
     type: float
     descr: line-of-sight velocity dispersion of bulge
@@ -129,22 +129,148 @@ dict:
   - name: cosi
   - name: t_merge
     descr: Time since last merger greater than 1:10
-    units: '\(Gyr\)'
+    units: 'Gyr'
     type: float
   - name: t_major_merge
     descr: Time since last merger greater than 1:4
     type: float
-    units: '\(Gyr\)'
+    units: 'Gyr'
   - name: age_mean
-    units: '\(Gyr\)'
+    units: 'Gyr'
     descr: Mean stellar mass weighted age of stars
     type: float
   - name: v_disk
     type: float
     descr: Maximum rotation velocity of disk
-    units: '\(km/s\)'
+    units: 'km/s'
   - name: UV1500_rest
     type: float
+  - name: GAIA_source_id
+    title: source_id
+    type: long
+    descr: Unique source Identifier
+  - name: GAIA_random_index
+    title: random_index
+    type: long
+    descr: Random index used to select subsets
+  - name: GAIA_ppos_x_error
+    title: ra_error
+    type: double
+    descr: Standard error of right ascension
+  - name: GAIA_ppos_y_error
+    title: dec_error
+    type: double
+    descr: Standard error of declination
+  - name: parallax
+    type: double
+    descr: Parallax
+    units: mas
+  - name: GAIA_parallax_error
+    title: parallax_error
+    type: double
+    descr: Standard error of parallax
+    units: mas
+  - name: GAIA_parallax_over_error
+    title: parallax_over_error
+    type: float
+    descr: Parallax divided by its error
+  - name: pmra
+    type: double
+    descr: Proper motion in right ascension direction
+    units: mas/year
+  - name: GAIA_pmra_error
+    title: pmra_error
+    type: double
+    descr: Standard error of proper motion in right ascension direction
+    units: mas/year
+  - name: pmdec
+    type: double
+    descr: Proper motion in declination direction
+    units: mas/year
+  - name: GAIA_pmdec_error
+    title: pmdec_error
+    type: double
+    descr: Standard error of proper motion in declination direction
+    units: mas/year
+  - name: GAIA_l
+    title: l
+    type: double
+    descr: Galactic longitude
+    units: deg
+  - name: GAIA_b
+    title: b
+    type: double
+    descr: Galactic latitude
+    units: deg
+  - name: GAIA_phot_g_mean_mag
+    title: phot_g_mean_mag
+    type: float
+    descr: Extincted apparent G-band mean magnitude
+  - name: GAIA_phot_g_mean_mag_error
+    title: phot_g_mean_mag_error
+    type: float
+    descr: true (i.e. after extinction, but before error convolution) apparent G-Band mean magnitude
+  - name: GAIA_phot_bp_mean_mag
+    title: phot_bp_mean_mag
+    type: float
+    descr: Extincted apparent G_Bp-band mean magnitude
+  - name: GAIA_phot_bp_mean_mag_error
+    title: phot_bp_mean_mag_error
+    type: float
+    descr: Standard error of G_Bp-band mean magnitude
+  - name: GAIA_phot_rp_mean_mag
+    title: phot_rp_mean_mag
+    type: float
+    descr: Extincted apparent G_Rp-band mean magnitude
+  - name: GAIA_phot_rp_mean_mag_error
+    title: phot_rp_mean_mag_error
+    type: float
+    descr: Standard error of G_Rp-band mean magnitude
+  - name: GAIA_bp_rp
+    title: bp_rp
+    type: float
+    descr: true BP - RP colour
+    units: mag
+  - name: GAIA_bp_g
+    title: bp_g
+    type: float
+    descr: BP - G colour
+    units: mag
+  - name: GAIA_g_rp
+    title: g_rp
+    type: float
+    descr: true G - RP colour
+    units: mag
+  - name: GAIA_a_g_val
+    title: a_g_val
+    type: float
+    descr: line-of-sight extinction in the G band, A_G
+    units: mag
+  - name: GAIA_e_bp_min_rp_val
+    title: e_bp_min_rp_val
+    type: float
+    descr: line-of-sight reddening E(BP-RP)
+    units: mag
+  - name: GAIA_teff_val
+    title: teff_val
+    type: float
+    descr: Stellar effective temperature
+    units: K
+  - name: GAIA_lum_val
+    title: lum_val
+    type: float
+    descr: Stellar luminosity
+    units: L_sun
+  - name: GAIA_radial_velocity
+    title: radial_velocity
+    type: double
+    descr: Radial velocity
+    units: km/s
+  - name: GAIA_radial_velocity_error
+    title: radial_velocity_error
+    type: double
+    descr: km/s
+    units: Radial velocity error
 
 illustris:
   title: Illustris
@@ -180,7 +306,7 @@ illustris:
       descr: 'Sum of the BH_Mdot field of all blackholes (type 5) in this group.'
     - name: CM
       type: float
-      units: '\( ckpc/h \)'
+      units: 'ckpc/h'
       descr: 'Center of mass of the group, computed as the sum of the mass weighted relative coordinates of all particles/cells in the group, of all types. Comoving coordinate. (Available only for the Illustris-3 run)'
       sub:
       - name: "x"
@@ -241,15 +367,15 @@ illustris:
       descr: 'Count of the total number of Subfind groups within this FoF group.'
     - name: Pos
       type: float
-      units: '\( ckpc/h \)'
+      units: 'ckpc/h'
       descr: 'Spatial position within the periodic box of the maximum bound particle. Comoving coordinate.'
       sub:
       - name: "x"
-        title: '\(x\)'
+        title: 'x'
       - name: "y"
-        title: '\(y\)'
+        title: 'y'
       - name: "z"
-        title: '\(z\)'
+        title: 'z'
     - name: SFR
       type: float
       units: '\( M_\odot / yr \)'
@@ -260,7 +386,7 @@ illustris:
       descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of all star particles in this FOF group.'
     - name: Vel
       type: float
-      units: '\( km/s/a \)'
+      units: 'km/s/a'
       descr: 'Velocity of the group, computed as the sum of the mass weighted velocities of all particles/cells in this group, of all types. The peculiar velocity is obtained by multiplying this value by \(1/a.\)'
       sub:
       - name: "x"
@@ -276,17 +402,17 @@ illustris:
     - name: M_Crit200
       type: float
       units: '\( 10^{10} M_\odot / h \)'
-      descr: 'Total Mass of this group enclosed in a sphere whose mean density is 200 times the critical density of the Universe, at the time the halo is considered.  '
+      descr: 'Total Mass of this group enclosed in a sphere whose mean density is 200 times the critical density of the Universe, at the time the halo is considered.'
       disp: false
     - name: M_Crit500
       type: float
       units: '\( 10^{10} M_\odot / h \)'
-      descr: 'Total Mass of this group enclosed in a sphere whose mean density is 500 times the critical density of the Universe, at the time the halo is considered. '
+      descr: 'Total Mass of this group enclosed in a sphere whose mean density is 500 times the critical density of the Universe, at the time the halo is considered.'
       disp: false
     - name: M_Mean200
       type: float
       units: '\( 10^{10} M_\odot / h \)'
-      descr: 'Total Mass of this group enclosed in a sphere whose mean density is 200 times the mean density of the Universe, at the time the halo is considered. '
+      descr: 'Total Mass of this group enclosed in a sphere whose mean density is 200 times the mean density of the Universe, at the time the halo is considered.'
       disp: false
     - name: M_TopHat200
       type: float
@@ -295,22 +421,22 @@ illustris:
       disp: false
     - name: R_Crit200
       type: float
-      units: '\( ckpc/h \)'
+      units: 'ckpc/h'
       descr: 'Comoving Radius of a sphere centered at the GroupPos of this Group whose mean density is 200 times the critical density of the Universe, at the time the halo is considered.'
       disp: false
     - name: R_Crit500
       type: float
-      units: '\( ckpc/h \)'
+      units: 'ckpc/h'
       descr: 'Comoving Radius of a sphere centered at the GroupPos of this Group whose mean density is 500 times the critical density of the Universe, at the time the halo is considered.'
       disp: false
     - name: R_Mean200
       type: float
-      units: '\( ckpc/h \)'
+      units: 'ckpc/h'
       descr: 'Comoving Radius of a sphere centered at the GroupPos of this Group whose mean density is 200 times the mean density of the Universe, at the time the halo is considered.'
       disp: false
     - name: R_TopHat200
       type: float
-      units: '\( ckpc/h \)'
+      units: 'ckpc/h'
       descr: 'Comoving Radius of a sphere centered at the GroupPos of this Group whose mean density is \(\Delta_c\) times the critical density of the Universe, at the time the halo is considered.'
       disp: false
 illustris_sub:
@@ -328,7 +454,7 @@ illustris_sub:
       descr: 'Sum of the instantaneous accretion rates \(\dot{M}\) of all blackholes in this subhalo.'
     - name: CM
       type: float
-      units: '\( ckpc/h \)'
+      units: 'ckpc/h'
       descr: 'Comoving center of mass of the Subhalo, computed as the sum of the mass weighted relative coordinates of all particles/cells in the Subhalo, of all types.'
       sub:
       - name: "x"
@@ -354,11 +480,11 @@ illustris_sub:
       descr: 'Index into the Group table of the FOF host/parent of this Subhalo.'
     - name: HalfmassRad
       type: float
-      units: '\( ckpc/h \)'
+      units: 'ckpc/h'
       descr: 'Comoving radius containing half of the total mass (SubhaloMass) of this Subhalo.'
     - name: HalfmassRadType
       type: float
-      units: '\( ckpc/h \)'
+      units: 'ckpc/h'
       descr: 'Comoving radius containing half of the mass of this Subhalo split by Type (SubhaloMassType).'
       sub:
       - name: gas
@@ -454,7 +580,7 @@ illustris_sub:
       descr: 'Index into the Subhalo table of the unique SUBF host/parent of this Subhalo. This index is local to the group (i.e. 2 indicates the third most massive subhalo of the parent halo of this subhalo, not the third most massive of the whole snapshot). The values are often zero for all subhalos of a group, indicating that there is no resolved hierarchical structure in that group, beyond the primary subhalo having as direct children all of the secondary subhalos.'
     - name: Pos
       type: float
-      units: '\( ckpc/h \)'
+      units: 'ckpc/h'
       descr: 'Spatial position within the periodic box of the maximum bound particle. Comoving coordinate.'
       sub:
       - name: "x"
@@ -497,7 +623,7 @@ illustris_sub:
       descr: 'Same as SubhaloStarMetallicity, but restricted to stars within the radius of \(V_{max}\).'
     - name: StellarPhotometrics
       type: float
-      units: '\( mag \)'
+      units: 'mag'
       descr: 'Eight bands: U, B, V, K, g, r, i, z. Magnitudes based on the summed-up luminosities of all the stellar particles of the group. For details on the bands, see snapshot table for stars.'
       sub:
       - name: U
@@ -514,11 +640,11 @@ illustris_sub:
       descr: 'Sum of the mass of the member stellar particles, but restricted to stars within the radius SubhaloStellarPhotometricsRad.'
     - name: StellarPhotometricsRad
       type: float
-      units: '\( ckpc/h \)'
+      units: 'ckpc/h'
       descr: 'Radius at which the surface brightness profile (computed from all member stellar particles) drops below the limit of 20.7 mag arcsec\(^{-2}\) in the K band (in comoving units).'
     - name: Vel
       type: float
-      units: '\( km/s \)'
+      units: 'km/s'
       descr: 'Peculiar velocity of the group, computed as the sum of the mass weighted velocities of all particles/cells in this group, of all types. No unit conversion is needed.'
       sub:
       - name: "x"
@@ -526,15 +652,15 @@ illustris_sub:
       - name: "z"
     - name: VelDisp
       type: float
-      units: '\( km/s \)'
+      units: 'km/s'
       descr: 'One-dimensional velocity dispersion of all the member particles/cells (the 3D dispersion divided by \(\sqrt{3}\)).'
     - name: Vmax
       type: float
-      units: '\( km/s \)'
+      units: 'km/s'
       descr: 'Maximum value of the spherically-averaged rotation curve.'
     - name: VmaxRad
       type: float
-      units: '\( kpc/h \)'
+      units: 'kpc/h'
       descr: 'Comoving radius of rotation curve maximum (where \(V_{max}\) is achieved).'
     - name: WindMass
       type: float
@@ -640,7 +766,7 @@ gaea:
     - name: Pos
       type: double
       descr: Position in the catalog in comoving distance from the observer
-      units: '\(Mpc/h\)'
+      units: 'Mpc/h'
       sub:
       - name: "x"
       - name: "y"
@@ -648,7 +774,7 @@ gaea:
     - name: Vel
       type: double
       descr: Velocity of the galaxy in the catalog
-      units: '\(km/s\)'
+      units: 'km/s'
       sub:
       - name: "x"
       - name: "y"
@@ -673,15 +799,15 @@ gaea:
     - name: Rvir
       type: float
       descr: 'Virial radius calculated from \(M_{200}\)'
-      units: '\(km/s\)'
+      units: 'km/s'
     - name: Vvir
       type: float
       descr: Virial Velocity of the SubHalo
-      units: '\(km/s\)'
+      units: 'km/s'
     - name: Vmax
       type: float
       descr: Maximal rotational velocity of DM particles in the Sub-Halo
-      units: '\(km/s\)'
+      units: 'km/s'
     - name: StellarMass
       type: float
       descr: 'Total stellar Mass of the galaxy (disk+bulge)'
@@ -697,11 +823,11 @@ gaea:
     - name: GasDiskRadius
       type: float
       descr: 'Gaseous Disk Radius'
-      units: '\(Mpc/h\)'
+      units: 'Mpc/h'
     - name: StellarDiskRadius
       type: float
       descr: 'Stellar Disk Radius'
-      units: '\(Mpc/h\)'
+      units: 'Mpc/h'
     - name: GasSpin
       type: float
       descr: 'Gaseous disk specific angular momentum'
@@ -714,11 +840,12 @@ gaea:
       - name: "z"
         title: jz
 gaiadr2:
-  title: GAIA DR2
+  title: Gaia DR2
   index: gaiadr2
+  descr: >
+    <a href='https://www.cosmos.esa.int/web/gaia/dr2'>Gaia Data Release 2</a> source catalog from the <a href='http://www.esa.int/ESA'>European Space Agency</a>, released Apr 25 2018.
   key: source_id
   count: 1692919135
-  #enabled: false
   fields:
 #    - name: solution_id
 #      descr: Solution Identifier
@@ -731,145 +858,196 @@ gaiadr2:
     - name: source_id
       descr: Unique source identifier
       type: long
+      dict: GAIA_source_id
     - name: random_index
       descr: Random index used to select subsets
       type: long
+      disp: false
+      dict: GAIA_random_index
     - name: ref_epoch
       descr: Reference epoch (J2015.5) in Julian years
       disp: false
       type: double
-      units: '\(year\)'
-    - name: ra
-      descr: Barycentric right ascension of the source
-      type: double
-      units: '\(deg\)'
-      dict: ppos_x
-    - name: ra_error
-      descr: Standard error of right ascension
-      type: double
-      units: '\(mas\)'
-    - name: dec
-      descr: Barycentric declination of the source
-      type: double
-      units: '\(deg\)'
-      dict: ppos_y
-    - name: dec_error
-      descr: Standard error of declination
-      type: double
-      units: '\(mas\)'
+      units: year
+    - name: ''
+      title: pos
+      descr: Barycentric position
+      sub:
+      - name: ra
+        title: ra
+        descr: Barycentric right ascension of the source
+        type: double
+        units: deg
+        dict: ppos_x
+      - name: ra_error
+        descr: Standard error of right ascension
+        type: double
+        units: mas
+      - name: dec
+        title: dec
+        descr: Barycentric declination of the source
+        type: double
+        units: deg
+        dict: ppos_y
+      - name: dec_error
+        descr: Standard error of declination
+        type: double
+        units: mas
     - name: parallax
+      dict: parallax
       descr: Absolute parallax of the source
       type: double
-      units: '\(mas\)'
+      units: mas
     - name: parallax_error
+      dict: GAIA_parallax_error
       descr: Standard error of parallax
       type: double
-      units: '\(mas\)'
+      units: mas
     - name: parallax_over_error
+      dict: GAIA_parallax_over_error
       descr: Parallax divided by its standard error
       type: float
-    - name: pmra
-      descr: Proper motion in right ascension (pmra) direction
+    - name: ''
+      title: pm
+      descr: Proper motion
       type: double
-      units: '\(mas/year\)'
-    - name: pmra_error
-      descr: Standard error of pmra direction
-      type: double
-      units: '\(mas/year\)'
-    - name: pmdec
-      descr: Proper motion in declination direction
-      type: double
-      units: '\(mas/year\)'
-    - name: pmdec_error
-      descr: Standard error of proper motion in declination direction
-      type: double
-      units: '\(mas/year\)'
-    - name: ra_dec_corr
-      descr: Correlation between right ascension and declination
+      units: mas/year
+      sub:
+      - name: pmra
+        dict: pmra
+        descr: Proper motion in right ascension (pmra) direction
+        type: double
+      - name: pmra_error
+        dict: GAIA_pmra_error
+        title: ra_error
+        type: double
+      - name: pmdec
+        dict: pmdec
+        descr: Proper motion in declination direction
+        type: double
+      - name: pmdec_error
+        dict: GAIA_pmdec_error
+        descr: Standard error of proper motion in declination direction
+        type: double
+    - name: ''
+      title: corr
+      descr: Correlation
       type: float
-    - name: ra_parallax_corr
-      descr: Correlation between right ascension and parallax
-      type: float
-    - name: ra_pmra_corr
-      descr: Correlation between right ascension and pmra
-      type: float
-    - name: ra_pmdec_corr
-      descr: Correlation between right ascension and proper motion in declination
-      type: float
-    - name: dec_parallax_corr
-      descr: Correlation between declination and parallax
-      type: float
-    - name: dec_pmra_corr
-      descr: Correlation between declination and pmra
-      type: float
-    - name: dec_pmdec_corr
-      descr: Correlation between declination and proper motion in declination
-      type: float
-    - name: parallax_pmra_corr
-      descr: Correlation between parallax and pmra
-      type: float
-    - name: parallax_pmdec_corr
-      descr: Correlation between parallax and proper motion in declination
-      type: float
-    - name: pmra_pmdec_corr
-      descr: Correlation between pmra and proper motion in declination
-      type: float
-    - name: astrometric_n_obs_al
-      descr: Total number of AL observations (=CCD transits), independent of their weight
-      type: int
-    - name: astrometric_n_obs_ac
-      descr: Total number of AC observations (=CCD transits), independent of their weight
-      type: int
-    - name: astrometric_n_good_obs_al
-      descr: Number of good AL observations (not strongly downweighted)
-      type: int
-    - name: astrometric_n_bad_obs_al
-      descr: Number of bad AL observations (strongly downweighted)
-      type: int
-    - name: astrometric_gof_al
-      descr: Goodness of fit statistic of model wrt along-scan observations
-      type: float
-    - name: astrometric_chi2_al
-      descr: '\({\chi}^2\) value in the AL direction'
-      type: float
-    - name: astrometric_excess_noise
-      descr: Excess noise of the source
-      type: double
-      units: '\(mas\)'
-    - name: astrometric_excess_noise_sig
-      descr: Significance of excess noise
-      type: double
-    - name: astrometric_params_solved
-      descr: Binary code indicating which parameters were estimated for the source
-      type: byte
-    - name: astrometric_primary_flag
-      descr: Indicator if this source was used as a primary (true) or secondary (false)
-      type: boolean
-    - name: astrometric_weight_al
-      descr: Mean astrometric weight of the source in the AL direction
-      type: float
-      units: '\(mas^{-2}\)'
-    - name: astrometric_pseudo_colour
-      descr: Astrometrically determined pseudocolour of the source
-      type: double
-      units: '\(\mu m^{-1}\)'
-    - name: astrometric_pseudo_colour_error
-      descr: Standard error of the pseudocolour of the source
-      type: double
-      units: '\(\mu m^{-1}\)'
-    - name: mean_varpi_factor_al
-      descr: Mean Parallax factor in the AL direction
-      type: float
-    - name: astrometric_matched_observations
-      descr: Matched FOV transits used in the AGIS solution
-      type: short
-    - name: visibility_periods_used
-      descr: Number of visibility periods used in astrometric solution
-      type: short
-    - name: astrometric_sigma5d_max
-      descr: The longest semi-major axis of the 5-d error ellipsoid
-      type: float
-      units: '\(mas\)'
+      sub:
+      - name: ra_dec_corr
+        title: ra_dec
+        descr: Correlation between right ascension and declination
+        type: float
+      - name: ra_parallax_corr
+        title: ra_parallax
+        descr: Correlation between right ascension and parallax
+        type: float
+      - name: ra_pmra_corr
+        title: ra_pmra
+        descr: Correlation between right ascension and pmra
+        type: float
+      - name: ra_pmdec_corr
+        title: ra_pmdec
+        descr: Correlation between right ascension and proper motion in declination
+        type: float
+      - name: dec_parallax_corr
+        title: dec_parallax
+        descr: Correlation between declination and parallax
+        type: float
+      - name: dec_pmra_corr
+        title: dec_pmra
+        descr: Correlation between declination and pmra
+        type: float
+      - name: dec_pmdec_corr
+        title: dec_pmdec
+        descr: Correlation between declination and proper motion in declination
+        type: float
+      - name: parallax_pmra_corr
+        title: parallax_pmra
+        descr: Correlation between parallax and pmra
+        type: float
+      - name: parallax_pmdec_corr
+        title: parallax_pmdec
+        descr: Correlation between parallax and proper motion in declination
+        type: float
+      - name: pmra_pmdec_corr
+        title: pmra_pmdec
+        descr: Correlation between pmra and proper motion in declination
+        type: float
+    - name: ''
+      title: astrometry
+      sub:
+      - name: astrometric_n_obs_al
+        title: n_obs_al
+        descr: Total number of AL observations (=CCD transits), independent of their weight
+        type: int
+      - name: astrometric_n_obs_ac
+        title: n_obs_ac
+        descr: Total number of AC observations (=CCD transits), independent of their weight
+        type: int
+      - name: astrometric_n_good_obs_al
+        title: n_good_obs_al
+        descr: Number of good AL observations (not strongly downweighted)
+        type: int
+      - name: astrometric_n_bad_obs_al
+        title: n_bad_obs_al
+        descr: Number of bad AL observations (strongly downweighted)
+        type: int
+      - name: astrometric_gof_al
+        title: gof_al
+        descr: Goodness of fit statistic of model wrt along-scan observations
+        type: float
+      - name: astrometric_chi2_al
+        title: chi2_al
+        descr: '\({\chi}^2\) value in the AL direction'
+        type: float
+      - name: astrometric_excess_noise
+        title: excess_noise
+        descr: Excess noise of the source
+        type: double
+        units: mas
+      - name: astrometric_excess_noise_sig
+        title: excess_noise_sig
+        descr: Significance of excess noise
+        type: double
+      - name: astrometric_params_solved
+        title: params_solved
+        descr: Binary code indicating which parameters were estimated for the source
+        type: byte
+      - name: astrometric_primary_flag
+        title: primary_flag
+        descr: Indicator if this source was used as a primary (true) or secondary (false)
+        type: boolean
+      - name: astrometric_weight_al
+        title: weight_al
+        descr: Mean astrometric weight of the source in the AL direction
+        type: float
+        units: '\(mas^{-2}\)'
+      - name: astrometric_pseudo_colour
+        title: pseudo_colour
+        descr: Astrometrically determined pseudocolour of the source
+        type: double
+        units: '\(\mu m^{-1}\)'
+      - name: astrometric_pseudo_colour_error
+        title: pseudo_colour_error
+        descr: Standard error of the pseudocolour of the source
+        type: double
+        units: '\(\mu m^{-1}\)'
+      - name: mean_varpi_factor_al
+        descr: Mean Parallax factor in the AL direction
+        type: float
+      - name: astrometric_matched_observations
+        title: matched_observations
+        descr: Matched FOV transits used in the AGIS solution
+        type: short
+      - name: visibility_periods_used
+        descr: Number of visibility periods used in astrometric solution
+        type: short
+      - name: astrometric_sigma5d_max
+        title: sigma5d_max
+        descr: The longest semi-major axis of the 5-d error ellipsoid
+        type: float
+        units: mas
     - name: frame_rotator_object_type
       descr: The type of the source mainly used for frame rotation
       type: int
@@ -879,60 +1057,90 @@ gaiadr2:
     - name: duplicated_source
       descr: Source with duplicate sources
       type: boolean
-    - name: phot_g_n_obs
-      descr: Number of observations contributing to G photometry
-      type: int
-    - name: phot_g_mean_flux
-      descr: G-band mean flux
-      type: double
-      units: '\({e^-}/s\)'
-    - name: phot_g_mean_flux_error
-      descr: Error on G-band mean flux
-      type: double
-      units: '\({e^-}/s\)'
-    - name: phot_g_mean_flux_over_error
-      descr: G-band mean flux divided by its error
-      type: float
-    - name: phot_g_mean_mag
-      descr: G-band mean magnitude
-      type: float
-      units: '\(mag\)'
-    - name: phot_bp_n_obs
-      descr: Number of observations contributing to BP photometry
-      type: int
-    - name: phot_bp_mean_flux
-      descr: Integrated BP mean flux
-      type: double
-      units: '\({e^-}/s\)'
-    - name: phot_bp_mean_flux_error
-      descr: Error on the integrated BP mean flux
-      type: double
-      units: '\({e^-}/s\)'
-    - name: phot_bp_mean_flux_over_error
-      descr: Integrated BP mean flux divided by its error
-      type: float
-    - name: phot_bp_mean_mag
-      descr: Integrated BP mean magnitude
-      type: float
-      units: '\(mag\)'
-    - name: phot_rp_n_obs
-      descr: Number of observations contributing to RP photometry
-      type: int
-    - name: phot_rp_mean_flux
-      descr: Integrated RP mean flux
-      type: double
-      units: '\({e^-}/s\)'
-    - name: phot_rp_mean_flux_error
-      descr: Error on the integrated RP mean flux
-      type: double
-      units: '\({e^-}/s\)'
-    - name: phot_rp_mean_flux_over_error
-      descr: Integrated RP mean flux divided by its error
-      type: float
-    - name: phot_rp_mean_mag
-      descr: Integrated RP mean magnitude
-      type: float
-      units: '\(mag\)'
+    - name: ''
+      title: phot_g
+      descr: G-band photometry
+      sub:
+      - name: phot_g_n_obs
+        title: n_obs
+        descr: Number of observations contributing to G photometry
+        type: int
+      - name: phot_g_mean_flux
+        title: mean_flux
+        descr: G-band mean flux
+        type: double
+        units: '\({e^-}/s\)'
+      - name: phot_g_mean_flux_error
+        title: mean_flux_error
+        descr: Error on G-band mean flux
+        type: double
+        units: '\({e^-}/s\)'
+      - name: phot_g_mean_flux_over_error
+        title: mean_flux_over_error
+        descr: G-band mean flux divided by its error
+        type: float
+      - name: phot_g_mean_mag
+        dict: GAIA_phot_g_mean_mag
+        title: mean_mag
+        descr: G-band mean magnitude
+        type: float
+        units: mag
+    - name: ''
+      title: phot_bp
+      descr: BP photometry
+      sub:
+      - name: phot_bp_n_obs
+        title: n_obj
+        descr: Number of observations contributing to BP photometry
+        type: int
+      - name: phot_bp_mean_flux
+        title: mean_flux
+        descr: Integrated BP mean flux
+        type: double
+        units: '\({e^-}/s\)'
+      - name: phot_bp_mean_flux_error
+        title: mean_flux_error
+        descr: Error on the integrated BP mean flux
+        type: double
+        units: '\({e^-}/s\)'
+      - name: phot_bp_mean_flux_over_error
+        title: mean_flux_over_error
+        descr: Integrated BP mean flux divided by its error
+        type: float
+      - name: phot_bp_mean_mag
+        dict: GAIA_phot_bp_mean_mag_error
+        title: mean_mag
+        descr: Integrated BP mean magnitude
+        type: float
+        units: mag
+    - name: ''
+      title: phot_rp
+      descr: RP photometry
+      sub:
+      - name: phot_rp_n_obs
+        title: n_obs
+        descr: Number of observations contributing to RP photometry
+        type: int
+      - name: phot_rp_mean_flux
+        title: mean_flux
+        descr: Integrated RP mean flux
+        type: double
+        units: '\({e^-}/s\)'
+      - name: phot_rp_mean_flux_error
+        title: mean_flux_error
+        descr: Error on the integrated RP mean flux
+        type: double
+        units: '\({e^-}/s\)'
+      - name: phot_rp_mean_flux_over_error
+        title: mean_flux_over_error
+        descr: Integrated RP mean flux divided by its error
+        type: float
+      - name: phot_rp_mean_mag
+        dict: GAIA_phot_rp_mean_mag
+        title: mean_mag
+        descr: Integrated RP mean magnitude
+        type: float
+        units: mag
     - name: phot_bp_rp_excess_factor
       descr: BP/RP excess factor
       type: float
@@ -940,32 +1148,36 @@ gaiadr2:
       descr: Photometry processing mode (0=gold, 1=silver, 2=bronze)
       type: byte
     - name: bp_rp
+      dict: GAIA_bp_rp
       descr: BP - RP colour
       type: float
-      units: '\(mag\)'
+      units: mag
     - name: bp_g
       descr: BP - G colour
       type: float
-      units: '\(mag\)'
+      units: mag
     - name: g_rp
+      dict: GAIA_g_rp
       descr: G - RP colour
       type: float
-      units: '\(mag\)'
+      units: mag
     - name: radial_velocity
+      dict: GAIA_radial_velocity
       descr: Radial velocity
       type: double
-      units: '\(km/s\)'
+      units: km/s
     - name: radial_velocity_error
+      dict: GAIA_radial_velocity_error
       descr: Radial velocity error
       type: double
-      units: '\(km/s\)'
+      units: km/s
     - name: rv_nb_transits
       descr: Number of transits used to compute radial velocity
       type: int
     - name: rv_template_teff
       descr: Teff of the template used to compute radial velocity
       type: float
-      units: '\(K\)'
+      units: K
     - name: rv_template_logg
       descr: logg of the template used to compute radial velocity
       type: float
@@ -973,93 +1185,124 @@ gaiadr2:
     - name: rv_template_fe_h
       descr: Fe/H of the template used to compute radial velocity
       type: float
-      units: '\(dex\)'
+      units: dex
     - name: phot_variable_flag
-      descr: Photometric variability flag (-1=NOT_AVALIABLE, 0=CONSTANT, 1=VARIABLE)
-      #type: byte
-      type: keyword
+      descr: Photometric variability flag (-1=NOT_AVAILABLE)
+      type: byte
+      enum: ['CONSTANT', 'VARIABLE']
     - name: l
+      dict: GAIA_l
       descr: Galactic longitude
       type: double
-      units: '\(deg\)'
+      units: deg
     - name: b
+      dict: GAIA_b
       descr: Galactic latitude
       type: double
-      units: '\(deg\)'
+      units: deg
     - name: ecl_lon
       descr: Ecliptic longitude
       type: double
-      units: '\(deg\)'
+      units: deg
     - name: ecl_lat
       descr: Ecliptic latitude
       type: double
-      units: '\(deg\)'
+      units: deg
     - name: priam_flags
       descr: flags for the Apsis-Priam results
       type: long
-    - name: teff_val
+    - name: ''
+      title: teff
       descr: stellar effective temperature
       type: float
-      units: '\(K\)'
-    - name: teff_percentile_lower
-      descr: teff_val lower uncertainty
-      type: float
-      units: '\(K\)'
-    - name: teff_percentile_upper
-      descr: teff_val upper uncertainty
-      type: float
-      units: '\(K\)'
-    - name: a_g_val
+      units: K
+      sub:
+      - name: teff_val
+        dict: GAIA_teff_val
+        title: val
+        type: float
+      - name: teff_percentile_lower
+        title: lower
+        descr: lower uncertainty
+        type: float
+      - name: teff_percentile_upper
+        title: upper
+        descr: upper uncertainty
+        type: float
+    - name: ''
+      title: a_g
       descr: line-of-sight extinction in the G band, A_G
       type: float
-      units: '\(mag\)'
-    - name: a_g_percentile_lower
-      descr: a_g_val lower uncertainty
-      type: float
-      units: '\(mag\)'
-    - name: a_g_percentile_upper
-      descr: a_g_val upper uncertainty
-      type: float
-      units: '\(mag\)'
-    - name: e_bp_min_rp_val
+      units: 'mag'
+      sub:
+      - name: a_g_val
+        dict: GAIA_a_g_val
+        title: val
+        type: float
+      - name: a_g_percentile_lower
+        title: lower
+        descr: lower uncertainty
+        type: float
+      - name: a_g_percentile_upper
+        title: upper
+        descr: upper uncertainty
+        type: float
+    - name: ''
+      title: e_bp_min_rp
       descr: line-of-sight reddening E(BP-RP)
       type: float
-      units: '\(mag\)'
-    - name: e_bp_min_rp_percentile_lower
-      descr: e_bp_min_rp_val lower uncertainty
-      type: float
-      units: '\(mag\)'
-    - name: e_bp_min_rp_percentile_upper
-      descr: e_bp_min_rp_val upper uncertainty
-      type: float
-      units: '\(mag\)'
+      units: 'mag'
+      sub:
+      - name: e_bp_min_rp_val
+        dict: GAIA_e_bp_min_rp_val
+        title: val
+        type: float
+      - name: e_bp_min_rp_percentile_lower
+        title: lower
+        descr: lower uncertainty
+        type: float
+      - name: e_bp_min_rp_percentile_upper
+        title: upper
+        descr: upper uncertainty
+        type: float
     - name: flame_flags
       descr: Flags for the Apsis-FLAME results
       type: long
-    - name: radius_val
+    - name: ''
+      title: radius
       descr: stellar radius
-      type: float
       units: '\(r_\odot\)'
-    - name: radius_percentile_lower
-      descr: radius_val lower uncertainty
       type: float
-      units: '\(r_\odot\)'
-    - name: radius_percentile_upper
-      descr: radius_val upper uncertainty
-      type: float
-      units: '\(r_\odot\)'
-    - name: lum_val
+      sub:
+      - name: radius_val
+        title: val
+        type: float
+      - name: radius_percentile_lower
+        title: lower
+        descr: lower uncertainty
+        type: float
+      - name: radius_percentile_upper
+        title: upper
+        descr: upper uncertainty
+        type: float
+    - name: ''
+      title: lum
       descr: stellar luminosity
-      type: float
       units: '\(L_\odot\)'
-    - name: lum_percentile_lower
-      descr: lum_val lower uncertainty
       type: float
-      units: '\(L_\odot\)'
-    - name: lum_percentile_upper
-      descr: lum_val upper uncertainty
-      type: float
-      units: '\(L_\odot\)'
+      sub:
+      - name: lum_val
+        dict: GAIA_lum_val
+        title: val
+        type: float
+      - name: lum_percentile_lower
+        title: lower
+        descr: lower uncertainty
+        type: float
+      - name: lum_percentile_upper
+        title: upper
+        descr: upper uncertainty
+        type: float
 ananke:
   title: Ananke
   index: ananke
@@ -1091,15 +1334,19 @@ ananke:
       - name: source_id
         descr: Unique source identifier (per mock catalog)
         type: long
+        dict: GAIA_source_id
       - name: random_index
         descr: Random index used to select subsets
         type: long
+        dict: GAIA_random_index
       - name: parentid
         descr: array index of the generating star particle in the snapshot file
         type: long
+        disp: false
       - name: partid
         descr: 0 if phase-space coordinates are identical to generating star particle, 1 otherwise
         type: short
+        disp: false
     - name: ""
       title: Astrometry
       sub:
@@ -1114,6 +1361,7 @@ ananke:
         - name: ra_error
           descr: Standard error of right ascension
           type: double
+          dict: GAIA_ppos_x_error
         - name: dec
           descr: Declination
           type: double
@@ -1121,41 +1369,51 @@ ananke:
         - name: dec_error
           descr: Standard error of declination
           type: double
+          dict: GAIA_ppos_y_error
       - name: parallax
         descr: Parallax
         type: double
         units: mas
+        dict: parallax
       - name: parallax_error
         descr: Standard error of parallax
         type: double
         units: mas
+        dict: GAIA_parallax_error
       - name: parallax_over_error
         descr: Parallax divided by its error
         type: float
+        dict: GAIA_parallax_over_error
       - name: pmra
         descr: Proper motion in right ascension direction
         type: double
         units: mas/year
+        dict: pmra
       - name: pmra_error
         descr: Standard error of proper motion in right ascension direction
         type: double
         units: mas/year
+        dict: GAIA_pmra_error
       - name: pmdec
         descr: Proper motion in declination direction
         type: double
         units: mas/year
+        dict: pmdec
       - name: pmdec_error
         descr: Standard error of proper motion in declination direction
         type: double
         units: mas/year
+        dict: GAIA_pmdec_error
       - name: l
         descr: Galactic longitude
         type: double
         units: deg
+        dict: GAIA_l
       - name: b
         descr: Galactic latitude
         type: double
         units: deg
+        dict: GAIA_b
     - name: ""
       title: Phase Space
       sub:
@@ -1163,65 +1421,81 @@ ananke:
         descr: true right ascension
         type: double
         units: deg
+        disp: false
       - name: dec_true
         descr: true declination
         type: double
         units: deg
+        disp: false
       #- name: rad_true
       #  descr: true LSR-centric distance
       #  type: double
       #  units: kpc
+      #  disp: false
       - name: dmod_true
         descr: true distance modulus
         type: double
         units: mag
+        disp: false
       - name: parallax_true
         descr: true parallax
         type: double
         units: mas
+        disp: false
       - name: pmra_true
         descr: true proper motion in right ascension direction
         type: double
         units: mas/year
+        disp: false
       - name: pmdec_true
         descr: true proper motion in declination direction
         type: double
         units: mas/year
+        disp: false
       - name: radial_velocity_true
         descr: true radial velocity
         type: double
         units: km/s
+        disp: false
       - name: l_true
         descr: true galactic longitude
         type: double
         units: deg
+        disp: false
       - name: b_true
         descr: true galactic latitude
         type: double
         units: deg
+        disp: false
       - name: px_true
         type: double
         units: kpc
+        disp: false
         descr: true position relative to LSR
       - name: py_true
         type: double
         units: kpc
+        disp: false
         descr: true position relative to LSR
       - name: pz_true
         type: double
         units: kpc
+        disp: false
         descr: true position relative to LSR
       - name: vx_true
         type: double
         units: km/s
+        disp: false
         descr: true velocity relative to LSR
       - name: vy_true
         type: double
         units: km/s
+        disp: false
         descr: true velocity relative to LSR
       - name: vz_true
         type: double
         units: km/s
+        disp: false
         descr: true velocity relative to LSR
     - name: ""
       title: Photometry
@@ -1234,15 +1508,19 @@ ananke:
           - name: phot_g_mean_mag
             title: mag
             descr: Extincted apparent G-band mean magnitude
+            dict: GAIA_phot_g_mean_mag
           - name: phot_g_mean_mag_error
             title: mag_error
             descr: Standard error of G-band mean magnitude
+            dict: GAIA_phot_g_mean_mag_error
           - name: phot_g_mean_mag_true
             title: mag_true
-            descr: true (i.e. after extinction, but before eror convolution) apparent G-Band mean magnitude
+            descr: true (i.e. after extinction, but before error convolution) apparent G-Band mean magnitude
+            disp: false
           - name: phot_g_mean_mag_int
             title: mag_int
-            descr: intrinsic (i.e. after extinction, but before eror convolution) apparent G-Band mean magnitude
+            descr: intrinsic (i.e. after extinction, but before error convolution) apparent G-Band mean magnitude
+            disp: false
       - name: ""
         title: phot_bp_mean_mag
         type: float
@@ -1251,15 +1529,19 @@ ananke:
           - name: phot_bp_mean_mag
             title: mag
             descr: Extincted apparent G_Bp-band mean magnitude
+            dict: GAIA_phot_bp_mean_mag
           - name: phot_bp_mean_mag_error
             title: mag_error
             descr: Standard error of G_Bp-band mean magnitude
+            dict: GAIA_phot_bp_mean_mag_error
           - name: phot_bp_mean_mag_true
             title: mag_true
             descr: true apparent of G_Bp-band mean magnitude
+            disp: false
           - name: phot_bp_mean_mag_int
             title: mag_int
             descr: intrinsic apparent of G_Bp-band mean magnitude
+            disp: false
       - name: ""
         type: float
         title: phot_rp_mean_mag
@@ -1268,59 +1550,74 @@ ananke:
           - name: phot_rp_mean_mag
             title: mag
             descr: Extincted apparent G_Rp-band mean magnitude
+            dict: GAIA_phot_rp_mean_mag
           - name: phot_rp_mean_mag_error
             title: mag_error
             descr: Standard error of G_Rp-band mean magnitude
+            dict: GAIA_phot_rp_mean_mag_error
           - name: phot_rp_mean_mag_true
             title: mag_true
             descr: true apparent of G_Rp-band mean magnitude
+            disp: false
           - name: phot_rp_mean_mag_int
             title: mag_int
             descr: intrinsic apparent of G_Rp-band mean magnitude
+            disp: false
       - name: bp_rp
         descr: BP - RP colour
         type: float
         units: mag
+        dict: GAIA_bp_rp
       - name: bp_rp_true
         descr: true BP - RP colour
         type: float
         units: mag
+        disp: false
       - name: bp_rp_int
         descr: intrinsic BP - RP colour
         type: float
         units: mag
+        disp: false
       - name: bp_g
         descr: BP - G colour
         type: float
         units: mag
+        dict: GAIA_bp_g
       - name: bp_g_true
         descr: true BP - G colour
         type: float
         units: mag
+        disp: false
       - name: bp_g_int
         descr: intrinsic BP - G colour
         type: float
         units: mag
+        disp: false
       - name: g_rp
         descr: G - RP colour
         type: float
         units: mag
+        dict: GAIA_g_rp
       - name: g_rp_true
         descr: true G - RP colour
         type: float
         units: mag
+        disp: false
       - name: g_rp_int
         descr: intrinsic G - RP colour
         type: float
         units: mag
+        disp: false
       - name: a_g_val
         descr: line-of-sight extinction in the G band, A_G
         type: float
         units: mag
+        dict: GAIA_a_g_val
       - name: e_bp_min_rp_val
         descr: line-of-sight reddening E(BP-RP)
         type: float
         units: mag
+        dict: GAIA_e_bp_min_rp_val
     - name: ""
       title: Extinction
       sub:
@@ -1328,14 +1625,17 @@ ananke:
         descr: log_10 equivalent H column density along line of sight to star
         type: float
         units: cm-2
+        disp: false
       - name: ebv
         descr: E(B-V) reddening, calculated from equivalent N_H
         type: float
         units: mag
+        disp: false
       - name: A0
         descr: A_0 extinction at 550 nm, assuming R_v = 3.1
         type: float
         units: mag
+        disp: false
     - name: ""
       title: Spectroscopy
       sub:
@@ -1343,10 +1643,12 @@ ananke:
         descr: Radial velocity
         type: double
         units: km/s
+        dict: GAIA_radial_velocity
       - name: radial_velocity_error
         descr: Radial velocity error
         type: double
         units: km/s
+        dict: GAIA_radial_velocity_error
     - name: ""
       title: Stellar Parameters
       sub:
@@ -1354,30 +1656,37 @@ ananke:
         descr: stellar effective temperature
         type: float
         units: K
+        dict: GAIA_teff_val
       - name: lum_val
         descr: stellar luminosity
         type: float
         units: L_sun
+        dict: GAIA_lum_val
       - name: mact
         descr: current stellar mass
         type: float
-        units: M_sun
+        units: '\(M_\odot\)'
+        disp: false
       - name: mtip
         descr: mass of a star at tip of giant branch for given age, metallicity
         type: float
-        units: M_sun
+        units: '\(M_\odot\)'
+        disp: false
       - name: mini
         descr: stellar mass on zero-age main sequence
         type: float
-        units: M_sun
+        units: '\(M_\odot\)'
+        disp: false
       - name: age
         descr: log_10 stellar age; identical for all stars generated from the same particle
         type: float
         units: log yr
+        disp: false
       - name: logg
         descr: surface gravity
         type: float
         units: log cgs
+        disp: false
     - name: ""
       title: Abundances
       units: dex
@@ -1385,36 +1694,47 @@ ananke:
       - name: feh
         descr: "[Fe/H]"
         type: float
+        disp: false
       - name: alpha
         descr: "[Mg/Fe]"
         type: float
+        disp: false
       - name: carbon
         descr: "[C/H]"
         type: float
+        disp: false
       - name: helium
         descr: "[He/H]"
         type: float
+        disp: false
       - name: nitrogen
         descr: "[N/H]"
         type: float
+        disp: false
       - name: sulphur
         descr: "[S/H]"
         type: float
+        disp: false
       - name: oxygen
         descr: "[O/H]"
         type: float
+        disp: false
       - name: silicon
         descr: "[Si/H]"
         type: float
+        disp: false
       - name: calcium
         descr: "[Ca/H]"
         type: float
+        disp: false
       - name: magnesium
         descr: "[Mg/H]"
         type: float
+        disp: false
       - name: neon
         descr: "[Ne/H]"
         type: float
+        disp: false
 lusam:
   title: Lu-SAM
   descr: >
@@ -1455,11 +1775,11 @@ lusam:
     - name: ra
       dict: ppos_x
       type: float
-      units: '\(deg\)'
+      units: 'deg'
     - name: dec
       dict: ppos_y
       type: float
-      units: '\(deg\)'
+      units: 'deg'
     - name: m_vir
       dict: halo_mass
       type: float
@@ -1467,7 +1787,7 @@ lusam:
       dict: V_vir
       type: float
       descr: host halo virial velocity
-      units: '\(km/s\)'
+      units: 'km/s'
     - name: r_vir
       dict: R
       title: r_vir
@@ -1501,22 +1821,22 @@ lusam:
       dict: v_disk
       type: float
       descr: maximum rotation velocity of disk
-      units: '\(km/s\)'
+      units: 'km/s'
     - name: r_disk
       dict: r_disk
       type: float
       descr: scale length of disk
-      units: '\(kpc\)'
+      units: 'kpc'
     - name: sigma_bulge
       dict: sigma_bulge
       type: float
       descr: line-of-sight velocity dispersion of bulge
-      units: '\(km/s\)'
+      units: 'km/s'
     - name: r_bulge
       dict: r_bulge
       type: float
       descr: effective radius of bulge (projected)
-      units: '\(kpc\)'
+      units: 'kpc'
     - name: mhalo
       dict: M
       type: float
@@ -1576,17 +1896,17 @@ lusam:
       dict: age_mean
       type: float
       descr: mean stellar mass weighted age of stars
-      units: '\(Gyr\)'
+      units: 'Gyr'
     - name: tmerge
       dict: t_merge
       type: float
       descr: time since last merger greater than 1:10
-      units: '\(Gyr\)'
+      units: 'Gyr'
     - name: tmajmerge
       dict: t_major_merge
       type: float
       descr: time since last merger greater than 1:4
-      units: '\(Gyr\)'
+      units: 'Gyr'
     - name: UV1500_rest
       type: float
       descr: CANDELS/TOPHAT/UV1500top.dat
@@ -2037,11 +2357,11 @@ unimach:
     - name: RA
       dict: ppos_x
       type: float
-      units: '\(deg\)'
+      units: 'deg'
     - name: Dec
       dict: ppos_y
       type: float
-      units: '\(deg\)'
+      units: 'deg'
     - name: Z(los)
       dict: redshift
       type: float
@@ -2065,7 +2385,7 @@ unimach:
       descr: -1 for central halos, otherwise, ID of largest parent halo
     - name: ""
       title: Position
-      units: '\(Mpc/h \)'
+      units: 'Mpc/h'
       sub:
       - name: 'X'
         title: 'X'
@@ -2084,20 +2404,20 @@ unimach:
         descr: 'Position of halo relative to axes of lightcone (distance perpendicular to lightcone X-axis) in comoving'
     - name: ""
       title: Velocity
-      units: '\(km/s\)'
+      units: 'km/s'
       sub:
       - name: VX
         # title: '\( V_x\)'
         type: float
-        descr: 'Peculiar velocity in physical (i.e., non-comoving) \(km/s \), relative to lightcone axes'
+        descr: 'Peculiar velocity in physical (i.e., non-comoving) km/s, relative to lightcone axes'
       - name: VY
         # title: '\( V_y\)'
         type: float
-        descr: 'Peculiar velocity in physical (i.e., non-comoving) \(km/s \), relative to lightcone axes'
+        descr: 'Peculiar velocity in physical (i.e., non-comoving) km/s, relative to lightcone axes'
       - name: VZ
         # title: '\( V_z\)'
         type: float
-        descr: 'Peculiar velocity in physical (i.e., non-comoving) \(km/s \), relative to lightcone axes'
+        descr: 'Peculiar velocity in physical (i.e., non-comoving) km/s, relative to lightcone axes'
     - name: M
       dict: M
       type: float
@@ -2107,7 +2427,7 @@ unimach:
     - name: V
       type: float
       descr: 'Halo \(v_{max}\) (physical)'
-      units: '\( km/s \)'
+      units: 'km/s'
     - name: MP
       type: float
       descr: Halo peak historical mass (BN98 virial mass)
@@ -2116,12 +2436,12 @@ unimach:
     - name: VMP
       type: float
       descr: Halo vmax at the time when peak mass was reached
-      units: '\( km/s \)'
+      units: 'km/s'
     - name: R
       dict: R
       type: float
       descr: 'Halo raidus (BN98 vir, co-moving)'
-      units: '\(kpc/h\)'
+      units: 'kpc/h'
     - name: Rank1
       type: float
       descr: 'Halo rank (see UniverseMachine paper)'
@@ -2208,11 +2528,11 @@ scsam:
     - name: ra
       dict: ppos_x
       type: float
-      units: '\(deg\)'
+      units: 'deg'
     - name: dec
       dict: ppos_y
       type: float
-      units: '\(deg\)'
+      units: 'deg'
     - name: m_vir
       dict: halo_mass
       type: float
@@ -2220,7 +2540,7 @@ scsam:
       dict: V_vir
       type: float
       descr: host halo virial velocity
-      units: '\(km/s\)'
+      units: 'km/s'
     - name: r_vir
       dict: R
       title: r_vir
@@ -2254,22 +2574,22 @@ scsam:
       dict: v_disk
       type: float
       descr: maximum rotation velocity of disk
-      units: '\(km/s\)'
+      units: 'km/s'
     - name: r_disk
       dict: r_disk
       type: float
       descr: scale length of disk
-      units: '\(kpc\)'
+      units: 'kpc'
     - name: sigma_bulge
       dict: sigma_bulge
       type: float
       descr: line-of-sight velocity dispersion of bulge
-      units: '\(km/s\)'
+      units: 'km/s'
     - name: rbulge
       dict: r_bulge
       type: float
       descr: effective radius of bulge (projected)
-      units: '\(kpc\)'
+      units: 'kpc'
     - name: mhalo
       dict: M
       type: float
@@ -2329,17 +2649,17 @@ scsam:
       dict: age_mean
       type: float
       descr: mean stellar mass weighted age of stars
-      units: '\(Gyr\)'
+      units: 'Gyr'
     - name: tmerge
       dict: t_merge
       type: float
       descr: time since last merger greater than 1:10
-      units: '\(Gyr\)'
+      units: 'Gyr'
     - name: tmajmerge
       dict: t_major_merge
       type: float
       descr: time since last merger greater than 1:4
-      units: '\(Gyr\)'
+      units: 'Gyr'
     - name: cosi
       dict: cosi
       type: float
