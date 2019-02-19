@@ -320,18 +320,17 @@ ul#topbar {
 li.header__link a,
 li.header__link--dropdown a {
   text-decoration: none;
-  color: var(--cooler-white);
+  color: var(--cooler-off-black);
 }
 
 li.header__link a.active {
-  color: var(--cooler-off-black);
-  border-bottom: 2px solid var(--cooler-gray);
   font-weight: 300;
 }
 
 li.header__link--dropdown a:hover,
 li.header__link a:hover {
-  color: var(--cooler-platinum);
+  color: var(--cooler-red);
+  border-bottom: 1px solid var(--cooler-red);
 }
 
 .dropdown:hover,
@@ -353,7 +352,7 @@ a:hover:not(.active) {
 }
 
 .dropdown-content > a {
-  color: var(--cooler-white);
+  color: var(--cooler-white) !important;
   background-color: var(--cooler-off-black);
   padding: 12px 16px;
   text-decoration: none;
@@ -363,7 +362,7 @@ a:hover:not(.active) {
 
 .dropdown-content > a:hover {
   background-color: var(--cooler-white);
-  color: var(--cooler-black);
+  color: var(--cooler-off-black) !important;
 }
 
 @media screen and (min-width: 600px) {
