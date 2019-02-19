@@ -84,16 +84,14 @@ htmlResponse req hdrs body = do
                   H.a H.! HA.href (WH.routeActionValue simulationPage key mempty) $ H.text (catalogTitle cat)    
             H.li H.! HA.class_ "header__link--dropdown" $ do 
               H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Collections"
-
             H.li H.! HA.class_ "header__link" $ do
-              H.a H.! HA.href (WH.routeActionValue comparePage () mempty) $ H.text "Compare"
-              
-              -- when (HM.member "scsam" $ catalogMap $ globalCatalogs glob) $
-              --   H.li H.! HA.class_ "header__link" $ do
-              --     H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) $ H.text "CANDELS"
-              -- when (HM.member "ananke" $ catalogMap $ globalCatalogs glob) $
-              --   H.li H.! HA.class_ "header__link" $ do
-              --     H.a H.! HA.href (WH.routeActionValue staticHtml ["ananke"] mempty) $ H.text "ANANKE"
+              H.a H.! HA.href (WH.routeActionValue comparePage () mempty) $ H.text "Compare"   
+            when (HM.member "scsam" $ catalogMap $ globalCatalogs glob) $
+              H.li H.! HA.class_ "header__link" $ do
+                H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) $ H.text "CANDELS"
+            when (HM.member "ananke" $ catalogMap $ globalCatalogs glob) $
+              H.li H.! HA.class_ "header__link" $ do
+                H.a H.! HA.href (WH.routeActionValue staticHtml ["ananke"] mempty) $ H.text "ANANKE"
       H.div H.! HA.class_ "container container--main" $ do         
         body
       H.footer H.! HA.class_"footer-distributed" $ do
@@ -113,18 +111,39 @@ acceptable l = find (`elem` l) . foldMap parseHttpAccept . lookup hAccept . Wai.
 -- Here is where the main page is generated
 topPage :: Route ()
 topPage = getPath R.unit $ \() req -> do
-  cats <- asks globalCatalogs
-  case acceptable ["application/json", "text/html"] req of
-    Just "application/json" ->
-      return $ okResponse [] $ J.encode $ HM.map catalogTitle $ catalogMap cats
-    _ -> htmlResponse req [] $
-      H.dl $
-        forM_ (catalogsSorted cats) $ \(sim, cat) -> do
-          H.dt $ H.a H.! HA.href (WH.routeActionValue simulationPage sim mempty) $
-            H.text $ catalogTitle cat
-          H.dd $ do
-            mapM_ H.preEscapedText $ catalogDescr cat
-            mapM_ ((" " <>) . (<> " rows.") . H.toMarkup) $ catalogCount cat
+    cats <- asks globalCatalogs
+    case acceptable ["application/json", "text/html"] req of
+      Just "application/json" ->
+        return $ okResponse [] $ J.encode $ HM.map catalogTitle $ catalogMap cats
+      _ -> htmlResponse req [] $
+        H.div H.! HA.class_ "section hero" $ do 
+          H.div H.! HA.class_ "container" $ do 
+            H.div H.! HA.class_ "row" $ do 
+              H.div H.! HA.class_ "one-half column" $ do 
+                H.h4 H.! HA.class_ "hero__heading" $ "ASTROSIMS. A repository for astrophysics simulation catalog data. 🖥️ 🌟"
+                H.a H.! HA.class_ "button button-primary"  H.! HA.href "https://flatironinstitute.org" $ H.text "Project of Flatiron Institute"
+              H.div H.! HA.class_ "one-half column hero__pics" $ do
+                H.img H.! HA.src (staticURI ["astrosims2.png"]) H.! HA.class_ "pic"
+                H.img H.! HA.src (staticURI ["astrosims.png"]) H.! HA.class_ "pic"
+        -- Second section on mainpage
+        H.div H.! HA.class_ "section collections" $ do 
+          H.div H.! HA.class_ "container" $ do 
+            H.h3 H.! HA.class_ "section__heading" $ "Collections"
+            H.p H.! HA.class_ "section__description" $ "Here is where you can describe these collections. Jelly-o sesame snaps halvah croissant oat cake cookie. Cheesecake bear claw."
+            H.div H.! HA.class_ "row" $ do 
+              H.div H.! HA.class_ "one-half column collection" $ do 
+                H.img H.! HA.src (staticURI ["candals_box.png"]) H.! HA.class_ "u-max-full-width"
+              H.div H.! HA.class_ "one-half column collection" $ do 
+                H.img H.! HA.src (staticURI ["ananke_box.png"]) H.! HA.class_ "u-max-full-width"
+
+
+        -- H.dl $
+        --   forM_ (catalogsSorted cats) $ \(sim, cat) -> do
+        --     H.dt $ H.a H.! HA.href (WH.routeActionValue simulationPage sim mempty) $
+        --       H.text $ catalogTitle cat
+        --     H.dd $ do
+        --       mapM_ H.preEscapedText $ catalogDescr cat
+        --       mapM_ ((" " <>) . (<> " rows.") . H.toMarkup) $ catalogCount cat
 
 simulationPage :: Route Simulation
 simulationPage = getPath R.parameter $ \sim req -> do

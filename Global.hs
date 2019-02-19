@@ -52,4 +52,5 @@ getPath p = R.RouteAction $ R.routeMethod R.GET R.*< R.routePath p
 askCatalog :: Simulation -> M Catalog
 askCatalog sim = maybe
   (result $ response notFound404 [] ("No such simulation" :: BSC.ByteString))
+  -- TODO: Add logo gif
   return =<< asks (HM.lookup sim . catalogMap . globalCatalogs)
