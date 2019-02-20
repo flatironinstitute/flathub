@@ -116,25 +116,27 @@ topPage = getPath R.unit $ \() req -> do
       Just "application/json" ->
         return $ okResponse [] $ J.encode $ HM.map catalogTitle $ catalogMap cats
       _ -> htmlResponse req [] $
-        H.div H.! HA.class_ "section hero" $ do 
-          H.div H.! HA.class_ "container" $ do 
-            H.div H.! HA.class_ "row" $ do 
-              H.div H.! HA.class_ "one-half column" $ do 
-                H.h4 H.! HA.class_ "hero__heading" $ "ASTROSIMS. A repository for astrophysics simulation catalog data. 🖥️ 🌟"
-                H.a H.! HA.class_ "button button-primary"  H.! HA.href "https://flatironinstitute.org" $ H.text "Project of Flatiron Institute"
-              H.div H.! HA.class_ "one-half column hero__pics" $ do
-                H.img H.! HA.src (staticURI ["astrosims2.png"]) H.! HA.class_ "pic"
-                H.img H.! HA.src (staticURI ["astrosims.png"]) H.! HA.class_ "pic"
-        -- Second section on mainpage
-        H.div H.! HA.class_ "section collections" $ do 
-          H.div H.! HA.class_ "container" $ do 
-            H.h3 H.! HA.class_ "section__heading" $ "Collections"
-            H.p H.! HA.class_ "section__description" $ "Here is where you can describe these collections. Jelly-o sesame snaps halvah croissant oat cake cookie. Cheesecake bear claw."
-            H.div H.! HA.class_ "row" $ do 
-              H.div H.! HA.class_ "one-half column collection" $ do 
-                H.img H.! HA.src (staticURI ["candals_box.png"]) H.! HA.class_ "u-max-full-width"
-              H.div H.! HA.class_ "one-half column collection" $ do 
-                H.img H.! HA.src (staticURI ["ananke_box.png"]) H.! HA.class_ "u-max-full-width"
+        H.div $ do
+          H.div H.! HA.class_ "section hero" $ do
+            H.div H.! HA.class_ "container" $ do 
+              H.div H.! HA.class_ "row" $ do 
+                H.div H.! HA.class_ "one-half column" $ do 
+                  H.h4 H.! HA.class_ "hero__heading" $ "ASTROSIMS. A repository for astrophysics simulation catalog data. 🖥️ 🌟"
+                  H.img H.! HA.src (staticURI ["cca-logo.jpg"]) H.! HA.height "35" H.! HA.width "35"
+                  H.a H.! HA.class_ "button button-primary"  H.! HA.href "https://flatironinstitute.org" $ H.text "Project of Flatiron Institute"
+                H.div H.! HA.class_ "one-half column hero__pics" $ do
+                  H.img H.! HA.src (staticURI ["astrosims2.png"]) H.! HA.class_ "pic"
+                  H.img H.! HA.src (staticURI ["astrosims.png"]) H.! HA.class_ "pic"
+          -- Second section on mainpage
+          H.div H.! HA.class_ "section collections" $ do 
+            H.div H.! HA.class_ "container" $ do 
+              H.h3 H.! HA.class_ "section__heading" $ "Collections"
+              H.p H.! HA.class_ "section__description" $ "Here is where you can describe these collections. Jelly-o sesame snaps halvah croissant oat cake cookie. Cheesecake bear claw."
+              H.div H.! HA.class_ "row" $ do 
+                H.div H.! HA.class_ "one-half column collection" $ do 
+                  H.img H.! HA.src (staticURI ["candals_box.png"]) H.! HA.class_ "u-max-full-width"
+                H.div H.! HA.class_ "one-half column collection" $ do 
+                  H.img H.! HA.src (staticURI ["ananke_box.png"]) H.! HA.class_ "u-max-full-width"
 
 
         -- H.dl $
