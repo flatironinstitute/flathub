@@ -2,6 +2,7 @@
 /jspm_packages/
 /index.js
 /main.js
+/common.js
 /compare.js
 /catalog.js
 /types.js

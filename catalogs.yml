@@ -234,18 +234,18 @@ dict:
   - name: GAIA_bp_g
     title: bp_g
     type: float
-    descr: BP - G colour 
+    descr: BP - G colour
     units: mag
   - name: GAIA_g_rp
     title: g_rp
-    type: float 
+    type: float
     descr: true G - RP colour
     units: mag
   - name: GAIA_a_g_val
     title: a_g_val
     type: float
-    descr: line-of-sight extinction in the G band, A_G  
-    units: mag  
+    descr: line-of-sight extinction in the G band, A_G
+    units: mag
   - name: GAIA_e_bp_min_rp_val
     title: e_bp_min_rp_val
     type: float
@@ -862,6 +862,7 @@ gaiadr2:
     - name: random_index
       descr: Random index used to select subsets
       type: long
+      disp: false
       dict: GAIA_random_index
     - name: ref_epoch
       descr: Reference epoch (J2015.5) in Julian years
@@ -1664,17 +1665,17 @@ ananke:
       - name: mact
         descr: current stellar mass
         type: float
-        units: M_sun
+        units: '\(M_\odot\)'
         disp: false
       - name: mtip
         descr: mass of a star at tip of giant branch for given age, metallicity
         type: float
-        units: M_sun
+        units: '\(M_\odot\)'
         disp: false
       - name: mini
         descr: stellar mass on zero-age main sequence
         type: float
-        units: M_sun
+        units: '\(M_\odot\)'
         disp: false
       - name: age
         descr: log_10 stellar age; identical for all stars generated from the same particle

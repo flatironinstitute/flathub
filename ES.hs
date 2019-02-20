@@ -21,7 +21,7 @@ import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (ask, asks)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
-import qualified Data.Aeson.Types as J (Parser, parseEither, parseMaybe)
+import qualified Data.Aeson.Types as J (Parser, parseEither, parseMaybe, typeMismatch)
 import qualified Data.Attoparsec.ByteString as AP
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
@@ -101,7 +101,7 @@ elasticSearch meth url query body = do
     -- print r
     return r
   where
-  parse r = AP.parseWith (HTTP.responseBody r) J.json BS.empty
+  parse r = AP.parseWith (HTTP.responseBody r) (J.json <* AP.endOfInput) BS.empty
 
 catalogURL :: Catalog -> [String]
 catalogURL Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn, catalogMapping = mapn } } =
@@ -137,15 +137,20 @@ createIndex cat@Catalog{ catalogStore = ~CatalogES{..} } = elasticSearch PUT [T.
 
 checkIndices :: M (HM.HashMap Simulation String)
 checkIndices = do
+  isdev <- asks globalDevMode
   indices <- elasticSearch GET ["*"] [] ()
-  HM.mapMaybe (\cat -> either Just (const Nothing) $ J.parseEither (catalog cat) indices)
+  HM.mapMaybe (\cat -> either Just (const Nothing) $ J.parseEither (catalog isdev cat) indices)
     <$> asks (catalogMap . globalCatalogs)
   where
-  catalog ~cat@Catalog{ catalogStore = CatalogES{ catalogIndex = idxn, catalogMapping = mapn } } =
-    parseJSONField idxn (idx cat mapn)
-  idx :: Catalog -> T.Text -> J.Value -> J.Parser ()
-  idx cat mapn = J.withObject "index" $ parseJSONField "mappings" $ J.withObject "mappings" $
-    parseJSONField mapn (mapping $ catalogFields cat)
+  catalog isdev ~cat@Catalog{ catalogStore = CatalogES{ catalogIndex = idxn, catalogMapping = mapn } } =
+    parseJSONField idxn (idx isdev cat mapn)
+  idx :: Bool -> Catalog -> T.Text -> J.Value -> J.Parser ()
+  idx isdev cat mapn = J.withObject "index" $ \i -> do
+    sets <- i J..: "settings" >>= (J..: "index")
+    ro <- sets J..:? "blocks" >>= maybe (return Nothing) (J..:? "read_only") >>= maybe (return False) boolish
+    unless (isdev || ro) $ fail "open (not read_only)"
+    parseJSONField "mappings" (J.withObject "mappings" $
+      parseJSONField mapn (mapping $ catalogFields cat)) i
   mapping :: Fields -> J.Value -> J.Parser ()
   mapping fields = J.withObject "mapping" $ parseJSONField "properties" $ J.withObject "properties" $ \ps ->
     forM_ fields $ \field -> parseJSONField (fieldName field) (prop field) ps
@@ -153,6 +158,11 @@ checkIndices = do
   prop field = J.withObject "property" $ \p -> do
     t <- p J..: "type"
     unless (t == fieldType field) $ fail $ "incorrect field type; should be " ++ show (fieldType field)
+  boolish :: J.Value -> J.Parser Bool
+  boolish (J.Bool b) = return b
+  boolish (J.String "true") = return True
+  boolish (J.String "false") = return False
+  boolish v = J.typeMismatch "bool" v
 
 scrollTime :: IsString s => s
 scrollTime = "60s"

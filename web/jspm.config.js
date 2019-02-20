@@ -170,13 +170,7 @@ SystemJS.config({
     },
     "npm:jspm-nodelibs-stream@0.2.1": {
       "map": {
-        "stream-browserify": "npm:stream-browserify@2.0.1"
-      }
-    },
-    "npm:stream-browserify@2.0.1": {
-      "map": {
-        "inherits": "npm:inherits@2.0.3",
-        "readable-stream": "npm:readable-stream@2.3.6"
+        "stream-browserify": "npm:stream-browserify@2.0.2"
       }
     },
     "npm:jspm-nodelibs-string_decoder@0.2.2": {
@@ -390,6 +384,12 @@ SystemJS.config({
         "evp_bytestokey": "npm:evp_bytestokey@1.0.3",
         "safe-buffer": "npm:safe-buffer@5.1.2",
         "asn1.js": "npm:asn1.js@4.10.1"
+      }
+    },
+    "npm:stream-browserify@2.0.2": {
+      "map": {
+        "readable-stream": "npm:readable-stream@2.3.6",
+        "inherits": "npm:inherits@2.0.3"
       }
     }
   }
