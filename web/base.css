@@ -334,7 +334,7 @@ li.header__link a:hover {
 }
 
 .dropdown:hover,
-a:hover:not(.active) {
+container a:hover:not(.active) {
   color: var(--cooler-black);
 }
 
@@ -485,6 +485,7 @@ a:hover:not(.active) {
   background-image: url(collections-bg.png);
   background-size: cover;
   color: #fff;
+  margin: 0 -20%;
 }
 
 .section-heading,

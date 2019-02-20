@@ -92,7 +92,7 @@ htmlResponse req hdrs body = do
             when (HM.member "ananke" $ catalogMap $ globalCatalogs glob) $
               H.li H.! HA.class_ "header__link" $ do
                 H.a H.! HA.href (WH.routeActionValue staticHtml ["ananke"] mempty) $ H.text "ANANKE"
-      H.div $ do         
+      H.div H.! HA.class_ "container container--main" $ do         
         body
       H.footer H.! HA.class_"footer-distributed" $ do
         H.div H.! HA.class_ "container" $ do
@@ -223,7 +223,7 @@ simulationPage = getPath R.parameter $ \sim req -> do
     _ -> htmlResponse req [] $ do
       jsonEncodingVar "Catalog" jcat
       jsonVar "Query" query
-      H.div $ do
+      H.div H.! HA.class_ "container--main" $ do 
         H.h2 $ H.text $ catalogTitle cat
         mapM_ (H.p . H.preEscapedText) $ catalogDescr cat
 
@@ -288,26 +288,27 @@ comparePage = getPath "compare" $ \() req -> do
   htmlResponse req [] $ do
     jsonVar "Catalogs" $ catalogMap cats
     jsonVar "Dict" $ catalogDict cats
-    H.h2 "Compare"
-    H.p $ "Select catalogs across the top to compare, and fields down the left to apply filters and compare statistics and distributions from these catalogs."
-    H.table H.! HA.id "tcompare" $ do
-      H.thead $ H.tr $ do
-        H.th "catalog"
-        H.td $ H.select H.! HA.name "selcat" H.! HA.onchange "return selectCat(event.target)" $ do
-          H.option H.! HA.value mempty H.! HA.selected "selected" $ "Choose catalog..."
-          forM_ (catalogsSorted cats) $ \(sim, cat) ->
-            H.option H.! HA.value (H.textValue sim) $ H.text $ catalogTitle cat
-      H.tbody $ mempty
-      H.tfoot $ do
-        H.tr H.! HA.id "tr-add" $
-          H.td $ H.select H.! HA.id "addf"  H.! HA.onchange "return addField()"  $ mempty
-        H.tr H.! HA.id "tr-comp" $
-          H.td $ H.select H.! HA.id "compf" H.! HA.onchange "return compField()" $ mempty
-    H.button H.! HA.id "hist-tog" H.! HA.disabled "disabled" H.! HA.onclick "return histogramComp()" $ "histogram"
-    H.div H.! HA.id "dhist" $ do
-      H.button H.! HA.id "hist-y-tog" H.! HA.onclick "return toggleLog()" $
-        "lin/log"
-      H.div H.! HA.id "hist" $ mempty
+    H.div H.! HA.class_ "container--main" $ do 
+      H.h2 "Compare"
+      H.p $ "Select catalogs across the top to compare, and fields down the left to apply filters and compare statistics and distributions from these catalogs."
+      H.table H.! HA.id "tcompare" $ do
+        H.thead $ H.tr $ do
+          H.th "catalog"
+          H.td $ H.select H.! HA.name "selcat" H.! HA.onchange "return selectCat(event.target)" $ do
+            H.option H.! HA.value mempty H.! HA.selected "selected" $ "Choose catalog..."
+            forM_ (catalogsSorted cats) $ \(sim, cat) ->
+              H.option H.! HA.value (H.textValue sim) $ H.text $ catalogTitle cat
+        H.tbody $ mempty
+        H.tfoot $ do
+          H.tr H.! HA.id "tr-add" $
+            H.td $ H.select H.! HA.id "addf"  H.! HA.onchange "return addField()"  $ mempty
+          H.tr H.! HA.id "tr-comp" $
+            H.td $ H.select H.! HA.id "compf" H.! HA.onchange "return compField()" $ mempty
+      H.button H.! HA.id "hist-tog" H.! HA.disabled "disabled" H.! HA.onclick "return histogramComp()" $ "histogram"
+      H.div H.! HA.id "dhist" $ do
+        H.button H.! HA.id "hist-y-tog" H.! HA.onclick "return toggleLog()" $
+          "lin/log"
+        H.div H.! HA.id "hist" $ mempty
 
 staticHtml :: Route [FilePathComponent]
 staticHtml = getPath ("html" R.*< R.manyI R.parameter) $ \paths q -> do
