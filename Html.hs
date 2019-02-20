@@ -288,12 +288,12 @@ comparePage = getPath "compare" $ \() req -> do
   htmlResponse req [] $ do
     jsonVar "Catalogs" $ catalogMap cats
     jsonVar "Dict" $ catalogDict cats
-    H.div H.! HA.class_ "container--main" $ do 
+    H.div H.! HA.class_ "container container--main" $ do 
       H.h2 "Compare"
       H.p $ "Select catalogs across the top to compare, and fields down the left to apply filters and compare statistics and distributions from these catalogs."
-      H.table H.! HA.id "tcompare" $ do
+      H.table H.! HA.id "tcompare" H.! HA.class_ "u-full-width" $ do
         H.thead $ H.tr $ do
-          H.th "catalog"
+          H.th "Choose two or more catalogs"
           H.td $ H.select H.! HA.name "selcat" H.! HA.onchange "return selectCat(event.target)" $ do
             H.option H.! HA.value mempty H.! HA.selected "selected" $ "Choose catalog..."
             forM_ (catalogsSorted cats) $ \(sim, cat) ->
