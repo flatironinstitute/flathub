@@ -604,14 +604,14 @@ function columnVisible(name: string, vis: boolean) {
 
 $("#show_all_button").click(function () {
   for (let i = 0; i < Catalog.fields.length; i++) {
-    $('#colvis-' + Catalog.fields[i].name)[0].checked = true;
+    (<HTMLInputElement>$('#colvis-' + Catalog.fields[i].name)[0]).checked = true;
     columnVisible(Catalog.fields[i].name, true);
   }
 })
 
 $("#hide_all_button").click(function () {
   for (let i = 0; i < Catalog.fields.length; i++) {
-    $('#colvis-' + Catalog.fields[i].name)[0].checked = false;
+    (<HTMLInputElement>$('#colvis-' + Catalog.fields[i].name)[0]).checked = false;
     columnVisible(Catalog.fields[i].name, false);
   }
 })
