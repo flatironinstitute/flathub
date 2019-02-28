@@ -2492,7 +2492,7 @@ scsam:
     <a href='http://adsabs.harvard.edu/abs/2015MNRAS.453.4337S'>Somerville et al. 2015</a>,
     <a href='http://adsabs.harvard.edu/abs/2019MNRAS.483.2983Y'>Yung et al. 2019</a>.<br>
     Data Release v1 2018-08-17.<br>
-    SC-SAM Lightcones for the CANDELS project (based on models presented in Yung et al. 2018 and Somerville et al. 2015 SAMs).
+    SC-SAM Lightcones for the CANDELS project (based on models presented in Yung et al. 2019 and Somerville et al. 2015 SAMs).
     The full data release will be available shortly.
   index: scsam
   sort: 'candels-1'
