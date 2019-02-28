@@ -597,6 +597,20 @@ function columnVisible(name: string, vis: boolean) {
   }
 }
 
+$("#show_all_button").click(function () {
+  for (let i = 0; i < Catalog.fields.length; i++) {
+    $('#colvis-' + Catalog.fields[i].name)[0].checked = true;
+    columnVisible(Catalog.fields[i].name, true);
+  }
+})
+
+$("#hide_all_button").click(function () {
+  for (let i = 0; i < Catalog.fields.length; i++) {
+    $('#colvis-' + Catalog.fields[i].name)[0].checked = false;
+    columnVisible(Catalog.fields[i].name, false);
+  }
+})
+
 function py_text(query: Dict<string>) {
   const cat = Catalog.name;
   let st = "import fi_astrosims.client\n"

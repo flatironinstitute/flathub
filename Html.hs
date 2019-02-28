@@ -222,7 +222,10 @@ simulationPage = getPath R.parameter $ \sim req -> do
         "Table of fields, units, and their descriptions (use checkboxes to view/hide fields in the table above)"
       H.div $ H.table H.! HA.class_ "dict" H.! HA.id "tdict" $ do
         H.thead $ H.tr $ do
-            H.th $ H.text "Field"
+            H.th $ do
+                H.text "Field"
+                H.button H.! HA.class_ "show_button" H.! HA.id "show_all_button" $ "show all"
+                H.button H.! HA.class_ "show_button" H.! HA.id "hide_all_button" $ "hide all"
             H.th $ H.text "Variable"
             H.th $ H.text "Type"
             H.th $ H.text "Units"

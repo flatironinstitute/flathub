@@ -304,3 +304,7 @@ table#tdict {
 .matrix_cell{
   width: 45vw;
 }
+
+#show_all_button, #hide_all_button {
+    display: inline-block;
+}
