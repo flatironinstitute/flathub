@@ -175,13 +175,18 @@ export function histogram_options(f: Field): Highcharts.Options {
       type: 'linear',
       title: axis_title(f),
       gridLineWidth: 1,
-
+      labels: {
+        rotation: 0
+      }
     },
     yAxis: {
       id: 'tog',
       type: 'linear',
       title: { text: 'Count' },
       min: 0,
+      labels: {
+        rotation: -90
+      }
     },
     tooltip: {
       animation: false,

@@ -27,7 +27,6 @@ var Last_query: undefined|Dict<string>;
 
 function set_download(query: Dict<string>) {
   const q = '?' + $.param(query);
-  console.log(q);
   const h = $('#download').html('download as ');
   for (let f of Catalog.bulk) {
     const a = document.createElement('a');
@@ -67,13 +66,6 @@ function histDraw(hist: NumericFilter, data: number[][], size: number[], field: 
   const opts: Highcharts.Options = histogram_options(f);
   const wid = (inv) ? size[1] : size[0];
   const chart_type = (inv) ? "bar" : "column"; 
-  if (inv) {
-    (<Highcharts.AxisOptions>opts.xAxis).reversed = false;
-  }
-  else { // the resizing issue for the y axis plot
-    (<Highcharts.AxisOptions>opts.xAxis).min = hist.lbv;
-    (<Highcharts.AxisOptions>opts.xAxis).max = hist.ubv + wid;
-  }
   (<Highcharts.ChartOptions>opts.chart).events = {
     selection: function (event: Highcharts.ChartSelectionEvent) {
       event.preventDefault();
@@ -81,6 +73,15 @@ function histDraw(hist: NumericFilter, data: number[][], size: number[], field: 
       return false; // Don't zoom
     }
   };
+  if (inv) {
+    (<Highcharts.AxisOptions>opts.xAxis).reversed = false;
+    (<Highcharts.AxisOptions>opts.yAxis).labels.rotation = 0;
+    (<Highcharts.AxisOptions>opts.xAxis).labels.rotation = -90;
+  }
+  else { 
+    (<Highcharts.AxisOptions>opts.xAxis).min = hist.lbv;
+    (<Highcharts.AxisOptions>opts.xAxis).max = hist.ubv + wid;
+  }
   (<Highcharts.TooltipOptions>opts.tooltip).footerFormat = 'drag to filter';
   opts.series = [<Highcharts.ColumnChartSeriesOptions>{
     showInLegend: true,
@@ -158,13 +159,17 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined | Field, agg: Agg
     opts.colorAxis.reversed = false;
    // (<Highcharts.LegendOptions>opts.legend).enabled = true;
     opts.xAxis = {
+      title: axis_title(hist.field),
       min: hist.lbv,
       max: hist.ubv + size[0],
       gridLineWidth: 1
     },
     opts.yAxis = {
       type: 'linear',
-      title: axis_title(heatmap)
+      title: axis_title(heatmap),
+      labels: {
+        rotation: -90
+      }
     };
     opts.series = [<Highcharts.HeatMapSeriesOptions>{
       type: 'heatmap',
