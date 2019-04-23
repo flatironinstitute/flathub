@@ -69,12 +69,13 @@ htmlResponse req hdrs body = do
       forM_ [["jspm_packages", "npm", "datatables.net-dt@1.10.19", "css", "jquery.dataTables.css"], ["base.css"]] $ \src ->
         H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
       H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML" $ mempty
+      H.script H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.src "https://fonts.googleapis.com/css?family=Major+Mono+Display|Montserrat" $ mempty
       jsonVar "Catalogs" (HM.map catalogTitle $ catalogMap $ globalCatalogs glob)
     H.body $ do
       H.header H.! HA.class_ "header" $ do
         H.div H.! HA.class_ "header__logo" $ do
           H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ do
-            H.img H.! HA.src (staticURI ["logo.svg"]) H.! HA.height "55" H.! HA.width "200"
+            H.img H.! HA.src (staticURI ["logo.png"]) H.! HA.height "25" H.! HA.width "200"
         H.nav H.! HA.class_ "header__nav" $ do
           H.ul H.! HA.id "topbar" $ do
             H.li H.! HA.class_ "header__link--dropdown" $ do
@@ -132,14 +133,16 @@ topPage = getPath R.unit $ \() req -> do
         H.div H.! HA.class_ "section collections" $ do
           H.div H.! HA.class_ "container" $ do
             H.h3 H.! HA.class_ "section__heading" $ "Collections"
-            H.p H.! HA.class_ "section__description" $ "Here is where you can describe these collections. Are these terms of art? Do they need definition? This design might be more than needed."
+            H.p H.! HA.class_ "section__description" $ "Here is where you can describe these collections. Or not, but this is a useful place to draw attention to bigger groupings. This design might be more than needed."
             H.div H.! HA.class_ "row" $ do
               H.div H.! HA.class_ "one-half column collection" $ do
-                H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty)$ do
-                  H.img H.! HA.src (staticURI ["candals_box.png"]) H.! HA.class_ "u-max-full-width"
+                H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) H.! HA.class_ "collection-link" $ do
+                  -- H.img H.! HA.src (staticURI ["candals_box.png"]) H.! HA.class_ "u-max-full-width"
+                  H.h4 H.! HA.class_ "u-max-full-width collection-label" $ "Candels"
               H.div H.! HA.class_ "one-half column collection" $ do
-                H.a H.! HA.href (WH.routeActionValue staticHtml ["ananke"] mempty)$ do
-                  H.img H.! HA.src (staticURI ["ananke_box.png"]) H.! HA.class_ "u-max-full-width"
+                H.a H.! HA.href (WH.routeActionValue staticHtml ["ananke"] mempty) H.! HA.class_ "collection-link" $ do
+                  -- H.img H.! HA.src (staticURI ["ananke_box.png"]) H.! HA.class_ "u-max-full-width"
+                  H.h4 H.! HA.class_ "u-max-full-width collection-label" $ "Ananke"
           -- Third section on mainpage
         H.div H.! HA.class_ "section catalogs" $ do
           H.div H.! HA.class_ "container" $ do
