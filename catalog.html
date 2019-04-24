@@ -530,7 +530,7 @@
                         </div>
                         <div class="row">
                            <div class="twelve columns"> 
-                              <label class="superlabel" for="filterApplied">Filter Applied</label>
+                              <label class="superlabel" for="filterApplied">Filters Applied</label>
                               <div class="row" id="filt-z_pos">
                                  <div class="three columns">
                                     <button class="button button-close">X</button>
@@ -566,6 +566,41 @@
                                     <button class="button-primary">View Histogram</button>
                                  </div>
                               </div>
+                              <div class="row" id="filt-z_pos">
+                                    <div class="three columns">
+                                       <button class="button button-close">X</button>
+                                       <span class="tooltip">
+                                          <span class="filter__title"><b>coord RA</b></span>
+                                          <span class="tooltiptext">Right Ascension</span>
+                                       </span>
+                                    </div>
+                                    <div class="six columns">
+                                       <input
+                                          id="z_pos.lb"
+                                          name="z_pos.lb"
+                                          title="Lower bound for z_nopec values"
+                                          type="number"
+                                          step="any"
+                                          min="0.0016757736942307714"
+                                          value="0.0016757736942307714"
+                                          max="0.03066790990567455"/>
+                                       –
+                                       <input
+                                          id="z_pos.ub"
+                                          name="z_pos.ub"
+                                          title="Upper bound for z_nopec values"
+                                          type="number"
+                                          step="any"
+                                          min="0.0016757736942307714"
+                                          max="0.03066790990567455"
+                                          value="0.03066790990567455"
+                                          />
+                                       <button class="button">Reset</button>
+                                    </div>
+                                    <div class="three columns">
+                                       <button class="button-primary">View Histogram</button>
+                                    </div>
+                                 </div>
                            </div>
                         </div>
                         <div class="row row-form" id="filt-">
@@ -2888,7 +2923,72 @@ dat = q.numpy()
                   </div>
                </div>
             </div>
-            <h3>Data Table</h3>
+         </div>
+         <div class="section section--catalog">
+            <div class="row">
+               <div class="one-half column">
+                     <div class="card">
+                           <div class="card-header">Summary:  Showing 1 to 25 of 96,316 (filtered from 96,317 total entries)</div>
+                     </div>
+                     <div class="cardcontent">
+                        <label>Filters applied:</label>
+                        <label >
+                              <input type="checkbox" checked>
+                              <span class="label-body">Z_NOPEC</span>
+                        </label>
+                        <label>
+                              <input type="checkbox" checked>
+                              <span class="label-body">COORD RA</span>
+                        </label>                    
+                     </div>
+               </div>
+               <div class="one-half column">
+                     <div class="card">
+                           <div class="card-header">download as</div>
+                     </div>
+                     <div class="cardcontent">
+                        <a
+                           id="download.csv"
+                           class="button" 
+                           href="/gaea/csv?sort=&amp;z_pos=0.0016757736942307714%200.03066790990567455&amp;fields=PPos_x%20PPos_y%20z%20z_pos%20Pos_x%20Pos_y%20Pos_z%20Vel_x%20Vel_y%20Vel_z%20Type%20GalID%20MMSubID%20CentralMvir%20Mvir%20Rvir%20Vvir%20Vmax%20StellarMass%20ColdGas%20HI%20GasDiskRadius%20StellarDiskRadius%20GasSpin_x%20GasSpin_y%20GasSpin_z"
+                           >csv</a
+                           >
+                        <a
+                           id="download.csv.gz"
+                           class="button" 
+                           href="/gaea/csv.gz?sort=&amp;z_pos=0.0016757736942307714%200.03066790990567455&amp;fields=PPos_x%20PPos_y%20z%20z_pos%20Pos_x%20Pos_y%20Pos_z%20Vel_x%20Vel_y%20Vel_z%20Type%20GalID%20MMSubID%20CentralMvir%20Mvir%20Rvir%20Vvir%20Vmax%20StellarMass%20ColdGas%20HI%20GasDiskRadius%20StellarDiskRadius%20GasSpin_x%20GasSpin_y%20GasSpin_z"
+                           >csv.gz</a
+                           >
+                        <a
+                           id="download.ecsv"
+                           class="button" 
+                           href="/gaea/ecsv?sort=&amp;z_pos=0.0016757736942307714%200.03066790990567455&amp;fields=PPos_x%20PPos_y%20z%20z_pos%20Pos_x%20Pos_y%20Pos_z%20Vel_x%20Vel_y%20Vel_z%20Type%20GalID%20MMSubID%20CentralMvir%20Mvir%20Rvir%20Vvir%20Vmax%20StellarMass%20ColdGas%20HI%20GasDiskRadius%20StellarDiskRadius%20GasSpin_x%20GasSpin_y%20GasSpin_z"
+                           >ecsv</a
+                           >
+                        <a
+                           id="download.ecsv.gz"
+                           class="button" 
+                           href="/gaea/ecsv.gz?sort=&amp;z_pos=0.0016757736942307714%200.03066790990567455&amp;fields=PPos_x%20PPos_y%20z%20z_pos%20Pos_x%20Pos_y%20Pos_z%20Vel_x%20Vel_y%20Vel_z%20Type%20GalID%20MMSubID%20CentralMvir%20Mvir%20Rvir%20Vvir%20Vmax%20StellarMass%20ColdGas%20HI%20GasDiskRadius%20StellarDiskRadius%20GasSpin_x%20GasSpin_y%20GasSpin_z"
+                           >ecsv.gz</a
+                           >
+                        <a
+                           id="download.npy"
+                           class="button" 
+                           href="/gaea/npy?sort=&amp;z_pos=0.0016757736942307714%200.03066790990567455&amp;fields=PPos_x%20PPos_y%20z%20z_pos%20Pos_x%20Pos_y%20Pos_z%20Vel_x%20Vel_y%20Vel_z%20Type%20GalID%20MMSubID%20CentralMvir%20Mvir%20Rvir%20Vvir%20Vmax%20StellarMass%20ColdGas%20HI%20GasDiskRadius%20StellarDiskRadius%20GasSpin_x%20GasSpin_y%20GasSpin_z"
+                           >npy</a
+                           >
+                        <a
+                           id="download.npy.gz"
+                           class="button" 
+                           href="/gaea/npy.gz?sort=&amp;z_pos=0.0016757736942307714%200.03066790990567455&amp;fields=PPos_x%20PPos_y%20z%20z_pos%20Pos_x%20Pos_y%20Pos_z%20Vel_x%20Vel_y%20Vel_z%20Type%20GalID%20MMSubID%20CentralMvir%20Mvir%20Rvir%20Vvir%20Vmax%20StellarMass%20ColdGas%20HI%20GasDiskRadius%20StellarDiskRadius%20GasSpin_x%20GasSpin_y%20GasSpin_z"
+                           >npy.gz</a
+                           >
+                     </div>
+               </div>
+            </div>
+         </div>
+         <div class="section section--catalog">
+            <h3>Raw Data</h3>
             <div id="tcat_wrapper" class="dataTables_wrapper no-footer">
                <div
                   class="dataTables_info"
@@ -2897,39 +2997,6 @@ dat = q.numpy()
                   aria-live="polite"
                   >
                   Showing 1 to 25 of 96,316 (filtered from 96,317 total entries)
-               </div>
-               <div id="download">
-                  download as
-                  <a
-                     id="download.csv"
-                     href="/gaea/csv?sort=&amp;z_pos=0.0016757736942307714%200.03066790990567455&amp;fields=PPos_x%20PPos_y%20z%20z_pos%20Pos_x%20Pos_y%20Pos_z%20Vel_x%20Vel_y%20Vel_z%20Type%20GalID%20MMSubID%20CentralMvir%20Mvir%20Rvir%20Vvir%20Vmax%20StellarMass%20ColdGas%20HI%20GasDiskRadius%20StellarDiskRadius%20GasSpin_x%20GasSpin_y%20GasSpin_z"
-                     >csv</a
-                     >
-                  <a
-                     id="download.csv.gz"
-                     href="/gaea/csv.gz?sort=&amp;z_pos=0.0016757736942307714%200.03066790990567455&amp;fields=PPos_x%20PPos_y%20z%20z_pos%20Pos_x%20Pos_y%20Pos_z%20Vel_x%20Vel_y%20Vel_z%20Type%20GalID%20MMSubID%20CentralMvir%20Mvir%20Rvir%20Vvir%20Vmax%20StellarMass%20ColdGas%20HI%20GasDiskRadius%20StellarDiskRadius%20GasSpin_x%20GasSpin_y%20GasSpin_z"
-                     >csv.gz</a
-                     >
-                  <a
-                     id="download.ecsv"
-                     href="/gaea/ecsv?sort=&amp;z_pos=0.0016757736942307714%200.03066790990567455&amp;fields=PPos_x%20PPos_y%20z%20z_pos%20Pos_x%20Pos_y%20Pos_z%20Vel_x%20Vel_y%20Vel_z%20Type%20GalID%20MMSubID%20CentralMvir%20Mvir%20Rvir%20Vvir%20Vmax%20StellarMass%20ColdGas%20HI%20GasDiskRadius%20StellarDiskRadius%20GasSpin_x%20GasSpin_y%20GasSpin_z"
-                     >ecsv</a
-                     >
-                  <a
-                     id="download.ecsv.gz"
-                     href="/gaea/ecsv.gz?sort=&amp;z_pos=0.0016757736942307714%200.03066790990567455&amp;fields=PPos_x%20PPos_y%20z%20z_pos%20Pos_x%20Pos_y%20Pos_z%20Vel_x%20Vel_y%20Vel_z%20Type%20GalID%20MMSubID%20CentralMvir%20Mvir%20Rvir%20Vvir%20Vmax%20StellarMass%20ColdGas%20HI%20GasDiskRadius%20StellarDiskRadius%20GasSpin_x%20GasSpin_y%20GasSpin_z"
-                     >ecsv.gz</a
-                     >
-                  <a
-                     id="download.npy"
-                     href="/gaea/npy?sort=&amp;z_pos=0.0016757736942307714%200.03066790990567455&amp;fields=PPos_x%20PPos_y%20z%20z_pos%20Pos_x%20Pos_y%20Pos_z%20Vel_x%20Vel_y%20Vel_z%20Type%20GalID%20MMSubID%20CentralMvir%20Mvir%20Rvir%20Vvir%20Vmax%20StellarMass%20ColdGas%20HI%20GasDiskRadius%20StellarDiskRadius%20GasSpin_x%20GasSpin_y%20GasSpin_z"
-                     >npy</a
-                     >
-                  <a
-                     id="download.npy.gz"
-                     href="/gaea/npy.gz?sort=&amp;z_pos=0.0016757736942307714%200.03066790990567455&amp;fields=PPos_x%20PPos_y%20z%20z_pos%20Pos_x%20Pos_y%20Pos_z%20Vel_x%20Vel_y%20Vel_z%20Type%20GalID%20MMSubID%20CentralMvir%20Mvir%20Rvir%20Vvir%20Vmax%20StellarMass%20ColdGas%20HI%20GasDiskRadius%20StellarDiskRadius%20GasSpin_x%20GasSpin_y%20GasSpin_z"
-                     >npy.gz</a
-                     >
                </div>
                <div
                   id="tcat_processing"

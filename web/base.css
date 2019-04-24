@@ -434,7 +434,7 @@ container a:hover:not(.active) {
 
 .section--catalog {
   text-align: left;
-  padding: 0 0 5rem 0 !important;
+  padding: 0 0 3rem 0 !important;
 }
 
 
@@ -649,6 +649,7 @@ div#hist, .hist {
   border: 1px solid #E1E1E1;
   margin: 2.5rem .2rem;
   font-size: 90%;
+  border-radius: 4px;
 }
 
 .py-pre {
@@ -656,6 +657,50 @@ div#hist, .hist {
   margin: 1rem 1rem 2.5rem 1rem; 
 }
 
+/* Filter card
+  –––––––––––––––––––––––––––––––––––––––––––––––––– */
+  .card {
+    overflow: hidden;
+    border: 1px solid #E1E1E1;
+    border-radius: 4px 4px 0 0;
+    background-color: #EEE;
+    height: 40px;
+  }
+  .card-header {
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    transition: 0.3s;
+    margin: 0;
+    border-bottom: none;
+    border-radius: 0;
+    display: inline-block;
+    height: 38px;
+    padding: 0 30px;
+    color: #555;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 38px;
+    letter-spacing: 0.1rem;
+    text-transform: uppercase;
+    text-decoration: none;
+    font-family: system-ui;
+    white-space: nowrap;
+  }
+  .cardcontent {
+    padding: 2.5rem 3rem;
+    border: 1px solid #E1E1E1;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    animation: fadeEffect 1s;
+    display: flex;
+    flex-direction: row;
+  }
+  .cardcontent > a, .cardcontent > label {
+    margin-right: 10px;
+  }
 
 /* Footer
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
