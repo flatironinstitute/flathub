@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css?family=Major+Mono+Display|Montserrat|Roboto");
+@import url("https://fonts.googleapis.com/css?family=Major+Mono+Display|Montserrat|Open+Sans");
 
 /*
 * Liz Skeleton
@@ -38,11 +38,26 @@
   min-height: calc(100vh - 160px);
 }
 
+.container--entire {
+  padding: 20px 0 0 0!important;
+  min-height: calc(100vh - 160px);
+}
+
+.container--footer {
+  max-width: 85% !important;
+}
+
 .column,
 .columns {
   width: 100%;
   float: left;
   box-sizing: border-box;
+}
+
+.row-form {
+  border-top: 1px solid #eee;
+  margin-top: 2.5rem;
+  padding-top: 2.5rem;
 }
 
 /* For devices larger than 400px */
@@ -56,7 +71,7 @@
 /* For devices larger than 550px */
 @media (min-width: 550px) {
   .container {
-    width: 80%;
+    width: 95vw;
   }
   .column,
   .columns {
@@ -200,7 +215,7 @@ body {
   font-size: 1.5em; /* currently ems cause chrome bug misinterpreting rems on body element */
   line-height: 1.6;
   font-weight: 400;
-  font-family: "Roboto", Helvetica, Arial, sans-serif;
+  font-family: "Open Sans", Helvetica, Arial, sans-serif;
   color: var(--cooler-black);
   margin: 0px;
 }
@@ -419,8 +434,42 @@ container a:hover:not(.active) {
 
 .section--catalog {
   text-align: left;
-  padding: 3rem 0 !important;
+  padding: 0 0 5rem 0 !important;
 }
+
+
+/* Histogram
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+.row--chartfilter {
+  max-height: 55vh;
+  margin-bottom: 5rem;
+}
+
+div#dhist, .dhist {
+  display: none;
+  position: relative;
+}
+
+div#hist, .hist {
+  width: 100%;
+}
+
+/* Catalog
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+.catalog__heading {
+  margin-bottom: 5rem;
+}
+
+.filter__title {
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  text-align: center;
+  line-height: 38px;
+  letter-spacing: 0.1rem;
+  padding-left: 10px;
+}
+
 
 /* Hero
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
@@ -555,6 +604,7 @@ container a:hover:not(.active) {
   border: 1px solid #E1E1E1;
   border-radius: 4px 4px 0 0;
   background-color: #EEE;
+  height: 40px;
 }
 
 .tab button {
@@ -584,6 +634,7 @@ container a:hover:not(.active) {
   border-top: none;
   border-radius: 0 0 4px 4px;
   animation: fadeEffect 1s;
+  min-height: calc(55vh - 90px);
 }
 
 @keyframes fadeEffect {
@@ -596,7 +647,7 @@ container a:hover:not(.active) {
   display: none;
   background: #F1F1F1;
   border: 1px solid #E1E1E1;
-  margin: 0 .2rem;
+  margin: 2.5rem .2rem;
   font-size: 90%;
 }
 
@@ -873,6 +924,10 @@ input[type="button"].button-primary:focus {
   border-color: var(--cooler-red);
 }
 
+.button-close {
+  padding: 0 10px;
+}
+
 /* Forms
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
 input[type="email"],
@@ -926,7 +981,9 @@ label,
 legend {
   display: block;
   margin-bottom: 0.5rem;
-  font-weight: 600;
+  font-weight: 400;
+  font-family: system-ui;
+  font-size: 1.2rem;
 }
 fieldset {
   padding: 0;
@@ -940,6 +997,11 @@ label > .label-body {
   display: inline-block;
   margin-left: 0.5rem;
   font-weight: normal;
+}
+
+.superlabel {
+  font-size: 1.5rem;
+  font-weight: 600;
 }
 
 /* Lists
@@ -1222,25 +1284,6 @@ table#tcat th {
 }
 table#tcat td {
   white-space: nowrap;
-}
-
-/* histogram */
-div#dhist {
-  display: none;
-  position: relative;
-  margin: auto;
-  margin-bottom: 30px;
-  height: 40vh;
-  width: 80vw;
-}
-button#hist-y-tog {
-  width: 50px;
-  padding: 2px;
-  border-width: 1px;
-}
-div#hist {
-  width: 100%;
-  height: 100%;
 }
 
 /* dict */
