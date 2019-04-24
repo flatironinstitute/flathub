@@ -137,11 +137,9 @@ topPage = getPath R.unit $ \() req -> do
             H.div H.! HA.class_ "row" $ do
               H.div H.! HA.class_ "one-half column collection" $ do
                 H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) H.! HA.class_ "collection-link" $ do
-                  -- H.img H.! HA.src (staticURI ["candals_box.png"]) H.! HA.class_ "u-max-full-width"
                   H.h4 H.! HA.class_ "u-max-full-width collection-label" $ "Candels"
               H.div H.! HA.class_ "one-half column collection" $ do
                 H.a H.! HA.href (WH.routeActionValue staticHtml ["ananke"] mempty) H.! HA.class_ "collection-link" $ do
-                  -- H.img H.! HA.src (staticURI ["ananke_box.png"]) H.! HA.class_ "u-max-full-width"
                   H.h4 H.! HA.class_ "u-max-full-width collection-label" $ "Ananke"
           -- Third section on mainpage
         H.div H.! HA.class_ "section catalogs" $ do
