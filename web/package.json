@@ -13,9 +13,9 @@
     "jspm": "^0.17.0-beta.49"
   },
   "devDependencies": {
-    "@types/datatables.net": "^1.10.14",
-    "@types/highcharts": "^5.0.36",
-    "@types/jquery": "^3.3.29",
+    "@types/datatables.net": "^1.10.17",
+    "@types/highcharts": "^5.0.41",
+    "@types/jquery": "^3.3.30",
     "@types/systemjs": "^0.20.6",
     "typescript": "~2.8.0"
   },
@@ -65,12 +65,12 @@
           "_stream_transform": "readable-stream/transform"
         }
       },
-      "npm:inherits@2.0.3": {
+      "npm:inherits@2.0.4": {
         "ignore": [
           "test.js"
         ]
       },
-      "npm:jquery@3.3.1": {
+      "npm:jquery@3.4.1": {
         "format": "amd"
       },
       "npm:pbkdf2@3.0.17": {
