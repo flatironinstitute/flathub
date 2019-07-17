@@ -343,7 +343,7 @@ ul#topbar {
 .header__link--dropdown,
 .header__link {
   display: inline;
-  padding: 0 1.4em 0 0;
+  padding: 0 1.4em 16px 0;
   font-size: 1.2rem;
   text-transform: uppercase;
   font-weight: 600;
