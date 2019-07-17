@@ -1,17 +1,13 @@
-resolver: lts-13.7
+resolver: lts-13.28
 packages:
 - '.'
-- location:
-    git: git://github.com/dylex/waimwork
-    commit: 5c6c01f1b3c3f69bae7cc8c409c9a2928dc4c53d
-  extra-dep: true
-- location:
-    git: git://github.com/dylex/hs-hdf5
-    commit: 7f3da0a759d69326031c0ff7a4c6419da57c39fb
-  extra-dep: true
 extra-deps:
-  - postgresql-typed-0.5.3.0
+  - postgresql-typed-0.6.0.1
   - web-inv-route-0.1.2.2
+  - git: git://github.com/dylex/waimwork
+    commit: fe4b01f09c12d2419d1b208aed79b04e0de8b227
+  - git: git://github.com/dylex/hs-hdf5
+    commit: ee4a09ada76b87ea2f7f88661c5b3049d9d9625c
 flags:
   web-inv-route:
     snap: false

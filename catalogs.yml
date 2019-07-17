@@ -1339,6 +1339,7 @@ ananke:
         descr: Random index used to select subsets
         type: long
         dict: GAIA_random_index
+        disp: false
       - name: parentid
         descr: array index of the generating star particle in the snapshot file
         type: long
@@ -1355,6 +1356,7 @@ ananke:
         units: deg
         sub:
         - name: ra
+          title: ra
           descr: Right ascension
           type: double
           dict: ppos_x
@@ -1363,6 +1365,7 @@ ananke:
           type: double
           dict: GAIA_ppos_x_error
         - name: dec
+          title: dec
           descr: Declination
           type: double
           dict: ppos_y

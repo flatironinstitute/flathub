@@ -25,7 +25,7 @@ spec:
           - name: discovery.zen.ping.unicast.hosts
             value: "astrosims-es-trans"
           - name: discovery.zen.minimum_master_nodes
-            value: "4"
+            value: "3"
           - name: node.max_local_storage_nodes
             value: "8"
           - name: node.master
