@@ -1194,6 +1194,7 @@ hr {
   padding: 4px 10px;
   text-align: left;
 }
+*/
 #tdict > tbody > tr > td.depth-0 {
   padding-left: 0px;
 }
@@ -1208,7 +1209,7 @@ hr {
 }
 #tdict > tbody > tr > td.units {
   text-align: center;
-} */
+}
 
 /* Old main.css
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
