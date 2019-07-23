@@ -1735,6 +1735,371 @@ ananke:
         descr: "[Ne/H]"
         type: float
         disp: false
+candels:
+  title: CANDELS
+  descr:
+  index: candels
+  count:
+  sort: 'candels'
+  fields:
+    - name: ID
+      desc: CANDELS ID
+      type: int
+    - name: RA
+      desc: Right scension
+      type: float
+      units: deg
+    - name: DEC
+      desc: Declination
+      type: float
+      units: deg
+    - name: U_abmag
+      desc: AB mag in VIMOS_U band corrected for Galactic extinction
+      type: float
+    - name: U_eabmag
+      desc: Uncertainty AB mag in VIMOS_U band corrected for Galactic extinction
+      type: float
+    - name: ACS_F435_abmag
+      desc: AB mag in ACS_F435W band corrected for Galactic extinction
+      type: float
+    - name: ACS_F435_eabmag
+      desc: Uncertainty AB mag in ACS_F435W band corrected for Galactic extinction
+      type: float
+    - name: ACS_F606_abmag
+      desc: AB mag in ACS_F606 band corrected for Galactic extinction
+      type: float
+    - name: ACS_F606_eabmag
+      desc: Uncertainty AB mag in ACS_F606 band corrected for Galactic extinction
+      type: float
+    - name: ACS_F775W_abmag
+      desc: AB mag in ACS_F775W band corrected for Galactic extinction
+      type: float
+    - name: ACS_F775W_eabmag
+      desc: Uncertainty AB mag in ACS_F775W band corrected for Galactic extinction
+      type: float
+    - name: ACS_F814_abmag
+      desc: AB mag in ACS_F814 band corrected for Galactic extinction
+      type: float
+    - name: ACS_F814_eabmag
+      desc: Uncertainty AB mag in ACS_F814 band corrected for Galactic extinction
+      type: float
+    - name: ACS_F850_abmag
+      desc: AB mag in ACS_F850 band corrected for Galactic extinction
+      type: float
+    - name: ACS_F850_eabmag
+      desc: Uncertainty AB mag in ACS_F850 band corrected for Galactic extinction
+      type: float
+    - name: WFC3_F098_abmag
+      desc: AB mag in WFC3_F098 band corrected for Galactic extinction
+      type: float
+    - name: WFC3_F098_eabmag
+      desc: Uncertainty AB mag in WFC3_F098 band corrected for Galactic extinction
+      type: float
+    - name: WFC3_F105_abmag
+      desc: AB mag in WFC3_F105 band corrected for Galactic extinction
+      type: float
+    - name: WFC3_F105_eabmag
+      desc: Uncertainty AB mag in WFC3_F105 band corrected for Galactic extinction
+      type: float
+    - name: WFC3_F125_abmag
+      desc: AB mag in WFC3_F125 band corrected for Galactic extinction
+      type: float
+    - name: WFC3_F125_eabmag
+      desc: Uncertainty AB mag in WFC3_F125 band corrected for Galactic extinction
+      type: float
+    - name: WFC3_F140_abmag
+      desc: AB mag in WFC3_F140 band corrected for Galactic extinction
+      type: float
+    - name: WFC3_F140_eabmag
+      desc: Uncertainty AB mag in WFC3_F140 band corrected for Galactic extinction
+      type: float
+    - name: WFC3_F160_abmag
+      desc: AB mag in WFC3_F160 band corrected for Galactic extinction
+      type: float
+    - name: WFC3_F160_eabmag
+      desc: Uncertainty AB mag in WFC3_F160 band corrected for Galactic extinction
+      type: float
+    - name: WFC3_F275_abmag
+      desc: AB mag in WFC3_F275 band corrected for Galactic extinction
+      type: float
+    - name: WFC3_F275_eabmag
+      desc: Uncertainty AB mag in WFC3_F275 band corrected for Galactic extinction
+      type: float
+    - name: K_abmag
+      desc: AB mag in ISAAC_KS band corrected for Galactic extinction
+      type: float
+    - name: K_eabmag
+      desc: Uncertainty AB mag in ISAAC_KS band corrected for Galactic extinction
+      type: float
+    - name: IRAC_CH1_abmag
+      desc: AB mag in IRAC_CH1 band corrected for Galactic extinction
+      type: float
+    - name: IRAC_CH1_eabmag
+      desc: Uncertainty AB mag in IRAC_CH1 band corrected for Galactic extinction
+      type: float
+    - name: IRAC_CH2_abmag
+      desc: AB mag in IRAC_CH2 band corrected for Galactic extinction
+      type: float
+    - name: IRAC_CH2_eabmag
+      desc: Uncertainty AB mag in IRAC_CH2 band corrected for Galactic extinction
+      type: float
+    - name: IRAC_CH3_abmag
+      desc: AB mag in IRAC_CH3 band corrected for Galactic extinction
+      type: float
+    - name: IRAC_CH3_eabmag
+      desc: Uncertainty AB mag in IRAC_CH3 band corrected for Galactic extinction
+      type: float
+    - name: IRAC_CH4_abmag
+      desc: AB mag in IRAC_CH4 band corrected for Galactic extinction
+      type: float
+    - name: IRAC_CH4_eabmag
+      desc: Uncertainty AB mag in IRAC_CH4 band corrected for Galactic extinction
+      type: float
+    - name: ztype
+      desc: Z type for z best (0 = spec, 1 = grism, 2 = phot)
+      type: int
+      enum: ['spec', 'grism', 'phot']
+    - name: zmed
+      desc: Median phot z
+      type: float
+    - name: zlow
+      desc: 16th percentile of z phot PDF
+      type: float
+    - name: zhigh
+      desc: 84th percentile of z phot PDF
+      type: float
+    - name: U_rest_eazy
+      desc: Rest-frame AB mag in U band derived with EAZY
+      type: float
+    - name: V_rest_eazy
+      desc: Rest-frame AB mag in V band derived with EAZY
+      type: float
+    - name: R_rest_eazy
+      desc: Rest-frame AB mag in R band derived with EAZY
+      type: float
+    - name: I_rest_eazy
+      desc: Rest-frame AB mag in I band derived with EAZY
+      type: float
+    - name: J_rest_eazy
+      desc: Rest-frame AB mag in J band derived with EAZY
+      type: float
+    - name: K_rest_eazy
+      desc: Rest-frame AB mag in K band derived with EAZY
+      type: float
+    - name: UV1500_rest_eazy
+      desc: Rest-frame AB mag in UV1500A band derived with EAZY
+      type: float
+    - name: UV2300_rest_eazy
+      desc: Rest-frame AB mag in UV2300A band derived with EAZY
+      type: float
+    - name: UV2800_rest_eazy
+      desc: Rest-frame AB mag in UV2800A band derived with EAZY
+      type: float
+    - name: FLAGS_galactic
+      desc: Galfit flag in F160W band
+      type: float
+    - name: re
+      desc: Galfit R_e in F160W band
+      type: float
+    - name: dre
+      desc: Uncertainty Galfit R_e in F160W band
+      type: float
+    - name: n
+      desc: Galfit Sersic Index in F160W band
+      type: float
+    - name: dn
+      desc: Uncertainty Galfit Sersic Index in F160W band
+      type: float
+    - name: q
+      desc: Galfit b/a in F160W band
+      type: float
+    - name: dq
+      desc: Uncertainty Galfit position angle in F160W band
+      type: float
+    - name: pa
+      desc: Galfit position angle in F160W band
+      type: float
+    - name: dpa
+      desc: Uncertainty Galfit position angle in F160W band
+      type: float
+    - name: sn
+      desc: Galfit S/N integration over the F160W segmentation region
+      type: float
+    - name: logM_P12_50
+      desc: Median stellar mass at observation
+      type: float
+    - name: logMt_P12_50
+      desc: Median total stellar mass formed
+      type: float
+    - name: logSFR_P12_50
+      desc: Median SFR in the last 10 Myr
+      type: float
+    - name: logAGE_P12_50
+      desc: Median light-weighted age
+      type: float
+    - name: logMha_P12_50
+      desc: Median Halpha flux
+      type: float
+    - name: VJ_P12_50
+      desc: Median V-J color
+      type: float
+    - name: UV_P12_50
+      desc: Median U-V color
+      type: float
+    - name: AV_P12_50
+      desc: Median dust-attenuation in V band
+      type: float
+    - name: AFUV_P12_50
+      desc: Median dust-attenuation in FUV band
+      type: float
+    - name: ANUV_P12_50
+      desc: Median dust-attenuation in NUV band
+      type: float
+    - name: logM_P12_16
+      desc: 16th percentile stellar mass at observation
+      type: float
+    - name: logMt_P12_16
+      desc: 16th percentile total stellar mass formed
+      type: float
+    - name: logSFR_P12_516
+      desc: 16th percentile SFR in the last 10 Myr
+      type: float
+    - name: logAGE_P12_16
+      desc: 16th percentile light-weighted age
+      type: float
+    - name: logMha_P12_16
+      desc: 16th percentile Halpha flux
+      type: float
+    - name: VJ_P12_16
+      desc: 16th percentile V-J color
+      type: float
+    - name: UV_P12_16
+      desc: 16th percentile U-V color
+      type: float
+    - name: AV_P12_16
+      desc: 16th percentile Median dust-attenuation in V band
+      type: float
+    - name: AFUV_P12_16
+      desc: 16th percentile Median dust-attenuation in FUV band
+      type: float
+    - name: ANUV_P12_16
+      desc: 16th percentile Median dust-attenuation in NUV band
+    - name: logM_P12_16
+      desc: 16th percentile stellar mass at observation
+      type: float
+    - name: logMt_P12_16
+      desc: 16th percentile total stellar mass formed
+      type: float
+    - name: logSFR_P12_516
+      desc: 16th percentile SFR in the last 10 Myr
+      type: float
+    - name: logAGE_P12_16
+      desc: 16th percentile light-weighted age
+      type: float
+    - name: logMha_P12_16
+      desc: 16th percentile Halpha flux
+      type: float
+    - name: VJ_P12_16
+      desc: 16th percentile V-J color
+      type: float
+    - name: UV_P12_16
+      desc: 16th percentile U-V color
+      type: float
+    - name: AV_P12_16
+      desc: 16th percentile Median dust-attenuation in V band
+      type: float
+    - name: AFUV_P12_16
+      desc: 16th percentile Median dust-attenuation in FUV band
+      type: float
+    - name: ANUV_P12_16
+      desc: 16th percentile Median dust-attenuation in NUV band
+    - name: logM_P12_84
+      desc: 84th percentile stellar mass at observation
+      type: float
+    - name: logMt_P12_84
+      desc: 84th percentile total stellar mass formed
+      type: float
+    - name: logSFR_P12_584
+      desc: 84th percentile SFR in the last 10 Myr
+      type: float
+    - name: logAGE_P12_84
+      desc: 84th percentile light-weighted age
+      type: float
+    - name: logMha_P12_84
+      desc: 84th percentile Halpha flux
+      type: float
+    - name: VJ_P12_84
+      desc: 84th percentile V-J color
+      type: float
+    - name: UV_P12_84
+      desc: 84th percentile U-V color
+      type: float
+    - name: AV_P12_84
+      desc: 84th percentile Median dust-attenuation in V band
+      type: float
+    - name: AFUV_P12_84
+      desc: 84th percentile Median dust-attenuation in FUV band
+      type: float
+    - name: ANUV_P12_84
+      desc: 84th percentile Median dust-attenuation in NUV band
+      type: float
+    - name: red_chi_P12
+      desc: Reduced chi^2 of fit (good < 5)
+      type: float
+    - name: nbands_P12
+      desc: Number of bands fitted (good >= 10)
+      type: int
+    - name: FLAGS_P12
+      desc: Zbest_flag (good = red_chi < 5 and nbands >= 10)
+      type: int
+    - name: Log_mass_zPhot
+      desc: Best-fit stellar mass
+      type: float
+    - name: SFR_zPhot
+      desc: Best-fit SFR
+      type: float
+    - name: age_zPhot
+      desc: Best-fit age of formation
+      type: float
+    - name: E_BminusV_zPhot
+      desc: Best-fit E(B-V)
+      type: float
+    - name: U_zPhot
+      desc: Best-fit rest frame AB mag in U band
+      type: float
+    - name: B_zPhot
+      desc: Best-fit rest frame AB mag in B band
+      type: float
+    - name: V_zPhot
+      desc: Best-fit rest frame AB mag in V band
+      type: float
+    - name: R_zPhot
+      desc: Best-fit rest frame AB mag in R band
+      type: float
+    - name: I_zPhot
+      desc: Best-fit rest frame AB mag in I band
+      type: float
+    - name: J_zPhot
+      desc: Best-fit rest frame AB mag in J band
+      type: float
+    - name: K_zPhot
+      desc: Best-fit rest frame AB mag in K band
+      type: float
+    - name: SFRTOTf
+      desc: The best estimate of the total SFR - either SFR^corr_UV or SFR_IR + SFR^obs_UV for IR detected sources
+      type: float
+    - name: LIMMAG_F160W
+      desc: Limiting magnitutde for a point source in F160W
+      type: float
+    - name: RMS
+      desc: RMS Value
+      type: float
+    - name: EFFECTIVE_AREA
+      desc: Effective area of the central pixel
+      type: float
+    - name: FLAGS_LIMMAG
+      desc: A flag for the galaxies with a limiting magnitude close to the magnitude limit calculated by Meredith Durbin (good=0)
+      type: float
 lusam:
   title: Lu-SAM
   descr: >
