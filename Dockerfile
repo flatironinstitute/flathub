@@ -9,9 +9,9 @@ USER astrosims
 
 COPY --chown=astrosims . /home/astrosims/astrosims
 WORKDIR /home/astrosims/astrosims
-RUN make -C web
 RUN stack install --system-ghc --extra-include-dirs=/usr/include/hdf5/serial --extra-lib-dirs=/usr/lib/x86_64-linux-gnu/hdf5/serial && \
     rm -rf .stack-work
+RUN make -C web
 
 EXPOSE 8092
 ENTRYPOINT ["/home/astrosims/.local/bin/astrosims"]
