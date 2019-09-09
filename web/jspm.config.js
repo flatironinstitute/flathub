@@ -44,6 +44,7 @@ SystemJS.config({
     "npm:*.json"
   ],
   map: {
+    "child_process": "npm:jspm-nodelibs-child_process@0.2.1",
     "assert": "npm:jspm-nodelibs-assert@0.2.1",
     "buffer": "npm:jspm-nodelibs-buffer@0.2.3",
     "constants": "npm:jspm-nodelibs-constants@0.2.1",
@@ -52,7 +53,7 @@ SystemJS.config({
     "datatables.net-dt": "npm:datatables.net-dt@1.10.19",
     "events": "npm:jspm-nodelibs-events@0.2.2",
     "fs": "npm:jspm-nodelibs-fs@0.2.1",
-    "highcharts": "npm:highcharts@6.2.0",
+    "highcharts": "npm:highcharts@7.2.0",
     "http": "npm:jspm-nodelibs-http@0.2.0",
     "https": "npm:jspm-nodelibs-https@0.2.2",
     "jquery": "npm:jquery@3.4.1",
@@ -62,6 +63,7 @@ SystemJS.config({
     "path": "npm:jspm-nodelibs-path@0.2.3",
     "process": "npm:jspm-nodelibs-process@0.2.1",
     "querystring": "npm:jspm-nodelibs-querystring@0.2.2",
+    "readline": "npm:jspm-nodelibs-readline@0.2.1",
     "stream": "npm:jspm-nodelibs-stream@0.2.1",
     "string_decoder": "npm:jspm-nodelibs-string_decoder@0.2.2",
     "ts": "github:frankwallis/plugin-typescript@9.0.0",
@@ -74,7 +76,7 @@ SystemJS.config({
   packages: {
     "npm:jspm-nodelibs-buffer@0.2.3": {
       "map": {
-        "buffer": "npm:buffer@5.2.1"
+        "buffer": "npm:buffer@5.4.2"
       }
     },
     "npm:jspm-nodelibs-crypto@0.2.1": {
@@ -105,7 +107,7 @@ SystemJS.config({
         "browserify-rsa": "npm:browserify-rsa@4.0.1",
         "parse-asn1": "npm:parse-asn1@5.1.4",
         "bn.js": "npm:bn.js@4.11.8",
-        "elliptic": "npm:elliptic@6.5.0"
+        "elliptic": "npm:elliptic@6.5.1"
       }
     },
     "npm:browserify-rsa@4.0.1": {
@@ -280,7 +282,7 @@ SystemJS.config({
     "npm:create-ecdh@4.0.3": {
       "map": {
         "bn.js": "npm:bn.js@4.11.8",
-        "elliptic": "npm:elliptic@6.5.0"
+        "elliptic": "npm:elliptic@6.5.1"
       }
     },
     "npm:stream-http@2.8.3": {
@@ -309,17 +311,6 @@ SystemJS.config({
         "inherits": "npm:inherits@2.0.4",
         "safe-buffer": "npm:safe-buffer@5.1.2",
         "des.js": "npm:des.js@1.0.0"
-      }
-    },
-    "npm:buffer@5.2.1": {
-      "map": {
-        "ieee754": "npm:ieee754@1.1.13",
-        "base64-js": "npm:base64-js@1.3.0"
-      }
-    },
-    "npm:typescript@2.8.4": {
-      "map": {
-        "source-map-support": "npm:source-map-support@0.5.12"
       }
     },
     "npm:public-encrypt@4.0.3": {
@@ -360,12 +351,6 @@ SystemJS.config({
         "inherits": "npm:inherits@2.0.4"
       }
     },
-    "npm:source-map-support@0.5.12": {
-      "map": {
-        "buffer-from": "npm:buffer-from@1.1.1",
-        "source-map": "npm:source-map@0.6.1"
-      }
-    },
     "npm:parse-asn1@5.1.4": {
       "map": {
         "browserify-aes": "npm:browserify-aes@1.2.0",
@@ -376,20 +361,37 @@ SystemJS.config({
         "asn1.js": "npm:asn1.js@4.10.1"
       }
     },
-    "npm:elliptic@6.5.0": {
+    "npm:randombytes@2.1.0": {
+      "map": {
+        "safe-buffer": "npm:safe-buffer@5.1.2"
+      }
+    },
+    "npm:buffer@5.4.2": {
+      "map": {
+        "ieee754": "npm:ieee754@1.1.13",
+        "base64-js": "npm:base64-js@1.3.1"
+      }
+    },
+    "npm:elliptic@6.5.1": {
       "map": {
         "bn.js": "npm:bn.js@4.11.8",
         "inherits": "npm:inherits@2.0.4",
         "hash.js": "npm:hash.js@1.1.7",
+        "minimalistic-assert": "npm:minimalistic-assert@1.0.1",
         "hmac-drbg": "npm:hmac-drbg@1.0.1",
         "brorand": "npm:brorand@1.1.0",
-        "minimalistic-assert": "npm:minimalistic-assert@1.0.1",
         "minimalistic-crypto-utils": "npm:minimalistic-crypto-utils@1.0.1"
       }
     },
-    "npm:randombytes@2.1.0": {
+    "npm:typescript@2.8.4": {
       "map": {
-        "safe-buffer": "npm:safe-buffer@5.1.2"
+        "source-map-support": "npm:source-map-support@0.5.13"
+      }
+    },
+    "npm:source-map-support@0.5.13": {
+      "map": {
+        "buffer-from": "npm:buffer-from@1.1.1",
+        "source-map": "npm:source-map@0.6.1"
       }
     }
   }

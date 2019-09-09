@@ -5,6 +5,7 @@
   "main": "main.js",
   "scripts": {
     "postinstall": "sed -i 's/\\r$//' node_modules/.bin/jspm ; jspm install",
+    "compile": "tsc",
     "build": "jspm build --minify main.ts index.js"
   },
   "author": "Dylan Simon",
@@ -14,10 +15,10 @@
   },
   "devDependencies": {
     "@types/datatables.net": "^1.10.17",
-    "@types/highcharts": "^5.0.41",
-    "@types/jquery": "^3.3.30",
+    "@types/highcharts": "^5.0.44",
+    "@types/jquery": "^3.3.31",
     "@types/systemjs": "^0.20.6",
-    "typescript": "~2.8.0"
+    "typescript": "^3.6.0"
   },
   "jspm": {
     "name": "astrosims",
@@ -25,7 +26,7 @@
     "dependencies": {
       "datatables.net": "npm:datatables.net@^1.10.16",
       "datatables.net-dt": "npm:datatables.net-dt@^1.10.16",
-      "highcharts": "npm:highcharts@^6.1.2",
+      "highcharts": "npm:highcharts@^7.2.0",
       "jquery": "npm:jquery@^3.3.1",
       "ts": "github:frankwallis/plugin-typescript@^9.0.0"
     },
@@ -35,6 +36,7 @@
     "peerDependencies": {
       "assert": "npm:jspm-nodelibs-assert@^0.2.0",
       "buffer": "npm:jspm-nodelibs-buffer@^0.2.0",
+      "child_process": "npm:jspm-nodelibs-child_process@^0.2.0",
       "constants": "npm:jspm-nodelibs-constants@^0.2.0",
       "crypto": "npm:jspm-nodelibs-crypto@^0.2.0",
       "events": "npm:jspm-nodelibs-events@^0.2.0",
@@ -47,6 +49,7 @@
       "path": "npm:jspm-nodelibs-path@^0.2.0",
       "process": "npm:jspm-nodelibs-process@^0.2.0",
       "querystring": "npm:jspm-nodelibs-querystring@^0.2.0",
+      "readline": "npm:jspm-nodelibs-readline@^0.2.0",
       "stream": "npm:jspm-nodelibs-stream@^0.2.0",
       "string_decoder": "npm:jspm-nodelibs-string_decoder@^0.2.0",
       "typescript": "npm:typescript@~2.8.0",
