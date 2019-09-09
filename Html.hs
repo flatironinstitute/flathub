@@ -133,7 +133,7 @@ topPage = getPath R.unit $ \() req -> do
         H.div H.! HA.class_ "section collections" $ do
           H.div H.! HA.class_ "container" $ do
             H.h3 H.! HA.class_ "section__heading" $ "Collections"
-            H.p H.! HA.class_ "section__description" $ "Here is where you can describe these collections. Or not, but this is a useful place to draw attention to bigger groupings. This design might be more than needed."
+            -- H.p H.! HA.class_ "section__description" $ "Here is where you can describe these collections. Or not, but this is a useful place to draw attention to bigger groupings. This design might be more than needed."
             H.div H.! HA.class_ "row" $ do
               H.div H.! HA.class_ "one-half column collection" $ do
                 H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) H.! HA.class_ "collection-link" $ do
@@ -145,7 +145,7 @@ topPage = getPath R.unit $ \() req -> do
         H.div H.! HA.class_ "section catalogs" $ do
           H.div H.! HA.class_ "container" $ do
             H.h3 H.! HA.class_ "section__heading" $ "Catalogs"
-            H.p H.! HA.class_ "section__description" $ "Overall catalog description. I'd like to gather some additional details on these so I can style appropriately."
+            -- H.p H.! HA.class_ "section__description" $ "Overall catalog description. I'd like to gather some additional details on these so I can style appropriately."
             H.div H.! HA.class_ "row" $ do
               H.dl H.! HA.class_ "twelve columns catalogs__list" $
                 forM_ (catalogsSorted cats) $ \(sim, cat) -> do
