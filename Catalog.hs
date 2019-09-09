@@ -50,7 +50,7 @@ instance J.FromJSON ESStoreField where
 
 data CatalogStore
   = CatalogES
-    { catalogIndex, catalogMapping :: !T.Text
+    { catalogIndex :: !T.Text
     , catalogSettings :: J.Object
     , catalogStoreField :: !ESStoreField
     }
@@ -79,7 +79,6 @@ parseCatalog dict = J.withObject "catalog" $ \c -> do
   catalogCount <- c J..:? "count"
   catalogStore <- CatalogES
       <$> (c J..: "index")
-      <*> (c J..:! "mapping" J..!= "catalog")
       <*> (c J..:? "settings" J..!= HM.empty)
       <*> (c J..:? "store" J..!= ESStoreValues)
   let catalogFields = expandFields catalogFieldGroups

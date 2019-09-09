@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: astrosims-es
-        image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.5.4
+        image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.3.1
         env:
           - name: cluster.name
             value: "astrosims"
@@ -22,10 +22,10 @@ spec:
           #  value: "true"
           - name: ES_JAVA_OPTS
             value: "-Xms24g -Xmx24g"
-          - name: discovery.zen.ping.unicast.hosts
+          - name: discovery.seed_hosts
             value: "astrosims-es-trans"
-          - name: discovery.zen.minimum_master_nodes
-            value: "3"
+          - name: cluster.initial_master_nodes
+            value: "astrosims-es" # FIXME valid node.name
           - name: node.max_local_storage_nodes
             value: "8"
           - name: node.master
@@ -47,6 +47,7 @@ spec:
             cpu: 4
             memory: 28Gi
           limits:
+            cpu: 8
             memory: 32Gi
         ports:
           - containerPort: 9200
