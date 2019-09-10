@@ -35,7 +35,7 @@ spec:
           - name: node.name
             valueFrom:
               fieldRef:
-                fieldPath: metadata.name
+                fieldPath: spec.nodeName
           - name: processors
             valueFrom:
               resourceFieldRef:
