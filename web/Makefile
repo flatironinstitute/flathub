@@ -1,4 +1,4 @@
-all: index.js.gz jspm.config.js.gz jspm_packages/system.js.gz jspm_packages/npm/datatables.net-dt@1.10.19/css/jquery.dataTables.css.gz
+all: index.js.gz jspm.config.js.gz jspm_packages/system.js.gz jspm_packages/npm/datatables.net-dt@1.10.19/css/jquery.dataTables.css.gz base.css.gz
 
 TS:=$(wildcard *.ts)
 

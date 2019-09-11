@@ -104,8 +104,8 @@ elasticSearch meth url query body = do
   parse r = AP.parseWith (HTTP.responseBody r) (J.json <* AP.endOfInput) BS.empty
 
 catalogURL :: Catalog -> [String]
-catalogURL Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn, catalogMapping = mapn } } =
-  [T.unpack idxn, T.unpack mapn]
+catalogURL Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } =
+  [T.unpack idxn]
 
 defaultSettings :: Catalog -> J.Object
 defaultSettings cat = HM.fromList
@@ -125,10 +125,9 @@ createIndex :: Catalog -> M J.Value
 createIndex cat@Catalog{ catalogStore = ~CatalogES{..} } = elasticSearch PUT [T.unpack catalogIndex] [] $ JE.pairs $
      "settings" J..= mergeJSONObject catalogSettings (defaultSettings cat)
   <> "mappings" .=*
-    (  catalogMapping .=*
-      (  "dynamic" J..= J.String "strict"
-      <> "_source" .=* ("enabled" J..= (catalogStoreField == ESStoreSource))
-      <> "properties" J..= HM.map field (catalogFieldMap cat)))
+    (  "dynamic" J..= J.String "strict"
+    <> "_source" .=* ("enabled" J..= (catalogStoreField == ESStoreSource))
+    <> "properties" J..= HM.map field (catalogFieldMap cat))
   where
   field f = J.object
     [ "type" J..= (fieldType f :: Type)
@@ -142,15 +141,14 @@ checkIndices = do
   HM.mapMaybe (\cat -> either Just (const Nothing) $ J.parseEither (catalog isdev cat) indices)
     <$> asks (catalogMap . globalCatalogs)
   where
-  catalog isdev ~cat@Catalog{ catalogStore = CatalogES{ catalogIndex = idxn, catalogMapping = mapn } } =
-    parseJSONField idxn (idx isdev cat mapn)
-  idx :: Bool -> Catalog -> T.Text -> J.Value -> J.Parser ()
-  idx isdev cat mapn = J.withObject "index" $ \i -> do
+  catalog isdev ~cat@Catalog{ catalogStore = CatalogES{ catalogIndex = idxn } } =
+    parseJSONField idxn (idx isdev cat)
+  idx :: Bool -> Catalog -> J.Value -> J.Parser ()
+  idx isdev cat = J.withObject "index" $ \i -> do
     sets <- i J..: "settings" >>= (J..: "index")
     ro <- sets J..:? "blocks" >>= maybe (return Nothing) (J..:? "read_only") >>= maybe (return False) boolish
     unless (isdev || ro) $ fail "open (not read_only)"
-    parseJSONField "mappings" (J.withObject "mappings" $
-      parseJSONField mapn (mapping $ catalogFields cat)) i
+    parseJSONField "mappings" (mapping $ catalogFields cat) i
   mapping :: Fields -> J.Value -> J.Parser ()
   mapping fields = J.withObject "mapping" $ parseJSONField "properties" $ J.withObject "properties" $ \ps ->
     forM_ fields $ \field -> parseJSONField (fieldName field) (prop field) ps
@@ -196,6 +194,7 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreFiel
         <> "boost_mode" J..= ("replace" :: String)
         <> "min_score" J..= (1 - querySample)))
       else id) filts
+    <> "track_total_hits" J..= J.Bool True
     <> "aggs" .=*
       (foldMap
         (\f -> fieldName f .=* ((if isTermsField f then "terms" else "stats") .=* field f))
@@ -274,7 +273,7 @@ queryBulk cat@Catalog{ catalogStore = CatalogES{ catalogStoreField = store } } q
   parse = J.withObject "query" $ \q -> (,)
     <$> q J..: "_scroll_id"
     <*> parseJSONField "hits" (J.withObject "hits" $ \hits -> (,)
-      <$> hits J..: "total"
+      <$> (hits J..: "total" >>= (J..: "value"))
       <*> parseJSONField "hits" (J.withArray "hits" $
         V.mapM $ J.withObject "hit" $ case store of
           ESStoreSource ->

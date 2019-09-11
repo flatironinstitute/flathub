@@ -25,10 +25,10 @@ spec:
         resources:
           requests:
             cpu: 2
-            memory: 1Gi
+            memory: 4Gi
           limits:
-            cpu: 2
-            memory: 8Gi
+            cpu: 4
+            memory: 16Gi
         ports:
         - containerPort: 8092
           name: http
