@@ -12,6 +12,8 @@ spec:
       labels:
         name: astrosims
     spec:
+      imagePullSecrets:
+      - name: docker-registry-auth
       initContainers:
       - name: wait-es
         image: busybox
@@ -20,7 +22,7 @@ spec:
           - '-c'
           - until wget http://astrosims-es:9200/ ; do sleep 5 ; done
       containers:
-      - image: flatironinstitute/astrosims-reproto:latest
+      - image: gordon-dm4:25703/flatironinstitute/astrosims
         name: astrosims
         resources:
           requests:
@@ -55,4 +57,5 @@ spec:
   - name: http
     port: 80
     targetPort: http
-  #externalIPs:
+  externalIPs:
+  - 132.249.245.247
