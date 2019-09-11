@@ -1,5 +1,8 @@
 http {
   port = 8092
+  ssl.key = "ssl/privkey.pem"
+  ssl.cert = "ssl/fullchain.pem"
+  ssl.insecure = true
 }
 elasticsearch {
   server = "http://astrosims-es:9200/"

@@ -44,6 +44,13 @@ spec:
           initialDelaySeconds: 30
           timeoutSeconds: 15
           periodSeconds: 60
+        volumeMounts:
+          - mountPath: /home/astrosims/astrosims/ssl
+            name: ssl
+      volumes:
+        - name: ssl
+          secret:
+            secretName: astrosims-ssl
       restartPolicy: Always
 ---
 apiVersion: v1
