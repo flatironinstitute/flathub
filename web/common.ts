@@ -34,6 +34,7 @@ export type Catalog = {
   bulk: string[],
   fields: Field[],
   count?: number,
+  sort?: number,
 };
 
 export type AggrStats = {

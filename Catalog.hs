@@ -57,14 +57,15 @@ data CatalogStore
 
 data Catalog = Catalog
   { catalogEnabled :: !Bool
-  , catalogSort :: !T.Text
+  , catalogOrder :: !T.Text -- ^display order in catalog list
   , catalogTitle :: !T.Text
   , catalogDescr :: Maybe T.Text
   , catalogStore :: !CatalogStore
   , catalogFieldGroups :: FieldGroups
   , catalogFields :: Fields
   , catalogFieldMap :: HM.HashMap T.Text Field
-  , catalogKey :: Maybe T.Text
+  , catalogKey :: Maybe T.Text -- ^primary key (not really used)
+  , catalogSort :: Maybe T.Text -- ^sort field for index
   , catalogCount :: Maybe Word
   }
 
@@ -73,17 +74,19 @@ parseCatalog dict = J.withObject "catalog" $ \c -> do
   catalogEnabled <- c J..:! "enabled" J..!= True
   catalogFieldGroups <- parseJSONField "fields" (J.withArray "fields" $ mapM (parseFieldGroup dict)) c
   catalogTitle <- c J..: "title"
-  catalogSort <- c J..:? "sort" J..!= T.empty
   catalogDescr <- c J..:? "descr"
   catalogKey <- c J..:? "key"
+  catalogSort <- c J..:? "sort"
   catalogCount <- c J..:? "count"
   catalogStore <- CatalogES
       <$> (c J..: "index")
       <*> (c J..:? "settings" J..!= HM.empty)
       <*> (c J..:? "store" J..!= ESStoreValues)
+  catalogOrder <- c J..:? "order" J..!= catalogIndex catalogStore
   let catalogFields = expandFields catalogFieldGroups
       catalogFieldMap = HM.fromList $ map (fieldName &&& id) catalogFields
   mapM_ (\k -> unless (HM.member k catalogFieldMap) $ fail "key field not found in catalog") catalogKey
+  mapM_ (\k -> unless (HM.member k catalogFieldMap) $ fail "sort field not found in catalog") catalogSort
   return Catalog{..}
 
 instance J.FromJSON Catalog where
@@ -96,6 +99,7 @@ instance J.ToJSON Catalog where
     , "fields" J..= catalogFields
     ] ++ concatMap maybeToList
     [ ("count" J..=) <$> catalogCount
+    , ("sort" J..=) <$> catalogSort
     ]
 
 takeCatalogField :: T.Text -> Catalog -> Maybe (Field, Catalog)

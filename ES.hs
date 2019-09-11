@@ -109,12 +109,15 @@ catalogURL Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } =
 
 defaultSettings :: Catalog -> J.Object
 defaultSettings cat = HM.fromList
-  [ "index" J..= J.object
+  [ "index" J..= J.object (
     [ "number_of_shards" J..= (clusterSize * min 100 (maybe 2 (succ . (`div` (clusterSize * docsPerShard))) (catalogCount cat)))
     , "number_of_replicas" J..= J.Number 1
     , "refresh_interval" J..= J.Number (-1)
     , "max_docvalue_fields_search" J..= (8 + length (catalogFields cat))
-    ]
+    ] ++ foldMap (\s ->
+    [ "sort.field" J..= J.String s
+    , "sort.order" J..= J.String "asc"
+    ]) (catalogSort cat))
   ] where
   -- elastic search cluster size to optimize for (should really be determined dynamicaly)
   clusterSize = 4
