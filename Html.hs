@@ -55,7 +55,7 @@ jsonVar :: J.ToJSON a => T.Text -> a -> H.Html
 jsonVar var = jsonEncodingVar var . J.toEncoding
 
 catalogsSorted :: Catalogs -> [(T.Text, Catalog)]
-catalogsSorted = sortOn (catalogSort . snd) . HM.toList . catalogMap
+catalogsSorted = sortOn (catalogOrder . snd) . HM.toList . catalogMap
 
 htmlResponse :: Wai.Request -> ResponseHeaders -> H.Markup -> M Wai.Response
 htmlResponse req hdrs body = do

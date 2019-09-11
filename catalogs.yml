@@ -667,7 +667,7 @@ illustris_sub:
 neutrino:
   title: Neutrino
   index: neutrino
-  sort: 'neutrino'
+  order: 'neutrino'
   fields:
     - name: simulation
       type: keyword
@@ -737,6 +737,7 @@ gaea:
     The full dataset is available <a href='http://voms.simonsfoundation.org:50013/KZiLTE5keWT4N535B3Zd2aHibbjju6n/HI_lightcone_Anna3/'>here</a>.
   index: gaea
   count: 201238825
+  sort: z
   fields:
     - name: PPos
       type: double
@@ -843,6 +844,7 @@ gaiadr2:
   descr: >
     <a href='https://www.cosmos.esa.int/web/gaia/dr2'>Gaia Data Release 2</a> source catalog from the <a href='http://www.esa.int/ESA'>European Space Agency</a>, released Apr 25 2018.
   key: source_id
+  sort: source_id
   count: 1692919135
   fields:
 #    - name: solution_id
@@ -1745,7 +1747,7 @@ lusam:
     The full data release will be available shortly.
   index: lusam
   count: 12380047
-  sort: 'candels-3'
+  order: 'candels-3'
   fields:
     - name: field
       dict: candels_field
@@ -2346,7 +2348,7 @@ unimach:
     The full data release is available <a href="https://www.peterbehroozi.com/data.html">here</a>.
   index: unimach
   count: 253884907
-  sort: 'candels-2'
+  order: 'candels-2'
   fields:
     - name: field
       dict: candels_field
@@ -2497,7 +2499,7 @@ scsam:
     SC-SAM Lightcones for the CANDELS project (based on models presented in Yung et al. 2018 and Somerville et al. 2015 SAMs).
     The full data release will be available shortly.
   index: scsam
-  sort: 'candels-1'
+  order: 'candels-1'
   count: 34168952
   fields:
     - name: field
