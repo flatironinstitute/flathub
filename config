@@ -1,7 +1,7 @@
 http {
   port = 8092
-  ssl.key = "ssl/privkey.pem"
-  ssl.cert = "ssl/fullchain.pem"
+  ssl.key = "tls/tls.key"
+  ssl.cert = "tls/tls.crt"
   ssl.insecure = true
 }
 elasticsearch {
