@@ -20,6 +20,7 @@ module Field
   , numpySize, numpyDtype
   , sqlType
   , FieldSub(..)
+  , fieldDisp
   , Field, FieldGroup
   , Fields, FieldGroups
   , parseFieldGroup
@@ -266,6 +267,27 @@ sqlType (Float _)     = "real"
 sqlType (HalfFloat _) = "real"
 sqlType (Boolean _)   = "boolean"
 
+data FieldFlag
+  = FieldHidden
+  | FieldNormal
+  | FieldTop
+  | FieldRequired
+  deriving (Eq, Ord, Enum)
+
+instance J.ToJSON FieldFlag where
+  toJSON FieldRequired = J.String "required"
+  toJSON FieldTop = J.String "top"
+  toJSON FieldNormal = J.Null
+  toJSON FieldHidden = J.String "hidden"
+
+instance J.FromJSON FieldFlag where
+  parseJSON (J.String "required") = return FieldRequired
+  parseJSON (J.String "top") = return FieldTop
+  parseJSON (J.String "hidden") = return FieldHidden
+  parseJSON (J.String "disp") = return FieldNormal
+  parseJSON J.Null = return FieldNormal
+  parseJSON j = J.typeMismatch "FieldFlag" j
+
 data FieldSub t m = Field
   { fieldName :: T.Text
   , fieldType :: TypeValue t
@@ -273,11 +295,14 @@ data FieldSub t m = Field
   , fieldTitle :: T.Text
   , fieldDescr :: Maybe T.Text
   , fieldUnits :: Maybe T.Text
-  , fieldTop, fieldDisp :: Bool
+  , fieldFlag :: FieldFlag
   , fieldSub :: m (FieldsSub t m)
   , fieldDict :: Maybe T.Text
   , fieldScale :: Maybe Scientific
   }
+
+fieldDisp :: FieldSub t m -> Bool
+fieldDisp = (FieldHidden <) . fieldFlag
 
 type FieldGroup = FieldSub Proxy Maybe
 type Field = FieldSub Proxy Proxy
@@ -295,8 +320,7 @@ instance Alternative m => Default (FieldSub Proxy m) where
     , fieldTitle = T.empty
     , fieldDescr = Nothing
     , fieldUnits = Nothing
-    , fieldTop = False
-    , fieldDisp = True
+    , fieldFlag = FieldNormal
     , fieldSub = empty
     , fieldDict = Nothing
     , fieldScale = Nothing
@@ -307,14 +331,15 @@ instance J.ToJSON Field where
     [ "name" J..= fieldName
     , "type" J..= fieldType
     , "title" J..= fieldTitle
-    , "disp" J..= fieldDisp
+    , "disp" J..= (fieldFlag > FieldHidden)
     , "base" J..= baseType ('f','i','b','s') fieldType
     , "dtype" J..= numpyDtype fieldType
     ] ++ concatMap maybeToList
     [ ("enum" J..=) <$> fieldEnum
     , ("descr" J..=) <$> fieldDescr
     , ("units" J..=) <$> fieldUnits
-    , bool "top" fieldTop
+    , bool "top" $ fieldFlag >= FieldTop
+    , bool "required" $ fieldFlag >= FieldRequired
     , bool "terms" $ isTermsField f
     , ("dict" J..=) <$> fieldDict
     , ("scale" J..=) <$> fieldScale
@@ -336,15 +361,13 @@ parseFieldGroup dict = parseFieldDefs def where
     fieldTitle <- f J..:! "title" J..!= if T.null (fieldTitle d) then fieldName else fieldTitle d
     fieldDescr <- (<|> fieldDescr d) <$> f J..:? "descr"
     fieldUnits <- (<|> fieldUnits d) <$> f J..:? "units"
-    fieldTop <- f J..:? "top" J..!= fieldTop d
-    fieldDisp <- f J..:! "disp" J..!= fieldDisp d
+    fieldFlag <- f J..:? "flag" J..!= fieldFlag d
     fieldScale <- f J..:! "scale"
     fieldSub <- (<|> fieldSub d) <$> J.explicitParseFieldMaybe' (J.withArray "subfields" $ V.mapM $
         parseFieldDefs defd
           { fieldType = fieldType
           , fieldEnum = fieldEnum
-          , fieldTop = fieldTop
-          , fieldDisp = fieldDisp
+          , fieldFlag = fieldFlag
           })
       f "sub"
     return Field{..}
@@ -410,5 +433,5 @@ isTermsField :: Field -> Bool
 isTermsField Field{ fieldType = Keyword _ } = True
 isTermsField Field{ fieldType = Text _ } = True
 isTermsField Field{ fieldType = Byte _, fieldEnum = Just _ } = True
-isTermsField Field{ fieldType = Byte _, fieldTop = True } = True
+isTermsField f@Field{ fieldType = Byte _ } = fieldFlag f >= FieldTop
 isTermsField _ = False
