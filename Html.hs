@@ -86,7 +86,7 @@ htmlResponse req hdrs body = do
             H.li H.! HA.class_ "header__link--dropdown" $ do
               H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Collections"
             H.li H.! HA.class_ "header__link" $ do
-              H.a H.! HA.href (WH.routeActionValue comparePage () mempty) $ H.text "Compare"
+              H.a H.! HA.href (WH.routeActionValue comparePage [] mempty) $ H.text "Compare"
             when (HM.member "scsam" $ catalogMap $ globalCatalogs glob) $
               H.li H.! HA.class_ "header__link" $ do
                 H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) $ H.text "CANDELS"
@@ -104,7 +104,7 @@ htmlResponse req hdrs body = do
             H.p H.! HA.class_ "footer-links" $ do
               H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Home"
               H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Catalogs"
-              H.a H.! HA.href (WH.routeActionValue comparePage () mempty) $ H.text "Compare"
+              H.a H.! HA.href (WH.routeActionValue comparePage [] mempty) $ H.text "Compare"
               H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) $ H.text "About"
             H.p H.! HA.class_ "footer-company-name" $ "Flatiron Institute, 2019"
 
@@ -284,9 +284,10 @@ sqlSchema = getPath (R.parameter R.>* "schema.sql") $ \sim _ -> do
   where
   sqls s = "$SqL$" <> s <> "$SqL$" -- hacky dangerous
 
-comparePage :: Route ()
-comparePage = getPath "compare" $ \() req -> do
-  cats <- asks globalCatalogs
+comparePage :: Route [T.Text]
+comparePage = getPath ("compare" R.*< R.manyI R.parameter) $ \path req -> do
+  cats <- maybe (result $ response notFound404 [] (T.intercalate "/" path <> " not found")) return .
+    groupedCatalogs path =<< asks globalCatalogs
   htmlResponse req [] $ do
     jsonVar "Catalogs" $ catalogMap cats
     jsonVar "Dict" $ catalogDict cats

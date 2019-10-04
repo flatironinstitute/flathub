@@ -272,14 +272,53 @@ dict:
     descr: km/s
     units: Radial velocity error
 
+groups:
+  - name: milkyway
+    title: Milky Way
+    children:
+      - gaiadr2
+      - ananke
+  - name: galaxy
+    title: Cosmological Galaxy Formation Simulations
+    children:
+      - name: illustris
+        title: Illustris
+        children:
+          - illustris
+          - illustris_sub
+      #- simba
+      - gaea
+  - name: dm
+    title: Cosmological Dark Matter-Only Simulations
+    children:
+      #- quixote
+      - name: illustris
+        title: Illustris
+        children:
+          - illustris
+          - illustris_sub
+  - name: candels
+    title: CANDELS
+    children:
+      - scsam
+      - unimach
+      - lusam
+      #- candels
+  - name: zoomin
+    title: Cosmological Zoom-in Simulations
+    children: []
+      #- fire
+
 illustris:
-  title: Illustris
+  title: Illustris FoF Halos
   index: illustris
   fields:
     - name: simulation
       type: keyword
+      # TODO: enum
       top: true
       descr: "e.g. 'Illustris-1' or 'Illustris-2-Dark'."
+      required: true
     - name: snapshot
       type: short
       title: 'snap'

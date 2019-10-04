@@ -9,6 +9,7 @@ module Catalog
   , Catalog(..)
   , takeCatalogField
   , Catalogs(..)
+  , groupedCatalogs
   , Filter(..)
   , liftFilterValue
   , Query(..)
@@ -22,10 +23,12 @@ import qualified Data.Aeson.Types as J
 import           Data.Bits (xor)
 import           Data.Functor.Identity (Identity(runIdentity))
 import qualified Data.HashMap.Strict as HM
+import qualified Data.HashSet as HS
 import           Data.Maybe (catMaybes, maybeToList)
 import           Data.Proxy (Proxy(Proxy))
 import           Data.Semigroup (Semigroup((<>)))
 import qualified Data.Text as T
+import qualified Data.Vector as V
 
 import Monoid
 import Field
@@ -109,26 +112,94 @@ takeCatalogField n c = (, c
   , catalogFieldGroups = deleteField n               $ catalogFieldGroups c
   }) <$> HM.lookup n (catalogFieldMap c) where
 
+data Grouping
+  = GroupCatalog !T.Text
+  | Grouping
+    { groupName :: !T.Text
+    , groupTitle :: !T.Text
+    , groupings :: Groupings
+    }
+
+groupingName :: Grouping -> T.Text
+groupingName (GroupCatalog n) = n
+groupingName Grouping{ groupName = n } = n
+
+data Groupings = Groupings
+  { groupList :: V.Vector Grouping
+  , groupMap :: HM.HashMap T.Text Grouping
+  }
+
+instance J.FromJSON Grouping where
+  parseJSON (J.String c) = return $ GroupCatalog c
+  parseJSON j = J.withObject "group" (\g -> do
+    groupName <- g J..: "name"
+    groupTitle <- g J..: "title"
+    groupings <- g J..: "children"
+    return Grouping{..}) j
+
+instance J.FromJSON Groupings where
+  parseJSON j = do
+    groupList <- J.parseJSON j
+    let groupMap = HM.fromList $ map (groupingName &&& id) $ V.toList groupList
+    return Groupings{..}
+
+instance Semigroup Groupings where
+  a <> b = Groupings
+    { groupList = groupList a <> groupList b
+    , groupMap = groupMap a <> groupMap b
+    }
+
+instance Monoid Groupings where
+  mempty = Groupings mempty mempty
+  mappend = (<>)
+
+lookupGrouping :: [T.Text] -> Grouping -> Maybe Grouping
+lookupGrouping [] g = Just g
+lookupGrouping (h:l) Grouping{ groupings = Groupings{ groupMap = m } } =
+  lookupGrouping l =<< HM.lookup h m
+lookupGrouping _ _ = Nothing
+
+groupingCatalogs :: Grouping -> HS.HashSet T.Text
+groupingCatalogs (GroupCatalog t) = HS.singleton t
+groupingCatalogs Grouping{ groupings = g } = groupingsCatalogs g
+
+groupingsCatalogs :: Groupings -> HS.HashSet T.Text
+groupingsCatalogs Groupings{ groupList = v } = foldMap groupingCatalogs v
+
 data Catalogs = Catalogs
   { catalogDict :: [Field]
   , catalogMap :: !(HM.HashMap T.Text Catalog)
+  , catalogGroupings :: Groupings
   }
+
+-- |Virtual top-level grouping
+catalogGrouping :: Catalogs -> Grouping
+catalogGrouping Catalogs{ catalogGroupings = g } = Grouping "top" "top" g
+
+groupedCatalogs :: [T.Text] -> Catalogs -> Maybe Catalogs
+groupedCatalogs [] c = Just c
+groupedCatalogs p c = do
+  g <- lookupGrouping p (catalogGrouping c)
+  return c{ catalogMap = HM.intersection (catalogMap c) $ HS.toMap $ groupingCatalogs g }
 
 instance Semigroup Catalogs where
   a <> b = Catalogs
     { catalogDict = catalogDict a <> catalogDict b
     , catalogMap  = catalogMap  a <> catalogMap  b
+    , catalogGroupings = catalogGroupings a <> catalogGroupings b
     }
 
 instance Monoid Catalogs where
-  mempty = Catalogs mempty mempty
+  mempty = Catalogs mempty mempty mempty
   mappend = (<>)
 
 instance J.FromJSON Catalogs where
   parseJSON = J.withObject "top" $ \o -> do
     dict <- o J..:? "dict" J..!= mempty
-    cats <- mapM (parseCatalog $ expandAllFields dict) (HM.delete "dict" o)
-    return $ Catalogs (expandFields dict) cats
+    groups <- o J..:? "groups" J..!= mempty
+    cats <- mapM (parseCatalog $ expandAllFields dict) (HM.delete "dict" $ HM.delete "groups" o)
+    mapM_ (\c -> unless (HM.member c cats) $ fail $ "Group catalog " ++ show c ++ " not found") $ groupingsCatalogs groups
+    return $ Catalogs (expandFields dict) cats groups
 
 data Filter a
   = FilterEQ !a
