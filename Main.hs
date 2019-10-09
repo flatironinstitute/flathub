@@ -35,7 +35,8 @@ routes = R.routes
   [ R.routeNormCase topPage
   , R.routeNormCase static
   , R.routeNormCase staticHtml
-  , R.routeNormCase simulationPage
+  , R.routeNormCase catalogPage
+  , R.routeNormCase groupPage
   , R.routeNormCase comparePage
   , R.routeNormCase catalog
   , R.routeNormCase catalogBulk
@@ -119,7 +120,7 @@ main = do
       unless (all (n ==) $ catalogCount cat) $ fail $ T.unpack sim ++ ": incorrect document count"
       liftIO . print =<< ES.closeIndex cat
 
-    return catalogs{ catalogMap = HM.filter catalogEnabled $ catalogMap catalogs `HM.difference` errs }
+    return $ pruneCatalogs errs catalogs
 
   when (null (optCreate opts ++ optClose opts) && isNothing (optIngest opts)) $
     runWaimwork conf $ runGlobal global{ globalCatalogs = catalogs' }

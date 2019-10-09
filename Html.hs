@@ -1,15 +1,17 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TupleSections #-}
 
 module Html
   ( topPage
-  , simulationPage
+  , catalogPage
   , sqlSchema
+  , groupPage
   , comparePage
   , staticHtml
   ) where
 
-import           Control.Monad (forM_, when)
+import           Control.Monad (forM_, when, zipWithM_)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (ask, asks)
 import qualified Data.Aeson as J
@@ -17,7 +19,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
 import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
-import           Data.List (find, sortOn)
+import           Data.List (find, inits, sortOn)
 import           Data.Maybe (isNothing)
 import           Data.Monoid ((<>))
 import qualified Data.Text as T
@@ -57,10 +59,14 @@ jsonVar var = jsonEncodingVar var . J.toEncoding
 catalogsSorted :: Catalogs -> [(T.Text, Catalog)]
 catalogsSorted = sortOn (catalogOrder . snd) . HM.toList . catalogMap
 
+groupingTitle :: Grouping -> Maybe Catalog -> T.Text
+groupingTitle g = maybe (groupTitle g) catalogTitle
+
 htmlResponse :: Wai.Request -> ResponseHeaders -> H.Markup -> M Wai.Response
 htmlResponse req hdrs body = do
   glob <- ask
   let isdev = globalDevMode glob && any ((==) "dev" . fst) (Wai.queryString req)
+      cats = globalCatalogs glob
   return $ okResponse hdrs $ H.docTypeHtml $ do
     H.head $ do
       forM_ ([["jspm_packages", if isdev then "system.src.js" else "system.js"], ["jspm.config.js"]] ++ if isdev then [["dev.js"]] else [["index.js"]]) $ \src ->
@@ -70,7 +76,7 @@ htmlResponse req hdrs body = do
         H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
       H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML" $ mempty
       H.script H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.src "https://fonts.googleapis.com/css?family=Major+Mono+Display|Montserrat" $ mempty
-      jsonVar "Catalogs" (HM.map catalogTitle $ catalogMap $ globalCatalogs glob)
+      jsonVar "Catalogs" (HM.map catalogTitle $ catalogMap cats)
     H.body $ do
       H.header H.! HA.class_ "header" $ do
         H.div H.! HA.class_ "header__logo" $ do
@@ -79,20 +85,15 @@ htmlResponse req hdrs body = do
         H.nav H.! HA.class_ "header__nav" $ do
           H.ul H.! HA.id "topbar" $ do
             H.li H.! HA.class_ "header__link--dropdown" $ do
+              H.a H.! HA.href (WH.routeActionValue groupPage [] mempty) $ H.text "Collections"
+              H.div H.! HA.class_ "dropdown-content" $ do
+                forM_ (groupList $ catalogGroupings cats) $ \g ->
+                  H.a H.! HA.href (WH.routeActionValue groupPage [groupingName g] mempty) $ H.text $ groupingTitle g $ groupingCatalog cats g
+            H.li H.! HA.class_ "header__link--dropdown" $ do
               H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Catalogs"
               H.div H.! HA.class_ "dropdown-content" $ do
-                forM_ (catalogsSorted $ globalCatalogs glob) $ \(key, cat) ->
-                  H.a H.! HA.href (WH.routeActionValue simulationPage key mempty) $ H.text (catalogTitle cat)
-            H.li H.! HA.class_ "header__link--dropdown" $ do
-              H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Collections"
-            H.li H.! HA.class_ "header__link" $ do
-              H.a H.! HA.href (WH.routeActionValue comparePage [] mempty) $ H.text "Compare"
-            when (HM.member "scsam" $ catalogMap $ globalCatalogs glob) $
-              H.li H.! HA.class_ "header__link" $ do
-                H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) $ H.text "CANDELS"
-            when (HM.member "ananke" $ catalogMap $ globalCatalogs glob) $
-              H.li H.! HA.class_ "header__link" $ do
-                H.a H.! HA.href (WH.routeActionValue staticHtml ["ananke"] mempty) $ H.text "ANANKE"
+                forM_ (catalogsSorted cats) $ \(key, cat) ->
+                  H.a H.! HA.href (WH.routeActionValue catalogPage key mempty) $ H.text (catalogTitle cat)
       H.div H.! HA.class_ "container container--main" $ do
         body
       H.footer H.! HA.class_"footer-distributed" $ do
@@ -103,9 +104,8 @@ htmlResponse req hdrs body = do
               H.h3 $ "Center for Computational Astrophysics"
             H.p H.! HA.class_ "footer-links" $ do
               H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Home"
-              H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Catalogs"
+              H.a H.! HA.href (WH.routeActionValue groupPage [] mempty) $ H.text "Catalogs"
               H.a H.! HA.href (WH.routeActionValue comparePage [] mempty) $ H.text "Compare"
-              H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) $ H.text "About"
             H.p H.! HA.class_ "footer-company-name" $ "Flatiron Institute, 2019"
 
 acceptable :: [BS.ByteString] -> Wai.Request -> Maybe BS.ByteString
@@ -136,10 +136,10 @@ topPage = getPath R.unit $ \() req -> do
             -- H.p H.! HA.class_ "section__description" $ "Here is where you can describe these collections. Or not, but this is a useful place to draw attention to bigger groupings. This design might be more than needed."
             H.div H.! HA.class_ "row" $ do
               H.div H.! HA.class_ "one-half column collection" $ do
-                H.a H.! HA.href (WH.routeActionValue staticHtml ["candels"] mempty) H.! HA.class_ "collection-link" $ do
+                H.a H.! HA.href (WH.routeActionValue groupPage ["candels"] mempty) H.! HA.class_ "collection-link" $ do
                   H.h4 H.! HA.class_ "u-max-full-width collection-label" $ "Candels"
               H.div H.! HA.class_ "one-half column collection" $ do
-                H.a H.! HA.href (WH.routeActionValue staticHtml ["ananke"] mempty) H.! HA.class_ "collection-link" $ do
+                H.a H.! HA.href (WH.routeActionValue groupPage ["milkyway", "ananke"] mempty) H.! HA.class_ "collection-link" $ do
                   H.h4 H.! HA.class_ "u-max-full-width collection-label" $ "Ananke"
           -- Third section on mainpage
         H.div H.! HA.class_ "section catalogs" $ do
@@ -149,15 +149,15 @@ topPage = getPath R.unit $ \() req -> do
             H.div H.! HA.class_ "row" $ do
               H.dl H.! HA.class_ "twelve columns catalogs__list" $
                 forM_ (catalogsSorted cats) $ \(sim, cat) -> do
-                  H.dt $ H.a H.! HA.href (WH.routeActionValue simulationPage sim mempty) $
+                  H.dt $ H.a H.! HA.href (WH.routeActionValue catalogPage sim mempty) $
                     H.text $ catalogTitle cat
                   H.dd $ do
                     mapM_ H.preEscapedText $ catalogDescr cat
                     mapM_ ((" " <>) . (<> " rows.") . H.toMarkup) $ catalogCount cat
 
 
-simulationPage :: Route Simulation
-simulationPage = getPath R.parameter $ \sim req -> do
+catalogPage :: Route Simulation
+catalogPage = getPath R.parameter $ \sim req -> do
   cat <- askCatalog sim
   let
     fields = catalogFieldGroups cat
@@ -283,6 +283,38 @@ sqlSchema = getPath (R.parameter R.>* "schema.sql") $ \sim _ -> do
     <> foldMap (\f -> "COMMENT ON COLUMN " <> tab <> "." <> fieldName f <> " IS " <> sqls (fieldTitle f <> foldMap ((" [" <>) . (<> "]")) (fieldUnits f) <> foldMap (": " <>) (fieldDescr f)) <> ";\n") (catalogFields cat)
   where
   sqls s = "$SqL$" <> s <> "$SqL$" -- hacky dangerous
+
+groupPage :: Route [T.Text]
+groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
+  cats <- asks globalCatalogs
+  grp <- maybe (result $ response notFound404 [] (T.intercalate "/" path <> " not found")) return $
+    lookupGrouping path $ catalogGrouping cats
+  htmlResponse req [] $ do
+    H.div $ zipWithM_ (\p n -> do
+      H.a H.! HA.href (WH.routeActionValue groupPage p mempty) $ H.text n
+      " / ")
+      (init $ inits path) ("top":path)
+    case grp of
+      GroupCatalog cat -> do
+        let Catalog{..} = catalogMap cats HM.! cat
+        maybe (do
+          H.h2 $ H.text catalogTitle
+          mapM_ (H.p . H.preEscapedText) catalogDescr)
+          H.preEscapedText catalogHtml
+        H.a H.! HA.href (WH.routeActionValue catalogPage cat mempty) $ "explore"
+      Grouping{..} -> do
+        maybe (do
+          H.h2 $ H.text groupTitle)
+          H.preEscapedText groupHtml
+        H.dl H.! HA.class_ "twelve columns catalogs__list" $
+          forM_ (groupList groupings) $ \g -> do
+            let cat' = groupingCatalog cats g
+            H.dt $ H.a H.! HA.href (WH.routeActionValue groupPage (path ++ [groupingName g]) mempty) $
+              H.text $ groupingTitle g cat'
+            forM_ cat' $ \cat -> H.dd $ do
+              mapM_ H.preEscapedText $ catalogDescr cat
+              mapM_ ((" " <>) . (<> " rows.") . H.toMarkup) $ catalogCount cat
+        H.a H.! HA.href (WH.routeActionValue comparePage path mempty) $ "compare"
 
 comparePage :: Route [T.Text]
 comparePage = getPath ("compare" R.*< R.manyI R.parameter) $ \path req -> do

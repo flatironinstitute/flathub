@@ -8,7 +8,14 @@ module Catalog
   , CatalogStore(..)
   , Catalog(..)
   , takeCatalogField
+  , Grouping(..)
+  , groupingName
+  , groupingCatalog
+  , Groupings(..)
+  , lookupGrouping
   , Catalogs(..)
+  , pruneCatalogs
+  , catalogGrouping
   , groupedCatalogs
   , Filter(..)
   , liftFilterValue
@@ -16,7 +23,7 @@ module Catalog
   ) where
 
 import           Control.Arrow ((&&&))
-import           Control.Monad (unless)
+import           Control.Monad (guard, unless)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
@@ -63,6 +70,7 @@ data Catalog = Catalog
   , catalogOrder :: !T.Text -- ^display order in catalog list
   , catalogTitle :: !T.Text
   , catalogDescr :: Maybe T.Text
+  , catalogHtml :: Maybe T.Text
   , catalogStore :: !CatalogStore
   , catalogFieldGroups :: FieldGroups
   , catalogFields :: Fields
@@ -78,6 +86,7 @@ parseCatalog dict = J.withObject "catalog" $ \c -> do
   catalogFieldGroups <- parseJSONField "fields" (J.withArray "fields" $ mapM (parseFieldGroup dict)) c
   catalogTitle <- c J..: "title"
   catalogDescr <- c J..:? "descr"
+  catalogHtml <- c J..:? "html"
   catalogKey <- c J..:? "key"
   catalogSort <- c J..:? "sort"
   catalogCount <- c J..:? "count"
@@ -117,12 +126,17 @@ data Grouping
   | Grouping
     { groupName :: !T.Text
     , groupTitle :: !T.Text
+    , groupHtml :: Maybe T.Text
     , groupings :: Groupings
     }
 
 groupingName :: Grouping -> T.Text
 groupingName (GroupCatalog n) = n
 groupingName Grouping{ groupName = n } = n
+
+groupingCatalog :: Catalogs -> Grouping -> Maybe Catalog
+groupingCatalog cats (GroupCatalog c) = HM.lookup c $ catalogMap cats
+groupingCatalog _ _ = Nothing
 
 data Groupings = Groupings
   { groupList :: V.Vector Grouping
@@ -134,6 +148,7 @@ instance J.FromJSON Grouping where
   parseJSON j = J.withObject "group" (\g -> do
     groupName <- g J..: "name"
     groupTitle <- g J..: "title"
+    groupHtml <- g J..:? "html"
     groupings <- g J..: "children"
     return Grouping{..}) j
 
@@ -172,9 +187,21 @@ data Catalogs = Catalogs
   , catalogGroupings :: Groupings
   }
 
+pruneCatalogs :: HM.HashMap T.Text a -> Catalogs -> Catalogs
+pruneCatalogs errs cats = cats
+  { catalogMap = cm
+  , catalogGroupings = pgs $ catalogGroupings cats
+  }
+  where
+  cm = HM.filter catalogEnabled $ catalogMap cats `HM.difference` errs
+  pg g@(GroupCatalog c) = g <$ guard (HM.member c cm)
+  pg g = g{ groupings = g' } <$ guard (not $ V.null $ groupList g')
+    where g' = pgs $ groupings g
+  pgs g = g{ groupList = V.mapMaybe pg (groupList g) }
+
 -- |Virtual top-level grouping
 catalogGrouping :: Catalogs -> Grouping
-catalogGrouping Catalogs{ catalogGroupings = g } = Grouping "top" "top" g
+catalogGrouping Catalogs{ catalogGroupings = g } = Grouping "top" "top" Nothing g
 
 groupedCatalogs :: [T.Text] -> Catalogs -> Maybe Catalogs
 groupedCatalogs [] c = Just c
@@ -196,8 +223,8 @@ instance Monoid Catalogs where
 instance J.FromJSON Catalogs where
   parseJSON = J.withObject "top" $ \o -> do
     dict <- o J..:? "dict" J..!= mempty
-    groups <- o J..:? "groups" J..!= mempty
-    cats <- mapM (parseCatalog $ expandAllFields dict) (HM.delete "dict" $ HM.delete "groups" o)
+    groups <- o J..:? "group" J..!= mempty
+    cats <- mapM (parseCatalog $ expandAllFields dict) (HM.delete "dict" $ HM.delete "group" o)
     mapM_ (\c -> unless (HM.member c cats) $ fail $ "Group catalog " ++ show c ++ " not found") $ groupingsCatalogs groups
     return $ Catalogs (expandFields dict) cats groups
 
