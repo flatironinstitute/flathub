@@ -19,6 +19,7 @@ module Catalog
   , groupedCatalogs
   , Filter(..)
   , liftFilterValue
+  , QueryAgg(..)
   , Query(..)
   ) where
 
@@ -232,6 +233,25 @@ data Filter a
   = FilterEQ !a
   | FilterRange{ filterLB, filterUB :: Maybe a }
 
+-- |Intersection
+instance Ord a => Semigroup (Filter a) where
+  FilterEQ a <> FilterEQ b = case compare a b of
+    EQ -> FilterEQ a
+    LT -> FilterRange (Just b) (Just a)
+    GT -> FilterRange (Just a) (Just b)
+  FilterEQ a <> FilterRange l u
+    | all (a <) l = FilterRange l (Just a)
+    | all (a >) u = FilterRange (Just a) u
+    | otherwise = FilterEQ a
+  FilterRange la ua <> FilterRange lb ub =
+    FilterRange (max la lb) (min ua ub)
+  r <> e = e <> r
+
+-- |'mempty' is unbounded
+instance Ord a => Monoid (Filter a) where
+  mempty = FilterRange Nothing Nothing
+  mappend = (<>)
+
 instance J.ToJSON1 Filter where
   liftToJSON f _ (FilterEQ x) = f x
   liftToJSON f _ (FilterRange l u) = J.object $ catMaybes $
@@ -252,6 +272,16 @@ liftFilterValue f (FilterRange Nothing (Just u)) =
 liftFilterValue f (FilterRange Nothing Nothing) =
   f{ fieldSub = Proxy, fieldType = fmapTypeValue (\Proxy -> FilterRange Nothing Nothing) (fieldType f) }
 
+data QueryAgg
+  = QueryAgg
+    { queryAggField :: Field
+    }
+  | QueryHist
+    { queryAggField :: Field
+    , queryHistSize :: Word
+    , queryHistAggs :: [QueryAgg]
+    }
+
 data Query = Query
   { queryOffset :: Word
   , queryLimit :: Word
@@ -260,8 +290,7 @@ data Query = Query
   , queryFilter :: [(FieldSub Filter Proxy)]
   , querySample :: Double
   , querySeed :: Maybe Word
-  , queryAggs :: [Field]
-  , queryHist :: [(Field, Word)]
+  , queryAggs :: [QueryAgg]
   }
 
 instance Monoid Query where
@@ -274,7 +303,6 @@ instance Monoid Query where
     , querySample = 1
     , querySeed   = Nothing
     , queryAggs   = []
-    , queryHist   = []
     }
   mappend = (<>)
 
@@ -288,7 +316,6 @@ instance Semigroup Query where
     , querySample = querySample q1 *     querySample q2
     , querySeed   = joinMaybeWith xor (querySeed q1) (querySeed q2)
     , queryAggs   = queryAggs   q1 <>    queryAggs   q2
-    , queryHist   = queryHist   q1 <>    queryHist q2
     }
 
 instance J.ToJSON Query where
@@ -306,6 +333,5 @@ instance J.ToJSON Query where
       ] | f <- queryFilter ]
     , "seed"   J..= querySeed
     , "sample" J..= querySample
-    , "aggs"   J..= map fieldName queryAggs
-    , "hist"   J..= (fieldName . fst <$> queryHist)
+    , "aggs"   J..= map (fieldName . queryAggField) queryAggs
     ]

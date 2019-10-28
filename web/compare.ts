@@ -295,7 +295,7 @@ class Compare {
       acell.appendChild(l);
 
       if (r.hist && Histogram) {
-        const wid = res.histsize[0]*scale;
+        const wid = res.histsize[n]*scale;
         const data = (<AggrTerms<number>>r.hist).buckets.map(x => [x.key * scale, x.doc_count / res.hits.total] as [number, number]);
         const opts = {
           id: this.unique,

@@ -54,7 +54,7 @@ function zoomRange(f: NumericFilter, wid: number, axis: Highcharts.AxisOptions) 
   f.change();
 }
 
-function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrTerms<number>, size: number[]) {
+function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrTerms<number>, size: Dict<number>) {
   const field = hist.field;
   const data: number[][] = [];
   for (let x of agg.buckets) {
@@ -69,7 +69,7 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrT
 
   const opts: Highcharts.Options = histogram_options(field);
   if (heatmap) {
-    const wid = size.map(s => s/2);
+    const wid = [size[field.name]/2, size[heatmap.name]/2];
     for (let d of data) {
       for (let i = 0; i < wid.length; i++)
         d[i] += wid[i];
@@ -104,11 +104,11 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, agg: AggrT
     opts.series = [<Highcharts.HeatMapSeriesOptions>{
       type: 'heatmap',
       data: data,
-      colsize: size[0],
-      rowsize: size[1]
+      colsize: 2*wid[0],
+      rowsize: 2*wid[1],
     }];
   } else {
-    const wid = size[0];
+    const wid = size[field.name];
     (<Highcharts.ChartOptions>opts.chart).events = {
       selection: function (event: Highcharts.ChartSelectionEvent) {
         event.preventDefault();

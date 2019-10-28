@@ -54,7 +54,7 @@ export type CatalogResponse = {
     hits: Dict<any>[]
   },
   aggregations?: Dict<Aggr>,
-  histsize: number[]
+  histsize: Dict<number>
 };
 
 export function fill_select_terms(s: HTMLSelectElement, f: Field, a: AggrTerms<string>) {
