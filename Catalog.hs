@@ -273,8 +273,12 @@ liftFilterValue f (FilterRange Nothing Nothing) =
   f{ fieldSub = Proxy, fieldType = fmapTypeValue (\Proxy -> FilterRange Nothing Nothing) (fieldType f) }
 
 data QueryAgg
-  = QueryAgg
+  = QueryStats
     { queryAggField :: Field
+    }
+  | QueryPercentiles
+    { queryAggField :: Field
+    , queryPercentiles :: [Float]
     }
   | QueryHist
     { queryAggField :: Field

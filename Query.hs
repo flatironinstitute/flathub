@@ -64,7 +64,7 @@ parseQuery cat req = fill $ foldl' parseQueryItem mempty $ Wai.queryString req w
   parseQueryItem q ("sample", Just (spl ('@' ==) -> Just (rmbs -> Just p, rmbs -> Just s))) =
     q{ querySample = querySample q * p, querySeed = Just $ maybe id xor (querySeed q) s }
   parseQueryItem q ("aggs",   Just (mapM lookf . spld -> Just a)) =
-    q{ queryAggs = unionBy eqAgg (queryAggs q) $ map QueryAgg a }
+    q{ queryAggs = unionBy eqAgg (queryAggs q) $ map QueryStats a }
   parseQueryItem q ("hist",   Just (parseHist . spld -> Just h)) =
     q{ queryAggs = queryAggs q <> h }
   parseQueryItem q (lookf -> Just f, Just (parseFilt f -> Just v)) =
@@ -76,7 +76,7 @@ parseQuery cat req = fill $ foldl' parseQueryItem mempty $ Wai.queryString req w
   parseSort _ = fail "invalid sort"
   parseHist [] = return []
   parseHist ((spl (':' ==) -> Just (lookf -> Just f, rmbs -> Just n)) : l) = mkHist f n =<< parseHist l
-  parseHist ((                      lookf -> Just f                 ) :[]) = return [QueryAgg f]
+  parseHist ((                      lookf -> Just f                 ) :[]) = return [QueryPercentiles f [50]]
   parseHist ((                      lookf -> Just f                 ) : l) = mkHist f 16 =<< parseHist l
   parseHist _ = fail "invalid hist"
   parseFilt f (spl delim -> Just (a, b)) = FilterRange <$> parseVal f a <*> parseVal f b
@@ -84,7 +84,7 @@ parseQuery cat req = fill $ foldl' parseQueryItem mempty $ Wai.queryString req w
   parseVal _ "" = Nothing
   parseVal f v = Just <$> parseVal' f v
   parseVal' f = fmap fieldType . parseFieldValue f . TE.decodeUtf8
-  eqAgg (QueryAgg f) (QueryAgg g) = fieldName f == fieldName g
+  eqAgg (QueryStats f) (QueryStats g) = fieldName f == fieldName g
   eqAgg _ _ = False
   mkHist f n l
     | typeIsNumeric (fieldType f) = return $ [QueryHist f n l]
@@ -107,7 +107,6 @@ catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do
   cat <- askCatalog sim
   let query = parseQuery cat req
       hsize = histsSize $ queryAggs query
-  liftIO $ print $ J.toJSON query
   unless (queryLimit query <= 100) $
     result $ response badRequest400 [] ("limit too large" :: String)
   unless (hsize > 0 && hsize <= 256) $
@@ -117,8 +116,8 @@ catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do
       res <- ES.queryIndex cat query
       return $ okResponse [] $ clean store res
   where
-  histSize (QueryAgg _) = 1
   histSize (QueryHist _ n l) = n * histsSize l
+  histSize _ = 1
   histsSize = product . map histSize
   clean store = mapObject $ HM.mapMaybeWithKey (cleanTop store)
   cleanTop _ "aggregations" = Just
