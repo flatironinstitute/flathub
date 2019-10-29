@@ -243,7 +243,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
       H.div H.! HA.class_ "comparison-tool-container" $ do
         H.div H.! HA.class_ "container-fluid comparison-tool" $ do
           H.div H.! HA.class_ "row" $ do
-            H.div H.! HA.class_ "col col-sm-12 col-md8 left-column" $ do
+            H.div H.! HA.class_ "col col-sm-12 col-md-8 left-column" $ do
               forM_ ["X", "Y"] $ \x ->
                 H.div H.! HA.class_ "left-column-header-group" $ do
                   -- here
@@ -274,9 +274,9 @@ catalogPage = getPath R.parameter $ \sim req -> do
                           H.! HA.name "customRadio"
                           H.! HA.class_ "custom-control-input"
                         H.label H.! HA.class_ "custom-control-label" H.! HA.for "customRadio1" $ H.string a
-                  when (x == "X") $
-                    H.button H.! HA.type_ "submit" H.! HA.class_ "btn btn-badge-inline" $
-                      "View Histogram"
+                    when (x == "X") $
+                      H.button H.! HA.type_ "submit" H.! HA.class_ "btn btn-badge-inline" $
+                        "View Histogram"
               H.div H.! HA.id "hist" $ mempty
 
             H.div H.! HA.class_ "col col-sm-12 col-md-4 right-column" $ do
