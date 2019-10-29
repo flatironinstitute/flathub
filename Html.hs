@@ -285,7 +285,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                 forM_ ["Filter", "Python", "Fields"] $ \t -> do
                   H.li H.! HA.class_ "nav-item" $ do
                     H.a
-                      H.! HA.class_ "nav-link"
+                      H.! HA.class_ ("nav-link" <> if (t == "Filter") then " active" else "")
                       H.! HA.id (H.stringValue t <> "-tab")
                       H.! H.dataAttribute "toggle" "tab"
                       H.! HA.href ("#" <> H.stringValue t)
