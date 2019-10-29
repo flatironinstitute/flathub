@@ -73,6 +73,7 @@ htmlResponse req hdrs body = do
         H.script H.! HA.type_ "text/javascript" H.! HA.src (staticURI src) $ mempty
       -- TODO: use System.resolve:
       forM_ [
+          ["jspm_packages", "npm", "datatables.net-dt@1.10.19", "css", "jquery.dataTables.css"],
           ["jspm_packages", "npm", "bootstrap@4.3.1", "dist", "css", "bootstrap.min.css"],
           ["base.css"]
         ] $ \src ->
