@@ -137,10 +137,17 @@ function toggleLog() {
     toggle_log(Histogram_chart);
 };
 
-(<any>window).histogramSelect = function histogramSelect() {
-  const sel = <HTMLSelectElement>document.getElementById('histsel');
-  Heatmap = Catalog.fields[Fields_idx[sel.value]];
-  update(false);
+(<any>window).histogramShow = function histogramShow(axis: 'x'|'y') {
+  if (axis == 'x')
+    Heatmap = undefined;
+  else {
+    const sely = <HTMLSelectElement>document.getElementById('histsel-y');
+    Heatmap = Catalog.fields[Fields_idx[sely.value]];
+  }
+  const selx = <HTMLSelectElement>document.getElementById('histsel-x');
+  const filt = add_filter(Fields_idx[selx.value]);
+  if (filt)
+    filt.histogram();
 };
 
 /* elasticsearch max_result_window */
