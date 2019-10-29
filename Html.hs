@@ -84,8 +84,8 @@ htmlResponse req hdrs body = do
     H.body $ do
       H.header H.! HA.class_ "header" $ do
         H.div H.! HA.class_ "header__logo" $ do
-          H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ do
-            H.img H.! HA.src (staticURI ["logo.png"]) H.! HA.height "25" H.! HA.width "200"
+          H.a H.! HA.href (WH.routeActionValue topPage () mempty) H.! HA.class_ "header__logo-link" $ do
+            H.span H.! HA.class_ "header__logo-style" $ H.text "ASTROSIMS"
         H.nav H.! HA.class_ "header__nav" $ do
           H.ul H.! HA.id "topbar" $ do
             H.li H.! HA.class_ "header__link--dropdown" $ do
@@ -98,6 +98,10 @@ htmlResponse req hdrs body = do
               H.div H.! HA.class_ "dropdown-content" $ do
                 forM_ (catalogsSorted cats) $ \(key, cat) ->
                   H.a H.! HA.href (WH.routeActionValue catalogPage key mempty) $ H.text (catalogTitle cat)
+            H.li H.! HA.class_ "header__link" $ do
+              H.a H.! HA.href (WH.routeActionValue comparePage [] mempty) $ H.text "Compare"
+            H.li H.! HA.class_ "header__link" $ do
+              H.a H.! HA.href (WH.routeActionValue staticHtml ["about"] mempty) $ H.text "About"
       H.div H.! HA.class_ "container container--main" $ do
         body
       H.footer H.! HA.class_"footer-distributed" $ do
