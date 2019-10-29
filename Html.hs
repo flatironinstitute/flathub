@@ -17,6 +17,7 @@ import           Control.Monad.Reader (ask, asks)
 import qualified Data.Aeson as J
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
+import           Data.Char (toUpper)
 import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
 import           Data.List (find, inits, sortOn)
@@ -245,30 +246,30 @@ catalogPage = getPath R.parameter $ \sim req -> do
         H.div H.! HA.class_ "container-fluid comparison-tool" $ do
           H.div H.! HA.class_ "row" $ do
             H.div H.! HA.class_ "col col-sm-12 col-md-8 left-column" $ do
-              forM_ ["X", "Y"] $ \x ->
+              forM_ ['x', 'y'] $ \x ->
                 H.div H.! HA.class_ "left-column-header-group" $ do
-                  -- here
-                  H.form H.! HA.class_ "form-inline form-badge" $ do
+                  H.div H.! HA.class_ "form-inline form-badge" $ do
                     H.div H.! HA.class_ "form-group" $ do
-                      H.label H.! HA.for ("histsel-" <> H.stringValue x) $ do
-                        H.a H.! HA.class_ "nav-link" $ "Select " <> H.string x <> " Axis"
-                      H.select H.! HA.class_ "custom-select" H.! HA.id ("histsel-" <> H.stringValue x) $ do
-                        H.option H.! HA.selected "selected" $ "Select " <> H.string x <> " Axis"
+                      H.label H.! HA.for ("histsel-" <> H.stringValue [x]) $ do
+                        H.a H.! HA.class_ "nav-link" $ "Select " <> H.string [toUpper x] <> " Axis"
+                      H.select H.! HA.id ("histsel-" <> H.stringValue [x]) $ do
                         forM_ (catalogFields cat) $ \f ->
                           when (typeIsFloating (fieldType f)) $
                             H.option H.! HA.value (H.textValue $ fieldName f) $ H.text $ fieldTitle f
-                    -- here
-                    forM_ ["Linear", "Log"] $ \a ->
+                    when (x == 'x') $ forM_ ["Linear", "Log"] $ \a ->
                       H.div H.! HA.class_ "custom-control custom-radio" $ do
                         H.input
                           H.! HA.type_ "radio"
-                          H.! HA.id ("hist-" <> H.stringValue x <> H.stringValue a)
-                          H.! HA.name ("hist-" <> H.stringValue x)
+                          H.! HA.id ("hist-" <> H.stringValue a)
+                          H.! HA.name ("histlog")
                           H.! HA.class_ "custom-control-input"
-                        H.label H.! HA.class_ "custom-control-label" H.! HA.for ("hist-" <> H.stringValue x <> H.stringValue a) $ H.string a
-                    when (x == "X") $
-                      H.button H.! HA.type_ "submit" H.! HA.class_ "btn btn-badge-inline" $
-                        "View Histogram"
+                        H.label H.! HA.class_ "custom-control-label" H.! HA.for ("hist-" <> H.stringValue a) $ H.string a
+                    H.button H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick ("return histogramShow(" <> H.stringValue (show x) <> ")") $ do
+                      "View "
+                      if x == 'x' then "Histogram" else "Heatmap"
+                    when (x == 'y') $ do
+                      H.input H.! HA.type_ "checkbox" H.! HA.id "histcond" H.! HA.value "median"
+                      H.label H.! HA.for "histcond" $ "Conditional median"
               H.div H.! HA.id "hist" $ mempty
 
             H.div H.! HA.class_ "col col-sm-12 col-md-4 right-column" $ do
@@ -276,7 +277,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                 forM_ ["Filter", "Python", "Fields"] $ \t -> do
                   H.li H.! HA.class_ "nav-item" $ do
                     H.a
-                      H.! HA.class_ ("nav-link" <> if (t == "Filter") then " active" else "")
+                      H.! HA.class_ ("nav-link" <> if t == "Filter" then " active" else mempty)
                       H.! HA.id (H.stringValue t <> "-tab")
                       H.! H.dataAttribute "toggle" "tab"
                       H.! HA.href ("#" <> H.stringValue t)
@@ -340,9 +341,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
           H.div H.! HA.class_ "container" $ do
             H.div H.! HA.class_ "row" $ do
               H.div H.! HA.class_ "col-md-6" $ do
-                H.p H.! HA.class_ "download" $ "Download as:"
-                H.div H.! HA.id "download" $ mempty
-              H.div H.! HA.class_ "col-md-6" $ do
+                H.p H.! HA.class_ "download" H.! HA.id "download" $ "Download as:"
                 H.button
                   H.! HA.type_ "button"
                   H.! HA.class_ "btn btn-warning"

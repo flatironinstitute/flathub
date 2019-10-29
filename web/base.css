@@ -1491,14 +1491,14 @@ table#tcat td {
 }
 .right-column {
   background-color: var(--cooler-platinum);
-  min-height: ;
+  min-height: 65vh;
   padding: 1rem;
 }
 .right-column-heading {
   border-bottom: 1px solid var(--cooler-red);
 }
 .tab-content {
-  min-height: calc(- 55px);
+  min-height: calc(70vh - 55px);
   padding: 1rem 2rem;
   max-height: 70vh;
   overflow: scroll;
