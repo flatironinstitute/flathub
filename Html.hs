@@ -252,7 +252,8 @@ catalogPage = getPath R.parameter $ \sim req -> do
                     H.div H.! HA.class_ "form-group" $ do
                       H.label H.! HA.for ("histsel-" <> H.stringValue x) $ do
                         H.a H.! HA.class_ "nav-link" $ "Select " <> H.string x <> " Axis"
-                      H.select H.! HA.id ("histsel-" <> H.stringValue x) $ do
+                      H.select H.! HA.class_ "custom-select" H.! HA.id ("histsel-" <> H.stringValue x) $ do
+                        H.option H.! HA.selected "selected" $ "Select " <> H.string x <> " Axis"
                         forM_ (catalogFields cat) $ \f ->
                           when (typeIsFloating (fieldType f)) $
                             H.option H.! HA.value (H.textValue $ fieldName f) $ H.text $ fieldTitle f
