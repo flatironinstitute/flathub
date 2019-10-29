@@ -43,7 +43,6 @@ function histogramRemove() {
   Histogram_chart = undefined;
   Histogram = undefined;
   Heatmap = undefined;
-  (<HTMLSelectElement>document.getElementById('histsel')).value = '';
   $('#dhist').hide();
   $('#hist').empty();
 }
@@ -146,7 +145,7 @@ function toggleLog() {
   }
   const selx = <HTMLSelectElement>document.getElementById('histsel-x');
   const filt = add_filter(Fields_idx[selx.value]);
-  if (filt)
+  if (filt instanceof NumericFilter)
     filt.histogram();
 };
 
@@ -467,7 +466,7 @@ class NumericFilter extends Filter {
     return true;
   }
 
-  private histogram() {
+  histogram() {
     if (!this.histogramRemove()) {
       Histogram = this;
       update(false);

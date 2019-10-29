@@ -110,7 +110,7 @@ export function field_title(field: Field, rmf?: (ev: MouseEvent) => any): HTMLSp
     h.appendChild(units);
   }
   if (field.descr) {
-    h.className = 'tooltip';
+    h.className = 'tooltip-dt';
     const tt = document.createElement('span');
     tt.className = 'tooltiptext';
     tt.innerHTML = field.descr;
