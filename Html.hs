@@ -250,31 +250,21 @@ catalogPage = getPath R.parameter $ \sim req -> do
                   -- here
                   H.form H.! HA.class_ "form-inline form-badge" $ do
                     H.div H.! HA.class_ "form-group" $ do
-                      H.label H.! HA.for "dropdown" $ do
+                      H.label H.! HA.for ("histsel-" <> H.stringValue x) $ do
                         H.a H.! HA.class_ "nav-link" $ "Select " <> H.string x <> " Axis"
-                      H.div H.! HA.class_ "dropdown" $ do
-                        H.button
-                          H.! HA.class_ "btn btn-secondary dropdown-toggle"
-                          H.! HA.type_ "button"
-                          H.! HA.id "dropdownMenuButton"
-                          H.! H.dataAttribute "toggle" "dropdown"
-                          H.! H.customAttribute "aria-haspopup" "true"
-                          H.! H.customAttribute "aria-expanded" "false"
-                          $ H.string x <> " Axis"
-                        H.div H.! HA.class_ "dropdown-menu" H.! H.customAttribute "aria-labelledby" "dropdownMenuButton" $
-                          forM_ (catalogFields cat) $ \f ->
-                            when (typeIsFloating (fieldType f)) $
-                              -- need fieldName here
-                              H.a H.! HA.class_ "dropdown-item" H.! HA.href "#" $ H.text $ fieldTitle f
+                      H.select H.! HA.id ("histsel-" <> H.stringValue x) $ do
+                        forM_ (catalogFields cat) $ \f ->
+                          when (typeIsFloating (fieldType f)) $
+                            H.option H.! HA.value (H.textValue $ fieldName f) $ H.text $ fieldTitle f
                     -- here
                     forM_ ["Linear", "Log"] $ \a ->
                       H.div H.! HA.class_ "custom-control custom-radio" $ do
                         H.input
                           H.! HA.type_ "radio"
-                          H.! HA.id ("customRadio" <> H.stringValue a)
-                          H.! HA.name "customRadio"
+                          H.! HA.id ("hist-" <> H.stringValue x <> H.stringValue a)
+                          H.! HA.name ("hist-" <> H.stringValue x)
                           H.! HA.class_ "custom-control-input"
-                        H.label H.! HA.class_ "custom-control-label" H.! HA.for "customRadio1" $ H.string a
+                        H.label H.! HA.class_ "custom-control-label" H.! HA.for ("hist-" <> H.stringValue x <> H.stringValue a) $ H.string a
                     when (x == "X") $
                       H.button H.! HA.type_ "submit" H.! HA.class_ "btn btn-badge-inline" $
                         "View Histogram"
