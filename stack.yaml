@@ -1,0 +1,14 @@
+resolver: lts-14.5
+packages:
+- '.'
+extra-deps:
+  - postgresql-typed-0.6.0.1
+  - web-inv-route-0.1.2.2
+  - git: git://github.com/dylex/waimwork
+    commit: c00627599674ebf19cf5a403bd27c1965051a1c0
+  - git: git://github.com/dylex/hs-hdf5
+    commit: ee4a09ada76b87ea2f7f88661c5b3049d9d9625c
+flags:
+  web-inv-route:
+    snap: false
+    happstack: false
