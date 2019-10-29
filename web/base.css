@@ -1375,8 +1375,7 @@ dt {
 }
 
 /* data table */
-table#tcat {
-  /* fix incorrect centering of datatables body content */
+/* table#tcat {/
   margin: 0;
   display: block;
   width: 100% !important;
@@ -1390,7 +1389,7 @@ table#tcat th {
 }
 table#tcat td {
   white-space: nowrap;
-}
+} */
 
 /* compare */
 #tcompare {

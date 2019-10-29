@@ -281,10 +281,10 @@ catalogPage = getPath R.parameter $ \sim req -> do
 
             H.div H.! HA.class_ "col col-sm-12 col-md-4 right-column" $ do
               H.ul H.! HA.class_ "nav nav-tabs" H.! HA.id "myTab" H.! HA.role "tablist" $ do
-                forM_ ["filter", "python"] $ \t -> do
+                forM_ ["Filter", "Python"] $ \t -> do
                   H.li H.! HA.class_ "nav-item" $ do
                     H.a
-                      H.! HA.class_ "nav-link active"
+                      H.! HA.class_ "nav-link"
                       H.! HA.id (H.stringValue t <> "-tab")
                       H.! H.dataAttribute "toggle" "tab"
                       H.! HA.href ("#" <> H.stringValue t)
