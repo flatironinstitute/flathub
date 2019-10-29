@@ -43,7 +43,7 @@ export type AggrStats = {
   avg: number
 };
 export type AggrTerms<T> = {
-  buckets: Array<{ key: T, doc_count: number, hist?: AggrTerms<any> }>
+  buckets: Array<{ key: T, doc_count: number, hist?: AggrTerms<any>, pct?: { values: Dict<number> }}>
 }
 
 export type Aggr = AggrStats|AggrTerms<string|number>;

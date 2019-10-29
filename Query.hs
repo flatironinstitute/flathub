@@ -76,7 +76,7 @@ parseQuery cat req = fill $ foldl' parseQueryItem mempty $ Wai.queryString req w
   parseSort _ = fail "invalid sort"
   parseHist [] = return []
   parseHist ((spl (':' ==) -> Just (lookf -> Just f, rmbs -> Just n)) : l) = mkHist f n =<< parseHist l
-  parseHist ((                      lookf -> Just f                 ) :[]) = return [QueryPercentiles f [50]]
+  parseHist ((                      lookf -> Just f                 ) :[]) = return [QueryPercentiles f [0,25,50,75,100]]
   parseHist ((                      lookf -> Just f                 ) : l) = mkHist f 16 =<< parseHist l
   parseHist _ = fail "invalid hist"
   parseFilt f (spl delim -> Just (a, b)) = FilterRange <$> parseVal f a <*> parseVal f b
