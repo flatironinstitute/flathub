@@ -3,10 +3,12 @@
 import $ from "jquery";
 import Datatables from "datatables.net";
 import Highcharts from "highcharts";
+import Highcharts_more from "highcharts/highcharts-more";
 import Highcharts_heatmap from "highcharts/modules/heatmap";
 import { assert, Dict, Field, Catalog, AggrStats, AggrTerms, Aggr, CatalogResponse, fill_select_terms, field_option, field_title, toggle_log, axis_title, render_funct, histogram_options, updateMathJax } from "./common";
 
 Datatables(window, $);
+Highcharts_more(Highcharts);
 Highcharts_heatmap(Highcharts);
 
 var TCat: DataTables.Api;
@@ -90,22 +92,24 @@ function histogramDraw(hist: NumericFilter, heatmap: undefined|Field, cond: bool
       return '[' + renderx(this.x-xwid) + ',' + renderx(this.x+xwid) + '): ' + this.y;
     };
     opts.colorAxis = <Highcharts.ColorAxisOptions>opts.yAxis;
-    opts.colorAxis.minColor = '#ffffff';
+    opts.colorAxis.minColor = '#bbbbbb';
     opts.colorAxis.reversed = false;
     opts.colorAxis.max = cmax;
     opts.yAxis = {
       type: 'linear',
       title: axis_title(heatmap)
     };
-    opts.series = [<Highcharts.LineChartSeriesOptions>{
+    opts.series = [<Highcharts.BoxPlotChartSeriesOptions>{
+      type: 'boxplot',
+      data: data,
+      keys: ['x','low','q1','median','q3','high','c'],
+      colorKey: 'c',
+    }, <Highcharts.LineChartSeriesOptions>{
       type: 'line',
       data: data,
       keys: ['x','min','q1','y','q3','max','c'],
       colorKey: 'c',
-    }, /*<Highcharts.BoxPlotChartSeriesOptions>{
-      type: 'boxplot',
-      data: data,
-    }*/];
+    }];
   }
   else if (heatmap) {
     (<Highcharts.ChartOptions>opts.chart).zoomType = 'xy';
