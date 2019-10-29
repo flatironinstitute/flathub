@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css?family=Major+Mono+Display|Montserrat|Open+Sans");
+@import url("https://fonts.googleapis.com/css?family=Lexend+Zetta|Open+Sans&display=swap");
 
 /*
 * Liz Skeleton
@@ -22,6 +22,22 @@
 - Media Queries
 */
 
+/* Variables
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+:root {
+  --header-font: "Lexend Zetta", sans-serif;
+  --body-font: "Open Sans", Helvetica, Arial, sans-serif;
+  --cooler-off-black: rgba(41, 44, 47, 1);
+  --cooler-black: rgba(34, 34, 34, 1);
+  --cooler-white: rgba(254, 254, 255, 1);
+  --cooler-platinum: #e7e7e8;
+  --cooler-red: #ff533d;
+  --cooler-azure: rgba(214, 239, 255, 1);
+  --cooler-blue: rgba(164, 222, 249, 1);
+  --cooler-gray: rgba(143, 146, 150, 1);
+}
+
 /* Grid
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 .container {
@@ -33,13 +49,14 @@
   box-sizing: border-box;
 }
 
+/*
 .container--main {
   padding: 20px 0 !important;
   min-height: calc(100vh - 160px);
 }
 
 .container--entire {
-  padding: 20px 0 0 0!important;
+  padding: 20px 0 0 0 !important;
   min-height: calc(100vh - 160px);
 }
 
@@ -61,15 +78,15 @@
 }
 
 /* For devices larger than 400px */
-@media (min-width: 400px) {
+/* @media (min-width: 400px) {
   .container {
     width: 85%;
     padding: 0;
   }
-}
+} */
 
 /* For devices larger than 550px */
-@media (min-width: 550px) {
+/* @media (min-width: 550px) {
   .container {
     width: 95vw;
   }
@@ -130,10 +147,10 @@
 
   .one-half.column {
     width: 48%;
-  }
+  } */
 
-  /* Offsets */
-  .offset-by-one.column,
+/* Offsets */
+/* .offset-by-one.column,
   .offset-by-one.columns {
     margin-left: 8.66666666667%;
   }
@@ -191,7 +208,7 @@
   .offset-by-one-half.columns {
     margin-left: 52%;
   }
-}
+}  */
 
 /* Base Styles
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
@@ -201,22 +218,14 @@
 
 html {
   font-size: 62.5%;
-  --cooler-off-black: rgba(41, 44, 47, 1);
-  --cooler-black: rgba(34, 34, 34, 1);
-  --cooler-white: rgba(254, 254, 255, 1);
-  --cooler-platinum: #e7e7e8;
-  /* --cooler-red: rgba(205, 52, 55, 1); */
-  --cooler-red: #ff533d;
-  --cooler-azure: rgba(214, 239, 255, 1);
-  --cooler-blue: rgba(164, 222, 249, 1);
-  --cooler-gray: rgba(143, 146, 150, 1);
 }
 body {
   font-size: 1.5em; /* currently ems cause chrome bug misinterpreting rems on body element */
   line-height: 1.6;
   font-weight: 400;
-  font-family: "Open Sans", Helvetica, Arial, sans-serif;
+  font-family: "Open Sans", sans-serif;
   color: var(--cooler-black);
+  background-color: var(--cooler-white);
   margin: 0px;
 }
 
@@ -231,7 +240,7 @@ h6 {
   margin-top: 0;
   margin-bottom: 2rem;
   font-weight: 300;
-  font-family: "Montserrat", serif;
+  font-family: "Lexend Zetta", sans-serif;
 }
 h1 {
   font-size: 4rem;
@@ -298,7 +307,7 @@ a {
 a:hover {
   color: var(--cooler-red);
 }
-/* Navbar 
+/* Navbar
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 
 .header {
@@ -324,8 +333,9 @@ a:hover {
 .header__logo-style {
   text-transform: uppercase;
   font-size: 2rem;
-  letter-spacing: .2rem;
-  font-family: "Montserrat", serif;
+  letter-spacing: 0.2rem;
+  font-weight: 300;
+  font-family: "Lexend Zetta", sans-serif;
 }
 
 .header__logo img {
@@ -347,7 +357,7 @@ ul#topbar {
   font-size: 1.2rem;
   text-transform: uppercase;
   font-weight: 600;
-  letter-spacing: .2rem;
+  letter-spacing: 0.2rem;
   text-decoration: none;
   color: #222;
 }
@@ -437,7 +447,6 @@ container a:hover:not(.active) {
   padding: 0 0 3rem 0 !important;
 }
 
-
 /* Histogram
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 .row--chartfilter {
@@ -445,12 +454,14 @@ container a:hover:not(.active) {
   margin-bottom: 5rem;
 }
 
-div#dhist, .dhist {
+div#dhist,
+.dhist {
   display: none;
   position: relative;
 }
 
-div#hist, .hist {
+div#hist,
+.hist {
   width: 100%;
 }
 
@@ -469,7 +480,6 @@ div#hist, .hist {
   letter-spacing: 0.1rem;
   padding-left: 10px;
 }
-
 
 /* Hero
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
@@ -601,9 +611,9 @@ div#hist, .hist {
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
 .tab {
   overflow: hidden;
-  border: 1px solid #E1E1E1;
+  border: 1px solid #e1e1e1;
   border-radius: 4px 4px 0 0;
-  background-color: #EEE;
+  background-color: #eee;
   height: 40px;
 }
 
@@ -627,10 +637,11 @@ div#hist, .hist {
   background-color: #ccc;
 }
 
-.tabcontent, .datacontent {
+.tabcontent,
+.datacontent {
   display: none;
   padding: 2.5rem 3rem;
-  border: 1px solid #E1E1E1;
+  border: 1px solid #e1e1e1;
   border-top: none;
   border-radius: 0 0 4px 4px;
   animation: fadeEffect 1s;
@@ -638,72 +649,77 @@ div#hist, .hist {
 }
 
 @keyframes fadeEffect {
-  from {opacity: 0;}
-  to {opacity: 1;}
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .py-query {
   max-width: 100%;
   display: none;
-  background: #F1F1F1;
-  border: 1px solid #E1E1E1;
-  margin: 2.5rem .2rem;
+  background: #f1f1f1;
+  border: 1px solid #e1e1e1;
+  margin: 2.5rem 0.2rem;
   font-size: 90%;
   border-radius: 4px;
 }
 
 .py-pre {
   white-space: pre-line;
-  margin: 1rem 1rem 2.5rem 1rem; 
+  margin: 1rem 1rem 2.5rem 1rem;
 }
 
 /* Filter card
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
-  .card {
-    overflow: hidden;
-    border: 1px solid #E1E1E1;
-    border-radius: 4px 4px 0 0;
-    background-color: #EEE;
-    height: 40px;
-  }
-  .card-header {
-    float: left;
-    border: none;
-    outline: none;
-    cursor: pointer;
-    transition: 0.3s;
-    margin: 0;
-    border-bottom: none;
-    border-radius: 0;
-    display: inline-block;
-    height: 38px;
-    padding: 0 30px;
-    color: #555;
-    text-align: center;
-    font-size: 11px;
-    font-weight: 600;
-    line-height: 38px;
-    letter-spacing: 0.1rem;
-    text-transform: uppercase;
-    text-decoration: none;
-    font-family: system-ui;
-    white-space: nowrap;
-  }
-  .cardcontent {
-    padding: 2.5rem 3rem;
-    border: 1px solid #E1E1E1;
-    border-radius: 0 0 4px 4px;
-  }
-  .cardcontent > a, .cardcontent > label {
-    margin-right: 10px;
-  }
+.card {
+  overflow: hidden;
+  border: 1px solid #e1e1e1;
+  border-radius: 4px 4px 0 0;
+  background-color: #eee;
+  height: 40px;
+}
+.card-header {
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  transition: 0.3s;
+  margin: 0;
+  border-bottom: none;
+  border-radius: 0;
+  display: inline-block;
+  height: 38px;
+  padding: 0 30px;
+  color: #555;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 38px;
+  letter-spacing: 0.1rem;
+  text-transform: uppercase;
+  text-decoration: none;
+  font-family: system-ui;
+  white-space: nowrap;
+}
+.cardcontent {
+  padding: 2.5rem 3rem;
+  border: 1px solid #e1e1e1;
+  border-radius: 0 0 4px 4px;
+}
+.cardcontent > a,
+.cardcontent > label {
+  margin-right: 10px;
+}
 
-  .download {
-      text-transform: uppercase;
-      font-size: 1.4rem;
-      letter-spacing: .2rem;
-      font-weight: 600;
-  }
+.download {
+  text-transform: uppercase;
+  font-size: 1.4rem;
+  letter-spacing: 0.2rem;
+  font-weight: 600;
+}
 
 /* Footer
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
@@ -754,7 +770,7 @@ div#hist, .hist {
   font-size: 1.2rem;
   text-transform: uppercase;
   font-weight: 400;
-  letter-spacing: .2rem;
+  letter-spacing: 0.2rem;
   text-decoration: none;
 }
 
@@ -1169,7 +1185,7 @@ hr {
   clear: both;
 }
 
-/* Fields Dictionary 
+/* Fields Dictionary
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
 /* table#tdict {
   margin: 0 auto;
@@ -1417,6 +1433,125 @@ table#tcat td {
 
 /* Larger than Desktop HD */
 @media (min-width: 1200px) {
+}
+
+/*
+* ConBoot
+* 10/03/2019
+*/
+
+.comparison-title {
+  margin-top: 2rem;
+}
+.comparison-title h5 {
+  margin-bottom: 1rem;
+}
+
+.comparison-title a,
+.underline {
+  text-decoration: underline;
+}
+.comparison-tool-container {
+  min-height: 80vh;
+  padding: 2rem;
+}
+.comparison-tool {
+  border: 1px solid var(--cooler-gray);
+  background-color: var(--cooler-white);
+  min-height: 80vh;
+}
+.comparison-summary {
+  background-color: var(--cooler-platinum);
+  border: 1px solid var(--cooler-gray);
+  padding: 2rem;
+}
+.comparison-summary h5 {
+  margin-bottom: 1rem;
+}
+@media screen and (min-width: 1000px) {
+  .comparison-tool,
+  .comparison-summary {
+    max-width: 95vw;
+  }
+}
+.raw-data {
+  background-color: var(--cooler-white);
+}
+.left-column {
+  min-height: 80vh;
+  padding: 1rem;
+}
+.right-column {
+  background-color: var(--cooler-platinum);
+  min-height: 80vh;
+  padding: 1rem;
+}
+.right-column-heading {
+  border-bottom: 1px solid var(--cooler-red);
+}
+.tab-content {
+  min-height: calc(80vh - 55px);
+  padding: 1rem 2rem;
+  background-color: var(--cooler-white);
+}
+
+.nav-link {
+  font-family: "Lexend Zetta", sans-serif;
+}
+.python-block {
+  margin-top: 2rem;
+}
+code {
+  overflow-wrap: break-word !important;
+  overflow: scroll;
+}
+
+.form-badge {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+.form-badge input {
+  margin-bottom: 0 !important;
+  height: 38px;
+}
+
+.tweener {
+  padding-bottom: 5px !important;
+  font-size: 2rem;
+  font-weight: 700;
+}
+.btn-badge-inline {
+  height: 37px;
+  border-color: var(--cooler-black);
+  margin-left: 1rem;
+  margin-bottom: 0 !important;
+}
+
+.btn-badge {
+  height: 37px;
+  border-color: var(--cooler-black);
+  margin-bottom: 0 !important;
+  margin-top: 2rem;
+}
+
+.right-column-group {
+  margin: 2rem 0;
+}
+
+.left-column-header-group {
+  background-color: var(--cooler-platinum);
+  padding: 0 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--cooler-gray);
+}
+
+.custom-control {
+  margin-left: 2rem;
+  margin-right: 2rem;
+}
+
+.fake-img {
+  max-height: 500px;
 }
 
 /*!
@@ -3744,7 +3879,6 @@ table#tcat td {
   clip: auto;
 }
 
-
 /* MathJax Moved over from index
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
 
@@ -4090,24 +4224,19 @@ table#tcat td {
   font-style: italic;
 }
 .MJXp-scr {
-  font-family: MathJax_Script, "Times New Roman", Times, STIXGeneral,
-    serif;
+  font-family: MathJax_Script, "Times New Roman", Times, STIXGeneral, serif;
 }
 .MJXp-frak {
-  font-family: MathJax_Fraktur, "Times New Roman", Times, STIXGeneral,
-    serif;
+  font-family: MathJax_Fraktur, "Times New Roman", Times, STIXGeneral, serif;
 }
 .MJXp-sf {
-  font-family: MathJax_SansSerif, "Times New Roman", Times, STIXGeneral,
-    serif;
+  font-family: MathJax_SansSerif, "Times New Roman", Times, STIXGeneral, serif;
 }
 .MJXp-cal {
-  font-family: MathJax_Caligraphic, "Times New Roman", Times, STIXGeneral,
-    serif;
+  font-family: MathJax_Caligraphic, "Times New Roman", Times, STIXGeneral, serif;
 }
 .MJXp-mono {
-  font-family: MathJax_Typewriter, "Times New Roman", Times, STIXGeneral,
-    serif;
+  font-family: MathJax_Typewriter, "Times New Roman", Times, STIXGeneral, serif;
 }
 .MJXp-largeop {
   font-size: 150%;
@@ -4700,8 +4829,7 @@ body :focus .mjx-chtml[tabindex] {
 }
 @font-face {
   font-family: MJXc-TeX-cal-B;
-  src: local("MathJax_Caligraphic Bold"),
-    local("MathJax_Caligraphic-Bold");
+  src: local("MathJax_Caligraphic Bold"), local("MathJax_Caligraphic-Bold");
 }
 @font-face {
   font-family: MJXc-TeX-cal-Bx;
@@ -4794,8 +4922,7 @@ body :focus .mjx-chtml[tabindex] {
 }
 @font-face {
   font-family: MJXc-TeX-sans-I;
-  src: local("MathJax_SansSerif Italic"),
-    local("MathJax_SansSerif-Italic");
+  src: local("MathJax_SansSerif Italic"), local("MathJax_SansSerif-Italic");
 }
 @font-face {
   font-family: MJXc-TeX-sans-Ix;
