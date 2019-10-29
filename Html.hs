@@ -195,12 +195,12 @@ catalogPage = getPath R.parameter $ \sim req -> do
           H.! H.dataAttribute "type" (baseType ("num","num","string","string") $ fieldType f)
           H.!? (not (fieldDisp f), H.dataAttribute "visible" "false")
           H.! H.dataAttribute "default-content" mempty
-          H.! HA.class_ "tooltip" $
+          H.! HA.class_ "tooltip-dt" $
         fieldBody d f
     field _ _ f@Field{ fieldSub = Just s } = do
       H.th
           H.! HA.colspan (H.toValue $ length $ expandFields s)
-          H.! HA.class_ "tooltip" $
+          H.! HA.class_ "tooltip-dt" $
         fieldBody 1 f
     row :: Word -> [(FieldGroup -> FieldGroup, FieldGroup)] -> H.Html
     row d l = do
@@ -361,7 +361,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                   $ "View Raw Data"
         H.div H.! HA.class_ "container-fluid comparison-summary raw-data" $ do
           H.h5 $ "Raw Data"
-          H.table H.! HA.id "tcat" H.! HA.class_ "table table-sm" $ do
+          H.table H.! HA.id "tcat" $ do
             H.thead $ row (fieldsDepth fields) ((id ,) <$> V.toList fields)
 
 
