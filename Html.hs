@@ -321,10 +321,10 @@ catalogPage = getPath R.parameter $ \sim req -> do
                   H.! H.customAttribute "aria-labelledby" "dict-tab" $ do
                   H.div H.! HA.class_ "right-column-group" $ do
                     H.h6 H.! HA.class_ "right-column-heading" $ "Fields Dictionary"
-                    H.div $ do
-                      H.button H.! HA.class_ "show_button" H.! HA.onclick "return toggleDisplay('tdict')" $ "show/hide"
-                      "Table of fields, units, and their descriptions (use checkboxes to view/hide fields in the table above)"
-                    H.div $ H.table H.! HA.id "tdict" $ do
+                    -- H.div $ do
+                    --   H.button H.! HA.class_ "show_button" H.! HA.onclick "return toggleDisplay('tdict')" $ "show/hide"
+                    --   "Table of fields, units, and their descriptions (use checkboxes to view/hide fields in the table above)"
+                    H.div $ H.table H.! HA.id "tdict" H.! HA.class_ "table table-striped table-sm" $ do
                       H.thead $ H.tr $ do
                           H.th $ H.text "Field"
                           H.th $ H.text "Variable"

@@ -1188,6 +1188,9 @@ hr {
 /* Fields Dictionary
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
 table#tdict {
+  font-size: 1.2rem;
+}
+/* table#tdict {
   margin: 0 auto;
   border-collapse: collapse;
   text-align: center;
@@ -1225,7 +1228,13 @@ table#tdict {
 }
 #tdict > tbody > tr > td.units {
   text-align: center;
+} */
+
+input.colvis {
+  margin-right: 7px;
 }
+
+table#tdict
 
 /* Old main.css
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
@@ -1491,6 +1500,8 @@ table#tcat td {
 .tab-content {
   min-height: calc(80vh - 55px);
   padding: 1rem 2rem;
+  max-height: 90vh;
+  overflow: scroll;
   background-color: var(--cooler-white);
 }
 
