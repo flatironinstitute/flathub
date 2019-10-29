@@ -241,6 +241,9 @@ catalogPage = getPath R.parameter $ \sim req -> do
               forM_ (catalogFields cat) $ \f ->
                 when (typeIsFloating (fieldType f)) $
                   H.option H.! HA.value (H.textValue $ fieldName f) $ H.text $ fieldTitle f
+          H.label $ do
+            H.input H.! HA.type_ "checkbox" H.! HA.id "histcond" H.! HA.value "median"
+            "Conditional median"
           H.div H.! HA.id "hist" $ mempty
 
         H.h3 $ "Data Table"
