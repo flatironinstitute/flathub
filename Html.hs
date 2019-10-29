@@ -248,7 +248,6 @@ catalogPage = getPath R.parameter $ \sim req -> do
             H.div H.! HA.class_ "col col-sm-12 col-md-8 left-column" $ do
               forM_ ['x', 'y'] $ \x ->
                 H.div H.! HA.class_ "left-column-header-group" $ do
-                  -- here
                   H.div H.! HA.class_ "form-inline form-badge" $ do
                     H.div H.! HA.class_ "form-group" $ do
                       H.label H.! HA.for ("histsel-" <> H.stringValue [x]) $ do
@@ -257,15 +256,14 @@ catalogPage = getPath R.parameter $ \sim req -> do
                         forM_ (catalogFields cat) $ \f ->
                           when (typeIsFloating (fieldType f)) $
                             H.option H.! HA.value (H.textValue $ fieldName f) $ H.text $ fieldTitle f
-                    -- here
-                    forM_ ["Linear", "Log"] $ \a ->
+                    when (x == 'x') $ forM_ ["Linear", "Log"] $ \a ->
                       H.div H.! HA.class_ "custom-control custom-radio" $ do
                         H.input
                           H.! HA.type_ "radio"
-                          H.! HA.id ("hist-" <> H.stringValue [x] <> H.stringValue a)
-                          H.! HA.name ("hist-" <> H.stringValue [x])
+                          H.! HA.id ("hist-" <> H.stringValue a)
+                          H.! HA.name ("histlog")
                           H.! HA.class_ "custom-control-input"
-                        H.label H.! HA.class_ "custom-control-label" H.! HA.for ("hist-" <> H.stringValue [x] <> H.stringValue a) $ H.string a
+                        H.label H.! HA.class_ "custom-control-label" H.! HA.for ("hist-" <> H.stringValue a) $ H.string a
                     H.button H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick ("return histogramShow(" <> H.stringValue (show x) <> ")") $ do
                       "View "
                       if x == 'x' then "Histogram" else "Heatmap"
