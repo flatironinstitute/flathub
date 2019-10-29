@@ -44,6 +44,7 @@ SystemJS.config({
     "npm:*.json"
   ],
   map: {
+    "bootstrap": "npm:bootstrap@4.3.1",
     "child_process": "npm:jspm-nodelibs-child_process@0.2.1",
     "assert": "npm:jspm-nodelibs-assert@0.2.1",
     "buffer": "npm:jspm-nodelibs-buffer@0.2.3",
@@ -61,6 +62,7 @@ SystemJS.config({
     "net": "npm:jspm-nodelibs-net@0.2.1",
     "os": "npm:jspm-nodelibs-os@0.2.2",
     "path": "npm:jspm-nodelibs-path@0.2.3",
+    "popper.js": "npm:popper.js@1.16.0",
     "process": "npm:jspm-nodelibs-process@0.2.1",
     "querystring": "npm:jspm-nodelibs-querystring@0.2.2",
     "readline": "npm:jspm-nodelibs-readline@0.2.1",
@@ -392,6 +394,11 @@ SystemJS.config({
       "map": {
         "buffer-from": "npm:buffer-from@1.1.1",
         "source-map": "npm:source-map@0.6.1"
+      }
+    },
+    "npm:bootstrap@4.3.1": {
+      "map": {
+        "tether": "github:shipshapecode/tether@1.4.7"
       }
     }
   }
