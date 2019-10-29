@@ -24,10 +24,10 @@
     "name": "astrosims",
     "main": "main.ts",
     "dependencies": {
+      "bootstrap": "npm:bootstrap@^4.3.1",
       "datatables.net": "npm:datatables.net@^1.10.16",
       "datatables.net-dt": "npm:datatables.net-dt@^1.10.16",
       "highcharts": "npm:highcharts@^7.2.0",
-      "jquery": "npm:jquery@^3.3.1",
       "ts": "github:frankwallis/plugin-typescript@^9.0.0"
     },
     "devDependencies": {
@@ -43,10 +43,12 @@
       "fs": "npm:jspm-nodelibs-fs@^0.2.0",
       "http": "npm:jspm-nodelibs-http@^0.2.0",
       "https": "npm:jspm-nodelibs-https@^0.2.0",
+      "jquery": "npm:jquery@^3.3.1",
       "module": "npm:jspm-nodelibs-module@^0.2.0",
       "net": "npm:jspm-nodelibs-net@^0.2.0",
       "os": "npm:jspm-nodelibs-os@^0.2.0",
       "path": "npm:jspm-nodelibs-path@^0.2.0",
+      "popper.js": "npm:popper.js@^1.14.7",
       "process": "npm:jspm-nodelibs-process@^0.2.0",
       "querystring": "npm:jspm-nodelibs-querystring@^0.2.0",
       "readline": "npm:jspm-nodelibs-readline@^0.2.0",
@@ -59,6 +61,27 @@
       "zlib": "npm:jspm-nodelibs-zlib@^0.2.0"
     },
     "overrides": {
+      "npm:bootstrap@4.3.1": {
+        "main": "dist/js/bootstrap",
+        "jspmNodeConversion": false,
+        "directories": {
+          "lib": "."
+        },
+        "dependencies": {
+          "jquery": "*",
+          "tether": "github:HubSpot/tether@^1.1.1"
+        },
+        "meta": {
+          "dist/js/bootstrap.js": {
+            "deps": [
+              "jquery",
+              "tether"
+            ],
+            "exports": "$",
+            "format": "global"
+          }
+        }
+      },
       "npm:browserify-zlib@0.1.4": {
         "dependencies": {
           "readable-stream": "^2.0.2",

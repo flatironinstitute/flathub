@@ -72,10 +72,14 @@ htmlResponse req hdrs body = do
       forM_ ([["jspm_packages", if isdev then "system.src.js" else "system.js"], ["jspm.config.js"]] ++ if isdev then [["dev.js"]] else [["index.js"]]) $ \src ->
         H.script H.! HA.type_ "text/javascript" H.! HA.src (staticURI src) $ mempty
       -- TODO: use System.resolve:
-      forM_ [["jspm_packages", "npm", "datatables.net-dt@1.10.19", "css", "jquery.dataTables.css"], ["base.css"]] $ \src ->
+      forM_ [
+          ["jspm_packages", "npm", "bootstrap@4.3.1", "dist", "css", "bootstrap.min.css"],
+          ["base.css"]
+        ] $ \src ->
         H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
+      H.script H.! HA.type_ "text/javascript" H.! HA.src (staticURI ["jspm_packages", "npm", "bootstrap@4.3.1", "dist", "js", "bootstrap.bundle.js"]) $ mempty
       H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML" $ mempty
-      H.script H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.src "https://fonts.googleapis.com/css?family=Major+Mono+Display|Montserrat" $ mempty
+      H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href "https://fonts.googleapis.com/css?family=Major+Mono+Display|Montserrat"
       jsonVar "Catalogs" (HM.map catalogTitle $ catalogMap cats)
     H.body $ do
       H.header H.! HA.class_ "header" $ do
