@@ -225,49 +225,136 @@ catalogPage = getPath R.parameter $ \sim req -> do
     _ -> htmlResponse req [] $ do
       jsonEncodingVar "Catalog" jcat
       jsonVar "Query" query
-      H.div H.! HA.class_ "container--main" $ do
-        H.h2 $ H.text $ catalogTitle cat
-        mapM_ (H.p . H.preEscapedText) $ catalogDescr cat
+      H.div H.! HA.class_ "comparison-title" $ do
+        H.div H.! HA.class_ "container" $ do
+          H.div H.! HA.class_ "row" $ do
+            H.div H.! HA.class_ "col" $ do
+              H.h5 $ H.text $ catalogTitle cat
+              mapM_ (H.p . H.preEscapedText) $ catalogDescr cat
 
-        H.h3 $ "Filters"
-        H.p $ "Query and explore a subset using the filters, download your selection using the link below, or get the full dataset above."
-        H.table H.! HA.id "filt" $ mempty
-        H.div H.! HA.id "dhist" $ do
-          H.button H.! HA.id "hist-y-tog" H.! HA.onclick "return toggleLog()" $
-            "lin/log"
-          H.select H.! HA.id "histsel" H.! HA.onchange "return histogramSelect()" $ do
-            H.option H.! HA.value mempty H.! HA.selected "selected" $ "Histogram"
-            H.optgroup H.! HA.label "Heatmap" $
-              forM_ (catalogFields cat) $ \f ->
-                when (typeIsFloating (fieldType f)) $
-                  H.option H.! HA.value (H.textValue $ fieldName f) $ H.text $ fieldTitle f
-          H.div H.! HA.id "hist" $ mempty
+      H.div H.! HA.class_ "comparison-tool-container" $ do
+        H.div H.! HA.class_ "container-fluid comparison-tool" $ do
+          H.div H.! HA.class_ "row" $ do
+            H.div H.! HA.class_ "col col-sm-12 col-md8 left-column" $ do
+              forM_ ["X", "Y"] $ \x ->
+                H.div H.! HA.class_ "left-column-header-group" $ do
+                  -- here
+                  H.form H.! HA.class_ "form-inline form-badge" $ do
+                    H.div H.! HA.class_ "form-group" $ do
+                      H.label H.! HA.for "dropdown" $ do
+                        H.a H.! HA.class_ "nav-link" $ "Select " <> H.string x <> " Axis"
+                      H.div H.! HA.class_ "dropdown" $ do
+                        H.button
+                          H.! HA.class_ "btn btn-secondary dropdown-toggle"
+                          H.! HA.type_ "button"
+                          H.! HA.id "dropdownMenuButton"
+                          H.! H.dataAttribute "toggle" "dropdown"
+                          H.! H.customAttribute "aria-haspopup" "true"
+                          H.! H.customAttribute "aria-expanded" "false"
+                          $ H.string x <> " Axis"
+                        H.div H.! HA.class_ "dropdown-menu" H.! H.customAttribute "aria-labelledby" "dropdownMenuButton" $
+                          forM_ (catalogFields cat) $ \f ->
+                            when (typeIsFloating (fieldType f)) $
+                              -- need fieldName here
+                              H.a H.! HA.class_ "dropdown-item" H.! HA.href "#" $ H.text $ fieldTitle f
+                    -- here
+                    forM_ ["Linear", "Log"] $ \a ->
+                      H.div H.! HA.class_ "custom-control custom-radio" $ do
+                        H.input
+                          H.! HA.type_ "radio"
+                          H.! HA.id ("customRadio" <> H.stringValue a)
+                          H.! HA.name "customRadio"
+                          H.! HA.class_ "custom-control-input"
+                        H.label H.! HA.class_ "custom-control-label" H.! HA.for "customRadio1" $ H.string a
+                  when (x == "X") $
+                    H.button H.! HA.type_ "submit" H.! HA.class_ "btn btn-badge-inline" $
+                      "View Histogram"
+              H.div H.! HA.id "hist" $ mempty
 
-        H.h3 $ "Data Table"
-        H.table H.! HA.id "tcat" H.! HA.class_ "compact" $ do
-          H.thead $ row (fieldsDepth fields) ((id ,) <$> V.toList fields)
+            H.div H.! HA.class_ "col col-sm-12 col-md-4 right-column" $ do
+              H.ul H.! HA.class_ "nav nav-tabs" H.! HA.id "myTab" H.! HA.role "tablist" $ do
+                forM_ ["filter", "python"] $ \t -> do
+                  H.li H.! HA.class_ "nav-item" $ do
+                    H.a
+                      H.! HA.class_ "nav-link active"
+                      H.! HA.id (H.stringValue t <> "-tab")
+                      H.! H.dataAttribute "toggle" "tab"
+                      H.! HA.href ("#" <> H.stringValue t)
+                      H.! HA.role "tab"
+                      H.! H.customAttribute "aria-controls" "filter"
+                      H.! H.customAttribute "aria-selected" "true"
+                      $ H.string t
+              H.div H.! HA.class_ "tab-content" H.! HA.id "myTabContent" $ do
+                H.div
+                  H.! HA.class_ "tab-pane fade show active right-column-container"
+                  H.! HA.id "filter"
+                  H.! HA.role "tabpanel"
+                  H.! H.customAttribute "aria-labelledby" "filter-tab" $ do
+                  H.div H.! HA.class_ "right-column-group" $ do
+                    H.h6 H.! HA.class_ "right-column-heading" $ "Active Filters"
+                    H.div
+                      H.! HA.id "filt"
+                      H.! HA.class_ "alert alert-warning alert-dismissible fade show"
+                      H.! HA.role "alert" $ mempty
+                  H.div H.! HA.class_ "right-column-group" $ do
+                    H.h6 H.! HA.class_ "right-column-heading" $ "Random Sample"
+                    H.div H.! HA.id "sample" $ mempty
 
-        H.h3 $ "Fields Dictionary"
-        H.div $ do
-          H.button H.! HA.class_ "show_button" H.! HA.onclick "return toggleDisplay('tdict')" $ "show/hide"
-          "Table of fields, units, and their descriptions (use checkboxes to view/hide fields in the table above)"
-        H.div $ H.table H.! HA.id "tdict" $ do
-          H.thead $ H.tr $ do
-              H.th $ H.text "Field"
-              H.th $ H.text "Variable"
-              H.th $ H.text "Type"
-              H.th $ H.text "Units"
-              H.th $ H.text "Description"
-          H.tbody $ forM_ (catalogFieldGroups cat) $ \f -> do
-              fielddesc f f 0
+                H.div
+                  H.! HA.class_ "tab-pane fade"
+                  H.! HA.id "python"
+                  H.! HA.role "tabpanel"
+                  H.! H.customAttribute "aria-labelledby" "python-tab" $ do
+                  H.div H.! HA.class_ "right-column-group" $ do
+                    H.h6 H.! HA.class_ "right-column-heading" $ "Python Query"
+                    H.p $ do
+                      "Example python code to apply the above filters and retrieve data. To use, download and install "
+                      H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto/tree/master/py" $ "this module"
+                      "."
+                    H.div H.! HA.id "div-py" H.! HA.class_ "python-block" $
+                      H.pre H.! HA.id "code-py" $ mempty
 
-        H.h3 $ "Python Query"
-        H.div $ do
-          H.button H.! HA.class_ "show_button" H.! HA.onclick "return toggleDisplay('div-py')" $ "show/hide"
-          "Example python code to apply the above filters and retrieve data. To use, download and install "
-          H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto/tree/master/py" $ "this module"
-          "."
-        H.div H.! HA.id "div-py" $ H.pre H.! HA.id "code-py" $ mempty
+                H.div
+                  H.! HA.class_ "tab-pane fade"
+                  H.! HA.id "dict"
+                  H.! HA.role "tabpanel"
+                  H.! H.customAttribute "aria-labelledby" "dict-tab" $ do
+                  H.div H.! HA.class_ "right-column-group" $ do
+                    H.h6 H.! HA.class_ "right-column-heading" $ "Fields Dictionary"
+                    H.div $ do
+                      H.button H.! HA.class_ "show_button" H.! HA.onclick "return toggleDisplay('tdict')" $ "show/hide"
+                      "Table of fields, units, and their descriptions (use checkboxes to view/hide fields in the table above)"
+                    H.div $ H.table H.! HA.id "tdict" $ do
+                      H.thead $ H.tr $ do
+                          H.th $ H.text "Field"
+                          H.th $ H.text "Variable"
+                          H.th $ H.text "Type"
+                          H.th $ H.text "Units"
+                          H.th $ H.text "Description"
+                      H.tbody $ forM_ (catalogFieldGroups cat) $ \f -> do
+                          fielddesc f f 0
+
+        H.div H.! HA.class_ "container-fluid comparison-summary" $ do
+          H.h5 $ "Summary"
+          H.p H.! HA.id "count" $ mempty
+          H.div H.! HA.class_ "container" $ do
+            H.div H.! HA.class_ "row" $ do
+              H.div H.! HA.class_ "col-md-6" $ do
+                H.p H.! HA.class_ "download" $ "Download as:"
+                H.div H.! HA.id "download" $ mempty
+              H.div H.! HA.class_ "col-md-6" $ do
+                H.button
+                  H.! HA.type_ "button"
+                  H.! HA.class_ "btn btn-warning"
+                  H.! H.dataAttribute "toggle" "button"
+                  H.! H.customAttribute "aria-pressed" "false"
+                  H.! HA.autocomplete "off"
+                  $ "View Raw Data"
+        H.div H.! HA.class_ "container-fluid comparison-summary raw-data" $ do
+          H.h5 $ "Raw Data"
+          H.table H.! HA.id "tcat" H.! HA.class_ "table table-sm" $ do
+            H.thead $ row (fieldsDepth fields) ((id ,) <$> V.toList fields)
+
 
 sqlSchema :: Route Simulation
 sqlSchema = getPath (R.parameter R.>* "schema.sql") $ \sim _ -> do
