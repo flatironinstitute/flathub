@@ -248,7 +248,7 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreFiel
     bound t = foldMap (t J..=)
   agg :: HM.HashMap T.Text Value -> QueryAgg -> J.Series
   agg _ (QueryStats f) = fieldName f .=* ((if isTermsField f then "terms" else "stats") .=* field f)
-  agg _ (QueryPercentiles f p) = fieldName f .=* ("percentiles" .=* (field f <> "percents" J..= p))
+  agg _ (QueryPercentiles f p) = "pct" .=* ("percentiles" .=* (field f <> "percents" J..= p))
   agg h (QueryHist f _ a)
     | Just v <- HM.lookup (fieldName f) h =
     "hist" .=* (

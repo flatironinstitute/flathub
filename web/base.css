@@ -1466,7 +1466,7 @@ table#tcat td {
 .comparison-tool {
   border: 1px solid var(--cooler-gray);
   background-color: var(--cooler-white);
-  min-height: 80vh;
+  min-height: 65vh;
 }
 .comparison-summary {
   background-color: var(--cooler-platinum);
@@ -1486,21 +1486,21 @@ table#tcat td {
   background-color: var(--cooler-white);
 }
 .left-column {
-  min-height: 80vh;
+  min-height: 65vh;
   padding: 1rem;
 }
 .right-column {
   background-color: var(--cooler-platinum);
-  min-height: 80vh;
+  min-height: ;
   padding: 1rem;
 }
 .right-column-heading {
   border-bottom: 1px solid var(--cooler-red);
 }
 .tab-content {
-  min-height: calc(80vh - 55px);
+  min-height: calc(- 55px);
   padding: 1rem 2rem;
-  max-height: 90vh;
+  max-height: 70vh;
   overflow: scroll;
   background-color: var(--cooler-white);
 }
