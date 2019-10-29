@@ -1187,7 +1187,7 @@ hr {
 
 /* Fields Dictionary
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
-/* table#tdict {
+table#tdict {
   margin: 0 auto;
   border-collapse: collapse;
   text-align: center;
@@ -1210,7 +1210,7 @@ hr {
   padding: 4px 10px;
   text-align: left;
 }
-*/
+
 #tdict > tbody > tr > td.depth-0 {
   padding-left: 0px;
 }
@@ -1499,8 +1499,11 @@ table#tcat td {
 }
 .python-block {
   margin-top: 2rem;
+  padding: 1rem;
+  background: #f1f1f1;
+  border: 1px solid #e1e1e1;
 }
-code {
+pre:first-child {
   overflow-wrap: break-word !important;
   overflow: scroll;
 }

@@ -282,7 +282,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
 
             H.div H.! HA.class_ "col col-sm-12 col-md-4 right-column" $ do
               H.ul H.! HA.class_ "nav nav-tabs" H.! HA.id "myTab" H.! HA.role "tablist" $ do
-                forM_ ["Filter", "Python"] $ \t -> do
+                forM_ ["Filter", "Python", "Fields"] $ \t -> do
                   H.li H.! HA.class_ "nav-item" $ do
                     H.a
                       H.! HA.class_ "nav-link"
@@ -296,7 +296,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
               H.div H.! HA.class_ "tab-content" H.! HA.id "myTabContent" $ do
                 H.div
                   H.! HA.class_ "tab-pane fade show active right-column-container"
-                  H.! HA.id "filter"
+                  H.! HA.id "Filter"
                   H.! HA.role "tabpanel"
                   H.! H.customAttribute "aria-labelledby" "filter-tab" $ do
                   H.div H.! HA.class_ "right-column-group" $ do
@@ -311,7 +311,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
 
                 H.div
                   H.! HA.class_ "tab-pane fade"
-                  H.! HA.id "python"
+                  H.! HA.id "Python"
                   H.! HA.role "tabpanel"
                   H.! H.customAttribute "aria-labelledby" "python-tab" $ do
                   H.div H.! HA.class_ "right-column-group" $ do
@@ -325,7 +325,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
 
                 H.div
                   H.! HA.class_ "tab-pane fade"
-                  H.! HA.id "dict"
+                  H.! HA.id "Fields"
                   H.! HA.role "tabpanel"
                   H.! H.customAttribute "aria-labelledby" "dict-tab" $ do
                   H.div H.! HA.class_ "right-column-group" $ do
