@@ -1,0 +1,352 @@
+<div class="comparison-title">
+  <div class="container">
+    <div class="row">
+      <div class="col">
+        <h5>
+          GAIA
+        </h5>
+        <p>
+          <a href="http://adsabs.harvard.edu/abs/2014MNRAS.445..970D"
+            >De Lucia et al. 2014</a
+          >,
+          <a href="http://adsabs.harvard.edu/abs/2016MNRAS.461.1760H"
+            >Hirschmann et al. 2016</a
+          >,
+          <a href="http://adsabs.harvard.edu/abs/2017MNRAS.469..968X"
+            >Xie et al. 2017</a
+          >,
+          <a href="http://adsabs.harvard.edu/abs/2017MNRAS.465.2236Z"
+            >Zoldan et al. 2017</a
+          >.<br />
+          Data release v3 2018-06-26.<br />
+          WARNING: This is one of the first all sky catalogs we have produced,
+          and there could be some issues/bugs we did not notice. Any bug report
+          will be useful to correct and improve this work! So please let us know
+          if you find anything "strange". The full dataset is available
+          <a
+            href="http://voms.simonsfoundation.org:50013/KZiLTE5keWT4N535B3Zd2aHibbjju6n/HI_lightcone_Anna3/"
+            >here</a
+          >.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="comparison-tool-container">
+  <div class="container-fluid comparison-tool">
+    <div class="row">
+      <div class="col col-sm-12 col-md-8 left-column">
+        <div class="left-column-header-group">
+          <!-- here -->
+          <form class="form-inline form-badge">
+            <div class="form-group">
+              <label class="" for="dropdown"
+                ><a class="nav-link">Select X Axis</a></label
+              >
+              <div class="dropdown">
+                <button
+                  class="btn btn-secondary dropdown-toggle"
+                  type="button"
+                  id="dropdownMenuButton"
+                  data-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  X Axis
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                  <a class="dropdown-item" href="#">PPos_x</a>
+                  <a class="dropdown-item" href="#">PPos_yn</a>
+                  <a class="dropdown-item" href="#">GalID</a>
+                </div>
+              </div>
+            </div>
+            <!-- here -->
+            <div class="custom-control custom-radio">
+              <input
+                type="radio"
+                id="customRadio1"
+                name="customRadio"
+                class="custom-control-input"
+              />
+              <label class="custom-control-label" for="customRadio1"
+                >Linear</label
+              >
+            </div>
+            <div class="custom-control custom-radio">
+              <input
+                type="radio"
+                id="customRadio2"
+                name="customRadio"
+                class="custom-control-input"
+              />
+              <label class="custom-control-label" for="customRadio2">Log</label>
+            </div>
+          </form>
+        </div>
+        <div class="left-column-header-group">
+          <form class="form-inline form-badge">
+            <div class="form-group">
+              <label class="" for="dropdown"
+                ><a class="nav-link">Select Y Axis</a></label
+              >
+              <div class="dropdown">
+                <button
+                  class="btn btn-secondary dropdown-toggle"
+                  type="button"
+                  id="dropdownMenuButton"
+                  data-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  Y Axis
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                  <a class="dropdown-item" href="#">PPos_x</a>
+                  <a class="dropdown-item" href="#">PPos_yn</a>
+                  <a class="dropdown-item" href="#">GalID</a>
+                </div>
+              </div>
+            </div>
+            <div class="custom-control custom-radio">
+              <input
+                type="radio"
+                id="customRadio1"
+                name="customRadio"
+                class="custom-control-input"
+              />
+              <label class="custom-control-label" for="customRadio1"
+                >Linear</label
+              >
+            </div>
+            <div class="custom-control custom-radio">
+              <input
+                type="radio"
+                id="customRadio2"
+                name="customRadio"
+                class="custom-control-input"
+              />
+              <label class="custom-control-label" for="customRadio2">Log</label>
+            </div>
+            <button type="submit" class="btn btn-badge-inline">
+              View Histogram
+            </button>
+          </form>
+        </div>
+        <img
+          src="./fake-histogram.png"
+          class="img-fluid fake-img"
+          alt="Responsive image"
+        />
+      </div>
+      <div class="col col-sm-12 col-md-4 right-column">
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+          <li class="nav-item">
+            <a
+              class="nav-link active"
+              id="filter-tab"
+              data-toggle="tab"
+              href="#filter"
+              role="tab"
+              aria-controls="filter"
+              aria-selected="true"
+              >Filter</a
+            >
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              id="python-tab"
+              data-toggle="tab"
+              href="#python"
+              role="tab"
+              aria-controls="python"
+              aria-selected="false"
+              >Python</a
+            >
+          </li>
+        </ul>
+        <div class="tab-content" id="myTabContent">
+          <div
+            class="tab-pane fade show active right-column-container"
+            id="filter"
+            role="tabpanel"
+            aria-labelledby="filter-tab"
+          >
+            <div class="right-column-group">
+              <h6 class="right-column-heading">Active Filters</h6>
+              <div
+                class="alert alert-warning alert-dismissible fade show"
+                role="alert"
+              >
+                <strong>Gas Spin</strong>
+                <form class="form-inline form-badge">
+                  <input
+                    type="password"
+                    class="form-control"
+                    id="pwd"
+                    placeholder="High Value"
+                    name="pwd"
+                  />
+                  <div class="form-group">
+                    <label class="tweener" for="pwd"> &nbsp;- &nbsp;</label>
+                    <input
+                      type="password"
+                      class="form-control"
+                      id="pwd"
+                      placeholder="Low Value"
+                      name="pwd"
+                    />
+                  </div>
+                  <button type="submit" class="btn btn-badge-inline">
+                    Apply
+                  </button>
+                </form>
+                <button
+                  type="button"
+                  class="close"
+                  data-dismiss="alert"
+                  aria-label="Close"
+                >
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+            </div>
+            <div class="right-column-group">
+              <h6 class="right-column-heading">Random Sample</h6>
+              <form action="/action_page.php">
+                <div class="form-group">
+                  <label for="email">Fraction of object to select:</label>
+                  <input type="email" class="form-control" id="email" />
+                </div>
+                <div class="form-group">
+                  <label for="pwd"
+                    >Random seed to generate sample selection:</label
+                  >
+                  <input type="password" class="form-control" id="pwd" />
+                </div>
+                <button type="submit" class="btn btn-badge btn-block">
+                  Apply
+                </button>
+              </form>
+            </div>
+          </div>
+          <div
+            class="tab-pane fade"
+            id="python"
+            role="tabpanel"
+            aria-labelledby="python-tab"
+          >
+            <div class="right-column-group">
+              <h6 class="right-column-heading">Python Query</h6>
+              <p>
+                Example python code to apply the above filters and retrieve
+                data. To use, download and install
+                <a class="underline" href="/">this module</a>.
+              </p>
+              <p><i>How to handle the python wrapping here 🤔</i></p>
+              <div class="python-block">
+                <pre><code>
+import fi_astrosims.client
+gaea = fi_astrosims.client.Simulation("gaea", host = "http://astrosims.flatironinstitute.org")
+q = gaea.query(fields = ["PPos_x","PPos_y","z","z_pos","Pos_x","Pos_y","Pos_z","Vel_x","Vel_y","Vel_z","Type","GalID","MMSubID","CentralMvir","Mvir","Rvir","Vvir","Vmax","StellarMass","ColdGas","HI","GasDiskRadius","StellarDiskRadius","GasSpin_x","GasSpin_y","GasSpin_z"])
+dat = q.numpy()
+</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container-fluid comparison-summary">
+    <h5>Summary</h5>
+    <p>Showing 1 to 25 of 96,316 (filtered from 96,317 total entries)</p>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6">
+          <p class="download">Download as:</p>
+          <a
+            id="download.csv"
+            class="button button-primary"
+            href="/gaea/csv?sort=&amp;z_pos=0.0016757736942307714%200.03066790990567455&amp;fields=PPos_x%20PPos_y%20z%20z_pos%20Pos_x%20Pos_y%20Pos_z%20Vel_x%20Vel_y%20Vel_z%20Type%20GalID%20MMSubID%20CentralMvir%20Mvir%20Rvir%20Vvir%20Vmax%20StellarMass%20ColdGas%20HI%20GasDiskRadius%20StellarDiskRadius%20GasSpin_x%20GasSpin_y%20GasSpin_z"
+            >csv</a
+          >
+          <a
+            id="download.csv.gz"
+            class="button button-primary"
+            href="/gaea/csv.gz?sort=&amp;z_pos=0.0016757736942307714%200.03066790990567455&amp;fields=PPos_x%20PPos_y%20z%20z_pos%20Pos_x%20Pos_y%20Pos_z%20Vel_x%20Vel_y%20Vel_z%20Type%20GalID%20MMSubID%20CentralMvir%20Mvir%20Rvir%20Vvir%20Vmax%20StellarMass%20ColdGas%20HI%20GasDiskRadius%20StellarDiskRadius%20GasSpin_x%20GasSpin_y%20GasSpin_z"
+            >csv.gz</a
+          >
+          <a
+            id="download.ecsv"
+            class="button button-primary"
+            href="/gaea/ecsv?sort=&amp;z_pos=0.0016757736942307714%200.03066790990567455&amp;fields=PPos_x%20PPos_y%20z%20z_pos%20Pos_x%20Pos_y%20Pos_z%20Vel_x%20Vel_y%20Vel_z%20Type%20GalID%20MMSubID%20CentralMvir%20Mvir%20Rvir%20Vvir%20Vmax%20StellarMass%20ColdGas%20HI%20GasDiskRadius%20StellarDiskRadius%20GasSpin_x%20GasSpin_y%20GasSpin_z"
+            >ecsv</a
+          >
+          <a
+            id="download.ecsv.gz"
+            class="button button-primary"
+            href="/gaea/ecsv.gz?sort=&amp;z_pos=0.0016757736942307714%200.03066790990567455&amp;fields=PPos_x%20PPos_y%20z%20z_pos%20Pos_x%20Pos_y%20Pos_z%20Vel_x%20Vel_y%20Vel_z%20Type%20GalID%20MMSubID%20CentralMvir%20Mvir%20Rvir%20Vvir%20Vmax%20StellarMass%20ColdGas%20HI%20GasDiskRadius%20StellarDiskRadius%20GasSpin_x%20GasSpin_y%20GasSpin_z"
+            >ecsv.gz</a
+          >
+          <a
+            id="download.npy"
+            class="button button-primary"
+            href="/gaea/npy?sort=&amp;z_pos=0.0016757736942307714%200.03066790990567455&amp;fields=PPos_x%20PPos_y%20z%20z_pos%20Pos_x%20Pos_y%20Pos_z%20Vel_x%20Vel_y%20Vel_z%20Type%20GalID%20MMSubID%20CentralMvir%20Mvir%20Rvir%20Vvir%20Vmax%20StellarMass%20ColdGas%20HI%20GasDiskRadius%20StellarDiskRadius%20GasSpin_x%20GasSpin_y%20GasSpin_z"
+            >npy</a
+          >
+          <a
+            id="download.npy.gz"
+            class="button button-primary"
+            href="/gaea/npy.gz?sort=&amp;z_pos=0.0016757736942307714%200.03066790990567455&amp;fields=PPos_x%20PPos_y%20z%20z_pos%20Pos_x%20Pos_y%20Pos_z%20Vel_x%20Vel_y%20Vel_z%20Type%20GalID%20MMSubID%20CentralMvir%20Mvir%20Rvir%20Vvir%20Vmax%20StellarMass%20ColdGas%20HI%20GasDiskRadius%20StellarDiskRadius%20GasSpin_x%20GasSpin_y%20GasSpin_z"
+            >npy.gz</a
+          >
+        </div>
+        <div class="col-md-6">
+          <button
+            type="button"
+            class="btn btn-warning"
+            data-toggle="button"
+            aria-pressed="false"
+            autocomplete="off"
+          >
+            View Raw Data
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container-fluid comparison-summary raw-data">
+    <h5>Raw Data</h5>
+    <table class="table table-sm">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">First</th>
+          <th scope="col">Last</th>
+          <th scope="col">Handle</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">1</th>
+          <td>Mark</td>
+          <td>Otto</td>
+          <td>@mdo</td>
+        </tr>
+        <tr>
+          <th scope="row">2</th>
+          <td>Jacob</td>
+          <td>Thornton</td>
+          <td>@fat</td>
+        </tr>
+        <tr>
+          <th scope="row">3</th>
+          <td colspan="2">Larry the Bird</td>
+          <td>@twitter</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
