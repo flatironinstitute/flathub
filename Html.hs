@@ -256,14 +256,16 @@ catalogPage = getPath R.parameter $ \sim req -> do
                         forM_ (catalogFields cat) $ \f ->
                           when (typeIsFloating (fieldType f)) $
                             H.option H.! HA.value (H.textValue $ fieldName f) $ H.text $ fieldTitle f
-                    when (x == 'x') $ forM_ ["Linear", "Log"] $ \a ->
-                      H.div H.! HA.class_ "custom-control custom-radio" $ do
-                        H.input
-                          H.! HA.type_ "radio"
-                          H.! HA.id ("hist-" <> H.stringValue a)
-                          H.! HA.name ("histlog")
-                          H.! HA.class_ "custom-control-input"
-                        H.label H.! HA.class_ "custom-control-label" H.! HA.for ("hist-" <> H.stringValue a) $ H.string a
+                    when (x == 'x') $ do
+                      H.button H.! HA.id "hist-y-tog" H.! HA.onclick "return toggleLog()" $ "lin/log"
+                      {- forM_ ["Linear", "Log"] $ \a ->
+                        H.div H.! HA.class_ "custom-control custom-radio" $ do
+                          H.input
+                            H.! HA.type_ "radio"
+                            H.! HA.id ("hist-" <> H.stringValue a)
+                            H.! HA.name ("histlog")
+                            H.! HA.class_ "custom-control-input"
+                          H.label H.! HA.class_ "custom-control-label" H.! HA.for ("hist-" <> H.stringValue a) $ H.string a -}
                     H.button H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick ("return histogramShow(" <> H.stringValue (show x) <> ")") $ do
                       "View "
                       if x == 'x' then "Histogram" else "Heatmap"
