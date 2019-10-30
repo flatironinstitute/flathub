@@ -54,7 +54,7 @@ var Last_query: undefined | Dict<string>;
 
 function set_download(query: Dict<string>) {
   const q = "?" + $.param(query);
-  const h = $("#download");
+  const h = $("#download").html('download as ');
   for (let f of Catalog.bulk) {
     const a = document.createElement("a");
     h.append(a);
