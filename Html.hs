@@ -399,9 +399,15 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
             let cat' = groupingCatalog cats g
             H.dt $ H.a H.! HA.href (WH.routeActionValue groupPage (path ++ [groupingName g]) mempty) $
               H.text $ groupingTitle g cat'
-            forM_ cat' $ \cat -> H.dd $ do
-              mapM_ H.preEscapedText $ catalogDescr cat
-              mapM_ ((" " <>) . (<> " rows.") . H.toMarkup) $ catalogCount cat
+            case g of
+              Grouping{ groupings = gs } ->
+                forM_ (groupList gs) $ \gc ->
+                  H.dd $ H.a H.! HA.href (WH.routeActionValue groupPage (path ++ [groupingName g, groupingName gc]) mempty) $
+                    H.text $ groupingTitle gc (groupingCatalog cats gc)
+              GroupCatalog{} ->
+                forM_ cat' $ \cat -> H.dd $ do
+                  mapM_ H.preEscapedText $ catalogDescr cat
+                  mapM_ ((" " <>) . (<> " rows.") . H.toMarkup) $ catalogCount cat
         H.a H.! HA.href (WH.routeActionValue comparePage path mempty) $ "compare"
 
 comparePage :: Route [T.Text]
