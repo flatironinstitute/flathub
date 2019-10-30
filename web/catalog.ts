@@ -265,6 +265,7 @@ function update(paging: boolean = true) {
     TCat.draw(Update_paging);
     Update_paging = false;
   });
+  /* TOOD: show loading */
 }
 
 function ajax(data: any, callback: (data: any) => void, opts: any) {
@@ -311,6 +312,7 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
     data: query
   }).then(
     (res: CatalogResponse) => {
+      /* TOOD: hide loading */
       Update = false;
       Catalog.count = Math.max(Catalog.count || 0, res.hits.total);
       const settings = (<any>TCat.settings())[0];
@@ -342,6 +344,7 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
       set_download((Last_query = query));
     },
     (xhr, msg, err) => {
+      /* TOOD: error loading */
       Update = false;
       callback({
         draw: data.draw,
