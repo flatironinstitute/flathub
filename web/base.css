@@ -1,8 +1,8 @@
 @import url("https://fonts.googleapis.com/css?family=Lexend+Zetta|Open+Sans&display=swap");
 
 /*
-* Liz Skeleton
-* 01/10/2019
+* Astrosims Base Styles
+* 04/17/2019
 */
 
 /* Table of contents
@@ -1249,29 +1249,6 @@ table#tcat td {
   height: 40vh;
   align-items: center;
   justify-content: center;
-}
-
-.hourglass {
-  transition: ease-in-out;
-  min-height: 3rem;
-}
-
-@keyframes spinner {
-  0% {
-    transform: rotate(45deg);
-  }
-  25% {
-    transform: rotate(45deg);
-  }
-  50% {
-    transform: rotate(90deg);
-  }
-  75% {
-    transform: rotate(135deg);
-  }
-  100% {
-    transform: rotate(0deg);
-  }
 }
 
 /* MathJax Moved over from index

@@ -90,8 +90,7 @@ htmlResponse req hdrs body = do
         H.div H.! HA.class_ "modal-body" $ do
           H.div H.! HA.class_ "modal-content" $ do
             H.h3 "LOADING"
-            H.span H.! HA.class_ "hourglass" $ H.text " ⏳"
-            H.p "Something like this but better looking. Do we have some sort of message here?"
+            H.p "Something like this but better looking. Do we have some sort of message here? Perhaps a swirling galaxy."
       H.header H.! HA.class_ "header" $ do
         H.div H.! HA.class_ "header__logo" $ do
           H.a H.! HA.href (WH.routeActionValue topPage () mempty) H.! HA.class_ "header__logo-link" $ do
