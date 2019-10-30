@@ -342,15 +342,16 @@ catalogPage = getPath R.parameter $ \sim req -> do
           H.p H.! HA.id "count" $ mempty
           H.div H.! HA.class_ "container" $ do
             H.div H.! HA.class_ "row" $ do
-              H.div H.! HA.class_ "col-md-6" $ do
-                H.p H.! HA.class_ "download" H.! HA.id "download" $ "Download as:"
-                H.button
-                  H.! HA.type_ "button"
-                  H.! HA.class_ "btn btn-warning"
-                  H.! H.dataAttribute "toggle" "button"
-                  H.! H.customAttribute "aria-pressed" "false"
-                  H.! HA.autocomplete "off"
-                  $ "View Raw Data"
+              H.div H.! HA.class_ "col-md-12  " $ do
+                H.div H.! HA.class_ "d-flex justify-content-between" $ do
+                  H.p H.! HA.class_ "download" H.! HA.id "download" $ "Download as:"
+                  H.button
+                    H.! HA.type_ "button"
+                    H.! HA.class_ "btn btn-warning"
+                    H.! H.dataAttribute "toggle" "button"
+                    H.! H.customAttribute "aria-pressed" "false"
+                    H.! HA.autocomplete "off"
+                    $ "View Raw Data"
         H.div H.! HA.class_ "container-fluid comparison-summary raw-data" $ do
           H.h5 $ "Raw Data"
           H.table H.! HA.id "tcat" $ do

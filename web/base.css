@@ -962,6 +962,7 @@ input[type="button"]:focus {
   color: #333;
   border-color: #888;
   outline: 0;
+  text-decoration: none;
 }
 .button.button-primary,
 button.button-primary,
@@ -986,6 +987,7 @@ input[type="button"].button-primary:focus {
   color: #fff;
   background-color: var(--cooler-red);
   border-color: var(--cooler-red);
+  text-decoration: none;
 }
 
 .button-close {
