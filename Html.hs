@@ -84,6 +84,14 @@ htmlResponse req hdrs body = do
       H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href "https://fonts.googleapis.com/css?family=Major+Mono+Display|Montserrat"
       jsonVar "Catalogs" (HM.map catalogTitle $ catalogMap cats)
     H.body $ do
+      H.div H.! HA.class_ "modal-container" $ do
+        H.div H.! HA.class_ "modal-background" $ do
+          H.span $ H.text ""
+        H.div H.! HA.class_ "modal-body" $ do
+          H.div H.! HA.class_ "modal-content" $ do
+            H.h3 "LOADING"
+            H.span H.! HA.class_ "hourglass" $ H.text " ⏳"
+            H.p "Something like this but better looking. Do we have some sort of message here?"
       H.header H.! HA.class_ "header" $ do
         H.div H.! HA.class_ "header__logo" $ do
           H.a H.! HA.href (WH.routeActionValue topPage () mempty) H.! HA.class_ "header__logo-link" $ do
@@ -235,15 +243,15 @@ catalogPage = getPath R.parameter $ \sim req -> do
     _ -> htmlResponse req [] $ do
       jsonEncodingVar "Catalog" jcat
       jsonVar "Query" query
-      H.div H.! HA.class_ "comparison-title" $ do
+      H.div H.! HA.class_ "catalog-title" $ do
         H.div H.! HA.class_ "container" $ do
           H.div H.! HA.class_ "row" $ do
             H.div H.! HA.class_ "col" $ do
               H.h5 $ H.text $ catalogTitle cat
               mapM_ (H.p . H.preEscapedText) $ catalogDescr cat
 
-      H.div H.! HA.class_ "comparison-tool-container" $ do
-        H.div H.! HA.class_ "container-fluid comparison-tool" $ do
+      H.div H.! HA.class_ "catalog-tool-container " $ do
+        H.div H.! HA.class_ "container-fluid catalog-tool" $ do
           H.div H.! HA.class_ "row" $ do
             H.div H.! HA.class_ "col col-sm-12 col-md-8 left-column" $ do
               forM_ ['x', 'y'] $ \x ->
@@ -358,7 +366,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                       H.tbody $ forM_ (catalogFieldGroups cat) $ \f -> do
                           fielddesc f f 0
 
-        H.div H.! HA.class_ "container-fluid comparison-summary" $ do
+        H.div H.! HA.class_ "container-fluid catalog-summary" $ do
           H.h5 $ "Summary"
           H.p H.! HA.id "count" $ mempty
           H.div H.! HA.class_ "container" $ do
@@ -373,7 +381,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                     H.! H.customAttribute "aria-pressed" "false"
                     H.! HA.autocomplete "off"
                     $ "View Raw Data"
-        H.div H.! HA.class_ "container-fluid comparison-summary raw-data" $ do
+        H.div H.! HA.class_ "container-fluid catalog-summary raw-data" $ do
           H.h5 $ "Raw Data"
           H.table H.! HA.id "tcat" $ do
             H.thead $ row (fieldsDepth fields) ((id ,) <$> V.toList fields)
