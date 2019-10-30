@@ -48,6 +48,7 @@ var Seed: undefined | number;
 var Update_aggs: number = -1;
 var Histogram: undefined | NumericFilter;
 var Heatmap: undefined | Field;
+var Histcond: boolean = false;
 var Histogram_chart: Highcharts.ChartObject | undefined;
 var Last_fields: string[] = [];
 var Last_query: undefined | Dict<string>;
@@ -235,15 +236,20 @@ function toggleLog() {
   if (Histogram_chart) toggle_log(Histogram_chart);
 }
 
-(<any>window).histogramShow = function histogramShow(axis: "x" | "y") {
+(<any>window).histogramShow = function histogramShow(axis: "x" | "y" | "c") {
   if (axis == "x") Heatmap = undefined;
   else {
     const sely = <HTMLSelectElement>document.getElementById("histsel-y");
     Heatmap = Catalog.fields[Fields_idx[sely.value]];
+    Histcond = (axis == 'c');
   }
   const selx = <HTMLSelectElement>document.getElementById("histsel-x");
   const filt = add_filter(Fields_idx[selx.value]);
-  if (filt instanceof NumericFilter) filt.histogram();
+  if (filt instanceof NumericFilter)
+    Histogram = filt;
+  else
+    histogramRemove();
+  update(false);
 };
 
 /* elasticsearch max_result_window */
@@ -292,8 +298,7 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
   if (aggs) query.aggs = aggs.map(filt => filt.name).join(" ");
   const histogram = Histogram;
   const heatmap = Histogram && Heatmap;
-  const histcond = (<HTMLInputElement>document.getElementById("histcond"))
-    .checked;
+  const histcond = Histcond;
   if (histogram) {
     if (heatmap) {
       if (histcond) query.hist = histogram.name + ":64 " + heatmap.name;
@@ -496,7 +501,6 @@ class NumericFilter extends Filter {
         .append(" &ndash; ")
         .append(this.ub),
       $("<span><em>&mu;</em> = </span>").append(this.avg),
-      $("<button>histogram</button>").on("click", this.histogram.bind(this)),
       $("<button>reset</button>").on("click", this.reset.bind(this))
     );
   }
@@ -541,13 +545,6 @@ class NumericFilter extends Filter {
     if (Histogram !== this) return false;
     histogramRemove();
     return true;
-  }
-
-  histogram() {
-    if (!this.histogramRemove()) {
-      Histogram = this;
-      update(false);
-    }
   }
 
   private reset() {
