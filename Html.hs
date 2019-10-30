@@ -276,9 +276,9 @@ catalogPage = getPath R.parameter $ \sim req -> do
                     H.button H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick ("return histogramShow(" <> H.stringValue (show x) <> ")") $ do
                       "View "
                       if x == 'x' then "Histogram" else "Heatmap"
-                    when (x == 'y') $ do
-                      H.input H.! HA.type_ "checkbox" H.! HA.id "histcond" H.! HA.value "median"
-                      H.label H.! HA.for "histcond" $ "Conditional median"
+                    when (x == 'y') $
+                      H.button H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick ("return histogramShow('c')") $
+                        "Conditional distribution"
               H.div H.! HA.id "hist" $ mempty
 
             H.div H.! HA.class_ "col col-sm-12 col-md-4 right-column" $ do
