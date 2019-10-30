@@ -367,45 +367,16 @@ function add_filt_row(
   }
 }
 
-function add_sample() {
-  const samp = <HTMLInputElement>document.createElement("input");
-  samp.name = "sample";
-  samp.type = "number";
-  samp.step = "any";
-  samp.min = <any>0;
-  samp.max = <any>1;
-  samp.value = <any>Sample;
-  samp.title = "Probability (0,1] with which to include each item";
-
-  const seed = <HTMLInputElement>document.createElement("input");
-  seed.name = "seed";
-  seed.type = "number";
-  seed.step = <any>1;
-  seed.min = <any>0;
-  seed.value = <any>Seed;
-  seed.disabled = Sample >= 1;
-  seed.title = "Random seed to generate sample selection";
-
-  samp.onchange = seed.onchange = function() {
-    Sample = samp.valueAsNumber;
-    if (!isFinite(Sample)) Sample = 1;
-    if ((seed.disabled = Sample >= 1)) seed.value = "";
-    Seed = seed.valueAsNumber;
-    if (!isFinite(Seed)) Seed = undefined;
-    update();
-  };
-
-  add_filt_row(
-    "sample",
-    "random sample",
-    $("<span>")
-      .append("fraction ")
-      .append(samp),
-    $("<span>")
-      .append("seed ")
-      .append(seed)
-  );
-}
+(<any>window).sampleChange = function sampleChange() {
+  const samp = <HTMLInputElement>document.getElementById("sample");
+  const seed = <HTMLInputElement>document.getElementById("seed");
+  Sample = samp.valueAsNumber;
+  if (!isFinite(Sample)) Sample = 1;
+  if ((seed.disabled = Sample >= 1)) seed.value = "";
+  Seed = seed.valueAsNumber;
+  if (!isFinite(Seed)) Seed = undefined;
+  update();
+};
 
 abstract class Filter {
   protected tcol: DataTables.ColumnMethods;
@@ -731,7 +702,6 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
   aopt.text = "Add filter...";
   addfilt.appendChild(aopt);
   add_filt_row("", addfilt, "Select field to filter");
-  add_sample();
   for (let i = 0; i < Catalog.fields.length; i++) {
     const f = Catalog.fields[i];
     const opt = field_option(f);

@@ -301,7 +301,28 @@ catalogPage = getPath R.parameter $ \sim req -> do
                       H.! HA.role "alert" $ mempty
                   H.div H.! HA.class_ "right-column-group" $ do
                     H.h6 H.! HA.class_ "right-column-heading" $ "Random Sample"
-                    H.div H.! HA.id "sample" $ mempty
+                    H.label H.! HA.for "sample" $ "fraction"
+                    H.input
+                      H.! HA.id "sample"
+                      H.! HA.name "sample"
+                      H.! HA.type_ "number"
+                      H.! HA.step "any"
+                      H.! HA.min "0"
+                      H.! HA.max "1"
+                      H.! HA.value (H.toValue $ querySample query)
+                      H.! HA.title "Probability (0,1] with which to include each item"
+                      H.! HA.onchange "return sampleChange()"
+                    H.label H.! HA.for "seed" $ "seed"
+                    H.input
+                      H.! HA.id "seed"
+                      H.! HA.name "seed"
+                      H.! HA.type_ "number"
+                      H.! HA.step "1"
+                      H.! HA.min "0"
+                      WH.!? (HA.value . H.toValue <$> querySeed query)
+                      H.!? (querySample query < 1, HA.disabled "disabled")
+                      H.! HA.title "Random seed to generate sample selection"
+                      H.! HA.onchange "return sampleChange()"
 
                 H.div
                   H.! HA.class_ "tab-pane fade"
