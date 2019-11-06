@@ -347,6 +347,10 @@ group:
 illustris:
   title: Illustris FoF Halos
   index: illustris
+  #sort:
+  #- simulation
+  #- snapshot
+  #- id
   fields:
     - name: simulation
       type: byte
@@ -360,23 +364,27 @@ illustris:
         - Illustris-2-Dark
         - Illustris-3
         - Illustris-3-Dark
-      ingest: A:Header/SimulationName
+      ingest: _attribute:Header/SimulationName
     - name: snapshot
       type: short
       title: 'snap'
       flag: top
       descr: 'snapshot number'
-      ingest: A:Header/SnapshotNumber
+      ingest: _attribute:Header/SnapshotNumber
     - name: time
       type: float
       descr: 'Scalefactor of the snapshot corresponding to this group catalog.'
       flag: hidden
-      ingest: A:Header/Time
+      ingest: _attribute:Header/Time
     - name: redshift
       type: float
       descr: 'Redshift of the snapshot corresponding to this group catalog.'
       dict: redshift
-      ingest: A:Header/Redshift
+      ingest: _attribute:Header/Redshift
+    - name: id
+      type: long
+      descr: "Group index number"
+      ingest: _illustris:group
 
     - name: BHMass
       type: float
@@ -400,7 +408,7 @@ illustris:
         title: '\({\rm CM}_y\)'
       - name: "z"
         title: '\({\rm CM}_z\)'
-      ingest: ?:Group/GroupCM
+      ingest: _optional:Group/GroupCM
     - name: FirstSub
       type: integer
       descr: 'Index into the <code>Subhalo</code> table of the first/primary/most massive Subfind group within this FoF group. Note: This value is signed (or should be interpreted as signed)! In this case, a value of -1 indicates that this FoF group has no subhalos.'

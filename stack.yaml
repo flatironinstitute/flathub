@@ -7,7 +7,7 @@ extra-deps:
   - git: git://github.com/dylex/waimwork
     commit: c00627599674ebf19cf5a403bd27c1965051a1c0
   - git: git://github.com/dylex/hs-hdf5
-    commit: f8161dfefa15a4279bc709ce659ffcac8ecb6713
+    commit: 826f8aa693313ad8b5c1bf4f3adcbd5dcc294488
 flags:
   web-inv-route:
     snap: false
