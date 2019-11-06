@@ -106,10 +106,8 @@ main = do
             v <- maybe (fail $ "Invalid value: " ++ show s) return $ parseFieldValue f s
             first (v:) <$> pconst c' r
       (consts, cat) <- pconst (catalogMap catalogs HM.! sim) $ optConstFields opts
-      forM_ args $ \f -> do
-        liftIO $ putStrLn f
-        n <- ingest cat consts f
-        liftIO $ print n
+      n <- ingest cat consts args
+      liftIO $ print n
       ES.flushIndex cat
 
     forM_ (optClose opts) $ \sim -> do

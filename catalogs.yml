@@ -347,6 +347,7 @@ group:
 illustris:
   title: Illustris FoF Halos
   index: illustris
+  count: 1259309875
   sort:
   - simulation
   - snapshot
@@ -382,7 +383,7 @@ illustris:
       dict: redshift
       ingest: _attribute:Header/Redshift
     - name: id
-      type: long
+      type: int
       descr: "Group index number"
       ingest: _illustris:Group
 
@@ -578,6 +579,11 @@ illustris:
 tng:
   title: Illustris TNG FoF Halos
   index: tng
+  count: 4652128910
+  sort:
+  - simulation
+  - snapshot
+  - id
   fields:
     - name: simulation
       type: byte
@@ -591,6 +597,7 @@ tng:
         - Illustris-2-Dark
         - Illustris-3
         - Illustris-3-Dark
+        # above are not included
         - TNG100-1
         - TNG100-1-Dark
         - TNG100-2
@@ -612,21 +619,30 @@ tng:
       type: float
       descr: 'Scalefactor of the snapshot corresponding to this group catalog.'
       flag: hidden
+      ingest: _attribute:Header/Time
     - name: redshift
       type: float
       descr: 'Redshift of the snapshot corresponding to this group catalog.'
       dict: redshift
+      ingest: _attribute:Header/Redshift
+    - name: id
+      type: int
+      descr: "Group index number"
+      ingest: _illustris:Group
 
     - name: BHMass
+      ingest: Group/GroupBHMass
       type: float
       units: '\( 10^{10} M_\odot / h \)'
       descr: 'Sum of the BH_Mass field of all blackholes (type 5) in this group.'
     - name: BHMdot
+      ingest: Group/GroupBHMdot
       type: float
       title: '\(\dot{M}_{\rm BH}\)'
       units: '\((10^{10} M_\odot/h) / (0.978Gyr/h)\)'
       descr: 'Sum of the BH_Mdot field of all blackholes (type 5) in this group.'
     - name: CM
+      ingest: Group/GroupCM
       type: float
       units: 'ckpc/h'
       descr: 'Center of mass of the group, computed as the sum of the mass weighted relative coordinates of all particles/cells in the group, of all types. Comoving coordinate. (Available only for the Illustris-3 run)'
@@ -638,10 +654,12 @@ tng:
       - name: "z"
         title: '\({\rm CM}_z\)'
     - name: FirstSub
+      ingest: Group/GroupFirstSub
       type: integer
       descr: 'Index into the <code>Subhalo</code> table of the first/primary/most massive Subfind group within this FoF group. Note: This value is signed (or should be interpreted as signed)! In this case, a value of -1 indicates that this FoF group has no subhalos.'
       flag: hidden
     - name: GasMetalFractions
+      ingest: Group/GroupGasMetalFractions
       type: float
       descr: "Individual abundances: dimensionless ratio of the total mass in that species divided by the total gas mass, for all gas cells in the group."
       sub:
@@ -657,13 +675,16 @@ tng:
       - name: "total"
         descr: "The 'total' of all other (i.e. untracked) metals."
     - name: GasMetallicity
+      ingest: Group/GroupGasMetallicity
       type: float
       descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of all gas cells in this FOF group.'
     - name: Len
+      ingest: Group/GroupLen
       type: integer
       title: '\(N_{\rm part}\)'
       descr: 'Integer counter of the total number of particles/cells of all types in this group.'
     - name: LenType
+      ingest: Group/GroupLenType
       type: integer
       descr: 'Integer counter of the total number of particles/cells, split into the six different types, in this group. Note: Wind phase cells are counted as stars (type 4) for GroupLenType.'
       sub:
@@ -679,11 +700,13 @@ tng:
       - name: bh
         title: '\(N_{\rm BH}\)'
     - name: Mass
+      ingest: Group/GroupMass
       type: float
       title: '\(M_{\rm tot}\)'
       units: '\( 10^{10} M_\odot / h \)'
       descr: 'Sum of the individual masses of every particle/cell, of all types, in this group.'
     - name: MassType
+      ingest: Group/GroupMassType
       type: float
       units: '\( 10^{10} M_\odot / h \)'
       descr: 'Sum of the individual masses of every particle/cell, split into the six different types, in this group. Note: Wind phase cells are counted as gas (type 0) for GroupMassType.'
@@ -700,9 +723,11 @@ tng:
       - name: bh
         title: '\(M_{\rm BH}\)'
     - name: Nsubs
+      ingest: Group/GroupNsubs
       type: integer
       descr: 'Count of the total number of Subfind groups within this FoF group.'
     - name: Pos
+      ingest: Group/GroupPos
       type: float
       units: 'ckpc/h'
       descr: 'Spatial position within the periodic box of the maximum bound particle. Comoving coordinate.'
@@ -714,11 +739,13 @@ tng:
       - name: "z"
         title: 'z'
     - name: SFR
+      ingest: Group/GroupSFR
       type: float
       units: '\( M_\odot / yr \)'
       descr: 'Sum of the individual star formation rates of all gas cells in this group.'
       dict: SFR
     - name: StarMetalFractions
+      ingest: Group/GroupStarMetalFractions
       type: float
       descr: "Individual abundances: dimensionless ratio of the total mass in that species divided by the total stellar mass, for all stars in the group."
       sub:
@@ -734,9 +761,11 @@ tng:
       - name: "total"
         descr: "The 'total' of all other (i.e. untracked) metals."
     - name: StarMetallicity
+      ingest: Group/GroupStarMetallicity
       type: float
       descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of all star particles in this FOF group.'
     - name: Vel
+      ingest: Group/GroupVel
       type: float
       units: 'km/s/a'
       descr: 'Velocity of the group, computed as the sum of the mass weighted velocities of all particles/cells in this group, of all types. The peculiar velocity is obtained by multiplying this value by \(1/a.\)'
@@ -748,45 +777,54 @@ tng:
       - name: "z"
         title: '\(v_z\)'
     - name: WindMass
+      ingest: Group/GroupWindMass
       type: float
       units: '\( 10^{10} M_\odot / h \)'
       descr: 'Sum of the individual masses of all wind phase gas cells (type 4, BirthTime <= 0) in this group.'
     - name: M_Crit200
+      ingest: Group/Group_M_Crit200
       type: float
       units: '\( 10^{10} M_\odot / h \)'
       descr: 'Total Mass of this group enclosed in a sphere whose mean density is 200 times the critical density of the Universe, at the time the halo is considered.'
       flag: hidden
     - name: M_Crit500
+      ingest: Group/Group_M_Crit500
       type: float
       units: '\( 10^{10} M_\odot / h \)'
       descr: 'Total Mass of this group enclosed in a sphere whose mean density is 500 times the critical density of the Universe, at the time the halo is considered.'
       flag: hidden
     - name: M_Mean200
+      ingest: Group/Group_M_Mean200
       type: float
       units: '\( 10^{10} M_\odot / h \)'
       descr: 'Total Mass of this group enclosed in a sphere whose mean density is 200 times the mean density of the Universe, at the time the halo is considered.'
       flag: hidden
     - name: M_TopHat200
+      ingest: Group/Group_M_TopHat200
       type: float
       units: '\( 10^{10} M_\odot / h \)'
       descr: 'Total Mass of this group enclosed in a sphere whose mean density is \(\Delta_c\) times the critical density of the Universe, at the time the halo is considered. \(\Delta_c\) derives from the solution of the collapse of a spherical top-hat perturbation (fitting formula from <a href="http://adsabs.harvard.edu/abs/1998ApJ...495...80B">Bryan+ 1998</a>). The subscript 200 can be ignored.'
       flag: hidden
     - name: R_Crit200
+      ingest: Group/Group_R_Crit200
       type: float
       units: 'ckpc/h'
       descr: 'Comoving Radius of a sphere centered at the GroupPos of this Group whose mean density is 200 times the critical density of the Universe, at the time the halo is considered.'
       flag: hidden
     - name: R_Crit500
+      ingest: Group/Group_R_Crit500
       type: float
       units: 'ckpc/h'
       descr: 'Comoving Radius of a sphere centered at the GroupPos of this Group whose mean density is 500 times the critical density of the Universe, at the time the halo is considered.'
       flag: hidden
     - name: R_Mean200
+      ingest: Group/Group_R_Mean200
       type: float
       units: 'ckpc/h'
       descr: 'Comoving Radius of a sphere centered at the GroupPos of this Group whose mean density is 200 times the mean density of the Universe, at the time the halo is considered.'
       flag: hidden
     - name: R_TopHat200
+      ingest: Group/Group_R_TopHat200
       type: float
       units: 'ckpc/h'
       descr: 'Comoving Radius of a sphere centered at the GroupPos of this Group whose mean density is \(\Delta_c\) times the critical density of the Universe, at the time the halo is considered.'
@@ -794,6 +832,7 @@ tng:
 illustris_sub:
   title: Illustris Subfind
   index: illustris_sub
+  count: 1175372132
   sort:
   - simulation
   - snapshot
@@ -829,7 +868,7 @@ illustris_sub:
       dict: redshift
       ingest: _attribute:Header/Redshift
     - name: id
-      type: long
+      type: int
       descr: "Subgroup index number"
       ingest: _illustris:Subhalo
 
@@ -1109,6 +1148,7 @@ illustris_sub:
 tng_sub:
   title: Illustris TNG Subfind
   index: tng_sub
+  count: 4597293249
   fields:
     - name: Flag
       type: boolean

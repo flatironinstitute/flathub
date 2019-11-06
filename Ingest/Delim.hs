@@ -18,7 +18,6 @@ import           Data.Monoid ((<>))
 import qualified Data.Text.Encoding as TE
 import           Data.Word (Word64)
 import           Text.Read (readMaybe)
-import           System.FilePath (dropExtension)
 import           System.IO (hFlush, stdout)
 
 import Global
@@ -26,6 +25,7 @@ import Field
 import Catalog
 import Compression
 import qualified ES
+import Ingest.Types
 
 data Delim = Delim
   { delimDelim :: !Char
@@ -56,9 +56,9 @@ commentLine x = case BSC.uncons x of
   Nothing -> True
   Just _ -> False
 
-ingestDelim :: Delim -> Catalog -> J.Series -> Word64 -> FilePath -> Word64 -> M Word64
-ingestDelim delim cat consts blockSize fn off = do
-  ls <- liftIO $ map BSLC.toStrict . BSLC.lines <$> decompressFile fn
+ingestDelim :: Delim -> Ingest -> M Word64
+ingestDelim delim info@Ingest{ ingestCatalog = cat, ingestOffset = off } = do
+  ls <- liftIO $ map BSLC.toStrict . BSLC.lines <$> decompressFile (ingestFile info)
   let
     (header, rows) = parseHeaders delim ls
     (missing, fields) = mapAccumL (\c s -> maybe (c, Nothing) (\(f, c') -> (c', Just f)) $ takeCatalogField (TE.decodeUtf8 s) c) cat header
@@ -68,7 +68,7 @@ ingestDelim delim cat consts blockSize fn off = do
           n <- catalogKey cat 
           findIndex (any ((n ==) . fieldName)) fields
         = \_ x -> BSC.unpack $ x !! i
-      | otherwise = \i _ -> fnb ++ '_' : show i
+      | otherwise = \i _ -> ingestPrefix info ++ show i
     val Nothing _ = mempty
     val (Just f) x
       | typeIsFloating (fieldType f) && x `elem` ["Inf", "-Inf", "+Inf", "inf"] = mempty
@@ -77,17 +77,15 @@ ingestDelim delim cat consts blockSize fn off = do
     loop o [] = return o
     loop o s = do
       liftIO $ putStr (show o ++ "\r") >> hFlush stdout
-      let (d, s') = genericSplitAt blockSize s
-          (o', block) = mapAccumL (\i l -> let x = splitDelim delim l in (succ i, (key i x, consts <> foldMap (uncurry val) (zip fields x)))) o d
+      let (d, s') = genericSplitAt (ingestBlockSize info) s
+          (o', block) = mapAccumL (\i l -> let x = splitDelim delim l in (succ i, (key i x, ingestJConsts info <> foldMap (uncurry val) (zip fields x)))) o d
       ES.createBulk cat block
       loop o' s'
   unless (HM.null $ catalogFieldMap missing) $ fail $ "missing fields: " ++ show (fieldName <$> catalogFieldMap missing)
   loop off rows'
-  where
-  fnb = dropExtension fn
 
-ingestDat :: Catalog -> J.Series -> Word64 -> FilePath -> Word64 -> M Word64
+ingestDat :: Ingest -> M Word64
 ingestDat = ingestDelim (Delim ' ' False)
 
-ingestTxt :: Catalog -> J.Series -> Word64 -> FilePath -> Word64 -> M Word64
+ingestTxt :: Ingest -> M Word64
 ingestTxt = ingestDelim (Delim ' ' True)

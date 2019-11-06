@@ -15,7 +15,6 @@ import           Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Vector as V
 import           Data.Word (Word64)
-import           System.FilePath (dropExtension)
 import           System.IO (hFlush, stdout)
 
 import Monoid
@@ -24,6 +23,7 @@ import Catalog
 import Global
 import qualified ES
 import Compression
+import Ingest.Types
 
 dropCSV :: Word64 -> CSV.Records a -> (Word64, CSV.Records a)
 dropCSV n (CSV.Cons _ r) | n > 0 = dropCSV (pred n) r
@@ -42,9 +42,9 @@ takeCSV n r = do
     (\a' -> first (a':) <$> takeCSV (pred n) r')
     a
 
-ingestCSV :: Catalog -> J.Series -> Word64 -> FilePath -> Word64 -> M Word64
-ingestCSV cat consts blockSize fn off = do
-  csv <- liftIO $ CSV.decode CSV.NoHeader <$> decompressFile fn
+ingestCSV :: Ingest -> M Word64
+ingestCSV info@Ingest{ ingestCatalog = cat, ingestOffset = off } = do
+  csv <- liftIO $ CSV.decode CSV.NoHeader <$> decompressFile (ingestFile info)
   (fromMaybe V.empty -> header, rows) <- unconsCSV csv
   cols <- mapM (\Field{ fieldName = n, fieldIngest = i } ->
       maybe (fail $ "csv header field missing: " ++ T.unpack n) (return . (,) n) $ V.elemIndex (fromMaybe n i) header)
@@ -54,18 +54,16 @@ ingestCSV cat consts blockSize fn off = do
     off' = off - del
     key
       | Just k <- (`lookup` cols) =<< catalogKey cat = const $ T.unpack . (V.! k)
-      | otherwise = const . (fnb ++) . ('_' :) . show
+      | otherwise = const . (ingestPrefix info ++) . show
     val r (n, i) = mwhen (not $ T.null v) (n J..= v)
       where v = r V.! i
     loop o cs = do
       liftIO $ putStr (show o ++ "\r") >> hFlush stdout
-      (rs, cs') <- takeCSV blockSize cs
+      (rs, cs') <- takeCSV (ingestBlockSize info) cs
       if null rs
         then return o
         else do
-          let (o', block) = mapAccumL (\i r -> (succ i, (key i r, consts <> foldMap (val r) cols))) o rs
+          let (o', block) = mapAccumL (\i r -> (succ i, (key i r, ingestJConsts info <> foldMap (val r) cols))) o rs
           ES.createBulk cat block
           loop o' cs'
   loop off' rows'
-  where
-  fnb = dropExtension fn
