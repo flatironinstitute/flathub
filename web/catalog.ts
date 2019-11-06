@@ -678,7 +678,7 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
       };
     })
   };
-  if (Catalog.sort) topts.order = [[Catalog.sort, "asc"]];
+  if (Catalog.sort) topts.order = Catalog.sort.map(o => [o, "asc"]);
   if ((<any>window).Query) {
     if (Query.sample != null) Sample = Query.sample;
     if (Query.seed != null) Seed = Query.seed;

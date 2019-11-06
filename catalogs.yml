@@ -347,10 +347,10 @@ group:
 illustris:
   title: Illustris FoF Halos
   index: illustris
-  #sort:
-  #- simulation
-  #- snapshot
-  #- id
+  sort:
+  - simulation
+  - snapshot
+  - id
   fields:
     - name: simulation
       type: byte
