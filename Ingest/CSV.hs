@@ -46,8 +46,8 @@ ingestCSV :: Catalog -> J.Series -> Word64 -> FilePath -> Word64 -> M Word64
 ingestCSV cat consts blockSize fn off = do
   csv <- liftIO $ CSV.decode CSV.NoHeader <$> decompressFile fn
   (fromMaybe V.empty -> header, rows) <- unconsCSV csv
-  cols <- mapM (\Field{ fieldName = n } ->
-      maybe (fail $ "csv header field missing: " ++ T.unpack n) (return . (,) n) $ V.elemIndex n header)
+  cols <- mapM (\Field{ fieldName = n, fieldIngest = i } ->
+      maybe (fail $ "csv header field missing: " ++ T.unpack n) (return . (,) n) $ V.elemIndex (fromMaybe n i) header)
     $ catalogFields cat
   let
     (del, rows') = dropCSV off rows
