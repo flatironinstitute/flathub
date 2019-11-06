@@ -76,7 +76,7 @@ hdf5ReadVector d o l = do
   let nt = H5.nativeTypeOf1 v
   ntc <- H5.getTypeClass nt
   nts <- H5.getTypeSize nt
-  unless (tc == ntc && ts == nts) $ fail $ "HDF5 type mismatch: " ++ show ((tc, ts), (ntc, nts))
+  unless (tc == ntc && ts >= nts) $ fail $ "HDF5 type mismatch: " ++ show ((tc, ts), (ntc, nts))
   return v
   where
   pad s [] = s
@@ -157,9 +157,9 @@ ingestHDF5 cat consts blockSize fn off = liftBaseOp (withHDF5 fn) $ \hf -> do
         return i{ infoConsts = infoConsts i <> fieldName f J..= v }
       infof i Field{ fieldIngest = (>>= T.stripPrefix "_illustris:") -> Just ill } = liftIO $ do
         let Just (J.Object c) = J.decode $ BSB.toLazyByteString $ J.fromEncoding $ J.pairs $ infoConsts i -- this is a bit silly and depends on field order
-        Long sz <- readScalarAttribute hf ("Header/N" <> TE.encodeUtf8 ill <> "s_ThisFile") (Long Proxy)
+        Long sz <- readScalarAttribute hf ("Header/N" <> case ill of { "Subhalo" -> "subgroup" ; s -> TE.encodeUtf8 (T.toLower s) } <> "s_ThisFile") (Long Proxy)
         Long fi <- readScalarAttribute hf "Header/Num_ThisFile" (Long Proxy)
-        Long ids <- readAttribute hf ("Header/FileOffsets_" <> TE.encodeUtf8 (T.toTitle ill)) (Long Proxy)
+        Long ids <- readAttribute hf ("Header/FileOffsets_" <> TE.encodeUtf8 ill) (Long Proxy)
         return i
           { infoPrefix = BSLC.unpack $ J.encode (c HM.! "simulation") <> "_" <> J.encode (c HM.! "snapshot") <> "_"
           , infoStart = fromIntegral $ ids V.! fromIntegral fi
