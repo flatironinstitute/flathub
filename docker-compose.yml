@@ -2,14 +2,7 @@ version: '2.4'
 
 x-es:
   &es
-  image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.3.1
-  environment:
-    - cluster.name=astrosims
-    - bootstrap.memory_lock=true
-    - "ES_JAVA_OPTS=-Xms20g -Xmx20g"
-    - "discovery.seed_hosts=astrosims-es"
-    - "discovery.zen.minimum_master_nodes=3"
-    - "node.max_local_storage_nodes=8"
+  image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.4.2
   ulimits:
     memlock:
       soft: -1
@@ -23,6 +16,14 @@ services:
   astrosims-es:
     << : *es
     container_name: astrosims-es
+    environment:
+      - cluster.name=astrosims
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms16g -Xmx16g"
+      - "discovery.seed_hosts=astrosims-es"
+      - "cluster.initial_master_nodes=astrosims-es"
+      - "node.max_local_storage_nodes=8"
+      - "node.name=astrosims-es"
     expose:
       - "9200"
     ports:
@@ -32,6 +33,13 @@ services:
     scale: 4
   astrosims:
     build: .
+    environment:
+      - cluster.name=astrosims
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms16g -Xmx16g"
+      - "discovery.seed_hosts=astrosims-es"
+      - "cluster.initial_master_nodes=astrosims-es"
+      - "node.max_local_storage_nodes=8"
     image: flatironinstitute/astrosims-reproto
     networks:
       - esnet
