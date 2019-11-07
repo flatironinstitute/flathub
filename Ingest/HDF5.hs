@@ -137,8 +137,11 @@ readScalarAttribute hf p t = do
   return $ fmapTypeValue1 V.head r
 
 ingestHFile :: Ingest -> H5.File -> M Word64
-ingestHFile info hf =
-  loop =<< foldM infof info (catalogFieldGroups $ ingestCatalog info)
+ingestHFile info hf = do
+  info' <- foldM infof info (catalogFieldGroups $ ingestCatalog info)
+  if ingestSize info' == Just 0 -- for illustris, if there's no data, don't try reading (since datasets are missing)
+    then return 0
+    else loop info'
   where
   infof i f@Field{ fieldIngest = (>>= T.stripPrefix attributePrefix) -> Just n } = liftIO $ do
     v <- readScalarAttribute hf (TE.encodeUtf8 n) (fieldType f)
