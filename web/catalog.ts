@@ -55,7 +55,7 @@ var Last_query: undefined | Dict<string>;
 
 function set_download(query: Dict<string>) {
   const q = "?" + $.param(query);
-  const h = $("#download").html('download as ');
+  const h = $("#download").html("download as ");
   for (let f of Catalog.bulk) {
     const a = document.createElement("a");
     h.append(a);
@@ -241,14 +241,12 @@ function toggleLog() {
   else {
     const sely = <HTMLSelectElement>document.getElementById("histsel-y");
     Heatmap = Catalog.fields[Fields_idx[sely.value]];
-    Histcond = (axis == 'c');
+    Histcond = axis == "c";
   }
   const selx = <HTMLSelectElement>document.getElementById("histsel-x");
   const filt = add_filter(Fields_idx[selx.value]);
-  if (filt instanceof NumericFilter)
-    Histogram = filt;
-  else
-    histogramRemove();
+  if (filt instanceof NumericFilter) Histogram = filt;
+  else histogramRemove();
   update(false);
 };
 
@@ -265,7 +263,8 @@ function update(paging: boolean = true) {
     TCat.draw(Update_paging);
     Update_paging = false;
   });
-  /* TOOD: show loading */
+  const modal = <HTMLSelectElement>document.getElementById("progress-modal");
+  modal.classList.remove("hidden");
 }
 
 function ajax(data: any, callback: (data: any) => void, opts: any) {
@@ -276,6 +275,9 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
       })
       .join(" ")
   };
+
+  const modal = <HTMLSelectElement>document.getElementById("progress-modal");
+  modal.classList.remove("hidden");
 
   let aggs = Filters;
   if (Update_aggs >= 0) aggs = aggs.slice(Update_aggs);
@@ -312,7 +314,10 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
     data: query
   }).then(
     (res: CatalogResponse) => {
-      /* TOOD: hide loading */
+      const modal = <HTMLSelectElement>(
+        document.getElementById("progress-modal")
+      );
+      modal.classList.add("hidden");
       Update = false;
       Catalog.count = Math.max(Catalog.count || 0, res.hits.total);
       const settings = (<any>TCat.settings())[0];
@@ -344,7 +349,10 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
       set_download((Last_query = query));
     },
     (xhr, msg, err) => {
-      /* TOOD: error loading */
+      const modal = <HTMLSelectElement>(
+        document.getElementById("progress-modal")
+      );
+      modal.classList.add("hidden");
       Update = false;
       callback({
         draw: data.draw,
@@ -661,7 +669,7 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
     ajax: ajax,
     deferLoading: 1,
     pageLength: 25,
-    processing: true,
+    processing: false,
     language: {
       emptyTable: "",
       zeroRecords: ""
