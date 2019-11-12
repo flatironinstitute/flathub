@@ -276,6 +276,9 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
       .join(" ")
   };
 
+  const modal = <HTMLSelectElement>document.getElementById("progress-modal");
+  modal.classList.remove("hidden");
+
   let aggs = Filters;
   if (Update_aggs >= 0) aggs = aggs.slice(Update_aggs);
   else Update_aggs = Filters.length;
@@ -311,7 +314,9 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
     data: query
   }).then(
     (res: CatalogResponse) => {
-      const modal = <HTMLSelectElement>document.getElementById("progress-modal");
+      const modal = <HTMLSelectElement>(
+        document.getElementById("progress-modal")
+      );
       modal.classList.add("hidden");
       Update = false;
       Catalog.count = Math.max(Catalog.count || 0, res.hits.total);
@@ -344,7 +349,10 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
       set_download((Last_query = query));
     },
     (xhr, msg, err) => {
-      /* TODO: error loading > hide loader and show err message */
+      const modal = <HTMLSelectElement>(
+        document.getElementById("progress-modal")
+      );
+      modal.classList.add("hidden");
       Update = false;
       callback({
         draw: data.draw,
@@ -661,7 +669,7 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
     ajax: ajax,
     deferLoading: 1,
     pageLength: 25,
-    processing: true,
+    processing: false,
     language: {
       emptyTable: "",
       zeroRecords: ""
