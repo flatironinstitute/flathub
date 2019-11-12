@@ -555,7 +555,7 @@ div#hist,
   margin: 0;
   border-bottom: none;
   border-radius: 0;
-  display: inline-block;
+  display: block;
   height: 38px;
   padding: 0 30px;
   color: #555;
@@ -618,7 +618,7 @@ div#hist,
   font-size: 2rem;
   line-height: 5rem;
   font-weight: 400;
-  text-trasnform: uppercase;
+  text-transform: uppercase;
 }
 
 /* Footer links */
@@ -1035,6 +1035,10 @@ hr {
   border-top: 1px solid #e1e1e1;
 }
 
+.hidden {
+  display: none;
+}
+
 /* Fields Dictionary
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
 
@@ -1310,12 +1314,21 @@ table#tcat td {
   justify-content: center;
 }
 
+.modal-content > h3 {
+  margin-bottom: 1rem;
+}
+
+.modal-content > p {
+  margin-bottom: 1rem;
+}
+
 /* Progress Bar
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
 
 .progress-container {
   width: 300px;
   text-align: center;
+  margin-bottom: 1rem;
 }
 
 @media (min-width: 800px) {
@@ -1332,7 +1345,6 @@ table#tcat td {
     #ff513a,
     #c93926,
     #c42d19,
-    #93554c,
     #ffada3,
     #ff533d,
     #ff2d55
@@ -1348,7 +1360,6 @@ table#tcat td {
     #ff513a,
     #c93926,
     #c42d19,
-    #93554c,
     #ffada3,
     #ff533d,
     #ff2d55
@@ -1358,10 +1369,6 @@ table#tcat td {
 
 .progress-exterior {
   padding: 6px;
-  background: rgba(0, 0, 0, 0.25);
-  border-radius: 6px;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25),
-    0 1px rgba(255, 255, 255, 0.08);
 }
 
 @keyframes colorAnimation {
@@ -1371,7 +1378,6 @@ table#tcat td {
       #ff513a,
       #c93926,
       #c42d19,
-      #93554c,
       #ffada3,
       #ff533d,
       #ff2d55
@@ -1382,7 +1388,6 @@ table#tcat td {
       to right,
       #c93926,
       #c42d19,
-      #93554c,
       #ffada3,
       #ff533d,
       #ff2d55,
@@ -1393,7 +1398,6 @@ table#tcat td {
     background-image: linear-gradient(
       to right,
       #c42d19,
-      #93554c,
       #ffada3,
       #ff533d,
       #ff2d55,
@@ -1404,7 +1408,6 @@ table#tcat td {
   60% {
     background-image: linear-gradient(
       to right,
-      #93554c,
       #ffada3,
       #ff533d,
       #ff2d55,
@@ -1421,8 +1424,7 @@ table#tcat td {
       #ff2d55,
       #ff513a,
       #c93926,
-      #c42d19,
-      #93554c
+      #c42d19
     );
   }
 }
@@ -2078,7 +2080,6 @@ table#tcat td {
 }
 
 .MathJax_PHTML .noError {
-  vertical-align: ;
   font-size: 90%;
   text-align: left;
   color: black;
@@ -2386,13 +2387,13 @@ body :focus .mjx-chtml[tabindex] {
 }
 
 .mjx-test-inline .mjx-left-box {
-  display: inline-block;
+  display: block;
   width: 0;
   float: left;
 }
 
 .mjx-test-inline .mjx-right-box {
-  display: inline-block;
+  display: block;
   width: 0;
   float: right;
 }
@@ -2427,7 +2428,6 @@ body :focus .mjx-chtml[tabindex] {
 
 .mjx-chtml .mjx-noError {
   line-height: 1.2;
-  vertical-align: ;
   font-size: 90%;
   text-align: left;
   color: black;

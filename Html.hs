@@ -84,7 +84,7 @@ htmlResponse req hdrs body = do
       H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href "https://fonts.googleapis.com/css?family=Major+Mono+Display|Montserrat"
       jsonVar "Catalogs" (HM.map catalogTitle $ catalogMap cats)
     H.body $ do
-      H.div H.! HA.class_ "modal-container" $ do
+      H.div H.! HA.class_ "modal-container hidden"  H.! HA.id "progress-modal" $ do
         H.div H.! HA.class_ "modal-background" $ do
           H.span $ H.text ""
         H.div H.! HA.class_ "modal-body" $ do
@@ -93,7 +93,7 @@ htmlResponse req hdrs body = do
             H.div H.! HA.class_ "progress-container" $ do
               H.div H.! HA.class_ "progress-exterior" $ do
                 H.div H.! HA.class_ "progress-interior" $ mempty
-            H.p "Do we have some sort of message here? Perhaps a swirling galaxy."
+            H.p "One moment, please. The data you requested is being retrieved."
       H.header H.! HA.class_ "header" $ do
         H.div H.! HA.class_ "header__logo" $ do
           H.a H.! HA.href (WH.routeActionValue topPage () mempty) H.! HA.class_ "header__logo-link" $ do

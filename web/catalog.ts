@@ -263,7 +263,8 @@ function update(paging: boolean = true) {
     TCat.draw(Update_paging);
     Update_paging = false;
   });
-  /* TODO: show loading */
+  const modal = <HTMLSelectElement>document.getElementById("progress-modal");
+  modal.classList.remove("hidden");
 }
 
 function ajax(data: any, callback: (data: any) => void, opts: any) {
@@ -310,7 +311,8 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
     data: query
   }).then(
     (res: CatalogResponse) => {
-      /* TODO: hide loading */
+      const modal = <HTMLSelectElement>document.getElementById("progress-modal");
+      modal.classList.add("hidden");
       Update = false;
       Catalog.count = Math.max(Catalog.count || 0, res.hits.total);
       const settings = (<any>TCat.settings())[0];
