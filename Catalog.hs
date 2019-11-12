@@ -77,7 +77,7 @@ data Catalog = Catalog
   , catalogFields :: Fields
   , catalogFieldMap :: HM.HashMap T.Text Field
   , catalogKey :: Maybe T.Text -- ^primary key (not really used)
-  , catalogSort :: Maybe T.Text -- ^sort field for index
+  , catalogSort :: [T.Text] -- ^sort field(s) for index
   , catalogCount :: Maybe Word
   }
 
@@ -89,7 +89,11 @@ parseCatalog dict = J.withObject "catalog" $ \c -> do
   catalogDescr <- c J..:? "descr"
   catalogHtml <- c J..:? "html"
   catalogKey <- c J..:? "key"
-  catalogSort <- c J..:? "sort"
+  catalogSort <- case HM.lookup "sort" c of
+    Nothing -> return []
+    Just J.Null -> return []
+    Just (J.String s) -> return [s]
+    Just s -> J.parseJSON s
   catalogCount <- c J..:? "count"
   catalogStore <- CatalogES
       <$> (c J..: "index")
@@ -112,7 +116,9 @@ instance J.ToJSON Catalog where
     , "fields" J..= catalogFields
     ] ++ concatMap maybeToList
     [ ("count" J..=) <$> catalogCount
-    , ("sort" J..=) <$> catalogSort
+    , case catalogSort of
+      [] -> Nothing
+      s -> Just $ "sort" J..= s
     ]
 
 takeCatalogField :: T.Text -> Catalog -> Maybe (Field, Catalog)

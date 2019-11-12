@@ -114,10 +114,12 @@ defaultSettings cat = HM.fromList
     , "number_of_replicas" J..= J.Number 1
     , "refresh_interval" J..= J.Number (-1)
     , "max_docvalue_fields_search" J..= (8 + length (catalogFields cat))
-    ] ++ foldMap (\s ->
-    [ "sort.field" J..= J.String s
-    , "sort.order" J..= J.String "asc"
-    ]) (catalogSort cat))
+    ] ++ case catalogSort cat of
+      [] -> []
+      s ->
+        [ "sort.field" J..= map J.String s
+        , "sort.order" J..= map (const $ J.String "asc") s
+        ])
   ] where
   -- elastic search cluster size to optimize for (should really be determined dynamicaly)
   clusterSize = 4
@@ -210,7 +212,7 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreFiel
       (JE.pairs $
         "size" J..= J.Number 0
       <> "query" .=* filts
-      <> "aggs" .=* foldMap (\(f, _) -> 
+      <> "aggs" .=* foldMap (\(f, _) ->
            ("0" <> fieldName f) .=* ("min" .=* field f)
         <> ("1" <> fieldName f) .=* ("max" .=* field f))
         histunks)
@@ -309,9 +311,10 @@ createBulk cat@Catalog{ catalogStore = ~CatalogES{} } docs = do
     <> nl <> J.fromEncoding (J.pairs d) <> nl
   nl = B.char7 '\n'
 
-flushIndex :: Catalog -> M J.Value
-flushIndex Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } =
-  elasticSearch POST ([T.unpack idxn, "_flush"]) [] EmptyJSON
+flushIndex :: Catalog -> M (J.Value, J.Value)
+flushIndex Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } = (,)
+  <$> elasticSearch POST ([T.unpack idxn, "_refresh"]) [] EmptyJSON
+  <*> elasticSearch POST ([T.unpack idxn, "_flush"]) [] EmptyJSON
 
 newtype ESCount = ESCount{ esCount :: Word } deriving (Show)
 instance J.FromJSON ESCount where

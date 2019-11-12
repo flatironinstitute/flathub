@@ -23,6 +23,7 @@ executable astrosims
     Global
     Html
     Ingest
+    Ingest.Types
     Ingest.CSV
     Ingest.HDF5
     Ingest.Delim

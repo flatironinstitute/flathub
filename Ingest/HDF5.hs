@@ -1,33 +1,47 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE ViewPatterns #-}
 
 module Ingest.HDF5
   ( ingestHDF5
   ) where
 
-import           Control.Exception (bracket)
-import           Control.Monad (when, unless)
+import           Control.Exception (bracket, handleJust)
+import           Control.Monad (foldM, guard, when, unless)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Trans.Control (liftBaseOp)
 import qualified Bindings.HDF5 as H5
+import qualified Bindings.HDF5.Error as H5E
+import qualified Bindings.HDF5.ErrorCodes as H5E
 import qualified Data.Aeson as J
 import qualified Data.ByteString.Char8 as BSC
 import           Data.Foldable (fold)
+import           Data.List (find, nub)
+import           Data.Maybe (fromMaybe)
 import           Data.Monoid ((<>))
+import           Data.Proxy (Proxy(Proxy))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V
 import qualified Data.Vector.Storable as VS
 import qualified Data.Vector.Storable.Mutable as VSM
 import           Data.Word (Word64, Word8)
-import           System.FilePath (takeBaseName)
 import           System.IO (hFlush, stdout)
 
 import Field
 import Catalog
 import Global
 import qualified ES
+import Ingest.Types
 
 type DataBlock = [(T.Text, TypeValue V.Vector)]
+
+attributePrefix :: T.Text
+attributePrefix = "_attribute:"
+
+optionalPrefix :: T.Text
+optionalPrefix = "_optional:"
 
 hdf5ReadVector :: H5.NativeType a => H5.Dataset -> [H5.HSize] -> Word64 -> IO (V.Vector a)
 hdf5ReadVector d o l = do
@@ -48,7 +62,7 @@ hdf5ReadVector d o l = do
   let nt = H5.nativeTypeOf1 v
   ntc <- H5.getTypeClass nt
   nts <- H5.getTypeSize nt
-  unless (tc == ntc && ts == nts) $ fail $ "HDF5 type mismatch: " ++ show ((tc, ts), (ntc, nts))
+  unless (tc == ntc && ts >= nts) $ fail $ "HDF5 type mismatch: " ++ show ((tc, ts), (ntc, nts))
   return v
   where
   pad s [] = s
@@ -58,49 +72,106 @@ hdf5ReadVector d o l = do
 toBool :: Word8 -> Bool
 toBool = (0 /=)
 
-hdf5ReadType :: Type -> H5.Dataset -> [H5.HSize] -> Word64 -> IO (TypeValue V.Vector)
-hdf5ReadType (Long    _) d o l = Long    <$> hdf5ReadVector d o l
-hdf5ReadType (Integer _) d o l = Integer <$> hdf5ReadVector d o l
-hdf5ReadType (Short   _) d o l = Short   <$> hdf5ReadVector d o l
-hdf5ReadType (Byte    _) d o l = Byte    <$> hdf5ReadVector d o l
-hdf5ReadType (Double  _) d o l = Double  <$> hdf5ReadVector d o l
-hdf5ReadType (Float   _) d o l = Float   <$> hdf5ReadVector d o l
-hdf5ReadType (Boolean _) d o l = Boolean . fmap toBool <$> hdf5ReadVector d o l
-hdf5ReadType t           _ _ _ = fail $ "Unsupported HDF5 type: " ++ show t
+hdf5ReadType :: Functor f => Type -> (forall a . H5.NativeType a => IO (f a)) -> IO (TypeValue f)
+hdf5ReadType (Long    _) f = Long    <$> f
+hdf5ReadType (Integer _) f = Integer <$> f
+hdf5ReadType (Short   _) f = Short   <$> f
+hdf5ReadType (Byte    _) f = Byte    <$> f
+hdf5ReadType (Double  _) f = Double  <$> f
+hdf5ReadType (Float   _) f = Float   <$> f
+hdf5ReadType (Boolean _) f = Boolean . fmap toBool <$> f
+hdf5ReadType t           _ = fail $ "Unsupported HDF5 type: " ++ show t
 
-loadBlock :: Catalog -> Word64 -> Word64 -> H5.File -> IO DataBlock
-loadBlock Catalog{ catalogFieldGroups = cat } off len hf = concat <$> mapM loadf cat where
-  loadf f
-    | T.null (fieldName f) = concat <$> mapM (loadf . mappend f) (fold $ fieldSub f)
-    | otherwise = bracket (H5.openDataset hf (TE.encodeUtf8 $ fieldName f) Nothing) H5.closeDataset $ \hd -> do
+loadBlock :: Ingest -> H5.File -> IO DataBlock
+loadBlock info@Ingest{ ingestCatalog = Catalog{ catalogFieldGroups = cat }, ingestOffset = off } hf = concat <$> mapM loadf cat where
+  loadf f = case fromMaybe (fieldName f) $ fieldIngest f of
+    "" -> concat <$> mapM (loadf . mappend f) (fold $ fieldSub f)
+    n | attributePrefix `T.isPrefixOf` n -> return []
+    (T.stripPrefix optionalPrefix -> Just n) ->
+      handleJust
+        (\(H5E.errorStack -> (H5E.HDF5Error{ H5E.classId = cls, H5E.majorNum = Just H5E.Sym, H5E.minorNum = Just H5E.NotFound }:_)) -> guard (cls == H5E.hdfError))
+        (\() -> return [])
+      $ loadf f{ fieldIngest = Just n }
+    n | "_illustris:" `T.isPrefixOf` n ->
+      return [(fieldName f, Long (V.generate (fromIntegral $ maybe id (min . subtract off) (ingestSize info) $ ingestBlockSize info) ((+) (fromIntegral $ ingestStart info + off) . fromIntegral)))]
+    n -> bracket (H5.openDataset hf (TE.encodeUtf8 n) Nothing) H5.closeDataset $ \hd -> do
       let
         loop _ [] = return []
         loop i (f':fs') = do
-          x <- hdf5ReadType (fieldType f') hd (fromIntegral off : if i == 0 then [] else [i]) len
+          x <- hdf5ReadType (fieldType f') $ hdf5ReadVector hd (fromIntegral off : if i == 0 then [] else [i]) $ ingestBlockSize info
           ((fieldName f', x) :) <$> loop (succ i) fs'
       loop 0 $ expandFields (V.singleton f)
 
-blockLength :: DataBlock -> Int
-blockLength = maximum . map (unTypeValue V.length . snd)
-
-ingestBlock :: Catalog -> J.Series -> String -> Word64 -> DataBlock -> M Int
-ingestBlock cat@Catalog{ catalogStore = ~CatalogES{} } consts pfx off dat = do
-  ES.createBulk cat $ map doc [0..pred n]
+ingestBlock :: Ingest -> DataBlock -> M Int
+ingestBlock info@Ingest{ ingestCatalog = cat@Catalog{ catalogStore = ~CatalogES{} }, ingestOffset = off } dat = do
+  n <- case nub $ map (unTypeValue V.length . snd) dat of
+    [n] -> return n
+    n -> fail $ "Inconsistent data length: " ++ show n
+  when (n /= 0) $ ES.createBulk cat $ map doc [0..pred n]
   return n
   where
-  n = blockLength dat
-  doc i = (pfx ++ show (off + fromIntegral i), consts <> foldMap (\(k, v) -> k J..= fmapTypeValue1 (V.! i) v) dat)
+  doc i =
+    ( ingestPrefix info ++ show (ingestStart info + off + fromIntegral i)
+    , ingestJConsts info <> foldMap (\(k, v) -> k J..= fmapTypeValue1 (V.! i) v) dat)
 
 withHDF5 :: FilePath -> (H5.File -> IO a) -> IO a
 withHDF5 fn = bracket (H5.openFile (BSC.pack fn) [H5.ReadOnly] Nothing) H5.closeFile
 
-ingestHDF5 :: Catalog -> J.Series -> Word64 -> FilePath -> Word64 -> M Word64
-ingestHDF5 cat consts blockSize fn off = liftBaseOp (withHDF5 fn) $ \hf -> do
-  let loop o = do
-        liftIO $ putStr (show o ++ "\r") >> hFlush stdout
-        n <- ingestBlock cat consts pfx o =<< liftIO (loadBlock cat o blockSize hf)
-        (if n < fromIntegral blockSize then return else loop) (o + fromIntegral n)
-  loop off
+withAttribute :: H5.File -> BSC.ByteString -> (H5.Attribute -> IO a) -> IO a
+withAttribute hf p = bracket
+  (if BSC.null g then H5.openAttribute hf a else bracket
+    (H5.openGroup hf g Nothing)
+    H5.closeGroup $ \hg -> H5.openAttribute hg a)
+  H5.closeAttribute
+  where (g, a) = BSC.breakEnd ('/'==) p
+
+readAttribute :: H5.File -> BSC.ByteString -> Type -> IO (TypeValue V.Vector)
+readAttribute hf p t = withAttribute hf p $ \a ->
+  hdf5ReadType t $ VS.convert <$> H5.readAttribute a
+
+readScalarAttribute :: H5.File -> BSC.ByteString -> Type -> IO Value
+readScalarAttribute hf p t = do
+  r <- readAttribute hf p t
+  let l = unTypeValue V.length r
+  unless (l == 1) $ fail ("attribute " ++ show p ++ ": expected scalar, got " ++ show l)
+  return $ fmapTypeValue1 V.head r
+
+ingestHFile :: Ingest -> H5.File -> M Word64
+ingestHFile info hf = do
+  info' <- foldM infof info (catalogFieldGroups $ ingestCatalog info)
+  if ingestSize info' == Just 0 -- for illustris, if there's no data, don't try reading (since datasets are missing)
+    then return 0
+    else loop info'
   where
-  -- TODO: catalogKey
-  pfx = takeBaseName fn ++ "_"
+  infof i f@Field{ fieldIngest = (>>= T.stripPrefix attributePrefix) -> Just n } = liftIO $ do
+    v <- readScalarAttribute hf (TE.encodeUtf8 n) (fieldType f)
+    return i{ ingestConsts = f{ fieldType = v, fieldSub = Proxy } : ingestConsts i }
+  infof i Field{ fieldIngest = (>>= T.stripPrefix "_illustris:") -> Just ill } = liftIO $ do
+    Long sz <- readScalarAttribute hf ("Header/N" <> case ill of { "Subhalo" -> "subgroup" ; s -> TE.encodeUtf8 (T.toLower s) } <> "s_ThisFile") (Long Proxy)
+    handleJust
+      (\(H5E.errorStack -> (H5E.HDF5Error{ H5E.classId = cls, H5E.majorNum = Just H5E.Attr, H5E.minorNum = Just H5E.NotFound }:_)) -> guard (cls == H5E.hdfError)) return $ do
+        Long fi <- readScalarAttribute hf "Header/Num_ThisFile" (Long Proxy)
+        Long ids <- readAttribute hf ("Header/FileOffsets_" <> TE.encodeUtf8 ill) (Long Proxy)
+        let si = fromIntegral (ids V.! fromIntegral fi)
+        unless (si == ingestStart i) $ fail "start offset mismatch"
+    si <- constv "simulation" i
+    sn <- constv "snapshot" i
+    return i
+      { ingestPrefix = si ++ '_' : sn ++ "_"
+      , ingestSize = Just (fromIntegral sz) }
+  infof i _ = return i
+  constv f = maybe (fail $ "const field " ++ show f ++ " not fonud")
+    (return . unTypeValue show . fieldType)
+    . find ((f ==) . fieldName) . ingestConsts
+  loop i = do
+    liftIO $ putStr (show (ingestOffset i) ++ "\r") >> hFlush stdout
+    n <- ingestBlock i =<< liftIO (loadBlock i hf)
+    let i' = i{ ingestOffset = ingestOffset i + fromIntegral n }
+    if n < fromIntegral (ingestBlockSize i)
+      then do
+        unless (all (ingestOffset i' ==) $ ingestSize i') $ fail $ "size mismatch: expected " ++ show (ingestSize i') ++ " rows, got " ++ show (ingestOffset i')
+        return $ ingestOffset i'
+      else loop i'
+
+ingestHDF5 :: Ingest -> M Word64
+ingestHDF5 info = liftBaseOp (withHDF5 $ ingestFile info) $ ingestHFile info
