@@ -1429,6 +1429,16 @@ table#tcat td {
   }
 }
 
+.dataTables_wrapper .dataTables_processing {
+  color: var(--cooler-off-black);
+  padding: 2rem;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border: 1px solid;
+  border-radius: 4px;
+}
+
 /* MathJax Moved over from index
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
 
