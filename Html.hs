@@ -307,7 +307,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                     H.h6 H.! HA.class_ "right-column-heading" $ "Active Filters"
                     H.div
                       H.! HA.id "filt"
-                      H.! HA.class_ "alert alert-warning alert-dismissible fade show"
+                      H.! HA.class_ "alert-parent"
                       H.! HA.role "alert" $ mempty
                   H.div H.! HA.class_ "right-column-group" $ do
                     H.h6 H.! HA.class_ "right-column-heading" $ "Random Sample"

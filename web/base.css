@@ -50,6 +50,13 @@
   box-sizing: border-box;
 }
 
+.filter-row {
+  align-items: baseline;
+  justify-content: space-between;
+  margin-right: 0;
+  margin-left: 0;
+}
+
 /* Base Styles
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
 
@@ -856,6 +863,44 @@ input[type="button"].button-primary:focus {
   padding: 0 10px;
 }
 
+.button.button-remove,
+button.button-remove,
+input[type="submit"].button-remove,
+input[type="reset"].button-remove,
+input[type="button"].button-remove {
+  max-width: 270px;
+  margin-bottom: 0;
+  color: var(--cooler-off-black);
+  opacity: 0.6;
+  background-color: transparent;
+  border-color: transparent;
+  max-width: 270px;
+  margin-bottom: 0;
+  margin-right: 2rem;
+  font-size: 2.2rem;
+  line-height: 2.2rem;
+  padding: 0 5px;
+}
+
+.button.button-remove:hover,
+button.button-remove:hover,
+input[type="submit"].button-remove:hover,
+input[type="reset"].button-remove:hover,
+input[type="button"].button-remove:hover,
+.button.button-remove:focus,
+button.button-remove:focus,
+input[type="submit"].button-remove:focus,
+input[type="reset"].button-remove:focus,
+input[type="button"].button-remove:focus {
+  color: var(--cooler-off-black);
+  opacity: 1;
+  text-decoration: none;
+}
+
+.button-close {
+  padding: 0 10px;
+}
+
 /* Forms
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
 
@@ -876,6 +921,7 @@ select {
   border-radius: 4px;
   box-shadow: none;
   box-sizing: border-box;
+  min-width: 120px;
 }
 
 /* Removes awkward default styles on some inputs for iOS */
@@ -1008,7 +1054,6 @@ button,
 
 input,
 textarea,
-select,
 fieldset {
   margin-bottom: 1.5rem;
 }
@@ -1073,13 +1118,6 @@ span.units::after {
   content: "]";
 }
 
-button.remove {
-  padding: 0px;
-  border-width: 1px;
-  margin: 1px;
-  color: red;
-}
-
 div#download {
   float: right;
   text-align: right;
@@ -1094,6 +1132,10 @@ div#download {
 
 .tooltip-dt {
   position: relative;
+  /* display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between; */
 }
 
 .tooltip-dt .tooltiptext {

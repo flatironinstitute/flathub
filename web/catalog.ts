@@ -365,6 +365,7 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
 
 function add_filt_row(
   name: string,
+  isTop: boolean | undefined,
   ...nodes: Array<
     JQuery.htmlString | JQuery.TypeOrArray<JQuery.Node | JQuery<JQuery.Node>>
   >
@@ -373,12 +374,20 @@ function add_filt_row(
   let tr = <HTMLTableRowElement | null>document.getElementById(id);
   if (tr) return;
   const tab = <HTMLTableElement>document.getElementById("filt");
-  tr = document.createElement("tr");
+  tr = document.createElement("div");
   tr.id = id;
+  tr.classList.add("alert", "fade", "show", "row", "filter-row");
+  if (!name.length) {
+    tr.classList.add("alert-secondary");
+  } else if (isTop) {
+    tr.classList.add("alert-info");
+  } else {
+    tr.classList.add("alert-warning");
+  }
   if (tab.lastChild) $(tr).insertBefore(<HTMLTableRowElement>tab.lastChild);
   else $(tr).appendTo(tab);
   for (let node of nodes) {
-    const td = $(document.createElement("td")).appendTo(tr);
+    const td = $(document.createElement("div")).appendTo(tr);
     td.append(node);
   }
 }
@@ -410,7 +419,7 @@ abstract class Filter {
   protected add(
     ...nodes: Array<JQuery.TypeOrArray<JQuery.Node | JQuery<JQuery.Node>>>
   ) {
-    add_filt_row(this.field.name, this.label, ...nodes);
+    add_filt_row(this.field.name, this.field.top, this.label, ...nodes);
     Filters.push(this);
   }
 
@@ -428,7 +437,7 @@ abstract class Filter {
     const i = Filters.indexOf(this);
     if (i < 0) return;
     Filters.splice(i, 1);
-    $("tr#filt-" + this.name).remove();
+    $("div#filt-" + this.name).remove();
     Update_aggs = i;
     columnVisible(this.name, true);
     update();
@@ -709,7 +718,8 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
   aopt.value = "";
   aopt.text = "Add filter...";
   addfilt.appendChild(aopt);
-  add_filt_row("", addfilt, "Select field to filter");
+  // TODO: Add conditional styling to indicate not selected yet row (alert-something)
+  add_filt_row("", false, addfilt, "Select field to filter");
   for (let i = 0; i < Catalog.fields.length; i++) {
     const f = Catalog.fields[i];
     const opt = field_option(f);
