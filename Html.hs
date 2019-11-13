@@ -264,7 +264,10 @@ catalogPage = getPath R.parameter $ \sim req -> do
                       H.select H.! HA.id ("histsel-" <> H.stringValue [x]) $ do
                         forM_ (catalogFields cat) $ \f ->
                           when (typeIsFloating (fieldType f)) $
-                            H.option H.! HA.value (H.textValue $ fieldName f) $ H.text $ fieldTitle f
+                            H.option
+                              H.! HA.class_ ("sel-" <> H.textValue (fieldName f))
+                              H.!? (not $ fieldDisp f, HA.style "display:none")
+                              H.! HA.value (H.textValue $ fieldName f) $ H.text $ fieldTitle f
                     when (x == 'x') $ do
                       H.button H.! HA.id "hist-y-tog" H.! HA.onclick "return toggleLog()" $ "lin/log"
                       {- forM_ ["Linear", "Log"] $ \a ->
