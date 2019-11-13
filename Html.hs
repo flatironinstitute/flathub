@@ -79,7 +79,6 @@ htmlResponse req hdrs body = do
           ["base.css"]
         ] $ \src ->
         H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
-      H.script H.! HA.type_ "text/javascript" H.! HA.src (staticURI ["jspm_packages", "npm", "bootstrap@4.3.1", "dist", "js", "bootstrap.bundle.js"]) $ mempty
       H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML" $ mempty
       H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href "https://fonts.googleapis.com/css?family=Major+Mono+Display|Montserrat"
       jsonVar "Catalogs" (HM.map catalogTitle $ catalogMap cats)

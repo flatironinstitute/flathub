@@ -1,4 +1,5 @@
 import $ from "jquery";
+import "bootstrap";
 import { initCatalog } from "./catalog";
 import { initCompare } from "./compare";
 
