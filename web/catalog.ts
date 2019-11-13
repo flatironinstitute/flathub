@@ -370,8 +370,9 @@ function add_filt_row(
     JQuery.htmlString | JQuery.TypeOrArray<JQuery.Node | JQuery<JQuery.Node>>
   >
 ) {
+  console.log("🐻", name, isTop, nodes);
   const id = "filt-" + name;
-  let tr = <HTMLTableRowElement | null>document.getElementById(id);
+  let tr = <HTMLDivElement | null>document.getElementById(id);
   if (tr) return;
   const tab = <HTMLTableElement>document.getElementById("filt");
   tr = document.createElement("div");
@@ -384,7 +385,7 @@ function add_filt_row(
   } else {
     tr.classList.add("alert-warning");
   }
-  if (tab.lastChild) $(tr).insertBefore(<HTMLTableRowElement>tab.lastChild);
+  if (tab.lastChild) $(tr).insertBefore(<HTMLDivElement>tab.lastChild);
   else $(tr).appendTo(tab);
   for (let node of nodes) {
     const td = $(document.createElement("div")).appendTo(tr);
@@ -718,8 +719,7 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
   aopt.value = "";
   aopt.text = "Add filter...";
   addfilt.appendChild(aopt);
-  // TODO: Add conditional styling to indicate not selected yet row (alert-something)
-  add_filt_row("", false, addfilt, "Select field to filter");
+  add_filt_row("", false, "Select field to filter", addfilt);
   for (let i = 0; i < Catalog.fields.length; i++) {
     const f = Catalog.fields[i];
     const opt = field_option(f);

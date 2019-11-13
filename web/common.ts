@@ -105,7 +105,6 @@ export function field_title(
 ): HTMLSpanElement {
   const h = document.createElement("span");
   h.textContent = field.title;
-  console.log("🐻", rmf);
   if (rmf) {
     const rm = document.createElement("button");
     rm.className = "button-remove";
