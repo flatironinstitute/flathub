@@ -663,11 +663,11 @@ function py_text(query: Dict<string>) {
 }
 
 function url_update(query: Dict<string>) {
-  history.replaceState(
-    {},
-    "",
-    location.origin + location.pathname + "?" + $.param(query)
-  );
+  const url = new URL(location.href);
+  for (let v in query) {
+    url.searchParams.set(v, query[v]);
+  }
+  history.replaceState({}, "", url.href);
 }
 
 export function initCatalog(table: JQuery<HTMLTableElement>) {
