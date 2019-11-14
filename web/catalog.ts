@@ -528,8 +528,8 @@ class NumericFilter extends Filter {
         .append(this.lb)
         .append(" &ndash; ")
         .append(this.ub),
-      $("<span><em>&mu;</em> = </span>").append(this.avg),
-      $("<button>Apply</button>").on("click", this.reset.bind(this))
+      $("<span><em>&mu;</em> = </span>").append(this.avg)
+      // $("<button>Apply</button>").on("click", this.reset.bind(this))
     );
   }
 
