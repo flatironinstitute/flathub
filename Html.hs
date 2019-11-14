@@ -139,7 +139,7 @@ topPage = getPath R.unit $ \() req -> do
       return $ okResponse [] $ J.encode $ HM.map catalogTitle $ catalogMap cats
     _ -> htmlResponse req [] $
       H.div $ do
-        H.div H.! HA.class_ "section hero" $ do
+        H.div H.! HA.class_ "section hero gray-heading" $ do
           H.div H.! HA.class_ "container" $ do
             H.div H.! HA.class_ "row" $ do
               H.div H.! HA.class_ "hero-content" $ do
@@ -397,6 +397,7 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
       " / ")
       (init $ inits path) ("top":path)
     case grp of
+      -- Single Catalog
       GroupCatalog cat -> do
         let Catalog{..} = catalogMap cats HM.! cat
         maybe (do
@@ -404,6 +405,7 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
           mapM_ (H.p . H.preEscapedText) catalogDescr)
           H.preEscapedText catalogHtml
         H.a H.! HA.href (WH.routeActionValue catalogPage cat mempty) $ "explore"
+      -- Collections
       Grouping{..} -> do
         maybe (do
           H.h2 $ H.text groupTitle)
