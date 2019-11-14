@@ -125,6 +125,7 @@ htmlResponse req hdrs body = do
               H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Home"
               H.a H.! HA.href (WH.routeActionValue groupPage [] mempty) $ H.text "Catalogs"
               H.a H.! HA.href (WH.routeActionValue comparePage [] mempty) $ H.text "Compare"
+              H.a H.! HA.href "https://github.com/flatironinstitute/astrosims" $ H.text "Github"
             H.p H.! HA.class_ "footer-company-name" $ "Flatiron Institute, 2019"
 
 acceptable :: [BS.ByteString] -> Wai.Request -> Maybe BS.ByteString
