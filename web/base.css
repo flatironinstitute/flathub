@@ -296,7 +296,7 @@ container a:hover:not(.active) {
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 
 .section {
-  padding: 7rem 0 7rem;
+  padding: 5rem 0 5rem;
   text-align: center;
 }
 
@@ -349,18 +349,16 @@ div#hist,
   padding-left: 10px;
 }
 
-/* Hero
+/* Hero and Heading
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 
 .col-border {
   border-left: 1px solid var(--cooler-off-black);
 }
 
-.hero {
+.gray-heading {
   margin: 0 calc(-2.5vw + -20px);
   background-color: var(--cooler-platinum);
-  /* background-image: url(collections-bg.png);
-  background-size: cover; */
 }
 
 .section__heading {
@@ -383,18 +381,16 @@ div#hist,
   font-size: 1.8rem;
 }
 
-.pic {
-  position: relative;
-  max-width: 80%;
-  margin: 3rem auto -12rem;
+.heading-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 }
 
 /* Bigger than 550 */
-
 @media (min-width: 550px) {
-  .section {
-    /* padding: 12rem 0 11rem; */
-  }
   .pic {
     position: absolute;
     top: -7rem;
@@ -403,7 +399,8 @@ div#hist,
     z-index: 3;
     border-radius: 4px;
   }
-  .hero-heading {
+  .hero-heading,
+  .heading-heading {
     font-size: 2.4rem;
   }
 }
@@ -411,11 +408,9 @@ div#hist,
 /* Bigger than 750 */
 
 @media (min-width: 750px) {
-  .hero-heading {
+  .hero-heading,
+  .heading-heading {
     font-size: 2.6rem;
-  }
-  .section {
-    /* padding: 14rem 0 15rem; */
   }
   .hero {
     padding: 16rem 0 14rem;
@@ -438,10 +433,8 @@ div#hist,
 /* Bigger than 1000 */
 
 @media (min-width: 1000px) {
-  .section {
-    /* padding: 14rem 0 15rem; */
-  }
-  .hero-heading {
+  .hero-heading,
+  .heading-heading {
     font-size: 3rem;
   }
   .pic {
@@ -452,9 +445,6 @@ div#hist,
 
 /* Collections
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
-
-.collections {
-}
 
 .collections-container {
   background-color: var(--cooler-white);
@@ -503,12 +493,12 @@ div#hist,
   line-height: 2.4rem;
 }
 
+.body-copy {
+  text-align: left;
+}
+
 /* Catalogs
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
-
-.catalogs {
-  /* nada mucho */
-}
 
 .catalogs-container {
   padding: 10px;
