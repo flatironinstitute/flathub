@@ -50,6 +50,10 @@
   box-sizing: border-box;
 }
 
+.container--main {
+  min-height: calc(100vh - 288px);
+}
+
 /* Base Styles
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
 
