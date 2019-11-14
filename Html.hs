@@ -130,7 +130,7 @@ htmlResponse req hdrs body = do
 acceptable :: [BS.ByteString] -> Wai.Request -> Maybe BS.ByteString
 acceptable l = find (`elem` l) . foldMap parseHttpAccept . lookup hAccept . Wai.requestHeaders
 
--- Here is where the main page is generated
+-- Landing page
 topPage :: Route ()
 topPage = getPath R.unit $ \() req -> do
   cats <- asks globalCatalogs
@@ -145,7 +145,6 @@ topPage = getPath R.unit $ \() req -> do
               H.div H.! HA.class_ "hero-content" $ do
                 H.h4 H.! HA.class_ "hero-heading" $ "ASTROSIMS"
                 H.h4 H.! HA.class_ "hero-subheading" $ "Repository for astrophysics simulation data"
-        -- Second section on mainpage
         H.div H.! HA.class_ "section" $ do
           H.div H.! HA.class_ "container" $ do
             H.div H.! HA.class_ "row" $ do
@@ -166,9 +165,6 @@ topPage = getPath R.unit $ \() req -> do
                     H.div H.! HA.class_ "catalogs-list" $
                       forM_ (catalogsSorted cats) $ \(sim, cat) -> do
                           H.a H.! HA.href (WH.routeActionValue catalogPage sim mempty) H.! HA.class_ "collection-card-heading" $ H.text $ catalogTitle cat
-                        -- H.dd $ do
-                        --   mapM_ H.preEscapedText $ catalogDescr cat
-                        --   mapM_ ((" " <>) . (<> " rows.") . H.toMarkup) $ catalogCount cat
 
 
 catalogPage :: Route Simulation

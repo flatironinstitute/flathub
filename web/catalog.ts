@@ -370,7 +370,6 @@ function add_filt_row(
     JQuery.htmlString | JQuery.TypeOrArray<JQuery.Node | JQuery<JQuery.Node>>
   >
 ) {
-  console.log("🐻", name, isTop, nodes);
   const id = "filt-" + name;
   let tr = <HTMLDivElement | null>document.getElementById(id);
   if (tr) return;
