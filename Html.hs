@@ -349,9 +349,6 @@ catalogPage = getPath R.parameter $ \sim req -> do
                   H.! H.customAttribute "aria-labelledby" "dict-tab" $ do
                   H.div H.! HA.class_ "right-column-group" $ do
                     H.h6 H.! HA.class_ "right-column-heading" $ "Fields Dictionary"
-                    -- H.div $ do
-                    --   H.button H.! HA.class_ "show_button" H.! HA.onclick "return toggleDisplay('tdict')" $ "show/hide"
-                    --   "Table of fields, units, and their descriptions (use checkboxes to view/hide fields in the table above)"
                     H.div $ H.table H.! HA.id "tdict" H.! HA.class_ "table table-striped table-sm" $ do
                       H.thead $ H.tr $ do
                           H.th $ H.text "Field"
@@ -373,11 +370,10 @@ catalogPage = getPath R.parameter $ \sim req -> do
                   H.button
                     H.! HA.type_ "button"
                     H.! HA.class_ "btn btn-warning"
-                    H.! H.dataAttribute "toggle" "button"
-                    H.! H.customAttribute "aria-pressed" "false"
-                    H.! HA.autocomplete "off"
+                    H.! HA.id "rawdata-btn"
+                    H.! HA.onclick "return toggleRawData()"
                     $ "View Raw Data"
-        H.div H.! HA.class_ "container-fluid catalog-summary raw-data" $ do
+        H.div H.! HA.class_ "container-fluid catalog-summary raw-data" H.! HA.id "rawdata" $ do
           H.h5 $ "Raw Data"
           H.table H.! HA.id "tcat" $ do
             H.thead $ row (fieldsDepth fields) ((id ,) <$> V.toList fields)

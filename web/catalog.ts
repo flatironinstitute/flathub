@@ -530,7 +530,7 @@ class NumericFilter extends Filter {
         .append(" &ndash; ")
         .append(this.ub),
       $("<span><em>&mu;</em> = </span>").append(this.avg),
-      $("<button>reset</button>").on("click", this.reset.bind(this))
+      $("<button>Apply</button>").on("click", this.reset.bind(this))
     );
   }
 
@@ -767,3 +767,10 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
   update();
   (<any>window).toggleLog = toggleLog;
 }
+
+(<any>window).toggleRawData = function toggleRawData() {
+  $("#rawdata-btn").text(function(i, text) {
+    return text === "View Raw Data" ? "Hide Raw Data" : "View Raw Data";
+  });
+  $("#rawdata").toggle();
+};
