@@ -272,7 +272,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
 
             H.div H.! HA.class_ "col col-sm-12 col-md-4 right-column" $ do
               H.ul H.! HA.class_ "nav nav-tabs" H.! HA.id "myTab" H.! HA.role "tablist" $ do
-                forM_ ["Filter", "Python", "All Fields"] $ \t -> do
+                forM_ ["Filter", "Python", "Fields"] $ \t -> do
                   H.li H.! HA.class_ "nav-item" $ do
                     H.a
                       H.! HA.class_ ("nav-link" <> if t == "Filter" then " active" else mempty)
@@ -282,7 +282,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                       H.! HA.role "tab"
                       H.! H.customAttribute "aria-controls" "filter"
                       H.! H.customAttribute "aria-selected" "true"
-                      $ H.string t
+                      $ H.string (if t == "Fields" then "All Fields" else t)
               H.div H.! HA.class_ "tab-content" H.! HA.id "myTabContent" $ do
                 H.div
                   H.! HA.class_ "tab-pane fade show active right-column-container"
@@ -363,8 +363,8 @@ catalogPage = getPath R.parameter $ \sim req -> do
                     H.! HA.type_ "button"
                     H.! HA.class_ "btn btn-warning"
                     H.! HA.id "rawdata-btn"
-                    H.! HA.onclick "return toggleRawData()"
-                    $ "View Raw Data"
+                    H.! HA.onclick "return toggleShowData()"
+                    $ "Hide Raw Data"
         H.div H.! HA.class_ "container-fluid catalog-summary raw-data" H.! HA.id "rawdata" $ do
           H.h5 $ "Raw Data"
           H.table H.! HA.id "tcat" $ do
