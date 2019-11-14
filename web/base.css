@@ -292,9 +292,12 @@ container a:hover:not(.active) {
   text-align: center;
 }
 
-.section-heading,
-.section__description {
+.section-heading {
   margin-bottom: 1.2rem;
+}
+
+.section-description {
+  margin-bottom: 2rem;
 }
 
 .section--catalog {
@@ -341,14 +344,35 @@ div#hist,
 /* Hero
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 
-.hero__left {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
+.col-border {
+  border-left: 1px solid var(--cooler-off-black);
 }
 
-.hero__pics {
-  position: relative;
+.hero {
+  margin: 0 calc(-2.5vw + -20px);
+  background-color: var(--cooler-platinum);
+  /* background-image: url(collections-bg.png);
+  background-size: cover; */
+}
+
+.section__heading {
+  text-decoration: underline;
+}
+
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.hero-subheading {
+  font-family: var(--body-font);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.2rem;
+  font-size: 1.8rem;
 }
 
 .pic {
@@ -361,12 +385,7 @@ div#hist,
 
 @media (min-width: 550px) {
   .section {
-    padding: 12rem 0 11rem;
-  }
-  .hero {
-    padding-bottom: 12rem;
-    text-align: left;
-    height: 165px;
+    /* padding: 12rem 0 11rem; */
   }
   .pic {
     position: absolute;
@@ -384,14 +403,11 @@ div#hist,
 /* Bigger than 750 */
 
 @media (min-width: 750px) {
-  .hero {
-    height: 190px;
-  }
   .hero-heading {
     font-size: 2.6rem;
   }
   .section {
-    padding: 14rem 0 15rem;
+    /* padding: 14rem 0 15rem; */
   }
   .hero {
     padding: 16rem 0 14rem;
@@ -415,10 +431,7 @@ div#hist,
 
 @media (min-width: 1000px) {
   .section {
-    padding: 14rem 0 15rem;
-  }
-  .hero {
-    padding: 22rem 0;
+    /* padding: 14rem 0 15rem; */
   }
   .hero-heading {
     font-size: 3rem;
@@ -433,14 +446,16 @@ div#hist,
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 
 .collections {
-  background-image: url(collections-bg.png);
-  background-size: cover;
-  color: #fff;
-  margin: 0 -20%;
+}
+
+.collections-container {
+  background-color: var(--cooler-white);
+  opacity: 0.8;
+  padding: 10px;
 }
 
 .collection-label {
-  color: white;
+  color: var(--cooler-off-black);
   font-size: 50px;
   text-transform: uppercase;
   border: white;
@@ -448,6 +463,22 @@ div#hist,
   text-decoration: none;
   border: 5px white solid;
   margin-top: 7rem;
+}
+
+.collections-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.collection-card-heading {
+  font-family: var(--body-font);
+  font-weight: 600;
+  letter-spacing: 0.2rem;
+  font-size: 1.8rem;
+  color: var(--cooler-red);
 }
 
 .collection-link {
@@ -464,10 +495,23 @@ div#hist,
   line-height: 2.4rem;
 }
 
-.catalogs__list {
-  text-align: left;
-  font-size: 1.7rem;
-  line-height: 2.4rem;
+/* Catalogs
+  –––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+.catalogs {
+  /* nada mucho */
+}
+
+.catalogs-container {
+  padding: 10px;
+}
+
+.catalogs-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
 }
 
 /* Tabs
