@@ -136,6 +136,7 @@ data Grouping
     , groupHtml :: Maybe T.Text
     , groupings :: Groupings
     }
+  deriving (Show)
 
 groupingName :: Grouping -> T.Text
 groupingName (GroupCatalog n) = n
@@ -148,7 +149,7 @@ groupingCatalog _ _ = Nothing
 data Groupings = Groupings
   { groupList :: V.Vector Grouping
   , groupMap :: HM.HashMap T.Text Grouping
-  }
+  } deriving (Show)
 
 instance J.FromJSON Grouping where
   parseJSON (J.String c) = return $ GroupCatalog c
@@ -159,11 +160,11 @@ instance J.FromJSON Grouping where
     groupings <- g J..: "children"
     return Grouping{..}) j
 
+grouping :: V.Vector Grouping -> Groupings
+grouping l = Groupings l $ HM.fromList $ map (groupingName &&& id) $ V.toList l
+
 instance J.FromJSON Groupings where
-  parseJSON j = do
-    groupList <- J.parseJSON j
-    let groupMap = HM.fromList $ map (groupingName &&& id) $ V.toList groupList
-    return Groupings{..}
+  parseJSON j = grouping <$> J.parseJSON j
 
 instance Semigroup Groupings where
   a <> b = Groupings
@@ -204,7 +205,7 @@ pruneCatalogs errs cats = cats
   pg g@(GroupCatalog c) = g <$ guard (HM.member c cm)
   pg g = g{ groupings = g' } <$ guard (not $ V.null $ groupList g')
     where g' = pgs $ groupings g
-  pgs g = g{ groupList = V.mapMaybe pg (groupList g) }
+  pgs g = grouping $ V.mapMaybe pg $ groupList g
 
 -- |Virtual top-level grouping
 catalogGrouping :: Catalogs -> Grouping
