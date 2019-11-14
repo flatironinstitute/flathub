@@ -417,10 +417,17 @@ abstract class Filter {
     return this.field.name;
   }
 
+  get addopt(): HTMLOptionElement {
+    return <HTMLOptionElement>(
+      document.getElementById("addfilt-" + this.field.name)
+    );
+  }
+
   protected add(
     ...nodes: Array<JQuery.TypeOrArray<JQuery.Node | JQuery<JQuery.Node>>>
   ) {
     add_filt_row(this.field.name, this.field.top, this.label, ...nodes);
+    this.addopt.disabled = true;
     Filters.push(this);
   }
 
@@ -441,6 +448,7 @@ abstract class Filter {
     $("div#filt-" + this.name).remove();
     Update_aggs = i;
     columnVisible(this.name, true);
+    this.addopt.disabled = false;
     update();
   }
 
@@ -621,6 +629,11 @@ function columnVisible(name: string, vis: boolean) {
     update(false);
     updateMathJax();
   }
+  for (let opt of (<any>(
+    document.getElementsByClassName("sel-" + name)
+  )) as HTMLOptionElement[]) {
+    opt.style.display = vis ? "" : "none";
+  }
 }
 
 (<any>window).colvisSet = function colvisSet(event: Event) {
@@ -686,15 +699,7 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
     },
     dom: 'i<"#download">rtlp',
     deferRender: true,
-    pagingType: "simple",
-    columns: Catalog.fields.map(c => {
-      return {
-        name: c.name,
-        className:
-          c.base === "f" || c.base === "i" ? "dt-body-right" : "dt-body-left",
-        render: render_funct(c)
-      };
-    })
+    pagingType: "simple"
   };
   if (Catalog.sort) topts.order = Catalog.sort.map(o => [o, "asc"]);
   if ((<any>window).Query) {
@@ -706,15 +711,26 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
       topts.order = Query.sort.map(o => {
         return [Fields_idx[o.field], o.asc ? "asc" : "desc"];
       });
-    if (Query.fields && Query.fields.length && topts.columns) {
-      for (let c of topts.columns)
-        c.visible = Query.fields.indexOf(<string>c.name) >= 0;
+    if (Query.fields && Query.fields.length) {
+      for (let f of Catalog.fields) {
+        f.disp = Query.fields.indexOf(<string>f.name) >= 0;
+      }
     }
   }
+  topts.columns = Catalog.fields.map(c => {
+    return {
+      name: c.name,
+      className:
+        c.base === "f" || c.base === "i" ? "dt-body-right" : "dt-body-left",
+      visible: c.disp,
+      render: render_funct(c)
+    };
+  });
   TCat = table.DataTable(topts);
   /* for debugging: */
   (<any>window).TCat = TCat;
   const addfilt = <HTMLSelectElement>document.createElement("select");
+  addfilt.id = "addfilt";
   const aopt = document.createElement("option");
   aopt.value = "";
   aopt.text = "Add filter...";
@@ -723,7 +739,10 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
   for (let i = 0; i < Catalog.fields.length; i++) {
     const f = Catalog.fields[i];
     const opt = field_option(f);
+    opt.id = "addfilt-" + f.name;
+    opt.className = "sel-" + f.name;
     opt.value = <any>i;
+    if (!f.disp) opt.style.display = "none";
     addfilt.appendChild(opt);
     if (f.top) add_filter(i);
   }

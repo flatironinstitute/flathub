@@ -79,7 +79,6 @@ htmlResponse req hdrs body = do
           ["base.css"]
         ] $ \src ->
         H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
-      H.script H.! HA.type_ "text/javascript" H.! HA.src (staticURI ["jspm_packages", "npm", "bootstrap@4.3.1", "dist", "js", "bootstrap.bundle.js"]) $ mempty
       H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML" $ mempty
       H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href "https://fonts.googleapis.com/css?family=Major+Mono+Display|Montserrat"
       jsonVar "Catalogs" (HM.map catalogTitle $ catalogMap cats)
@@ -265,7 +264,10 @@ catalogPage = getPath R.parameter $ \sim req -> do
                       H.select H.! HA.id ("histsel-" <> H.stringValue [x]) $ do
                         forM_ (catalogFields cat) $ \f ->
                           when (typeIsFloating (fieldType f)) $
-                            H.option H.! HA.value (H.textValue $ fieldName f) $ H.text $ fieldTitle f
+                            H.option
+                              H.! HA.class_ ("sel-" <> H.textValue (fieldName f))
+                              H.!? (not $ fieldDisp f, HA.style "display:none")
+                              H.! HA.value (H.textValue $ fieldName f) $ H.text $ fieldTitle f
                     when (x == 'x') $ do
                       H.button H.! HA.id "hist-y-tog" H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick "return toggleLog()" $ "Toggle lin/log"
                     H.button H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick ("return histogramShow(" <> H.stringValue (show x) <> ")") $ do

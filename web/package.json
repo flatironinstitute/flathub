@@ -4,7 +4,7 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "postinstall": "sed -i 's/\\r$//' node_modules/.bin/jspm ; jspm install",
+    "postinstall": "sed -i 's/\\r$//' node_modules/.bin/jspm ; ln -s ../popper.js node_modules/@types ; jspm install",
     "compile": "tsc",
     "build": "jspm build --minify main.ts index.js"
   },
@@ -14,10 +14,12 @@
     "jspm": "^0.17.0-beta.49"
   },
   "devDependencies": {
+    "@types/bootstrap": "^4.3.1",
     "@types/datatables.net": "^1.10.17",
     "@types/highcharts": "^5.0.44",
     "@types/jquery": "^3.3.31",
     "@types/systemjs": "^0.20.6",
+    "popper.js": "^1.16.0",
     "typescript": "^3.6.0"
   },
   "jspm": {
