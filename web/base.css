@@ -247,6 +247,10 @@ container a:hover:not(.active) {
   top: 50px;
 }
 
+.dropdown-second {
+  margin-left: 115px;
+}
+
 .header__link--dropdown:hover > .dropdown-content {
   display: block;
 }

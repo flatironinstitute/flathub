@@ -106,7 +106,7 @@ htmlResponse req hdrs body = do
                   H.a H.! HA.href (WH.routeActionValue groupPage [groupingName g] mempty) $ H.text $ groupingTitle g $ groupingCatalog cats g
             H.li H.! HA.class_ "header__link--dropdown" $ do
               H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Catalogs"
-              H.div H.! HA.class_ "dropdown-content" $ do
+              H.div H.! HA.class_ "dropdown-content dropdown-second" $ do
                 forM_ (catalogsSorted cats) $ \(key, cat) ->
                   H.a H.! HA.href (WH.routeActionValue catalogPage key mempty) $ H.text (catalogTitle cat)
             H.li H.! HA.class_ "header__link" $ do
