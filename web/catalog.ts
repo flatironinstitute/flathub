@@ -52,6 +52,7 @@ var Histcond: boolean = false;
 var Histogram_chart: Highcharts.ChartObject | undefined;
 var Last_fields: string[] = [];
 var Last_query: undefined | Dict<string>;
+var Show_data: boolean = true;
 
 function set_download(query: Dict<string>) {
   const q = "?" + $.param(query);
@@ -293,7 +294,7 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
   }
 
   query.offset = data.start;
-  query.limit = data.length;
+  query.limit = Show_data ? data.length : 0;
   Last_fields = TCat.columns(":visible")
     .dataSrc()
     .toArray();
@@ -683,6 +684,15 @@ function url_update(query: Dict<string>) {
   history.replaceState({}, "", url.href);
 }
 
+function toggleShowData(show?: boolean) {
+  Show_data = show === undefined ? !Show_data : show;
+  $("#rawdata-btn").text(Show_data ? "Hide Raw Data" : "View Raw Data");
+  $("#rawdata").toggle(Show_data);
+  if (Show_data)
+    update(true);
+}
+(<any>window).toggleShowData = toggleShowData;
+
 export function initCatalog(table: JQuery<HTMLTableElement>) {
   for (let i = 0; i < Catalog.fields.length; i++)
     Fields_idx[Catalog.fields[i].name] = i;
@@ -763,13 +773,7 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
     document.getElementsByClassName("colvis")
   )) as HTMLInputElement[])
     colvisUpdate(b);
+  toggleShowData(false);
   update();
   (<any>window).toggleLog = toggleLog;
 }
-
-(<any>window).toggleRawData = function toggleRawData() {
-  $("#rawdata-btn").text(function(i, text) {
-    return text === "View Raw Data" ? "Hide Raw Data" : "View Raw Data";
-  });
-  $("#rawdata").toggle();
-};

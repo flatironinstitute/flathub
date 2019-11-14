@@ -272,7 +272,7 @@ data FieldFlag
   | FieldNormal
   | FieldTop
   | FieldRequired
-  deriving (Eq, Ord, Enum)
+  deriving (Eq, Ord, Enum, Show)
 
 instance J.ToJSON FieldFlag where
   toJSON FieldRequired = J.String "required"
