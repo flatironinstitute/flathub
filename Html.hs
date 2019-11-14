@@ -144,7 +144,7 @@ topPage = getPath R.unit $ \() req -> do
             H.div H.! HA.class_ "row" $ do
               H.div H.! HA.class_ "hero-content" $ do
                 H.h4 H.! HA.class_ "hero-heading" $ "ASTROSIMS"
-                H.h4 H.! HA.class_ "hero-subheading" $ "Repository for astrophysics simulation data"
+                H.h4 H.! HA.class_ "hero-subheading" $ "Astrophysics simulation data repository"
         H.div H.! HA.class_ "section" $ do
           H.div H.! HA.class_ "container" $ do
             H.div H.! HA.class_ "row" $ do
