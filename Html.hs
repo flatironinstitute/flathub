@@ -267,7 +267,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                           when (typeIsFloating (fieldType f)) $
                             H.option H.! HA.value (H.textValue $ fieldName f) $ H.text $ fieldTitle f
                     when (x == 'x') $ do
-                      H.button H.! HA.id "hist-y-tog" H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick "return toggleLog()" $ "lin/log"
+                      H.button H.! HA.id "hist-y-tog" H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick "return toggleLog()" $ "Toggle lin/log"
                     H.button H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick ("return histogramShow(" <> H.stringValue (show x) <> ")") $ do
                       "View "
                       if x == 'x' then "Histogram" else "Heatmap"
@@ -278,7 +278,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
 
             H.div H.! HA.class_ "col col-sm-12 col-md-4 right-column" $ do
               H.ul H.! HA.class_ "nav nav-tabs" H.! HA.id "myTab" H.! HA.role "tablist" $ do
-                forM_ ["Filter", "Python", "Fields"] $ \t -> do
+                forM_ ["Filter", "Python", "All Fields"] $ \t -> do
                   H.li H.! HA.class_ "nav-item" $ do
                     H.a
                       H.! HA.class_ ("nav-link" <> if t == "Filter" then " active" else mempty)
