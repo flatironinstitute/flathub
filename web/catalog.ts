@@ -365,20 +365,30 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
 
 function add_filt_row(
   name: string,
+  isTop: boolean | undefined,
   ...nodes: Array<
     JQuery.htmlString | JQuery.TypeOrArray<JQuery.Node | JQuery<JQuery.Node>>
   >
 ) {
+  console.log("🐻", name, isTop, nodes);
   const id = "filt-" + name;
-  let tr = <HTMLTableRowElement | null>document.getElementById(id);
+  let tr = <HTMLDivElement | null>document.getElementById(id);
   if (tr) return;
   const tab = <HTMLTableElement>document.getElementById("filt");
-  tr = document.createElement("tr");
+  tr = document.createElement("div");
   tr.id = id;
-  if (tab.lastChild) $(tr).insertBefore(<HTMLTableRowElement>tab.lastChild);
+  tr.classList.add("alert", "fade", "show", "row", "filter-row");
+  if (!name.length) {
+    tr.classList.add("alert-secondary");
+  } else if (isTop) {
+    tr.classList.add("alert-info");
+  } else {
+    tr.classList.add("alert-warning");
+  }
+  if (tab.lastChild) $(tr).insertBefore(<HTMLDivElement>tab.lastChild);
   else $(tr).appendTo(tab);
   for (let node of nodes) {
-    const td = $(document.createElement("td")).appendTo(tr);
+    const td = $(document.createElement("div")).appendTo(tr);
     td.append(node);
   }
 }
@@ -408,13 +418,15 @@ abstract class Filter {
   }
 
   get addopt(): HTMLOptionElement {
-    return <HTMLOptionElement>document.getElementById("addfilt-" + this.field.name);
+    return <HTMLOptionElement>(
+      document.getElementById("addfilt-" + this.field.name)
+    );
   }
 
   protected add(
     ...nodes: Array<JQuery.TypeOrArray<JQuery.Node | JQuery<JQuery.Node>>>
   ) {
-    add_filt_row(this.field.name, this.label, ...nodes);
+    add_filt_row(this.field.name, this.field.top, this.label, ...nodes);
     this.addopt.disabled = true;
     Filters.push(this);
   }
@@ -433,7 +445,7 @@ abstract class Filter {
     const i = Filters.indexOf(this);
     if (i < 0) return;
     Filters.splice(i, 1);
-    $("tr#filt-" + this.name).remove();
+    $("div#filt-" + this.name).remove();
     Update_aggs = i;
     columnVisible(this.name, true);
     this.addopt.disabled = false;
@@ -620,7 +632,7 @@ function columnVisible(name: string, vis: boolean) {
   for (let opt of (<any>(
     document.getElementsByClassName("sel-" + name)
   )) as HTMLOptionElement[]) {
-    opt.style.display = vis ? '' : 'none';
+    opt.style.display = vis ? "" : "none";
   }
 }
 
@@ -687,7 +699,7 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
     },
     dom: 'i<"#download">rtlp',
     deferRender: true,
-    pagingType: "simple",
+    pagingType: "simple"
   };
   if (Catalog.sort) topts.order = Catalog.sort.map(o => [o, "asc"]);
   if ((<any>window).Query) {
@@ -718,20 +730,19 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
   /* for debugging: */
   (<any>window).TCat = TCat;
   const addfilt = <HTMLSelectElement>document.createElement("select");
-  addfilt.id = 'addfilt';
+  addfilt.id = "addfilt";
   const aopt = document.createElement("option");
   aopt.value = "";
   aopt.text = "Add filter...";
   addfilt.appendChild(aopt);
-  add_filt_row("", addfilt, "Select field to filter");
+  add_filt_row("", false, "Select field to filter", addfilt);
   for (let i = 0; i < Catalog.fields.length; i++) {
     const f = Catalog.fields[i];
     const opt = field_option(f);
-    opt.id = 'addfilt-' + f.name;
-    opt.className = 'sel-' + f.name;
+    opt.id = "addfilt-" + f.name;
+    opt.className = "sel-" + f.name;
     opt.value = <any>i;
-    if (!f.disp)
-      opt.style.display = 'none';
+    if (!f.disp) opt.style.display = "none";
     addfilt.appendChild(opt);
     if (f.top) add_filter(i);
   }

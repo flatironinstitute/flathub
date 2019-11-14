@@ -269,15 +269,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                               H.!? (not $ fieldDisp f, HA.style "display:none")
                               H.! HA.value (H.textValue $ fieldName f) $ H.text $ fieldTitle f
                     when (x == 'x') $ do
-                      H.button H.! HA.id "hist-y-tog" H.! HA.onclick "return toggleLog()" $ "lin/log"
-                      {- forM_ ["Linear", "Log"] $ \a ->
-                        H.div H.! HA.class_ "custom-control custom-radio" $ do
-                          H.input
-                            H.! HA.type_ "radio"
-                            H.! HA.id ("hist-" <> H.stringValue a)
-                            H.! HA.name ("histlog")
-                            H.! HA.class_ "custom-control-input"
-                          H.label H.! HA.class_ "custom-control-label" H.! HA.for ("hist-" <> H.stringValue a) $ H.string a -}
+                      H.button H.! HA.id "hist-y-tog" H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick "return toggleLog()" $ "Toggle lin/log"
                     H.button H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick ("return histogramShow(" <> H.stringValue (show x) <> ")") $ do
                       "View "
                       if x == 'x' then "Histogram" else "Heatmap"
@@ -288,7 +280,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
 
             H.div H.! HA.class_ "col col-sm-12 col-md-4 right-column" $ do
               H.ul H.! HA.class_ "nav nav-tabs" H.! HA.id "myTab" H.! HA.role "tablist" $ do
-                forM_ ["Filter", "Python", "Fields"] $ \t -> do
+                forM_ ["Filter", "Python", "All Fields"] $ \t -> do
                   H.li H.! HA.class_ "nav-item" $ do
                     H.a
                       H.! HA.class_ ("nav-link" <> if t == "Filter" then " active" else mempty)
@@ -309,33 +301,33 @@ catalogPage = getPath R.parameter $ \sim req -> do
                     H.h6 H.! HA.class_ "right-column-heading" $ "Active Filters"
                     H.div
                       H.! HA.id "filt"
-                      H.! HA.class_ "alert alert-warning alert-dismissible fade show"
+                      H.! HA.class_ "alert-parent"
                       H.! HA.role "alert" $ mempty
                   H.div H.! HA.class_ "right-column-group" $ do
                     H.h6 H.! HA.class_ "right-column-heading" $ "Random Sample"
-                    H.label H.! HA.for "sample" $ "fraction"
-                    H.input
-                      H.! HA.id "sample"
-                      H.! HA.name "sample"
-                      H.! HA.type_ "number"
-                      H.! HA.step "any"
-                      H.! HA.min "0"
-                      H.! HA.max "1"
-                      H.! HA.value (H.toValue $ querySample query)
-                      H.! HA.title "Probability (0,1] with which to include each item"
-                      H.! HA.onchange "return sampleChange()"
-                    H.label H.! HA.for "seed" $ "seed"
-                    H.input
-                      H.! HA.id "seed"
-                      H.! HA.name "seed"
-                      H.! HA.type_ "number"
-                      H.! HA.step "1"
-                      H.! HA.min "0"
-                      WH.!? (HA.value . H.toValue <$> querySeed query)
-                      H.!? (querySample query < 1, HA.disabled "disabled")
-                      H.! HA.title "Random seed to generate sample selection"
-                      H.! HA.onchange "return sampleChange()"
-
+                    H.div H.! HA.class_ "sample-row" $ do
+                      H.label H.! HA.for "sample" $ "fraction"
+                      H.input
+                        H.! HA.id "sample"
+                        H.! HA.name "sample"
+                        H.! HA.type_ "number"
+                        H.! HA.step "any"
+                        H.! HA.min "0"
+                        H.! HA.max "1"
+                        H.! HA.value (H.toValue $ querySample query)
+                        H.! HA.title "Probability (0,1] with which to include each item"
+                        H.! HA.onchange "return sampleChange()"
+                      H.label H.! HA.for "seed" $ "seed"
+                      H.input
+                        H.! HA.id "seed"
+                        H.! HA.name "seed"
+                        H.! HA.type_ "number"
+                        H.! HA.step "1"
+                        H.! HA.min "0"
+                        WH.!? (HA.value . H.toValue <$> querySeed query)
+                        H.!? (querySample query < 1, HA.disabled "disabled")
+                        H.! HA.title "Random seed to generate sample selection"
+                        H.! HA.onchange "return sampleChange()"
                 H.div
                   H.! HA.class_ "tab-pane fade"
                   H.! HA.id "Python"
@@ -470,7 +462,7 @@ comparePage = getPath ("compare" R.*< R.manyI R.parameter) $ \path req -> do
       H.button H.! HA.id "hist-tog" H.! HA.disabled "disabled" H.! HA.onclick "return histogramComp()" $ "histogram"
       H.div H.! HA.id "dhist" $ do
         H.button H.! HA.id "hist-y-tog" H.! HA.onclick "return toggleLog()" $
-          "lin/log"
+          "Toggle lin/log"
         H.div H.! HA.id "hist" $ mempty
 
 
