@@ -106,7 +106,7 @@ htmlResponse req hdrs body = do
                   H.a H.! HA.href (WH.routeActionValue groupPage [groupingName g] mempty) $ H.text $ groupingTitle g $ groupingCatalog cats g
             H.li H.! HA.class_ "header__link--dropdown" $ do
               H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Catalogs"
-              H.div H.! HA.class_ "dropdown-content" $ do
+              H.div H.! HA.class_ "dropdown-content dropdown-second" $ do
                 forM_ (catalogsSorted cats) $ \(key, cat) ->
                   H.a H.! HA.href (WH.routeActionValue catalogPage key mempty) $ H.text (catalogTitle cat)
             H.li H.! HA.class_ "header__link" $ do
@@ -130,7 +130,7 @@ htmlResponse req hdrs body = do
 acceptable :: [BS.ByteString] -> Wai.Request -> Maybe BS.ByteString
 acceptable l = find (`elem` l) . foldMap parseHttpAccept . lookup hAccept . Wai.requestHeaders
 
--- Here is where the main page is generated
+-- Landing page
 topPage :: Route ()
 topPage = getPath R.unit $ \() req -> do
   cats <- asks globalCatalogs
@@ -142,37 +142,29 @@ topPage = getPath R.unit $ \() req -> do
         H.div H.! HA.class_ "section hero" $ do
           H.div H.! HA.class_ "container" $ do
             H.div H.! HA.class_ "row" $ do
-              H.div H.! HA.class_ "one-half column hero__left" $ do
-                H.h4 H.! HA.class_ "hero__heading" $ "ASTROSIMS"
-                H.h4 H.! HA.class_ "hero__heading" $ "Repository for astrophysics simulation catalog data. 🖥️ 🌟"
-                H.a H.! HA.class_ "button button-primary"  H.! HA.href "https://flatironinstitute.org" $ H.text "Project of Flatiron Institute"
-              H.div H.! HA.class_ "one-half column hero__pics" $ do
-                H.img H.! HA.src (staticURI ["hubble.jpg"]) H.! HA.class_ "pic"
-        -- Second section on mainpage
-        H.div H.! HA.class_ "section collections" $ do
+              H.div H.! HA.class_ "hero-content" $ do
+                H.h4 H.! HA.class_ "hero-heading" $ "ASTROSIMS"
+                H.h4 H.! HA.class_ "hero-subheading" $ "Astrophysics simulation data repository"
+        H.div H.! HA.class_ "section" $ do
           H.div H.! HA.class_ "container" $ do
-            H.h3 H.! HA.class_ "section__heading" $ "Collections"
-            -- H.p H.! HA.class_ "section__description" $ "Here is where you can describe these collections. Or not, but this is a useful place to draw attention to bigger groupings. This design might be more than needed."
             H.div H.! HA.class_ "row" $ do
-              H.div H.! HA.class_ "one-half column collection" $ do
-                H.a H.! HA.href (WH.routeActionValue groupPage ["candels"] mempty) H.! HA.class_ "collection-link" $ do
-                  H.h4 H.! HA.class_ "u-max-full-width collection-label" $ "Candels"
-              H.div H.! HA.class_ "one-half column collection" $ do
-                H.a H.! HA.href (WH.routeActionValue groupPage ["milkyway", "ananke"] mempty) H.! HA.class_ "collection-link" $ do
-                  H.h4 H.! HA.class_ "u-max-full-width collection-label" $ "Ananke"
-          -- Third section on mainpage
-        H.div H.! HA.class_ "section catalogs" $ do
-          H.div H.! HA.class_ "container" $ do
-            H.h3 H.! HA.class_ "section__heading" $ "Catalogs"
-            -- H.p H.! HA.class_ "section__description" $ "Overall catalog description. I'd like to gather some additional details on these so I can style appropriately."
-            H.div H.! HA.class_ "row" $ do
-              H.dl H.! HA.class_ "twelve columns catalogs__list" $
-                forM_ (catalogsSorted cats) $ \(sim, cat) -> do
-                  H.dt $ H.a H.! HA.href (WH.routeActionValue catalogPage sim mempty) $
-                    H.text $ catalogTitle cat
-                  H.dd $ do
-                    mapM_ H.preEscapedText $ catalogDescr cat
-                    mapM_ ((" " <>) . (<> " rows.") . H.toMarkup) $ catalogCount cat
+              H.div H.! HA.class_ "col-md" $ do
+                H.div H.! HA.class_ "collections" $ do
+                  H.div H.! HA.class_ "collections-container" $ do
+                    H.h3 H.! HA.class_ "section__heading" $ "Collections"
+                    H.p H.! HA.class_ "section-description" $ "TK here: definition of a collection."
+                    H.div H.! HA.class_ "row" $ do
+                      H.div H.! HA.class_ "collections-list" $ do
+                        forM_ (groupList $ catalogGroupings cats) $ \g ->
+                            H.a H.! HA.href (WH.routeActionValue groupPage [groupingName g] mempty) H.! HA.class_ "collection-card-heading" $ H.text $ groupingTitle g $ groupingCatalog cats g
+              H.div H.! HA.class_ "col-md col-border" $ do
+                H.div H.! HA.class_ "catalogs" $ do
+                  H.div H.! HA.class_ "catalogs-container" $ do
+                    H.h3 H.! HA.class_ "section__heading" $ "Catalogs"
+                    H.p H.! HA.class_ "section-description" $ "TK here: definition of a catalog."
+                    H.div H.! HA.class_ "catalogs-list" $
+                      forM_ (catalogsSorted cats) $ \(sim, cat) -> do
+                          H.a H.! HA.href (WH.routeActionValue catalogPage sim mempty) H.! HA.class_ "collection-card-heading" $ H.text $ catalogTitle cat
 
 
 catalogPage :: Route Simulation
