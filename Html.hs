@@ -145,7 +145,7 @@ topPage = getPath R.unit $ \() req -> do
             H.div H.! HA.class_ "row" $ do
               H.div H.! HA.class_ "hero-content" $ do
                 H.h4 H.! HA.class_ "hero-heading" $ "ASTROSIMS"
-                H.h4 H.! HA.class_ "hero-subheading" $ "Astrophysics simulation data repository"
+                H.h4 H.! HA.class_ "hero-subheading" $ ""
         H.div H.! HA.class_ "section" $ do
           H.div H.! HA.class_ "container" $ do
             H.div H.! HA.class_ "row" $ do
@@ -153,7 +153,7 @@ topPage = getPath R.unit $ \() req -> do
                 H.div H.! HA.class_ "collections" $ do
                   H.div H.! HA.class_ "collections-container" $ do
                     H.h3 H.! HA.class_ "section__heading" $ H.a H.! HA.href (WH.routeActionValue groupPage [] mempty) $ "Collections"
-                    H.p H.! HA.class_ "section-description" $ "Grouped catalog simulations"
+                    H.p H.! HA.class_ "section-description" $ ""
                     H.div H.! HA.class_ "row" $ do
                       H.div H.! HA.class_ "collections-list" $ do
                         forM_ (groupList $ catalogGroupings cats) $ \g ->
