@@ -348,6 +348,8 @@ illustris:
   title: Illustris FoF Halos
   index: illustris
   count: 1259309875
+  descr: >
+    <a href='http://arxiv.org/abs/1504.00362'>Nelson+ (2015)</a>, <a href='https://www.illustris-project.org/'>Illustris</a> <a href='https://www.illustris-project.org/data/docs/specifications/#sec2a'>FoF Halo catalog</a> derived with a standard friends-of-friends (FoF) algorithm.
   sort:
   - simulation
   - snapshot
@@ -577,9 +579,11 @@ illustris:
       - name: bh
       ingest: Offsets/Group_FuzzByType
 tng:
-  title: Illustris TNG FoF Halos
+  title: IllustrisTNG FoF Halos
   index: tng
   count: 4652128910
+  descr: >
+    <a href='http://arxiv.org/abs/1812.05609'>Nelson+ (2019a)</a>, <a href='https://www.tng-project.org/'>IllustrisTNG</a> <a href='https://www.tng-project.org/data/docs/specifications/#sec2a'>FoF Halo catalog</a> derived with a standard friends-of-friends (FoF) algorithm.
   sort:
   - simulation
   - snapshot
@@ -832,9 +836,11 @@ tng:
       descr: 'Comoving Radius of a sphere centered at the GroupPos of this Group whose mean density is \(\Delta_c\) times the critical density of the Universe, at the time the halo is considered.'
       flag: hidden
 illustris_sub:
-  title: Illustris Subfind
+  title: Illustris Subfind Subhalos
   index: illustris_sub
   count: 1175372132
+  descr: >
+    <a href='http://arxiv.org/abs/1504.00362'>Nelson+ (2015)</a>, <a href='https://www.illustris-project.org/'>Illustris</a> <a href='https://www.illustris-project.org/data/docs/specifications/#sec2b'>Subfind Subhalo catalog</a> derived with the Subfind algorithm.
   sort:
   - simulation
   - snapshot
@@ -1148,9 +1154,11 @@ illustris_sub:
       - name: bh
       ingest: Offsets/Subhalo_SnapByType
 tng_sub:
-  title: Illustris TNG Subfind
+  title: IllustrisTNG Subfind Subhalos
   index: tng_sub
   count: 4597293249
+  descr: >
+    <a href='http://arxiv.org/abs/1812.05609'>Nelson+ (2019a)</a>, <a href='https://www.tng-project.org/'>IllustrisTNG</a> <a href='https://www.tng-project.org/data/docs/specifications/#sec2b'>Subfind Subhalo catalog</a> derived with the Subfind algorithm.
   fields:
     - name: simulation
       type: byte
@@ -1164,7 +1172,7 @@ tng_sub:
         - Illustris-2-Dark
         - Illustris-3
         - Illustris-3-Dark
-        # above are not included
+        # above are not included here (in illustris instead)
         - TNG100-1
         - TNG100-1-Dark
         - TNG100-2
