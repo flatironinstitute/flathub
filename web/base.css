@@ -177,7 +177,7 @@ a:hover {
 }
 
 .header__logo {
-  margin-left: 5%;
+  margin-left: 5vw;
   height: 55px;
   display: flex;
   justify-content: center;
@@ -201,7 +201,7 @@ a:hover {
 }
 
 nav.header__nav {
-  margin: 1.5em 0 0 5%;
+  margin: 1.5em 0 0 5vw;
 }
 
 ul#topbar {
@@ -284,11 +284,11 @@ container a:hover:not(.active) {
     height: 55px;
   }
   .header__logo {
-    margin-left: 9vw;
+    margin-left: 5vw;
   }
   nav.header__nav {
     align-self: center;
-    margin: 0 9vw 0 0;
+    margin: 0 5vw 0 0;
   }
 }
 
@@ -347,6 +347,55 @@ div#hist,
   line-height: 38px;
   letter-spacing: 0.1rem;
   padding-left: 10px;
+}
+
+.catalogs-container {
+  padding: 10px;
+}
+
+.catalogs-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+/* Breadcrumbs
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+.breadcrumb-container {
+  margin: 0 calc(-2.5vw + -20px) 2rem calc(-2.5vw + -20px);
+}
+.breadcrumb {
+  margin: 0 5vw;
+  max-width: 95vw;
+  padding: 1rem 0;
+  background-color: transparent;
+}
+
+.breadcrumb-item {
+  display: inline;
+  padding: 0 0.8em 0 0.8em;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.2rem;
+  text-decoration: none;
+}
+
+.breadcrumb-item:first-of-type {
+  padding-left: 0;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+  padding-right: 0.8em;
+}
+
+.breadcrumb-item > a {
+  border-bottom: 1px solid var(--cooler-red);
+}
+.breadcrumb-item > a:hover {
+  text-decoration: none;
 }
 
 /* Hero and Heading
@@ -495,21 +544,6 @@ div#hist,
 
 .body-copy {
   text-align: left;
-}
-
-/* Catalogs
-  –––––––––––––––––––––––––––––––––––––––––––––––––– */
-
-.catalogs-container {
-  padding: 10px;
-}
-
-.catalogs-list {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  width: 100%;
 }
 
 /* Tabs

@@ -105,6 +105,7 @@ htmlResponse req hdrs body = do
                 forM_ (groupList $ catalogGroupings cats) $ \g ->
                   H.a H.! HA.href (WH.routeActionValue groupPage [groupingName g] mempty) $ H.text $ groupingTitle g $ groupingCatalog cats g
             H.li H.! HA.class_ "header__link--dropdown" $ do
+              -- TODO: Add link to top level catalog page.
               H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Catalogs"
               H.div H.! HA.class_ "dropdown-content dropdown-second" $ do
                 forM_ (catalogsSorted cats) $ \(key, cat) ->
@@ -393,10 +394,13 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
   grp <- maybe (result $ response notFound404 [] (T.intercalate "/" path <> " not found")) return $
     lookupGrouping path $ catalogGrouping cats
   htmlResponse req [] $ do
-    H.div $ zipWithM_ (\p n -> do
-      H.a H.! HA.class_ "btn btn-primary" H.! HA.href (WH.routeActionValue groupPage p mempty) $ H.text n
-      " / ")
-      (init $ inits path) ("top":path)
+    H.nav H.! HA.class_"breadcrumb-container" $ do
+      H.ol H.! HA.class_"breadcrumb" $ zipWithM_ (\p n -> do
+        H.li H.! HA.class_ "breadcrumb-item" $ do
+          H.a H.! HA.href (WH.routeActionValue groupPage p mempty) $ H.text n
+        )
+        -- TODO: Can we put a word other than Top here (ex: Collections / Catalogs)? Can we also include the current location as the last slash item.
+        (init $ inits path) ("top":path)
     case grp of
       -- Single Catalog
       GroupCatalog cat -> do
