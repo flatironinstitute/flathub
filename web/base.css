@@ -1177,6 +1177,10 @@ hr {
   display: none;
 }
 
+.highlighted-links {
+  text-align: left;
+}
+
 .highlighted-links > p > a {
   border-bottom: 1px solid var(--cooler-red);
 }
