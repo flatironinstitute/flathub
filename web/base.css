@@ -364,7 +364,7 @@ div#hist,
 /* Breadcrumbs
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 .breadcrumb-container {
-  margin: 0 calc(-2.5vw + -20px) 2rem calc(-2.5vw + -20px);
+  margin: 0 calc(-2.5vw + -20px) 0.1rem calc(-2.5vw + -20px);
 }
 .breadcrumb {
   margin: 0 5vw;
