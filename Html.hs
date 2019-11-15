@@ -11,7 +11,7 @@ module Html
   , staticHtml
   ) where
 
-import           Control.Monad (forM_, when, zipWithM_)
+import           Control.Monad (forM_, when)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (ask, asks)
 import qualified Data.Aeson as J
@@ -392,10 +392,9 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
   grp <- maybe (result $ response notFound404 [] (T.intercalate "/" path <> " not found")) return $
     lookupGrouping path $ catalogGrouping cats
   htmlResponse req [] $ do
-    H.div $ zipWithM_ (\p n -> do
-      H.a H.! HA.href (WH.routeActionValue groupPage p mempty) $ H.text n
-      " / ")
-      (init $ inits path) ("top":path)
+    H.div $ mintersperse (" / ") $ zipWith (\p n ->
+      H.a H.! HA.href (WH.routeActionValue groupPage p mempty) $ H.text n)
+      (inits path) ("collections":path)
     case grp of
       -- Single Catalog
       GroupCatalog cat -> do
