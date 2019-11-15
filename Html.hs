@@ -85,7 +85,7 @@ htmlResponse req hdrs body = do
     H.body $ do
       H.div H.! HA.class_ "modal-container hidden"  H.! HA.id "progress-modal" $ do
         H.div H.! HA.class_ "modal-background" $ do
-          H.span $ H.text ""
+          H.span $ mempty
         H.div H.! HA.class_ "modal-body" $ do
           H.div H.! HA.class_ "modal-content" $ do
             H.h3 "Processing..."
@@ -96,23 +96,23 @@ htmlResponse req hdrs body = do
       H.header H.! HA.class_ "header" $ do
         H.div H.! HA.class_ "header__logo" $ do
           H.a H.! HA.href (WH.routeActionValue topPage () mempty) H.! HA.class_ "header__logo-link" $ do
-            H.span H.! HA.class_ "header__logo-style" $ H.text "ASTROSIMS"
+            H.span H.! HA.class_ "header__logo-style" $ "ASTROSIMS"
         H.nav H.! HA.class_ "header__nav" $ do
           H.ul H.! HA.id "topbar" $ do
             H.li H.! HA.class_ "header__link--dropdown" $ do
-              H.a H.! HA.href (WH.routeActionValue groupPage [] mempty) $ H.text "Collections"
+              H.a H.! HA.href (WH.routeActionValue groupPage [] mempty) $ "Collections"
               H.div H.! HA.class_ "dropdown-content" $ do
                 forM_ (groupList $ catalogGroupings cats) $ \g ->
                   H.a H.! HA.href (WH.routeActionValue groupPage [groupingName g] mempty) $ H.text $ groupingTitle g $ groupingCatalog cats g
             H.li H.! HA.class_ "header__link--dropdown" $ do
-              H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Catalogs"
+              H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ "Catalogs"
               H.div H.! HA.class_ "dropdown-content dropdown-second" $ do
                 forM_ (catalogsSorted cats) $ \(key, cat) ->
                   H.a H.! HA.href (WH.routeActionValue catalogPage key mempty) $ H.text (catalogTitle cat)
             H.li H.! HA.class_ "header__link" $ do
-              H.a H.! HA.href (WH.routeActionValue comparePage [] mempty) $ H.text "Compare"
+              H.a H.! HA.href (WH.routeActionValue comparePage [] mempty) $ "Compare"
             H.li H.! HA.class_ "header__link" $ do
-              H.a H.! HA.href (WH.routeActionValue staticHtml ["about"] mempty) $ H.text "About"
+              H.a H.! HA.href (WH.routeActionValue staticHtml ["about"] mempty) $ "About"
       H.div H.! HA.class_ "container container--main" $ do
         body
       H.footer H.! HA.class_"footer-distributed" $ do
@@ -122,9 +122,9 @@ htmlResponse req hdrs body = do
               H.img H.! HA.src (staticURI ["cca-logo.jpg"]) H.! HA.height "50" H.! HA.width "50"
               H.h3 $ "Center for Computational Astrophysics"
             H.p H.! HA.class_ "footer-links" $ do
-              H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Home"
-              H.a H.! HA.href (WH.routeActionValue groupPage [] mempty) $ H.text "Catalogs"
-              H.a H.! HA.href (WH.routeActionValue comparePage [] mempty) $ H.text "Compare"
+              H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ "Home"
+              H.a H.! HA.href (WH.routeActionValue groupPage [] mempty) $ "Catalogs"
+              H.a H.! HA.href (WH.routeActionValue comparePage [] mempty) $ "Compare"
             H.p H.! HA.class_ "footer-company-name" $ "Flatiron Institute, 2019"
 
 acceptable :: [BS.ByteString] -> Wai.Request -> Maybe BS.ByteString
@@ -151,7 +151,7 @@ topPage = getPath R.unit $ \() req -> do
               H.div H.! HA.class_ "col-md" $ do
                 H.div H.! HA.class_ "collections" $ do
                   H.div H.! HA.class_ "collections-container" $ do
-                    H.h3 H.! HA.class_ "section__heading" $ "Collections"
+                    H.h3 H.! HA.class_ "section__heading" $ H.a H.! HA.href (WH.routeActionValue groupPage [] mempty) $ "Collections"
                     H.p H.! HA.class_ "section-description" $ "TK here: definition of a collection."
                     H.div H.! HA.class_ "row" $ do
                       H.div H.! HA.class_ "collections-list" $ do
@@ -343,11 +343,11 @@ catalogPage = getPath R.parameter $ \sim req -> do
                     H.h6 H.! HA.class_ "right-column-heading" $ "Fields Dictionary"
                     H.div $ H.table H.! HA.id "tdict" H.! HA.class_ "table table-striped table-sm" $ do
                       H.thead $ H.tr $ do
-                          H.th $ H.text "Field"
-                          H.th $ H.text "Variable"
-                          H.th $ H.text "Type"
-                          H.th $ H.text "Units"
-                          H.th $ H.text "Description"
+                          H.th $ "Field"
+                          H.th $ "Variable"
+                          H.th $ "Type"
+                          H.th $ "Units"
+                          H.th $ "Description"
                       H.tbody $ forM_ (catalogFieldGroups cat) $ \f -> do
                           fielddesc f f 0
 
