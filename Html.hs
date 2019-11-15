@@ -122,9 +122,10 @@ htmlResponse req hdrs body = do
               H.img H.! HA.src (staticURI ["cca-logo.jpg"]) H.! HA.height "50" H.! HA.width "50"
               H.h3 $ "Center for Computational Astrophysics"
             H.p H.! HA.class_ "footer-links" $ do
-              H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ "Home"
-              H.a H.! HA.href (WH.routeActionValue groupPage [] mempty) $ "Catalogs"
-              H.a H.! HA.href (WH.routeActionValue comparePage [] mempty) $ "Compare"
+              H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Home"
+              H.a H.! HA.href (WH.routeActionValue groupPage [] mempty) $ H.text "Catalogs"
+              H.a H.! HA.href (WH.routeActionValue comparePage [] mempty) $ H.text "Compare"
+              H.a H.! HA.href "https://github.com/flatironinstitute/astrosims" $ H.text "Github"
             H.p H.! HA.class_ "footer-company-name" $ "Flatiron Institute, 2019"
 
 acceptable :: [BS.ByteString] -> Wai.Request -> Maybe BS.ByteString
@@ -152,7 +153,7 @@ topPage = getPath R.unit $ \() req -> do
                 H.div H.! HA.class_ "collections" $ do
                   H.div H.! HA.class_ "collections-container" $ do
                     H.h3 H.! HA.class_ "section__heading" $ H.a H.! HA.href (WH.routeActionValue groupPage [] mempty) $ "Collections"
-                    H.p H.! HA.class_ "section-description" $ "TK here: definition of a collection."
+                    H.p H.! HA.class_ "section-description" $ "Grouped catalog simulations"
                     H.div H.! HA.class_ "row" $ do
                       H.div H.! HA.class_ "collections-list" $ do
                         forM_ (groupList $ catalogGroupings cats) $ \g ->
@@ -161,7 +162,7 @@ topPage = getPath R.unit $ \() req -> do
                 H.div H.! HA.class_ "catalogs" $ do
                   H.div H.! HA.class_ "catalogs-container" $ do
                     H.h3 H.! HA.class_ "section__heading" $ "Catalogs"
-                    H.p H.! HA.class_ "section-description" $ "TK here: definition of a catalog."
+                    H.p H.! HA.class_ "section-description" $ "Simulation datasets"
                     H.div H.! HA.class_ "catalogs-list" $
                       forM_ (catalogsSorted cats) $ \(sim, cat) -> do
                           H.a H.! HA.href (WH.routeActionValue catalogPage sim mempty) H.! HA.class_ "collection-card-heading" $ H.text $ catalogTitle cat
@@ -392,24 +393,36 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
   grp <- maybe (result $ response notFound404 [] (T.intercalate "/" path <> " not found")) return $
     lookupGrouping path $ catalogGrouping cats
   htmlResponse req [] $ do
-    H.div $ mintersperse (" / ") $ zipWith (\p n ->
-      H.a H.! HA.href (WH.routeActionValue groupPage p mempty) $ H.text n)
-      (inits path) ("collections":path)
+    H.nav H.! HA.class_"breadcrumb-container" $ do
+      H.ol H.! HA.class_"breadcrumb" $ mintersperse ("") $ zipWith (\p n ->
+        H.li H.! HA.class_ "breadcrumb-item" $ do
+          H.a H.! HA.href (WH.routeActionValue groupPage p mempty) $ H.text n)
+        (inits path) ("collections":path)
     case grp of
       -- Single Catalog
       GroupCatalog cat -> do
         let Catalog{..} = catalogMap cats HM.! cat
+        H.div H.! HA.class_ "section gray-heading" $ do
+          H.div H.! HA.class_"container" $ do
+            H.div H.! HA.class_ "row" $ do
+              H.div H.! HA.class_ "heading-content" $ do
+                H.h4 H.! HA.class_"heading-heading"  $ H.text catalogTitle
+                H.a  H.! HA.class_ "button button-primary" H.! HA.href (WH.routeActionValue catalogPage cat mempty) $ "explore"
         maybe (do
-          H.h2 $ H.text catalogTitle
-          mapM_ (H.p . H.preEscapedText) catalogDescr)
-          H.preEscapedText catalogHtml
-        H.a H.! HA.href (WH.routeActionValue catalogPage cat mempty) $ "explore"
+          H.div H.! HA.class_ "section highlighted-links" $ do
+            mapM_ (H.p . H.preEscapedText) catalogDescr)
+            H.preEscapedText catalogHtml
       -- Collections
       Grouping{..} -> do
-        maybe (do
-          H.h2 $ H.text groupTitle)
+        H.div H.! HA.class_ "section gray-heading" $ do
+          H.div H.! HA.class_"container" $ do
+            H.div H.! HA.class_ "row" $ do
+              H.div H.! HA.class_ "heading-content" $ do
+                H.h4 H.! HA.class_"heading-heading"  $ H.text groupTitle
+                H.a H.! HA.class_ "button button-primary" H.! HA.href (WH.routeActionValue comparePage path mempty) $ "compare"
+        mapM_
           H.preEscapedText groupHtml
-        H.dl H.! HA.class_ "twelve columns catalogs__list" $
+        H.dl H.! HA.class_ "section catalogs-list" $
           forM_ (groupList groupings) $ \g -> do
             let cat' = groupingCatalog cats g
             H.dt $ H.a H.! HA.href (WH.routeActionValue groupPage (path ++ [groupingName g]) mempty) $
@@ -423,7 +436,6 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
                 forM_ cat' $ \cat -> H.dd $ do
                   mapM_ H.preEscapedText $ catalogDescr cat
                   mapM_ ((" " <>) . (<> " rows.") . H.toMarkup) $ catalogCount cat
-        H.a H.! HA.href (WH.routeActionValue comparePage path mempty) $ "compare"
 
 comparePage :: Route [T.Text]
 comparePage = getPath ("compare" R.*< R.manyI R.parameter) $ \path req -> do
