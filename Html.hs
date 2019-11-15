@@ -163,7 +163,7 @@ topPage = getPath R.unit $ \() req -> do
                   H.div H.! HA.class_ "catalogs-container" $ do
                     H.h3 H.! HA.class_ "section__heading" $ "Catalogs"
                     H.p H.! HA.class_ "section-description" $ "Simulation datasets"
-                    H.div H.! HA.class_ "catalogs-list" $
+                    H.div H.! HA.class_ "catalogs-list main-page" $
                       forM_ (catalogsSorted cats) $ \(sim, cat) -> do
                           H.a H.! HA.href (WH.routeActionValue catalogPage sim mempty) H.! HA.class_ "collection-card-heading" $ H.text $ catalogTitle cat
 
