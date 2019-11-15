@@ -356,8 +356,9 @@ div#hist,
 .catalogs-list {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: flex-start;
+  text-align: left;
   width: 100%;
 }
 
@@ -406,7 +407,7 @@ div#hist,
 }
 
 .gray-heading {
-  margin: 0 calc(-2.5vw + -20px);
+  margin: 0 calc(-2.5vw + -20px) 2rem calc(-2.5vw + -20px);
   background-color: var(--cooler-platinum);
 }
 
@@ -1181,6 +1182,37 @@ hr {
 }
 
 .highlighted-links > p > a:hover {
+  text-decoration: none;
+}
+
+/* Dedicated Lists
+  –––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+dt {
+  margin-bottom: 1rem;
+}
+
+dt > a {
+  font-weight: bolder;
+  font-size: 1.6rem;
+  border-bottom: 1px solid var(--cooler-red);
+}
+
+dd {
+  margin-bottom: 1.5rem;
+}
+
+dd:before {
+  padding-right: 0.8em;
+  content: " - ";
+}
+
+dd > a {
+  border-bottom: 1px solid var(--cooler-red);
+}
+
+dt > a:hover,
+dd > a:hover {
   text-decoration: none;
 }
 
