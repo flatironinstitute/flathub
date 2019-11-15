@@ -1,7 +1,0 @@
-http {
-  port = 8092
-}
-elasticsearch {
-  server = "http://astrodb:9200/"
-}
-dev = true
