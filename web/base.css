@@ -1176,6 +1176,14 @@ hr {
   display: none;
 }
 
+.highlighted-links > p > a {
+  border-bottom: 1px solid var(--cooler-red);
+}
+
+.highlighted-links > p > a:hover {
+  text-decoration: none;
+}
+
 /* Fields Dictionary
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
 

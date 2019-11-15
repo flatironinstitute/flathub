@@ -412,8 +412,8 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
               H.div H.! HA.class_ "row" $ do
                 H.div H.! HA.class_ "heading-content" $ do
                   H.h4 H.! HA.class_"heading-heading"  $ H.text catalogTitle
-                  H.a H.! HA.href (WH.routeActionValue catalogPage cat mempty) $ "explore"
-          H.div H.! HA.class_ "section" $ do
+                  H.a  H.! HA.class_ "button button-primary" H.! HA.href (WH.routeActionValue catalogPage cat mempty) $ "explore"
+          H.div H.! HA.class_ "section highlighted-links" $ do
             mapM_ (H.p . H.preEscapedText) catalogDescr)
             H.preEscapedText catalogHtml
       -- Collections
