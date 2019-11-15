@@ -11,7 +11,7 @@ module Html
   , staticHtml
   ) where
 
-import           Control.Monad (forM_, when, zipWithM_)
+import           Control.Monad (forM_, when)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (ask, asks)
 import qualified Data.Aeson as J
@@ -394,12 +394,10 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
     lookupGrouping path $ catalogGrouping cats
   htmlResponse req [] $ do
     H.nav H.! HA.class_"breadcrumb-container" $ do
-      H.ol H.! HA.class_"breadcrumb" $ zipWithM_ (\p n -> do
+      H.ol H.! HA.class_"breadcrumb" $ mintersperse ("") $ zipWith (\p n ->
         H.li H.! HA.class_ "breadcrumb-item" $ do
-          H.a H.! HA.href (WH.routeActionValue groupPage p mempty) $ H.text n
-        )
-        -- TODO: Can we put a word other than Top here (ex: Collections / Catalogs)? Can we also include the current location as the last slash item.
-        (init $ inits path) ("top":path)
+          H.a H.! HA.href (WH.routeActionValue groupPage p mempty) $ H.text n)
+        (inits path) ("collections":path)
     case grp of
       -- Single Catalog
       GroupCatalog cat -> do
@@ -418,7 +416,11 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
       -- Collections
       Grouping{..} -> do
         maybe (do
-          H.h2 $ H.text groupTitle)
+          H.div H.! HA.class_ "section gray-heading" $ do
+            H.div H.! HA.class_"container" $ do
+              H.div H.! HA.class_ "row" $ do
+                H.div H.! HA.class_ "heading-content" $ do
+                  H.h4 H.! HA.class_"heading-heading"  $ H.text groupTitle)
           H.preEscapedText groupHtml
         H.dl H.! HA.class_ "twelve columns catalogs__list" $
           forM_ (groupList groupings) $ \g -> do

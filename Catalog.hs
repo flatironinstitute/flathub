@@ -209,7 +209,7 @@ pruneCatalogs errs cats = cats
 
 -- |Virtual top-level grouping
 catalogGrouping :: Catalogs -> Grouping
-catalogGrouping Catalogs{ catalogGroupings = g } = Grouping "top" "top" Nothing g
+catalogGrouping Catalogs{ catalogGroupings = g } = Grouping "collections" "Collections" Nothing g
 
 groupedCatalogs :: [T.Text] -> Catalogs -> Maybe Catalogs
 groupedCatalogs [] c = Just c
