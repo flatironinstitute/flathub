@@ -123,43 +123,16 @@ function histogramDraw(
   if (data.length <= 1) return histogramRemove();
 
   const opts: Highcharts.Options = histogram_options(field);
-  if (heatmap && cond) {
-    const renderx = render_funct(hist.field);
-    (<Highcharts.TooltipOptions>opts.tooltip).formatter = function(
-      this: Highcharts.PointObject
-    ): string {
-      return (
-        "[" +
-        renderx(this.x - xwid) +
-        "," +
-        renderx(this.x + xwid) +
-        "): " +
-        this.y
-      );
-    };
+  const renderx = render_funct(hist.field);
+  if (heatmap) {
     opts.colorAxis = <Highcharts.ColorAxisOptions>opts.yAxis;
-    opts.colorAxis.minColor = "#bbbbbb";
     opts.colorAxis.reversed = false;
-    opts.colorAxis.max = cmax;
     opts.yAxis = {
       type: "linear",
       title: axis_title(heatmap)
     };
-    opts.series = [
-      <Highcharts.BoxPlotChartSeriesOptions>{
-        type: "boxplot",
-        data: data,
-        keys: ["x", "low", "q1", "median", "q3", "high", "c"],
-        colorKey: "c"
-      },
-      <Highcharts.LineChartSeriesOptions>{
-        type: "line",
-        data: data,
-        keys: ["x", "min", "q1", "y", "q3", "max", "c"],
-        colorKey: "c"
-      }
-    ];
-  } else if (heatmap) {
+  }
+  if (heatmap && !cond) {
     (<Highcharts.ChartOptions>opts.chart).zoomType = "xy";
     (<Highcharts.ChartOptions>opts.chart).events = {
       selection: function(event: Highcharts.ChartSelectionEvent) {
@@ -170,7 +143,6 @@ function histogramDraw(
         return false; // Don't zoom
       }
     };
-    const renderx = render_funct(hist.field);
     const rendery = render_funct(heatmap);
     (<Highcharts.TooltipOptions>opts.tooltip).formatter = function(this: {
       point: { x: number; y: number; value: number };
@@ -190,14 +162,8 @@ function histogramDraw(
         p.value
       );
     };
-    opts.colorAxis = <Highcharts.ColorAxisOptions>opts.yAxis;
-    opts.colorAxis.minColor = "#ffffff";
-    opts.colorAxis.reversed = false;
+    (<Highcharts.ColorAxisOptions>opts.colorAxis).minColor = "#ffffff";
     (<Highcharts.LegendOptions>opts.legend).enabled = true;
-    opts.yAxis = {
-      type: "linear",
-      title: axis_title(heatmap)
-    };
     opts.series = [
       <Highcharts.HeatMapSeriesOptions>{
         type: "heatmap",
@@ -218,16 +184,49 @@ function histogramDraw(
     (<Highcharts.TooltipOptions>opts.tooltip).footerFormat = "drag to filter";
     (<Highcharts.AxisOptions>opts.xAxis).min = hist.lbv;
     (<Highcharts.AxisOptions>opts.xAxis).max = hist.ubv + wid;
-    opts.series = [
-      <Highcharts.ColumnChartSeriesOptions>{
-        showInLegend: true,
-        type: "column",
-        data: data,
-        pointInterval: wid,
-        pointRange: wid,
-        color: "#0008"
-      }
-    ];
+    if (heatmap) {
+      /* condmedian */
+      (<Highcharts.TooltipOptions>opts.tooltip).formatter = function(
+        this: Highcharts.PointObject
+      ): string {
+        return (
+          "[" +
+          renderx(this.x - xwid) +
+          "," +
+          renderx(this.x + xwid) +
+          "): " +
+          this.y
+        );
+      };
+      (<Highcharts.ColorAxisOptions>opts.colorAxis).minColor = "#bbbbbb";
+      (<Highcharts.ColorAxisOptions>opts.colorAxis).max = cmax;
+      opts.series = [
+        <Highcharts.BoxPlotChartSeriesOptions>{
+          type: "boxplot",
+          data: data,
+          keys: ["x", "low", "q1", "median", "q3", "high", "c"],
+          colorKey: "c"
+        },
+        <Highcharts.LineChartSeriesOptions>{
+          type: "line",
+          data: data,
+          keys: ["x", "min", "q1", "y", "q3", "max", "c"],
+          colorKey: "c"
+        }
+      ];
+    } else {
+      /* histogram */
+      opts.series = [
+        <Highcharts.ColumnChartSeriesOptions>{
+          showInLegend: true,
+          type: "column",
+          data: data,
+          pointInterval: wid,
+          pointRange: wid,
+          color: "#0008"
+        }
+      ];
+    }
   }
   $("#dhist").show();
   Histogram_chart = Highcharts.chart("hist", opts);
