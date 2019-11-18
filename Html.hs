@@ -269,6 +269,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                     when (x == 'y') $
                       H.button H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick ("return histogramShow('c')") $
                         "Conditional distribution"
+              H.div H.! HA.id "info" $ mempty
               H.div H.! HA.id "error" $ mempty
               H.div H.! HA.id "hist" $ mempty
 

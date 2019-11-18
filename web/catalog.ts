@@ -325,6 +325,7 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
       settings.oLanguage.sInfo =
         "Showing _START_ to _END_ of " +
         settings.fnFormatNumber(res.hits.total);
+      $('#info').text(settings.fnFormatNumber(res.hits.total) + " results (filtered from " + settings.fnFormatNumber(Catalog.count) + ")")
       callback({
         draw: data.draw,
         recordsTotal: Catalog.count,
