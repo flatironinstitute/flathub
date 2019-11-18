@@ -17,7 +17,7 @@ export type Field = {
   title: string;
   descr?: null | string;
   units?: null | string;
-  top?: boolean;
+  flag?: boolean;
   disp: boolean;
   base: "f" | "i" | "b" | "s";
   terms?: boolean;
@@ -66,9 +66,11 @@ export function fill_select_terms(
   f: Field,
   a: AggrTerms<string>
 ) {
-  const def = document.createElement("option");
-  def.text = "all";
-  s.add(def);
+  if (!f.flag /* required */) {
+    const def = document.createElement("option");
+    def.text = "all";
+    s.add(def);
+  }
   a.buckets.sort((c, d) => -(c.key < d.key) || +(c.key > d.key));
   for (let b of a.buckets) {
     const opt = document.createElement("option");

@@ -340,8 +340,10 @@ instance J.ToJSON Field where
     [ ("enum" J..=) <$> fieldEnum
     , ("descr" J..=) <$> fieldDescr
     , ("units" J..=) <$> fieldUnits
-    , bool "top" $ fieldFlag >= FieldTop
-    , bool "required" $ fieldFlag >= FieldRequired
+    , ("flag" J..=) <$> case fieldFlag of
+        FieldTop -> Just False
+        FieldRequired -> Just True
+        _ -> Nothing
     , bool "terms" $ isTermsField f
     , ("dict" J..=) <$> fieldDict
     , ("scale" J..=) <$> fieldScale

@@ -185,7 +185,7 @@ class Compare {
     Compares[idx] = this;
 
     for (let f of this.catalog.fields) {
-      this.fillField(new CField(this.catalog, f), f.top);
+      this.fillField(new CField(this.catalog, f), f.flag !== undefined);
     }
 
     update_comp(this);

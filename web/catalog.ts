@@ -381,7 +381,7 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
 
 function add_filt_row(
   name: string,
-  isTop: boolean | undefined,
+  flag: boolean | undefined,
   ...nodes: Array<
     JQuery.htmlString | JQuery.TypeOrArray<JQuery.Node | JQuery<JQuery.Node>>
   >
@@ -395,7 +395,7 @@ function add_filt_row(
   tr.classList.add("alert", "fade", "show", "row", "filter-row");
   if (!name.length) {
     tr.classList.add("alert-secondary");
-  } else if (isTop) {
+  } else if (flag) {
     tr.classList.add("alert-info");
   } else {
     tr.classList.add("alert-warning", "alert-horz");
@@ -425,7 +425,7 @@ abstract class Filter {
 
   constructor(public field: Field) {
     this.tcol = TCat.column(this.name + ":name");
-    this.label = field_title(this.field, this.remove.bind(this));
+    this.label = field_title(this.field, this.field.flag ? undefined : this.remove.bind(this));
   }
 
   get name(): string {
@@ -441,7 +441,7 @@ abstract class Filter {
   protected add(
     ...nodes: Array<JQuery.TypeOrArray<JQuery.Node | JQuery<JQuery.Node>>>
   ) {
-    add_filt_row(this.field.name, this.field.top, this.label, ...nodes);
+    add_filt_row(this.field.name, this.field.flag !== undefined, this.label, ...nodes);
     this.addopt.disabled = true;
     Filters.push(this);
   }
@@ -758,7 +758,7 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
   aopt.value = "";
   aopt.text = "Add filter...";
   addfilt.appendChild(aopt);
-  add_filt_row("", false, "Select field to filter", addfilt);
+  add_filt_row("", undefined, "Select field to filter", addfilt);
   for (let i = 0; i < Catalog.fields.length; i++) {
     const f = Catalog.fields[i];
     const opt = field_option(f);
@@ -767,7 +767,7 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
     opt.value = <any>i;
     if (!f.disp) opt.style.display = "none";
     addfilt.appendChild(opt);
-    if (f.top) add_filter(i);
+    if (f.flag !== undefined) add_filter(i);
   }
   addfilt.onchange = function() {
     if (add_filter(<any>addfilt.value)) update(false);
