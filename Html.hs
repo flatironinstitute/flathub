@@ -145,7 +145,7 @@ topPage = getPath R.unit $ \() req -> do
             H.div H.! HA.class_ "row" $ do
               H.div H.! HA.class_ "hero-content" $ do
                 H.h4 H.! HA.class_ "hero-heading" $ "ASTROSIMS"
-                H.h4 H.! HA.class_ "hero-subheading" $ ""
+                H.h4 H.! HA.class_ "hero-subheading" $ mempty
         H.div H.! HA.class_ "section" $ do
           H.div H.! HA.class_ "container" $ do
             H.div H.! HA.class_ "row" $ do
@@ -153,7 +153,7 @@ topPage = getPath R.unit $ \() req -> do
                 H.div H.! HA.class_ "collections" $ do
                   H.div H.! HA.class_ "collections-container" $ do
                     H.h3 H.! HA.class_ "section__heading" $ H.a H.! HA.href (WH.routeActionValue groupPage [] mempty) $ "Collections"
-                    H.p H.! HA.class_ "section-description" $ ""
+                    H.p H.! HA.class_ "section-description" $ mempty
                     H.div H.! HA.class_ "row" $ do
                       H.div H.! HA.class_ "collections-list" $ do
                         forM_ (groupList $ catalogGroupings cats) $ \g ->
@@ -269,6 +269,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                     when (x == 'y') $
                       H.button H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick ("return histogramShow('c')") $
                         "Conditional distribution"
+              H.div H.! HA.id "error" $ mempty
               H.div H.! HA.id "hist" $ mempty
 
             H.div H.! HA.class_ "col col-sm-12 col-md-4 right-column" $ do
@@ -394,7 +395,7 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
     lookupGrouping path $ catalogGrouping cats
   htmlResponse req [] $ do
     H.nav H.! HA.class_"breadcrumb-container" $ do
-      H.ol H.! HA.class_"breadcrumb" $ mintersperse ("") $ zipWith (\p n ->
+      H.ol H.! HA.class_"breadcrumb" $ fold $ zipWith (\p n ->
         H.li H.! HA.class_ "breadcrumb-item" $ do
           H.a H.! HA.href (WH.routeActionValue groupPage p mempty) $ H.text n)
         (inits path) ("collections":path)

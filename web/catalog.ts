@@ -319,6 +319,7 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
       );
       modal.classList.add("hidden");
       Update = false;
+      $('#error').hide();
       Catalog.count = Math.max(Catalog.count || 0, res.hits.total);
       const settings = (<any>TCat.settings())[0];
       settings.oLanguage.sInfo =
@@ -354,6 +355,7 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
       );
       modal.classList.add("hidden");
       Update = false;
+      $('#error').text(msg + ": " + err).show();
       callback({
         draw: data.draw,
         data: [],
