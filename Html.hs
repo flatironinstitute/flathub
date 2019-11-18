@@ -260,11 +260,11 @@ catalogPage = getPath R.parameter $ \sim req -> do
                               H.! HA.class_ ("sel-" <> H.textValue (fieldName f))
                               H.!? (not $ fieldDisp f, HA.style "display:none")
                               H.! HA.value (H.textValue $ fieldName f) $ H.text $ fieldTitle f
-                    when (x == 'x') $ do
-                      H.button H.! HA.id "hist-y-tog" H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick "return toggleLog()" $ "Toggle lin/log"
                     H.button H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick ("return histogramShow(" <> H.stringValue (show x) <> ")") $ do
                       "View "
                       if x == 'x' then "Histogram" else "Heatmap"
+                    when (x == 'x') $
+                      H.button H.! HA.id "hist-y-tog" H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick "return toggleLog()" $ "Toggle lin/log"
                     when (x == 'y') $
                       H.button H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick ("return histogramShow('c')") $
                         "Conditional distribution"
