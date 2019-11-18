@@ -58,15 +58,15 @@ parseQuery cat req = fill $ foldl' parseQueryItem mempty $ Wai.queryString req w
   parseQueryItem q ("sort",   Just (mapM parseSort . spld -> Just s)) =
     q{ querySort = querySort q <> s }
   parseQueryItem q ("fields", Just (mapM lookf . spld -> Just l)) =
-    q{ queryFields = unionf (queryFields q) l }
+    q{ queryFields = unionBy ((==) `on` fieldName) (queryFields q) l }
   parseQueryItem q ("sample", Just (rmbs -> Just p)) =
     q{ querySample = querySample q * p }
   parseQueryItem q ("sample", Just (spl ('@' ==) -> Just (rmbs -> Just p, rmbs -> Just s))) =
     q{ querySample = querySample q * p, querySeed = Just $ maybe id xor (querySeed q) s }
   parseQueryItem q ("aggs",   Just (mapM lookf . spld -> Just a)) =
-    q{ queryAggs = unionf (queryAggs q) a }
-  parseQueryItem q ("hist",   Just (mapM parseHist . spld -> Just h)) =
-    q{ queryHist = queryHist q <> h }
+    q{ queryAggs = unionBy eqAgg (queryAggs q) $ map QueryStats a }
+  parseQueryItem q ("hist",   Just (parseHist . spld -> Just h)) =
+    q{ queryAggs = queryAggs q <> h }
   parseQueryItem q (lookf -> Just f, Just (parseFilt f -> Just v)) =
     q{ queryFilter = queryFilter q <> [liftFilterValue f v] }
   parseQueryItem q _ = q -- just ignore anything we can't parse
@@ -74,18 +74,21 @@ parseQuery cat req = fill $ foldl' parseQueryItem mempty $ Wai.queryString req w
   parseSort (BSC.uncons -> Just ('-', lookf -> Just f)) = return (f, False)
   parseSort (lookf -> Just f) = return (f, True)
   parseSort _ = fail "invalid sort"
-  parseHist (spl (':' ==) -> Just (lookf -> Just f, rmbs -> Just n)) = mkHist f n
-  parseHist (                      lookf -> Just f                 ) = mkHist f 16
+  parseHist [] = return []
+  parseHist ((spl (':' ==) -> Just (lookf -> Just f, rmbs -> Just n)) : l) = mkHist f n =<< parseHist l
+  parseHist ((                      lookf -> Just f                 ) :[]) = return [QueryPercentiles f [0,25,50,75,100]]
+  parseHist ((                      lookf -> Just f                 ) : l) = mkHist f 16 =<< parseHist l
   parseHist _ = fail "invalid hist"
   parseFilt f (spl delim -> Just (a, b)) = FilterRange <$> parseVal f a <*> parseVal f b
   parseFilt f a = FilterEQ <$> parseVal' f a
-  parseVal _ "" = Nothing
+  parseVal _ "" = return Nothing
   parseVal f v = Just <$> parseVal' f v
   parseVal' f = fmap fieldType . parseFieldValue f . TE.decodeUtf8
-  mkHist f n
-    | typeIsNumeric (fieldType f) = return (f, n)
+  eqAgg (QueryStats f) (QueryStats g) = fieldName f == fieldName g
+  eqAgg _ _ = False
+  mkHist f n l
+    | typeIsNumeric (fieldType f) = return $ [QueryHist f n l]
     | otherwise = fail "non-numeric hist"
-  unionf = unionBy ((==) `on` fieldName)
   fill q@Query{ queryFields = [] } | all (("fields" /=) . fst) (Wai.queryString req) =
     q{ queryFields = filter fieldDisp $ catalogFields cat }
   fill q = q
@@ -103,7 +106,7 @@ catalog :: Route Simulation
 catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do
   cat <- askCatalog sim
   let query = parseQuery cat req
-      hsize = product $ map snd $ queryHist query
+      hsize = histsSize $ queryAggs query
   unless (queryLimit query <= 100) $
     result $ response badRequest400 [] ("limit too large" :: String)
   unless (hsize > 0 && hsize <= 256) $
@@ -113,6 +116,9 @@ catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do
       res <- ES.queryIndex cat query
       return $ okResponse [] $ clean store res
   where
+  histSize (QueryHist _ n l) = n * histsSize l
+  histSize _ = 1
+  histsSize = product . map histSize
   clean store = mapObject $ HM.mapMaybeWithKey (cleanTop store)
   cleanTop _ "aggregations" = Just
   cleanTop _ "histsize" = Just
@@ -206,7 +212,7 @@ catalogBulk = getPath (R.parameter R.>*< R.parameter) $ \(sim, fmt) req -> do
   cat <- askCatalog sim
   let query = parseQuery cat req
       enc = bulkCompression fmt <|> listToMaybe (acceptCompressionEncoding req)
-  unless (queryOffset query == 0 && null (queryAggs query) && null (queryHist query)) $
+  unless (queryOffset query == 0 && null (queryAggs query)) $
     result $ response badRequest400 [] ("offset,aggs not supported for download" :: String)
   nextes <- ES.queryBulk cat query
   (count, block1) <- liftIO nextes

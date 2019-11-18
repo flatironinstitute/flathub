@@ -8,24 +8,35 @@ module Catalog
   , CatalogStore(..)
   , Catalog(..)
   , takeCatalogField
+  , Grouping(..)
+  , groupingName
+  , groupingCatalog
+  , Groupings(..)
+  , lookupGrouping
   , Catalogs(..)
+  , pruneCatalogs
+  , catalogGrouping
+  , groupedCatalogs
   , Filter(..)
   , liftFilterValue
+  , QueryAgg(..)
   , Query(..)
   ) where
 
 import           Control.Arrow ((&&&))
-import           Control.Monad (unless)
+import           Control.Monad (guard, unless)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
 import           Data.Bits (xor)
 import           Data.Functor.Identity (Identity(runIdentity))
 import qualified Data.HashMap.Strict as HM
+import qualified Data.HashSet as HS
 import           Data.Maybe (catMaybes, maybeToList)
 import           Data.Proxy (Proxy(Proxy))
 import           Data.Semigroup (Semigroup((<>)))
 import qualified Data.Text as T
+import qualified Data.Vector as V
 
 import Monoid
 import Field
@@ -60,12 +71,13 @@ data Catalog = Catalog
   , catalogOrder :: !T.Text -- ^display order in catalog list
   , catalogTitle :: !T.Text
   , catalogDescr :: Maybe T.Text
+  , catalogHtml :: Maybe T.Text
   , catalogStore :: !CatalogStore
   , catalogFieldGroups :: FieldGroups
   , catalogFields :: Fields
   , catalogFieldMap :: HM.HashMap T.Text Field
   , catalogKey :: Maybe T.Text -- ^primary key (not really used)
-  , catalogSort :: Maybe T.Text -- ^sort field for index
+  , catalogSort :: [T.Text] -- ^sort field(s) for index
   , catalogCount :: Maybe Word
   }
 
@@ -75,8 +87,13 @@ parseCatalog dict = J.withObject "catalog" $ \c -> do
   catalogFieldGroups <- parseJSONField "fields" (J.withArray "fields" $ mapM (parseFieldGroup dict)) c
   catalogTitle <- c J..: "title"
   catalogDescr <- c J..:? "descr"
+  catalogHtml <- c J..:? "html"
   catalogKey <- c J..:? "key"
-  catalogSort <- c J..:? "sort"
+  catalogSort <- case HM.lookup "sort" c of
+    Nothing -> return []
+    Just J.Null -> return []
+    Just (J.String s) -> return [s]
+    Just s -> J.parseJSON s
   catalogCount <- c J..:? "count"
   catalogStore <- CatalogES
       <$> (c J..: "index")
@@ -99,7 +116,9 @@ instance J.ToJSON Catalog where
     , "fields" J..= catalogFields
     ] ++ concatMap maybeToList
     [ ("count" J..=) <$> catalogCount
-    , ("sort" J..=) <$> catalogSort
+    , case catalogSort of
+      [] -> Nothing
+      s -> Just $ "sort" J..= s
     ]
 
 takeCatalogField :: T.Text -> Catalog -> Maybe (Field, Catalog)
@@ -109,30 +128,136 @@ takeCatalogField n c = (, c
   , catalogFieldGroups = deleteField n               $ catalogFieldGroups c
   }) <$> HM.lookup n (catalogFieldMap c) where
 
+data Grouping
+  = GroupCatalog !T.Text
+  | Grouping
+    { groupName :: !T.Text
+    , groupTitle :: !T.Text
+    , groupHtml :: Maybe T.Text
+    , groupings :: Groupings
+    }
+  deriving (Show)
+
+groupingName :: Grouping -> T.Text
+groupingName (GroupCatalog n) = n
+groupingName Grouping{ groupName = n } = n
+
+groupingCatalog :: Catalogs -> Grouping -> Maybe Catalog
+groupingCatalog cats (GroupCatalog c) = HM.lookup c $ catalogMap cats
+groupingCatalog _ _ = Nothing
+
+data Groupings = Groupings
+  { groupList :: V.Vector Grouping
+  , groupMap :: HM.HashMap T.Text Grouping
+  } deriving (Show)
+
+instance J.FromJSON Grouping where
+  parseJSON (J.String c) = return $ GroupCatalog c
+  parseJSON j = J.withObject "group" (\g -> do
+    groupName <- g J..: "name"
+    groupTitle <- g J..: "title"
+    groupHtml <- g J..:? "html"
+    groupings <- g J..: "children"
+    return Grouping{..}) j
+
+grouping :: V.Vector Grouping -> Groupings
+grouping l = Groupings l $ HM.fromList $ map (groupingName &&& id) $ V.toList l
+
+instance J.FromJSON Groupings where
+  parseJSON j = grouping <$> J.parseJSON j
+
+instance Semigroup Groupings where
+  a <> b = Groupings
+    { groupList = groupList a <> groupList b
+    , groupMap = groupMap a <> groupMap b
+    }
+
+instance Monoid Groupings where
+  mempty = Groupings mempty mempty
+  mappend = (<>)
+
+lookupGrouping :: [T.Text] -> Grouping -> Maybe Grouping
+lookupGrouping [] g = Just g
+lookupGrouping (h:l) Grouping{ groupings = Groupings{ groupMap = m } } =
+  lookupGrouping l =<< HM.lookup h m
+lookupGrouping _ _ = Nothing
+
+groupingCatalogs :: Grouping -> HS.HashSet T.Text
+groupingCatalogs (GroupCatalog t) = HS.singleton t
+groupingCatalogs Grouping{ groupings = g } = groupingsCatalogs g
+
+groupingsCatalogs :: Groupings -> HS.HashSet T.Text
+groupingsCatalogs Groupings{ groupList = v } = foldMap groupingCatalogs v
+
 data Catalogs = Catalogs
   { catalogDict :: [Field]
   , catalogMap :: !(HM.HashMap T.Text Catalog)
+  , catalogGroupings :: Groupings
   }
+
+pruneCatalogs :: HM.HashMap T.Text a -> Catalogs -> Catalogs
+pruneCatalogs errs cats = cats
+  { catalogMap = cm
+  , catalogGroupings = pgs $ catalogGroupings cats
+  }
+  where
+  cm = HM.filter catalogEnabled $ catalogMap cats `HM.difference` errs
+  pg g@(GroupCatalog c) = g <$ guard (HM.member c cm)
+  pg g = g{ groupings = g' } <$ guard (not $ V.null $ groupList g')
+    where g' = pgs $ groupings g
+  pgs g = grouping $ V.mapMaybe pg $ groupList g
+
+-- |Virtual top-level grouping
+catalogGrouping :: Catalogs -> Grouping
+catalogGrouping Catalogs{ catalogGroupings = g } = Grouping "collections" "Collections" Nothing g
+
+groupedCatalogs :: [T.Text] -> Catalogs -> Maybe Catalogs
+groupedCatalogs [] c = Just c
+groupedCatalogs p c = do
+  g <- lookupGrouping p (catalogGrouping c)
+  return c{ catalogMap = HM.intersection (catalogMap c) $ HS.toMap $ groupingCatalogs g }
 
 instance Semigroup Catalogs where
   a <> b = Catalogs
     { catalogDict = catalogDict a <> catalogDict b
     , catalogMap  = catalogMap  a <> catalogMap  b
+    , catalogGroupings = catalogGroupings a <> catalogGroupings b
     }
 
 instance Monoid Catalogs where
-  mempty = Catalogs mempty mempty
+  mempty = Catalogs mempty mempty mempty
   mappend = (<>)
 
 instance J.FromJSON Catalogs where
   parseJSON = J.withObject "top" $ \o -> do
     dict <- o J..:? "dict" J..!= mempty
-    cats <- mapM (parseCatalog $ expandAllFields dict) (HM.delete "dict" o)
-    return $ Catalogs (expandFields dict) cats
+    groups <- o J..:? "group" J..!= mempty
+    cats <- mapM (parseCatalog $ expandAllFields dict) (HM.delete "dict" $ HM.delete "group" o)
+    mapM_ (\c -> unless (HM.member c cats) $ fail $ "Group catalog " ++ show c ++ " not found") $ groupingsCatalogs groups
+    return $ Catalogs (expandFields dict) cats groups
 
 data Filter a
   = FilterEQ !a
   | FilterRange{ filterLB, filterUB :: Maybe a }
+
+-- |Intersection
+instance Ord a => Semigroup (Filter a) where
+  FilterEQ a <> FilterEQ b = case compare a b of
+    EQ -> FilterEQ a
+    LT -> FilterRange (Just b) (Just a)
+    GT -> FilterRange (Just a) (Just b)
+  FilterEQ a <> FilterRange l u
+    | all (a <) l = FilterRange l (Just a)
+    | all (a >) u = FilterRange (Just a) u
+    | otherwise = FilterEQ a
+  FilterRange la ua <> FilterRange lb ub =
+    FilterRange (max la lb) (min ua ub)
+  r <> e = e <> r
+
+-- |'mempty' is unbounded
+instance Ord a => Monoid (Filter a) where
+  mempty = FilterRange Nothing Nothing
+  mappend = (<>)
 
 instance J.ToJSON1 Filter where
   liftToJSON f _ (FilterEQ x) = f x
@@ -154,6 +279,20 @@ liftFilterValue f (FilterRange Nothing (Just u)) =
 liftFilterValue f (FilterRange Nothing Nothing) =
   f{ fieldSub = Proxy, fieldType = fmapTypeValue (\Proxy -> FilterRange Nothing Nothing) (fieldType f) }
 
+data QueryAgg
+  = QueryStats
+    { queryAggField :: Field
+    }
+  | QueryPercentiles
+    { queryAggField :: Field
+    , queryPercentiles :: [Float]
+    }
+  | QueryHist
+    { queryAggField :: Field
+    , queryHistSize :: Word
+    , queryHistAggs :: [QueryAgg]
+    }
+
 data Query = Query
   { queryOffset :: Word
   , queryLimit :: Word
@@ -162,8 +301,7 @@ data Query = Query
   , queryFilter :: [(FieldSub Filter Proxy)]
   , querySample :: Double
   , querySeed :: Maybe Word
-  , queryAggs :: [Field]
-  , queryHist :: [(Field, Word)]
+  , queryAggs :: [QueryAgg]
   }
 
 instance Monoid Query where
@@ -176,7 +314,6 @@ instance Monoid Query where
     , querySample = 1
     , querySeed   = Nothing
     , queryAggs   = []
-    , queryHist   = []
     }
   mappend = (<>)
 
@@ -190,7 +327,6 @@ instance Semigroup Query where
     , querySample = querySample q1 *     querySample q2
     , querySeed   = joinMaybeWith xor (querySeed q1) (querySeed q2)
     , queryAggs   = queryAggs   q1 <>    queryAggs   q2
-    , queryHist   = queryHist   q1 <>    queryHist q2
     }
 
 instance J.ToJSON Query where
@@ -208,6 +344,5 @@ instance J.ToJSON Query where
       ] | f <- queryFilter ]
     , "seed"   J..= querySeed
     , "sample" J..= querySample
-    , "aggs"   J..= map fieldName queryAggs
-    , "hist"   J..= (fieldName . fst <$> queryHist)
+    , "aggs"   J..= map (fieldName . queryAggField) queryAggs
     ]

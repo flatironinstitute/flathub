@@ -36,7 +36,7 @@ import           Data.IORef (newIORef, readIORef, writeIORef)
 import           Data.List (find)
 import           Data.Maybe (mapMaybe)
 import           Data.Monoid ((<>))
-import           Data.Proxy (Proxy(Proxy))
+import           Data.Proxy (Proxy)
 import           Data.String (IsString)
 import qualified Data.Text as T
 import qualified Data.Vector as V
@@ -94,8 +94,13 @@ elasticSearch meth url query body = do
         , HTTP.requestBody = bodyRequest body
         }
   liftIO $ do
-    -- print $ HTTP.path req'
-    -- print $ JE.encodingToLazyByteString <$> body
+    {-
+    print $ HTTP.path req'
+    case bodyRequest body of
+      HTTP.RequestBodyBS b -> print b
+      HTTP.RequestBodyLBS b -> print b
+      _ -> return ()
+    -}
     r <- either fail return . (J.parseEither J.parseJSON <=< AP.eitherResult)
       =<< HTTP.withResponse req' (globalHTTP glob) parse
     -- print r
@@ -114,10 +119,12 @@ defaultSettings cat = HM.fromList
     , "number_of_replicas" J..= J.Number 1
     , "refresh_interval" J..= J.Number (-1)
     , "max_docvalue_fields_search" J..= (8 + length (catalogFields cat))
-    ] ++ foldMap (\s ->
-    [ "sort.field" J..= J.String s
-    , "sort.order" J..= J.String "asc"
-    ]) (catalogSort cat))
+    ] ++ case catalogSort cat of
+      [] -> []
+      s ->
+        [ "sort.field" J..= map J.String s
+        , "sort.order" J..= map (const $ J.String "asc") s
+        ])
   ] where
   -- elastic search cluster size to optimize for (should really be determined dynamicaly)
   clusterSize = 4
@@ -170,16 +177,7 @@ scrollTime = "60s"
 
 queryIndexScroll :: Bool -> Catalog -> Query -> M J.Value
 queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreField = store } } Query{..} = do
-  hists <- mapMaybe histsize . (histbnds ++) <$> if null histunks then return [] else
-    fold . J.parseMaybe fillhistbnd <$> elasticSearch GET
-      (catalogURL cat ++ ["_search"]) []
-      (JE.pairs $
-        "size" J..= J.Number 0
-      <> "query" .=* filts
-      <> "aggs" .=* foldMap (\(f, _) -> 
-           ("0" <> fieldName f) .=* ("min" .=* field f)
-        <> ("1" <> fieldName f) .=* ("max" .=* field f))
-        histunks)
+  hists <- gethists
   amend hists <$> elasticSearch GET
     (catalogURL cat ++ ["_search"])
     (mwhen scroll $ [("scroll", Just scrollTime)])
@@ -198,57 +196,77 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreFiel
         <> "min_score" J..= (1 - querySample)))
       else id) filts
     <> "track_total_hits" J..= J.Bool True
-    <> "aggs" .=*
-      (foldMap
-        (\f -> fieldName f .=* ((if isTermsField f then "terms" else "stats") .=* field f))
-        queryAggs
-      <> histogram hists))
+    <> aggs hists queryAggs)
   where
-  amend :: [FieldValue] -> J.Value -> J.Value
-  amend h@(_:_) (J.Object o) = J.Object $ HM.insert "histsize" (J.toJSON $ map fieldType h) o
+  -- find all histogram fields and divide them into those with range queries and those without
+  -- if a field appears in multiple histograms, we use the same (arbitrary) size for all
+  -- this could be easily fixed, but would require more complex histsize results
+  (histunks, histbnds) = partitionEithers $ map (\h@(f, n) ->
+      maybe (Left h) (Right . (, n)) $
+        find (\q -> fieldName f == fieldName q && unTypeValue isbnd (fieldType q)) queryFilter)
+    $ foldMap histFields queryAggs
+  isbnd (FilterRange (Just _) (Just _)) = True
+  isbnd _ = False
+  histFields (QueryHist f n l) = (f, n) : foldMap histFields l
+  histFields _ = []
+
+  -- pre-query ranges of histogram fields without bounds if necesary
+  gethists = HM.fromList . mapMaybe histsize . (histbnds ++) <$> if null histunks then return [] else
+    fold . J.parseMaybe fillhistbnd <$> elasticSearch GET
+      (catalogURL cat ++ ["_search"]) []
+      (JE.pairs $
+        "size" J..= J.Number 0
+      <> "query" .=* filts
+      <> "aggs" .=* foldMap (\(f, _) ->
+           ("0" <> fieldName f) .=* ("min" .=* field f)
+        <> ("1" <> fieldName f) .=* ("max" .=* field f))
+        histunks)
+  -- resolve bounds in pre-query result
+  fillhistbnd j = do
+    jaggs <- j J..: "aggregations"
+    forM histunks $ \(f, n) -> do
+      let val a = traverseTypeValue (maybe (fail "bnd value") return) . parseTypeJSONValue (fieldType f)
+            =<< (J..: "value") =<< jaggs J..: a
+      lb <- val ("0" <> fieldName f)
+      ub <- val ("1" <> fieldName f)
+      return (liftFilterValue f $ FilterRange (Just lb) (Just ub), n)
+  -- calculate bucket size from range and count
+  histsize :: (FieldSub Filter Proxy, Word) -> Maybe (T.Text, Value)
+  histsize (f, n) = case fieldType f of
+    Double    (FilterRange (Just l) (Just u)) -> r Double    $ (u - l) / realToFrac n
+    Float     (FilterRange (Just l) (Just u)) -> r Float     $ (u - l) / realToFrac n
+    HalfFloat (FilterRange (Just l) (Just u)) -> r HalfFloat $ (u - l) / realToFrac n
+    Long      (FilterRange (Just l) (Just u)) -> r Long      $ (u - l + n' - 1) `div` n' where n' = fromIntegral n
+    Integer   (FilterRange (Just l) (Just u)) -> r Integer   $ (u - l + n' - 1) `div` n' where n' = fromIntegral n
+    Short     (FilterRange (Just l) (Just u)) -> r Short     $ (u - l + n' - 1) `div` n' where n' = fromIntegral n
+    Byte      (FilterRange (Just l) (Just u)) -> r Byte      $ (u - l + n' - 1) `div` n' where n' = fromIntegral n
+    _ -> fail "invalid hist"
+    where
+    r c s = Just (fieldName f, c $ Identity $ if s > 0 then s else 1)
+
+  -- add hist field sizes (widths) to final result
+  amend :: HM.HashMap T.Text Value -> J.Value -> J.Value
+  amend h (J.Object o) | not (HM.null h) = J.Object $ HM.insert "histsize" (J.toJSON h) o
   amend _ j = j
+
   filts = "bool" .=* ("filter" `JE.pair` JE.list (\f -> JE.pairs $ unTypeValue (term f) $ fieldType f) queryFilter)
   term f (FilterEQ v) = "term" .=* (fieldName f J..= v)
   term f (FilterRange l u) = "range" .=* (fieldName f .=* (bound "gte" l <> bound "lte" u)) where
     bound t = foldMap (t J..=)
-  histogram :: [FieldValue] -> J.Series
-  histogram [] = mempty
-  histogram (f:hl) = "hist" .=* (
-    "histogram" .=* (field f
-      <> "interval" J..= fieldType f
-      <> "min_doc_count" J..= J.Number 1)
-    <> histogram' hl)
-  histogram' [] = mempty
-  histogram' hl = "aggs" .=* histogram hl
-  histsize :: (FieldSub Filter Proxy, Word) -> Maybe FieldValue
-  histsize (f, n) = f' <$> case fieldType f of
-    Double    (FilterRange (Just l) (Just u)) -> return $ Double    $ checksize $ (u - l) / realToFrac n
-    Float     (FilterRange (Just l) (Just u)) -> return $ Float     $ checksize $ (u - l) / realToFrac n
-    HalfFloat (FilterRange (Just l) (Just u)) -> return $ HalfFloat $ checksize $ (u - l) / realToFrac n
-    Long      (FilterRange (Just l) (Just u)) -> return $ Long      $ checksize $ (u - l + n' - 1) `div` n' where n' = fromIntegral n
-    Integer   (FilterRange (Just l) (Just u)) -> return $ Integer   $ checksize $ (u - l + n' - 1) `div` n' where n' = fromIntegral n
-    Short     (FilterRange (Just l) (Just u)) -> return $ Short     $ checksize $ (u - l + n' - 1) `div` n' where n' = fromIntegral n
-    Byte      (FilterRange (Just l) (Just u)) -> return $ Byte      $ checksize $ (u - l + n' - 1) `div` n' where n' = fromIntegral n
-    _ -> fail "invalid hist"
-    where
-    f' s = f{ fieldSub = Proxy, fieldType = s }
-  checksize z
-    | z <= 0 = Identity 1
-    | otherwise = Identity z
-  fillhistbnd j = do
-    aggs <- j J..: "aggregations"
-    forM histunks $ \(f, n) -> do
-      let val a = traverseTypeValue (maybe (fail "bnd value") return) . parseTypeJSONValue (fieldType f)
-            =<< (J..: "value") =<< aggs J..: a
-      lb <- val ("0" <> fieldName f)
-      ub <- val ("1" <> fieldName f)
-      return (liftFilterValue f $ FilterRange (Just lb) (Just ub), n)
-  histunks :: [(Field, Word)]
-  (histunks, histbnds) = partitionEithers $ map (\h@(f, n) -> 
-      maybe (Left h) (Right . (, n)) $ find (\q -> fieldName f == fieldName q && unTypeValue isbnd (fieldType q)) queryFilter)
-    queryHist
-  isbnd (FilterRange (Just _) (Just _)) = True
-  isbnd _ = False
+  agg :: HM.HashMap T.Text Value -> QueryAgg -> J.Series
+  agg _ (QueryStats f) = fieldName f .=* ((if isTermsField f then "terms" else "stats") .=* field f)
+  agg _ (QueryPercentiles f p) = "pct" .=* ("percentiles" .=* (field f <> "percents" J..= p))
+  agg h (QueryHist f _ a)
+    | Just v <- HM.lookup (fieldName f) h =
+    "hist" .=* (
+      "histogram" .=* (field f
+        <> "interval" J..= v
+        <> "min_doc_count" J..= J.Number 1)
+      <> aggs h a)
+    | otherwise = mempty
+  aggs _ [] = mempty
+  aggs h a = "aggs" .=* foldMap (agg h) a
+
   field = ("field" J..=) . fieldName
 
 queryIndex :: Catalog -> Query -> M J.Value
@@ -298,9 +316,10 @@ createBulk cat@Catalog{ catalogStore = ~CatalogES{} } docs = do
     <> nl <> J.fromEncoding (J.pairs d) <> nl
   nl = B.char7 '\n'
 
-flushIndex :: Catalog -> M J.Value
-flushIndex Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } =
-  elasticSearch POST ([T.unpack idxn, "_flush"]) [] EmptyJSON
+flushIndex :: Catalog -> M (J.Value, J.Value)
+flushIndex Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } = (,)
+  <$> elasticSearch POST ([T.unpack idxn, "_refresh"]) [] EmptyJSON
+  <*> elasticSearch POST ([T.unpack idxn, "_flush"]) [] EmptyJSON
 
 newtype ESCount = ESCount{ esCount :: Word } deriving (Show)
 instance J.FromJSON ESCount where
