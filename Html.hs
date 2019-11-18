@@ -268,10 +268,8 @@ catalogPage = getPath R.parameter $ \sim req -> do
                     when (x == 'y') $
                       H.button H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick ("return histogramShow('c')") $
                         "Conditional distribution"
-              H.div H.! HA.class_ "left-column-header-group" H.! HA.id "info" $ mempty
               H.div H.! HA.class_ "alert alert-danger" H.! HA.id "error" $ mempty
               H.div H.! HA.id "hist" $ mempty
-              -- H.h6  H.! HA.id "info" H.! HA.class_ "right-column-heading" $ mempty
 
             H.div H.! HA.class_ "col col-sm-12 col-md-4 right-column" $ do
               H.ul H.! HA.class_ "nav nav-tabs" H.! HA.id "myTab" H.! HA.role "tablist" $ do
@@ -362,19 +360,18 @@ catalogPage = getPath R.parameter $ \sim req -> do
                     mapM_ (H.p . H.preEscapedText) $ catalogDescr cat
 
         H.div H.! HA.class_ "container-fluid catalog-summary" $ do
-          H.h5 $ "Summary"
-          H.p H.! HA.id "count" $ mempty
-          H.div H.! HA.class_ "container" $ do
-            H.div H.! HA.class_ "row" $ do
-              H.div H.! HA.class_ "col-md-12  " $ do
-                H.div H.! HA.class_ "d-flex justify-content-between" $ do
-                  H.p H.! HA.class_ "download" H.! HA.id "download" $ "Download as:"
-                  H.button
-                    H.! HA.type_ "button"
-                    H.! HA.class_ "btn btn-warning"
-                    H.! HA.id "rawdata-btn"
-                    H.! HA.onclick "return toggleShowData()"
-                    $ "Hide Raw Data"
+          -- H.p H.! HA.id "count" $ mempty
+          H.div H.! HA.class_ "d-flex justify-content-between" $ do
+            H.div H.! HA.class_ "d-flex" $ do
+              H.button
+                H.! HA.type_ "button"
+                H.! HA.class_ "btn btn-warning"
+                H.! HA.id "rawdata-btn"
+                H.! HA.onclick "return toggleShowData()"
+                $ "Hide Raw Data"
+              H.p H.! HA.class_ "download" H.! HA.id  "info" $ mempty
+            H.p H.! HA.class_ "download" H.! HA.id "download" $ "Download as:"
+
         H.div H.! HA.class_ "container-fluid catalog-summary raw-data" H.! HA.id "rawdata" $ do
           H.h5 $ "Raw Data"
           H.table H.! HA.id "tcat" $ do

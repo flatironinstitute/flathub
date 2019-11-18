@@ -664,9 +664,25 @@ div#hist,
 
 .download {
   text-transform: uppercase;
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   letter-spacing: 0.2rem;
   font-weight: 600;
+  margin-bottom: 0;
+}
+
+@media (min-width: 1440px) {
+  .download {
+    font-size: 1.5rem;
+  }
+}
+
+.d-flex {
+  justify-content: center;
+  align-items: baseline;
+}
+
+.d-flex > p {
+  margin-left: 1rem;
 }
 
 .filter-row,
@@ -687,21 +703,30 @@ div#hist,
   padding: 0.75rem;
 }
 
-.alert-horz > div:not(:first-child) {
+.alert-horz > div:not(:first-child),
+.alert-info > div:not(:first-child) {
   margin-left: 4rem;
   margin-top: 1rem;
 }
 
-/* Bigger than 1000 */
-
 @media (min-width: 1880px) {
-  .alert-horz > div:not(:first-child) {
+  .alert-horz > div:not(:first-child),
+  .alert-info > div:not(:first-child) {
     margin-left: 0;
+    margin-top: 0;
   }
 }
 
-.alert-horz > div > span > input {
-  margin-bottom: 0;
+.alert-horz > div > span > input,
+.alert-info > div > span > input {
+  margin-bottom: 0rem;
+}
+
+@media (min-width: 1000px) {
+  .alert-horz > div > span > input,
+  .alert-info > div > span > input {
+    margin-bottom: 1rem;
+  }
 }
 
 /* Footer
@@ -923,6 +948,7 @@ input[type="button"] {
   border: 1px solid #bbb;
   cursor: pointer;
   box-sizing: border-box;
+  margin-bottom: 0 !important;
 }
 
 .button:hover,
@@ -1276,11 +1302,6 @@ span.units::before {
 
 span.units::after {
   content: "]";
-}
-
-div#download {
-  float: right;
-  text-align: right;
 }
 
 .show_button {
