@@ -363,7 +363,7 @@ div#hist,
 }
 
 .main-page {
-  text-align: center;
+  align-items: center;
 }
 
 /* Breadcrumbs
