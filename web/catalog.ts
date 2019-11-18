@@ -319,13 +319,18 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
       );
       modal.classList.add("hidden");
       Update = false;
-      $('#error').hide();
+      $("#error").hide();
       Catalog.count = Math.max(Catalog.count || 0, res.hits.total);
       const settings = (<any>TCat.settings())[0];
       settings.oLanguage.sInfo =
         "Showing _START_ to _END_ of " +
         settings.fnFormatNumber(res.hits.total);
-      $('#info').text(settings.fnFormatNumber(res.hits.total) + " results (filtered from " + settings.fnFormatNumber(Catalog.count) + ")")
+      $("#info").text(
+        settings.fnFormatNumber(res.hits.total) +
+          " Results (Filtered from " +
+          settings.fnFormatNumber(Catalog.count) +
+          ")"
+      );
       callback({
         draw: data.draw,
         recordsTotal: Catalog.count,
@@ -356,7 +361,9 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
       );
       modal.classList.add("hidden");
       Update = false;
-      $('#error').text(msg + ": " + err).show();
+      $("#error")
+        .text(msg + ": " + err)
+        .show();
       callback({
         draw: data.draw,
         data: [],
@@ -385,7 +392,7 @@ function add_filt_row(
   } else if (isTop) {
     tr.classList.add("alert-info");
   } else {
-    tr.classList.add("alert-warning");
+    tr.classList.add("alert-warning", "alert-horz");
   }
   if (tab.lastChild) $(tr).insertBefore(<HTMLDivElement>tab.lastChild);
   else $(tr).appendTo(tab);
@@ -690,8 +697,7 @@ function toggleShowData(show?: boolean) {
   Show_data = show === undefined ? !Show_data : show;
   $("#rawdata-btn").text(Show_data ? "Hide Raw Data" : "View Raw Data");
   $("#rawdata").toggle(Show_data);
-  if (Show_data)
-    update(true);
+  if (Show_data) update(true);
 }
 (<any>window).toggleShowData = toggleShowData;
 

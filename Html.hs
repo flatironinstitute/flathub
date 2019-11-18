@@ -242,7 +242,6 @@ catalogPage = getPath R.parameter $ \sim req -> do
           H.div H.! HA.class_ "row" $ do
             H.div H.! HA.class_ "col" $ do
               H.h5 $ H.text $ catalogTitle cat
-              mapM_ (H.p . H.preEscapedText) $ catalogDescr cat
 
       H.div H.! HA.class_ "catalog-tool-container " $ do
         H.div H.! HA.class_ "container-fluid catalog-tool" $ do
@@ -269,13 +268,14 @@ catalogPage = getPath R.parameter $ \sim req -> do
                     when (x == 'y') $
                       H.button H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick ("return histogramShow('c')") $
                         "Conditional distribution"
-              H.div H.! HA.id "info" $ mempty
-              H.div H.! HA.id "error" $ mempty
+              H.div H.! HA.class_ "left-column-header-group" H.! HA.id "info" $ mempty
+              H.div H.! HA.class_ "alert alert-danger" H.! HA.id "error" $ mempty
               H.div H.! HA.id "hist" $ mempty
+              -- H.h6  H.! HA.id "info" H.! HA.class_ "right-column-heading" $ mempty
 
             H.div H.! HA.class_ "col col-sm-12 col-md-4 right-column" $ do
               H.ul H.! HA.class_ "nav nav-tabs" H.! HA.id "myTab" H.! HA.role "tablist" $ do
-                forM_ ["Filter", "Python", "Fields"] $ \t -> do
+                forM_ ["Filter", "Python", "Fields", "About"] $ \t -> do
                   H.li H.! HA.class_ "nav-item" $ do
                     H.a
                       H.! HA.class_ ("nav-link" <> if t == "Filter" then " active" else mempty)
@@ -336,7 +336,6 @@ catalogPage = getPath R.parameter $ \sim req -> do
                       "."
                     H.div H.! HA.id "div-py" H.! HA.class_ "python-block" $
                       H.pre H.! HA.id "code-py" $ mempty
-
                 H.div
                   H.! HA.class_ "tab-pane fade"
                   H.! HA.id "Fields"
@@ -353,6 +352,14 @@ catalogPage = getPath R.parameter $ \sim req -> do
                           H.th $ "Description"
                       H.tbody $ forM_ (catalogFieldGroups cat) $ \f -> do
                           fielddesc f f 0
+                H.div
+                  H.! HA.class_ "tab-pane fade"
+                  H.! HA.id "About"
+                  H.! HA.role "tabpanel"
+                  H.! H.customAttribute "aria-labelledby" "about-tab" $ do
+                  H.div H.! HA.class_ "right-column-group" $ do
+                    H.h6 H.! HA.class_ "right-column-heading" $ "About Catalog"
+                    mapM_ (H.p . H.preEscapedText) $ catalogDescr cat
 
         H.div H.! HA.class_ "container-fluid catalog-summary" $ do
           H.h5 $ "Summary"

@@ -684,6 +684,24 @@ div#hist,
 .alert {
   font-size: 1.2rem;
   line-height: 1.5;
+  padding: 0.75rem;
+}
+
+.alert-horz > div:not(:first-child) {
+  margin-left: 4rem;
+  margin-top: 1rem;
+}
+
+/* Bigger than 1000 */
+
+@media (min-width: 1880px) {
+  .alert-horz > div:not(:first-child) {
+    margin-left: 0;
+  }
+}
+
+.alert-horz > div > span > input {
+  margin-bottom: 0;
 }
 
 /* Footer
@@ -971,6 +989,7 @@ input[type="button"].button-remove {
   font-size: 1.8rem;
   line-height: 1.8rem;
   padding: 0 5px;
+  height: auto;
 }
 
 .button.button-remove:hover,
@@ -1237,6 +1256,7 @@ input.colvis {
 
 .nav-link {
   font-family: "Lexend Zetta", sans-serif;
+  font-size: 1.4rem;
 }
 
 /* bits */
@@ -1285,8 +1305,8 @@ div#download {
   font-weight: normal;
   font-size: small;
   z-index: 1;
-  border: solid;
-  border-width: 1px;
+  border: 1px solid var(--cooler-gray);
+  min-width: 150px;
 }
 
 .tooltip-dt:hover .tooltiptext {
@@ -1421,8 +1441,8 @@ table#tcat td {
 }
 
 .form-badge {
-  margin-top: 1rem;
-  margin-bottom: 1rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
 }
 
 .form-badge input {
