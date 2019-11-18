@@ -143,8 +143,8 @@ export function render_funct(field: Field): (data: any) => string {
   return data => data;
 }
 
-export function toggle_log(chart: Highcharts.ChartObject) {
-  const axis = <Highcharts.AxisObject>chart.get("tog");
+export function toggle_log(chart: Highcharts.Chart) {
+  const axis = <Highcharts.Axis>chart.get("tog");
   if ((<any>axis).userOptions.type !== "linear") {
     axis.update({
       min: 0,
@@ -176,7 +176,7 @@ export function histogram_options(f: Field): Highcharts.Options {
       enabled: false
     },
     title: {
-      text: null
+      text: undefined
     },
     credits: {
       enabled: false
@@ -194,7 +194,7 @@ export function histogram_options(f: Field): Highcharts.Options {
     },
     tooltip: {
       animation: false,
-      formatter: function(this: Highcharts.PointObject): string {
+      formatter: function(this: Highcharts.TooltipFormatterContextObject): string {
         return (
           "[" +
           render(this.x) +
@@ -202,7 +202,7 @@ export function histogram_options(f: Field): Highcharts.Options {
           render(
             this.x +
               <number>(
-                (<Highcharts.ColumnChartSeriesOptions>this.series.options)
+                (<Highcharts.SeriesColumnOptions>this.series.options)
                   .pointInterval
               )
           ) +

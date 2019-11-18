@@ -4,7 +4,7 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "postinstall": "sed -i 's/\\r$//' node_modules/.bin/jspm ; ln -s ../popper.js node_modules/@types ; jspm install",
+    "postinstall": "sed -i 's/\\r$//' node_modules/.bin/jspm ; ln -s ../{popper.js,highcharts} node_modules/@types ; jspm install",
     "compile": "tsc",
     "build": "jspm build --minify main.ts index.js"
   },
@@ -15,12 +15,12 @@
   },
   "devDependencies": {
     "@types/bootstrap": "^4.3.1",
-    "@types/datatables.net": "^1.10.17",
-    "@types/highcharts": "^5.0.44",
+    "@types/datatables.net": "^1.10.18",
     "@types/jquery": "^3.3.31",
-    "@types/systemjs": "^0.20.6",
+    "@types/systemjs": "^0.20.7",
     "popper.js": "^1.16.0",
-    "typescript": "^3.6.0"
+    "highcharts": "^7.2.0",
+    "typescript": "^3.7.2"
   },
   "jspm": {
     "name": "astrosims",

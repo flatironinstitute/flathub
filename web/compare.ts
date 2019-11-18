@@ -19,7 +19,7 @@ const Aggs: Dict<Dict<Aggr>> = {};
 const Aggs_req: Dict<Dict<(a: Aggr) => void>> = {};
 
 var CompField: undefined|CField;
-var Histogram: Highcharts.ChartObject|undefined;
+var Histogram: Highcharts.Chart|undefined;
 
 var Aggs_timeout: number|undefined;
 function update_aggs() {
@@ -297,7 +297,7 @@ class Compare {
       if (r.hist && Histogram) {
         const wid = res.histsize[n]*scale;
         const data = (<AggrTerms<number>>r.hist).buckets.map(x => [x.key * scale, x.doc_count / res.hits.total] as [number, number]);
-        const opts = {
+        const opts = <Highcharts.SeriesColumnOptions>{
           id: this.unique,
           index: this.idx,
           type: 'column',
@@ -307,7 +307,7 @@ class Compare {
           pointRange: wid,
           color: Colors[this.idx]
         };
-        const series = <Highcharts.SeriesObject|undefined>Histogram.get(this.unique);
+        const series = <Highcharts.Series|undefined>Histogram.get(this.unique);
         if (series)
           series.update(opts);
         else
@@ -556,7 +556,7 @@ function histogramToggle() {
   $('#dhist').show();
   const opts = histogram_options(CompField.field);
   (<Highcharts.LegendOptions>opts.legend).enabled = true;
-  (<Highcharts.AxisTitle>(<Highcharts.AxisOptions>opts.yAxis).title).text = 'Fraction';
+  (<Highcharts.YAxisTitleOptions>(<Highcharts.AxisOptions>opts.yAxis).title).text = 'Fraction';
   Histogram = Highcharts.chart('hist', opts);
   update_comp();
 }

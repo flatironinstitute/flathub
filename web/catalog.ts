@@ -49,7 +49,7 @@ var Update_aggs: number = -1;
 var Histogram: undefined | NumericFilter;
 var Heatmap: undefined | Field;
 var Histcond: boolean = false;
-var Histogram_chart: Highcharts.ChartObject | undefined;
+var Histogram_chart: Highcharts.Chart | undefined;
 var Last_fields: string[] = [];
 var Last_query: undefined | Dict<string>;
 var Show_data: boolean = true;
@@ -138,7 +138,7 @@ function histogramDraw(
   if (heatmap && !cond) {
     (<Highcharts.ChartOptions>opts.chart).zoomType = "xy";
     (<Highcharts.ChartOptions>opts.chart).events = {
-      selection: function(event: Highcharts.ChartSelectionEvent) {
+      selection: function(event: Highcharts.ChartSelectionContextObject) {
         event.preventDefault();
         zoomRange(hist, xwid, event.xAxis[0]);
         const hm = add_filter(Fields_idx[heatmap.name]);
@@ -147,9 +147,7 @@ function histogramDraw(
       }
     };
     const rendery = render_funct(heatmap);
-    (<Highcharts.TooltipOptions>opts.tooltip).formatter = function(this: {
-      point: { x: number; y: number; value: number };
-    }): string {
+    (<Highcharts.TooltipOptions>opts.tooltip).formatter = function(this: Highcharts.TooltipFormatterContextObject): string {
       const p = this.point;
       return (
         "[" +
@@ -158,17 +156,17 @@ function histogramDraw(
         renderx(p.x + xwid) +
         ") & " +
         "[" +
-        rendery(p.y - ywid) +
+        rendery(<number>p.y - ywid) +
         "," +
-        rendery(p.y + ywid) +
+        rendery(<number>p.y + ywid) +
         "): " +
-        p.value
+        (<any>p).value
       );
     };
     (<Highcharts.ColorAxisOptions>opts.colorAxis).minColor = "#ffffff";
     (<Highcharts.LegendOptions>opts.legend).enabled = true;
     opts.series = [
-      <Highcharts.HeatMapSeriesOptions>{
+      <Highcharts.SeriesHeatmapOptions>{
         type: "heatmap",
         data: data,
         colsize: 2 * xwid,
@@ -178,7 +176,7 @@ function histogramDraw(
   } else {
     const wid = 2 * xwid;
     (<Highcharts.ChartOptions>opts.chart).events = {
-      selection: function(event: Highcharts.ChartSelectionEvent) {
+      selection: function(event: Highcharts.ChartSelectionContextObject) {
         event.preventDefault();
         zoomRange(hist, wid, event.xAxis[0]);
         return false; // Don't zoom
@@ -190,7 +188,7 @@ function histogramDraw(
     if (heatmap) {
       /* condmedian */
       (<Highcharts.TooltipOptions>opts.tooltip).formatter = function(
-        this: Highcharts.PointObject
+        this: Highcharts.TooltipFormatterContextObject
       ): string {
         return (
           "[" +
@@ -204,13 +202,13 @@ function histogramDraw(
       (<Highcharts.ColorAxisOptions>opts.colorAxis).minColor = "#bbbbbb";
       (<Highcharts.ColorAxisOptions>opts.colorAxis).max = cmax;
       opts.series = [
-        <Highcharts.BoxPlotChartSeriesOptions>{
+        <Highcharts.SeriesBoxplotOptions>{
           type: "boxplot",
           data: data,
           keys: ["x", "low", "q1", "median", "q3", "high", "c"],
           colorKey: "c"
         },
-        <Highcharts.LineChartSeriesOptions>{
+        <Highcharts.SeriesLineOptions>{
           type: "line",
           data: data,
           keys: ["x", "min", "q1", "y", "q3", "max", "c"],
@@ -220,7 +218,7 @@ function histogramDraw(
     } else {
       /* histogram */
       opts.series = [
-        <Highcharts.ColumnChartSeriesOptions>{
+        <Highcharts.SeriesColumnOptions>{
           showInLegend: true,
           type: "column",
           data: data,
