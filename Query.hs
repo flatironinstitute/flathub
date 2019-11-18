@@ -81,7 +81,7 @@ parseQuery cat req = fill $ foldl' parseQueryItem mempty $ Wai.queryString req w
   parseHist _ = fail "invalid hist"
   parseFilt f (spl delim -> Just (a, b)) = FilterRange <$> parseVal f a <*> parseVal f b
   parseFilt f a = FilterEQ <$> parseVal' f a
-  parseVal _ "" = Nothing
+  parseVal _ "" = return Nothing
   parseVal f v = Just <$> parseVal' f v
   parseVal' f = fmap fieldType . parseFieldValue f . TE.decodeUtf8
   eqAgg (QueryStats f) (QueryStats g) = fieldName f == fieldName g

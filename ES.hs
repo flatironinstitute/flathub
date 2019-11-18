@@ -94,8 +94,13 @@ elasticSearch meth url query body = do
         , HTTP.requestBody = bodyRequest body
         }
   liftIO $ do
-    -- print $ HTTP.path req'
-    -- print $ JE.encodingToLazyByteString <$> body
+    {-
+    print $ HTTP.path req'
+    case bodyRequest body of
+      HTTP.RequestBodyBS b -> print b
+      HTTP.RequestBodyLBS b -> print b
+      _ -> return ()
+    -}
     r <- either fail return . (J.parseEither J.parseJSON <=< AP.eitherResult)
       =<< HTTP.withResponse req' (globalHTTP glob) parse
     -- print r
@@ -237,7 +242,7 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreFiel
     Byte      (FilterRange (Just l) (Just u)) -> r Byte      $ (u - l + n' - 1) `div` n' where n' = fromIntegral n
     _ -> fail "invalid hist"
     where
-    r c s = Just (fieldName f, c $ Identity $ if s <= 0 then 1 else s)
+    r c s = Just (fieldName f, c $ Identity $ if s > 0 then s else 1)
 
   -- add hist field sizes (widths) to final result
   amend :: HM.HashMap T.Text Value -> J.Value -> J.Value

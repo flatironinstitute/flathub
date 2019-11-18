@@ -74,7 +74,6 @@ function histogramRemove() {
   Histogram_chart = undefined;
   Histogram = undefined;
   Heatmap = undefined;
-  $("#dhist").hide();
   $("#hist").empty();
 }
 
@@ -120,7 +119,11 @@ function histogramDraw(
           data.push([x.key + xwid, y.key + ywid, y.doc_count]);
     } else data.push([x.key, x.doc_count]);
   }
-  if (data.length <= 1) return histogramRemove();
+  if (data.length <= 1) {
+    histogramRemove();
+    $('#hist').text('No data for histogram');
+    return;
+  }
 
   const opts: Highcharts.Options = histogram_options(field);
   const renderx = render_funct(hist.field);
@@ -228,7 +231,6 @@ function histogramDraw(
       ];
     }
   }
-  $("#dhist").show();
   Histogram_chart = Highcharts.chart("hist", opts);
 }
 
@@ -335,14 +337,18 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
       for (let filt of aggs)
         filt.update_aggs((res.aggregations as Dict<Aggr>)[filt.name]);
       Update_aggs = Filters.length;
-      if (histogram && res.aggregations && res.aggregations.hist)
-        histogramDraw(
-          histogram,
-          heatmap,
-          histcond,
-          res.aggregations.hist as AggrTerms<number>,
-          res.histsize
-        );
+      if (histogram) {
+        if (res.aggregations && res.aggregations.hist)
+          histogramDraw(
+            histogram,
+            heatmap,
+            histcond,
+            res.aggregations.hist as AggrTerms<number>,
+            res.histsize
+          );
+        else
+          $('#hist').text('No data for histogram');
+      }
       delete query.aggs;
       delete query.hist;
       url_update(query);
@@ -551,7 +557,7 @@ class NumericFilter extends Filter {
     else this.lb.value = <any>aggs.min;
     if (this.ub.disabled) this.ub.disabled = false;
     else this.ub.value = <any>aggs.max;
-    this.avg.textContent = render_funct(this.field)(aggs.avg);
+    this.avg.textContent = aggs.avg == null ? 'no data' : render_funct(this.field)(aggs.avg);
   }
 
   change() {
@@ -559,9 +565,9 @@ class NumericFilter extends Filter {
   }
 
   query(): string {
-    const lbv = this.lbv;
-    const ubv = this.ubv;
-    if (lbv == ubv) return <any>lbv;
+    const lbv = isFinite(this.lbv) ? this.lbv.toString() : '';
+    const ubv = isFinite(this.ubv) ? this.ubv.toString() : '';
+    if (lbv == ubv) return lbv;
     else return lbv + " " + ubv;
   }
 
