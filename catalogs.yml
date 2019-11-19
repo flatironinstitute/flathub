@@ -405,13 +405,13 @@ illustris:
       type: float
       units: '\( 10^{10} M_\odot / h \)'
       descr: 'Sum of the BH_Mass field of all blackholes (type 5) in this group.'
-      ingest: Group/GroupBHMass
+      ingest: _optional:Group/GroupBHMass
     - name: BHMdot
       type: float
       title: '\(\dot{M}_{\rm BH}\)'
       units: '\((10^{10} M_\odot/h) / (0.978Gyr/h)\)'
       descr: 'Sum of the BH_Mdot field of all blackholes (type 5) in this group.'
-      ingest: Group/GroupBHMdot
+      ingest: _optional:Group/GroupBHMdot
     - name: CM
       type: float
       units: 'ckpc/h'
@@ -432,7 +432,7 @@ illustris:
     - name: GasMetallicity
       type: float
       descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of all gas cells in this FOF group.'
-      ingest: Group/GroupGasMetallicity
+      ingest: _optional:Group/GroupGasMetallicity
     - name: Len
       type: integer
       title: '\(N_{\rm part}\)'
@@ -498,11 +498,11 @@ illustris:
       units: '\( M_\odot / yr \)'
       descr: 'Sum of the individual star formation rates of all gas cells in this group.'
       dict: SFR
-      ingest: Group/GroupSFR
+      ingest: _optional:Group/GroupSFR
     - name: StarMetallicity
       type: float
       descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of all star particles in this FOF group.'
-      ingest: Group/GroupStarMetallicity
+      ingest: _optional:Group/GroupStarMetallicity
     - name: Vel
       type: float
       units: 'km/s/a'
@@ -519,7 +519,7 @@ illustris:
       type: float
       units: '\( 10^{10} M_\odot / h \)'
       descr: 'Sum of the individual masses of all wind phase gas cells (type 4, BirthTime <= 0) in this group.'
-      ingest: Group/GroupWindMass
+      ingest: _optional:Group/GroupWindMass
     - name: M_Crit200
       type: float
       units: '\( 10^{10} M_\odot / h \)'
@@ -589,7 +589,7 @@ illustris:
       - name: tracers
       - name: stars
       - name: bh
-      ingest: Offsets/Group_FuzzByType
+      ingest: _optional:Offsets/Group_FuzzByType
 tng:
   title: IllustrisTNG FoF Halos
   index: tng
@@ -893,12 +893,12 @@ illustris_sub:
       ingest: _illustris:Subhalo
 
     - name: BHMass
-      ingest: Subhalo/SubhaloBHMass
+      ingest: _optional:Subhalo/SubhaloBHMass
       type: float
       units: '\( 10^{10} M_\odot/h \)'
       descr: 'Sum of the masses of all blackholes in this subhalo.'
     - name: BHMdot
-      ingest: Subhalo/SubhaloBHMdot
+      ingest: _optional:Subhalo/SubhaloBHMdot
       type: float
       units: '\((10^{10} M_\odot/h) / (0.978Gyr/h)\)'
       descr: 'Sum of the instantaneous accretion rates \(\dot{M}\) of all blackholes in this subhalo.'
@@ -912,23 +912,23 @@ illustris_sub:
       - name: "y"
       - name: "z"
     - name: GasMetallicity
-      ingest: Subhalo/SubhaloGasMetallicity
+      ingest: _optional:Subhalo/SubhaloGasMetallicity
       type: float
       descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of the gas cells bound to this Subhalo, but restricted to cells within <b>twice</b> the stellar half mass radius.'
     - name: GasMetallicityHalfRad
-      ingest: Subhalo/SubhaloGasMetallicityHalfRad
+      ingest: _optional:Subhalo/SubhaloGasMetallicityHalfRad
       type: float
       descr: 'Same as SubhaloGasMetallicity, but restricted to cells within the stellar half mass radius.'
     - name: GasMetallicityMaxRad
-      ingest: Subhalo/SubhaloGasMetallicityMaxRad
+      ingest: _optional:Subhalo/SubhaloGasMetallicityMaxRad
       type: float
       descr: 'Same as SubhaloGasMetallicity, but restricted to cells within the radius of \(V_{max}\).'
     - name: GasMetallicitySfr
-      ingest: Subhalo/SubhaloGasMetallicitySfr
+      ingest: _optional:Subhalo/SubhaloGasMetallicitySfr
       type: float
       descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of the gas cells bound to this Subhalo, but restricted to cells which are star forming.'
     - name: GasMetallicitySfrWeighted
-      ingest: Subhalo/SubhaloGasMetallicitySfrWeighted
+      ingest: _optional:Subhalo/SubhaloGasMetallicitySfrWeighted
       type: float
       descr: 'Same as SubhaloGasMetallicitySfr, but weighted by the cell star-formation rate rather than the cell mass.'
     - name: GrNr
@@ -1059,22 +1059,22 @@ illustris_sub:
       - name: "y"
       - name: "z"
     - name: SFR
-      ingest: Subhalo/SubhaloSFR
+      ingest: _optional:Subhalo/SubhaloSFR
       type: float
       units: '\( M_\odot / yr \)'
       descr: 'Sum of the individual star formation rates of all gas cells in this subhalo.'
     - name: SFRinHalfRad
-      ingest: Subhalo/SubhaloSFRinHalfRad
+      ingest: _optional:Subhalo/SubhaloSFRinHalfRad
       type: float
       units: '\( M_\odot / yr \)'
       descr: 'Same as SubhaloSFR, but restricted to cells within the stellar half mass radius.'
     - name: SFRinMaxRad
-      ingest: Subhalo/SubhaloSFRinMaxRad
+      ingest: _optional:Subhalo/SubhaloSFRinMaxRad
       type: float
       units: '\( M_\odot / yr \)'
       descr: 'Same as SubhaloSFR, but restricted to cells within the radius of \(V_{max}\).'
     - name: SFRinRad
-      ingest: Subhalo/SubhaloSFRinRad
+      ingest: _optional:Subhalo/SubhaloSFRinRad
       type: float
       units: '\( M_\odot / yr \)'
       descr: 'Same as SubhaloSFR, but restricted to cells within <b>twice</b> the stellar half mass radius.'
@@ -1088,21 +1088,21 @@ illustris_sub:
       - name: "y"
       - name: "z"
     - name: StarMetallicity
-      ingest: Subhalo/SubhaloStarMetallicity
+      ingest: _optional:Subhalo/SubhaloStarMetallicity
       type: float
       units: '-'
       descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of the star particles bound to this Subhalo, but restricted to stars within <b>twice</b> the stellar half mass radius.'
     - name: StarMetallicityHalfRad
-      ingest: Subhalo/SubhaloStarMetallicityHalfRad
+      ingest: _optional:Subhalo/SubhaloStarMetallicityHalfRad
       type: float
       descr: 'Same as SubhaloStarMetallicity, but restricted to stars within the stellar half mass radius.'
     - name: StarMetallicityMaxRad
-      ingest: Subhalo/SubhaloStarMetallicityMaxRad
+      ingest: _optional:Subhalo/SubhaloStarMetallicityMaxRad
       type: float
       units: '-'
       descr: 'Same as SubhaloStarMetallicity, but restricted to stars within the radius of \(V_{max}\).'
     - name: StellarPhotometrics
-      ingest: Subhalo/SubhaloStellarPhotometrics
+      ingest: _optional:Subhalo/SubhaloStellarPhotometrics
       type: float
       units: 'mag'
       descr: 'Eight bands: U, B, V, K, g, r, i, z. Magnitudes based on the summed-up luminosities of all the stellar particles of the group. For details on the bands, see snapshot table for stars.'
@@ -1116,12 +1116,12 @@ illustris_sub:
       - name: i
       - name: z
     - name: StellarPhotometricsMassInRad
-      ingest: Subhalo/SubhaloStellarPhotometricsMassInRad
+      ingest: _optional:Subhalo/SubhaloStellarPhotometricsMassInRad
       type: float
       units: '\( 10^{10} M_\odot/h \)'
       descr: 'Sum of the mass of the member stellar particles, but restricted to stars within the radius SubhaloStellarPhotometricsRad.'
     - name: StellarPhotometricsRad
-      ingest: Subhalo/SubhaloStellarPhotometricsRad
+      ingest: _optional:Subhalo/SubhaloStellarPhotometricsRad
       type: float
       units: 'ckpc/h'
       descr: 'Radius at which the surface brightness profile (computed from all member stellar particles) drops below the limit of 20.7 mag arcsec\(^{-2}\) in the K band (in comoving units).'
@@ -1150,7 +1150,7 @@ illustris_sub:
       units: 'kpc/h'
       descr: 'Comoving radius of rotation curve maximum (where \(V_{max}\) is achieved).'
     - name: WindMass
-      ingest: Subhalo/SubhaloWindMass
+      ingest: _optional:Subhalo/SubhaloWindMass
       type: float
       units: '\( 10^{10} M_\odot/h \)'
       descr: 'Sum of masses of all wind-phase cells in this subhalo (with Type==4 and BirthTime&#60;=0).'
