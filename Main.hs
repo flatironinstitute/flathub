@@ -3,7 +3,7 @@
 
 import           Control.Arrow (first, second)
 import           Control.Exception (throwIO)
-import           Control.Monad ((<=<), forM_, when, unless)
+import           Control.Monad ((<=<), forM_, when, unless, void)
 import           Control.Monad.IO.Class (liftIO)
 import           Data.Default (Default(def))
 import qualified Data.HashMap.Strict as HM
@@ -108,7 +108,7 @@ main = do
       (consts, cat) <- pconst (catalogMap catalogs HM.! sim) $ optConstFields opts
       n <- ingest cat consts args
       liftIO $ print n
-      ES.flushIndex cat
+      when (n > 0) $ void $ ES.flushIndex cat
 
     forM_ (optClose opts) $ \sim -> do
       let cat = catalogMap catalogs HM.! sim
