@@ -161,7 +161,7 @@ ingestHFile info hf = do
       , ingestSize = Just (fromIntegral sz) }
   infof i _ = return i
   constv f = maybe (fail $ "const field " ++ show f ++ " not fonud")
-    (return . unTypeValue show . fieldType)
+    (return . show . fieldType)
     . find ((f ==) . fieldName) . ingestConsts
   loop i = do
     liftIO $ putStr (show (ingestOffset i) ++ "\r") >> hFlush stdout

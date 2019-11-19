@@ -153,6 +153,9 @@ instance Eq1 f => Eq (TypeValue f) where
 instance {-# OVERLAPPABLE #-} Show1 f => Show (TypeValue f) where
   showsPrec i = unTypeValue (showsPrec1 i)
 
+instance Show Value where
+  showsPrec i = unTypeValue (showsPrec i . runIdentity)
+
 parseTypeValue :: Type -> T.Text -> TypeValue Maybe
 parseTypeValue (Text    _) s       = Text    $ Just s
 parseTypeValue (Keyword _) s       = Keyword $ Just s
