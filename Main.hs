@@ -80,6 +80,8 @@ main = do
   conf <- C.load $ optConfig opts
   catalogs <- either throwIO return =<< YAML.decodeFileEither (fromMaybe "catalogs.yml" $ conf C.! "catalogs")
   httpmgr <- HTTP.newManager HTTP.defaultManagerSettings
+    { HTTP.managerResponseTimeout = HTTP.responseTimeoutMicro 300000000
+    }
   es <- ES.initServer (conf C.! "elasticsearch")
   let global = Global
         { globalConfig = conf
