@@ -294,7 +294,7 @@ group:
   - name: dm
     title: Cosmological Dark Matter-Only Simulations
     children:
-      #- quixote
+      - quijote
       - *illustris
   - name: candels
     title: The CANDELS Survey
@@ -4220,3 +4220,62 @@ scsam:
         descr: magnitude of bulge only, without extinction
       - name: "dust"
         descr: galaxy magnitude, including extinction by dust
+
+quijote:
+  title: Quijote
+  descr: >
+    <a href='https://github.com/franciscovillaescusa/Quijote-simulations'>Quijote simulations</a>,
+  #count: 
+  fields:
+    - name: simulation
+      flag: top
+      type: byte
+      enum:
+      - fiducial
+      - fiducial_HR
+      - fiducial_LR
+      - fiducial_ZA
+      - Om_p
+      - Om_m
+      - Ob2_p
+      - Ob_p
+      - Ob_m
+      - Ob2_m
+      - h_p
+      - h_m
+      - ns_p
+      - ns_m
+      - s8_p
+      - s8_m
+      - Mnu_ppp
+      - Mnu_pp
+      - Mnu_p
+      - latin_hypercube
+    - name: realization
+      flag: top
+      type: short
+    - name: snapshot
+      type: byte
+      flag: top
+    - name: z
+      dict: redshift
+      type: float
+
+    - name: len
+      type: int
+      descr: 'Number of CDM particles in the halo'
+    - name: mass
+      type: float
+      units: '\(10^{10} M_\odot\)'
+    - name: pos
+      dict: pos
+      units: 'kpc/h'
+      type: float
+    - name: vel
+      type: float
+      units: 'km/s/(1+z)'
+      descr: 'Halo peculiar velocities'
+      sub:
+      - name: 'x'
+      - name: 'y'
+      - name: 'z'
