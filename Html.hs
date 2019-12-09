@@ -6,6 +6,7 @@ module Html
   ( topPage
   , catalogPage
   , sqlSchema
+  , csvSchema
   , groupPage
   , comparePage
   , staticHtml
@@ -26,7 +27,7 @@ import           Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Vector as V
 import           Network.HTTP.Types.Header (ResponseHeaders, hAccept, hIfModifiedSince, hLastModified, hContentType)
-import           Network.HTTP.Types.Status (notModified304, notFound404)
+import           Network.HTTP.Types.Status (ok200, notModified304, notFound404)
 import qualified Network.Wai as Wai
 import           Network.Wai.Parse (parseHttpAccept)
 import qualified System.FilePath as FP
@@ -392,6 +393,14 @@ sqlSchema = getPath (R.parameter R.>* "schema.sql") $ \sim _ -> do
     <> foldMap (\f -> "COMMENT ON COLUMN " <> tab <> "." <> fieldName f <> " IS " <> sqls (fieldTitle f <> foldMap ((" [" <>) . (<> "]")) (fieldUnits f) <> foldMap (": " <>) (fieldDescr f)) <> ";\n") (catalogFields cat)
   where
   sqls s = "$SqL$" <> s <> "$SqL$" -- hacky dangerous
+
+csvSchema :: Route Simulation
+csvSchema = getPath (R.parameter R.>* "schema.csv") $ \sim _ -> do
+  fields <- if sim == "dict" then asks $ catalogDict . globalCatalogs else catalogFields <$> askCatalog sim
+  return $ Wai.responseBuilder ok200
+    [ (hContentType, "text/csv")
+    ]
+    $ fieldsCSV fields
 
 groupPage :: Route [T.Text]
 groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do

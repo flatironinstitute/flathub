@@ -41,6 +41,7 @@ routes = R.routes
   , R.routeNormCase catalog
   , R.routeNormCase catalogBulk
   , R.routeNormCase sqlSchema
+  , R.routeNormCase csvSchema
   ]
 
 data Opts = Opts

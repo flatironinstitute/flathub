@@ -1,15 +1,4 @@
 dict:
-  - name: candels_field
-    title: field
-    type: byte
-    flag: top
-    descr: "CANDELS field (COSMOS, EGS, GOODS-N, GOODS-S, UDS)"
-    enum: ['COSMOS', 'EGS', 'GOODS-N', 'GOODS-S', 'UDS']
-  - name: candels_realization
-    title: realization
-    type: byte
-    flag: top
-    descr: "Realization between 0-7"
   - name: ppos
     title: coord
     sub:
@@ -35,12 +24,6 @@ dict:
       title: 'Y'
     - name: 'z'
       title: 'Z'
-  - name: candels_gal_id
-    title: gal_id
-    type: long
-  - name: bolshoi_halo_id
-    type: long
-    descr: halo id from Bolshoi halo catalog
   - name: halo_mass
     type: float
     descr: host halo virial mass
@@ -143,8 +126,38 @@ dict:
     type: float
     descr: Maximum rotation velocity of disk
     units: 'km/s'
+  - name: candels_field
+    title: field
+    type: byte
+    flag: top
+    descr: "CANDELS field (COSMOS, EGS, GOODS-N, GOODS-S, UDS)"
+    enum: ['COSMOS', 'EGS', 'GOODS-N', 'GOODS-S', 'UDS']
+  - name: candels_realization
+    title: realization
+    type: byte
+    flag: top
+    descr: "Realization between 0-7"
+  - name: candels_gal_id
+    title: gal_id
+    type: long
+  - name: bolshoi_halo_id
+    type: long
+    descr: halo id from Bolshoi halo catalog
   - name: UV1500_rest
     type: float
+  - name: parallax
+    type: double
+    descr: Parallax
+    units: mas
+  - name: pmra
+    type: double
+    descr: Proper motion in right ascension direction
+    units: mas/year
+  - name: pmdec
+    type: double
+    descr: Proper motion in declination direction
+    units: mas/year
+
   - name: GAIA_source_id
     title: source_id
     type: long
@@ -161,10 +174,6 @@ dict:
     title: dec_error
     type: double
     descr: Standard error of declination
-  - name: parallax
-    type: double
-    descr: Parallax
-    units: mas
   - name: GAIA_parallax_error
     title: parallax_error
     type: double
@@ -174,18 +183,10 @@ dict:
     title: parallax_over_error
     type: float
     descr: Parallax divided by its error
-  - name: pmra
-    type: double
-    descr: Proper motion in right ascension direction
-    units: mas/year
   - name: GAIA_pmra_error
     title: pmra_error
     type: double
     descr: Standard error of proper motion in right ascension direction
-    units: mas/year
-  - name: pmdec
-    type: double
-    descr: Proper motion in declination direction
     units: mas/year
   - name: GAIA_pmdec_error
     title: pmdec_error
@@ -4223,6 +4224,7 @@ scsam:
 
 quijote:
   title: Quijote
+  index: quijote
   descr: >
     <a href='https://github.com/franciscovillaescusa/Quijote-simulations'>Quijote simulations</a>,
   #count: 

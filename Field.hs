@@ -30,12 +30,15 @@ module Field
   , FieldValue
   , parseFieldValue
   , isTermsField
+  , fieldsCSV
   ) where
 
 import           Control.Applicative (Alternative, empty, (<|>))
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Types as J
+import           Data.ByteString.Builder as B
 import           Data.Default (Default(def))
+import           Data.Foldable (fold)
 import           Data.Functor.Classes (Eq1, eq1, Show1, showsPrec1)
 import           Data.Functor.Const (Const(Const, getConst))
 import           Data.Functor.Identity (Identity(Identity, runIdentity))
@@ -52,6 +55,7 @@ import           Numeric.Half (Half)
 import           Text.Read (readMaybe, readPrec, Lexeme(Ident), lexP, readEither)
 
 import Monoid
+import Output.CSV (csvTextRow)
 
 instance J.ToJSON Half where
   toJSON = J.toJSON . (realToFrac :: Half -> Float)
@@ -198,11 +202,17 @@ instance Read Type where
       "long"        -> return (Long Proxy)
       "int"         -> return (Integer Proxy)
       "integer"     -> return (Integer Proxy)
+      "int32"       -> return (Integer Proxy)
       "short"       -> return (Short Proxy)
+      "int16"       -> return (Short Proxy)
       "byte"        -> return (Byte Proxy)
+      "int8"        -> return (Byte Proxy)
       "double"      -> return (Double Proxy)
+      "float8"      -> return (Double Proxy)
       "float"       -> return (Float Proxy)
+      "float4"      -> return (Float Proxy)
       "half_float"  -> return (HalfFloat Proxy)
+      "float2"      -> return (HalfFloat Proxy)
       "bool"        -> return (Boolean Proxy)
       "boolean"     -> return (Boolean Proxy)
       _ -> fail "Unknown type"
@@ -443,3 +453,8 @@ isTermsField Field{ fieldType = Text _ } = True
 isTermsField Field{ fieldType = Byte _, fieldEnum = Just _ } = True
 isTermsField f@Field{ fieldType = Byte _ } = fieldFlag f >= FieldTop
 isTermsField _ = False
+
+fieldsCSV :: Fields -> B.Builder
+fieldsCSV l = csvTextRow ["variable", "name", "type", "units", "description", "values"] <> foldMap fieldCSV l where
+  fieldCSV :: Field -> B.Builder
+  fieldCSV Field{..} = csvTextRow [fieldName, fieldTitle, T.pack $ show fieldType, fold fieldUnits, fold fieldDescr, foldMap (T.intercalate "," . V.toList) fieldEnum]
