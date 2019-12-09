@@ -24,10 +24,15 @@ dict:
       title: 'Y'
     - name: 'z'
       title: 'Z'
+  - name: vel
+    sub:
+    - name: 'x'
+    - name: 'y'
+    - name: 'z'
   - name: halo_mass
     type: float
     descr: host halo virial mass
-    units: '\(10^{10} M_\odot\)'
+    units: '\(10^{10}M_\odot\)'
   - name: V_vir
     type: float
     descr: Host halo virial velocity
@@ -56,47 +61,47 @@ dict:
   - name: M_stellar
     type: float
     descr: stellar mass
-    units: '\(10^{10} M_\odot\)'
+    units: '\(10^{10}M_\odot\)'
   - name: M
     type: float
     descr: mass of sub-halo
-    units: '\(10^{10} M_\odot\)'
+    units: '\(10^{10}M_\odot\)'
   - name: M_star_diffuse
     descr: Mass of stars in a 'diffuse stellar halo'
-    units: '\(10^{10} M_\odot\)'
+    units: '\(10^{10}M_\odot\)'
     type: float
   - name: M_hot_halo
-    units: '\(10^{10} M_\odot\)'
+    units: '\(10^{10}M_\odot\)'
     type: float
     descr: Mass of hot gas in host halo
   - name: M_cold
     descr: Mass of cold gas
-    units: '\(10^{10} M_\odot\)'
+    units: '\(10^{10}M_\odot\)'
     type: float
   - name: M_bulge
     descr: Stellar mass of bulge component
-    units: '\(10^{10} M_\odot\)'
+    units: '\(10^{10}M_\odot\)'
     type: float
   - name: M_BH
     descr: Mass of black hole
-    units: '\(10^{10} M_\odot\)'
+    units: '\(10^{10}M_\odot\)'
     type: float
   - name: BHAR
     descr: Total accretion rate onto black hole
-    units: '\(10^{10} M_\odot\)/yr'
+    units: '\(10^{10}M_\odot\)/yr'
     type: float
   - name: BHAR_radio
     descr: Black hole accretion rate onto black hole
-    units: '\(10^{10} M_\odot\)'
+    units: '\(10^{10}M_\odot\)'
     type: float
   - name: Z_star
     type: float
     descr: Mass weighted metallicity of stars
-    units: '\( Z_\odot\)'
+    units: '\(Z_\odot\)'
   - name: Z_cold
     type: float
     descr: Mass weighted metallicity of cold gas
-    units: '\( Z_\odot\)'
+    units: '\(Z_\odot\)'
   - name: Z_hot_halo
     descr: Metallicity of hot gas in host halo
     units: '\(Z_\odot\)'
@@ -126,6 +131,7 @@ dict:
     type: float
     descr: Maximum rotation velocity of disk
     units: 'km/s'
+
   - name: candels_field
     title: field
     type: byte
@@ -145,6 +151,7 @@ dict:
     descr: halo id from Bolshoi halo catalog
   - name: UV1500_rest
     type: float
+
   - name: parallax
     type: double
     descr: Parallax
@@ -157,7 +164,6 @@ dict:
     type: double
     descr: Proper motion in declination direction
     units: mas/year
-
   - name: GAIA_source_id
     title: source_id
     type: long
@@ -170,10 +176,12 @@ dict:
     title: ra_error
     type: double
     descr: Standard error of right ascension
+    units: deg
   - name: GAIA_ppos_y_error
     title: dec_error
     type: double
     descr: Standard error of declination
+    units: deg
   - name: GAIA_parallax_error
     title: parallax_error
     type: double
@@ -270,8 +278,8 @@ dict:
   - name: GAIA_radial_velocity_error
     title: radial_velocity_error
     type: double
-    descr: km/s
-    units: Radial velocity error
+    units: km/s
+    descr: Radial velocity error
 
 group:
   - name: milkyway
@@ -404,13 +412,13 @@ illustris:
 
     - name: BHMass
       type: float
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of the BH_Mass field of all blackholes (type 5) in this group.'
       ingest: _optional:Group/GroupBHMass
     - name: BHMdot
       type: float
       title: '\(\dot{M}_{\rm BH}\)'
-      units: '\((10^{10} M_\odot/h) / (0.978Gyr/h)\)'
+      units: '\((10^{10}M_\odot/h)/(0.978Gyr/h)\)'
       descr: 'Sum of the BH_Mdot field of all blackholes (type 5) in this group.'
       ingest: _optional:Group/GroupBHMdot
     - name: CM
@@ -458,12 +466,12 @@ illustris:
     - name: Mass
       type: float
       title: '\(M_{\rm tot}\)'
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of the individual masses of every particle/cell, of all types, in this group.'
       ingest: Group/GroupMass
     - name: MassType
       type: float
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of the individual masses of every particle/cell, split into the six different types, in this group. Note: Wind phase cells are counted as gas (type 0) for GroupMassType.'
       sub:
       - name: gas
@@ -496,7 +504,7 @@ illustris:
       ingest: Group/GroupPos
     - name: SFR
       type: float
-      units: '\( M_\odot / yr \)'
+      units: '\(M_\odot/yr\)'
       descr: 'Sum of the individual star formation rates of all gas cells in this group.'
       dict: SFR
       ingest: _optional:Group/GroupSFR
@@ -506,42 +514,46 @@ illustris:
       ingest: _optional:Group/GroupStarMetallicity
     - name: Vel
       type: float
+      dict: vel
       units: 'km/s/a'
       descr: 'Velocity of the group, computed as the sum of the mass weighted velocities of all particles/cells in this group, of all types. The peculiar velocity is obtained by multiplying this value by \(1/a.\)'
       sub:
       - name: "x"
         title: '\(v_x\)'
+        dict: vel_x
       - name: "y"
         title: '\(v_y\)'
+        dict: vel_y
       - name: "z"
         title: '\(v_z\)'
+        dict: vel_z
       ingest: Group/GroupVel
     - name: WindMass
       type: float
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of the individual masses of all wind phase gas cells (type 4, BirthTime <= 0) in this group.'
       ingest: _optional:Group/GroupWindMass
     - name: M_Crit200
       type: float
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Total Mass of this group enclosed in a sphere whose mean density is 200 times the critical density of the Universe, at the time the halo is considered.'
       flag: hidden
       ingest: Group/Group_M_Crit200
     - name: M_Crit500
       type: float
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Total Mass of this group enclosed in a sphere whose mean density is 500 times the critical density of the Universe, at the time the halo is considered.'
       flag: hidden
       ingest: Group/Group_M_Crit500
     - name: M_Mean200
       type: float
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Total Mass of this group enclosed in a sphere whose mean density is 200 times the mean density of the Universe, at the time the halo is considered.'
       flag: hidden
       ingest: Group/Group_M_Mean200
     - name: M_TopHat200
       type: float
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Total Mass of this group enclosed in a sphere whose mean density is \(\Delta_c\) times the critical density of the Universe, at the time the halo is considered. \(\Delta_c\) derives from the solution of the collapse of a spherical top-hat perturbation (fitting formula from <a href="http://adsabs.harvard.edu/abs/1998ApJ...495...80B">Bryan+ 1998</a>). The subscript 200 can be ignored.'
       flag: hidden
       ingest: Group/Group_M_TopHat200
@@ -650,13 +662,13 @@ tng:
     - name: BHMass
       ingest: Group/GroupBHMass
       type: float
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of the BH_Mass field of all blackholes (type 5) in this group.'
     - name: BHMdot
       ingest: Group/GroupBHMdot
       type: float
       title: '\(\dot{M}_{\rm BH}\)'
-      units: '\((10^{10} M_\odot/h) / (0.978Gyr/h)\)'
+      units: '\((10^{10}M_\odot/h)/(0.978Gyr/h)\)'
       descr: 'Sum of the BH_Mdot field of all blackholes (type 5) in this group.'
     - name: CM
       ingest: Group/GroupCM
@@ -721,12 +733,12 @@ tng:
       ingest: Group/GroupMass
       type: float
       title: '\(M_{\rm tot}\)'
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of the individual masses of every particle/cell, of all types, in this group.'
     - name: MassType
       ingest: Group/GroupMassType
       type: float
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of the individual masses of every particle/cell, split into the six different types, in this group. Note: Wind phase cells are counted as gas (type 0) for GroupMassType.'
       sub:
       - name: gas
@@ -759,7 +771,7 @@ tng:
     - name: SFR
       ingest: Group/GroupSFR
       type: float
-      units: '\( M_\odot / yr \)'
+      units: '\(M_\odot/yr\)'
       descr: 'Sum of the individual star formation rates of all gas cells in this group.'
       dict: SFR
     - name: StarMetalFractions
@@ -786,42 +798,46 @@ tng:
     - name: Vel
       ingest: Group/GroupVel
       type: float
+      dict: vel
       units: 'km/s/a'
       descr: 'Velocity of the group, computed as the sum of the mass weighted velocities of all particles/cells in this group, of all types. The peculiar velocity is obtained by multiplying this value by \(1/a.\)'
       sub:
       - name: "x"
         title: '\(v_x\)'
+        dict: vel_x
       - name: "y"
         title: '\(v_y\)'
+        dict: vel_y
       - name: "z"
         title: '\(v_z\)'
+        dict: vel_z
     - name: WindMass
       ingest: Group/GroupWindMass
       type: float
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of the individual masses of all wind phase gas cells (type 4, BirthTime <= 0) in this group.'
     - name: M_Crit200
       ingest: Group/Group_M_Crit200
       type: float
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Total Mass of this group enclosed in a sphere whose mean density is 200 times the critical density of the Universe, at the time the halo is considered.'
       flag: hidden
     - name: M_Crit500
       ingest: Group/Group_M_Crit500
       type: float
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Total Mass of this group enclosed in a sphere whose mean density is 500 times the critical density of the Universe, at the time the halo is considered.'
       flag: hidden
     - name: M_Mean200
       ingest: Group/Group_M_Mean200
       type: float
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Total Mass of this group enclosed in a sphere whose mean density is 200 times the mean density of the Universe, at the time the halo is considered.'
       flag: hidden
     - name: M_TopHat200
       ingest: Group/Group_M_TopHat200
       type: float
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Total Mass of this group enclosed in a sphere whose mean density is \(\Delta_c\) times the critical density of the Universe, at the time the halo is considered. \(\Delta_c\) derives from the solution of the collapse of a spherical top-hat perturbation (fitting formula from <a href="http://adsabs.harvard.edu/abs/1998ApJ...495...80B">Bryan+ 1998</a>). The subscript 200 can be ignored.'
       flag: hidden
     - name: R_Crit200
@@ -896,12 +912,12 @@ illustris_sub:
     - name: BHMass
       ingest: _optional:Subhalo/SubhaloBHMass
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of the masses of all blackholes in this subhalo.'
     - name: BHMdot
       ingest: _optional:Subhalo/SubhaloBHMdot
       type: float
-      units: '\((10^{10} M_\odot/h) / (0.978Gyr/h)\)'
+      units: '\((10^{10}M_\odot/h)/(0.978Gyr/h)\)'
       descr: 'Sum of the instantaneous accretion rates \(\dot{M}\) of all blackholes in this subhalo.'
     - name: CM
       ingest: Subhalo/SubhaloCM
@@ -977,17 +993,17 @@ illustris_sub:
     - name: Mass
       ingest: Subhalo/SubhaloMass
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Total mass of all member particle/cells which are bound to this Subhalo, of all types. Particle/cells bound to subhaloes of this Subhalo are NOT accounted for.'
     - name: MassInHalfRad
       ingest: Subhalo/SubhaloMassInHalfRad
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of masses of all particles/cells within the stellar half mass radius.'
     - name: MassInHalfRadType
       ingest: Subhalo/SubhaloMassInHalfRadType
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of masses of all particles/cells (split by type) within the stellar half mass radius.'
       sub:
       - name: gas
@@ -1000,12 +1016,12 @@ illustris_sub:
     - name: MassInMaxRad
       ingest: Subhalo/SubhaloMassInMaxRad
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of masses of all particles/cells within the radius of \(V_{max}\).'
     - name: MassInMaxRadType
       ingest: Subhalo/SubhaloMassInMaxRadType
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of masses of all particles/cells (split by type) within the radius of \(V_{max}\).'
       sub:
       - name: gas
@@ -1018,12 +1034,12 @@ illustris_sub:
     - name: MassInRad
       ingest: Subhalo/SubhaloMassInRad
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of masses of all particles/cells within <b>twice</b> the stellar half mass radius.'
     - name: MassInRadType
       ingest: Subhalo/SubhaloMassInRadType
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of masses of all particles/cells (split by type) within <b>twice</b> the stellar half mass radius.'
       sub:
       - name: gas
@@ -1036,7 +1052,7 @@ illustris_sub:
     - name: MassType
       ingest: Subhalo/SubhaloMassType
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Total mass of all member particle/cells which are bound to this Subhalo, separated by type. Particle/cells bound to subhaloes of this Subhalo are NOT accounted for. Note: Wind phase cells are counted as gas (type 0) for SubhaloMassType.'
       sub:
       - name: gas
@@ -1062,27 +1078,27 @@ illustris_sub:
     - name: SFR
       ingest: _optional:Subhalo/SubhaloSFR
       type: float
-      units: '\( M_\odot / yr \)'
+      units: '\(M_\odot/yr\)'
       descr: 'Sum of the individual star formation rates of all gas cells in this subhalo.'
     - name: SFRinHalfRad
       ingest: _optional:Subhalo/SubhaloSFRinHalfRad
       type: float
-      units: '\( M_\odot / yr \)'
+      units: '\(M_\odot/yr\)'
       descr: 'Same as SubhaloSFR, but restricted to cells within the stellar half mass radius.'
     - name: SFRinMaxRad
       ingest: _optional:Subhalo/SubhaloSFRinMaxRad
       type: float
-      units: '\( M_\odot / yr \)'
+      units: '\(M_\odot/yr\)'
       descr: 'Same as SubhaloSFR, but restricted to cells within the radius of \(V_{max}\).'
     - name: SFRinRad
       ingest: _optional:Subhalo/SubhaloSFRinRad
       type: float
-      units: '\( M_\odot / yr \)'
+      units: '\(M_\odot/yr\)'
       descr: 'Same as SubhaloSFR, but restricted to cells within <b>twice</b> the stellar half mass radius.'
     - name: Spin
       ingest: Subhalo/SubhaloSpin
       type: float
-      units: '\( (kpc/h) (km/s) \)'
+      units: '\((kpc/h)(km/s)\)'
       descr: 'Total spin per axis, computed for each as the mass weighted sum of the relative coordinate times relative velocity of all member particles/cells.'
       sub:
       - name: "x"
@@ -1119,7 +1135,7 @@ illustris_sub:
     - name: StellarPhotometricsMassInRad
       ingest: _optional:Subhalo/SubhaloStellarPhotometricsMassInRad
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of the mass of the member stellar particles, but restricted to stars within the radius SubhaloStellarPhotometricsRad.'
     - name: StellarPhotometricsRad
       ingest: _optional:Subhalo/SubhaloStellarPhotometricsRad
@@ -1153,7 +1169,7 @@ illustris_sub:
     - name: WindMass
       ingest: _optional:Subhalo/SubhaloWindMass
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of masses of all wind-phase cells in this subhalo (with Type==4 and BirthTime&#60;=0).'
     - name: SnapByType
       type: long
@@ -1226,22 +1242,22 @@ tng_sub:
     - name: BHMass
       ingest: Subhalo/SubhaloBHMass
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of the masses of all blackholes in this subhalo.'
     - name: BHMdot
       ingest: Subhalo/SubhaloBHMdot
       type: float
-      units: '\((10^{10} M_\odot/h) / (0.978Gyr/h)\)'
+      units: '\((10^{10}M_\odot/h)/(0.978Gyr/h)\)'
       descr: 'Sum of the instantaneous accretion rates \(\dot{M}\) of all blackholes in this subhalo.'
     - name: BfldDisk
       ingest: _optional:Subhalo/SubhaloBfldDisk
       type: float
-      units: '\((h/a^2) (\rm{UnitPressure})^{1/2}\)'
+      units: '\((h/a^2)(\rm{UnitPressure})^{1/2}\)'
       descr: "The square root of the volume weighted value of $B^{2}$ for all gas cells within the canonical two times the stellar half mass radius. This value gives a magnetic field strength which would have the same amount of mean magnetic energy as the galaxy cells."
     - name: BfldHalo
       ingest: _optional:Subhalo/SubhaloBfldHalo
       type: float
-      units: '\((h/a^2) (\rm{UnitPressure})^{1/2}\)'
+      units: '\((h/a^2)(\rm{UnitPressure})^{1/2}\)'
       descr: "The square root of the volume weighted value of $B^{2}$ for all gas cells in the subhalo. This value gives a magnetic field strength which would have the same amount of mean magnetic energy as the subhalo cells."
     - name: CM
       ingest: Subhalo/SubhaloCM
@@ -1402,17 +1418,17 @@ tng_sub:
     - name: Mass
       ingest: Subhalo/SubhaloMass
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Total mass of all member particle/cells which are bound to this Subhalo, of all types. Particle/cells bound to subhaloes of this Subhalo are NOT accounted for.'
     - name: MassInHalfRad
       ingest: Subhalo/SubhaloMassInHalfRad
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of masses of all particles/cells within the stellar half mass radius.'
     - name: MassInHalfRadType
       ingest: Subhalo/SubhaloMassInHalfRadType
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of masses of all particles/cells (split by type) within the stellar half mass radius.'
       sub:
       - name: gas
@@ -1425,12 +1441,12 @@ tng_sub:
     - name: MassInMaxRad
       ingest: Subhalo/SubhaloMassInMaxRad
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of masses of all particles/cells within the radius of \(V_{max}\).'
     - name: MassInMaxRadType
       ingest: Subhalo/SubhaloMassInMaxRadType
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of masses of all particles/cells (split by type) within the radius of \(V_{max}\).'
       sub:
       - name: gas
@@ -1443,12 +1459,12 @@ tng_sub:
     - name: MassInRad
       ingest: Subhalo/SubhaloMassInRad
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of masses of all particles/cells within <b>twice</b> the stellar half mass radius.'
     - name: MassInRadType
       ingest: Subhalo/SubhaloMassInRadType
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of masses of all particles/cells (split by type) within <b>twice</b> the stellar half mass radius.'
       sub:
       - name: gas
@@ -1461,7 +1477,7 @@ tng_sub:
     - name: MassType
       ingest: Subhalo/SubhaloMassType
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Total mass of all member particle/cells which are bound to this Subhalo, separated by type. Particle/cells bound to subhaloes of this Subhalo are NOT accounted for. Note: Wind phase cells are counted as gas (type 0) for SubhaloMassType.'
       sub:
       - name: gas
@@ -1487,27 +1503,27 @@ tng_sub:
     - name: SFR
       ingest: Subhalo/SubhaloSFR
       type: float
-      units: '\( M_\odot / yr \)'
+      units: '\(M_\odot/yr\)'
       descr: 'Sum of the individual star formation rates of all gas cells in this subhalo.'
     - name: SFRinHalfRad
       ingest: Subhalo/SubhaloSFRinHalfRad
       type: float
-      units: '\( M_\odot / yr \)'
+      units: '\(M_\odot/yr\)'
       descr: 'Same as SubhaloSFR, but restricted to cells within the stellar half mass radius.'
     - name: SFRinMaxRad
       ingest: Subhalo/SubhaloSFRinMaxRad
       type: float
-      units: '\( M_\odot / yr \)'
+      units: '\(M_\odot/yr\)'
       descr: 'Same as SubhaloSFR, but restricted to cells within the radius of \(V_{max}\).'
     - name: SFRinRad
       ingest: Subhalo/SubhaloSFRinRad
       type: float
-      units: '\( M_\odot / yr \)'
+      units: '\(M_\odot/yr\)'
       descr: 'Same as SubhaloSFR, but restricted to cells within <b>twice</b> the stellar half mass radius.'
     - name: Spin
       ingest: Subhalo/SubhaloSpin
       type: float
-      units: '\( (kpc/h) (km/s) \)'
+      units: '\((kpc/h)(km/s)\)'
       descr: 'Total spin per axis, computed for each as the mass weighted sum of the relative coordinate times relative velocity of all member particles/cells.'
       sub:
       - name: "x"
@@ -1595,7 +1611,7 @@ tng_sub:
     - name: StellarPhotometricsMassInRad
       ingest: Subhalo/SubhaloStellarPhotometricsMassInRad
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of the mass of the member stellar particles, but restricted to stars within the radius SubhaloStellarPhotometricsRad.'
     - name: StellarPhotometricsRad
       ingest: Subhalo/SubhaloStellarPhotometricsRad
@@ -1629,7 +1645,7 @@ tng_sub:
     - name: WindMass
       ingest: Subhalo/SubhaloWindMass
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of masses of all wind-phase cells in this subhalo (with Type==4 and BirthTime&#60;=0).'
 neutrino:
   title: Neutrino
@@ -1731,6 +1747,7 @@ gaea:
     - name: Pos
       type: double
       descr: Position in the catalog in comoving distance from the observer
+      dict: pos
       units: 'Mpc/h'
       sub:
       - name: "x"
@@ -1739,11 +1756,18 @@ gaea:
     - name: Vel
       type: double
       descr: Velocity of the galaxy in the catalog
+      dict: vel
       units: 'km/s'
       sub:
       - name: "x"
+        type: double
+        dict: vel_x
       - name: "y"
+        type: double
+        dict: vel_y
       - name: "z"
+        type: double
+        dict: vel_z
     - name: Type
       type: integer
       descr: Galaxy Type, indicates how this galaxy is related to the HM halo
@@ -1756,11 +1780,11 @@ gaea:
     - name: CentralMvir
       type: float
       descr: '\(M_{200}\) mass of the FoF halo'
-      units: '\(10^{10} M_\odot/h\)'
+      units: '\(10^{10}M_\odot/h\)'
     - name: Mvir
       type: float
       descr: '\(M_{200}\) mass of the hosting SubHalo'
-      units: '\(10^{10} M_\odot/h\)'
+      units: '\(10^{10}M_\odot/h\)'
     - name: Rvir
       type: float
       descr: 'Virial radius calculated from \(M_{200}\)'
@@ -1776,15 +1800,15 @@ gaea:
     - name: StellarMass
       type: float
       descr: 'Total stellar Mass of the galaxy (disk+bulge)'
-      units: '\(10^{10} M_\odot/h\)'
+      units: '\(10^{10}M_\odot/h\)'
     - name: ColdGas
       type: float
       descr: 'Cold gas mass in the gaseous disk'
-      units: '\(10^{10} M_\odot/h\)'
+      units: '\(10^{10}M_\odot/h\)'
     - name: HI
       type: float
       descr: 'HI mass in the gaseous disk'
-      units: '\(10^{10} M_\odot/h\)'
+      units: '\(10^{10}M_\odot/h\)'
     - name: GasDiskRadius
       type: float
       descr: 'Gaseous Disk Radius'
@@ -1796,7 +1820,7 @@ gaea:
     - name: GasSpin
       type: float
       descr: 'Gaseous disk specific angular momentum'
-      units: '\({Mpc/h} \text{ } {km/s}\)'
+      units: '\((Mpc/h)(km/s)\)'
       sub:
       - name: "x"
         title: jx
@@ -1993,12 +2017,12 @@ gaiadr2:
         title: pseudo_colour
         descr: Astrometrically determined pseudocolour of the source
         type: double
-        units: '\(\mu m^{-1}\)'
+        units: '\(\mu{m}^{-1}\)'
       - name: astrometric_pseudo_colour_error
         title: pseudo_colour_error
         descr: Standard error of the pseudocolour of the source
         type: double
-        units: '\(\mu m^{-1}\)'
+        units: '\(\mu{m}^{-1}\)'
       - name: mean_varpi_factor_al
         descr: Mean Parallax factor in the AL direction
         type: float
@@ -2147,7 +2171,7 @@ gaiadr2:
     - name: rv_template_logg
       descr: logg of the template used to compute radial velocity
       type: float
-      units: '\(\log cgs\)'
+      units: 'log cgs'
     - name: rv_template_fe_h
       descr: Fe/H of the template used to compute radial velocity
       type: float
@@ -2808,7 +2832,7 @@ ananke:
       - name: age
         descr: log_10 stellar age; identical for all stars generated from the same particle
         type: float
-        units: log yr
+        units: 'log yr'
         flag: hidden
       - name: logg
         descr: surface gravity
@@ -2934,17 +2958,17 @@ lusam:
       dict: M_star_diffuse
       type: float
       descr: mass of stars in a 'diffuse stellar halo'
-      units: '\(10^{10} M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
     - name: m_hot_halo
       dict: M_hot_halo
       type: float
       descr: mass of hot gas in host halo
-      units: '\(10^{10} M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
     - name: Z_hot_halo
       dict: Z_hot_halo
       type: float
       descr: metallicity of hot gas in host halo
-      units: '\( Z_\odot\)'
+      units: '\(Z_\odot\)'
     - name: v_disk
       dict: v_disk
       type: float
@@ -2969,57 +2993,57 @@ lusam:
       dict: M
       type: float
       descr: mass of sub-halo (at the time it became a sub)
-      units: '\(10^{10} M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
     - name: mstar
       dict: M_stellar
       type: float
       descr: stellar mass
-      units: '\(10^{10} M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
     - name: mcold
       dict: M_cold
       type: float
       descr: mass of cold gas
-      units: '\(10^{10} M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
     - name: mbulge
       dict: M_bulge
       type: float
       descr: stellar mass of bulge component
-      units: '\(10^{10} M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
     - name: mBH
       dict: M_BH
       type: float
       descr: mass of black hole
-      units: '\(10^{10} M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
     - name: maccdot
       dict: BHAR
       type: float
       descr: total accretion rate onto black hole
-      units: '\( M_\odot\)/yr'
+      units: '\(M_\odot\)/yr'
     - name: maccdot_radio
       dict: BHAR_radio
       type: float
       descr: BHAR associated with 'radio mode'
-      units: '\( M_\odot\)/yr'
+      units: '\(M_\odot\)/yr'
     - name: Zstar
       dict: Z_star
       type: float
       descr: mass weighted metallicity of stars
-      units: '\( Z_\odot\)'
+      units: '\(Z_\odot\)'
     - name: Zcold
       dict: Z_cold
       type: float
       descr: mass weighted metallicity of cold gas
-      units: '\( Z_\odot\)'
+      units: '\(Z_\odot\)'
     - name: mstardot
       dict: SFR_inst
       type: float
       descr: instantaneous star formation rate
-      units: '\( M_\odot /yr\)'
+      units: '\(M_\odot/yr\)'
     - name: sfr_ave
       dict: SFR
       type: float
       descr: star formation rate averaged over past 1E8 yr
-      units: '\( M_\odot /yr \)'
+      units: '\(M_\odot/yr\)'
     - name: meanage
       dict: age_mean
       type: float
@@ -3533,24 +3557,28 @@ unimach:
     - name: ""
       title: Velocity
       units: 'km/s'
+      dict: vel
       sub:
       - name: VX
-        # title: '\( V_x\)'
+        # title: '\(V_x\)'
         type: float
         descr: 'Peculiar velocity in physical (i.e., non-comoving) km/s, relative to lightcone axes'
+        dict: vel_x
       - name: VY
-        # title: '\( V_y\)'
+        # title: '\(V_y\)'
         type: float
         descr: 'Peculiar velocity in physical (i.e., non-comoving) km/s, relative to lightcone axes'
+        dict: vel_y
       - name: VZ
-        # title: '\( V_z\)'
+        # title: '\(V_z\)'
         type: float
         descr: 'Peculiar velocity in physical (i.e., non-comoving) km/s, relative to lightcone axes'
+        dict: vel_z
     - name: M
       dict: M
       type: float
       descr: Halo mass (Bryan & Norman (BN98) 1998 virial mass)
-      units: '\( M_\odot\)'
+      units: '\(M_\odot\)'
       scale: 1e-10
     - name: V
       type: float
@@ -3559,7 +3587,7 @@ unimach:
     - name: MP
       type: float
       descr: Halo peak historical mass (BN98 virial mass)
-      units: '\( M_\odot \)'
+      units: '\(M_\odot\)'
       scale: 1e-10
     - name: VMP
       type: float
@@ -3578,28 +3606,28 @@ unimach:
       dict: M_stellar
       type: float
       descr: True stellar mass
-      units: '\( M_\odot\)'
+      units: '\(M_\odot\)'
       scale: 1e-10
     - name: ICL
       type: float
       descr: True intracluster stellar mass
-      units: '\( M_\odot\)'
+      units: '\(M_\odot\)'
       scale: 1e-10
     - name: SFR
       dict: SFR
       type: float
       descr: True star formation rate
-      units: '\( M_\odot /yr \)'
+      units: '\(M_\odot/yr\)'
       scale: 1e-10
     - name: obs_SM
       type: float
       descr: Observed stellar mass, including random & systematic errors
-      units: '\( M_\odot\)'
+      units: '\(M_\odot\)'
       scale: 1e-10
     - name: obs_SFR
       type: float
       descr: Observed star formation rate (SFR), including random & systemic errors
-      units: '\( M_\odot /yr \)'
+      units: '\(M_\odot/yr\)'
     - name: SSFR
       type: float
       descr: Observed SSFR
@@ -3610,7 +3638,7 @@ unimach:
       dict: UV1500_rest
       type: float
       descr: Observed UV Magnitude
-      units: '\( M_{1500} AB \)'
+      units: '\(M_{1500} AB\)'
     - name:  A_UV
       type: float
       descr: UV attenuation from dust
@@ -3687,17 +3715,17 @@ scsam:
       dict: M_star_diffuse
       type: float
       descr: mass of stars in a 'diffuse stellar halo'
-      units: '\(10^{10} M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
     - name: m_hot_halo
       dict: M_hot_halo
       type: float
       descr: mass of hot gas in host halo
-      units: '\(10^{10} M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
     - name: Z_hot_halo
       dict: Z_hot_halo
       type: float
       descr: metallicity of hot gas in host halo
-      units: '\( Z_\odot\)'
+      units: '\(Z_\odot\)'
     - name: v_disk
       dict: v_disk
       type: float
@@ -3722,57 +3750,57 @@ scsam:
       dict: M
       type: float
       descr: mass of sub-halo (at the time it became a sub)
-      units: '\(10^{10} M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
     - name: mstar
       dict: M_stellar
       type: float
       descr: stellar mass
-      units: '\(10^{10} M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
     - name: mcold
       dict: M_cold
       type: float
       descr: mass of cold gas
-      units: '\(10^{10} M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
     - name: mbulge
       dict: M_bulge
       type: float
       descr: stellar mass of bulge component
-      units: '\(10^{10} M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
     - name: mbh #mbh in SU SAM
       dict: M_BH
       type: float
       descr: mass of black hole
-      units: '\(10^{10} M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
     - name: maccdot
       dict: BHAR
       type: float
       descr: total accretion rate onto black hole
-      units: '\( M_\odot\)/yr'
+      units: '\(M_\odot\)/yr'
     - name: maccdot_radio
       dict: BHAR_radio
       type: float
       descr: BHAR associated with 'radio mode'
-      units: '\( M_\odot\)/yr'
+      units: '\(M_\odot\)/yr'
     - name: Zstar
       dict: Z_star
       type: float
       descr: mass weighted metallicity of stars
-      units: '\( Z_\odot\)'
+      units: '\(Z_\odot\)'
     - name: Zcold
       dict: Z_cold
       type: float
       descr: mass weighted metallicity of cold gas
-      units: '\( Z_\odot\)'
+      units: '\(Z_\odot\)'
     - name: mstardot
       dict: SFR_inst
       type: float
       descr: instantaneous star formation rate
-      units: '\( M_\odot /yr\)'
+      units: '\(M_\odot/yr\)'
     - name: sfr_ave
       dict: SFR
       type: float
       descr: star formation rate averaged over past 1E8 yr
-      units: '\( M_\odot /yr \)'
+      units: '\(M_\odot/yr\)'
     - name: meanage
       dict: age_mean
       type: float
@@ -4268,16 +4296,28 @@ quijote:
       descr: 'Number of CDM particles in the halo'
     - name: mass
       type: float
-      units: '\(10^{10} M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
+      dict: M
     - name: pos
       dict: pos
       units: 'kpc/h'
       type: float
+      sub:
+      - name: 'x'
+        dict: pos_x
+      - name: 'y'
+        dict: pos_y
+      - name: 'z'
+        dict: pos_z
     - name: vel
       type: float
+      dict: vel
       units: 'km/s/(1+z)'
       descr: 'Halo peculiar velocities'
       sub:
       - name: 'x'
+        dict: vel_x
       - name: 'y'
+        dict: vel_y
       - name: 'z'
+        dict: vel_z

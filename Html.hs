@@ -396,11 +396,20 @@ sqlSchema = getPath (R.parameter R.>* "schema.sql") $ \sim _ -> do
 
 csvSchema :: Route Simulation
 csvSchema = getPath (R.parameter R.>* "schema.csv") $ \sim _ -> do
-  fields <- if sim == "dict" then asks $ catalogDict . globalCatalogs else catalogFields <$> askCatalog sim
+  fields <- if sim == "dict" then asks $ populateDict . globalCatalogs else catalogFields <$> askCatalog sim
   return $ Wai.responseBuilder ok200
     [ (hContentType, "text/csv")
     ]
     $ fieldsCSV fields
+  where
+  populateDict cats = map pf $ catalogDict cats where
+    pf f = f{ fieldDict = Just $ T.intercalate ";" $ md (fieldName f) }
+    md d =
+      [ c <> "." <> fieldName f <> foldMap (T.cons '[' . (`T.snoc` ']')) (fieldUnits f) <> foldMap (T.cons '*' . T.pack . show) (fieldScale f)
+      | (c, cf) <- HM.toList (catalogMap cats)
+      , f <- catalogFields cf
+      , Just d == fieldDict f
+      ]
 
 groupPage :: Route [T.Text]
 groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do

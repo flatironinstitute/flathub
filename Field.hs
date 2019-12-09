@@ -455,6 +455,6 @@ isTermsField f@Field{ fieldType = Byte _ } = fieldFlag f >= FieldTop
 isTermsField _ = False
 
 fieldsCSV :: Fields -> B.Builder
-fieldsCSV l = csvTextRow ["variable", "name", "type", "units", "description", "values"] <> foldMap fieldCSV l where
+fieldsCSV l = csvTextRow ["variable", "name", "type", "units", "description", "values","dict","scale"] <> foldMap fieldCSV l where
   fieldCSV :: Field -> B.Builder
-  fieldCSV Field{..} = csvTextRow [fieldName, fieldTitle, T.pack $ show fieldType, fold fieldUnits, fold fieldDescr, foldMap (T.intercalate "," . V.toList) fieldEnum]
+  fieldCSV Field{..} = csvTextRow [fieldName, fieldTitle, T.pack $ show fieldType, fold fieldUnits, fold fieldDescr, foldMap (T.intercalate "," . V.toList) fieldEnum, fold fieldDict, foldMap (T.pack . show) fieldScale]
