@@ -5,6 +5,7 @@ import Datatables from "datatables.net";
 import Highcharts from "highcharts";
 import Highcharts_more from "highcharts/highcharts-more";
 import Highcharts_heatmap from "highcharts/modules/heatmap";
+import Highcharts_export_data from "highcharts/modules/export-data";
 import {
   assert,
   Dict,
@@ -27,6 +28,7 @@ import {
 Datatables(window, $);
 Highcharts_more(Highcharts);
 Highcharts_heatmap(Highcharts);
+Highcharts_export_data(Highcharts);
 
 var TCat: DataTables.Api;
 declare const Catalog: Catalog;
