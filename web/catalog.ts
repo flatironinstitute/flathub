@@ -380,32 +380,40 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
 }
 
 function add_filt_row(
-  name: string,
-  flag: boolean | undefined,
-  ...nodes: Array<
-    JQuery.htmlString | JQuery.TypeOrArray<JQuery.Node | JQuery<JQuery.Node>>
-  >
+  field: Field|null,
+  text: HTMLElement|string,
+  input: any,
+  extra?: any
 ) {
+  const name = field ? field.name : '';
   const id = "filt-" + name;
-  let tr = <HTMLDivElement | null>document.getElementById(id);
-  if (tr) return;
+  let row = <HTMLDivElement | null>document.getElementById(id);
+  if (row) return;
+
   const tab = <HTMLTableElement>document.getElementById("filt");
-  tr = document.createElement("div");
-  tr.id = id;
-  tr.classList.add("alert", "fade", "show", "row", "filter-row");
-  if (!name.length) {
-    tr.classList.add("alert-secondary");
-  } else if (flag) {
-    tr.classList.add("alert-info");
+  row = document.createElement("div");
+  row.id = id;
+  row.classList.add("alert", "fade", "show", "row", "filter-row");
+  if (!field) {
+    row.classList.add("alert-secondary");
+  } else if (field.flag !== undefined) {
+    row.classList.add("alert-info");
   } else {
-    tr.classList.add("alert-warning", "alert-horz");
+    row.classList.add("alert-warning", "alert-horz");
   }
-  if (tab.lastChild) $(tr).insertBefore(<HTMLDivElement>tab.lastChild);
-  else $(tr).appendTo(tab);
-  for (let node of nodes) {
-    const td = $(document.createElement("div")).appendTo(tr);
-    td.append(node);
-  }
+  if (tab.lastChild) $(row).insertBefore(<HTMLDivElement>tab.lastChild);
+  else tab.append(row);
+
+  const dtext = document.createElement("div");
+  dtext.className = "filter-text";
+  dtext.append(text);
+  row.append(dtext);
+  if (extra)
+    $(extra).appendTo(row);
+  const dinp = document.createElement("div");
+  dinp.className = "filter-inputs";
+  $(input).appendTo(dinp);
+  row.append(dinp);
 }
 
 (<any>window).sampleChange = function sampleChange() {
@@ -421,11 +429,12 @@ function add_filt_row(
 
 abstract class Filter {
   protected tcol: DataTables.ColumnMethods;
-  private label: HTMLSpanElement;
+  private label: any;
 
   constructor(public field: Field) {
     this.tcol = TCat.column(this.name + ":name");
-    this.label = field_title(this.field, this.field.flag ? undefined : this.remove.bind(this));
+    this.label = field_title(this.field,
+      this.field.flag ? undefined : this.remove.bind(this));
   }
 
   get name(): string {
@@ -438,10 +447,8 @@ abstract class Filter {
     );
   }
 
-  protected add(
-    ...nodes: Array<JQuery.TypeOrArray<JQuery.Node | JQuery<JQuery.Node>>>
-  ) {
-    add_filt_row(this.field.name, this.field.flag !== undefined, this.label, ...nodes);
+  protected add(input: any, extra?: any) {
+    add_filt_row(this.field, this.label, input, extra);
     this.addopt.disabled = true;
     Filters.push(this);
   }
@@ -543,18 +550,25 @@ class NumericFilter extends Filter {
     this.min = document.createElement("span");
     this.max = document.createElement("span");
     this.avg.innerHTML = "<em>loading...</em>";
-    this.add(
-      $("<span>")
-        .append(this.lb)
-        .append(" &ndash; ")
-        .append(this.ub),
-      $("<span>")
-        .append(this.min)
-        .append(" &ndash; ")
-        .append(this.max),
-      $("<span><em>&mu;</em> = </span>").append(this.avg),
-      $("<button>Reset</button>").on("click", this.reset.bind(this))
-    );
+    
+    let inputs = $();
+
+    const dmin = document.createElement('div');
+    dmin.className = 'filter-input';
+    const pmin = document.createElement('p');
+    pmin.append(this.min);
+    dmin.append(this.lb, pmin);
+    inputs = inputs.add(dmin);
+
+    const dmax = document.createElement('div');
+    dmax.className = 'filter-input';
+    const pmax = document.createElement('p');
+    pmax.append(this.max);
+    dmax.append(this.ub, pmax);
+    inputs = inputs.add(dmax);
+
+    this.add(inputs.add($('<button class="filter-reset">Reset</button>').on("click", this.reset.bind(this))),
+      $('<div class="filter-avg"><em>&mu;</em> = </div>').append(this.avg));
   }
 
   get lbv(): number {
@@ -769,7 +783,7 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
   aopt.value = "";
   aopt.text = "Add filter...";
   addfilt.appendChild(aopt);
-  add_filt_row("", undefined, "Select field to filter", addfilt);
+  add_filt_row(null, "Select field to filter", addfilt);
   for (let i = 0; i < Catalog.fields.length; i++) {
     const f = Catalog.fields[i];
     const opt = field_option(f);
