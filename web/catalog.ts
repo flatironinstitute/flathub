@@ -520,6 +520,8 @@ class NumericFilter extends Filter {
   lb: HTMLInputElement;
   ub: HTMLInputElement;
   private avg: HTMLSpanElement;
+  private min: HTMLSpanElement;
+  private max: HTMLSpanElement;
 
   private makeBound(w: boolean): HTMLInputElement {
     const b = <HTMLInputElement>document.createElement("input");
@@ -538,14 +540,20 @@ class NumericFilter extends Filter {
     this.lb = this.makeBound(false);
     this.ub = this.makeBound(true);
     this.avg = document.createElement("span");
+    this.min = document.createElement("span");
+    this.max = document.createElement("span");
     this.avg.innerHTML = "<em>loading...</em>";
     this.add(
       $("<span>")
         .append(this.lb)
         .append(" &ndash; ")
         .append(this.ub),
-      $("<span><em>&mu;</em> = </span>").append(this.avg)
-      // $("<button>Apply</button>").on("click", this.reset.bind(this))
+      $("<span>")
+        .append(this.min)
+        .append(" &ndash; ")
+        .append(this.max),
+      $("<span><em>&mu;</em> = </span>").append(this.avg),
+      $("<button>Reset</button>").on("click", this.reset.bind(this))
     );
   }
 
@@ -558,13 +566,16 @@ class NumericFilter extends Filter {
   }
 
   update_aggs(aggs: AggrStats) {
+    const f = render_funct(this.field);
     this.lb.defaultValue = this.lb.min = this.ub.min = <any>aggs.min;
     this.ub.defaultValue = this.lb.max = this.ub.max = <any>aggs.max;
     if (this.lb.disabled) this.lb.disabled = false;
     else this.lb.value = <any>aggs.min;
     if (this.ub.disabled) this.ub.disabled = false;
     else this.ub.value = <any>aggs.max;
-    this.avg.textContent = aggs.avg == null ? 'no data' : render_funct(this.field)(aggs.avg);
+    this.avg.textContent = aggs.avg == null ? 'no data' : f(aggs.avg);
+    this.min.textContent = f(aggs.min);
+    this.max.textContent = f(aggs.max);
   }
 
   change() {
