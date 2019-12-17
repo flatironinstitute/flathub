@@ -1647,67 +1647,6 @@ tng_sub:
       type: float
       units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of masses of all wind-phase cells in this subhalo (with Type==4 and BirthTime&#60;=0).'
-neutrino:
-  title: Neutrino
-  index: neutrino
-  order: 'neutrino'
-  fields:
-    - name: simulation
-      type: keyword
-      flag: top
-    - name: snapshot
-      type: short
-      flag: top
-    - name: time
-      type: half_float
-      flag: hidden
-    - name: redshift
-      type: half_float
-      dict: redshift
-    - name: instance
-      type: byte
-      flag: top
-    - name: Mnu
-      type: half_float
-
-    - name: Len
-      type: integer
-    - name: Offset
-      type: integer
-    - name: Mass
-      type: float
-    - name: Pos
-      type: float
-      sub:
-      - name: "x"
-      - name: "y"
-      - name: "z"
-    - name: Vel
-      type: float
-      sub:
-      - name: "x"
-      - name: "y"
-      - name: "z"
-    - name: LenType
-      type: float
-      sub:
-      - name: gas
-      - name: dm
-      - name: unused
-        flag: hidden
-      - name: tracers
-      - name: stars
-      - name: bh
-    - name: MassType
-      type: float
-      sub:
-      - name: gas
-      - name: dm
-      - name: unused
-        flag: hidden
-      - name: tracers
-      - name: stars
-      - name: bh
 gaea:
   title: GAEA
   descr: >
@@ -4300,7 +4239,7 @@ quijote:
       dict: M
     - name: pos
       dict: pos
-      units: 'kpc/h'
+      units: 'kpc'
       type: float
       sub:
       - name: 'x'
