@@ -17,6 +17,7 @@ import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (ask, asks)
 import qualified Data.Aeson as J
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy as BSL
 import           Data.Char (toUpper)
 import           Data.Foldable (fold)
@@ -24,6 +25,7 @@ import qualified Data.HashMap.Strict as HM
 import           Data.List (find, inits, sortOn)
 import           Data.Maybe (isNothing)
 import           Data.Monoid ((<>))
+import           Data.String (fromString)
 import qualified Data.Text as T
 import qualified Data.Vector as V
 import           Network.HTTP.Types.Header (ResponseHeaders, hAccept, hIfModifiedSince, hLastModified, hContentType)
@@ -35,7 +37,7 @@ import qualified Text.Blaze.Html5 as H hiding (text, textValue)
 import qualified Text.Blaze.Html5.Attributes as HA
 import qualified Waimwork.Blaze as H (text, textValue, preEscapedBuilder)
 import qualified Waimwork.Blaze as WH
-import           Waimwork.HTTP (parseHTTPDate, formatHTTPDate)
+import           Waimwork.HTTP (parseHTTPDate, formatHTTPDate, encodePathSegments')
 import           Waimwork.Response (response, okResponse)
 import           Waimwork.Result (result)
 import qualified Web.Route.Invertible as R
@@ -47,6 +49,7 @@ import Compression
 import Query
 import Monoid
 import Static
+import JSON
 
 jsonEncodingVar :: T.Text -> J.Encoding -> H.Html
 jsonEncodingVar var enc = H.script $ do
@@ -63,6 +66,9 @@ catalogsSorted = sortOn (catalogOrder . snd) . HM.toList . catalogMap
 
 groupingTitle :: Grouping -> Maybe Catalog -> T.Text
 groupingTitle g = maybe (groupTitle g) catalogTitle
+
+vueAttribute :: String -> H.AttributeValue -> H.Attribute
+vueAttribute = H.customAttribute . fromString . ("v-" ++)
 
 htmlResponse :: Wai.Request -> ResponseHeaders -> H.Markup -> M Wai.Response
 htmlResponse req hdrs body = do
@@ -179,7 +185,6 @@ catalogPage = getPath R.parameter $ \sim req -> do
          "name" J..= sim
       <> "title" J..= catalogTitle cat
       <> "descr" J..= catalogDescr cat
-      <> "bulk" J..= map (J.String . R.renderParameter) [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkECSV Nothing, BulkECSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)]
       <> "fields" J..= fields'
     fieldBody :: Word -> FieldGroup -> H.Html
     fieldBody d f = H.span $ do
@@ -370,8 +375,17 @@ catalogPage = getPath R.parameter $ \sim req -> do
                 H.! HA.id "rawdata-btn"
                 H.! HA.onclick "return toggleShowData()"
                 $ "Hide Raw Data"
-              H.p H.! HA.class_ "download" H.! HA.id  "info" $ mempty
-            H.p H.! HA.class_ "download" H.! HA.id "download" $ "Download as:"
+              H.p H.! HA.class_ "download" H.! HA.id "info" $ mempty
+            H.p H.! HA.class_ "download" H.! HA.id "download" $ do
+              "download as"
+              forM_ [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkECSV Nothing, BulkECSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)] $ \b -> do
+                let f = R.renderParameter b
+                " "
+                H.a
+                  H.! HA.id ("download." <> H.textValue f)
+                  H.! HA.class_ "button button-primary"
+                  H.! vueAttribute "bind:href" ((jsLazyByteStringValue $ BSB.toLazyByteString $ encodePathSegments' $ R.requestPath $ R.requestActionRoute catalogBulk (sim, b)) <> "+query")
+                  $ H.text f
 
         H.div H.! HA.class_ "container-fluid catalog-summary raw-data" H.! HA.id "rawdata" $ do
           H.h5 $ "Raw Data"

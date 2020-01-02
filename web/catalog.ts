@@ -1,5 +1,6 @@
 "use strict";
 
+import Vue from "vue";
 import $ from "jquery";
 import Datatables from "datatables.net";
 import Highcharts from "highcharts";
@@ -56,18 +57,14 @@ var Last_fields: string[] = [];
 var Last_query: undefined | Dict<string>;
 var Show_data: boolean = true;
 
-function set_download(query: Dict<string>) {
-  const q = "?" + $.param(query);
-  const h = $("#download").html("download as ");
-  for (let f of Catalog.bulk) {
-    const a = document.createElement("a");
-    h.append(a);
-    a.id = "download." + f;
-    a.className = "button button-primary";
-    a.href = "/" + Catalog.name + "/" + f + q;
-    a.appendChild(document.createTextNode(f));
-    h.append(document.createTextNode(" "));
+const downloadVue = new Vue({
+  data: {
+    query: ''
   }
+});
+
+function set_download(query: Dict<string>) {
+  downloadVue.query = "?" + $.param(query);
   py_text(query);
 }
 
@@ -234,9 +231,9 @@ function histogramDraw(
   Histogram_chart = Highcharts.chart("hist", opts);
 }
 
-function toggleLog() {
+(<any>window).toggleLog = function toggleLog() {
   if (Histogram_chart) toggle_log(Histogram_chart);
-}
+};
 
 (<any>window).histogramShow = function histogramShow(axis: "x" | "y" | "c") {
   if (axis == "x") Heatmap = undefined;
@@ -733,6 +730,7 @@ function toggleShowData(show?: boolean) {
 (<any>window).toggleShowData = toggleShowData;
 
 export function initCatalog(table: JQuery<HTMLTableElement>) {
+  downloadVue.$mount('#download');
   for (let i = 0; i < Catalog.fields.length; i++)
     Fields_idx[Catalog.fields[i].name] = i;
   const topts: DataTables.Settings = {
@@ -814,5 +812,4 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
     colvisUpdate(b);
   toggleShowData(false);
   update();
-  (<any>window).toggleLog = toggleLog;
 }

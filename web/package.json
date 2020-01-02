@@ -122,6 +122,9 @@
         "dependencies": {
           "source-map-support": "*"
         }
+      },
+      "npm:vue@2.6.11": {
+        "main": "dist/vue.common.js"
       }
     }
   }
