@@ -44,17 +44,17 @@ SystemJS.config({
     "npm:*.json"
   ],
   map: {
-    "bootstrap": "npm:bootstrap@4.3.1",
+    "bootstrap": "npm:bootstrap@4.4.1",
     "child_process": "npm:jspm-nodelibs-child_process@0.2.1",
     "assert": "npm:jspm-nodelibs-assert@0.2.1",
     "buffer": "npm:jspm-nodelibs-buffer@0.2.3",
     "constants": "npm:jspm-nodelibs-constants@0.2.1",
     "crypto": "npm:jspm-nodelibs-crypto@0.2.1",
-    "datatables.net": "npm:datatables.net@1.10.19",
-    "datatables.net-dt": "npm:datatables.net-dt@1.10.19",
+    "datatables.net": "npm:datatables.net@1.10.20",
+    "datatables.net-dt": "npm:datatables.net-dt@1.10.20",
     "events": "npm:jspm-nodelibs-events@0.2.2",
     "fs": "npm:jspm-nodelibs-fs@0.2.1",
-    "highcharts": "npm:highcharts@7.2.0",
+    "highcharts": "npm:highcharts@7.2.1",
     "http": "npm:jspm-nodelibs-http@0.2.0",
     "https": "npm:jspm-nodelibs-https@0.2.2",
     "jquery": "npm:jquery@3.4.1",
@@ -78,7 +78,7 @@ SystemJS.config({
   packages: {
     "npm:jspm-nodelibs-buffer@0.2.3": {
       "map": {
-        "buffer": "npm:buffer@5.4.2"
+        "buffer": "npm:buffer@5.4.3"
       }
     },
     "npm:jspm-nodelibs-crypto@0.2.1": {
@@ -107,9 +107,9 @@ SystemJS.config({
         "create-hmac": "npm:create-hmac@1.1.7",
         "inherits": "npm:inherits@2.0.4",
         "browserify-rsa": "npm:browserify-rsa@4.0.1",
-        "parse-asn1": "npm:parse-asn1@5.1.4",
+        "parse-asn1": "npm:parse-asn1@5.1.5",
         "bn.js": "npm:bn.js@4.11.8",
-        "elliptic": "npm:elliptic@6.5.1"
+        "elliptic": "npm:elliptic@6.5.2"
       }
     },
     "npm:browserify-rsa@4.0.1": {
@@ -139,12 +139,6 @@ SystemJS.config({
     "npm:jspm-nodelibs-os@0.2.2": {
       "map": {
         "os-browserify": "npm:os-browserify@0.3.0"
-      }
-    },
-    "npm:des.js@1.0.0": {
-      "map": {
-        "inherits": "npm:inherits@2.0.4",
-        "minimalistic-assert": "npm:minimalistic-assert@1.0.1"
       }
     },
     "npm:hash-base@3.0.4": {
@@ -284,7 +278,7 @@ SystemJS.config({
     "npm:create-ecdh@4.0.3": {
       "map": {
         "bn.js": "npm:bn.js@4.11.8",
-        "elliptic": "npm:elliptic@6.5.1"
+        "elliptic": "npm:elliptic@6.5.2"
       }
     },
     "npm:stream-http@2.8.3": {
@@ -296,23 +290,12 @@ SystemJS.config({
         "readable-stream": "npm:readable-stream@2.3.6"
       }
     },
-    "npm:datatables.net-dt@1.10.19": {
-      "map": {
-        "jquery": "npm:jquery@3.4.1",
-        "datatables.net": "npm:datatables.net@1.10.19"
-      }
-    },
-    "npm:datatables.net@1.10.19": {
-      "map": {
-        "jquery": "npm:jquery@3.4.1"
-      }
-    },
     "npm:browserify-des@1.0.2": {
       "map": {
         "cipher-base": "npm:cipher-base@1.0.4",
         "inherits": "npm:inherits@2.0.4",
         "safe-buffer": "npm:safe-buffer@5.1.2",
-        "des.js": "npm:des.js@1.0.0"
+        "des.js": "npm:des.js@1.0.1"
       }
     },
     "npm:public-encrypt@4.0.3": {
@@ -322,7 +305,7 @@ SystemJS.config({
         "safe-buffer": "npm:safe-buffer@5.1.2",
         "browserify-rsa": "npm:browserify-rsa@4.0.1",
         "bn.js": "npm:bn.js@4.11.8",
-        "parse-asn1": "npm:parse-asn1@5.1.4"
+        "parse-asn1": "npm:parse-asn1@5.1.5"
       }
     },
     "npm:pbkdf2@3.0.17": {
@@ -353,52 +336,69 @@ SystemJS.config({
         "inherits": "npm:inherits@2.0.4"
       }
     },
-    "npm:parse-asn1@5.1.4": {
-      "map": {
-        "browserify-aes": "npm:browserify-aes@1.2.0",
-        "evp_bytestokey": "npm:evp_bytestokey@1.0.3",
-        "pbkdf2": "npm:pbkdf2@3.0.17",
-        "create-hash": "npm:create-hash@1.2.0",
-        "safe-buffer": "npm:safe-buffer@5.1.2",
-        "asn1.js": "npm:asn1.js@4.10.1"
-      }
-    },
     "npm:randombytes@2.1.0": {
       "map": {
         "safe-buffer": "npm:safe-buffer@5.1.2"
       }
     },
-    "npm:buffer@5.4.2": {
+    "npm:typescript@2.8.4": {
+      "map": {
+        "source-map-support": "npm:source-map-support@0.5.16"
+      }
+    },
+    "npm:datatables.net-dt@1.10.20": {
+      "map": {
+        "jquery": "npm:jquery@3.4.1",
+        "datatables.net": "npm:datatables.net@1.10.20"
+      }
+    },
+    "npm:datatables.net@1.10.20": {
+      "map": {
+        "jquery": "npm:jquery@3.4.1"
+      }
+    },
+    "npm:buffer@5.4.3": {
       "map": {
         "ieee754": "npm:ieee754@1.1.13",
         "base64-js": "npm:base64-js@1.3.1"
       }
     },
-    "npm:elliptic@6.5.1": {
+    "npm:bootstrap@4.4.1": {
+      "map": {
+        "tether": "github:shipshapecode/tether@1.4.7"
+      }
+    },
+    "npm:parse-asn1@5.1.5": {
+      "map": {
+        "browserify-aes": "npm:browserify-aes@1.2.0",
+        "pbkdf2": "npm:pbkdf2@3.0.17",
+        "create-hash": "npm:create-hash@1.2.0",
+        "evp_bytestokey": "npm:evp_bytestokey@1.0.3",
+        "safe-buffer": "npm:safe-buffer@5.1.2",
+        "asn1.js": "npm:asn1.js@4.10.1"
+      }
+    },
+    "npm:elliptic@6.5.2": {
       "map": {
         "bn.js": "npm:bn.js@4.11.8",
         "inherits": "npm:inherits@2.0.4",
-        "hash.js": "npm:hash.js@1.1.7",
+        "brorand": "npm:brorand@1.1.0",
         "minimalistic-assert": "npm:minimalistic-assert@1.0.1",
         "hmac-drbg": "npm:hmac-drbg@1.0.1",
-        "brorand": "npm:brorand@1.1.0",
+        "hash.js": "npm:hash.js@1.1.7",
         "minimalistic-crypto-utils": "npm:minimalistic-crypto-utils@1.0.1"
       }
     },
-    "npm:typescript@2.8.4": {
+    "npm:source-map-support@0.5.16": {
       "map": {
-        "source-map-support": "npm:source-map-support@0.5.13"
+        "source-map": "npm:source-map@0.6.1",
+        "buffer-from": "npm:buffer-from@1.1.1"
       }
     },
-    "npm:source-map-support@0.5.13": {
+    "npm:des.js@1.0.1": {
       "map": {
-        "buffer-from": "npm:buffer-from@1.1.1",
-        "source-map": "npm:source-map@0.6.1"
-      }
-    },
-    "npm:bootstrap@4.3.1": {
-      "map": {
-        "tether": "github:shipshapecode/tether@1.4.7"
+        "inherits": "npm:inherits@2.0.4",
+        "minimalistic-assert": "npm:minimalistic-assert@1.0.1"
       }
     }
   }
