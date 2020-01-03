@@ -266,6 +266,16 @@ function update(paging: boolean = true) {
   modal.classList.remove("hidden");
 }
 
+function visibleFields(): string[] {
+  if (Show_data) {
+    return TCat.columns(":visible").dataSrc().toArray();
+  } else {
+    const cols = TCat.columns();
+    const cvis = (<any>cols.visible()).toArray();
+    return cols.dataSrc().toArray().filter((n, i) => cvis[i]);
+  }
+}
+
 function ajax(data: any, callback: (data: any) => void, opts: any) {
   const query: Dict<string> = {
     sort: data.order
@@ -293,9 +303,7 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
 
   query.offset = data.start;
   query.limit = Show_data ? data.length : 0;
-  Last_fields = TCat.columns(":visible")
-    .dataSrc()
-    .toArray();
+  Last_fields = visibleFields();
   query.fields = Last_fields.join(" ");
   if (aggs) query.aggs = aggs.map(filt => filt.name).join(" ");
   const histogram = Histogram;
@@ -662,7 +670,7 @@ function columnVisible(name: string, vis: boolean) {
     document.getElementsByClassName("colvis-" + name)
   )) as Element[])
     colvisUpdate(<HTMLInputElement>b, vis);
-  if (vis && Last_fields.indexOf(name) < 0) {
+  if (Show_data && vis && Last_fields.indexOf(name) < 0) {
     update(false);
     updateMathJax();
   }
@@ -678,10 +686,7 @@ function columnVisible(name: string, vis: boolean) {
   if (!box.indeterminate)
     for (let n of colvisNames(box)) columnVisible(n, box.checked);
   if (Last_query) {
-    Last_query.fields = TCat.columns(":visible")
-      .dataSrc()
-      .toArray()
-      .join(" ");
+    Last_query.fields = visibleFields().join(' ');
     set_download(Last_query);
   }
 };
