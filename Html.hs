@@ -35,6 +35,7 @@ import           Network.Wai.Parse (parseHttpAccept)
 import qualified System.FilePath as FP
 import qualified Text.Blaze.Html5 as H hiding (text, textValue)
 import qualified Text.Blaze.Html5.Attributes as HA
+import qualified Text.Blaze.Internal as H (customParent)
 import qualified Waimwork.Blaze as H (text, textValue, preEscapedBuilder)
 import qualified Waimwork.Blaze as WH
 import           Waimwork.HTTP (parseHTTPDate, formatHTTPDate, encodePathSegments')
@@ -225,7 +226,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                     H.!? (isNothing (fieldSub g), HA.id $ H.textValue $ key f)
                     H.! HA.class_ (H.textValue $ T.unwords $ "colvis" : map key fs)
                     H.!? (fieldDisp g, HA.checked "checked")
-                    H.! HA.onclick "return colvisSet(event)"
+                    H.! HA.onclick "colvisSet(event)"
                 H.text (fieldTitle g)
             H.td $ when (isNothing (fieldSub g)) (H.text (fieldName f))
             H.td $ H.string (show $ fieldType g)
@@ -261,18 +262,20 @@ catalogPage = getPath R.parameter $ \sim req -> do
                         H.a H.! HA.class_ "nav-link" $ "Select " <> H.string [toUpper x] <> " Axis"
                       H.select H.! HA.id ("histsel-" <> H.stringValue [x]) $ do
                         forM_ (catalogFields cat) $ \f ->
-                          when (typeIsFloating (fieldType f)) $
+                          when (typeIsFloating (fieldType f)) $ do
+                            let n = H.textValue $ fieldName f
                             H.option
-                              H.! HA.class_ ("sel-" <> H.textValue (fieldName f))
+                              H.! HA.class_ ("sel-" <> n)
                               H.!? (not $ fieldDisp f, HA.style "display:none")
-                              H.! HA.value (H.textValue $ fieldName f) $ H.text $ fieldTitle f
-                    H.button H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick ("return histogramShow(" <> H.stringValue (show x) <> ")") $ do
+                              H.! HA.value n
+                              $ H.text $ fieldTitle f
+                    H.button H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick ("histogramShow(" <> H.stringValue (show x) <> ")") $ do
                       "View "
                       if x == 'x' then "Histogram" else "Heatmap"
                     when (x == 'x') $
-                      H.button H.! HA.id "hist-y-tog" H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick "return toggleLog()" $ "Toggle lin/log"
+                      H.button H.! HA.id "hist-y-tog" H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick "toggleLog()" $ "Toggle lin/log"
                     when (x == 'y') $
-                      H.button H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick ("return histogramShow('c')") $
+                      H.button H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick ("histogramShow('c')") $
                         "Conditional distribution"
               H.div H.! HA.class_ "alert alert-danger" H.! HA.id "error" $ mempty
               H.div H.! HA.id "hist" $ mempty
@@ -301,7 +304,68 @@ catalogPage = getPath R.parameter $ \sim req -> do
                     H.div
                       H.! HA.id "filt"
                       H.! HA.class_ "alert-parent"
-                      H.! HA.role "alert" $ mempty
+                      H.! HA.role "alert" $ do
+                      H.div
+                        H.! vueAttribute "for" "filter in filters"
+                        H.! vueAttribute "bind:id" "'filt-'+filter.field.name"
+                        H.! HA.class_ "alert fade show row filter-row"
+                        H.! vueAttribute "bind:class" "\
+                          \{'alert-info':filter.field.flag!==undefined\
+                          \,'alert-warning':filter.field.flag===undefined\
+                          \,'alert-horz':filter.field.flag===undefined\
+                          \}"
+                        $ do
+                        H.div H.! HA.class_ "filter-text" $
+                          H.customParent "field-title"
+                            H.! vueAttribute "bind:field" "filter.field"
+                            H.! vueAttribute "bind:rmf" "filter.field.flag?undefined:filter.remove.bind(filter)"
+                            $ mempty
+                        H.div H.! HA.class_ "filter-avg"
+                          H.! vueAttribute "if" "filter.aggs.avg!==undefined"
+                          $ do
+                          H.em $ H.preEscapedString "&mu;"
+                          " = {{filter.aggs.avg?filter.render(filter.aggs.avg):'no data'}}"
+                        H.div H.! HA.class_ "filter-inputs" $ do
+                          H.customParent "select-terms"
+                            H.! vueAttribute "if" "filter.field.terms"
+                            H.! vueAttribute "bind:field" "filter.field"
+                            H.! vueAttribute "bind:aggs" "filter.aggs"
+                            H.! vueAttribute "model" "filter.value"
+                            H.! vueAttribute "bind:change" "filter.change.bind(filter)"
+                            $ mempty
+                          H.div
+                            H.! vueAttribute "else" "" $ do
+                            forM_ [False, True] $ \b ->
+                              H.div H.! HA.class_ "filter-input" $ do
+                                H.input
+                                  H.! vueAttribute "bind:name" ("filter.field.name+'." <> (if b then "u" else "l") <> "b'")
+                                  H.! vueAttribute "bind:title" ("'" <> (if b then "Upper" else "Lower") <> " bound for '+filter.field.title+' values'")
+                                  H.! HA.type_ "number"
+                                  H.! vueAttribute "bind:step" "filter.field.base=='i'?'1':'any'"
+                                  -- H.! HA.disabled "disabled"
+                                  H.! vueAttribute "bind:min" "filter.aggs.min"
+                                  H.! vueAttribute "bind:max" "filter.aggs.max"
+                                  H.! vueAttribute "model.number" ("filter." <> (if b then "ubv" else "lbv"))
+                                  H.! vueAttribute "on:change" "filter.change()"
+                                H.p $ "{{filter.render(filter.aggs." <> (if b then "max" else "min") <> ")}}"
+                            H.button H.! HA.class_ "filter-reset"
+                              H.! vueAttribute "on:click" "filter.reset()"
+                              $ "Reset"
+                      H.div H.! HA.class_ "alert fade show row filter-row alert-secondary" $ do
+                        H.div H.! HA.class_ "filter-text" $
+                          "Select field to filter"
+                        H.div H.! HA.class_ "filter-inputs" $
+                          H.select H.! HA.id "addfilt" H.! HA.onchange "addFilter(event.target.value)" $ do
+                            H.option H.! HA.value "" $ "Add filter..."
+                            forM_ (catalogFields cat) $ \f -> do
+                              let n = H.textValue $ fieldName f
+                              H.option
+                                H.! HA.value n
+                                H.! HA.id ("addfilt-" <> n)
+                                H.! HA.class_ ("sel-" <> n)
+                                H.!? (not $ fieldDisp f, HA.style "display:none")
+                                -- H.! vueAttribute "bind:style" ("{display:disp[" <> WH.lazyByteStringValue (J.encode $ fieldName f) <> "]?'':'none'}")
+                                $ H.text $ fieldTitle f
                   H.div H.! HA.class_ "right-column-group" $ do
                     H.h6 H.! HA.class_ "right-column-heading" $ "Random Sample"
                     H.div H.! HA.class_ "sample-row" $ do
@@ -315,7 +379,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                         H.! HA.max "1"
                         H.! HA.value (H.toValue $ querySample query)
                         H.! HA.title "Probability (0,1] with which to include each item"
-                        H.! HA.onchange "return sampleChange()"
+                        H.! HA.onchange "sampleChange()"
                       H.label H.! HA.for "seed" $ "seed"
                       H.input
                         H.! HA.id "seed"
@@ -326,7 +390,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                         WH.!? (HA.value . H.toValue <$> querySeed query)
                         H.!? (querySample query < 1, HA.disabled "disabled")
                         H.! HA.title "Random seed to generate sample selection"
-                        H.! HA.onchange "return sampleChange()"
+                        H.! HA.onchange "sampleChange()"
                 H.div
                   H.! HA.class_ "tab-pane fade"
                   H.! HA.id "Python"
@@ -373,7 +437,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                 H.! HA.type_ "button"
                 H.! HA.class_ "btn btn-warning"
                 H.! HA.id "rawdata-btn"
-                H.! HA.onclick "return toggleShowData()"
+                H.! HA.onclick "toggleShowData()"
                 $ "Hide Raw Data"
               H.p H.! HA.class_ "download" H.! HA.id "info" $ mempty
             H.p H.! HA.class_ "download" H.! HA.id "download" $ do
@@ -488,19 +552,19 @@ comparePage = getPath ("compare" R.*< R.manyI R.parameter) $ \path req -> do
       H.table H.! HA.id "tcompare" H.! HA.class_ "u-full-width" $ do
         H.thead $ H.tr $ do
           H.th "Choose two or more catalogs"
-          H.td $ H.select H.! HA.name "selcat" H.! HA.onchange "return selectCat(event.target)" $ do
+          H.td $ H.select H.! HA.name "selcat" H.! HA.onchange "selectCat(event.target)" $ do
             H.option H.! HA.value mempty H.! HA.selected "selected" $ "Choose catalog..."
             forM_ (catalogsSorted cats) $ \(sim, cat) ->
               H.option H.! HA.value (H.textValue sim) $ H.text $ catalogTitle cat
         H.tbody $ mempty
         H.tfoot $ do
           H.tr H.! HA.id "tr-add" $
-            H.td $ H.select H.! HA.id "addf"  H.! HA.onchange "return addField()"  $ mempty
+            H.td $ H.select H.! HA.id "addf"  H.! HA.onchange "addField()"  $ mempty
           H.tr H.! HA.id "tr-comp" $
-            H.td $ H.select H.! HA.id "compf" H.! HA.onchange "return compField()" $ mempty
-      H.button H.! HA.id "hist-tog" H.! HA.disabled "disabled" H.! HA.onclick "return histogramComp()" $ "histogram"
+            H.td $ H.select H.! HA.id "compf" H.! HA.onchange "compField()" $ mempty
+      H.button H.! HA.id "hist-tog" H.! HA.disabled "disabled" H.! HA.onclick "histogramComp()" $ "histogram"
       H.div H.! HA.id "dhist" $ do
-        H.button H.! HA.id "hist-y-tog" H.! HA.onclick "return toggleLog()" $
+        H.button H.! HA.id "hist-y-tog" H.! HA.onclick "toggleLog()" $
           "Toggle lin/log"
         H.div H.! HA.id "hist" $ mempty
 

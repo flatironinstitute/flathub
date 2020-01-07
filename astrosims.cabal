@@ -42,6 +42,7 @@ executable astrosims
     , aeson
     , attoparsec
     , blaze-html
+    , blaze-markup
     , bytestring
     , bzlib
     , cassava
