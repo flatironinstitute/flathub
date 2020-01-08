@@ -133,9 +133,9 @@ export function field_title(
   return h;
 }
 
-export function render_funct(field: Field): (data: any) => string {
+export function render_funct(field: Field, prec: number = 8): (data: any) => string {
   if (field.base === "f")
-    return data => (data != undefined ? parseFloat(data).toPrecision(8) : data);
+    return data => (data != undefined ? parseFloat(data).toPrecision(prec) : data);
   if (field.enum) {
     const e: string[] = field.enum;
     return data => (data in e ? e[data] : data);
@@ -167,6 +167,7 @@ export function axis_title(f: Field) {
 
 export function histogram_options(f: Field): Highcharts.Options {
   const render = render_funct(f);
+  const renders = render_funct(f, 3);
   return {
     chart: {
       animation: false,
@@ -184,12 +185,18 @@ export function histogram_options(f: Field): Highcharts.Options {
     xAxis: {
       type: "linear",
       title: axis_title(f),
-      gridLineWidth: 1
+      gridLineWidth: 1,
+      labels: {
+        formatter: function() {
+          return renders(this.value);
+        }
+      }
     },
     yAxis: {
       id: "tog",
       type: "linear",
       title: { text: "Count" },
+      allowDecimals: false,
       min: 0
     },
     tooltip: {

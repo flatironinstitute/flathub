@@ -132,10 +132,7 @@ function histogramDraw(
   if (heatmap) {
     opts.colorAxis = <Highcharts.ColorAxisOptions>opts.yAxis;
     opts.colorAxis.reversed = false;
-    opts.yAxis = {
-      type: "linear",
-      title: axis_title(heatmap)
-    };
+    opts.yAxis = histogram_options(heatmap).xAxis;
   }
   if (heatmap && !cond) {
     (<Highcharts.ChartOptions>opts.chart).zoomType = "xy";
