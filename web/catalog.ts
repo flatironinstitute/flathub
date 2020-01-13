@@ -304,7 +304,7 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
   query.offset = data.start;
   query.limit = Show_data ? data.length : 0;
   Last_fields = visibleFields();
-  query.fields = Last_fields.join(" ");
+  query.fields = Show_data ? Last_fields.join(" ") : "";
   if (aggs) query.aggs = aggs.map(filt => filt.name).join(" ");
   const histogram = Histogram;
   const heatmap = Histogram && Heatmap;
@@ -359,6 +359,8 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
         else
           $('#hist').text('No data for histogram');
       }
+      if (!Show_data)
+        query.fields = Last_fields.join(" ");
       delete query.aggs;
       delete query.hist;
       url_update(query);
