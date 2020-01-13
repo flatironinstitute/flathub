@@ -140,8 +140,11 @@ function histogramDraw(
       selection: function(event: Highcharts.ChartSelectionContextObject) {
         event.preventDefault();
         zoomRange(hist, xwid, event.xAxis[0]);
-        const hm = add_filter(Fields_idx[heatmap.name]);
-        if (hm instanceof NumericFilter) zoomRange(hm, ywid, event.yAxis[0]);
+        const i = Update_aggs;
+        zoomRange(heatmap, ywid, event.yAxis[0]);
+        /* make sure both filters apply, in case y happens to be above x */
+        if (Update_aggs < i)
+          Update_aggs = i;
         return false; // Don't zoom
       }
     };
@@ -469,7 +472,8 @@ abstract class Filter {
 
   protected change(search: any, vis: boolean) {
     const i = Filters.indexOf(this);
-    if (i >= 0 && Update_aggs > i) Update_aggs = i + 1;
+    /* we want this filter to take effect, so only update later ones */
+    if (i >= 0) Update_aggs = i + 1;
     columnVisible(this.name, vis);
     update();
   }
@@ -595,10 +599,8 @@ class NumericFilter extends Filter {
     const f = render_funct(this.field);
     this.lb.defaultValue = this.lb.min = this.ub.min = <any>aggs.min;
     this.ub.defaultValue = this.lb.max = this.ub.max = <any>aggs.max;
-    if (this.lb.disabled) this.lb.disabled = false;
-    else this.lb.value = <any>aggs.min;
-    if (this.ub.disabled) this.ub.disabled = false;
-    else this.ub.value = <any>aggs.max;
+    this.lb.disabled = false;
+    this.ub.disabled = false;
     this.avg.textContent = aggs.avg == null ? 'no data' : f(aggs.avg);
     this.min.textContent = f(aggs.min);
     this.max.textContent = f(aggs.max);
