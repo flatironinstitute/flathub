@@ -256,7 +256,8 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreFiel
 
   -- add hist field sizes (widths) to final result
   amend :: HM.HashMap T.Text (Either (TypeValue []) Value) -> J.Value -> J.Value
-  amend h (J.Object o) | not (HM.null h) = J.Object $ HM.insert "histsize" (J.toJSON h) o
+  amend h (J.Object o) | not (HM.null h') = J.Object $ HM.insert "histsize" (J.toJSON h') o where
+    h' = HM.mapMaybe (either (const Nothing) Just) h
   amend _ j = j
 
   filts = "bool" .=* ("filter" `JE.pair` JE.list (\f -> JE.pairs $ unTypeValue (term f) $ fieldType f) queryFilter)
