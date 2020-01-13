@@ -49,7 +49,7 @@ var Sample: number = 1;
 var Seed: undefined | number;
 var Update_aggs: number = -1;
 var Histogram: undefined | NumericFilter;
-var Heatmap: undefined | Field;
+var Heatmap: undefined | NumericFilter;
 var Histcond: boolean = false;
 var Histogram_chart: Highcharts.Chart | undefined;
 var Last_fields: string[] = [];
@@ -93,7 +93,7 @@ function zoomRange(
 
 function histogramDraw(
   hist: NumericFilter,
-  heatmap: undefined | Field,
+  heatmap: undefined | NumericFilter,
   cond: boolean,
   agg: AggrTerms<number>,
   size: Dict<number>
@@ -132,7 +132,7 @@ function histogramDraw(
   if (heatmap) {
     opts.colorAxis = <Highcharts.ColorAxisOptions>opts.yAxis;
     opts.colorAxis.reversed = false;
-    opts.yAxis = histogram_options(heatmap).xAxis;
+    opts.yAxis = histogram_options(heatmap.field).xAxis;
   }
   if (heatmap && !cond) {
     (<Highcharts.ChartOptions>opts.chart).zoomType = "xy";
@@ -145,7 +145,7 @@ function histogramDraw(
         return false; // Don't zoom
       }
     };
-    const rendery = render_funct(heatmap);
+    const rendery = render_funct(heatmap.field);
     (<Highcharts.TooltipOptions>opts.tooltip).formatter = function(this: Highcharts.TooltipFormatterContextObject): string {
       const p = this.point;
       return (
@@ -236,15 +236,20 @@ function toggleLog() {
 }
 
 (<any>window).histogramShow = function histogramShow(axis: "x" | "y" | "c") {
-  if (axis == "x") Heatmap = undefined;
-  else {
-    const sely = <HTMLSelectElement>document.getElementById("histsel-y");
-    Heatmap = Catalog.fields[Fields_idx[sely.value]];
-    Histcond = axis == "c";
-  }
   const selx = <HTMLSelectElement>document.getElementById("histsel-x");
   const filt = add_filter(Fields_idx[selx.value]);
-  if (filt instanceof NumericFilter) Histogram = filt;
+  if (filt instanceof NumericFilter) {
+    Histogram = filt;
+    Heatmap = undefined;
+    if (axis != "x") {
+      const sely = <HTMLSelectElement>document.getElementById("histsel-y");
+      const heat = add_filter(Fields_idx[sely.value]);
+      if (heat instanceof NumericFilter) {
+        Heatmap = heat;
+        Histcond = axis == "c";
+      }
+    }
+  }
   else histogramRemove();
   update(false);
 };
