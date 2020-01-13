@@ -44,6 +44,8 @@ export type AggrStats = {
 export type AggrTerms<T> = {
   buckets: Array<{
     key: T;
+    from?: T;
+    to?: T;
     doc_count: number;
     hist?: AggrTerms<any>;
     pct?: { values: Dict<number> };
@@ -165,7 +167,7 @@ export function axis_title(f: Field) {
   };
 }
 
-export function histogram_options(f: Field): Highcharts.Options {
+export function histogram_options(f: Field, log: boolean = false): Highcharts.Options {
   const render = render_funct(f);
   const renders = render_funct(f, 3);
   return {
@@ -183,7 +185,7 @@ export function histogram_options(f: Field): Highcharts.Options {
       enabled: false
     },
     xAxis: {
-      type: "linear",
+      type: log ? "logarithmic" : "linear",
       title: axis_title(f),
       gridLineWidth: 1,
       labels: {
@@ -202,18 +204,16 @@ export function histogram_options(f: Field): Highcharts.Options {
     tooltip: {
       animation: false,
       formatter: function(this: Highcharts.TooltipFormatterContextObject): string {
+        const wid = <number>(<Highcharts.SeriesColumnOptions>this.series.options).pointInterval;
         return (
-          "[" +
-          render(this.x) +
-          "," +
-          render(
-            this.x +
-              <number>(
-                (<Highcharts.SeriesColumnOptions>this.series.options)
-                  .pointInterval
-              )
-          ) +
-          "): " +
+          (wid ?
+            "[" +
+            render(this.x) +
+            "," +
+            render(this.x + wid) +
+          ")"
+          : render(this.x))
+          + ": " +
           this.y
         );
       }
