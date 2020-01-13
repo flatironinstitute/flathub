@@ -2,6 +2,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE ViewPatterns #-}
 
@@ -75,10 +76,12 @@ parseQuery cat req = fill $ foldl' parseQueryItem mempty $ Wai.queryString req w
   parseSort (lookf -> Just f) = return (f, True)
   parseSort _ = fail "invalid sort"
   parseHist [] = return []
-  parseHist ((spl (':' ==) -> Just (lookf -> Just f, rmbs -> Just n)) : l) = mkHist f n =<< parseHist l
-  parseHist ((                      lookf -> Just f                 ) :[]) = return [QueryPercentiles f [0,25,50,75,100]]
-  parseHist ((                      lookf -> Just f                 ) : l) = mkHist f 16 =<< parseHist l
+  parseHist ((spl (':' ==) -> Just (lookf -> Just f, histn -> Just n)) : l) = mkHist f n =<< parseHist l
+  parseHist ((                      lookf -> Just f                  ) :[]) = return [QueryPercentiles f [0,25,50,75,100]]
+  parseHist ((                      lookf -> Just f                  ) : l) = mkHist f (False, 16) =<< parseHist l
   parseHist _ = fail "invalid hist"
+  histn s = (t, ) <$> rmbs r where
+    (t, r) = maybe (False, s) (True ,) $ BS.stripPrefix "log" s
   parseFilt f (spl delim -> Just (a, b)) = FilterRange <$> parseVal f a <*> parseVal f b
   parseFilt f a = FilterEQ <$> parseVal' f a
   parseVal _ "" = return Nothing
@@ -86,8 +89,8 @@ parseQuery cat req = fill $ foldl' parseQueryItem mempty $ Wai.queryString req w
   parseVal' f = fmap fieldType . parseFieldValue f . TE.decodeUtf8
   eqAgg (QueryStats f) (QueryStats g) = fieldName f == fieldName g
   eqAgg _ _ = False
-  mkHist f n l
-    | typeIsNumeric (fieldType f) = return $ [QueryHist f n l]
+  mkHist f (t, n) l
+    | typeIsNumeric (fieldType f) = return $ [QueryHist f n t l]
     | otherwise = fail "non-numeric hist"
   fill q@Query{ queryFields = [] } | all (("fields" /=) . fst) (Wai.queryString req) =
     q{ queryFields = filter fieldDisp $ catalogFields cat }
@@ -116,7 +119,7 @@ catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do
       res <- ES.queryIndex cat query
       return $ okResponse [] $ clean store res
   where
-  histSize (QueryHist _ n l) = n * histsSize l
+  histSize (QueryHist _ n _ l) = n * histsSize l
   histSize _ = 1
   histsSize = product . map histSize
   clean store = mapObject $ HM.mapMaybeWithKey (cleanTop store)

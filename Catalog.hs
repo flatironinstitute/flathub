@@ -290,6 +290,7 @@ data QueryAgg
   | QueryHist
     { queryAggField :: Field
     , queryHistSize :: Word
+    , queryHistLog :: Bool
     , queryHistAggs :: [QueryAgg]
     }
 
