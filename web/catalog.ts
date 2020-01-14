@@ -84,9 +84,11 @@ function zoomRange(
   wid: number,
   axis: Highcharts.AxisOptions
 ) {
+  /* FIXME histLog may have been updated since plot? */
+  const unlog = f.histLog ? Math.exp : (x: number) => x;
   f.setRange(
-    wid ? wid * Math.floor(<number>axis.min / wid) : <number>axis.min,
-    wid ? wid * Math.ceil(<number>axis.max / wid) : <number>axis.max
+    unlog(wid ? wid * Math.floor(<number>axis.min / wid) : <number>axis.min),
+    unlog(wid ? wid * Math.ceil(<number>axis.max / wid) : <number>axis.max)
   );
   f.change();
 }
@@ -100,14 +102,14 @@ function histogramDraw(
 ) {
   const field = hist.field;
   const data: number[][] = [];
-  let xwid = size[field.name] / 2 || 0;
-  let ywid = heatmap ? size[heatmap.name] / 2 || 0 : NaN;
+  let xwid = size[field.name] / 2;
+  let ywid = heatmap ? size[heatmap.name] / 2 : NaN;
   let cmax = 0;
-  const key = (x: any) => 'from' in x ? x.from : x.key;
+  const key = (x: {key: any}) => parseFloat(x.key);
   for (let x of agg.buckets) {
     if (heatmap) {
       if (cond && x.pct) {
-        data.push([
+        if (x.doc_count) data.push([
           key(x) + xwid,
           x.pct.values["0.0"],
           x.pct.values["25.0"],
@@ -119,8 +121,8 @@ function histogramDraw(
         if (x.doc_count > cmax) cmax = x.doc_count;
       } else if (x.hist)
         for (let y of x.hist.buckets)
-          data.push([key(x) + xwid, key(y) + ywid, y.doc_count]);
-    } else data.push([key(x), x.doc_count]);
+          if (y.doc_count) data.push([key(x) + xwid, key(y) + ywid, y.doc_count]);
+    } else if (x.doc_count) data.push([key(x), x.doc_count]);
   }
   if (data.length <= 1) {
     histogramRemove();
@@ -129,7 +131,7 @@ function histogramDraw(
   }
 
   const opts: Highcharts.Options = histogram_options(field, hist.histLog);
-  const renderx = render_funct(hist.field);
+  const renderx = render_funct(hist.field, hist.histLog);
   if (heatmap) {
     opts.colorAxis = <Highcharts.ColorAxisOptions>opts.yAxis;
     opts.colorAxis.reversed = false;
@@ -149,7 +151,7 @@ function histogramDraw(
         return false; // Don't zoom
       }
     };
-    const rendery = render_funct(heatmap.field);
+    const rendery = render_funct(heatmap.field, heatmap.histLog);
     (<Highcharts.TooltipOptions>opts.tooltip).formatter = function(this: Highcharts.TooltipFormatterContextObject): string {
       const p = this.point;
       return (
@@ -178,8 +180,8 @@ function histogramDraw(
       <Highcharts.SeriesHeatmapOptions>{
         type: "heatmap",
         data: data,
-        colsize: 2 * xwid || null,
-        rowsize: 2 * ywid || null
+        colsize: 2 * xwid,
+        rowsize: 2 * ywid
       }
     ];
   } else {
@@ -192,8 +194,8 @@ function histogramDraw(
       }
     };
     (<Highcharts.TooltipOptions>opts.tooltip).footerFormat = "drag to filter";
-    (<Highcharts.AxisOptions>opts.xAxis).min = hist.lbv;
-    (<Highcharts.AxisOptions>opts.xAxis).max = hist.ubv + wid;
+    (<Highcharts.AxisOptions>opts.xAxis).min = hist.histLog ? Math.log(hist.lbv) : hist.lbv;
+    (<Highcharts.AxisOptions>opts.xAxis).max = hist.histLog ? Math.log(hist.ubv + wid) : hist.ubv + wid;
     if (heatmap) {
       /* condmedian */
       (<Highcharts.TooltipOptions>opts.tooltip).formatter = function(
@@ -234,8 +236,8 @@ function histogramDraw(
           showInLegend: true,
           type: "column",
           data: data,
-          pointInterval: wid || null,
-          pointRange: wid || null,
+          pointInterval: wid,
+          pointRange: wid,
           color: "#0008"
         }
       ];
@@ -802,8 +804,6 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
     };
   });
   TCat = table.DataTable(topts);
-  /* for debugging: */
-  (<any>window).TCat = TCat;
   const addfilt = <HTMLSelectElement>document.createElement("select");
   addfilt.id = "addfilt";
   const aopt = document.createElement("option");

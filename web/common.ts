@@ -135,9 +135,11 @@ export function field_title(
   return h;
 }
 
-export function render_funct(field: Field, prec: number = 8): (data: any) => string {
-  if (field.base === "f")
-    return data => (data != undefined ? parseFloat(data).toPrecision(prec) : data);
+export function render_funct(field: Field, log: boolean = false, prec: number = 8): (data: any) => string {
+  if (field.base === "f") {
+    const p = log ? (x: any) => Math.exp(parseFloat(x)) : parseFloat;
+    return data => (data != undefined ? p(data).toPrecision(prec) : data);
+  }
   if (field.enum) {
     const e: string[] = field.enum;
     return data => (data in e ? e[data] : data);
@@ -168,8 +170,8 @@ export function axis_title(f: Field) {
 }
 
 export function histogram_options(f: Field, log: boolean = false): Highcharts.Options {
-  const render = render_funct(f);
-  const renders = render_funct(f, 3);
+  const render = render_funct(f, log);
+  const renders = render_funct(f, log, 3);
   return {
     chart: {
       animation: false,
@@ -185,7 +187,7 @@ export function histogram_options(f: Field, log: boolean = false): Highcharts.Op
       enabled: false
     },
     xAxis: {
-      type: log ? "logarithmic" : "linear",
+      type: /* log ? "logarithmic" : */ "linear",
       title: axis_title(f),
       gridLineWidth: 1,
       labels: {
