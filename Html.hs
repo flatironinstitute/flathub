@@ -294,6 +294,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                   H.! H.customAttribute "aria-labelledby" "filter-tab" $ do
                   H.div H.! HA.class_ "right-column-group" $ do
                     H.h6 H.! HA.class_ "right-column-heading" $ "Active Filters"
+                    H.a H.! HA.class_ "button button-primary" H.! HA.href (WH.routeActionValue catalogPage sim mempty) $ "reset all"
                     H.div
                       H.! HA.id "filt"
                       H.! HA.class_ "alert-parent"
