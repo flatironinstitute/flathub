@@ -13,6 +13,7 @@ module Catalog
   , groupingCatalog
   , Groupings(..)
   , lookupGrouping
+  , findGroupsCatalog
   , Catalogs(..)
   , pruneCatalogs
   , catalogGrouping
@@ -188,6 +189,15 @@ groupingCatalogs Grouping{ groupings = g } = groupingsCatalogs g
 
 groupingsCatalogs :: Groupings -> HS.HashSet T.Text
 groupingsCatalogs Groupings{ groupList = v } = foldMap groupingCatalogs v
+
+findGroupCatalog :: T.Text -> Grouping -> [[T.Text]]
+findGroupCatalog t (GroupCatalog s)
+  | s == t = [[s]]
+  | otherwise = []
+findGroupCatalog t Grouping{ groupName = n, groupings = g } = map (n:) $ findGroupsCatalog t g
+
+findGroupsCatalog :: T.Text -> Groupings -> [[T.Text]]
+findGroupsCatalog t = foldMap (findGroupCatalog t) . groupList
 
 data Catalogs = Catalogs
   { catalogDict :: [Field]

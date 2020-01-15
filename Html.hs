@@ -12,7 +12,7 @@ module Html
   , staticHtml
   ) where
 
-import           Control.Monad (forM_, when)
+import           Control.Monad (forM_, when, unless)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (ask, asks)
 import qualified Data.Aeson as J
@@ -172,6 +172,7 @@ topPage = getPath R.unit $ \() req -> do
 catalogPage :: Route Simulation
 catalogPage = getPath R.parameter $ \sim req -> do
   cat <- askCatalog sim
+  groups <- asks (catalogGroupings . globalCatalogs)
   let
     fields = catalogFieldGroups cat
     fields' = catalogFields cat
@@ -361,6 +362,11 @@ catalogPage = getPath R.parameter $ \sim req -> do
                   H.div H.! HA.class_ "right-column-group" $ do
                     H.h6 H.! HA.class_ "right-column-heading" $ "About Catalog"
                     mapM_ (H.p . H.preEscapedText) $ catalogDescr cat
+                    let gs = findGroupsCatalog sim groups
+                    unless (null gs) $ H.div $ do
+                      "More under:"
+                      H.ul $ forM_ gs $ \g ->
+                        H.li $ H.a H.! HA.href (WH.routeActionValue groupPage g mempty) $ mintersperseMap "/" H.text g
 
         H.div H.! HA.class_ "container-fluid catalog-summary" $ do
           -- H.p H.! HA.id "count" $ mempty
