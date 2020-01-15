@@ -186,6 +186,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
          "name" J..= sim
       <> "title" J..= catalogTitle cat
       <> "descr" J..= catalogDescr cat
+      <> foldMap ("count" J..=) (catalogCount cat)
       <> "fields" J..= fields'
     fieldBody :: Word -> FieldGroup -> H.Html
     fieldBody d f = H.span $ do

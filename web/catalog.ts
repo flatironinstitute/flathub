@@ -47,7 +47,7 @@ var Sample: number = 1;
 var Seed: undefined | number;
 var Update_aggs: number = -1;
 var Histogram: undefined | NumericFilter;
-var Heatmap: undefined | Field;
+var Heatmap: undefined | NumericFilter;
 var Histcond: boolean = false;
 var Histogram_chart: Highcharts.Chart | undefined;
 var Last_fields: string[] = [];
@@ -78,16 +78,18 @@ function zoomRange(
   wid: number,
   axis: Highcharts.AxisOptions
 ) {
+  /* FIXME histLog may have been updated since plot? */
+  const unlog = f.histLog ? Math.exp : (x: number) => x;
   f.setRange(
-    wid * Math.floor(<number>axis.min / wid),
-    wid * Math.ceil(<number>axis.max / wid)
+    unlog(wid ? wid * Math.floor(<number>axis.min / wid) : <number>axis.min),
+    unlog(wid ? wid * Math.ceil(<number>axis.max / wid) : <number>axis.max)
   );
   f.change();
 }
 
 function histogramDraw(
   hist: NumericFilter,
-  heatmap: undefined | Field,
+  heatmap: undefined | NumericFilter,
   cond: boolean,
   agg: AggrTerms<number>,
   size: Dict<number>
@@ -97,11 +99,12 @@ function histogramDraw(
   let xwid = size[field.name] / 2;
   let ywid = heatmap ? size[heatmap.name] / 2 : NaN;
   let cmax = 0;
+  const key = (x: {key: any}) => parseFloat(x.key);
   for (let x of agg.buckets) {
     if (heatmap) {
       if (cond && x.pct) {
-        data.push([
-          x.key + xwid,
+        if (x.doc_count) data.push([
+          key(x) + xwid,
           x.pct.values["0.0"],
           x.pct.values["25.0"],
           x.pct.values["50.0"],
@@ -112,8 +115,8 @@ function histogramDraw(
         if (x.doc_count > cmax) cmax = x.doc_count;
       } else if (x.hist)
         for (let y of x.hist.buckets)
-          data.push([x.key + xwid, y.key + ywid, y.doc_count]);
-    } else data.push([x.key, x.doc_count]);
+          if (y.doc_count) data.push([key(x) + xwid, key(y) + ywid, y.doc_count]);
+    } else if (x.doc_count) data.push([key(x), x.doc_count]);
   }
   if (data.length <= 1) {
     histogramRemove();
@@ -121,15 +124,12 @@ function histogramDraw(
     return;
   }
 
-  const opts: Highcharts.Options = histogram_options(field);
-  const renderx = render_funct(hist.field);
+  const opts: Highcharts.Options = histogram_options(field, hist.histLog);
+  const renderx = render_funct(hist.field, hist.histLog);
   if (heatmap) {
     opts.colorAxis = <Highcharts.ColorAxisOptions>opts.yAxis;
     opts.colorAxis.reversed = false;
-    opts.yAxis = {
-      type: "linear",
-      title: axis_title(heatmap)
-    };
+    opts.yAxis = histogram_options(heatmap.field, heatmap.histLog).xAxis;
   }
   if (heatmap && !cond) {
     (<Highcharts.ChartOptions>opts.chart).zoomType = "xy";
@@ -137,25 +137,34 @@ function histogramDraw(
       selection: function(event: Highcharts.ChartSelectionContextObject) {
         event.preventDefault();
         zoomRange(hist, xwid, event.xAxis[0]);
-        const hm = addFilter(heatmap);
-        if (hm instanceof NumericFilter) zoomRange(hm, ywid, event.yAxis[0]);
+        const i = Update_aggs;
+        zoomRange(heatmap, ywid, event.yAxis[0]);
+        /* make sure both filters apply, in case y happens to be above x */
+        if (Update_aggs < i)
+          Update_aggs = i;
         return false; // Don't zoom
       }
     };
-    const rendery = render_funct(heatmap);
+    const rendery = render_funct(heatmap.field, heatmap.histLog);
     (<Highcharts.TooltipOptions>opts.tooltip).formatter = function(this: Highcharts.TooltipFormatterContextObject): string {
       const p = this.point;
       return (
-        "[" +
-        renderx(p.x - xwid) +
-        "," +
-        renderx(p.x + xwid) +
-        ") & " +
-        "[" +
-        rendery(<number>p.y - ywid) +
-        "," +
-        rendery(<number>p.y + ywid) +
-        "): " +
+        (xwid ?
+          "[" +
+          renderx(p.x - xwid) +
+          "," +
+          renderx(p.x + xwid) +
+          ")"
+        : renderx(p.x))
+        + " & " +
+        (ywid ?
+          "[" +
+          rendery(<number>p.y - ywid) +
+          "," +
+          rendery(<number>p.y + ywid) +
+          ")"
+        : rendery(p.y))
+        + ": " +
         (<any>p).value
       );
     };
@@ -179,19 +188,22 @@ function histogramDraw(
       }
     };
     (<Highcharts.TooltipOptions>opts.tooltip).footerFormat = "drag to filter";
-    (<Highcharts.AxisOptions>opts.xAxis).min = hist.lbv;
-    (<Highcharts.AxisOptions>opts.xAxis).max = hist.ubv + wid;
+    (<Highcharts.AxisOptions>opts.xAxis).min = hist.histLog ? Math.log(hist.lbv) : hist.lbv;
+    (<Highcharts.AxisOptions>opts.xAxis).max = hist.histLog ? Math.log(hist.ubv + wid) : hist.ubv + wid;
     if (heatmap) {
       /* condmedian */
       (<Highcharts.TooltipOptions>opts.tooltip).formatter = function(
         this: Highcharts.TooltipFormatterContextObject
       ): string {
         return (
-          "[" +
-          renderx(this.x - xwid) +
-          "," +
-          renderx(this.x + xwid) +
-          "): " +
+          (xwid ?
+            "[" +
+            renderx(this.x - xwid) +
+            "," +
+            renderx(this.x + xwid) +
+            ")"
+          : renderx(this.x))
+          + ": " +
           this.y
         );
       };
@@ -233,15 +245,20 @@ function histogramDraw(
 };
 
 (<any>window).histogramShow = function histogramShow(axis: "x" | "y" | "c") {
-  if (axis == "x") Heatmap = undefined;
-  else {
-    const sely = <HTMLSelectElement>document.getElementById("histsel-y");
-    Heatmap = Catalog.fields[Fields_idx[sely.value]];
-    Histcond = axis == "c";
-  }
   const selx = <HTMLSelectElement>document.getElementById("histsel-x");
   const filt = addFilter(selx.value);
-  if (filt instanceof NumericFilter) Histogram = filt;
+  if (filt instanceof NumericFilter) {
+    Histogram = filt;
+    Heatmap = undefined;
+    if (axis != "x") {
+      const sely = <HTMLSelectElement>document.getElementById("histsel-y");
+      const heat = addFilter(sely.value);
+      if (heat instanceof NumericFilter) {
+        Heatmap = heat;
+        Histcond = axis == "c";
+      }
+    }
+  }
   else histogramRemove();
   update(false);
 };
@@ -301,16 +318,16 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
   query.offset = data.start;
   query.limit = Show_data ? data.length : 0;
   Last_fields = visibleFields();
-  query.fields = Last_fields.join(" ");
+  query.fields = Show_data ? Last_fields.join(" ") : "";
   if (aggs) query.aggs = aggs.map(filt => filt.name).join(" ");
   const histogram = Histogram;
   const heatmap = Histogram && Heatmap;
   const histcond = Histcond;
   if (histogram) {
     if (heatmap) {
-      if (histcond) query.hist = histogram.name + ":64 " + heatmap.name;
-      else query.hist = histogram.name + ":16 " + heatmap.name + ":16";
-    } else query.hist = histogram.name + ":128";
+      if (histcond) query.hist = histogram.histQuery(64) + " " + heatmap.name;
+      else query.hist = histogram.histQuery(16) + " " + heatmap.histQuery(16);
+    } else query.hist = histogram.histQuery(128);
   }
   $.ajax({
     method: "GET",
@@ -351,11 +368,13 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
             heatmap,
             histcond,
             res.aggregations.hist as AggrTerms<number>,
-            res.histsize
+            res.histsize || {}
           );
         else
           $('#hist').text('No data for histogram');
       }
+      if (!Show_data)
+        query.fields = Last_fields.join(" ");
       delete query.aggs;
       delete query.hist;
       url_update(query);
@@ -424,7 +443,8 @@ abstract class Filter {
 
   protected change(search: any, vis: boolean) {
     const i = Filters.indexOf(this);
-    if (i >= 0 && Update_aggs > i) Update_aggs = i + 1;
+    /* we want this filter to take effect, so only update later ones */
+    if (i >= 0) Update_aggs = i + 1;
     columnVisible(this.name, vis);
     update();
   }
@@ -474,6 +494,7 @@ class SelectFilter extends Filter {
 class NumericFilter extends Filter {
   lbv: number;
   ubv: number;
+  histLog: boolean = false;
 
   update_aggs(aggs: AggrStats) {
     super.update_aggs(aggs);
@@ -520,6 +541,11 @@ class NumericFilter extends Filter {
     this.ubv = ubv;
     /* vue isn't updating when called from highcharts: */
     filterVue.$forceUpdate();
+  }
+
+  histQuery(n: number): string {
+    // this.histLog = this.lbv > 0; // for testing
+    return this.field.name + (this.histLog ? ":log" : ":") + n.toString();
   }
 }
 
@@ -674,8 +700,6 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
     };
   });
   TCat = table.DataTable(topts);
-  /* for debugging: */
-  (<any>window).TCat = TCat;
 
   for (let f of Catalog.fields) {
     if (f.flag !== undefined) addFilter(f);

@@ -45,6 +45,8 @@ export type AggrStats = {
 };
 type Bucket<T> = {
   key: T;
+  from?: T;
+  to?: T;
   doc_count: number;
   hist?: AggrTerms<any>;
   pct?: { values: Dict<number> };
@@ -169,9 +171,11 @@ export function field_title(
   return h;
 }
 
-export function render_funct(field: Field): (data: any) => string {
-  if (field.base === "f")
-    return data => (data != undefined ? parseFloat(data).toPrecision(8) : data);
+export function render_funct(field: Field, log: boolean = false): (data: any) => string {
+  if (field.base === "f") {
+    const p = log ? (x: any) => Math.exp(parseFloat(x)) : parseFloat;
+    return (data: any) => (data != undefined ? p(data).toPrecision(8) : data);
+  }
   if (field.enum) {
     const e: string[] = field.enum;
     return data => (data in e ? e[data] : data);
@@ -201,8 +205,8 @@ export function axis_title(f: Field) {
   };
 }
 
-export function histogram_options(f: Field): Highcharts.Options {
-  const render = render_funct(f);
+export function histogram_options(field: Field, log: boolean = false): Highcharts.Options {
+  const render = render_funct(field, log);
   return {
     chart: {
       animation: false,
@@ -218,31 +222,43 @@ export function histogram_options(f: Field): Highcharts.Options {
       enabled: false
     },
     xAxis: {
-      type: "linear",
-      title: axis_title(f),
-      gridLineWidth: 1
+      type: /* log ? "logarithmic" : */ "linear",
+      title: axis_title(field),
+      gridLineWidth: 1,
+      labels: {
+        formatter: field.base === 'f' ? log ? function() {
+          const v = Math.exp(this.value);
+          let d = (<any>this.axis).tickInterval;
+          return v.toPrecision(1+Math.max(-Math.floor(Math.log10(Math.exp(d)-1))));
+        } : function() {
+          const v = this.value;
+          const d = (<any>this.axis).tickInterval;
+          return v.toPrecision(1+Math.max(Math.floor(Math.log10(Math.abs(v)))-Math.floor(Math.log10(d)),0));
+        } : function() {
+          return render(this.value);
+        }
+      }
     },
     yAxis: {
       id: "tog",
       type: "linear",
       title: { text: "Count" },
+      allowDecimals: false,
       min: 0
     },
     tooltip: {
       animation: false,
       formatter: function(this: Highcharts.TooltipFormatterContextObject): string {
+        const wid = <number>(<Highcharts.SeriesColumnOptions>this.series.options).pointInterval;
         return (
-          "[" +
-          render(this.x) +
-          "," +
-          render(
-            this.x +
-              <number>(
-                (<Highcharts.SeriesColumnOptions>this.series.options)
-                  .pointInterval
-              )
-          ) +
-          "): " +
+          (wid ?
+            "[" +
+            render(this.x) +
+            "," +
+            render(this.x + wid) +
+          ")"
+          : render(this.x))
+          + ": " +
           this.y
         );
       }

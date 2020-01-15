@@ -8,6 +8,7 @@
 module Field
   ( TypeValue(..)
   , Type, Value
+  , Typed
   , typeValue, typeValue1
   , traverseTypeValue
   , fmapTypeValue, fmapTypeValue1, fmapTypeValue2
@@ -63,6 +64,28 @@ instance J.ToJSON Half where
 
 instance J.FromJSON Half where
   parseJSON = fmap (realToFrac :: Float -> Half) . J.parseJSON
+
+instance Enum Half where
+  succ = (+) 1
+  pred = (-) 1
+  toEnum = realToFrac
+  fromEnum = truncate
+  enumFrom x = x : enumFrom (succ x)
+  enumFromThen x y = x : f y where
+    d = y - x
+    f a = a : f (a + d)
+  enumFromTo x z
+    | z >= x = x : enumFromTo (succ x) z
+    | otherwise = []
+  enumFromThenTo x y z
+    | c x = x : f y
+    | otherwise = [] where
+    f a
+      | c a = a : f (a + d)
+      | otherwise = []
+    d = y - x
+    c | d > 0 = (z >=)
+      | otherwise = (z <=)
 
 data TypeValue f
   = Double    !(f Double)

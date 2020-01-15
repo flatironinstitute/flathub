@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TupleSections #-}
 
@@ -16,6 +17,7 @@ module ES
   , closeIndex
   ) where
 
+import           Control.Arrow ((&&&))
 import           Control.Monad ((<=<), forM, forM_, unless)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (ask, asks)
@@ -30,7 +32,6 @@ import qualified Data.ByteString.Lazy.Char8 as BSLC
 import           Data.Default (def)
 import           Data.Either (partitionEithers)
 import           Data.Foldable (fold)
-import           Data.Functor.Identity (Identity(Identity))
 import qualified Data.HashMap.Strict as HM
 import           Data.IORef (newIORef, readIORef, writeIORef)
 import           Data.List (find)
@@ -175,6 +176,12 @@ checkIndices = do
 scrollTime :: IsString s => s
 scrollTime = "60s"
 
+data HistogramInterval a
+  = HistogramInterval
+    { histogramInterval :: a
+    , _histogramRanges :: [(a, a)] -- (log, exp)
+    }
+
 queryIndexScroll :: Bool -> Catalog -> Query -> M J.Value
 queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreField = store } } Query{..} = do
   hists <- gethists
@@ -201,13 +208,13 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreFiel
   -- find all histogram fields and divide them into those with range queries and those without
   -- if a field appears in multiple histograms, we use the same (arbitrary) size for all
   -- this could be easily fixed, but would require more complex histsize results
-  (histunks, histbnds) = partitionEithers $ map (\h@(f, n) ->
-      maybe (Left h) (Right . (, n)) $
+  (histunks, histbnds) = partitionEithers $ map (\h@(f, t, n) ->
+      maybe (Left h) (Right . (, t, n)) $
         find (\q -> fieldName f == fieldName q && unTypeValue isbnd (fieldType q)) queryFilter)
     $ foldMap histFields queryAggs
   isbnd (FilterRange (Just _) (Just _)) = True
   isbnd _ = False
-  histFields (QueryHist f n l) = (f, n) : foldMap histFields l
+  histFields (QueryHist f n t l) = (f, t, n) : foldMap histFields l
   histFields _ = []
 
   -- pre-query ranges of histogram fields without bounds if necesary
@@ -217,55 +224,73 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreFiel
       (JE.pairs $
         "size" J..= J.Number 0
       <> "query" .=* filts
-      <> "aggs" .=* foldMap (\(f, _) ->
+      <> "aggs" .=* foldMap (\(f, _, _) ->
            ("0" <> fieldName f) .=* ("min" .=* field f)
         <> ("1" <> fieldName f) .=* ("max" .=* field f))
         histunks)
   -- resolve bounds in pre-query result
   fillhistbnd j = do
     jaggs <- j J..: "aggregations"
-    forM histunks $ \(f, n) -> do
+    forM histunks $ \(f, t, n) -> do
       let val a = traverseTypeValue (maybe (fail "bnd value") return) . parseTypeJSONValue (fieldType f)
             =<< (J..: "value") =<< jaggs J..: a
       lb <- val ("0" <> fieldName f)
       ub <- val ("1" <> fieldName f)
-      return (liftFilterValue f $ FilterRange (Just lb) (Just ub), n)
+      return (liftFilterValue f $ FilterRange (Just lb) (Just ub), t, n)
   -- calculate bucket size from range and count
-  histsize :: (FieldSub Filter Proxy, Word) -> Maybe (T.Text, Value)
-  histsize (f, n) = case fieldType f of
-    Double    (FilterRange (Just l) (Just u)) -> r Double    $ (u - l) / realToFrac n
-    Float     (FilterRange (Just l) (Just u)) -> r Float     $ (u - l) / realToFrac n
-    HalfFloat (FilterRange (Just l) (Just u)) -> r HalfFloat $ (u - l) / realToFrac n
-    Long      (FilterRange (Just l) (Just u)) -> r Long      $ (u - l + n' - 1) `div` n' where n' = fromIntegral n
-    Integer   (FilterRange (Just l) (Just u)) -> r Integer   $ (u - l + n' - 1) `div` n' where n' = fromIntegral n
-    Short     (FilterRange (Just l) (Just u)) -> r Short     $ (u - l + n' - 1) `div` n' where n' = fromIntegral n
-    Byte      (FilterRange (Just l) (Just u)) -> r Byte      $ (u - l + n' - 1) `div` n' where n' = fromIntegral n
+  histsize :: (FieldSub Filter Proxy, Bool, Word) -> Maybe (T.Text, TypeValue HistogramInterval)
+  histsize (f, t, n) = case fieldType f of
+    Double    (FilterRange (Just l) (Just u)) -> q Double    l u
+    Float     (FilterRange (Just l) (Just u)) -> q Float     l u
+    HalfFloat (FilterRange (Just l) (Just u)) -> q HalfFloat l u
+    Long      (FilterRange (Just l) (Just u)) -> i Long      l u
+    Integer   (FilterRange (Just l) (Just u)) -> i Integer   l u
+    Short     (FilterRange (Just l) (Just u)) -> i Short     l u
+    Byte      (FilterRange (Just l) (Just u)) -> i Byte      l u
     _ -> fail "invalid hist"
     where
-    r c s = Just (fieldName f, c $ Identity $ if s > 0 then s else 1)
+    r :: (Num t, Ord t) => (forall f . f t -> TypeValue f) -> (t -> [(t, t)]) -> t -> Maybe (T.Text, TypeValue HistogramInterval)
+    r c l s = return (fieldName f, c $ HistogramInterval s' (l s')) where
+      s' | s > 0 = s
+         | otherwise = 1
+    q :: (Floating t, Ord t, Enum t) => (forall f . f t -> TypeValue f) -> t -> t -> Maybe (T.Text, TypeValue HistogramInterval)
+    q c l u
+      | t && l > 0 = r c (\s -> map (id &&& exp) $ take (fromIntegral $ succ n) $ enumFromThenTo ll (ll + s) lu) $ (lu - ll) / realToFrac n
+      | otherwise = r c (const []) $ (u - l) / realToFrac n
+      where
+      ll = log l
+      lu = log u
+    i :: Integral t => (forall f . f t -> TypeValue f) -> t -> t -> Maybe (T.Text, TypeValue HistogramInterval)
+    i c l u
+      | t = fail "log hist on int"
+      | otherwise = r c (const []) $ (u - l + n' - 1) `div` n' where n' = fromIntegral n
 
   -- add hist field sizes (widths) to final result
-  amend :: HM.HashMap T.Text Value -> J.Value -> J.Value
-  amend h (J.Object o) | not (HM.null h) = J.Object $ HM.insert "histsize" (J.toJSON h) o
+  amend :: HM.HashMap T.Text (TypeValue HistogramInterval) -> J.Value -> J.Value
+  amend h (J.Object o) | not (HM.null h') = J.Object $ HM.insert "histsize" (J.toJSON h') o where
+    h' = HM.map (fmapTypeValue1 histogramInterval) h
   amend _ j = j
 
   filts = "bool" .=* ("filter" `JE.pair` JE.list (\f -> JE.pairs $ unTypeValue (term f) $ fieldType f) queryFilter)
   term f (FilterEQ v) = "term" .=* (fieldName f J..= v)
   term f (FilterRange l u) = "range" .=* (fieldName f .=* (bound "gte" l <> bound "lte" u)) where
     bound t = foldMap (t J..=)
-  agg :: HM.HashMap T.Text Value -> QueryAgg -> J.Series
+  agg :: HM.HashMap T.Text (TypeValue HistogramInterval) -> QueryAgg -> J.Series
   agg _ (QueryStats f) = fieldName f .=* ((if isTermsField f then "terms" else "stats") .=* field f)
   agg _ (QueryPercentiles f p) = "pct" .=* ("percentiles" .=* (field f <> "percents" J..= p))
-  agg h (QueryHist f _ a)
-    | Just v <- HM.lookup (fieldName f) h =
-    "hist" .=* (
-      "histogram" .=* (field f
-        <> "interval" J..= v
-        <> "min_doc_count" J..= J.Number 1)
-      <> aggs h a)
+  agg h (QueryHist f _ _ a)
+    | Just v <- HM.lookup (fieldName f) h = "hist" .=*
+      (unTypeValue (hist f) v <> aggs h a)
     | otherwise = mempty
   aggs _ [] = mempty
   aggs h a = "aggs" .=* foldMap (agg h) a
+  hist f (HistogramInterval i []) = "histogram" .=* (field f
+    <> "interval" J..= i
+    <> "min_doc_count" J..= J.Number 1)
+  hist f (HistogramInterval _ l) = "range" .=* (field f
+    <> "ranges" `JE.pair` JE.list id (range l))
+  range ((lx,x):r@((_,y):_)) = JE.pairs ("from" J..= x <> "to" J..= y <> "key" J..= show lx) : range r
+  range _ = []
 
   field = ("field" J..=) . fieldName
 
