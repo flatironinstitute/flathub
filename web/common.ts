@@ -135,10 +135,10 @@ export function field_title(
   return h;
 }
 
-export function render_funct(field: Field, log: boolean = false, prec: number = 8): (data: any) => string {
+export function render_funct(field: Field, log: boolean = false): (data: any) => string {
   if (field.base === "f") {
     const p = log ? (x: any) => Math.exp(parseFloat(x)) : parseFloat;
-    return data => (data != undefined ? p(data).toPrecision(prec) : data);
+    return (data: any) => (data != undefined ? p(data).toPrecision(8) : data);
   }
   if (field.enum) {
     const e: string[] = field.enum;
@@ -169,9 +169,8 @@ export function axis_title(f: Field) {
   };
 }
 
-export function histogram_options(f: Field, log: boolean = false): Highcharts.Options {
-  const render = render_funct(f, log);
-  const renders = render_funct(f, log, 3);
+export function histogram_options(field: Field, log: boolean = false): Highcharts.Options {
+  const render = render_funct(field, log);
   return {
     chart: {
       animation: false,
@@ -188,11 +187,19 @@ export function histogram_options(f: Field, log: boolean = false): Highcharts.Op
     },
     xAxis: {
       type: /* log ? "logarithmic" : */ "linear",
-      title: axis_title(f),
+      title: axis_title(field),
       gridLineWidth: 1,
       labels: {
-        formatter: function() {
-          return renders(this.value);
+        formatter: field.base === 'f' ? log ? function() {
+          const v = Math.exp(this.value);
+          let d = (<any>this.axis).tickInterval;
+          return v.toPrecision(1+Math.max(-Math.floor(Math.log10(Math.exp(d)-1))));
+        } : function() {
+          const v = this.value;
+          const d = (<any>this.axis).tickInterval;
+          return v.toPrecision(1+Math.max(Math.floor(Math.log10(Math.abs(v)))-Math.floor(Math.log10(d)),0));
+        } : function() {
+          return render(this.value);
         }
       }
     },
