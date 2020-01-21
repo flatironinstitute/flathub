@@ -316,13 +316,19 @@ group:
       <div class="section highlighted-links">
         <h3>About</h3>
         <p>
-          CANDELS (Cosmic Assembly Near-infrared Deep Extragalactic Legacy Survey) is
-          a powerful imaging survey of the distant Universe being carried out with two
-          cameras on board the Hubble Space Telescope.
+        The Cosmic Assembly Near-infrared Deep Extragalactic Survey (CANDELS) is a multi-wavelength deep sky survey anchored in a Multi-cycle Treasury program with the Hubble Space Telescope (HST; PI S. Faber & H. Ferguson). CANDELS took Near-IR images with the Wide Field Camera 3 (WFC3) in five fields that were already well studied at many different wavelengths: COSMOS, EGS, GOODS-N, GOODS-S, and the UDS. The CANDELS team and the community have compiled extensive ancillary observations, both imaging and spectroscopy, in these fields. Physical parameters such as redshifts, stellar masses, star formation rates, etc., have been estimated from the Spectral Energy Distributions (SED).
         </p>
+        <p>As part of the CANDELS program, the theory team created custom "mock CANDELS" catalogs. These were created by extracting the dark matter halos from a large cosmological simulation along the past lightcone corresponding to a field with the same geometry and sky location as one of the real CANDELS fields.  These halos are then populated with galaxy properties using two different techniques: an empirical technique known as Sub-Halo Abundance Matching (using the UniverseMachine built by P. Behroozi & collaborators), and Semi-analytic Models of galaxy formation.</p>
+        <p>In order to facilitate comparison between theoretical models and the CANDELS observations, we have created a set of curated "theory friendly" catalogs for the CANDELS observed quantities and physical properties derived from the observations.</p>
+        <p>This site is a portal to explore and compare the "theory friendly" CANDELS observational catalogs and three of the sets of CANDELS mock catalogs: SC-SAM (created by R. Somerville & collaborators), Lu-SAM (Y. Lu & collaborators), and UniverseMachine (P. Behroozi & collaborators). </p>
+        <p>For more information about the CANDELS survey, the theory friendly catalogs, and the theoretical mock catalogs, please see the following references.
+        CANDELS survey design and execution: Grogin et al. (2011); Koekemoer et al. (2011)
+        CANDELS theory friendly catalogs: Somerville et al. (2020)
+        CANDELS mock catalogs: Lu et al. (2014); Somerville et al. (2020)</p>
+        <p>Each of the five fields covers an area of about 200 sq. arcmin. The imaging depth ranges from 29.74 (5s, point source) in the Hubble Ultra Deep Field (HUDF) within GOODS-S, to ~27.5 typical depth for the "wide" fields (in the F160W detection band). Two sub-regions within GOODS-N and GOODS-S have an intermediate depth of ~28.2. </p>
         <p>
-          For more detailed information about the project, please visit
-          <a href="http://candels.ucolick.org/About.html" target="_blank">this link</a
+          For more information about the project, please visit
+          <a href="http://arcoiris.ucolick.org/candels/About.html" target="_blank">this link</a
           >.
         </p>
 
@@ -4194,7 +4200,7 @@ quijote:
   index: quijote
   descr: >
     <a href='https://github.com/franciscovillaescusa/Quijote-simulations'>Quijote simulations</a>,
-  #count: 
+  #count:
   fields:
     - name: simulation
       flag: top
