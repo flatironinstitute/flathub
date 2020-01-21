@@ -229,11 +229,11 @@ export function histogram_options(field: Field, log: boolean = false): Highchart
         formatter: field.base === 'f' ? log ? function() {
           const v = Math.exp(this.value);
           let d = (<any>this.axis).tickInterval;
-          return v.toPrecision(1+Math.max(-Math.floor(Math.log10(Math.exp(d)-1))));
+          return v.toPrecision(1+Math.max(0,-Math.floor(Math.log10(Math.exp(d)-1))));
         } : function() {
           const v = this.value;
           const d = (<any>this.axis).tickInterval;
-          return v.toPrecision(1+Math.max(Math.floor(Math.log10(Math.abs(v)))-Math.floor(Math.log10(d)),0));
+          return v.toPrecision(1+Math.max(0,Math.floor(Math.log10(Math.abs(v)))-Math.floor(Math.log10(d))));
         } : function() {
           return render(this.value);
         }

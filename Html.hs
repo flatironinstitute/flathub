@@ -256,29 +256,33 @@ catalogPage = getPath R.parameter $ \sim req -> do
         H.div H.! HA.class_ "container-fluid catalog-tool" $ do
           H.div H.! HA.class_ "row" $ do
             H.div H.! HA.class_ "col col-sm-12 col-md-8 left-column" $ do
-              forM_ ['x', 'y'] $ \x ->
-                H.div H.! HA.class_ "left-column-header-group" $ do
-                  H.div H.! HA.class_ "form-inline form-badge" $ do
-                    H.div H.! HA.class_ "form-group" $ do
-                      H.label H.! HA.for ("histsel-" <> H.stringValue [x]) $ do
-                        H.a H.! HA.class_ "nav-link" $ "Select " <> H.string [toUpper x] <> " Axis"
-                      H.select H.! HA.id ("histsel-" <> H.stringValue [x]) $ do
-                        forM_ (catalogFields cat) $ \f ->
-                          when (typeIsFloating (fieldType f)) $ do
-                            let n = H.textValue $ fieldName f
-                            H.option
-                              H.! HA.class_ ("sel-" <> n)
-                              H.!? (not $ fieldDisp f, HA.style "display:none")
-                              H.! HA.value n
-                              $ H.text $ fieldTitle f
-                    H.button H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick ("histogramShow(" <> H.stringValue (show x) <> ")") $ do
-                      "View "
-                      if x == 'x' then "Histogram" else "Heatmap"
-                    when (x == 'x') $
-                      H.button H.! HA.id "hist-y-tog" H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick "toggleLog()" $ "Toggle lin/log"
-                    when (x == 'y') $
-                      H.button H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick ("histogramShow('c')") $
-                        "Conditional distribution"
+              H.div H.! HA.id "plot" $ do
+                H.select H.! vueAttribute "model" "type" $ do
+                  H.option H.! HA.value "x" H.! HA.selected "selected" $ "histogram"
+                  H.option H.! HA.value "y" $ "heatmap"
+                  H.option H.! HA.value "c" $ "conditional distribution"
+                forM_ ['x', 'y'] $ \x ->
+                  H.div H.!? (x == 'y', vueAttribute "if" "type!=='x'") $ do
+                    let filt = H.stringValue [x] <> "filter"
+                    H.string [toUpper x] <> "-Axis:"
+                    H.select H.! HA.id ("histsel-" <> H.stringValue [x]) $ do
+                      forM_ (catalogFields cat) $ \f ->
+                        when (typeIsFloating (fieldType f)) $ do
+                          let n = H.textValue $ fieldName f
+                          H.option
+                            H.! HA.class_ ("sel-" <> n)
+                            H.!? (not $ fieldDisp f, HA.style "display:none")
+                            H.! HA.value n
+                            $ H.text $ fieldTitle f
+                    H.div H.! vueAttribute "if" (filt <> if x == 'y' then "&&type==='y'" else "") $ do
+                      H.input
+                        H.! HA.type_ "checkbox"
+                        H.! vueAttribute "bind:disabled" ("!(" <> filt <> ".lbv>0)")
+                        H.! vueAttribute "model" (filt <> ".histLog")
+                      "log"
+                "Count:"
+                H.button H.! vueAttribute "on:click" "log" $ "Toggle lin/log"
+                H.button H.! vueAttribute "on:click" "go" $ "Go"
               H.div H.! HA.class_ "alert alert-danger" H.! HA.id "error" $ mempty
               H.div H.! HA.id "hist" $ mempty
 
