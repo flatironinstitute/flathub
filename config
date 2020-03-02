@@ -1,7 +1,10 @@
 http {
   port = 8092
+  ssl.key = "tls/tls.key"
+  ssl.cert = "tls/tls.crt"
+  ssl.insecure = true
 }
 elasticsearch {
-  server = "http://astrodb:9200/"
+  server = "http://astrosims-es:9200/"
 }
-dev = true
+dev = false
