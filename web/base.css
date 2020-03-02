@@ -1275,7 +1275,7 @@ dd > a {
 }
 
 a.underline,
-a.underlinea:hover {
+a.underline:hover {
   text-decoration: none;
   border-bottom: 1px solid var(--cooler-red);
 }
