@@ -297,7 +297,7 @@ group:
       #- quixote
       - *illustris
   - name: candels
-    title: The CANDELS Survey
+    title: CANDELS
     children:
       - scsam
       - unimach
@@ -305,52 +305,25 @@ group:
       #- candels
     html: |
       <div class="section highlighted-links">
-        <h3>About</h3>
+        <h4><a class="subtitle" href="http://arcoiris.ucolick.org/candels/About.html" target="_blank">Project summary</a></h4>
         <p>
-          CANDELS (Cosmic Assembly Near-infrared Deep Extragalactic Legacy Survey) is
-          a powerful imaging survey of the distant Universe being carried out with two
-          cameras on board the Hubble Space Telescope.
+        <b>The Cosmic Assembly Near-infrared Deep Extragalactic Survey (CANDELS)</b> is a multi-wavelength deep sky survey anchored in a Multi-cycle Treasury program with the Hubble Space Telescope (HST; PI S. Faber & H. Ferguson). CANDELS took Near-IR images with the Wide Field Camera 3 (WFC3) in five fields that were already well studied at many different wavelengths: COSMOS, EGS, GOODS-N, GOODS-S, and the UDS. The CANDELS team and the community have compiled extensive ancillary observations, both imaging and spectroscopy, in these fields. Physical parameters such as redshifts, stellar masses, star formation rates, etc., have been estimated from the Spectral Energy Distributions (SED).
         </p>
         <p>
-          For more detailed information about the project, please visit
-          <a href="http://candels.ucolick.org/About.html" target="_blank">this link</a
-          >.
+        As part of the CANDELS program, the theory team created custom "mock CANDELS" catalogs. These were created by extracting the dark matter halos from a large cosmological simulation along the past lightcone corresponding to a field with the same geometry and sky location as one of the real CANDELS fields.  These halos are then populated with galaxy properties using two different techniques: an empirical technique known as Sub-Halo Abundance Matching (using the UniverseMachine built by P. Behroozi & collaborators), and Semi-analytic Models of galaxy formation.
         </p>
-
-        <h3>Specifications</h3>
-        <table>
-          <tr>
-            <th>Field</th>
-            <th>Area (arcmin^2)</th>
-          </tr>
-          <tr>
-            <td>COSMOS</td>
-            <td>17 x 41</td>
-          </tr>
-          <tr>
-            <td>EGS</td>
-            <td>17 x 46</td>
-          </tr>
-          <tr>
-            <td>GOODS-N</td>
-            <td>32 x 32</td>
-          </tr>
-          <tr>
-            <td>GOODS-S</td>
-            <td>39 x 41</td>
-          </tr>
-          <tr>
-            <td>UDS</td>
-            <td>36 x 35</td>
-          </tr>
-        </table>
-
-        <h3>Models</h3>
         <p>
-          Each model contains the five fields mentioned above, and eight realizations
-          of each field, leading to a total of fourty runs per model.
+        In order to facilitate comparison between theoretical models and the CANDELS observations, we have created a set of curated "theory friendly" catalogs for the CANDELS observed quantities and physical properties derived from the observations.
         </p>
-      </div>
+        <p>
+        This site is a portal to explore and compare the "theory friendly" CANDELS observational catalogs and three of the sets of CANDELS mock catalogs: SC-SAM (created by R. Somerville & collaborators), Lu-SAM (Y. Lu & collaborators), and UniverseMachine (P. Behroozi & collaborators).
+        </p>
+        <p>For more information about the CANDELS survey, the theory friendly catalogs, and the theoretical mock catalogs, please see the following references:</p>
+        <ul>
+          <li>CANDELS survey design and execution: <a class="underline" href="https://iopscience.iop.org/article/10.1088/0067-0049/197/2/35" target="_blank">Grogin et al. (2011);</a>  <a class="underline" href="https://arxiv.org/pdf/1105.3754.pdf" target="_blank"> Koekemoer et al. (2011)</a></li>
+          <li>CANDELS theory friendly catalogs: <a class="underline" href="https://www.overleaf.com/read/gvdgkswmprqx" target="_blank">Somerville et al. (2020)</a></li>
+          <li>CANDELS mock catalogs:<a class="underline" href="https://arxiv.org/abs/1312.3233" target="_blank"> Lu et al. (2014);</a> <a class="underline" href="https://www.overleaf.com/read/gvdgkswmprqx"> Somerville et al. (2020)</a></li>
+        </ul>
   - name: zoomin
     title: Cosmological Zoom-in Simulations
     children: []

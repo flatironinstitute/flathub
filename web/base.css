@@ -1274,6 +1274,12 @@ dd > a {
   border-bottom: 1px solid var(--cooler-red);
 }
 
+a.underline,
+a.underlinea:hover {
+  text-decoration: none;
+  border-bottom: 1px solid var(--cooler-red);
+}
+
 dt > a:hover,
 dd > a:hover {
   text-decoration: none;
