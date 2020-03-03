@@ -65,6 +65,22 @@ function set_download(query: Dict<string>) {
   py_text(query);
 }
 
+const plotVue = new Vue({
+  data: {
+    type: 'x',
+    xfilter: Histogram,
+    yfilter: Heatmap
+  },
+  methods: {
+    log: function () {
+      if (Histogram_chart) toggle_log(Histogram_chart);
+    },
+    go: function() {
+      histogramShow(<any>this.type);
+    }
+  }
+});
+
 function histogramRemove() {
   if (Histogram_chart) Histogram_chart.destroy();
   Histogram_chart = undefined;
@@ -238,13 +254,10 @@ function histogramDraw(
     }
   }
   Histogram_chart = Highcharts.chart("hist", opts);
+  plotVue.$forceUpdate();
 }
 
-(<any>window).toggleLog = function toggleLog() {
-  if (Histogram_chart) toggle_log(Histogram_chart);
-};
-
-(<any>window).histogramShow = function histogramShow(axis: "x" | "y" | "c") {
+function histogramShow(axis: "x" | "y" | "c") {
   const selx = <HTMLSelectElement>document.getElementById("histsel-x");
   const filt = addFilter(selx.value);
   if (filt instanceof NumericFilter) {
@@ -255,13 +268,16 @@ function histogramDraw(
       const heat = addFilter(sely.value);
       if (heat instanceof NumericFilter) {
         Heatmap = heat;
-        Histcond = axis == "c";
+        if ((Histcond = axis == "c"))
+          Heatmap.histLog = false;
       }
     }
   }
   else histogramRemove();
+  plotVue.xfilter = Histogram;
+  plotVue.yfilter = Heatmap;
   update(false);
-};
+}
 
 /* elasticsearch max_result_window */
 const DisplayLimit = 10000;
@@ -539,12 +555,12 @@ class NumericFilter extends Filter {
   setRange(lbv: number, ubv: number) {
     this.lbv = lbv;
     this.ubv = ubv;
+    if (!(this.lbv > 0)) this.histLog = false;
     /* vue isn't updating when called from highcharts: */
     filterVue.$forceUpdate();
   }
 
   histQuery(n: number): string {
-    // this.histLog = this.lbv > 0; // for testing
     return this.field.name + (this.histLog ? ":log" : ":") + n.toString();
   }
 }
@@ -718,6 +734,7 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
     document.getElementsByClassName("colvis")
   )) as HTMLInputElement[])
     colvisUpdate(b);
+  plotVue.$mount('#plot');
   toggleShowData(false);
   update();
 }
