@@ -104,7 +104,7 @@ htmlResponse req hdrs body = do
       H.header H.! HA.class_ "header" $ do
         H.div H.! HA.class_ "header__logo" $ do
           H.a H.! HA.href (WH.routeActionValue topPage () mempty) H.! HA.class_ "header__logo-link" $ do
-            H.span H.! HA.class_ "header__logo-style" $ "ASTROSIMS"
+            H.span H.! HA.class_ "header__logo-style" $ "FLATHUB"
         H.nav H.! HA.class_ "header__nav" $ do
           H.ul H.! HA.id "topbar" $ do
             H.li H.! HA.class_ "header__link--dropdown" $ do
@@ -152,7 +152,7 @@ topPage = getPath R.unit $ \() req -> do
           H.div H.! HA.class_ "container" $ do
             H.div H.! HA.class_ "row" $ do
               H.div H.! HA.class_ "hero-content" $ do
-                H.h4 H.! HA.class_ "hero-heading" $ "ASTROSIMS"
+                H.h4 H.! HA.class_ "hero-heading" $ "FLATHUB"
                 H.h4 H.! HA.class_ "hero-subheading" $ mempty
         H.div H.! HA.class_ "section" $ do
           H.div H.! HA.class_ "container" $ do
