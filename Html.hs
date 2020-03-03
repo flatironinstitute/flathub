@@ -516,7 +516,7 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
       -- Single Catalog
       GroupCatalog cat -> do
         let Catalog{..} = catalogMap cats HM.! cat
-        H.div H.! HA.class_ "section gray-heading" $ do
+        H.div H.! HA.class_ ("section gray-heading " <> H.textValue cat <> "-heading") $ do
           H.div H.! HA.class_"container" $ do
             H.div H.! HA.class_ "row" $ do
               H.div H.! HA.class_ "heading-content" $ do
@@ -528,7 +528,7 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
             H.preEscapedText catalogHtml
       -- Collections
       Grouping{..} -> do
-        H.div H.! HA.class_ "section gray-heading" $ do
+        H.div H.! HA.class_ ("section gray-heading " <> H.textValue groupName <> "-heading") $ do
           H.div H.! HA.class_"container" $ do
             H.div H.! HA.class_ "row" $ do
               H.div H.! HA.class_ "heading-content" $ do
