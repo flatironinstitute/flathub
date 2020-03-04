@@ -1,66 +1,219 @@
+@charset "UTF-8";
 @import url("https://fonts.googleapis.com/css?family=Lexend+Zetta|Open+Sans&display=swap");
-
-/*
-* Astrosims Base Styles
-* 04/17/2019
-*/
-
-/* Table of contents
-––––––––––––––––––––––––––––––––––––––––––––––––––
-- Grid
-- Base Styles
-- Typography
-- Links
-- Buttons
-- Forms
-- Lists
-- Code
-- Tables
-- Spacing
-- Utilities
-- Clearing
-- Media Queries
-*/
-
 /* Variables
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
-
-:root {
-  --header-font: "Lexend Zetta", sans-serif;
-  --body-font: "Open Sans", Helvetica, Arial, sans-serif;
-  --cooler-off-black: rgba(41, 44, 47, 1);
-  --cooler-black: rgba(34, 34, 34, 1);
-  --cooler-white: rgba(254, 254, 255, 1);
-  --cooler-platinum: #e7e7e8;
-  --cooler-red: #ff533d;
-  --cooler-azure: rgba(214, 239, 255, 1);
-  --cooler-blue: rgba(164, 222, 249, 1);
-  --cooler-gray: rgba(143, 146, 150, 1);
-}
-
-/* Grid
+/* Reset
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
-
-.container {
-  position: relative;
-  width: 100%;
-  max-width: 95vw;
-  margin: 0 auto;
-  padding: 0 20px;
-  box-sizing: border-box;
+html {
+  line-height: 1.15;
+  /* 1 */
+  -webkit-text-size-adjust: 100%;
+  /* 2 */
 }
 
-.container--main {
-  min-height: calc(100vh - 288px);
+body {
+  margin: 0;
+}
+
+main {
+  display: block;
+}
+
+h1 {
+  font-size: 2em;
+  margin: 0.67em 0;
+}
+
+hr {
+  box-sizing: content-box;
+  /* 1 */
+  height: 0;
+  /* 1 */
+  overflow: visible;
+  /* 2 */
+}
+
+pre {
+  font-family: monospace, monospace;
+  /* 1 */
+  font-size: 1em;
+  /* 2 */
+}
+
+a {
+  background-color: transparent;
+}
+
+abbr[title] {
+  border-bottom: none;
+  /* 1 */
+  text-decoration: underline;
+  /* 2 */
+  text-decoration: underline dotted;
+  /* 2 */
+}
+
+b,
+strong {
+  font-weight: bolder;
+}
+
+code,
+kbd,
+samp {
+  font-family: monospace, monospace;
+  /* 1 */
+  font-size: 1em;
+  /* 2 */
+}
+
+small {
+  font-size: 80%;
+}
+
+sub,
+sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+sub {
+  bottom: -0.25em;
+}
+
+sup {
+  top: -0.5em;
+}
+
+img {
+  border-style: none;
+}
+
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: inherit;
+  /* 1 */
+  font-size: 100%;
+  /* 1 */
+  line-height: 1.15;
+  /* 1 */
+  margin: 0;
+  /* 2 */
+}
+
+button,
+input {
+  /* 1 */
+  overflow: visible;
+}
+
+button,
+select {
+  /* 1 */
+  text-transform: none;
+}
+
+button,
+[type=button],
+[type=reset],
+[type=submit] {
+  -webkit-appearance: button;
+}
+
+button::-moz-focus-inner,
+[type=button]::-moz-focus-inner,
+[type=reset]::-moz-focus-inner,
+[type=submit]::-moz-focus-inner {
+  border-style: none;
+  padding: 0;
+}
+
+button:-moz-focusring,
+[type=button]:-moz-focusring,
+[type=reset]:-moz-focusring,
+[type=submit]:-moz-focusring {
+  outline: 1px dotted ButtonText;
+}
+
+fieldset {
+  padding: 0.35em 0.75em 0.625em;
+}
+
+legend {
+  box-sizing: border-box;
+  /* 1 */
+  color: inherit;
+  /* 2 */
+  display: table;
+  /* 1 */
+  max-width: 100%;
+  /* 1 */
+  padding: 0;
+  /* 3 */
+  white-space: normal;
+  /* 1 */
+}
+
+progress {
+  vertical-align: baseline;
+}
+
+textarea {
+  overflow: auto;
+}
+
+[type=checkbox],
+[type=radio] {
+  box-sizing: border-box;
+  /* 1 */
+  padding: 0;
+  /* 2 */
+}
+
+[type=number]::-webkit-inner-spin-button, [type=number]::-webkit-outer-spin-button {
+  height: auto;
+}
+
+[type=search] {
+  -webkit-appearance: textfield;
+  /* 1 */
+  outline-offset: -2px;
+  /* 2 */
+}
+[type=search]::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+
+::-webkit-file-upload-button {
+  -webkit-appearance: button;
+  /* 1 */
+  font: inherit;
+  /* 2 */
+}
+
+details {
+  display: block;
+}
+
+summary {
+  display: list-item;
+}
+
+template,
+[hidden] {
+  display: none;
 }
 
 /* Base Styles
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
-
 /* NOTE
   html is set to 62.5% so that all the REM measurements throughout Skeleton
   are based on 10px sizing. So basically 1.5rem = 15px :) */
-
 html {
   font-size: 62.5%;
 }
@@ -71,14 +224,13 @@ body {
   line-height: 1.6;
   font-weight: 400;
   font-family: "Open Sans", sans-serif;
-  color: $cooler-black;
-  background-color: $cooler-black;
+  color: #222222;
+  background-color: #fefeff;
   margin: 0px;
 }
 
 /* Typography
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
-
 h1,
 h2,
 h3,
@@ -128,717 +280,105 @@ h6 {
 }
 
 /* Larger than phablet */
-
 @media (min-width: 550px) {
   h1 {
     font-size: 5rem;
   }
+
   h2 {
     font-size: 4.2rem;
   }
+
   h3 {
     font-size: 3.6rem;
   }
+
   h4 {
     font-size: 3rem;
   }
+
   h5 {
     font-size: 2.4rem;
   }
+
   h6 {
     font-size: 1.5rem;
   }
 }
-
 p {
   margin-top: 0;
-}
-
-/* Links
-  –––––––––––––––––––––––––––––––––––––––––––––––––– */
-
-a {
-  color: $cooler-black;
-  text-decoration: none;
-}
-
-a:hover {
-  color: var(--cooler-red);
-}
-
-/* Forms
-–––––––––––––––––––––––––––––––––––––––––––––––––– */
-form {
-  margin-bottom: 2.5rem;
-}
-input[type="email"],
-input[type="number"],
-input[type="search"],
-input[type="text"],
-input[type="tel"],
-input[type="url"],
-input[type="password"],
-textarea,
-select {
-  height: 38px;
-  padding: 6px 10px; /* The 6px vertically centers text on FF, ignored by Webkit */
-  background-color: #fff;
-  border: 1px solid #d1d1d1;
-  border-radius: 4px;
-  box-shadow: none;
-  box-sizing: border-box;
-}
-/* Removes awkward default styles on some inputs for iOS */
-input[type="email"],
-input[type="number"],
-input[type="search"],
-input[type="text"],
-input[type="tel"],
-input[type="url"],
-input[type="password"],
-textarea {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-}
-textarea {
-  min-height: 65px;
-  padding-top: 6px;
-  padding-bottom: 6px;
-}
-input[type="email"]:focus,
-input[type="number"]:focus,
-input[type="search"]:focus,
-input[type="text"]:focus,
-input[type="tel"]:focus,
-input[type="url"]:focus,
-input[type="password"]:focus,
-textarea:focus,
-select:focus {
-  border: 1px solid #33c3f0;
-  outline: 0;
-}
-label,
-legend {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-}
-fieldset {
-  padding: 0;
-  border-width: 0;
-}
-input[type="checkbox"],
-input[type="radio"] {
-  display: inline;
-}
-label > .label-body {
-  display: inline-block;
-  margin-left: 0.5rem;
-  font-weight: normal;
-}
-
-/* Navbar
-–––––––––––––––––––––––––––––––––––––––––––––––––– */
-
-.header {
-  display: flex;
-  flex-direction: column;
-  box-shadow: rgba(31, 53, 78, 0.11) 0 1px;
-  border-bottom: 1px solid var(--cooler-red);
-  height: 125px;
-}
-
-.header__logo {
-  margin-left: 5vw;
-  height: 55px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.header__logo-link {
-  text-decoration: none;
-}
-
-.header__logo-style {
-  text-transform: uppercase;
-  font-size: 2rem;
-  letter-spacing: 0.2rem;
-  font-weight: 300;
-  font-family: "Lexend Zetta", sans-serif;
-}
-
-.header__logo img {
-  display: block;
-}
-
-nav.header__nav {
-  margin: 1.5em 0 0 5vw;
-}
-
-ul#topbar {
-  margin-bottom: 0;
-}
-
-.header__link--dropdown,
-.header__link {
-  display: inline;
-  padding: 0 1.4em 16px 0;
-  font-size: 1.2rem;
-  text-transform: uppercase;
-  font-weight: 600;
-  letter-spacing: 0.2rem;
-  text-decoration: none;
-  color: #222;
-}
-
-li.header__link a,
-li.header__link--dropdown a {
-  text-decoration: none;
-  color: $cooler-off-black;
-}
-
-li.header__link a.active {
-  font-weight: 300;
-}
-
-li.header__link--dropdown a:hover,
-li.header__link a:hover {
-  color: var(--cooler-red);
-  border-bottom: 1px solid var(--cooler-red);
-}
-
-.dropdown:hover,
-container a:hover:not(.active) {
-  color: $cooler-black;
-}
-
-.dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #f9f9f9;
-  min-width: 160px;
-  box-shadow: 0px 8px 16px 0px $cooler-off-black;
-  z-index: 100;
-  top: 50px;
-}
-
-.dropdown-second {
-  margin-left: 115px;
-}
-
-.header__link--dropdown:hover > .dropdown-content {
-  display: block;
-}
-
-.header__link--dropdown:focus > .dropdown-content {
-  display: block;
-}
-
-.dropdown-content > a {
-  color: $cooler-black !important;
-  background-color: $cooler-off-black;
-  padding: 12px 16px;
-  text-decoration: none;
-  display: block;
-  text-align: left;
-}
-
-.dropdown-content > a:hover {
-  background-color: $cooler-black;
-  color: $cooler-off-black !important;
-}
-
-@media screen and (min-width: 600px) {
-  .header {
-    flex-direction: row;
-    justify-content: space-between;
-    height: 55px;
-  }
-  .header__logo {
-    margin-left: 5vw;
-  }
-  nav.header__nav {
-    align-self: center;
-    margin: 0 5vw 0 0;
-  }
-}
-
-/* Sections
-–––––––––––––––––––––––––––––––––––––––––––––––––– */
-
-.section {
-  padding: 5rem 0 5rem;
-  text-align: center;
-}
-
-.section-heading {
-  margin-bottom: 1.2rem;
-}
-
-.section-description {
-  margin-bottom: 2rem;
-}
-
-.section--catalog {
-  text-align: left;
-  padding: 0 0 3rem 0 !important;
-}
-
-/* Histogram
-–––––––––––––––––––––––––––––––––––––––––––––––––– */
-
-.row--chartfilter {
-  max-height: 55vh;
-  margin-bottom: 5rem;
-}
-
-div#dhist,
-.dhist {
-  display: none;
-  position: relative;
-}
-
-div#hist,
-.hist {
-  width: 100%;
-}
-
-.hist-container {
-  margin: 2rem 1rem;
-}
-
-/* Catalog
-–––––––––––––––––––––––––––––––––––––––––––––––––– */
-
-.catalog__heading {
-  margin-bottom: 5rem;
-}
-
-.filter__title {
-  font-size: 1.2rem;
-  text-transform: uppercase;
-  font-weight: 600;
-  text-align: center;
-  line-height: 38px;
-  letter-spacing: 0.1rem;
-  padding-left: 10px;
-}
-
-.catalogs-container {
-  padding: 10px;
-}
-
-.catalogs-list {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  text-align: left;
-  width: 100%;
-}
-
-.main-page {
-  align-items: center;
-}
-
-/* Breadcrumbs
-–––––––––––––––––––––––––––––––––––––––––––––––––– */
-.breadcrumb-container {
-  margin: 0 calc(-2.5vw + -20px) 0.1rem calc(-2.5vw + -20px);
-}
-.breadcrumb {
-  margin: 0 5vw;
-  max-width: 95vw;
-  padding: 1rem 0;
-  background-color: transparent;
-}
-
-.breadcrumb-item {
-  display: inline;
-  padding: 0 0.8em 0 0.8em;
-  font-size: 1.2rem;
-  text-transform: uppercase;
-  font-weight: 600;
-  letter-spacing: 0.2rem;
-  text-decoration: none;
-}
-
-.breadcrumb-item:first-of-type {
-  padding-left: 0;
-}
-
-.breadcrumb-item + .breadcrumb-item::before {
-  padding-right: 0.8em;
-}
-
-.breadcrumb-item > a {
-  border-bottom: 1px solid var(--cooler-red);
-}
-.breadcrumb-item > a:hover {
-  text-decoration: none;
-}
-
-/* Hero and Heading
-–––––––––––––––––––––––––––––––––––––––––––––––––– */
-
-.col-border {
-  border-left: 1px solid $cooler-off-black;
-}
-
-.gray-heading {
-  margin: 0 calc(-2.5vw + -20px) 2rem calc(-2.5vw + -20px);
-  background-color: $cooler-platinum;
-}
-
-.candels-heading {
-  background: url(./candels-bg.jpg) repeat-x center center;
-}
-
-.candels-subheading {
-  color: $cooler-black !important;
-  background: rgba(143, 146, 150, 0.5);
-}
-
-.section__heading {
-  text-decoration: underline;
-}
-
-.hero-content {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-}
-
-.hero-subheading {
-  font-family: $body-font;
-  text-transform: uppercase;
-  font-weight: 600;
-  letter-spacing: 0.2rem;
-  font-size: 1.8rem;
-}
-
-.heading-content {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-}
-
-/* Bigger than 550 */
-@media (min-width: 550px) {
-  .pic {
-    position: absolute;
-    top: -7rem;
-    right: 3rem;
-    max-height: 362px;
-    z-index: 3;
-    border-radius: 4px;
-  }
-  .hero-heading,
-  .heading-heading {
-    font-size: 2.4rem;
-  }
-}
-
-/* Bigger than 750 */
-
-@media (min-width: 750px) {
-  .hero-heading,
-  .heading-heading {
-    font-size: 2.6rem;
-  }
-  .hero {
-    padding: 16rem 0 14rem;
-  }
-  .section__description {
-    max-width: 60%;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  .pic {
-    top: -14rem;
-    right: 5rem;
-    max-height: 510px;
-  }
-  .categories {
-    padding: 15rem 0 8rem;
-  }
-}
-
-/* Bigger than 1000 */
-
-@media (min-width: 1000px) {
-  .hero-heading,
-  .heading-heading {
-    font-size: 3rem;
-  }
-  .pic {
-    top: -16rem;
-    max-height: 500px;
-  }
-}
-
-/* Collections
-–––––––––––––––––––––––––––––––––––––––––––––––––– */
-
-.collections-container {
-  background-color: $cooler-black;
-  opacity: 0.8;
-  padding: 10px;
-}
-
-.collection-label {
-  color: $cooler-off-black;
-  font-size: 50px;
-  text-transform: uppercase;
-  border: white;
-  padding: 100px 0;
-  text-decoration: none;
-  border: 5px white solid;
-  margin-top: 7rem;
-}
-
-.collections-list {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-}
-
-.collection-card-heading {
-  font-family: $body-font;
-  font-weight: 600;
-  letter-spacing: 0.2rem;
-  font-size: 1.8rem;
-  color: var(--cooler-red);
-}
-
-.collection-link {
-  text-decoration: none;
-}
-
-.section-heading,
-.section--description {
-  margin-bottom: 1.2rem;
-}
-
-.section__description {
-  font-size: 1.8rem;
-  line-height: 2.4rem;
 }
 
 .body-copy {
   text-align: left;
 }
 
-/* Tabs
+/* Links
+    –––––––––––––––––––––––––––––––––––––––––––––––––– */
+a {
+  color: #222222;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #ff533d;
+}
+
+/* Code
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
-
-.tab {
-  overflow: hidden;
-  border: 1px solid #e1e1e1;
-  border-radius: 4px 4px 0 0;
-  background-color: #eee;
-  height: 40px;
-}
-
-.tab button {
-  background-color: inherit;
-  float: left;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  transition: 0.3s;
-  margin: 0;
-  border-bottom: none;
-  border-radius: 0;
-}
-
-.tab button:hover {
-  background-color: #ddd;
-}
-
-.tab button.active {
-  background-color: #ccc;
-}
-
-.tabcontent,
-.datacontent {
-  display: none;
-  padding: 2.5rem 3rem;
-  border: 1px solid #e1e1e1;
-  border-top: none;
-  border-radius: 0 0 4px 4px;
-  animation: fadeEffect 1s;
-}
-
-@keyframes fadeEffect {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.py-query {
-  max-width: 100%;
-  display: none;
+code {
+  padding: 0.2rem 0.5rem;
+  margin: 0 0.2rem;
+  font-size: 90%;
+  white-space: nowrap;
   background: #f1f1f1;
   border: 1px solid #e1e1e1;
-  margin: 2.5rem 0.2rem;
-  font-size: 90%;
   border-radius: 4px;
 }
 
-.py-pre {
-  white-space: pre-line;
-  margin: 1rem 1rem 2.5rem 1rem;
-}
-
-/* Filter card
-  –––––––––––––––––––––––––––––––––––––––––––––––––– */
-
-.card {
-  overflow: hidden;
-  border: 1px solid #e1e1e1;
-  border-radius: 4px 4px 0 0;
-  background-color: #eee;
-  height: 40px;
-}
-
-.card-header {
-  float: left;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  transition: 0.3s;
-  margin: 0;
-  border-bottom: none;
-  border-radius: 0;
+pre > code {
   display: block;
-  height: 38px;
-  padding: 0 30px;
-  color: #555;
-  text-align: center;
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 38px;
-  letter-spacing: 0.1rem;
-  text-transform: uppercase;
-  text-decoration: none;
-  font-family: system-ui;
-  white-space: nowrap;
+  padding: 1rem 1.5rem;
+  white-space: pre;
 }
 
-.cardcontent {
-  padding: 2.5rem 3rem;
-  border: 1px solid #e1e1e1;
-  border-radius: 0 0 4px 4px;
-}
-
-.cardcontent > a,
-.cardcontent > label {
-  margin-right: 10px;
-}
-
-.download {
-  text-transform: uppercase;
-  font-size: 1.2rem;
-  letter-spacing: 0.2rem;
-  font-weight: 600;
-  margin-bottom: 0;
-}
-
-@media (min-width: 1440px) {
-  .download {
-    font-size: 1.5rem;
-  }
-}
-
-.d-flex {
-  justify-content: center;
-  align-items: baseline;
-}
-
-.d-flex > p {
-  margin-left: 1rem;
-}
-
-.filter-row,
-.sample-row {
-  align-items: baseline;
-  justify-content: space-between;
-  margin-right: 0;
-  margin-left: 0;
-}
-
-.sample-row {
-  display: flex;
-}
-
-.alert {
-  font-size: 1.2rem;
-  line-height: 1.5;
-  padding: 0.75rem;
-}
-
-.alert-horz > div:not(:first-child),
-.alert-info > div:not(:first-child) {
-  margin-left: 4rem;
-  margin-top: 1rem;
-}
-
-@media (min-width: 1880px) {
-  .alert-horz > div:not(:first-child),
-  .alert-info > div:not(:first-child) {
-    margin-left: 0;
-    margin-top: 0;
-  }
-}
-
-.alert-horz > div > span > input,
-.alert-info > div > span > input {
-  margin-bottom: 0rem;
-}
-
-@media (min-width: 1000px) {
-  .alert-horz > div > span > input,
-  .alert-info > div > span > input {
-    margin-bottom: 1rem;
-  }
-}
-
-/* Plot controls
-–––––––––––––––––––––––––––––––––––––––––––––––––– */
-.plot-controls-row {
-  background-color: $cooler-platinum;
-  margin: -1rem;
+.python-block {
+  margin-top: 2rem;
   padding: 1rem;
-  margin: -1rem -1rem 0 -1rem;
+  background: #f1f1f1;
+  border: 1px solid #e1e1e1;
 }
 
-.plot-col {
-  border-left: 1px solid var(--cooler-red);
-  padding-left: 25px;
+pre:first-child {
+  overflow-wrap: break-word !important;
+  overflow: scroll;
 }
 
-.plot-col:first-of-type {
-  border-left: none;
-  padding-left: 25px;
+.tweener {
+  padding-bottom: 5px !important;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+/* Grid
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+.container {
+  position: relative;
+  width: 100%;
+  max-width: 95vw;
+  margin: 0 auto;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.container--main {
+  min-height: calc(100vh - 288px);
 }
 
 /* Footer
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
-
 .footer-distributed {
-  background-color: $cooler-off-black;
+  background-color: #292c2f;
   text-align: left;
   overflow: hidden;
   padding: 2rem 0;
@@ -868,7 +408,6 @@ div#hist,
 }
 
 /* Footer links */
-
 .footer-links {
   color: #ffffff;
   padding: 0;
@@ -889,17 +428,16 @@ div#hist,
 }
 
 .footer-links a:hover {
-  color: var(--cooler-red);
+  color: #ff533d;
 }
 
 .footer-company-name {
-  color: var(--cooler-gray);
+  color: #8f9296;
   font-weight: normal;
   margin: 0;
 }
 
 /* Footer social icons */
-
 .footer-distributed .footer-icons {
   margin-top: 40px;
 }
@@ -920,7 +458,6 @@ div#hist,
 }
 
 /* Footer Right */
-
 .footer-right {
   float: right;
 }
@@ -933,7 +470,6 @@ div#hist,
 }
 
 /* The contact form */
-
 .footer-distributed form {
   display: inline-block;
 }
@@ -992,318 +528,305 @@ div#hist,
   .footer-distributed {
     font: bold 14px sans-serif;
   }
+
   .footer-distributed .footer-company-name {
     font-size: 12px;
   }
+
   .footer-distributed form input,
-  .footer-distributed form textarea {
+.footer-distributed form textarea {
     width: 250px;
   }
+
   .footer-distributed form button {
     padding: 10px 35px;
   }
 }
-
 @media (max-width: 800px) {
   .footer-distributed {
     padding: 30px;
   }
+
   .footer-distributed .footer-left,
-  .footer-distributed .footer-right {
+.footer-distributed .footer-right {
     float: none;
     max-width: 300px;
     margin: 0 auto;
   }
+
   .footer-distributed .footer-left {
     margin-bottom: 40px;
   }
+
   .footer-distributed form {
     margin-top: 30px;
   }
+
   .footer-distributed form {
     display: block;
   }
+
   .footer-distributed form button {
     float: none;
   }
 }
+/* Header
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+.header {
+  display: flex;
+  flex-direction: column;
+  box-shadow: rgba(31, 53, 78, 0.11) 0 1px;
+  border-bottom: 1px solid #ff533d;
+  height: 125px;
+}
 
-/* Buttons
-  –––––––––––––––––––––––––––––––––––––––––––––––––– */
+.header__logo {
+  margin-left: 5vw;
+  height: 55px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-.button,
-button,
-input[type="submit"],
-input[type="reset"],
-input[type="button"] {
-  display: inline-block;
-  height: 38px;
-  padding: 0 30px;
-  color: #555;
-  text-align: center;
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 38px;
-  letter-spacing: 0.1rem;
+.header__logo-link {
+  text-decoration: none;
+}
+
+.header__logo-style {
   text-transform: uppercase;
-  text-decoration: none;
-  white-space: nowrap;
-  background-color: transparent;
-  border-radius: 4px;
-  border: 1px solid #bbb;
-  cursor: pointer;
-  box-sizing: border-box;
-  margin-bottom: 0 !important;
+  font-size: 2rem;
+  letter-spacing: 0.2rem;
+  font-weight: 300;
+  font-family: "Lexend Zetta", sans-serif;
 }
 
-.button:hover,
-button:hover,
-input[type="submit"]:hover,
-input[type="reset"]:hover,
-input[type="button"]:hover,
-.button:focus,
-button:focus,
-input[type="submit"]:focus,
-input[type="reset"]:focus,
-input[type="button"]:focus {
-  color: #333;
-  border-color: #888;
-  outline: 0;
-  text-decoration: none;
-}
-
-.button.button-primary,
-button.button-primary,
-input[type="submit"].button-primary,
-input[type="reset"].button-primary,
-input[type="button"].button-primary {
-  color: #fff;
-  background-color: $cooler-off-black;
-  border-color: $cooler-off-black;
-  max-width: 270px;
-}
-
-.button.button-primary:hover,
-button.button-primary:hover,
-input[type="submit"].button-primary:hover,
-input[type="reset"].button-primary:hover,
-input[type="button"].button-primary:hover,
-.button.button-primary:focus,
-button.button-primary:focus,
-input[type="submit"].button-primary:focus,
-input[type="reset"].button-primary:focus,
-input[type="button"].button-primary:focus {
-  color: #fff;
-  background-color: var(--cooler-red);
-  border-color: var(--cooler-red);
-  text-decoration: none;
-}
-
-.button-close {
-  padding: 0 10px;
-}
-
-.button.button-remove,
-button.button-remove,
-input[type="submit"].button-remove,
-input[type="reset"].button-remove,
-input[type="button"].button-remove {
-  max-width: 270px;
-  margin-bottom: 0;
-  color: $cooler-off-black;
-  opacity: 0.6;
-  background-color: transparent;
-  border-color: transparent;
-  max-width: 270px;
-  margin-bottom: 0;
-  margin-right: 2rem;
-  font-size: 1.8rem;
-  line-height: 1.8rem;
-  padding: 0 5px;
-  height: auto;
-}
-
-.button.button-remove:hover,
-button.button-remove:hover,
-input[type="submit"].button-remove:hover,
-input[type="reset"].button-remove:hover,
-input[type="button"].button-remove:hover,
-.button.button-remove:focus,
-button.button-remove:focus,
-input[type="submit"].button-remove:focus,
-input[type="reset"].button-remove:focus,
-input[type="button"].button-remove:focus {
-  color: $cooler-off-black;
-  opacity: 1;
-  text-decoration: none;
-}
-
-.button-close {
-  padding: 0 10px;
-}
-
-/* Forms
-  –––––––––––––––––––––––––––––––––––––––––––––––––– */
-
-input[type="email"],
-input[type="number"],
-input[type="search"],
-input[type="text"],
-input[type="tel"],
-input[type="url"],
-input[type="password"],
-textarea,
-select {
-  height: 38px;
-  padding: 6px 10px;
-  /* The 6px vertically centers text on FF, ignored by Webkit */
-  background-color: #fff;
-  border: 1px solid #d1d1d1;
-  border-radius: 4px;
-  box-shadow: none;
-  box-sizing: border-box;
-  min-width: 150px;
-  font-size: 1.2rem;
-  line-height: 1.5;
-}
-
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0; /* Removes leftover margin */
-}
-
-input[type="number"] {
-  -moz-appearance: textfield !important;
-}
-
-select {
-  min-width: 200px;
-}
-
-/* Removes awkward default styles on some inputs for iOS */
-
-input[type="email"],
-input[type="number"],
-input[type="search"],
-input[type="text"],
-input[type="tel"],
-input[type="url"],
-input[type="password"],
-textarea {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-}
-
-textarea {
-  min-height: 65px;
-  padding-top: 6px;
-  padding-bottom: 6px;
-}
-
-input[type="email"]:focus,
-input[type="number"]:focus,
-input[type="search"]:focus,
-input[type="text"]:focus,
-input[type="tel"]:focus,
-input[type="url"]:focus,
-input[type="password"]:focus,
-textarea:focus,
-select:focus {
-  border: 1px solid var(--cooler-red);
-  outline: 0;
-}
-
-label,
-legend {
+.header__logo img {
   display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 400;
-  font-family: system-ui;
-  font-size: 1.2rem;
 }
 
-fieldset {
-  padding: 0;
-  border-width: 0;
+nav.header__nav {
+  margin: 1.5em 0 0 5vw;
 }
 
-input[type="checkbox"],
-input[type="radio"] {
+ul#topbar {
+  margin-bottom: 0;
+}
+
+.header__link--dropdown,
+.header__link {
   display: inline;
-}
-
-label > .label-body {
-  display: inline-block;
-  margin-left: 0.5rem;
-  font-weight: normal;
-}
-
-.superlabel {
-  font-size: 1.5rem;
+  padding: 0 1.4em 16px 0;
+  font-size: 1.2rem;
+  text-transform: uppercase;
   font-weight: 600;
+  letter-spacing: 0.2rem;
+  text-decoration: none;
+  color: #222;
 }
 
-/* Lists
-  –––––––––––––––––––––––––––––––––––––––––––––––––– */
-
-ul {
-  list-style: circle inside;
+li.header__link a,
+li.header__link--dropdown a {
+  text-decoration: none;
+  color: #292c2f;
 }
 
-ol {
-  list-style: decimal inside;
+li.header__link a.active {
+  font-weight: 300;
 }
 
-ol,
-ul {
-  padding-left: 0;
-  margin-top: 0;
+li.header__link--dropdown a:hover,
+li.header__link a:hover {
+  color: #ff533d;
+  border-bottom: 1px solid #ff533d;
 }
 
-ul ul,
-ul ol,
-ol ol,
-ol ul {
-  margin: 1.5rem 0 1.5rem 3rem;
-  font-size: 90%;
+.dropdown:hover,
+container a:hover:not(.active) {
+  color: #222222;
 }
 
-/* Code
-  –––––––––––––––––––––––––––––––––––––––––––––––––– */
-
-code {
-  padding: 0.2rem 0.5rem;
-  margin: 0 0.2rem;
-  font-size: 90%;
-  white-space: nowrap;
-  background: #f1f1f1;
-  border: 1px solid #e1e1e1;
-  border-radius: 4px;
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px #292c2f;
+  z-index: 100;
+  top: 50px;
 }
 
-pre > code {
+.dropdown-second {
+  margin-left: 115px;
+}
+
+.header__link--dropdown:hover > .dropdown-content {
   display: block;
-  padding: 1rem 1.5rem;
-  white-space: pre;
 }
 
-.python-block {
-  margin-top: 2rem;
-  padding: 1rem;
-  background: #f1f1f1;
-  border: 1px solid #e1e1e1;
+.header__link--dropdown:focus > .dropdown-content {
+  display: block;
 }
 
-pre:first-child {
-  overflow-wrap: break-word !important;
-  overflow: scroll;
+.dropdown-content > a {
+  color: #222222 !important;
+  background-color: #fefeff;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  text-align: left;
+}
+
+.dropdown-content > a:hover {
+  background-color: #222222;
+  color: #292c2f !important;
+}
+
+@media screen and (min-width: 600px) {
+  .header {
+    flex-direction: row;
+    justify-content: space-between;
+    height: 55px;
+  }
+
+  .header__logo {
+    margin-left: 5vw;
+  }
+
+  nav.header__nav {
+    align-self: center;
+    margin: 0 5vw 0 0;
+  }
+}
+.nav-link {
+  font-family: "Lexend Zetta", sans-serif;
+  font-size: 1.4rem;
+}
+
+/* Hero and Heading
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+.col-border {
+  border-left: 1px solid #292c2f;
+}
+
+.gray-heading {
+  margin: 0 calc(-2.5vw + -20px) 2rem calc(-2.5vw + -20px);
+  background-color: #e7e7e8;
+}
+
+.candels-heading {
+  background: url(./candels-bg.jpg) repeat-x center center;
+}
+
+.candels-subheading {
+  color: #222222 !important;
+  background: rgba(143, 146, 150, 0.5);
+}
+
+.section__heading {
+  text-decoration: underline;
+}
+
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.hero-subheading {
+  font-family: "Open Sans", Helvetica, Arial, sans-serif;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.2rem;
+  font-size: 1.8rem;
+}
+
+.heading-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+/* Bigger than 550 */
+@media (min-width: 550px) {
+  .pic {
+    position: absolute;
+    top: -7rem;
+    right: 3rem;
+    max-height: 362px;
+    z-index: 3;
+    border-radius: 4px;
+  }
+
+  .hero-heading,
+.heading-heading {
+    font-size: 2.4rem;
+  }
+}
+/* Bigger than 750 */
+@media (min-width: 750px) {
+  .hero-heading,
+.heading-heading {
+    font-size: 2.6rem;
+  }
+
+  .hero {
+    padding: 16rem 0 14rem;
+  }
+
+  .section__description {
+    max-width: 60%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .pic {
+    top: -14rem;
+    right: 5rem;
+    max-height: 510px;
+  }
+
+  .categories {
+    padding: 15rem 0 8rem;
+  }
+}
+/* Bigger than 1000 */
+@media (min-width: 1000px) {
+  .hero-heading,
+.heading-heading {
+    font-size: 3rem;
+  }
+
+  .pic {
+    top: -16rem;
+    max-height: 500px;
+  }
+}
+/* Sections
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+.section {
+  padding: 5rem 0 5rem;
+  text-align: center;
+}
+
+.section-heading {
+  margin-bottom: 1.2rem;
+}
+
+.section-description {
+  margin-bottom: 2rem;
+}
+
+.section--catalog {
+  text-align: left;
+  padding: 0 0 3rem 0 !important;
 }
 
 /* Spacing
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
-
 button,
 .button {
   margin-bottom: 1rem;
@@ -1328,8 +851,7 @@ form {
 }
 
 /* Misc
-  –––––––––––––––––––––––––––––––––––––––––––––––––– */
-
+    –––––––––––––––––––––––––––––––––––––––––––––––––– */
 hr {
   margin-top: 3rem;
   margin-bottom: 3.5rem;
@@ -1346,69 +868,399 @@ hr {
 }
 
 .highlighted-links > p > a {
-  border-bottom: 1px solid var(--cooler-red);
+  border-bottom: 1px solid #ff533d;
 }
 
 .highlighted-links > p > a:hover {
   text-decoration: none;
 }
 
-/* Dedicated Lists
-  –––––––––––––––––––––––––––––––––––––––––––––––––– */
+.right-column-group {
+  margin: 2rem 0;
+}
 
-dt {
+.left-column-header-group {
+  background-color: #e7e7e8;
+  padding: 0 1rem;
   margin-bottom: 1rem;
+  border: 1px solid #8f9296;
 }
 
-dt > a {
-  font-weight: bolder;
-  font-size: 1.6rem;
-  border-bottom: 1px solid var(--cooler-red);
+/* Breadcrumbs
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+.breadcrumb-container {
+  margin: 0 calc(-2.5vw + -20px) 0.1rem calc(-2.5vw + -20px);
 }
 
-dd {
-  margin-bottom: 1.5rem;
+.breadcrumb {
+  margin: 0 5vw;
+  max-width: 95vw;
+  padding: 1rem 0;
+  background-color: transparent;
 }
 
-dd:before {
-  padding-right: 0.8em;
-  content: " - ";
-}
-
-dd > a {
-  border-bottom: 1px solid var(--cooler-red);
-}
-
-a.underline,
-a.underline:hover {
-  text-decoration: none;
-  border-bottom: 1px solid var(--cooler-red);
-}
-
-dt > a:hover,
-dd > a:hover {
-  text-decoration: none;
-}
-
-/* Fields Dictionary
-  –––––––––––––––––––––––––––––––––––––––––––––––––– */
-
-table#tdict {
+.breadcrumb-item {
+  display: inline;
+  padding: 0 0.8em 0 0.8em;
   font-size: 1.2rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.2rem;
+  text-decoration: none;
+}
+
+.breadcrumb-item:first-of-type {
+  padding-left: 0;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+  padding-right: 0.8em;
+}
+
+.breadcrumb-item > a {
+  border-bottom: 1px solid #ff533d;
+}
+
+.breadcrumb-item > a:hover {
+  text-decoration: none;
+}
+
+/* Buttons
+  –––––––––––––––––––––––––––––––––––––––––––––––––– */
+.button,
+button,
+input[type=submit],
+input[type=reset],
+input[type=button] {
+  display: inline-block;
+  height: 38px;
+  padding: 0 30px;
+  color: #555;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 38px;
+  letter-spacing: 0.1rem;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  background-color: transparent;
+  border-radius: 4px;
+  border: 1px solid #bbb;
+  cursor: pointer;
+  box-sizing: border-box;
+  margin-bottom: 0 !important;
+}
+
+.button:hover,
+button:hover,
+input[type=submit]:hover,
+input[type=reset]:hover,
+input[type=button]:hover,
+.button:focus,
+button:focus,
+input[type=submit]:focus,
+input[type=reset]:focus,
+input[type=button]:focus {
+  color: #333;
+  border-color: #888;
+  outline: 0;
+  text-decoration: none;
+}
+
+.button.button-primary,
+button.button-primary,
+input[type=submit].button-primary,
+input[type=reset].button-primary,
+input[type=button].button-primary {
+  color: #fff;
+  background-color: #fefeff;
+  border-color: #292c2f;
+  max-width: 270px;
+}
+
+.button.button-primary:hover,
+button.button-primary:hover,
+input[type=submit].button-primary:hover,
+input[type=reset].button-primary:hover,
+input[type=button].button-primary:hover,
+.button.button-primary:focus,
+button.button-primary:focus,
+input[type=submit].button-primary:focus,
+input[type=reset].button-primary:focus,
+input[type=button].button-primary:focus {
+  color: #fff;
+  background-color: #ff533d;
+  border-color: #ff533d;
+  text-decoration: none;
+}
+
+.button-close {
+  padding: 0 10px;
+}
+
+.button.button-remove,
+button.button-remove,
+input[type=submit].button-remove,
+input[type=reset].button-remove,
+input[type=button].button-remove {
+  max-width: 270px;
+  margin-bottom: 0;
+  color: #292c2f;
+  opacity: 0.6;
+  background-color: transparent;
+  border-color: transparent;
+  max-width: 270px;
+  margin-bottom: 0;
+  margin-right: 2rem;
+  font-size: 1.8rem;
+  line-height: 1.8rem;
+  padding: 0 5px;
+  height: auto;
+}
+
+.button.button-remove:hover,
+button.button-remove:hover,
+input[type=submit].button-remove:hover,
+input[type=reset].button-remove:hover,
+input[type=button].button-remove:hover,
+.button.button-remove:focus,
+button.button-remove:focus,
+input[type=submit].button-remove:focus,
+input[type=reset].button-remove:focus,
+input[type=button].button-remove:focus {
+  color: #292c2f;
+  opacity: 1;
+  text-decoration: none;
+}
+
+.button-close {
+  padding: 0 10px;
+}
+
+.show_button {
+  display: inline;
+  margin-right: 10px;
+}
+
+.btn-badge-inline {
+  height: 37px;
+  border-color: #222222;
+  margin-left: 1rem;
+  margin-bottom: 0 !important;
+}
+
+.btn-badge {
+  height: 37px;
+  border-color: #222222;
+  margin-bottom: 0 !important;
+  margin-top: 2rem;
+}
+
+/* Filter card
+  –––––––––––––––––––––––––––––––––––––––––––––––––– */
+.card {
+  overflow: hidden;
+  border: 1px solid #e1e1e1;
+  border-radius: 4px 4px 0 0;
+  background-color: #eee;
+  height: 40px;
+}
+
+.card-header {
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  transition: 0.3s;
+  margin: 0;
+  border-bottom: none;
+  border-radius: 0;
+  display: block;
+  height: 38px;
+  padding: 0 30px;
+  color: #555;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 38px;
+  letter-spacing: 0.1rem;
+  text-transform: uppercase;
+  text-decoration: none;
+  font-family: system-ui;
+  white-space: nowrap;
+}
+
+.cardcontent {
+  padding: 2.5rem 3rem;
+  border: 1px solid #e1e1e1;
+  border-radius: 0 0 4px 4px;
+}
+
+.cardcontent > a,
+.cardcontent > label {
+  margin-right: 10px;
+}
+
+.download {
+  text-transform: uppercase;
+  font-size: 1.2rem;
+  letter-spacing: 0.2rem;
+  font-weight: 600;
+  margin-bottom: 0;
+}
+
+@media (min-width: 1440px) {
+  .download {
+    font-size: 1.5rem;
+  }
+}
+.d-flex {
+  justify-content: center;
+  align-items: baseline;
+}
+
+.d-flex > p {
+  margin-left: 1rem;
+}
+
+.filter-row,
+.sample-row {
+  align-items: baseline;
+  justify-content: space-between;
+  margin-right: 0;
+  margin-left: 0;
+}
+
+.sample-row {
+  display: flex;
+}
+
+.alert {
+  font-size: 1.2rem;
+  line-height: 1.5;
+  padding: 0.75rem;
+}
+
+.alert-horz > div:not(:first-child),
+.alert-info > div:not(:first-child) {
+  margin-left: 4rem;
+  margin-top: 1rem;
+}
+
+@media (min-width: 1880px) {
+  .alert-horz > div:not(:first-child),
+.alert-info > div:not(:first-child) {
+    margin-left: 0;
+    margin-top: 0;
+  }
+}
+.alert-horz > div > span > input,
+.alert-info > div > span > input {
+  margin-bottom: 0rem;
+}
+
+@media (min-width: 1000px) {
+  .alert-horz > div > span > input,
+.alert-info > div > span > input {
+    margin-bottom: 1rem;
+  }
+}
+/* Form
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+form {
+  margin-bottom: 2.5rem;
+}
+
+input[type=email],
+input[type=number],
+input[type=search],
+input[type=text],
+input[type=tel],
+input[type=url],
+input[type=password],
+textarea,
+select {
+  height: 38px;
+  padding: 6px 10px;
+  /* The 6px vertically centers text on FF, ignored by Webkit */
+  background-color: #fff;
+  border: 1px solid #d1d1d1;
+  border-radius: 4px;
+  box-shadow: none;
+  box-sizing: border-box;
+}
+
+/* Removes awkward default styles on some inputs for iOS */
+input[type=email],
+input[type=number],
+input[type=search],
+input[type=text],
+input[type=tel],
+input[type=url],
+input[type=password],
+textarea {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+textarea {
+  min-height: 65px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+input[type=email]:focus,
+input[type=number]:focus,
+input[type=search]:focus,
+input[type=text]:focus,
+input[type=tel]:focus,
+input[type=url]:focus,
+input[type=password]:focus,
+textarea:focus,
+select:focus {
+  border: 1px solid #33c3f0;
+  outline: 0;
+}
+
+label,
+legend {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+fieldset {
+  padding: 0;
+  border-width: 0;
+}
+
+input[type=checkbox],
+input[type=radio] {
+  display: inline;
+}
+
+label > .label-body {
+  display: inline-block;
+  margin-left: 0.5rem;
+  font-weight: normal;
+}
+
+select {
+  min-width: 200px;
+}
+
+.superlabel {
+  font-size: 1.5rem;
+  font-weight: 600;
 }
 
 input.colvis {
   margin-right: 7px;
 }
 
-.nav-link {
-  font-family: "Lexend Zetta", sans-serif;
-  font-size: 1.4rem;
-}
-
-/* bits */
-
-input[type="number"] {
+input[type=number] {
   width: 100px;
 }
 
@@ -1425,43 +1277,158 @@ span.units::after {
   content: "]";
 }
 
-.show_button {
-  display: inline;
-  margin-right: 10px;
+/* Histogram
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+.row--chartfilter {
+  max-height: 55vh;
+  margin-bottom: 5rem;
 }
 
-/* tooltips */
-
-.tooltip-dt {
+div#dhist,
+.dhist {
+  display: none;
   position: relative;
 }
 
-.tooltip-dt .tooltiptext {
-  display: none;
-  background-color: white;
-  color: black;
-  text-align: center;
-  padding: 1ex;
-  top: 3em;
-  position: absolute;
-  font-weight: normal;
-  font-size: small;
-  z-index: 1;
-  border: 1px solid var(--cooler-gray);
-  min-width: 150px;
+div#hist,
+.hist {
+  width: 100%;
 }
 
-.tooltip-dt:hover .tooltiptext {
-  display: block;
+.hist-container {
+  margin: 2rem 1rem;
 }
 
-/* top page */
+/* Dedicated Lists
+  –––––––––––––––––––––––––––––––––––––––––––––––––– */
+dt {
+  margin-bottom: 1rem;
+}
+
+dt > a {
+  font-weight: bolder;
+  font-size: 1.6rem;
+  border-bottom: 1px solid #ff533d;
+}
+
+dd {
+  margin-bottom: 1.5rem;
+}
+
+dd:before {
+  padding-right: 0.8em;
+  content: " - ";
+}
+
+dd > a {
+  border-bottom: 1px solid #ff533d;
+}
+
+a.underline,
+a.underline:hover {
+  text-decoration: none;
+  border-bottom: 1px solid #ff533d;
+}
+
+dt > a:hover,
+dd > a:hover {
+  text-decoration: none;
+}
 
 dt {
   padding-top: 10px;
 }
 
-/* data table */
+/* Lists
+  –––––––––––––––––––––––––––––––––––––––––––––––––– */
+ul {
+  list-style: circle inside;
+}
+
+ol {
+  list-style: decimal inside;
+}
+
+ol,
+ul {
+  padding-left: 0;
+  margin-top: 0;
+}
+
+ul ul,
+ul ol,
+ol ol,
+ol ul {
+  margin: 1.5rem 0 1.5rem 3rem;
+  font-size: 90%;
+}
+
+/* Tabs
+  –––––––––––––––––––––––––––––––––––––––––––––––––– */
+.tab {
+  overflow: hidden;
+  border: 1px solid #e1e1e1;
+  border-radius: 4px 4px 0 0;
+  background-color: #eee;
+  height: 40px;
+}
+
+.tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  transition: 0.3s;
+  margin: 0;
+  border-bottom: none;
+  border-radius: 0;
+}
+
+.tab button:hover {
+  background-color: #ddd;
+}
+
+.tab button.active {
+  background-color: #ccc;
+}
+
+.tabcontent,
+.datacontent {
+  display: none;
+  padding: 2.5rem 3rem;
+  border: 1px solid #e1e1e1;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  animation: fadeEffect 1s;
+}
+
+@keyframes fadeEffect {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.py-query {
+  max-width: 100%;
+  display: none;
+  background: #f1f1f1;
+  border: 1px solid #e1e1e1;
+  margin: 2.5rem 0.2rem;
+  font-size: 90%;
+  border-radius: 4px;
+}
+
+.py-pre {
+  white-space: pre-line;
+  margin: 1rem 1rem 2.5rem 1rem;
+}
+
+table#tdict {
+  font-size: 1.2rem;
+}
 
 table#tcat {
   margin: 0;
@@ -1484,34 +1451,78 @@ table#tcat td {
 #tdict > tbody > tr > td.depth-0 {
   padding-left: 0px;
 }
+
 #tdict > tbody > tr > td.depth-1 {
   padding-left: 25px;
 }
+
 #tdict > tbody > tr > td.depth-2 {
   padding-left: 50px;
 }
+
 #tdict > tbody > tr > td.depth-3 {
   padding-left: 75px;
 }
+
 #tdict > tbody > tr > td.units {
   text-align: center;
 }
 
-/* compare */
-
-#tcompare {
-  border-collapse: collapse;
+/* tooltips */
+.tooltip-dt {
+  position: relative;
 }
 
-#tcompare th {
-  min-width: 250px;
+.tooltip-dt .tooltiptext {
+  display: none;
+  background-color: white;
+  color: black;
+  text-align: center;
+  padding: 1ex;
+  top: 3em;
+  position: absolute;
+  font-weight: normal;
+  font-size: small;
+  z-index: 1;
+  border: 1px solid #8f9296;
+  min-width: 150px;
 }
 
-#tcompare td {
-  border: solid;
-  border-width: 0px 1px;
-  padding: 4px 10px;
-  min-width: 250px;
+.tooltip-dt:hover .tooltiptext {
+  display: block;
+}
+
+/* Catalog
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+.catalog__heading {
+  margin-bottom: 5rem;
+}
+
+.filter__title {
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  text-align: center;
+  line-height: 38px;
+  letter-spacing: 0.1rem;
+  padding-left: 10px;
+}
+
+.catalogs-container {
+  padding: 10px;
+}
+
+.catalogs-list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  text-align: left;
+  width: 100%;
+}
+
+.main-page {
+  align-items: center;
 }
 
 .catalog-title {
@@ -1533,14 +1544,14 @@ table#tcat td {
 }
 
 .catalog-tool {
-  border: 1px solid var(--cooler-gray);
-  background-color: $cooler-black;
+  border: 1px solid #8f9296;
+  background-color: #222222;
   min-height: 65vh;
 }
 
 .catalog-summary {
-  background-color: $cooler-platinum;
-  border: 1px solid var(--cooler-gray);
+  background-color: #e7e7e8;
+  border: 1px solid #8f9296;
   padding: 2rem;
 }
 
@@ -1550,13 +1561,12 @@ table#tcat td {
 
 @media screen and (min-width: 1000px) {
   .catalog-tool,
-  .catalog-summary {
+.catalog-summary {
     max-width: 95vw;
   }
 }
-
 .raw-data {
-  background-color: $cooler-black;
+  background-color: #222222;
 }
 
 .left-column {
@@ -1565,13 +1575,13 @@ table#tcat td {
 }
 
 .right-column {
-  background-color: $cooler-platinum;
+  background-color: #e7e7e8;
   min-height: 65vh;
   padding: 1rem 1rem 0 1rem;
 }
 
 .right-column-heading {
-  border-bottom: 1px solid var(--cooler-red);
+  border-bottom: 1px solid #ff533d;
 }
 
 .tab-content {
@@ -1579,7 +1589,7 @@ table#tcat td {
   padding: 1rem 2rem;
   max-height: 70vh;
   overflow: scroll;
-  background-color: $cooler-black;
+  background-color: #222222;
 }
 
 .form-badge {
@@ -1592,53 +1602,81 @@ table#tcat td {
   height: 38px;
 }
 
-.tweener {
-  padding-bottom: 5px !important;
-  font-size: 2rem;
-  font-weight: 700;
+/* Plot controls
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+.plot-controls-row {
+  background-color: #e7e7e8;
+  margin: -1rem;
+  padding: 1rem;
+  margin: -1rem -1rem 0 -1rem;
 }
 
-.btn-badge-inline {
-  height: 37px;
-  border-color: $cooler-black;
-  margin-left: 1rem;
-  margin-bottom: 0 !important;
+.plot-col {
+  border-left: 1px solid #ff533d;
+  padding-left: 25px;
 }
 
-.btn-badge {
-  height: 37px;
-  border-color: $cooler-black;
-  margin-bottom: 0 !important;
-  margin-top: 2rem;
+.plot-col:first-of-type {
+  border-left: none;
+  padding-left: 25px;
 }
 
-.right-column-group {
-  margin: 2rem 0;
+/* Collections
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+.collections-container {
+  background-color: #222222;
+  opacity: 0.8;
+  padding: 10px;
 }
 
-.left-column-header-group {
-  background-color: $cooler-platinum;
-  padding: 0 1rem;
-  margin-bottom: 1rem;
-  border: 1px solid var(--cooler-gray);
+.collection-label {
+  color: #292c2f;
+  font-size: 50px;
+  text-transform: uppercase;
+  border: white;
+  padding: 100px 0;
+  text-decoration: none;
+  border: 5px white solid;
+  margin-top: 7rem;
 }
 
-.custom-control {
-  margin-left: 2rem;
-  margin-right: 2rem;
+.collections-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
 }
 
-.fake-img {
-  max-height: 500px;
+.collection-card-heading {
+  font-family: "Open Sans", Helvetica, Arial, sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.2rem;
+  font-size: 1.8rem;
+  color: #ff533d;
 }
 
-.custom-select {
-  margin-bottom: 0;
+.collection-link {
+  text-decoration: none;
+}
+
+#tcompare {
+  border-collapse: collapse;
+}
+
+#tcompare th {
+  min-width: 250px;
+}
+
+#tcompare td {
+  border: solid;
+  border-width: 0px 1px;
+  padding: 4px 10px;
+  min-width: 250px;
 }
 
 /* Loading screens
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
-
 .modal-container {
   position: fixed;
   width: 100vw;
@@ -1647,7 +1685,7 @@ table#tcat td {
 }
 
 .modal-background {
-  background-color: var(--cooler-gray);
+  background-color: #8f9296;
   opacity: 0.5;
   height: 100%;
   width: 100%;
@@ -1663,7 +1701,7 @@ table#tcat td {
 }
 
 .modal-content {
-  color: $cooler-off-black;
+  color: #292c2f;
   padding: 2rem;
   max-width: 900px;
   align-items: center;
@@ -1680,7 +1718,6 @@ table#tcat td {
 
 /* Progress Bar
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
-
 .progress-container {
   width: 300px;
   text-align: center;
@@ -1692,34 +1729,17 @@ table#tcat td {
     width: 500px;
   }
 }
-
 .progress-interior {
   height: 18px;
   border-radius: 4px;
-  background-image: linear-gradient(
-    to right,
-    #ff513a,
-    #c93926,
-    #c42d19,
-    #ffada3,
-    #ff533d,
-    #ff2d55
-  );
+  background-image: linear-gradient(to right, #ff513a, #c93926, #c42d19, #ffada3, #ff533d, #ff2d55);
   transition: 0.4s linear;
   transition-property: width, background-color;
 }
 
 .progress-exterior .progress-interior {
   width: 100%;
-  background-image: linear-gradient(
-    to right,
-    #ff513a,
-    #c93926,
-    #c42d19,
-    #ffada3,
-    #ff533d,
-    #ff2d55
-  );
+  background-image: linear-gradient(to right, #ff513a, #c93926, #c42d19, #ffada3, #ff533d, #ff2d55);
   animation: colorAnimation 1s infinite;
 }
 
@@ -1729,64 +1749,23 @@ table#tcat td {
 
 @keyframes colorAnimation {
   0% {
-    background-image: linear-gradient(
-      to right,
-      #ff513a,
-      #c93926,
-      #c42d19,
-      #ffada3,
-      #ff533d,
-      #ff2d55
-    );
+    background-image: linear-gradient(to right, #ff513a, #c93926, #c42d19, #ffada3, #ff533d, #ff2d55);
   }
   20% {
-    background-image: linear-gradient(
-      to right,
-      #c93926,
-      #c42d19,
-      #ffada3,
-      #ff533d,
-      #ff2d55,
-      #ff513a
-    );
+    background-image: linear-gradient(to right, #c93926, #c42d19, #ffada3, #ff533d, #ff2d55, #ff513a);
   }
   40% {
-    background-image: linear-gradient(
-      to right,
-      #c42d19,
-      #ffada3,
-      #ff533d,
-      #ff2d55,
-      #ff513a,
-      #c93926
-    );
+    background-image: linear-gradient(to right, #c42d19, #ffada3, #ff533d, #ff2d55, #ff513a, #c93926);
   }
   60% {
-    background-image: linear-gradient(
-      to right,
-      #ffada3,
-      #ff533d,
-      #ff2d55,
-      #ff513a,
-      #c93926,
-      #c42d19
-    );
+    background-image: linear-gradient(to right, #ffada3, #ff533d, #ff2d55, #ff513a, #c93926, #c42d19);
   }
   100% {
-    background-image: linear-gradient(
-      to right,
-      #ffada3,
-      #ff533d,
-      #ff2d55,
-      #ff513a,
-      #c93926,
-      #c42d19
-    );
+    background-image: linear-gradient(to right, #ffada3, #ff533d, #ff2d55, #ff513a, #c93926, #c42d19);
   }
 }
-
 .dataTables_wrapper .dataTables_processing {
-  color: $cooler-off-black;
+  color: #292c2f;
   padding: 2rem;
   align-items: center;
   justify-content: center;
@@ -1797,7 +1776,6 @@ table#tcat td {
 
 /* MathJax Moved over from index
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
-
 .MathJax_Hover_Frame {
   border-radius: 0.25em;
   -webkit-border-radius: 0.25em;
@@ -1874,7 +1852,7 @@ table#tcat td {
   -webkit-box-shadow: 0px 10px 20px #808080;
   -moz-box-shadow: 0px 10px 20px #808080;
   -khtml-box-shadow: 0px 10px 20px #808080;
-  filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true');
+  filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color="gray", Positive="true");
 }
 
 #MathJax_About.MathJax_MousePost {
@@ -1909,7 +1887,7 @@ table#tcat td {
   -webkit-box-shadow: 0px 10px 20px #808080;
   -moz-box-shadow: 0px 10px 20px #808080;
   -khtml-box-shadow: 0px 10px 20px #808080;
-  filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true');
+  filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color="gray", Positive="true");
 }
 
 .MathJax_MenuItem {
@@ -2089,7 +2067,7 @@ table#tcat td {
   -webkit-box-shadow: 5px 5px 15px #aaaaaa;
   -moz-box-shadow: 5px 5px 15px #aaaaaa;
   -khtml-box-shadow: 5px 5px 15px #aaaaaa;
-  filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true');
+  filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color="gray", Positive="true");
 }
 
 #MathJax_ZoomOverlay {
@@ -2913,389 +2891,236 @@ body :focus .mjx-chtml[tabindex] {
   font-family: MJXc-TeX-ams-R;
   src: local("MathJax_AMS"), local("MathJax_AMS-Regular");
 }
-
 @font-face {
   font-family: MJXc-TeX-ams-Rw;
-  src/*1*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_AMS-Regular.eot");
-  src/*2*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_AMS-Regular.woff")
-      format("woff"),
-    url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_AMS-Regular.otf")
-      format("opentype");
+  src/*1*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_AMS-Regular.eot");
+  src/*2*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_AMS-Regular.woff") format("woff"), url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_AMS-Regular.otf") format("opentype");
 }
-
 @font-face {
   font-family: MJXc-TeX-cal-B;
   src: local("MathJax_Caligraphic Bold"), local("MathJax_Caligraphic-Bold");
 }
-
 @font-face {
   font-family: MJXc-TeX-cal-Bx;
   src: local("MathJax_Caligraphic");
   font-weight: bold;
 }
-
 @font-face {
   font-family: MJXc-TeX-cal-Bw;
-  src/*1*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Caligraphic-Bold.eot");
-  src/*2*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Caligraphic-Bold.woff")
-      format("woff"),
-    url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Caligraphic-Bold.otf")
-      format("opentype");
+  src/*1*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Caligraphic-Bold.eot");
+  src/*2*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Caligraphic-Bold.woff") format("woff"), url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Caligraphic-Bold.otf") format("opentype");
 }
-
 @font-face {
   font-family: MJXc-TeX-frak-R;
   src: local("MathJax_Fraktur"), local("MathJax_Fraktur-Regular");
 }
-
 @font-face {
   font-family: MJXc-TeX-frak-Rw;
-  src/*1*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Fraktur-Regular.eot");
-  src/*2*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Fraktur-Regular.woff")
-      format("woff"),
-    url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Fraktur-Regular.otf")
-      format("opentype");
+  src/*1*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Fraktur-Regular.eot");
+  src/*2*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Fraktur-Regular.woff") format("woff"), url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Fraktur-Regular.otf") format("opentype");
 }
-
 @font-face {
   font-family: MJXc-TeX-frak-B;
   src: local("MathJax_Fraktur Bold"), local("MathJax_Fraktur-Bold");
 }
-
 @font-face {
   font-family: MJXc-TeX-frak-Bx;
   src: local("MathJax_Fraktur");
   font-weight: bold;
 }
-
 @font-face {
   font-family: MJXc-TeX-frak-Bw;
-  src/*1*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Fraktur-Bold.eot");
-  src/*2*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Fraktur-Bold.woff")
-      format("woff"),
-    url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Fraktur-Bold.otf")
-      format("opentype");
+  src/*1*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Fraktur-Bold.eot");
+  src/*2*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Fraktur-Bold.woff") format("woff"), url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Fraktur-Bold.otf") format("opentype");
 }
-
 @font-face {
   font-family: MJXc-TeX-math-BI;
   src: local("MathJax_Math BoldItalic"), local("MathJax_Math-BoldItalic");
 }
-
 @font-face {
   font-family: MJXc-TeX-math-BIx;
   src: local("MathJax_Math");
   font-weight: bold;
   font-style: italic;
 }
-
 @font-face {
   font-family: MJXc-TeX-math-BIw;
-  src/*1*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Math-BoldItalic.eot");
-  src/*2*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Math-BoldItalic.woff")
-      format("woff"),
-    url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Math-BoldItalic.otf")
-      format("opentype");
+  src/*1*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Math-BoldItalic.eot");
+  src/*2*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Math-BoldItalic.woff") format("woff"), url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Math-BoldItalic.otf") format("opentype");
 }
-
 @font-face {
   font-family: MJXc-TeX-sans-R;
   src: local("MathJax_SansSerif"), local("MathJax_SansSerif-Regular");
 }
-
 @font-face {
   font-family: MJXc-TeX-sans-Rw;
-  src/*1*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_SansSerif-Regular.eot");
-  src/*2*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_SansSerif-Regular.woff")
-      format("woff"),
-    url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_SansSerif-Regular.otf")
-      format("opentype");
+  src/*1*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_SansSerif-Regular.eot");
+  src/*2*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_SansSerif-Regular.woff") format("woff"), url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_SansSerif-Regular.otf") format("opentype");
 }
-
 @font-face {
   font-family: MJXc-TeX-sans-B;
   src: local("MathJax_SansSerif Bold"), local("MathJax_SansSerif-Bold");
 }
-
 @font-face {
   font-family: MJXc-TeX-sans-Bx;
   src: local("MathJax_SansSerif");
   font-weight: bold;
 }
-
 @font-face {
   font-family: MJXc-TeX-sans-Bw;
-  src/*1*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_SansSerif-Bold.eot");
-  src/*2*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_SansSerif-Bold.woff")
-      format("woff"),
-    url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_SansSerif-Bold.otf")
-      format("opentype");
+  src/*1*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_SansSerif-Bold.eot");
+  src/*2*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_SansSerif-Bold.woff") format("woff"), url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_SansSerif-Bold.otf") format("opentype");
 }
-
 @font-face {
   font-family: MJXc-TeX-sans-I;
   src: local("MathJax_SansSerif Italic"), local("MathJax_SansSerif-Italic");
 }
-
 @font-face {
   font-family: MJXc-TeX-sans-Ix;
   src: local("MathJax_SansSerif");
   font-style: italic;
 }
-
 @font-face {
   font-family: MJXc-TeX-sans-Iw;
-  src/*1*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_SansSerif-Italic.eot");
-  src/*2*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_SansSerif-Italic.woff")
-      format("woff"),
-    url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_SansSerif-Italic.otf")
-      format("opentype");
+  src/*1*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_SansSerif-Italic.eot");
+  src/*2*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_SansSerif-Italic.woff") format("woff"), url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_SansSerif-Italic.otf") format("opentype");
 }
-
 @font-face {
   font-family: MJXc-TeX-script-R;
   src: local("MathJax_Script"), local("MathJax_Script-Regular");
 }
-
 @font-face {
   font-family: MJXc-TeX-script-Rw;
-  src/*1*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Script-Regular.eot");
-  src/*2*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Script-Regular.woff")
-      format("woff"),
-    url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Script-Regular.otf")
-      format("opentype");
+  src/*1*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Script-Regular.eot");
+  src/*2*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Script-Regular.woff") format("woff"), url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Script-Regular.otf") format("opentype");
 }
-
 @font-face {
   font-family: MJXc-TeX-type-R;
   src: local("MathJax_Typewriter"), local("MathJax_Typewriter-Regular");
 }
-
 @font-face {
   font-family: MJXc-TeX-type-Rw;
-  src/*1*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Typewriter-Regular.eot");
-  src/*2*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Typewriter-Regular.woff")
-      format("woff"),
-    url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Typewriter-Regular.otf")
-      format("opentype");
+  src/*1*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Typewriter-Regular.eot");
+  src/*2*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Typewriter-Regular.woff") format("woff"), url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Typewriter-Regular.otf") format("opentype");
 }
-
 @font-face {
   font-family: MJXc-TeX-cal-R;
   src: local("MathJax_Caligraphic"), local("MathJax_Caligraphic-Regular");
 }
-
 @font-face {
   font-family: MJXc-TeX-cal-Rw;
-  src/*1*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Caligraphic-Regular.eot");
-  src/*2*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Caligraphic-Regular.woff")
-      format("woff"),
-    url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Caligraphic-Regular.otf")
-      format("opentype");
+  src/*1*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Caligraphic-Regular.eot");
+  src/*2*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Caligraphic-Regular.woff") format("woff"), url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Caligraphic-Regular.otf") format("opentype");
 }
-
 @font-face {
   font-family: MJXc-TeX-main-B;
   src: local("MathJax_Main Bold"), local("MathJax_Main-Bold");
 }
-
 @font-face {
   font-family: MJXc-TeX-main-Bx;
   src: local("MathJax_Main");
   font-weight: bold;
 }
-
 @font-face {
   font-family: MJXc-TeX-main-Bw;
-  src/*1*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Main-Bold.eot");
-  src/*2*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Main-Bold.woff")
-      format("woff"),
-    url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Main-Bold.otf")
-      format("opentype");
+  src/*1*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Main-Bold.eot");
+  src/*2*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Main-Bold.woff") format("woff"), url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Main-Bold.otf") format("opentype");
 }
-
 @font-face {
   font-family: MJXc-TeX-main-I;
   src: local("MathJax_Main Italic"), local("MathJax_Main-Italic");
 }
-
 @font-face {
   font-family: MJXc-TeX-main-Ix;
   src: local("MathJax_Main");
   font-style: italic;
 }
-
 @font-face {
   font-family: MJXc-TeX-main-Iw;
-  src/*1*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Main-Italic.eot");
-  src/*2*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Main-Italic.woff")
-      format("woff"),
-    url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Main-Italic.otf")
-      format("opentype");
+  src/*1*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Main-Italic.eot");
+  src/*2*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Main-Italic.woff") format("woff"), url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Main-Italic.otf") format("opentype");
 }
-
 @font-face {
   font-family: MJXc-TeX-main-R;
   src: local("MathJax_Main"), local("MathJax_Main-Regular");
 }
-
 @font-face {
   font-family: MJXc-TeX-main-Rw;
-  src/*1*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Main-Regular.eot");
-  src/*2*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Main-Regular.woff")
-      format("woff"),
-    url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Main-Regular.otf")
-      format("opentype");
+  src/*1*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Main-Regular.eot");
+  src/*2*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Main-Regular.woff") format("woff"), url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Main-Regular.otf") format("opentype");
 }
-
 @font-face {
   font-family: MJXc-TeX-math-I;
   src: local("MathJax_Math Italic"), local("MathJax_Math-Italic");
 }
-
 @font-face {
   font-family: MJXc-TeX-math-Ix;
   src: local("MathJax_Math");
   font-style: italic;
 }
-
 @font-face {
   font-family: MJXc-TeX-math-Iw;
-  src/*1*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Math-Italic.eot");
-  src/*2*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Math-Italic.woff")
-      format("woff"),
-    url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Math-Italic.otf")
-      format("opentype");
+  src/*1*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Math-Italic.eot");
+  src/*2*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Math-Italic.woff") format("woff"), url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Math-Italic.otf") format("opentype");
 }
-
 @font-face {
   font-family: MJXc-TeX-size1-R;
   src: local("MathJax_Size1"), local("MathJax_Size1-Regular");
 }
-
 @font-face {
   font-family: MJXc-TeX-size1-Rw;
-  src/*1*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Size1-Regular.eot");
-  src/*2*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Size1-Regular.woff")
-      format("woff"),
-    url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Size1-Regular.otf")
-      format("opentype");
+  src/*1*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Size1-Regular.eot");
+  src/*2*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Size1-Regular.woff") format("woff"), url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Size1-Regular.otf") format("opentype");
 }
-
 @font-face {
   font-family: MJXc-TeX-size2-R;
   src: local("MathJax_Size2"), local("MathJax_Size2-Regular");
 }
-
 @font-face {
   font-family: MJXc-TeX-size2-Rw;
-  src/*1*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Size2-Regular.eot");
-  src/*2*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Size2-Regular.woff")
-      format("woff"),
-    url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Size2-Regular.otf")
-      format("opentype");
+  src/*1*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Size2-Regular.eot");
+  src/*2*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Size2-Regular.woff") format("woff"), url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Size2-Regular.otf") format("opentype");
 }
-
 @font-face {
   font-family: MJXc-TeX-size3-R;
   src: local("MathJax_Size3"), local("MathJax_Size3-Regular");
 }
-
 @font-face {
   font-family: MJXc-TeX-size3-Rw;
-  src/*1*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Size3-Regular.eot");
-  src/*2*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Size3-Regular.woff")
-      format("woff"),
-    url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Size3-Regular.otf")
-      format("opentype");
+  src/*1*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Size3-Regular.eot");
+  src/*2*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Size3-Regular.woff") format("woff"), url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Size3-Regular.otf") format("opentype");
 }
-
 @font-face {
   font-family: MJXc-TeX-size4-R;
   src: local("MathJax_Size4"), local("MathJax_Size4-Regular");
 }
-
 @font-face {
   font-family: MJXc-TeX-size4-Rw;
-  src/*1*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Size4-Regular.eot");
-  src/*2*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Size4-Regular.woff")
-      format("woff"),
-    url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Size4-Regular.otf")
-      format("opentype");
+  src/*1*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Size4-Regular.eot");
+  src/*2*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Size4-Regular.woff") format("woff"), url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Size4-Regular.otf") format("opentype");
 }
-
 @font-face {
   font-family: MJXc-TeX-vec-R;
   src: local("MathJax_Vector"), local("MathJax_Vector-Regular");
 }
-
 @font-face {
   font-family: MJXc-TeX-vec-Rw;
-  src/*1*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Vector-Regular.eot");
-  src/*2*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Vector-Regular.woff")
-      format("woff"),
-    url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Vector-Regular.otf")
-      format("opentype");
+  src/*1*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Vector-Regular.eot");
+  src/*2*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Vector-Regular.woff") format("woff"), url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Vector-Regular.otf") format("opentype");
 }
-
 @font-face {
   font-family: MJXc-TeX-vec-B;
   src: local("MathJax_Vector Bold"), local("MathJax_Vector-Bold");
 }
-
 @font-face {
   font-family: MJXc-TeX-vec-Bx;
   src: local("MathJax_Vector");
   font-weight: bold;
 }
-
 @font-face {
   font-family: MJXc-TeX-vec-Bw;
-  src/*1*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Vector-Bold.eot");
-  src/*2*/
-  : url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Vector-Bold.woff")
-      format("woff"),
-    url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Vector-Bold.otf")
-      format("opentype");
+  src/*1*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/eot/MathJax_Vector-Bold.eot");
+  src/*2*/: url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/woff/MathJax_Vector-Bold.woff") format("woff"), url("http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/fonts/HTML-CSS/TeX/otf/MathJax_Vector-Bold.otf") format("opentype");
 }
+
+/*# sourceMappingURL=style.css.map */

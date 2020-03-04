@@ -1,0 +1,22 @@
+/* Histogram
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+.row--chartfilter {
+  max-height: 55vh;
+  margin-bottom: 5rem;
+}
+
+div#dhist,
+.dhist {
+  display: none;
+  position: relative;
+}
+
+div#hist,
+.hist {
+  width: 100%;
+}
+
+.hist-container {
+  margin: 2rem 1rem;
+}

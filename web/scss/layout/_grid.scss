@@ -1,0 +1,15 @@
+/* Grid
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+.container {
+  position: relative;
+  width: 100%;
+  max-width: 95vw;
+  margin: 0 auto;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.container--main {
+  min-height: calc(100vh - 288px);
+}

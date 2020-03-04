@@ -1,0 +1,24 @@
+/* tooltips */
+
+.tooltip-dt {
+  position: relative;
+}
+
+.tooltip-dt .tooltiptext {
+  display: none;
+  background-color: white;
+  color: black;
+  text-align: center;
+  padding: 1ex;
+  top: 3em;
+  position: absolute;
+  font-weight: normal;
+  font-size: small;
+  z-index: 1;
+  border: 1px solid $cooler-gray;
+  min-width: 150px;
+}
+
+.tooltip-dt:hover .tooltiptext {
+  display: block;
+}
