@@ -329,8 +329,8 @@ group:
         <p>For more information about the CANDELS survey, the theory friendly catalogs, and the theoretical mock catalogs, please see the following references:</p>
         <ul>
           <li>CANDELS survey design and execution: <a class="underline" href="https://iopscience.iop.org/article/10.1088/0067-0049/197/2/35" target="_blank">Grogin et al. (2011);</a>  <a class="underline" href="https://arxiv.org/pdf/1105.3754.pdf" target="_blank"> Koekemoer et al. (2011)</a></li>
-          <li>CANDELS theory friendly catalogs: <a class="underline" href="https://www.overleaf.com/read/gvdgkswmprqx" target="_blank">Somerville et al. (2020)</a></li>
-          <li>CANDELS mock catalogs:<a class="underline" href="https://arxiv.org/abs/1312.3233" target="_blank"> Lu et al. (2014);</a> <a class="underline" href="https://www.overleaf.com/read/gvdgkswmprqx"> Somerville et al. (2020)</a></li>
+          <li>CANDELS theory friendly catalogs: <a class="underline" href="" target="_blank">Somerville et al. (2020)</a></li>
+          <li>CANDELS mock catalogs:<a class="underline" href="https://arxiv.org/abs/1312.3233" target="_blank"> Lu et al. (2014);</a> <a class="underline" href=""> Somerville et al. (2020)</a></li>
         </ul>
       </div>
   - name: zoomin
