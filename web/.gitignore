@@ -7,4 +7,6 @@
 /catalog.js
 /types.js
 /*.js.map
+/style.css
+/*.css.map
 *.gz

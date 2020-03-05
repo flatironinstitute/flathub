@@ -6,7 +6,7 @@
   "scripts": {
     "postinstall": "sed -i 's/\\r$//' node_modules/.bin/jspm ; ln -s ../{popper.js,highcharts,vue} node_modules/@types ; jspm install",
     "compile": "tsc",
-    "build": "jspm build --minify main.ts index.js"
+    "build": "jspm build --minify main.ts index.js && sass scss/main.scss style.css"
   },
   "author": "Dylan Simon",
   "license": "Apache-2.0",
@@ -20,6 +20,7 @@
     "@types/systemjs": "^0.20.7",
     "highcharts": "^7.2.0",
     "popper.js": "^1.16.1",
+    "sass": "^1.26.2",
     "typescript": "^3.8.3",
     "vue": "^2.6.11"
   },
