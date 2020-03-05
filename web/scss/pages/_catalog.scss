@@ -51,14 +51,14 @@
 }
 
 .catalog-tool {
-  border: 1px solid $cooler-gray;
-  background-color: $cooler-black;
+  border: 1px solid $gray0;
+  background-color: $white;
   min-height: 65vh;
 }
 
 .catalog-summary {
-  background-color: $cooler-platinum;
-  border: 1px solid $cooler-gray;
+  background-color: $platinum;
+  border: 1px solid $gray0;
   padding: 2rem;
 }
 
@@ -74,7 +74,7 @@
 }
 
 .raw-data {
-  background-color: $cooler-black;
+  background-color: $black;
 }
 
 .left-column {
@@ -83,13 +83,13 @@
 }
 
 .right-column {
-  background-color: $cooler-platinum;
+  background-color: $platinum;
   min-height: 65vh;
   padding: 1rem 1rem 0 1rem;
 }
 
 .right-column-heading {
-  border-bottom: 1px solid $cooler-red;
+  border-bottom: 1px solid $red;
 }
 
 .tab-content {
@@ -97,7 +97,7 @@
   padding: 1rem 2rem;
   max-height: 70vh;
   overflow: scroll;
-  background-color: $cooler-black;
+  background-color: $white;
 }
 
 .form-badge {
@@ -113,14 +113,14 @@
 /* Plot controls
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 .plot-controls-row {
-  background-color: $cooler-platinum;
+  background-color: $platinum;
   margin: -1rem;
   padding: 1rem;
   margin: -1rem -1rem 0 -1rem;
 }
 
 .plot-col {
-  border-left: 1px solid $cooler-red;
+  border-left: 1px solid $red;
   padding-left: 25px;
 }
 

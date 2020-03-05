@@ -5,7 +5,7 @@
   display: flex;
   flex-direction: column;
   box-shadow: rgba(31, 53, 78, 0.11) 0 1px;
-  border-bottom: 1px solid $cooler-red;
+  border-bottom: 1px solid $red;
   height: 125px;
 }
 
@@ -56,7 +56,7 @@ ul#topbar {
 li.header__link a,
 li.header__link--dropdown a {
   text-decoration: none;
-  color: $cooler-off-black;
+  color: $off-black;
 }
 
 li.header__link a.active {
@@ -65,13 +65,13 @@ li.header__link a.active {
 
 li.header__link--dropdown a:hover,
 li.header__link a:hover {
-  color: $cooler-red;
-  border-bottom: 1px solid $cooler-red;
+  color: $red;
+  border-bottom: 1px solid $red;
 }
 
 .dropdown:hover,
 container a:hover:not(.active) {
-  color: $cooler-black;
+  color: $black;
 }
 
 .dropdown-content {
@@ -79,7 +79,7 @@ container a:hover:not(.active) {
   position: absolute;
   background-color: #f9f9f9;
   min-width: 160px;
-  box-shadow: 0px 8px 16px 0px $cooler-gray;
+  box-shadow: 0px 8px 16px 0px $gray0;
   z-index: 100;
   top: 50px;
 }
@@ -97,8 +97,8 @@ container a:hover:not(.active) {
 }
 
 .dropdown-content > a {
-  color: $cooler-black !important;
-  background-color: $cooler-white;
+  color: $black !important;
+  background-color: $white;
   padding: 12px 16px;
   text-decoration: none;
   display: block;
@@ -106,8 +106,9 @@ container a:hover:not(.active) {
 }
 
 .dropdown-content > a:hover {
-  background-color: $cooler-platinum;
-  color: $cooler-off-black !important;
+  color: $off-black !important;
+  font-weight: bold;
+  background-color: $gray3;
 }
 
 @media screen and (min-width: 600px) {

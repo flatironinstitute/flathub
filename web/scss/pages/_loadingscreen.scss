@@ -9,7 +9,7 @@
 }
 
 .modal-background {
-  background-color: $cooler-gray;
+  background-color: $gray0;
   opacity: 0.5;
   height: 100%;
   width: 100%;
@@ -25,7 +25,7 @@
 }
 
 .modal-content {
-  color: $cooler-off-black;
+  color: $off-black;
   padding: 2rem;
   max-width: 900px;
   align-items: center;
@@ -147,7 +147,7 @@
 }
 
 .dataTables_wrapper .dataTables_processing {
-  color: $cooler-off-black;
+  color: $off-black;
   padding: 2rem;
   align-items: center;
   justify-content: center;

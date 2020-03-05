@@ -677,8 +677,9 @@ container a:hover:not(.active) {
 }
 
 .dropdown-content > a:hover {
-  background-color: #e7e7e8;
   color: #292c2f !important;
+  font-weight: bold;
+  background-color: rgba(143, 146, 150, 0.1);
 }
 
 @media screen and (min-width: 600px) {
@@ -718,7 +719,7 @@ container a:hover:not(.active) {
 }
 
 .candels-subheading {
-  color: #222222 !important;
+  color: #fefeff !important;
   background: rgba(143, 146, 150, 0.5);
 }
 
@@ -973,9 +974,7 @@ button.button-primary,
 input[type=submit].button-primary,
 input[type=reset].button-primary,
 input[type=button].button-primary {
-  color: #292c2f;
   background-color: #fefeff;
-  border-color: #292c2f;
   max-width: 270px;
 }
 
@@ -1545,7 +1544,7 @@ table#tcat td {
 
 .catalog-tool {
   border: 1px solid #8f9296;
-  background-color: #222222;
+  background-color: #fefeff;
   min-height: 65vh;
 }
 
@@ -1589,7 +1588,7 @@ table#tcat td {
   padding: 1rem 2rem;
   max-height: 70vh;
   overflow: scroll;
-  background-color: #222222;
+  background-color: #fefeff;
 }
 
 .form-badge {

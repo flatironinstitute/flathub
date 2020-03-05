@@ -2,12 +2,12 @@
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 
 .col-border {
-  border-left: 1px solid $cooler-off-black;
+  border-left: 1px solid $off-black;
 }
 
 .gray-heading {
   margin: 0 calc(-2.5vw + -20px) 2rem calc(-2.5vw + -20px);
-  background-color: $cooler-platinum;
+  background-color: $platinum;
 }
 
 .candels-heading {
@@ -15,8 +15,8 @@
 }
 
 .candels-subheading {
-  color: $cooler-black !important;
-  background: rgba(143, 146, 150, 0.5);
+  color: $white !important;
+  background: $gray2;
 }
 
 .section__heading {

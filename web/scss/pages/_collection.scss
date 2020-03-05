@@ -2,13 +2,13 @@
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 
 .collections-container {
-  background-color: $cooler-white;
+  background-color: $white;
   opacity: 0.8;
   padding: 10px;
 }
 
 .collection-label {
-  color: $cooler-off-black;
+  color: $off-black;
   font-size: 50px;
   text-transform: uppercase;
   border: white;
@@ -31,7 +31,7 @@
   font-weight: 600;
   letter-spacing: 0.2rem;
   font-size: 1.8rem;
-  color: $cooler-red;
+  color: $red;
 }
 
 .collection-link {
