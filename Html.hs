@@ -84,7 +84,7 @@ htmlResponse req hdrs body = do
       forM_ [
           ["jspm_packages", "npm", "datatables.net-dt@1.10.20", "css", "jquery.dataTables.css"],
           ["jspm_packages", "npm", "bootstrap@4.4.1", "dist", "css", "bootstrap.min.css"],
-          ["base.css"]
+          ["style.css"]
         ] $ \src ->
         H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
       H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML" $ mempty
@@ -127,8 +127,7 @@ htmlResponse req hdrs body = do
         H.div H.! HA.class_ "container" $ do
           H.div H.! HA.class_ "footer-left" $ do
             H.div H.! HA.class_ "footer__title" $ do
-              H.img H.! HA.src (staticURI ["cca-logo.jpg"]) H.! HA.height "50" H.! HA.width "50"
-              H.h3 $ "Center for Computational Astrophysics"
+              H.h3 $ "Flathub"
             H.p H.! HA.class_ "footer-links" $ do
               H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Home"
               H.a H.! HA.href (WH.routeActionValue groupPage [] mempty) $ H.text "Catalogs"
@@ -257,34 +256,44 @@ catalogPage = getPath R.parameter $ \sim req -> do
           H.div H.! HA.class_ "row" $ do
             H.div H.! HA.class_ "col col-sm-12 col-md-8 left-column" $ do
               H.div H.! HA.id "plot" $ do
-                H.select H.! vueAttribute "model" "type" $ do
-                  H.option H.! HA.value "x" H.! HA.selected "selected" $ "histogram"
-                  H.option H.! HA.value "y" $ "heatmap"
-                  H.option H.! HA.value "c" $ "conditional distribution"
-                forM_ ['x', 'y'] $ \x ->
-                  H.div H.!? (x == 'y', vueAttribute "if" "type!=='x'") $ do
-                    let filt = H.stringValue [x] <> "filter"
-                    H.string [toUpper x] <> "-Axis:"
-                    H.select H.! HA.id ("histsel-" <> H.stringValue [x]) $ do
-                      forM_ (catalogFields cat) $ \f ->
-                        when (typeIsFloating (fieldType f)) $ do
-                          let n = H.textValue $ fieldName f
-                          H.option
-                            H.! HA.class_ ("sel-" <> n)
-                            H.!? (not $ fieldDisp f, HA.style "display:none")
-                            H.! HA.value n
-                            $ H.text $ fieldTitle f
-                    H.div H.! vueAttribute "if" (filt <> if x == 'y' then "&&type==='y'" else "") $ do
-                      H.input
-                        H.! HA.type_ "checkbox"
-                        H.! vueAttribute "bind:disabled" ("!(" <> filt <> ".lbv>0)")
-                        H.! vueAttribute "model" (filt <> ".histLog")
-                      "log"
-                "Count:"
-                H.button H.! vueAttribute "on:click" "log" $ "Toggle lin/log"
-                H.button H.! vueAttribute "on:click" "go" $ "Go"
+                -- Start Vue
+                H.div H.! HA.class_ "row plot-controls-row" $ do
+                  H.div H.! HA.class_ "col-sm-12 col-md-4 plot-col" $ do
+                    H.label "Plot type:"
+                    H.select H.! vueAttribute "model" "type" H.! vueAttribute "on:change" "reset" $ do
+                      H.option H.! HA.value "x" H.! HA.selected "selected" $ "histogram"
+                      H.option H.! HA.value "y" $ "heatmap"
+                      H.option H.! HA.value "c" $ "conditional distribution"
+                  H.div H.! HA.class_ "col-sm-12 col-md-4 plot-col" $ do
+                    forM_ ['x', 'y'] $ \x ->
+                      H.div H.!? (x == 'y', vueAttribute "if" "type!=='x'") H.! vueAttribute "on:change" "go" $ do
+                        let filt = H.stringValue [x] <> "filter"
+                        H.label $ do
+                          H.string [toUpper x] <> "-Axis:"
+                        H.select H.! HA.id ("histsel-" <> H.stringValue [x]) $ do
+                          forM_ (catalogFields cat) $ \f ->
+                            when (typeIsFloating (fieldType f)) $ do
+                              let n = H.textValue $ fieldName f
+                              H.option
+                                H.! HA.class_ ("sel-" <> n)
+                                H.!? (not $ fieldDisp f, HA.style "display:none")
+                                H.! HA.value n
+                                $ H.text $ fieldTitle f
+                        H.div H.! vueAttribute "if" (filt <> if x == 'y' then "&&type==='y'" else "") $ do
+                          -- todo style this
+                          H.input
+                            H.! HA.type_ "checkbox"
+                            H.! vueAttribute "bind:disabled" ("!(" <> filt <> ".lbv>0)")
+                            H.! vueAttribute "model" (filt <> ".histLog")
+                          "log"
+                  H.div H.! HA.class_ "col-sm-12 col-md-4 plot-col" $ do
+                    H.label "Count:"
+                    H.button H.! HA.class_ "button-primary" H.! vueAttribute "on:click" "log" $ "Toggle lin/log"
+                    H.button H.! vueAttribute "on:click" "go" $ "Go"
+                -- End Vue
               H.div H.! HA.class_ "alert alert-danger" H.! HA.id "error" $ mempty
-              H.div H.! HA.id "hist" $ mempty
+              H.div H.! HA.class_ "hist-container" $ do
+                H.div H.! HA.id "hist" $ mempty
 
             H.div H.! HA.class_ "col col-sm-12 col-md-4 right-column" $ do
               H.ul H.! HA.class_ "nav nav-tabs" H.! HA.id "myTab" H.! HA.role "tablist" $ do
@@ -520,7 +529,7 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
           H.div H.! HA.class_"container" $ do
             H.div H.! HA.class_ "row" $ do
               H.div H.! HA.class_ "heading-content" $ do
-                H.h4 H.! HA.class_"heading-heading"  $ H.text catalogTitle
+                H.h4 H.! HA.class_("heading-heading " <> H.textValue cat <> "-subheading")  $ H.text catalogTitle
                 H.a  H.! HA.class_ "button button-primary" H.! HA.href (WH.routeActionValue catalogPage cat mempty) $ "explore"
         maybe (do
           H.div H.! HA.class_ "section highlighted-links" $ do
@@ -532,7 +541,7 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
           H.div H.! HA.class_"container" $ do
             H.div H.! HA.class_ "row" $ do
               H.div H.! HA.class_ "heading-content" $ do
-                H.h4 H.! HA.class_"heading-heading"  $ H.text groupTitle
+                H.h4 H.! HA.class_ ("heading-heading " <> H.textValue groupName <> "-subheading") $ H.text groupTitle
                 H.a H.! HA.class_ "button button-primary" H.! HA.href (WH.routeActionValue comparePage path mempty) $ "compare"
         mapM_
           H.preEscapedText groupHtml

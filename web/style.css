@@ -650,7 +650,7 @@ container a:hover:not(.active) {
   position: absolute;
   background-color: #f9f9f9;
   min-width: 160px;
-  box-shadow: 0px 8px 16px 0px #292c2f;
+  box-shadow: 0px 8px 16px 0px #8f9296;
   z-index: 100;
   top: 50px;
 }
@@ -677,7 +677,7 @@ container a:hover:not(.active) {
 }
 
 .dropdown-content > a:hover {
-  background-color: #222222;
+  background-color: #e7e7e8;
   color: #292c2f !important;
 }
 
@@ -973,7 +973,7 @@ button.button-primary,
 input[type=submit].button-primary,
 input[type=reset].button-primary,
 input[type=button].button-primary {
-  color: #fff;
+  color: #292c2f;
   background-color: #fefeff;
   border-color: #292c2f;
   max-width: 270px;
@@ -989,7 +989,7 @@ button.button-primary:focus,
 input[type=submit].button-primary:focus,
 input[type=reset].button-primary:focus,
 input[type=button].button-primary:focus {
-  color: #fff;
+  color: #fefeff;
   background-color: #ff533d;
   border-color: #ff533d;
   text-decoration: none;
@@ -1624,7 +1624,7 @@ table#tcat td {
 /* Collections
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 .collections-container {
-  background-color: #222222;
+  background-color: #fefeff;
   opacity: 0.8;
   padding: 10px;
 }

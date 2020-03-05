@@ -47,7 +47,7 @@ button.button-primary,
 input[type="submit"].button-primary,
 input[type="reset"].button-primary,
 input[type="button"].button-primary {
-  color: #fff;
+  color: $cooler-off-black;
   background-color: $cooler-white;
   border-color: $cooler-off-black;
   max-width: 270px;
@@ -63,7 +63,7 @@ button.button-primary:focus,
 input[type="submit"].button-primary:focus,
 input[type="reset"].button-primary:focus,
 input[type="button"].button-primary:focus {
-  color: #fff;
+  color: $cooler-white;
   background-color: $cooler-red;
   border-color: $cooler-red;
   text-decoration: none;
