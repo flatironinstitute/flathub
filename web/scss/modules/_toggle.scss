@@ -7,6 +7,9 @@
   align-items: center;
   justify-content: flex-start;
   padding-left: 15px;
+  &.solo-row {
+    padding-left: 0;
+  }
 }
 .switch-row > label {
   padding: 0 2.5px;
@@ -30,7 +33,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ccc;
+  background-color: $red;
   -webkit-transition: 0.4s;
   transition: 0.4s;
   border-radius: 4px;

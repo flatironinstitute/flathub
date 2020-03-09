@@ -291,7 +291,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                             H.label "log"
                   H.div H.! HA.class_ "col-sm-12 col-md-3 plot-col" $ do
                     H.label "Count:"
-                    H.div H.! HA.class_ "switch-row" $ do
+                    H.div H.! HA.class_ "switch-row solo-row" $ do
                       H.label "lin"
                       H.label H.! HA.class_ "switch" $ do
                         H.input

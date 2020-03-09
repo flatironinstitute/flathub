@@ -1285,6 +1285,7 @@ span.units::after {
 
 .input-group {
   flex-wrap: nowrap;
+  align-items: center;
 }
 
 .input-group + .input-group {
@@ -1493,6 +1494,9 @@ table#tcat td {
   justify-content: flex-start;
   padding-left: 15px;
 }
+.switch-row.solo-row {
+  padding-left: 0;
+}
 
 .switch-row > label {
   padding: 0 2.5px;
@@ -1519,7 +1523,7 @@ table#tcat td {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ccc;
+  background-color: #ff533d;
   -webkit-transition: 0.4s;
   transition: 0.4s;
   border-radius: 4px;
