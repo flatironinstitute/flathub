@@ -102,7 +102,6 @@ span.units::after {
   flex-wrap: nowrap;
   align-items: center;
 }
-.input-group + .input-group {
-  margin-right: 15px;
-  margin-bottom: 1rem;
+.input-group-row:nth-of-type(2) {
+  margin-top: 1rem;
 }

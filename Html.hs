@@ -246,9 +246,9 @@ catalogPage = getPath R.parameter $ \sim req -> do
       jsonEncodingVar "Catalog" jcat
       jsonVar "Query" query
       H.div H.! HA.class_ "catalog-title" $ do
-        H.div H.! HA.class_ "container" $ do
+        H.div H.! HA.class_ "container-fluid" $ do
           H.div H.! HA.class_ "row" $ do
-            H.div H.! HA.class_ "col" $ do
+            -- H.div H.! HA.class_ "col" $ do
               H.h5 $ H.text $ catalogTitle cat
 
       H.div H.! HA.class_ "catalog-tool-container " $ do
@@ -266,7 +266,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                       H.option H.! HA.value "c" $ "conditional distribution"
                   H.div H.! HA.class_ "col-sm-12 col-md-5 plot-col" $ do
                     forM_ ['x', 'y'] $ \x ->
-                      H.div H.!? (x == 'y', vueAttribute "if" "type!=='x'") H.! vueAttribute "on:change" "go" $ do
+                      H.div H.! HA.class_ "input-group-row" H.!? (x == 'y', vueAttribute "if" "type!=='x'") H.! vueAttribute "on:change" "go" $ do
                         let filt = H.stringValue [x] <> "filter"
                         H.label $ do
                           H.string [toUpper x] <> "-Axis:"
@@ -299,7 +299,6 @@ catalogPage = getPath R.parameter $ \sim req -> do
                           H.! vueAttribute "on:click" "log"
                         H.span H.! HA.class_ "slider" $ mempty
                       H.label "log"
-                    -- H.button H.! HA.class_ "button-primary" H.! vueAttribute "on:click" "log" $ "Toggle lin/log"
                 -- End Vue
               H.div H.! HA.class_ "alert alert-danger" H.! HA.id "error" $ mempty
               H.div H.! HA.class_ "hist-container" $ do
