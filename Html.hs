@@ -264,32 +264,42 @@ catalogPage = getPath R.parameter $ \sim req -> do
                       H.option H.! HA.value "x" H.! HA.selected "selected" $ "histogram"
                       H.option H.! HA.value "y" $ "heatmap"
                       H.option H.! HA.value "c" $ "conditional distribution"
-                  H.div H.! HA.class_ "col-sm-12 col-md-4 plot-col" $ do
+                  H.div H.! HA.class_ "col-sm-12 col-md-5 plot-col" $ do
                     forM_ ['x', 'y'] $ \x ->
                       H.div H.!? (x == 'y', vueAttribute "if" "type!=='x'") H.! vueAttribute "on:change" "go" $ do
                         let filt = H.stringValue [x] <> "filter"
                         H.label $ do
                           H.string [toUpper x] <> "-Axis:"
-                        H.select H.! HA.id ("histsel-" <> H.stringValue [x]) $ do
-                          forM_ (catalogFields cat) $ \f ->
-                            when (typeIsFloating (fieldType f)) $ do
-                              let n = H.textValue $ fieldName f
-                              H.option
-                                H.! HA.class_ ("sel-" <> n)
-                                H.!? (not $ fieldDisp f, HA.style "display:none")
-                                H.! HA.value n
-                                $ H.text $ fieldTitle f
-                        H.div H.! vueAttribute "if" (filt <> if x == 'y' then "&&type==='y'" else "") $ do
-                          -- todo style this
-                          H.input
-                            H.! HA.type_ "checkbox"
-                            H.! vueAttribute "bind:disabled" ("!(" <> filt <> ".lbv>0)")
-                            H.! vueAttribute "model" (filt <> ".histLog")
-                          "log"
-                  H.div H.! HA.class_ "col-sm-12 col-md-4 plot-col" $ do
+                        H.div H.! HA.class_ "input-group" $ do
+                          H.select H.! HA.id ("histsel-" <> H.stringValue [x]) $ do
+                            forM_ (catalogFields cat) $ \f ->
+                              when (typeIsFloating (fieldType f)) $ do
+                                let n = H.textValue $ fieldName f
+                                H.option
+                                  H.! HA.class_ ("sel-" <> n)
+                                  H.!? (not $ fieldDisp f, HA.style "display:none")
+                                  H.! HA.value n
+                                  $ H.text $ fieldTitle f
+                          H.div H.! HA.class_ "switch-row" H.! vueAttribute "if" (filt <> if x == 'y' then "&&type==='y'" else "") $ do
+                            H.label "lin"
+                            H.label H.! HA.class_ "switch" $ do
+                              H.input
+                                H.! HA.type_ "checkbox"
+                                H.! vueAttribute "bind:disabled" ("!(" <> filt <> ".lbv>0)")
+                                H.! vueAttribute "model" (filt <> ".histLog")
+                              H.span H.! HA.class_ "slider" $ mempty
+                            H.label "log"
+                  H.div H.! HA.class_ "col-sm-12 col-md-3 plot-col" $ do
                     H.label "Count:"
-                    H.button H.! HA.class_ "button-primary" H.! vueAttribute "on:click" "log" $ "Toggle lin/log"
-                    H.button H.! vueAttribute "on:click" "go" $ "Go"
+                    H.div H.! HA.class_ "switch-row" $ do
+                      H.label "lin"
+                      H.label H.! HA.class_ "switch" $ do
+                        H.input
+                          H.! HA.type_ "checkbox"
+                          H.! vueAttribute "on:click" "log"
+                        H.span H.! HA.class_ "slider" $ mempty
+                      H.label "log"
+                    -- H.button H.! HA.class_ "button-primary" H.! vueAttribute "on:click" "log" $ "Toggle lin/log"
                 -- End Vue
               H.div H.! HA.class_ "alert alert-danger" H.! HA.id "error" $ mempty
               H.div H.! HA.class_ "hist-container" $ do

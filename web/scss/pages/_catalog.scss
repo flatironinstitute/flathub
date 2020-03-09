@@ -54,6 +54,7 @@
   border: 1px solid $gray0;
   background-color: $white;
   min-height: 65vh;
+  border-radius: 4px;
 }
 
 .catalog-summary {
@@ -120,11 +121,10 @@
 }
 
 .plot-col {
-  border-left: 1px solid $red;
-  padding-left: 25px;
+  border-right: 1px solid $red;
+  padding-left: 15px;
 }
 
-.plot-col:first-of-type {
-  border-left: none;
-  padding-left: 25px;
+.plot-col:last-of-type {
+  border-right: none;
 }

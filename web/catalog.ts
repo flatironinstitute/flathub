@@ -78,6 +78,7 @@ const plotVue = new Vue({
     },
     // Reload
     go: function() {
+      console.log("🚦go");
       histogramShow(<any>this.type);
     },
     reset: function() {
@@ -91,7 +92,6 @@ const plotVue = new Vue({
       }
       histogramRemove();
     }
-    // TK: reset to clear input values (on plottype change)
   }
 });
 

@@ -826,12 +826,12 @@ div#hist,
 
 .plot-col {
   border-left: 1px solid var(--red);
-  padding-left: 25px;
+  padding-left: 15px;
 }
 
 .plot-col:first-of-type {
   border-left: none;
-  padding-left: 25px;
+  padding-left: 0px;
 }
 
 /* Footer

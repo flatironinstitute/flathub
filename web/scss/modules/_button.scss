@@ -24,6 +24,7 @@ input[type="button"] {
   cursor: pointer;
   box-sizing: border-box;
   margin-bottom: 0 !important;
+  background-color: $white;
 }
 
 .button:hover,
@@ -47,9 +48,7 @@ button.button-primary,
 input[type="submit"].button-primary,
 input[type="reset"].button-primary,
 input[type="button"].button-primary {
-  // color: $off-black;
   background-color: $white;
-  // border-color: $off-black;
   max-width: 270px;
 }
 
