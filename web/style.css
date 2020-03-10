@@ -1297,6 +1297,21 @@ span.units::after {
   margin-top: 1rem;
 }
 
+.label-help::after {
+  content: url("info.png");
+  padding: 3px;
+}
+
+.label-help {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  text-transform: uppercase;
+  opacity: 1;
+}
+
 /* Histogram
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 .row--chartfilter {
@@ -1584,6 +1599,36 @@ input:checked + .slider:before {
   display: block;
 }
 
+.tooltip-container {
+  position: relative;
+  display: inline;
+}
+
+/* Tooltip text */
+.tooltip-container > .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: #292c2f;
+  color: #fefeff;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 4px;
+  position: absolute;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  text-transform: uppercase;
+  z-index: 1;
+  display: none;
+}
+
+.tooltip-container:hover .tooltiptext {
+  visibility: visible;
+  display: inline;
+  opacity: 1;
+}
+
 /* Catalog
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 .catalog__heading {
@@ -1642,9 +1687,10 @@ input:checked + .slider:before {
 
 .catalog-tool {
   border: 1px solid #8f9296;
+  border-bottom: none;
   background-color: #fefeff;
   min-height: 65vh;
-  border-radius: 4px;
+  border-radius: 4px 4px 0 0;
 }
 
 .catalog-summary {

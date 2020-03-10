@@ -22,3 +22,33 @@
 .tooltip-dt:hover .tooltiptext {
   display: block;
 }
+
+.tooltip-container {
+  position: relative;
+  display: inline;
+}
+
+/* Tooltip text */
+.tooltip-container > .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: $off-black;
+  color: $white;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 4px;
+  position: absolute;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  text-transform: uppercase;
+  z-index: 1;
+  display: none;
+}
+
+.tooltip-container:hover .tooltiptext {
+  visibility: visible;
+  display: inline;
+  opacity: 1;
+}

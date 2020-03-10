@@ -55,9 +55,10 @@
 
 .catalog-tool {
   border: 1px solid $gray0;
+  border-bottom: none;
   background-color: $white;
   min-height: 65vh;
-  border-radius: 4px;
+  border-radius: 4px 4px 0 0;
 }
 
 .catalog-summary {

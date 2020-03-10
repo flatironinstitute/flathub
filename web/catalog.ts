@@ -78,7 +78,6 @@ const plotVue = new Vue({
     },
     // Reload
     go: function() {
-      console.log("🚦go");
       histogramShow(<any>this.type);
     },
     reset: function() {
@@ -91,6 +90,9 @@ const plotVue = new Vue({
         sely.selectedIndex = 0;
       }
       histogramRemove();
+    },
+    tooltip: function() {
+      console.log("hover");
     }
   }
 });

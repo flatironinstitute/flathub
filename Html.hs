@@ -259,7 +259,9 @@ catalogPage = getPath R.parameter $ \sim req -> do
                 -- Start Vue
                 H.div H.! HA.class_ "row plot-controls-row" $ do
                   H.div H.! HA.class_ "col-sm-12 col-md-4 plot-col" $ do
-                    H.label "Plot type:"
+                    H.div H.! HA.class_ "tooltip-container" $ do
+                      H.span H.! HA.class_ "label-help" $ "Plot type:"
+                      H.span H.! HA.class_ "tooltiptext" $ "Say something about the plots."
                     H.select H.! vueAttribute "model" "type" H.! vueAttribute "on:change" "reset" $ do
                       H.option H.! HA.value "x" H.! HA.selected "selected" $ "histogram"
                       H.option H.! HA.value "y" $ "heatmap"
@@ -290,7 +292,9 @@ catalogPage = getPath R.parameter $ \sim req -> do
                               H.span H.! HA.class_ "slider" $ mempty
                             H.label "log"
                   H.div H.! HA.class_ "col-sm-12 col-md-3 plot-col" $ do
-                    H.label "Count:"
+                    H.div H.! HA.class_ "tooltip-container" $ do
+                      H.span H.! HA.class_ "label-help" $ "Count:"
+                      H.span H.! HA.class_ "tooltiptext" $ "Say what count means here."
                     H.div H.! HA.class_ "switch-row solo-row" $ do
                       H.label "lin"
                       H.label H.! HA.class_ "switch" $ do
