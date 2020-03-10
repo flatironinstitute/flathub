@@ -45,6 +45,19 @@
   text-transform: uppercase;
   z-index: 1;
   display: none;
+  bottom: 100%;
+  left: 50%;
+  opacity: 0;
+  transition: opacity 1s;
+  &::after {
+    content: " ";
+    position: absolute;
+    top: 100%; /* At the bottom of the tooltip */
+    left: 50%;
+    border-width: 5px;
+    border-style: solid;
+    border-color: $off-black transparent transparent transparent;
+  }
 }
 
 .tooltip-container:hover .tooltiptext {

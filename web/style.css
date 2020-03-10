@@ -1000,6 +1000,33 @@ input[type=button].button-primary:focus {
   text-decoration: none;
 }
 
+.button.button-secondary,
+button.button-secondary,
+input[type=submit].button-secondary,
+input[type=reset].button-secondary,
+input[type=button].button-secondary {
+  background-color: #333;
+  color: #fefeff;
+  border-color: #333;
+  max-width: 270px;
+}
+
+.button.button-secondary:hover,
+button.button-secondary:hover,
+input[type=submit].button-secondary:hover,
+input[type=reset].button-secondary:hover,
+input[type=button].button-secondary:hover,
+.button.button-secondary:focus,
+button.button-secondary:focus,
+input[type=submit].button-secondary:focus,
+input[type=reset].button-secondary:focus,
+input[type=button].button-secondary:focus {
+  color: #333;
+  background-color: #fefeff;
+  border-color: #333;
+  text-decoration: none;
+}
+
 .button-close {
   padding: 0 10px;
 }
@@ -1298,7 +1325,7 @@ span.units::after {
 }
 
 .label-help::after {
-  content: url("info.png");
+  content: "ℹ️";
   padding: 3px;
 }
 
@@ -1621,6 +1648,20 @@ input:checked + .slider:before {
   text-transform: uppercase;
   z-index: 1;
   display: none;
+  bottom: 100%;
+  left: 50%;
+  opacity: 0;
+  transition: opacity 1s;
+}
+.tooltip-container > .tooltiptext::after {
+  content: " ";
+  position: absolute;
+  top: 100%;
+  /* At the bottom of the tooltip */
+  left: 50%;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #292c2f transparent transparent transparent;
 }
 
 .tooltip-container:hover .tooltiptext {
@@ -1724,8 +1765,13 @@ input:checked + .slider:before {
   padding: 1rem 1rem 0 1rem;
 }
 
-.right-column-heading {
+.right-column-heading-group {
   border-bottom: 1px solid #ff533d;
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 2rem;
 }
 
 .tab-content {

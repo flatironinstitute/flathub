@@ -328,8 +328,9 @@ catalogPage = getPath R.parameter $ \sim req -> do
                   H.! HA.role "tabpanel"
                   H.! H.customAttribute "aria-labelledby" "filter-tab" $ do
                   H.div H.! HA.class_ "right-column-group" $ do
-                    H.h6 H.! HA.class_ "right-column-heading" $ "Active Filters"
-                    H.a H.! HA.class_ "button button-primary" H.! HA.href (WH.routeActionValue catalogPage sim mempty) $ "reset all"
+                    H.div H.! HA.class_ "right-column-heading-group" $ do
+                      H.h6 H.! HA.class_ "right-column-heading" $ "Active Filters"
+                      H.a H.! HA.class_ "button button-secondary" H.! HA.href (WH.routeActionValue catalogPage sim mempty) $ "reset all"
                     H.div
                       H.! HA.id "filt"
                       H.! HA.class_ "alert-parent"
@@ -371,7 +372,6 @@ catalogPage = getPath R.parameter $ \sim req -> do
                                   H.! vueAttribute "bind:title" ("'" <> (if b then "Upper" else "Lower") <> " bound for '+filter.field.title+' values'")
                                   H.! HA.type_ "number"
                                   H.! vueAttribute "bind:step" "filter.field.base=='i'?'1':'any'"
-                                  -- H.! HA.disabled "disabled"
                                   H.! vueAttribute "bind:min" "filter.aggs.min"
                                   H.! vueAttribute "bind:max" "filter.aggs.max"
                                   H.! vueAttribute "model.number" ("filter." <> (if b then "ubv" else "lbv"))

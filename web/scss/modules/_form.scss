@@ -106,7 +106,8 @@ span.units::after {
   margin-top: 1rem;
 }
 .label-help::after {
-  content: url("info.png");
+  // content: url("info.png");
+  content: "ℹ️";
   padding: 3px;
 }
 .label-help {
