@@ -396,7 +396,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                                 -- H.! vueAttribute "bind:style" ("{display:disp[" <> WH.lazyByteStringValue (J.encode $ fieldName f) <> "]?'':'none'}")
                                 $ H.text $ fieldTitle f
                   H.div H.! HA.class_ "right-column-group" $ do
-                    H.h6 H.! HA.class_ "right-column-heading" $ "Random Sample"
+                    H.h6 H.! HA.class_ "right-column-heading-leader" $ "Random Sample"
                     H.div H.! HA.class_ "sample-row" $ do
                       H.label H.! HA.for "sample" $ "fraction"
                       H.input
