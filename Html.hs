@@ -261,7 +261,10 @@ catalogPage = getPath R.parameter $ \sim req -> do
                   H.div H.! HA.class_ "col-sm-12 col-md-4 plot-col" $ do
                     H.div H.! HA.class_ "tooltip-container" $ do
                       H.span H.! HA.class_ "label-help" $ "Plot type:"
-                      H.span H.! HA.class_ "tooltiptext" $ "Say something about the plots."
+                      H.span H.! HA.class_ "tooltiptext" $ do
+                        H.span H.! vueAttribute "if" "type=='x'" $ "Histogram bins the data by a single field and displays count of objects per bin."
+                        H.span H.! vueAttribute "if" "type=='y'" $ "Heatmap bins the data by two fields and displays count as color."
+                        H.span H.! vueAttribute "if" "type=='c'" $ "Conditional distribution bins the data by one field and displays the distribution of a second field within that bin as a boxplot (range and quartiles)."
                     H.select H.! vueAttribute "model" "type" H.! vueAttribute "on:change" "reset" $ do
                       H.option H.! HA.value "x" H.! HA.selected "selected" $ "histogram"
                       H.option H.! HA.value "y" $ "heatmap"
@@ -294,7 +297,10 @@ catalogPage = getPath R.parameter $ \sim req -> do
                   H.div H.! HA.class_ "col-sm-12 col-md-3 plot-col" $ do
                     H.div H.! HA.class_ "tooltip-container" $ do
                       H.span H.! HA.class_ "label-help" $ "Count:"
-                      H.span H.! HA.class_ "tooltiptext" $ "Say what count means here."
+                      H.span H.! HA.class_ "tooltiptext" $ do
+                        "Choose whether the object count per bin is shown in linear or log scale. "
+                        H.span H.! vueAttribute "if" "type=='x'" $ "Count is shown on the Y axis."
+                        H.span H.! vueAttribute "else" "" $ "Count is shown on the color (Z) axis."
                     H.div H.! HA.class_ "switch-row solo-row" $ do
                       H.label "lin"
                       H.label H.! HA.class_ "switch" $ do
