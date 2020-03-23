@@ -62,7 +62,7 @@ SystemJS.config({
     "net": "npm:jspm-nodelibs-net@0.2.1",
     "os": "npm:jspm-nodelibs-os@0.2.2",
     "path": "npm:jspm-nodelibs-path@0.2.3",
-    "popper.js": "npm:popper.js@1.16.0",
+    "popper.js": "npm:popper.js@1.16.1",
     "process": "npm:jspm-nodelibs-process@0.2.1",
     "querystring": "npm:jspm-nodelibs-querystring@0.2.2",
     "readline": "npm:jspm-nodelibs-readline@0.2.1",
@@ -79,7 +79,7 @@ SystemJS.config({
   packages: {
     "npm:jspm-nodelibs-buffer@0.2.3": {
       "map": {
-        "buffer": "npm:buffer@5.4.3"
+        "buffer": "npm:buffer@5.5.0"
       }
     },
     "npm:jspm-nodelibs-crypto@0.2.1": {
@@ -195,19 +195,8 @@ SystemJS.config({
     },
     "npm:browserify-zlib@0.1.4": {
       "map": {
-        "readable-stream": "npm:readable-stream@2.3.6",
+        "readable-stream": "npm:readable-stream@2.3.7",
         "pako": "npm:pako@0.2.9"
-      }
-    },
-    "npm:readable-stream@2.3.6": {
-      "map": {
-        "string_decoder": "npm:string_decoder@1.1.1",
-        "inherits": "npm:inherits@2.0.4",
-        "isarray": "npm:isarray@1.0.0",
-        "core-util-is": "npm:core-util-is@1.0.2",
-        "process-nextick-args": "npm:process-nextick-args@2.0.1",
-        "safe-buffer": "npm:safe-buffer@5.1.2",
-        "util-deprecate": "npm:util-deprecate@1.0.2"
       }
     },
     "npm:string_decoder@1.1.1": {
@@ -288,7 +277,7 @@ SystemJS.config({
         "inherits": "npm:inherits@2.0.4",
         "xtend": "npm:xtend@4.0.2",
         "to-arraybuffer": "npm:to-arraybuffer@1.0.1",
-        "readable-stream": "npm:readable-stream@2.3.6"
+        "readable-stream": "npm:readable-stream@2.3.7"
       }
     },
     "npm:browserify-des@1.0.2": {
@@ -333,7 +322,7 @@ SystemJS.config({
     },
     "npm:stream-browserify@2.0.2": {
       "map": {
-        "readable-stream": "npm:readable-stream@2.3.6",
+        "readable-stream": "npm:readable-stream@2.3.7",
         "inherits": "npm:inherits@2.0.4"
       }
     },
@@ -356,12 +345,6 @@ SystemJS.config({
     "npm:datatables.net@1.10.20": {
       "map": {
         "jquery": "npm:jquery@3.4.1"
-      }
-    },
-    "npm:buffer@5.4.3": {
-      "map": {
-        "ieee754": "npm:ieee754@1.1.13",
-        "base64-js": "npm:base64-js@1.3.1"
       }
     },
     "npm:bootstrap@4.4.1": {
@@ -400,6 +383,23 @@ SystemJS.config({
       "map": {
         "inherits": "npm:inherits@2.0.4",
         "minimalistic-assert": "npm:minimalistic-assert@1.0.1"
+      }
+    },
+    "npm:readable-stream@2.3.7": {
+      "map": {
+        "string_decoder": "npm:string_decoder@1.1.1",
+        "inherits": "npm:inherits@2.0.4",
+        "safe-buffer": "npm:safe-buffer@5.1.2",
+        "process-nextick-args": "npm:process-nextick-args@2.0.1",
+        "isarray": "npm:isarray@1.0.0",
+        "core-util-is": "npm:core-util-is@1.0.2",
+        "util-deprecate": "npm:util-deprecate@1.0.2"
+      }
+    },
+    "npm:buffer@5.5.0": {
+      "map": {
+        "ieee754": "npm:ieee754@1.1.13",
+        "base64-js": "npm:base64-js@1.3.1"
       }
     }
   }

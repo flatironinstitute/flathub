@@ -20,7 +20,7 @@
     "@types/systemjs": "^0.20.7",
     "highcharts": "^7.2.0",
     "popper.js": "^1.16.1",
-    "sass": "^1.26.2",
+    "sass": "^1.26.3",
     "typescript": "^3.8.3",
     "vue": "^2.6.11"
   },
