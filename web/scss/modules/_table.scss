@@ -1,0 +1,36 @@
+table#tdict {
+  font-size: 1.2rem;
+}
+table#tcat {
+  margin: 0;
+  display: block;
+  width: 100% !important;
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+
+table#tcat th {
+  white-space: nowrap;
+  border-right: solid 1px #444;
+  border-left: solid 1px #444;
+}
+
+table#tcat td {
+  white-space: nowrap;
+}
+
+#tdict > tbody > tr > td.depth-0 {
+  padding-left: 0px;
+}
+#tdict > tbody > tr > td.depth-1 {
+  padding-left: 25px;
+}
+#tdict > tbody > tr > td.depth-2 {
+  padding-left: 50px;
+}
+#tdict > tbody > tr > td.depth-3 {
+  padding-left: 75px;
+}
+#tdict > tbody > tr > td.units {
+  text-align: center;
+}

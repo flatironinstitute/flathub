@@ -73,6 +73,7 @@ SystemJS.config({
     "url": "npm:jspm-nodelibs-url@0.2.1",
     "util": "npm:jspm-nodelibs-util@0.2.2",
     "vm": "npm:jspm-nodelibs-vm@0.2.1",
+    "vue": "npm:vue@2.6.11",
     "zlib": "npm:jspm-nodelibs-zlib@0.2.3"
   },
   packages: {

@@ -1,5 +1,6 @@
 "use strict";
 
+import Vue from "vue";
 import $ from "jquery";
 import Datatables from "datatables.net";
 import Highcharts from "highcharts";
@@ -15,9 +16,6 @@ import {
   AggrTerms,
   Aggr,
   CatalogResponse,
-  fill_select_terms,
-  field_option,
-  field_title,
   toggle_log,
   axis_title,
   render_funct,
@@ -56,20 +54,48 @@ var Last_fields: string[] = [];
 var Last_query: undefined | Dict<string>;
 var Show_data: boolean = true;
 
-function set_download(query: Dict<string>) {
-  const q = "?" + $.param(query);
-  const h = $("#download").html("download as ");
-  for (let f of Catalog.bulk) {
-    const a = document.createElement("a");
-    h.append(a);
-    a.id = "download." + f;
-    a.className = "button button-primary";
-    a.href = "/" + Catalog.name + "/" + f + q;
-    a.appendChild(document.createTextNode(f));
-    h.append(document.createTextNode(" "));
+const downloadVue = new Vue({
+  data: {
+    query: ""
   }
+});
+
+function set_download(query: Dict<string>) {
+  downloadVue.query = "?" + $.param(query);
   py_text(query);
 }
+
+const plotVue = new Vue({
+  data: {
+    type: "x",
+    xfilter: Histogram,
+    yfilter: Heatmap
+  },
+  methods: {
+    // Count log toggle (aka replot)
+    log: function() {
+      if (Histogram_chart) toggle_log(Histogram_chart);
+    },
+    // Reload
+    go: function() {
+      histogramShow(<any>this.type);
+    },
+    reset: function() {
+      let selx = <HTMLSelectElement>document.getElementById("histsel-x");
+      if (selx) {
+        selx.selectedIndex = 0;
+      }
+      let sely = <HTMLSelectElement>document.getElementById("histsel-y");
+      if (sely) {
+        sely.selectedIndex = 0;
+      }
+      histogramRemove();
+    },
+    tooltip: function() {
+      console.log("hover");
+    }
+  }
+});
 
 function histogramRemove() {
   if (Histogram_chart) Histogram_chart.destroy();
@@ -105,28 +131,30 @@ function histogramDraw(
   let xwid = size[field.name] / 2;
   let ywid = heatmap ? size[heatmap.name] / 2 : NaN;
   let cmax = 0;
-  const key = (x: {key: any}) => parseFloat(x.key);
+  const key = (x: { key: any }) => parseFloat(x.key);
   for (let x of agg.buckets) {
     if (heatmap) {
       if (cond && x.pct) {
-        if (x.doc_count) data.push([
-          key(x) + xwid,
-          x.pct.values["0.0"],
-          x.pct.values["25.0"],
-          x.pct.values["50.0"],
-          x.pct.values["75.0"],
-          x.pct.values["100.0"],
-          x.doc_count
-        ]);
+        if (x.doc_count)
+          data.push([
+            key(x) + xwid,
+            x.pct.values["0.0"],
+            x.pct.values["25.0"],
+            x.pct.values["50.0"],
+            x.pct.values["75.0"],
+            x.pct.values["100.0"],
+            x.doc_count
+          ]);
         if (x.doc_count > cmax) cmax = x.doc_count;
       } else if (x.hist)
         for (let y of x.hist.buckets)
-          if (y.doc_count) data.push([key(x) + xwid, key(y) + ywid, y.doc_count]);
+          if (y.doc_count)
+            data.push([key(x) + xwid, key(y) + ywid, y.doc_count]);
     } else if (x.doc_count) data.push([key(x), x.doc_count]);
   }
   if (data.length <= 1) {
     histogramRemove();
-    $('#hist').text('No data for histogram');
+    $("#hist").text("No data for histogram");
     return;
   }
 
@@ -146,31 +174,28 @@ function histogramDraw(
         const i = Update_aggs;
         zoomRange(heatmap, ywid, event.yAxis[0]);
         /* make sure both filters apply, in case y happens to be above x */
-        if (Update_aggs < i)
-          Update_aggs = i;
+        if (Update_aggs < i) Update_aggs = i;
         return false; // Don't zoom
       }
     };
     const rendery = render_funct(heatmap.field, heatmap.histLog);
-    (<Highcharts.TooltipOptions>opts.tooltip).formatter = function(this: Highcharts.TooltipFormatterContextObject): string {
+    (<Highcharts.TooltipOptions>opts.tooltip).formatter = function(
+      this: Highcharts.TooltipFormatterContextObject
+    ): string {
       const p = this.point;
       return (
-        (xwid ?
-          "[" +
-          renderx(p.x - xwid) +
-          "," +
-          renderx(p.x + xwid) +
-          ")"
-        : renderx(p.x))
-        + " & " +
-        (ywid ?
-          "[" +
-          rendery(<number>p.y - ywid) +
-          "," +
-          rendery(<number>p.y + ywid) +
-          ")"
-        : rendery(p.y))
-        + ": " +
+        (xwid
+          ? "[" + renderx(p.x - xwid) + "," + renderx(p.x + xwid) + ")"
+          : renderx(p.x)) +
+        " & " +
+        (ywid
+          ? "[" +
+            rendery(<number>p.y - ywid) +
+            "," +
+            rendery(<number>p.y + ywid) +
+            ")"
+          : rendery(p.y)) +
+        ": " +
         (<any>p).value
       );
     };
@@ -194,22 +219,22 @@ function histogramDraw(
       }
     };
     (<Highcharts.TooltipOptions>opts.tooltip).footerFormat = "drag to filter";
-    (<Highcharts.AxisOptions>opts.xAxis).min = hist.histLog ? Math.log(hist.lbv) : hist.lbv;
-    (<Highcharts.AxisOptions>opts.xAxis).max = hist.histLog ? Math.log(hist.ubv + wid) : hist.ubv + wid;
+    (<Highcharts.AxisOptions>opts.xAxis).min = hist.histLog
+      ? Math.log(hist.lbv)
+      : hist.lbv;
+    (<Highcharts.AxisOptions>opts.xAxis).max = hist.histLog
+      ? Math.log(hist.ubv + wid)
+      : hist.ubv + wid;
     if (heatmap) {
       /* condmedian */
       (<Highcharts.TooltipOptions>opts.tooltip).formatter = function(
         this: Highcharts.TooltipFormatterContextObject
       ): string {
         return (
-          (xwid ?
-            "[" +
-            renderx(this.x - xwid) +
-            "," +
-            renderx(this.x + xwid) +
-            ")"
-          : renderx(this.x))
-          + ": " +
+          (xwid
+            ? "[" + renderx(this.x - xwid) + "," + renderx(this.x + xwid) + ")"
+            : renderx(this.x)) +
+          ": " +
           this.y
         );
       };
@@ -244,30 +269,28 @@ function histogramDraw(
     }
   }
   Histogram_chart = Highcharts.chart("hist", opts);
+  plotVue.$forceUpdate();
 }
 
-function toggleLog() {
-  if (Histogram_chart) toggle_log(Histogram_chart);
-}
-
-(<any>window).histogramShow = function histogramShow(axis: "x" | "y" | "c") {
+function histogramShow(axis: "x" | "y" | "c") {
   const selx = <HTMLSelectElement>document.getElementById("histsel-x");
-  const filt = add_filter(Fields_idx[selx.value]);
+  const filt = addFilter(selx.value);
   if (filt instanceof NumericFilter) {
     Histogram = filt;
     Heatmap = undefined;
     if (axis != "x") {
       const sely = <HTMLSelectElement>document.getElementById("histsel-y");
-      const heat = add_filter(Fields_idx[sely.value]);
+      const heat = addFilter(sely.value);
       if (heat instanceof NumericFilter) {
         Heatmap = heat;
-        Histcond = axis == "c";
+        if ((Histcond = axis == "c")) Heatmap.histLog = false;
       }
     }
-  }
-  else histogramRemove();
+  } else histogramRemove();
+  plotVue.xfilter = Histogram;
+  plotVue.yfilter = Heatmap;
   update(false);
-};
+}
 
 /* elasticsearch max_result_window */
 const DisplayLimit = 10000;
@@ -288,11 +311,16 @@ function update(paging: boolean = true) {
 
 function visibleFields(): string[] {
   if (Show_data) {
-    return TCat.columns(":visible").dataSrc().toArray();
+    return TCat.columns(":visible")
+      .dataSrc()
+      .toArray();
   } else {
     const cols = TCat.columns();
     const cvis = (<any>cols.visible()).toArray();
-    return cols.dataSrc().toArray().filter((n, i) => cvis[i]);
+    return cols
+      .dataSrc()
+      .toArray()
+      .filter((n, i) => cvis[i]);
   }
 }
 
@@ -376,11 +404,9 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
             res.aggregations.hist as AggrTerms<number>,
             res.histsize || {}
           );
-        else
-          $('#hist').text('No data for histogram');
+        else $("#hist").text("No data for histogram");
       }
-      if (!Show_data)
-        query.fields = Last_fields.join(" ");
+      if (!Show_data) query.fields = Last_fields.join(" ");
       delete query.aggs;
       delete query.hist;
       url_update(query);
@@ -406,43 +432,6 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
   );
 }
 
-function add_filt_row(
-  field: Field|null,
-  text: HTMLElement|string,
-  input: any,
-  extra?: any
-) {
-  const name = field ? field.name : '';
-  const id = "filt-" + name;
-  let row = <HTMLDivElement | null>document.getElementById(id);
-  if (row) return;
-
-  const tab = <HTMLTableElement>document.getElementById("filt");
-  row = document.createElement("div");
-  row.id = id;
-  row.classList.add("alert", "fade", "show", "row", "filter-row");
-  if (!field) {
-    row.classList.add("alert-secondary");
-  } else if (field.flag !== undefined) {
-    row.classList.add("alert-info");
-  } else {
-    row.classList.add("alert-warning", "alert-horz");
-  }
-  if (tab.lastChild) $(row).insertBefore(<HTMLDivElement>tab.lastChild);
-  else tab.append(row);
-
-  const dtext = document.createElement("div");
-  dtext.className = "filter-text";
-  dtext.append(text);
-  row.append(dtext);
-  if (extra)
-    $(extra).appendTo(row);
-  const dinp = document.createElement("div");
-  dinp.className = "filter-inputs";
-  $(input).appendTo(dinp);
-  row.append(dinp);
-}
-
 (<any>window).sampleChange = function sampleChange() {
   const samp = <HTMLInputElement>document.getElementById("sample");
   const seed = <HTMLInputElement>document.getElementById("seed");
@@ -456,12 +445,13 @@ function add_filt_row(
 
 abstract class Filter {
   protected tcol: DataTables.ColumnMethods;
-  private label: any;
+  aggs: Aggr | {} = {};
+  render: (val: any) => string;
 
   constructor(public field: Field) {
     this.tcol = TCat.column(this.name + ":name");
-    this.label = field_title(this.field,
-      this.field.flag ? undefined : this.remove.bind(this));
+    this.render = render_funct(this.field);
+    this.add();
   }
 
   get name(): string {
@@ -474,13 +464,14 @@ abstract class Filter {
     );
   }
 
-  protected add(input: any, extra?: any) {
-    add_filt_row(this.field, this.label, input, extra);
+  protected add() {
     this.addopt.disabled = true;
     Filters.push(this);
   }
 
-  abstract update_aggs(aggs: Aggr): void;
+  update_aggs(aggs: Aggr): void {
+    this.aggs = aggs;
+  }
 
   protected change(search: any, vis: boolean) {
     const i = Filters.indexOf(this);
@@ -490,12 +481,11 @@ abstract class Filter {
     update();
   }
 
-  protected remove() {
+  remove() {
     if (!TCat) return;
     const i = Filters.indexOf(this);
     if (i < 0) return;
     Filters.splice(i, 1);
-    $("div#filt-" + this.name).remove();
     Update_aggs = i;
     columnVisible(this.name, true);
     this.addopt.disabled = false;
@@ -507,116 +497,41 @@ abstract class Filter {
 }
 
 class SelectFilter extends Filter {
-  select: HTMLSelectElement;
-  private value?: string;
-
-  constructor(field: Field) {
-    super(field);
-
-    this.select = document.createElement("select");
-    this.select.name = this.field.name;
-    this.select.disabled = true;
-    this.select.onchange = this.change.bind(this);
-    this.add(this.select);
-  }
+  value: string = "";
 
   update_aggs(aggs: AggrTerms<string>) {
-    while (this.select.lastChild)
-      this.select.removeChild(this.select.lastChild);
-    fill_select_terms(this.select, this.field, aggs);
-    if (this.value != null) {
-      this.select.value = this.value;
-      delete this.value;
-    }
+    super.update_aggs(aggs);
   }
 
   change() {
-    const val = this.select.value;
+    const val = this.value;
     super.change(val, !val);
   }
 
   setValue(val: string) {
-    if (this.select.disabled) this.value = val;
-    else this.select.value = val;
+    this.value = val;
   }
 
   query(): string | undefined {
-    const val = this.select.value;
+    const val = this.value;
     if (val) return val;
   }
 
   pyQuery(): string | undefined {
-    const val = this.select.value;
+    const val = this.value;
     if (val) return JSON.stringify(val);
   }
 }
 
 class NumericFilter extends Filter {
-  lb: HTMLInputElement;
-  ub: HTMLInputElement;
-  private avg: HTMLSpanElement;
-  private min: HTMLSpanElement;
-  private max: HTMLSpanElement;
+  lbv: number;
+  ubv: number;
   histLog: boolean = false;
 
-  private makeBound(w: boolean): HTMLInputElement {
-    const b = <HTMLInputElement>document.createElement("input");
-    b.name = this.name + "." + (w ? "u" : "l") + "b";
-    b.title =
-      (w ? "Upper" : "Lower") + " bound for " + this.field.title + " values";
-    b.type = "number";
-    b.step = this.field.base == "i" ? <any>1 : "any";
-    b.disabled = true;
-    b.onchange = this.change.bind(this);
-    return b;
-  }
-
-  constructor(field: Field) {
-    super(field);
-    this.lb = this.makeBound(false);
-    this.ub = this.makeBound(true);
-    this.avg = document.createElement("span");
-    this.min = document.createElement("span");
-    this.max = document.createElement("span");
-    this.avg.innerHTML = "<em>loading...</em>";
-    
-    let inputs = $();
-
-    const dmin = document.createElement('div');
-    dmin.className = 'filter-input';
-    const pmin = document.createElement('p');
-    pmin.append(this.min);
-    dmin.append(this.lb, pmin);
-    inputs = inputs.add(dmin);
-
-    const dmax = document.createElement('div');
-    dmax.className = 'filter-input';
-    const pmax = document.createElement('p');
-    pmax.append(this.max);
-    dmax.append(this.ub, pmax);
-    inputs = inputs.add(dmax);
-
-    this.add(inputs.add($('<button class="filter-reset">Reset</button>').on("click", this.reset.bind(this))),
-      $('<div class="filter-avg"><em>&mu;</em> = </div>').append(this.avg));
-  }
-
-  get lbv(): number {
-    return this.lb.valueAsNumber;
-  }
-
-  get ubv(): number {
-    return this.ub.valueAsNumber;
-  }
-
   update_aggs(aggs: AggrStats) {
-    const f = render_funct(this.field);
-    this.lb.defaultValue = this.lb.min = this.ub.min = <any>aggs.min;
-    this.ub.defaultValue = this.lb.max = this.ub.max = <any>aggs.max;
-    this.lb.disabled = false;
-    this.ub.disabled = false;
-    this.avg.textContent = aggs.avg == null ? 'no data' : f(aggs.avg);
-    this.min.textContent = f(aggs.min);
-    this.max.textContent = f(aggs.max);
+    super.update_aggs(aggs);
+    this.lbv = aggs.min;
+    this.ubv = aggs.max;
   }
 
   change() {
@@ -624,8 +539,8 @@ class NumericFilter extends Filter {
   }
 
   query(): string {
-    const lbv = isFinite(this.lbv) ? this.lbv.toString() : '';
-    const ubv = isFinite(this.ubv) ? this.ubv.toString() : '';
+    const lbv = isFinite(this.lbv) ? this.lbv.toString() : "";
+    const ubv = isFinite(this.ubv) ? this.ubv.toString() : "";
     if (lbv == ubv) return lbv;
     else return lbv + " " + ubv;
   }
@@ -643,36 +558,47 @@ class NumericFilter extends Filter {
     return true;
   }
 
-  private reset() {
-    this.lb.value = this.lb.defaultValue;
-    this.ub.value = this.ub.defaultValue;
+  reset() {
+    this.setRange((<AggrStats>this.aggs).min, (<AggrStats>this.aggs).max);
     this.change();
   }
 
-  protected remove() {
+  remove() {
     this.histogramRemove();
     super.remove();
   }
 
   setRange(lbv: number, ubv: number) {
-    this.lb.valueAsNumber = lbv;
-    this.ub.valueAsNumber = ubv;
+    this.lbv = lbv;
+    this.ubv = ubv;
+    if (!(this.lbv > 0)) this.histLog = false;
+    /* vue isn't updating when called from highcharts: */
+    filterVue.$forceUpdate();
   }
 
   histQuery(n: number): string {
-    // this.histLog = this.lbv > 0; // for testing
     return this.field.name + (this.histLog ? ":log" : ":") + n.toString();
   }
 }
 
-function add_filter(idx: number): Filter | undefined {
-  const field = Catalog.fields[idx];
+const filterVue = new Vue({
+  data: {
+    filters: Filters
+  }
+});
+
+function addFilter(fi: string | Field): Filter | undefined {
+  const field = typeof fi === "string" ? Catalog.fields[Fields_idx[fi]] : fi;
   if (!TCat || !field) return;
   let filt = Filters.find(f => f.field.name === field.name);
   if (filt) return filt;
   if (field.terms) return new SelectFilter(field);
   return new NumericFilter(field);
 }
+
+(<any>window).addFilter = function(fn: string) {
+  if (addFilter(fn)) update(false);
+};
 
 function colvisNames(box: HTMLInputElement): string[] {
   const l: string[] = [];
@@ -713,7 +639,7 @@ function columnVisible(name: string, vis: boolean) {
   if (!box.indeterminate)
     for (let n of colvisNames(box)) columnVisible(n, box.checked);
   if (Last_query) {
-    Last_query.fields = visibleFields().join(' ');
+    Last_query.fields = visibleFields().join(" ");
     set_download(Last_query);
   }
 };
@@ -762,6 +688,7 @@ function toggleShowData(show?: boolean) {
 (<any>window).toggleShowData = toggleShowData;
 
 export function initCatalog(table: JQuery<HTMLTableElement>) {
+  downloadVue.$mount("#download");
   for (let i = 0; i < Catalog.fields.length; i++)
     Fields_idx[Catalog.fields[i].name] = i;
   const topts: DataTables.Settings = {
@@ -804,42 +731,25 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
     };
   });
   TCat = table.DataTable(topts);
-  const addfilt = <HTMLSelectElement>document.createElement("select");
-  addfilt.id = "addfilt";
-  const aopt = document.createElement("option");
-  aopt.value = "";
-  aopt.text = "Add filter...";
-  addfilt.appendChild(aopt);
-  add_filt_row(null, "Select field to filter", addfilt);
-  for (let i = 0; i < Catalog.fields.length; i++) {
-    const f = Catalog.fields[i];
-    const opt = field_option(f);
-    opt.id = "addfilt-" + f.name;
-    opt.className = "sel-" + f.name;
-    opt.value = <any>i;
-    if (!f.disp) opt.style.display = "none";
-    addfilt.appendChild(opt);
-    if (f.flag !== undefined) add_filter(i);
+
+  for (let f of Catalog.fields) {
+    if (f.flag !== undefined) addFilter(f);
   }
-  addfilt.onchange = function() {
-    if (add_filter(<any>addfilt.value)) update(false);
-  };
   if ((<any>window).Query && Query.filter) {
     for (let f of Query.filter) {
-      const fi = Fields_idx[f.field];
-      if (fi == null) continue;
-      const filt = add_filter(fi);
+      const filt = addFilter(f.field);
       if (filt instanceof NumericFilter && typeof f.value === "object")
         filt.setRange(f.value.lb, f.value.ub);
       if (filt instanceof SelectFilter && typeof f.value !== "object")
         filt.setValue(f.value);
     }
   }
+  filterVue.$mount("#filt");
   for (let b of (<any>(
     document.getElementsByClassName("colvis")
   )) as HTMLInputElement[])
     colvisUpdate(b);
+  plotVue.$mount("#plot");
   toggleShowData(false);
   update();
-  (<any>window).toggleLog = toggleLog;
 }

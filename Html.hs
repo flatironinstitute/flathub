@@ -17,6 +17,7 @@ import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (ask, asks)
 import qualified Data.Aeson as J
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy as BSL
 import           Data.Char (toUpper)
 import           Data.Foldable (fold)
@@ -24,6 +25,7 @@ import qualified Data.HashMap.Strict as HM
 import           Data.List (find, inits, sortOn)
 import           Data.Maybe (isNothing)
 import           Data.Monoid ((<>))
+import           Data.String (fromString)
 import qualified Data.Text as T
 import qualified Data.Vector as V
 import           Network.HTTP.Types.Header (ResponseHeaders, hAccept, hIfModifiedSince, hLastModified, hContentType)
@@ -33,9 +35,10 @@ import           Network.Wai.Parse (parseHttpAccept)
 import qualified System.FilePath as FP
 import qualified Text.Blaze.Html5 as H hiding (text, textValue)
 import qualified Text.Blaze.Html5.Attributes as HA
+import qualified Text.Blaze.Internal as H (customParent)
 import qualified Waimwork.Blaze as H (text, textValue, preEscapedBuilder)
 import qualified Waimwork.Blaze as WH
-import           Waimwork.HTTP (parseHTTPDate, formatHTTPDate)
+import           Waimwork.HTTP (parseHTTPDate, formatHTTPDate, encodePathSegments')
 import           Waimwork.Response (response, okResponse)
 import           Waimwork.Result (result)
 import qualified Web.Route.Invertible as R
@@ -47,6 +50,7 @@ import Compression
 import Query
 import Monoid
 import Static
+import JSON
 
 jsonEncodingVar :: T.Text -> J.Encoding -> H.Html
 jsonEncodingVar var enc = H.script $ do
@@ -64,6 +68,9 @@ catalogsSorted = sortOn (catalogOrder . snd) . HM.toList . catalogMap
 groupingTitle :: Grouping -> Maybe Catalog -> T.Text
 groupingTitle g = maybe (groupTitle g) catalogTitle
 
+vueAttribute :: String -> H.AttributeValue -> H.Attribute
+vueAttribute = H.customAttribute . fromString . ("v-" ++)
+
 htmlResponse :: Wai.Request -> ResponseHeaders -> H.Markup -> M Wai.Response
 htmlResponse req hdrs body = do
   glob <- ask
@@ -77,7 +84,7 @@ htmlResponse req hdrs body = do
       forM_ [
           ["jspm_packages", "npm", "datatables.net-dt@1.10.20", "css", "jquery.dataTables.css"],
           ["jspm_packages", "npm", "bootstrap@4.4.1", "dist", "css", "bootstrap.min.css"],
-          ["base.css"]
+          ["style.css"]
         ] $ \src ->
         H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
       H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML" $ mempty
@@ -120,8 +127,7 @@ htmlResponse req hdrs body = do
         H.div H.! HA.class_ "container" $ do
           H.div H.! HA.class_ "footer-left" $ do
             H.div H.! HA.class_ "footer__title" $ do
-              H.img H.! HA.src (staticURI ["cca-logo.jpg"]) H.! HA.height "50" H.! HA.width "50"
-              H.h3 $ "Center for Computational Astrophysics"
+              H.h3 $ "Flathub"
             H.p H.! HA.class_ "footer-links" $ do
               H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Home"
               H.a H.! HA.href (WH.routeActionValue groupPage [] mempty) $ H.text "Catalogs"
@@ -181,7 +187,6 @@ catalogPage = getPath R.parameter $ \sim req -> do
       <> "title" J..= catalogTitle cat
       <> "descr" J..= catalogDescr cat
       <> foldMap ("count" J..=) (catalogCount cat)
-      <> "bulk" J..= map (J.String . R.renderParameter) [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkECSV Nothing, BulkECSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)]
       <> "fields" J..= fields'
     fieldBody :: Word -> FieldGroup -> H.Html
     fieldBody d f = H.span $ do
@@ -222,7 +227,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                     H.!? (isNothing (fieldSub g), HA.id $ H.textValue $ key f)
                     H.! HA.class_ (H.textValue $ T.unwords $ "colvis" : map key fs)
                     H.!? (fieldDisp g, HA.checked "checked")
-                    H.! HA.onclick "return colvisSet(event)"
+                    H.! HA.onclick "colvisSet(event)"
                 H.text (fieldTitle g)
             H.td $ when (isNothing (fieldSub g)) (H.text (fieldName f))
             H.td $ H.string (show $ fieldType g)
@@ -241,38 +246,73 @@ catalogPage = getPath R.parameter $ \sim req -> do
       jsonEncodingVar "Catalog" jcat
       jsonVar "Query" query
       H.div H.! HA.class_ "catalog-title" $ do
-        H.div H.! HA.class_ "container" $ do
+        H.div H.! HA.class_ "container-fluid" $ do
           H.div H.! HA.class_ "row" $ do
-            H.div H.! HA.class_ "col" $ do
+            -- H.div H.! HA.class_ "col" $ do
               H.h5 $ H.text $ catalogTitle cat
 
       H.div H.! HA.class_ "catalog-tool-container " $ do
         H.div H.! HA.class_ "container-fluid catalog-tool" $ do
           H.div H.! HA.class_ "row" $ do
             H.div H.! HA.class_ "col col-sm-12 col-md-8 left-column" $ do
-              forM_ ['x', 'y'] $ \x ->
-                H.div H.! HA.class_ "left-column-header-group" $ do
-                  H.div H.! HA.class_ "form-inline form-badge" $ do
-                    H.div H.! HA.class_ "form-group" $ do
-                      H.label H.! HA.for ("histsel-" <> H.stringValue [x]) $ do
-                        H.a H.! HA.class_ "nav-link" $ "Select " <> H.string [toUpper x] <> " Axis"
-                      H.select H.! HA.id ("histsel-" <> H.stringValue [x]) $ do
-                        forM_ (catalogFields cat) $ \f ->
-                          when (typeIsFloating (fieldType f)) $
-                            H.option
-                              H.! HA.class_ ("sel-" <> H.textValue (fieldName f))
-                              H.!? (not $ fieldDisp f, HA.style "display:none")
-                              H.! HA.value (H.textValue $ fieldName f) $ H.text $ fieldTitle f
-                    H.button H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick ("return histogramShow(" <> H.stringValue (show x) <> ")") $ do
-                      "View "
-                      if x == 'x' then "Histogram" else "Heatmap"
-                    when (x == 'x') $
-                      H.button H.! HA.id "hist-y-tog" H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick "return toggleLog()" $ "Toggle lin/log"
-                    when (x == 'y') $
-                      H.button H.! HA.class_ "btn btn-badge-inline" H.! HA.onclick ("return histogramShow('c')") $
-                        "Conditional distribution"
+              H.div H.! HA.id "plot" $ do
+                -- Start Vue
+                H.div H.! HA.class_ "row plot-controls-row" $ do
+                  H.div H.! HA.class_ "col-sm-12 col-md-4 plot-col" $ do
+                    H.div H.! HA.class_ "tooltip-container" $ do
+                      H.span H.! HA.class_ "label-help" $ "Plot type:"
+                      H.span H.! HA.class_ "tooltiptext" $ do
+                        H.span H.! vueAttribute "if" "type=='x'" $ "Histogram bins the data by a single field and displays count of objects per bin."
+                        H.span H.! vueAttribute "if" "type=='y'" $ "Heatmap bins the data by two fields and displays count as color."
+                        H.span H.! vueAttribute "if" "type=='c'" $ "Conditional distribution bins the data by one field and displays the distribution of a second field within that bin as a boxplot (range and quartiles)."
+                    H.select H.! vueAttribute "model" "type" H.! vueAttribute "on:change" "reset" $ do
+                      H.option H.! HA.value "x" H.! HA.selected "selected" $ "histogram"
+                      H.option H.! HA.value "y" $ "heatmap"
+                      H.option H.! HA.value "c" $ "conditional distribution"
+                  H.div H.! HA.class_ "col-sm-12 col-md-5 plot-col" $ do
+                    forM_ ['x', 'y'] $ \x ->
+                      H.div H.! HA.class_ "input-group-row" H.!? (x == 'y', vueAttribute "if" "type!=='x'") H.! vueAttribute "on:change" "go" $ do
+                        let filt = H.stringValue [x] <> "filter"
+                        H.label $ do
+                          H.string [toUpper x] <> "-Axis:"
+                        H.div H.! HA.class_ "input-group" $ do
+                          H.select H.! HA.id ("histsel-" <> H.stringValue [x]) $ do
+                            forM_ (catalogFields cat) $ \f ->
+                              when (typeIsFloating (fieldType f)) $ do
+                                let n = H.textValue $ fieldName f
+                                H.option
+                                  H.! HA.class_ ("sel-" <> n)
+                                  H.!? (not $ fieldDisp f, HA.style "display:none")
+                                  H.! HA.value n
+                                  $ H.text $ fieldTitle f
+                          H.div H.! HA.class_ "switch-row" H.! vueAttribute "if" (filt <> if x == 'y' then "&&type==='y'" else "") $ do
+                            H.label "lin"
+                            H.label H.! HA.class_ "switch" $ do
+                              H.input
+                                H.! HA.type_ "checkbox"
+                                H.! vueAttribute "bind:disabled" ("!(" <> filt <> ".lbv>0)")
+                                H.! vueAttribute "model" (filt <> ".histLog")
+                              H.span H.! HA.class_ "slider" $ mempty
+                            H.label "log"
+                  H.div H.! HA.class_ "col-sm-12 col-md-3 plot-col" $ do
+                    H.div H.! HA.class_ "tooltip-container" $ do
+                      H.span H.! HA.class_ "label-help" $ "Count:"
+                      H.span H.! HA.class_ "tooltiptext" $ do
+                        "Choose whether the object count per bin is shown in linear or log scale. "
+                        H.span H.! vueAttribute "if" "type=='x'" $ "Count is shown on the Y axis."
+                        H.span H.! vueAttribute "else" "" $ "Count is shown on the color (Z) axis."
+                    H.div H.! HA.class_ "switch-row solo-row" $ do
+                      H.label "lin"
+                      H.label H.! HA.class_ "switch" $ do
+                        H.input
+                          H.! HA.type_ "checkbox"
+                          H.! vueAttribute "on:click" "log"
+                        H.span H.! HA.class_ "slider" $ mempty
+                      H.label "log"
+                -- End Vue
               H.div H.! HA.class_ "alert alert-danger" H.! HA.id "error" $ mempty
-              H.div H.! HA.id "hist" $ mempty
+              H.div H.! HA.class_ "hist-container" $ do
+                H.div H.! HA.id "hist" $ mempty
 
             H.div H.! HA.class_ "col col-sm-12 col-md-4 right-column" $ do
               H.ul H.! HA.class_ "nav nav-tabs" H.! HA.id "myTab" H.! HA.role "tablist" $ do
@@ -294,14 +334,75 @@ catalogPage = getPath R.parameter $ \sim req -> do
                   H.! HA.role "tabpanel"
                   H.! H.customAttribute "aria-labelledby" "filter-tab" $ do
                   H.div H.! HA.class_ "right-column-group" $ do
-                    H.h6 H.! HA.class_ "right-column-heading" $ "Active Filters"
-                    H.a H.! HA.class_ "button button-primary" H.! HA.href (WH.routeActionValue catalogPage sim mempty) $ "reset all"
+                    H.div H.! HA.class_ "right-column-heading-group" $ do
+                      H.h6 H.! HA.class_ "right-column-heading" $ "Active Filters"
+                      H.a H.! HA.class_ "button button-secondary" H.! HA.href (WH.routeActionValue catalogPage sim mempty) $ "reset all"
                     H.div
                       H.! HA.id "filt"
                       H.! HA.class_ "alert-parent"
-                      H.! HA.role "alert" $ mempty
+                      H.! HA.role "alert" $ do
+                      H.div
+                        H.! vueAttribute "for" "filter in filters"
+                        H.! vueAttribute "bind:id" "'filt-'+filter.field.name"
+                        H.! HA.class_ "alert fade show row filter-row"
+                        H.! vueAttribute "bind:class" "\
+                          \{'alert-info':filter.field.flag!==undefined\
+                          \,'alert-warning':filter.field.flag===undefined\
+                          \,'alert-horz':filter.field.flag===undefined\
+                          \}"
+                        $ do
+                        H.div H.! HA.class_ "filter-text" $
+                          H.customParent "field-title"
+                            H.! vueAttribute "bind:field" "filter.field"
+                            H.! vueAttribute "bind:rmf" "filter.field.flag?undefined:filter.remove.bind(filter)"
+                            $ mempty
+                        H.div H.! HA.class_ "filter-avg"
+                          H.! vueAttribute "if" "filter.aggs.avg!==undefined"
+                          $ do
+                          H.em $ H.preEscapedString "&mu;"
+                          " = {{filter.aggs.avg?filter.render(filter.aggs.avg):'no data'}}"
+                        H.div H.! HA.class_ "filter-inputs" $ do
+                          H.customParent "select-terms"
+                            H.! vueAttribute "if" "filter.field.terms"
+                            H.! vueAttribute "bind:field" "filter.field"
+                            H.! vueAttribute "bind:aggs" "filter.aggs"
+                            H.! vueAttribute "model" "filter.value"
+                            H.! vueAttribute "bind:change" "filter.change.bind(filter)"
+                            $ mempty
+                          H.div
+                            H.! vueAttribute "else" "" $ do
+                            forM_ [False, True] $ \b ->
+                              H.div H.! HA.class_ "filter-input" $ do
+                                H.input
+                                  H.! vueAttribute "bind:name" ("filter.field.name+'." <> (if b then "u" else "l") <> "b'")
+                                  H.! vueAttribute "bind:title" ("'" <> (if b then "Upper" else "Lower") <> " bound for '+filter.field.title+' values'")
+                                  H.! HA.type_ "number"
+                                  H.! vueAttribute "bind:step" "filter.field.base=='i'?'1':'any'"
+                                  H.! vueAttribute "bind:min" "filter.aggs.min"
+                                  H.! vueAttribute "bind:max" "filter.aggs.max"
+                                  H.! vueAttribute "model.number" ("filter." <> (if b then "ubv" else "lbv"))
+                                  H.! vueAttribute "on:change" "filter.change()"
+                                H.p $ "{{filter.render(filter.aggs." <> (if b then "max" else "min") <> ")}}"
+                            H.button H.! HA.class_ "filter-reset"
+                              H.! vueAttribute "on:click" "filter.reset()"
+                              $ "Reset"
+                      H.div H.! HA.class_ "alert fade show row filter-row alert-secondary" $ do
+                        H.div H.! HA.class_ "filter-text" $
+                          "Select field to filter"
+                        H.div H.! HA.class_ "filter-inputs" $
+                          H.select H.! HA.id "addfilt" H.! HA.onchange "addFilter(event.target.value)" $ do
+                            H.option H.! HA.value "" $ "Add filter..."
+                            forM_ (catalogFields cat) $ \f -> do
+                              let n = H.textValue $ fieldName f
+                              H.option
+                                H.! HA.value n
+                                H.! HA.id ("addfilt-" <> n)
+                                H.! HA.class_ ("sel-" <> n)
+                                H.!? (not $ fieldDisp f, HA.style "display:none")
+                                -- H.! vueAttribute "bind:style" ("{display:disp[" <> WH.lazyByteStringValue (J.encode $ fieldName f) <> "]?'':'none'}")
+                                $ H.text $ fieldTitle f
                   H.div H.! HA.class_ "right-column-group" $ do
-                    H.h6 H.! HA.class_ "right-column-heading" $ "Random Sample"
+                    H.h6 H.! HA.class_ "right-column-heading-leader" $ "Random Sample"
                     H.div H.! HA.class_ "sample-row" $ do
                       H.label H.! HA.for "sample" $ "fraction"
                       H.input
@@ -313,7 +414,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                         H.! HA.max "1"
                         H.! HA.value (H.toValue $ querySample query)
                         H.! HA.title "Probability (0,1] with which to include each item"
-                        H.! HA.onchange "return sampleChange()"
+                        H.! HA.onchange "sampleChange()"
                       H.label H.! HA.for "seed" $ "seed"
                       H.input
                         H.! HA.id "seed"
@@ -324,7 +425,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                         WH.!? (HA.value . H.toValue <$> querySeed query)
                         H.!? (querySample query < 1, HA.disabled "disabled")
                         H.! HA.title "Random seed to generate sample selection"
-                        H.! HA.onchange "return sampleChange()"
+                        H.! HA.onchange "sampleChange()"
                 H.div
                   H.! HA.class_ "tab-pane fade"
                   H.! HA.id "Python"
@@ -376,10 +477,19 @@ catalogPage = getPath R.parameter $ \sim req -> do
                 H.! HA.type_ "button"
                 H.! HA.class_ "btn btn-warning"
                 H.! HA.id "rawdata-btn"
-                H.! HA.onclick "return toggleShowData()"
+                H.! HA.onclick "toggleShowData()"
                 $ "Hide Raw Data"
-              H.p H.! HA.class_ "download" H.! HA.id  "info" $ mempty
-            H.p H.! HA.class_ "download" H.! HA.id "download" $ "Download as:"
+              H.p H.! HA.class_ "download" H.! HA.id "info" $ mempty
+            H.p H.! HA.class_ "download" H.! HA.id "download" $ do
+              "download as"
+              forM_ [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkECSV Nothing, BulkECSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)] $ \b -> do
+                let f = R.renderParameter b
+                " "
+                H.a
+                  H.! HA.id ("download." <> H.textValue f)
+                  H.! HA.class_ "button button-primary"
+                  H.! vueAttribute "bind:href" ((jsLazyByteStringValue $ BSB.toLazyByteString $ encodePathSegments' $ R.requestPath $ R.requestActionRoute catalogBulk (sim, b)) <> "+query")
+                  $ H.text f
 
         H.div H.! HA.class_ "container-fluid catalog-summary raw-data" H.! HA.id "rawdata" $ do
           H.h5 $ "Raw Data"
@@ -434,11 +544,11 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
       -- Single Catalog
       GroupCatalog cat -> do
         let Catalog{..} = catalogMap cats HM.! cat
-        H.div H.! HA.class_ "section gray-heading" $ do
+        H.div H.! HA.class_ ("section gray-heading " <> H.textValue cat <> "-heading") $ do
           H.div H.! HA.class_"container" $ do
             H.div H.! HA.class_ "row" $ do
               H.div H.! HA.class_ "heading-content" $ do
-                H.h4 H.! HA.class_"heading-heading"  $ H.text catalogTitle
+                H.h4 H.! HA.class_("heading-heading " <> H.textValue cat <> "-subheading")  $ H.text catalogTitle
                 H.a  H.! HA.class_ "button button-primary" H.! HA.href (WH.routeActionValue catalogPage cat mempty) $ "explore"
         maybe (do
           H.div H.! HA.class_ "section highlighted-links" $ do
@@ -446,11 +556,11 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
             H.preEscapedText catalogHtml
       -- Collections
       Grouping{..} -> do
-        H.div H.! HA.class_ "section gray-heading" $ do
+        H.div H.! HA.class_ ("section gray-heading " <> H.textValue groupName <> "-heading") $ do
           H.div H.! HA.class_"container" $ do
             H.div H.! HA.class_ "row" $ do
               H.div H.! HA.class_ "heading-content" $ do
-                H.h4 H.! HA.class_"heading-heading"  $ H.text groupTitle
+                H.h4 H.! HA.class_ ("heading-heading " <> H.textValue groupName <> "-subheading") $ H.text groupTitle
                 H.a H.! HA.class_ "button button-primary" H.! HA.href (WH.routeActionValue comparePage path mempty) $ "compare"
         mapM_
           H.preEscapedText groupHtml
@@ -482,19 +592,19 @@ comparePage = getPath ("compare" R.*< R.manyI R.parameter) $ \path req -> do
       H.table H.! HA.id "tcompare" H.! HA.class_ "u-full-width" $ do
         H.thead $ H.tr $ do
           H.th "Choose two or more catalogs"
-          H.td $ H.select H.! HA.name "selcat" H.! HA.onchange "return selectCat(event.target)" $ do
+          H.td $ H.select H.! HA.name "selcat" H.! HA.onchange "selectCat(event.target)" $ do
             H.option H.! HA.value mempty H.! HA.selected "selected" $ "Choose catalog..."
             forM_ (catalogsSorted cats) $ \(sim, cat) ->
               H.option H.! HA.value (H.textValue sim) $ H.text $ catalogTitle cat
         H.tbody $ mempty
         H.tfoot $ do
           H.tr H.! HA.id "tr-add" $
-            H.td $ H.select H.! HA.id "addf"  H.! HA.onchange "return addField()"  $ mempty
+            H.td $ H.select H.! HA.id "addf"  H.! HA.onchange "addField()"  $ mempty
           H.tr H.! HA.id "tr-comp" $
-            H.td $ H.select H.! HA.id "compf" H.! HA.onchange "return compField()" $ mempty
-      H.button H.! HA.id "hist-tog" H.! HA.disabled "disabled" H.! HA.onclick "return histogramComp()" $ "histogram"
+            H.td $ H.select H.! HA.id "compf" H.! HA.onchange "compField()" $ mempty
+      H.button H.! HA.id "hist-tog" H.! HA.disabled "disabled" H.! HA.onclick "histogramComp()" $ "histogram"
       H.div H.! HA.id "dhist" $ do
-        H.button H.! HA.id "hist-y-tog" H.! HA.onclick "return toggleLog()" $
+        H.button H.! HA.id "hist-y-tog" H.! HA.onclick "toggleLog()" $
           "Toggle lin/log"
         H.div H.! HA.id "hist" $ mempty
 

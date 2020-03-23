@@ -1,0 +1,149 @@
+/* Catalog
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+.catalog__heading {
+  margin-bottom: 5rem;
+}
+
+.filter__title {
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  text-align: center;
+  line-height: 38px;
+  letter-spacing: 0.1rem;
+  padding-left: 10px;
+}
+
+.catalogs-container {
+  padding: 10px;
+}
+
+.catalogs-list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  text-align: left;
+  width: 100%;
+}
+
+.main-page {
+  align-items: center;
+}
+
+.catalog-title {
+  margin-top: 2rem;
+}
+
+.catalog-title h5 {
+  margin-bottom: 1rem;
+}
+
+.catalog-title a,
+.underline {
+  text-decoration: underline;
+}
+
+.catalog-tool-container {
+  min-height: 80vh;
+  padding: 0 0 2rem 0;
+  @media screen and (min-width: 1800px) {
+    padding: 1rem 0 2rem 0;
+  }
+}
+
+.catalog-tool {
+  border: 1px solid $gray0;
+  border-bottom: none;
+  background-color: $white;
+  min-height: 65vh;
+  border-radius: 4px 4px 0 0;
+}
+
+.catalog-summary {
+  background-color: $platinum;
+  border: 1px solid $gray0;
+  padding: 2rem;
+}
+
+.catalog-summary h5 {
+  margin-bottom: 1rem;
+}
+
+@media screen and (min-width: 1800px) {
+  .catalog-tool,
+  .catalog-summary {
+    max-width: 95vw;
+  }
+}
+
+.raw-data {
+  background-color: $black;
+}
+
+.left-column {
+  min-height: 65vh;
+  padding: 1rem;
+}
+
+.right-column {
+  background-color: $platinum;
+  min-height: 65vh;
+  padding: 1rem 1rem 0 1rem;
+}
+
+.right-column-heading-leader {
+  border-bottom: 1px solid #ff533d;
+}
+
+.right-column-heading-group {
+  border-bottom: 1px solid #ff533d;
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.tab-content {
+  min-height: calc(70vh - 55px);
+  padding: 1rem 2rem;
+  max-height: 70vh;
+  overflow: scroll;
+  background-color: $white;
+  border: 1px solid #dee2e6;
+  border-top: 1px solid #fff;
+}
+
+.form-badge {
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.form-badge input {
+  margin-bottom: 0 !important;
+  height: 38px;
+}
+
+/* Plot controls
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+.plot-controls-row {
+  background-color: $platinum;
+  margin: -1rem;
+  padding: 1rem;
+  margin: -1rem -1rem 0 -1rem;
+}
+
+.plot-col:first-of-type {
+  padding-left: 5px;
+}
+
+.plot-col {
+  border-right: 1px solid $red;
+  padding-left: 15px;
+}
+
+.plot-col:last-of-type {
+  border-right: none;
+}

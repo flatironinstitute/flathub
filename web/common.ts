@@ -1,4 +1,6 @@
 "use strict";
+
+import Vue from "vue";
 import Highcharts from "highcharts";
 import Highcharts_exporting from "highcharts/modules/exporting";
 
@@ -41,15 +43,16 @@ export type AggrStats = {
   max: number;
   avg: number;
 };
+type Bucket<T> = {
+  key: T;
+  from?: T;
+  to?: T;
+  doc_count: number;
+  hist?: AggrTerms<any>;
+  pct?: { values: Dict<number> };
+};
 export type AggrTerms<T> = {
-  buckets: Array<{
-    key: T;
-    from?: T;
-    to?: T;
-    doc_count: number;
-    hist?: AggrTerms<any>;
-    pct?: { values: Dict<number> };
-  }>;
+  buckets: Array<Bucket<T>>;
 };
 
 export type Aggr = AggrStats | AggrTerms<string | number>;
@@ -63,6 +66,7 @@ export type CatalogResponse = {
   histsize: Dict<number>;
 };
 
+/* deprecated: use select-terms below */
 export function fill_select_terms(
   s: HTMLSelectElement,
   f: Field,
@@ -85,6 +89,26 @@ export function fill_select_terms(
   s.disabled = false;
 }
 
+Vue.component('select-terms', {
+  props: {
+    field: Object, // Field
+    aggs: Object, // AggrTerms<string>
+    value: String,
+    change: Function
+  },
+  computed: {
+    terms: function() {
+      return (<AggrTerms<string>>this.aggs).buckets && this.aggs.buckets.sort((c: Bucket<any>, d: Bucket<any>) => -(c.key < d.key) || +(c.key > d.key));
+    }
+  },
+  template: `
+    <select v-bind:value="value" v-on:input="$emit('input',$event.target.value)" v-on:change="change">
+      <option v-if="!field.flag" value="">all</option>
+      <option v-for="b in terms" v-bind:value="b.key">{{field.enum&&b.key in field.enum?field.enum[b.key]:b.key}} ({{b.doc_count}})</option>
+    </select>
+  `
+});
+
 export function field_option(f: Field): HTMLOptionElement {
   const o = document.createElement("option");
   o.value = f.name;
@@ -102,6 +126,18 @@ export function updateMathJax() {
         MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
     });
 }
+
+Vue.component('field-title', {
+  props: ['field', 'rmf'],
+  template: `
+    <span v-bind:class="{ 'tooltip-dt': field.descr }">
+      <button v-if="rmf" class="button-remove" v-on:click="rmf">&times;</button>
+      {{field.title}}
+      <span v-if="field.units">{{field.units}}</span>
+      <span v-if="field.descr" class="tooltiptext">{{field.descr}}</span>
+    </span>
+  `
+});
 
 export function field_title(
   field: Field,
@@ -193,11 +229,11 @@ export function histogram_options(field: Field, log: boolean = false): Highchart
         formatter: field.base === 'f' ? log ? function() {
           const v = Math.exp(this.value);
           let d = (<any>this.axis).tickInterval;
-          return v.toPrecision(1+Math.max(-Math.floor(Math.log10(Math.exp(d)-1))));
+          return v.toPrecision(1+Math.max(0,-Math.floor(Math.log10(Math.exp(d)-1))));
         } : function() {
           const v = this.value;
           const d = (<any>this.axis).tickInterval;
-          return v.toPrecision(1+Math.max(Math.floor(Math.log10(Math.abs(v)))-Math.floor(Math.log10(d)),0));
+          return v.toPrecision(1+Math.max(0,Math.floor(Math.log10(Math.abs(v)))-Math.floor(Math.log10(d))));
         } : function() {
           return render(this.value);
         }

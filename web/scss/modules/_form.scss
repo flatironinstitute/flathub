@@ -1,0 +1,121 @@
+/* Form
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+form {
+  margin-bottom: 2.5rem;
+}
+input[type="email"],
+input[type="number"],
+input[type="search"],
+input[type="text"],
+input[type="tel"],
+input[type="url"],
+input[type="password"],
+textarea,
+select {
+  height: 38px;
+  padding: 6px 10px; /* The 6px vertically centers text on FF, ignored by Webkit */
+  background-color: $white;
+  border: 1px solid $gray1;
+  border-radius: 4px;
+  box-shadow: none;
+  box-sizing: border-box;
+  font-size: 1.3rem;
+  line-height: 1.5;
+  color: #555;
+}
+/* Removes awkward default styles on some inputs for iOS */
+input[type="email"],
+input[type="number"],
+input[type="search"],
+input[type="text"],
+input[type="tel"],
+input[type="url"],
+input[type="password"],
+textarea {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+textarea {
+  min-height: 65px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+input[type="email"]:focus,
+input[type="number"]:focus,
+input[type="search"]:focus,
+input[type="text"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+input[type="password"]:focus,
+textarea:focus,
+select:focus {
+  border: 1px solid $blue;
+  outline: 0;
+}
+label,
+legend {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+fieldset {
+  padding: 0;
+  border-width: 0;
+}
+input[type="checkbox"],
+input[type="radio"] {
+  display: inline;
+}
+label > .label-body {
+  display: inline-block;
+  margin-left: 0.5rem;
+  font-weight: normal;
+}
+select {
+  min-width: 200px;
+}
+.superlabel {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+input.colvis {
+  margin-right: 7px;
+}
+input[type="number"] {
+  width: 100px;
+}
+span.units {
+  font-size: small;
+  font-weight: normal;
+}
+span.units::before {
+  content: " [";
+}
+span.units::after {
+  content: "]";
+}
+.input-group {
+  flex-wrap: nowrap;
+  align-items: center;
+}
+.input-group-row:nth-of-type(2) {
+  margin-top: 1rem;
+}
+.label-help::after {
+  // content: url("info.png");
+  content: "ℹ️";
+  padding: 3px;
+}
+.label-help {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  text-transform: uppercase;
+  opacity: 1;
+}
