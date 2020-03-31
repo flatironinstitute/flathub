@@ -73,6 +73,7 @@ ingestDelim delim info@Ingest{ ingestCatalog = cat, ingestOffset = off } = do
     val (Just f) x
       | typeIsFloating (fieldType f) && x `elem` ["Inf", "-Inf", "+Inf", "inf"] = mempty
       | BSC.null x = mempty
+      | fieldMissing f == x = mempty
       | otherwise = fieldName f J..= TE.decodeLatin1 x
     loop o [] = return o
     loop o s = do

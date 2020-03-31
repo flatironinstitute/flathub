@@ -37,7 +37,8 @@ module Field
 import           Control.Applicative (Alternative, empty, (<|>))
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Types as J
-import           Data.ByteString.Builder as B
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.Builder as B
 import           Data.Default (Default(def))
 import           Data.Foldable (fold)
 import           Data.Functor.Classes (Eq1, eq1, Show1, showsPrec1)
@@ -50,6 +51,7 @@ import           Data.Proxy (Proxy(Proxy))
 import           Data.Scientific (Scientific)
 import           Data.Semigroup (Max(getMax), Semigroup((<>)))
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import           Data.Typeable (Typeable)
 import qualified Data.Vector as V
 import           Numeric.Half (Half)
@@ -336,7 +338,7 @@ data FieldSub t m = Field
   , fieldDict :: Maybe T.Text
   , fieldScale :: Maybe Scientific
   , fieldIngest :: Maybe T.Text
-  , fieldMissing :: TypeValue Maybe
+  , fieldMissing :: BS.ByteString
   }
 
 fieldDisp :: FieldSub t m -> Bool
@@ -363,7 +365,7 @@ instance Alternative m => Default (FieldSub Proxy m) where
     , fieldDict = Nothing
     , fieldScale = Nothing
     , fieldIngest = Nothing
-    , fieldMissing = Float Nothing
+    , fieldMissing = BS.empty
     }
 
 instance J.ToJSON Field where
@@ -406,7 +408,7 @@ parseFieldGroup dict = parseFieldDefs def where
     fieldFlag <- f J..:? "flag" J..!= fieldFlag d
     fieldScale <- f J..:! "scale"
     fieldIngest <- f J..:! "ingest"
-    fieldMissing <- parseTypeJSONValue fieldType <$> f J..:! "missing" J..!= J.Null
+    fieldMissing <- TE.encodeUtf8 <$> f J..:! "missing" J..!= T.empty
     fieldSub <- (<|> fieldSub d) <$> J.explicitParseFieldMaybe' (J.withArray "subfields" $ V.mapM $
         parseFieldDefs defd
           { fieldType = fieldType
