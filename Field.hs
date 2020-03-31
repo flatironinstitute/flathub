@@ -336,6 +336,7 @@ data FieldSub t m = Field
   , fieldDict :: Maybe T.Text
   , fieldScale :: Maybe Scientific
   , fieldIngest :: Maybe T.Text
+  , fieldMissing :: TypeValue Maybe
   }
 
 fieldDisp :: FieldSub t m -> Bool
@@ -362,6 +363,7 @@ instance Alternative m => Default (FieldSub Proxy m) where
     , fieldDict = Nothing
     , fieldScale = Nothing
     , fieldIngest = Nothing
+    , fieldMissing = Float Nothing
     }
 
 instance J.ToJSON Field where
@@ -404,11 +406,13 @@ parseFieldGroup dict = parseFieldDefs def where
     fieldFlag <- f J..:? "flag" J..!= fieldFlag d
     fieldScale <- f J..:! "scale"
     fieldIngest <- f J..:! "ingest"
+    fieldMissing <- parseTypeJSONValue fieldType <$> f J..:! "missing" J..!= J.Null
     fieldSub <- (<|> fieldSub d) <$> J.explicitParseFieldMaybe' (J.withArray "subfields" $ V.mapM $
         parseFieldDefs defd
           { fieldType = fieldType
           , fieldEnum = fieldEnum
           , fieldFlag = fieldFlag
+          , fieldMissing = fieldMissing
           })
       f "sub"
     return Field{..}
