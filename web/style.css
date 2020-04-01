@@ -708,6 +708,14 @@ container a:hover:not(.active) {
   font-size: 1.4rem;
 }
 
+.heading-modal-container {
+  display: none;
+  background-color: pink;
+}
+.heading-modal-container.hidden {
+  display: none;
+}
+
 /* Hero and Heading
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 .col-border {
