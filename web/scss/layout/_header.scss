@@ -130,3 +130,26 @@ container a:hover:not(.active) {
   font-family: "Lexend Zetta", sans-serif;
   font-size: 1.4rem;
 }
+
+.subheader {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-end;
+  background-color: $red;
+}
+
+.subheader-content {
+  margin-left: 5vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  p {
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.2rem;
+    text-decoration: none;
+    color: $white;
+    margin-bottom: 0 !important;
+  }
+}
