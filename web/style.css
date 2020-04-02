@@ -712,7 +712,7 @@ container a:hover:not(.active) {
   flex-direction: row;
   justify-content: space-between;
   align-items: flex-end;
-  background-color: #ff533d;
+  background-color: #ffc107;
 }
 
 .subheader-content {
@@ -727,7 +727,6 @@ container a:hover:not(.active) {
   font-weight: 600;
   letter-spacing: 0.2rem;
   text-decoration: none;
-  color: #fefeff;
   margin-bottom: 0 !important;
 }
 
