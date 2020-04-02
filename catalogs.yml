@@ -3557,7 +3557,8 @@ unimach:
       type: float
       descr: 'Halo raidus (BN98 vir, co-moving kpc/h)'
       units: 'kpc/h'
-      ingest: 1/(1000*(1+z))
+      scale: 1e-3
+      ingest: '1/(1+z)'
     - name: Rank1
       type: float
       descr: 'Halo rank (see UniverseMachine paper)'
