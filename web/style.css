@@ -708,6 +708,29 @@ container a:hover:not(.active) {
   font-size: 1.4rem;
 }
 
+.subheader {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-end;
+  background-color: #ff533d;
+}
+
+.subheader-content {
+  margin-left: 5vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.subheader-content p {
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.2rem;
+  text-decoration: none;
+  color: #fefeff;
+  margin-bottom: 0 !important;
+}
+
 /* Hero and Heading
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 .col-border {

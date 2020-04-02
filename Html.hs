@@ -121,6 +121,9 @@ htmlResponse req hdrs body = do
               H.a H.! HA.href (WH.routeActionValue comparePage [] mempty) $ "Compare"
             H.li H.! HA.class_ "header__link" $ do
               H.a H.! HA.href (WH.routeActionValue staticHtml ["about"] mempty) $ "About"
+      H.div H.! HA.class_ "subheader" $ do
+        H.div H.! HA.class_ "subheader-content" $ do
+          H.p $ "Please note that this is a beta version. The website is still undergoing final testing before the official release."
       H.div H.! HA.class_ "modal-container hidden" H.! HA.id "browser-modal" $ do
         H.div H.! HA.class_ "modal-background" $ do
           H.span $ mempty
