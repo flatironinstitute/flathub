@@ -121,6 +121,14 @@ htmlResponse req hdrs body = do
               H.a H.! HA.href (WH.routeActionValue comparePage [] mempty) $ "Compare"
             H.li H.! HA.class_ "header__link" $ do
               H.a H.! HA.href (WH.routeActionValue staticHtml ["about"] mempty) $ "About"
+      H.div H.! HA.class_ "modal-container hidden" H.! HA.id "browser-modal" $ do
+        H.div H.! HA.class_ "modal-background" $ do
+          H.span $ mempty
+        H.div H.! HA.class_ "modal-body" $ do
+          H.div H.! HA.class_ "modal-content" $ do
+            H.p H.! HA.class_ "modal-close" H.! HA.id "browser-modal-close" H.! HA.onclick "closeModal()" $ mempty
+            H.h3 "Unsupported Browser"
+            H.p "Flathub requires an up-to-date web browser to make sure that you can use all of the features. Please consider using one of the preferred browsers: Google Chrome, Mozilla Firefox, Apple Safari."
       H.div H.! HA.class_ "container container--main" $ do
         body
       H.footer H.! HA.class_"footer-distributed" $ do

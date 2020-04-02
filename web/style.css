@@ -1915,6 +1915,21 @@ input:checked + .slider:before {
   margin-bottom: 1rem;
 }
 
+/* Modal Close
+  –––––––––––––––––––––––––––––––––––––––––––––––––– */
+.modal-close {
+  height: 20px;
+  width: 20px;
+  margin-bottom: 0 !important;
+  align-self: flex-start;
+}
+
+.modal-close:before {
+  content: "X";
+  font-weight: 300;
+  font-family: "Lexend Zetta", sans-serif;
+}
+
 /* Progress Bar
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
 .progress-container {
