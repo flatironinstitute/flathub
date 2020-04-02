@@ -130,12 +130,3 @@ container a:hover:not(.active) {
   font-family: "Lexend Zetta", sans-serif;
   font-size: 1.4rem;
 }
-
-.heading-modal-container {
-  display: none;
-  background-color: pink;
-
-  &.hidden {
-    display: none;
-  }
-}

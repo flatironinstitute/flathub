@@ -6,7 +6,6 @@ import { initCompare } from "./compare";
 function init() {
   if (isIEorEDGE()) {
     const modal = <HTMLSelectElement>document.getElementById("browser-modal");
-    console.log("🌭 not IE or Edge", modal);
     modal.classList.remove("hidden");
   }
   const tcat: JQuery<HTMLTableElement> = $("table#tcat");

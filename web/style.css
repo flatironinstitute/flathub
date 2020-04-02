@@ -708,14 +708,6 @@ container a:hover:not(.active) {
   font-size: 1.4rem;
 }
 
-.heading-modal-container {
-  display: none;
-  background-color: pink;
-}
-.heading-modal-container.hidden {
-  display: none;
-}
-
 /* Hero and Heading
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 .col-border {
@@ -1921,6 +1913,21 @@ input:checked + .slider:before {
 
 .modal-content > p {
   margin-bottom: 1rem;
+}
+
+/* Modal Close
+  –––––––––––––––––––––––––––––––––––––––––––––––––– */
+.modal-close {
+  height: 20px;
+  width: 20px;
+  margin-bottom: 0 !important;
+  align-self: flex-start;
+}
+
+.modal-close:before {
+  content: "X";
+  font-weight: 300;
+  font-family: "Lexend Zetta", sans-serif;
 }
 
 /* Progress Bar
