@@ -712,7 +712,7 @@ container a:hover:not(.active) {
   flex-direction: row;
   justify-content: space-between;
   align-items: flex-end;
-  background-color: #ffc107;
+  background-color: #ff533d;
 }
 
 .subheader-content {
@@ -727,6 +727,7 @@ container a:hover:not(.active) {
   font-weight: 600;
   letter-spacing: 0.2rem;
   text-decoration: none;
+  color: #fefeff;
   margin-bottom: 0 !important;
 }
 
@@ -1383,6 +1384,10 @@ div#hist,
   margin: 2rem 1rem;
 }
 
+.img-ctr {
+  margin-bottom: 2rem;
+}
+
 /* Dedicated Lists
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
 dt {
@@ -1894,6 +1899,14 @@ input:checked + .slider:before {
   border-width: 0px 1px;
   padding: 4px 10px;
   min-width: 250px;
+}
+
+.compare-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 5vh;
 }
 
 /* Loading screens
