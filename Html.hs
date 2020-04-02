@@ -127,15 +127,8 @@ htmlResponse req hdrs body = do
         H.div H.! HA.class_ "modal-body" $ do
           H.div H.! HA.class_ "modal-content" $ do
             H.p H.! HA.class_ "modal-close" H.! HA.id "browser-modal-close" H.! HA.onclick "closeModal()" $ mempty
-            H.h3 "Browser Alert"
-            H.p "Flathub requires an up-to-date web browser to make sure that you can use all of the features. Unfortunately, you are using an unsupported browser."
-            H.p "Flathub currently supports the latest two versions of the following browsers:"
-            H.ul $ do
-              H.li "Google Chrome"
-              H.li "Mozilla Firefox"
-              H.li "Apple Safari"
-            H.p "Please consider using one of the browsers listed above."
-
+            H.h3 "Unsupported Browser"
+            H.p "Flathub requires an up-to-date web browser to make sure that you can use all of the features. Please consider using one of the preferred browsers: Google Chrome, Mozilla Firefox, Apple Safari."
       H.div H.! HA.class_ "container container--main" $ do
         body
       H.footer H.! HA.class_"footer-distributed" $ do
