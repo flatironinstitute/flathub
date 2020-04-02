@@ -74,7 +74,10 @@ ingestDelim delim info@Ingest{ ingestCatalog = cat, ingestOffset = off } = do
       | typeIsFloating (fieldType f) && x `elem` ["Inf", "-Inf", "+Inf", "inf"] = mempty
       | BSC.null x = mempty
       | fieldMissing f == x = mempty
-      | otherwise = fieldName f J..= TE.decodeLatin1 x
+      | otherwise = fieldName f J..= recode f x
+    -- recode Field{ fieldIngest = Just "1/(1+z)" } = J.toJSON . (*) s . read . BSC.unpack
+    recode Field{ fieldScale = Just s } = J.toJSON . (*) s . read . BSC.unpack
+    recode _ = J.toJSON . TE.decodeLatin1
     loop o [] = return o
     loop o s = do
       liftIO $ putStr (show o ++ "\r") >> hFlush stdout
