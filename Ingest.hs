@@ -29,21 +29,21 @@ ingest cat consts fs = do
   fs' <- liftIO $ concat <$> mapM expand fs
   foldM run 0 fs'
   where
-  expand (splitoff -> fo@(f,o)) = do
+  expand (splitoff -> (splitpfx -> (p,f),o)) = do
     d <- doesDirectoryExist f
     if d
-      then map ((, 0) . (f </>)) . drop (fromIntegral o) . sort . filter (isJust . proc) <$> listDirectory f
-      else return [fo]
-  run start (f, off) = do
+      then map ((p, , 0) . (f </>)) . drop (fromIntegral o) . sort . filter (isJust . proc) <$> listDirectory f
+      else return [(p,f,o)]
+  run start (p, f, off) = do
     liftIO $ putStrLn f
-    n <- ing f start off
+    n <- ing f p start off
     liftIO $ print n
     return (start + n)
-  ing f start off = fromMaybe (error $ "Unknown ingest file type: " ++ f) (proc f)
+  ing f pfx start off = fromMaybe (error $ "Unknown ingest file type: " ++ f) (proc f)
     Ingest
       { ingestCatalog = cat
       , ingestFile = f
-      , ingestPrefix = takeBaseName f <> "_"
+      , ingestPrefix = pfx <> "_"
       , ingestConsts = consts
       , ingestBlockSize = 1000
       , ingestStart = start
@@ -59,3 +59,6 @@ ingest cat consts fs = do
   splitoff [] = ([], 0)
   splitoff ('@':(readMaybe -> Just i)) = ([], i)
   splitoff (c:s) = first (c:) $ splitoff s
+  splitpfx s = case break ('=' ==) s of
+    (r, []) -> (takeBaseName r, r)
+    (p, ~('=':r)) -> (p, r)
