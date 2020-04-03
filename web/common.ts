@@ -66,6 +66,12 @@ export type CatalogResponse = {
   histsize: Dict<number>;
 };
 
+export function closeModal() {
+  const modal = <HTMLSelectElement>document.getElementById("browser-modal");
+  modal.classList.add("hidden");
+}
+(<any>window).closeModal = closeModal;
+
 /* deprecated: use select-terms below */
 export function fill_select_terms(
   s: HTMLSelectElement,
@@ -89,7 +95,7 @@ export function fill_select_terms(
   s.disabled = false;
 }
 
-Vue.component('select-terms', {
+Vue.component("select-terms", {
   props: {
     field: Object, // Field
     aggs: Object, // AggrTerms<string>
@@ -98,7 +104,13 @@ Vue.component('select-terms', {
   },
   computed: {
     terms: function() {
-      return (<AggrTerms<string>>this.aggs).buckets && this.aggs.buckets.sort((c: Bucket<any>, d: Bucket<any>) => -(c.key < d.key) || +(c.key > d.key));
+      return (
+        (<AggrTerms<string>>this.aggs).buckets &&
+        this.aggs.buckets.sort(
+          (c: Bucket<any>, d: Bucket<any>) =>
+            -(c.key < d.key) || +(c.key > d.key)
+        )
+      );
     }
   },
   template: `
@@ -127,8 +139,8 @@ export function updateMathJax() {
     });
 }
 
-Vue.component('field-title', {
-  props: ['field', 'rmf'],
+Vue.component("field-title", {
+  props: ["field", "rmf"],
   template: `
     <span v-bind:class="{ 'tooltip-dt': field.descr }">
       <button v-if="rmf" class="button-remove" v-on:click="rmf">&times;</button>
@@ -171,7 +183,10 @@ export function field_title(
   return h;
 }
 
-export function render_funct(field: Field, log: boolean = false): (data: any) => string {
+export function render_funct(
+  field: Field,
+  log: boolean = false
+): (data: any) => string {
   if (field.base === "f") {
     const p = log ? (x: any) => Math.exp(parseFloat(x)) : parseFloat;
     return (data: any) => (data != undefined ? p(data).toPrecision(8) : data);
@@ -205,7 +220,10 @@ export function axis_title(f: Field) {
   };
 }
 
-export function histogram_options(field: Field, log: boolean = false): Highcharts.Options {
+export function histogram_options(
+  field: Field,
+  log: boolean = false
+): Highcharts.Options {
   const render = render_funct(field, log);
   return {
     chart: {
@@ -226,17 +244,31 @@ export function histogram_options(field: Field, log: boolean = false): Highchart
       title: axis_title(field),
       gridLineWidth: 1,
       labels: {
-        formatter: field.base === 'f' ? log ? function() {
-          const v = Math.exp(this.value);
-          let d = (<any>this.axis).tickInterval;
-          return v.toPrecision(1+Math.max(0,-Math.floor(Math.log10(Math.exp(d)-1))));
-        } : function() {
-          const v = this.value;
-          const d = (<any>this.axis).tickInterval;
-          return v.toPrecision(1+Math.max(0,Math.floor(Math.log10(Math.abs(v)))-Math.floor(Math.log10(d))));
-        } : function() {
-          return render(this.value);
-        }
+        formatter:
+          field.base === "f"
+            ? log
+              ? function() {
+                  const v = Math.exp(this.value);
+                  let d = (<any>this.axis).tickInterval;
+                  return v.toPrecision(
+                    1 + Math.max(0, -Math.floor(Math.log10(Math.exp(d) - 1)))
+                  );
+                }
+              : function() {
+                  const v = this.value;
+                  const d = (<any>this.axis).tickInterval;
+                  return v.toPrecision(
+                    1 +
+                      Math.max(
+                        0,
+                        Math.floor(Math.log10(Math.abs(v))) -
+                          Math.floor(Math.log10(d))
+                      )
+                  );
+                }
+            : function() {
+                return render(this.value);
+              }
       }
     },
     yAxis: {
@@ -248,17 +280,17 @@ export function histogram_options(field: Field, log: boolean = false): Highchart
     },
     tooltip: {
       animation: false,
-      formatter: function(this: Highcharts.TooltipFormatterContextObject): string {
-        const wid = <number>(<Highcharts.SeriesColumnOptions>this.series.options).pointInterval;
+      formatter: function(
+        this: Highcharts.TooltipFormatterContextObject
+      ): string {
+        const wid = <number>(
+          (<Highcharts.SeriesColumnOptions>this.series.options).pointInterval
+        );
         return (
-          (wid ?
-            "[" +
-            render(this.x) +
-            "," +
-            render(this.x + wid) +
-          ")"
-          : render(this.x))
-          + ": " +
+          (wid
+            ? "[" + render(this.x) + "," + render(this.x + wid) + ")"
+            : render(this.x)) +
+          ": " +
           this.y
         );
       }

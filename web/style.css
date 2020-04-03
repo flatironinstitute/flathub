@@ -708,6 +708,29 @@ container a:hover:not(.active) {
   font-size: 1.4rem;
 }
 
+.subheader {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-end;
+  background-color: #ff533d;
+}
+
+.subheader-content {
+  margin-left: 5vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.subheader-content p {
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.2rem;
+  text-decoration: none;
+  color: #fefeff;
+  margin-bottom: 0 !important;
+}
+
 /* Hero and Heading
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 .col-border {
@@ -1361,6 +1384,10 @@ div#hist,
   margin: 2rem 1rem;
 }
 
+.img-ctr {
+  margin-bottom: 2rem;
+}
+
 /* Dedicated Lists
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
 dt {
@@ -1874,6 +1901,14 @@ input:checked + .slider:before {
   min-width: 250px;
 }
 
+.compare-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 5vh;
+}
+
 /* Loading screens
   –––––––––––––––––––––––––––––––––––––––––––––––––– */
 .modal-container {
@@ -1913,6 +1948,21 @@ input:checked + .slider:before {
 
 .modal-content > p {
   margin-bottom: 1rem;
+}
+
+/* Modal Close
+  –––––––––––––––––––––––––––––––––––––––––––––––––– */
+.modal-close {
+  height: 20px;
+  width: 20px;
+  margin-bottom: 0 !important;
+  align-self: flex-start;
+}
+
+.modal-close:before {
+  content: "X";
+  font-weight: 300;
+  font-family: "Lexend Zetta", sans-serif;
 }
 
 /* Progress Bar

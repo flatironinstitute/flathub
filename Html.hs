@@ -121,6 +121,17 @@ htmlResponse req hdrs body = do
               H.a H.! HA.href (WH.routeActionValue comparePage [] mempty) $ "Compare"
             H.li H.! HA.class_ "header__link" $ do
               H.a H.! HA.href (WH.routeActionValue staticHtml ["about"] mempty) $ "About"
+      H.div H.! HA.class_ "subheader" $ do
+        H.div H.! HA.class_ "subheader-content" $ do
+          H.p $ "Please note that this is a beta version. The website is still undergoing final testing before the official release."
+      H.div H.! HA.class_ "modal-container hidden" H.! HA.id "browser-modal" $ do
+        H.div H.! HA.class_ "modal-background" $ do
+          H.span $ mempty
+        H.div H.! HA.class_ "modal-body" $ do
+          H.div H.! HA.class_ "modal-content" $ do
+            H.p H.! HA.class_ "modal-close" H.! HA.id "browser-modal-close" H.! HA.onclick "closeModal()" $ mempty
+            H.h3 "Unsupported Browser"
+            H.p "Flathub requires an up-to-date web browser to make sure that you can use all of the features. Please consider using one of the preferred browsers: Google Chrome, Mozilla Firefox, Apple Safari."
       H.div H.! HA.class_ "container container--main" $ do
         body
       H.footer H.! HA.class_"footer-distributed" $ do
@@ -586,27 +597,30 @@ comparePage = getPath ("compare" R.*< R.manyI R.parameter) $ \path req -> do
   htmlResponse req [] $ do
     jsonVar "Catalogs" $ catalogMap cats
     jsonVar "Dict" $ catalogDict cats
-    H.div H.! HA.class_ "container container--main" $ do
+    H.div H.! HA.class_ "compare-container" $ do
       H.h2 "Compare"
-      H.p $ "Select catalogs across the top to compare, and fields down the left to apply filters and compare statistics and distributions from these catalogs."
-      H.table H.! HA.id "tcompare" H.! HA.class_ "u-full-width" $ do
-        H.thead $ H.tr $ do
-          H.th "Choose two or more catalogs"
-          H.td $ H.select H.! HA.name "selcat" H.! HA.onchange "selectCat(event.target)" $ do
-            H.option H.! HA.value mempty H.! HA.selected "selected" $ "Choose catalog..."
-            forM_ (catalogsSorted cats) $ \(sim, cat) ->
-              H.option H.! HA.value (H.textValue sim) $ H.text $ catalogTitle cat
-        H.tbody $ mempty
-        H.tfoot $ do
-          H.tr H.! HA.id "tr-add" $
-            H.td $ H.select H.! HA.id "addf"  H.! HA.onchange "addField()"  $ mempty
-          H.tr H.! HA.id "tr-comp" $
-            H.td $ H.select H.! HA.id "compf" H.! HA.onchange "compField()" $ mempty
-      H.button H.! HA.id "hist-tog" H.! HA.disabled "disabled" H.! HA.onclick "histogramComp()" $ "histogram"
-      H.div H.! HA.id "dhist" $ do
-        H.button H.! HA.id "hist-y-tog" H.! HA.onclick "toggleLog()" $
-          "Toggle lin/log"
-        H.div H.! HA.id "hist" $ mempty
+      -- H.p $ "Select catalogs across the top to compare, and fields down the left to apply filters and compare statistics and distributions from these catalogs."
+      H.p "Comparison tool coming soon."
+      H.img H.! HA.class_ "img-ctr" H.! HA.src "https://media.giphy.com/media/3o72FkiKGMGauydfyg/source.gif"
+      -- <div style="width:100%;height:0;padding-bottom:76%;position:relative;"><iframe src="https://giphy.com/embed/3o72FkiKGMGauydfyg" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div><p><a href="https://giphy.com/gifs/arielle-m-coming-soon-3o72FkiKGMGauydfyg">via GIPHY</a></p>
+      -- H.table H.! HA.id "tcompare" H.! HA.class_ "u-full-width" $ do
+      --   H.thead $ H.tr $ do
+      --     H.th "Choose two or more catalogs"
+      --     H.td $ H.select H.! HA.name "selcat" H.! HA.onchange "selectCat(event.target)" $ do
+      --       H.option H.! HA.value mempty H.! HA.selected "selected" $ "Choose catalog..."
+      --       forM_ (catalogsSorted cats) $ \(sim, cat) ->
+      --         H.option H.! HA.value (H.textValue sim) $ H.text $ catalogTitle cat
+      --   H.tbody $ mempty
+      --   H.tfoot $ do
+      --     H.tr H.! HA.id "tr-add" $
+      --       H.td $ H.select H.! HA.id "addf"  H.! HA.onchange "addField()"  $ mempty
+      --     H.tr H.! HA.id "tr-comp" $
+      --       H.td $ H.select H.! HA.id "compf" H.! HA.onchange "compField()" $ mempty
+      -- H.button H.! HA.id "hist-tog" H.! HA.disabled "disabled" H.! HA.onclick "histogramComp()" $ "histogram"
+      -- H.div H.! HA.id "dhist" $ do
+      --   H.button H.! HA.id "hist-y-tog" H.! HA.onclick "toggleLog()" $
+      --     "Toggle lin/log"
+      --   H.div H.! HA.id "hist" $ mempty
 
 
 staticHtml :: Route [FilePathComponent]
