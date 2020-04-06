@@ -13,7 +13,7 @@ import qualified Data.Aeson as J
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy.Char8 as BSLC
 import qualified Data.HashMap.Strict as HM
-import           Data.List (mapAccumL, findIndex, genericDrop, genericSplitAt)
+import           Data.List (mapAccumL, find, findIndex, genericDrop, genericSplitAt)
 import           Data.Monoid ((<>))
 import qualified Data.Text.Encoding as TE
 import           Data.Word (Word64)
@@ -69,20 +69,26 @@ ingestDelim delim info@Ingest{ ingestCatalog = cat, ingestOffset = off } = do
           findIndex (any ((n ==) . fieldName)) fields
         = \_ x -> BSC.unpack $ x !! i
       | otherwise = \i _ -> ingestPrefix info ++ show i
-    val Nothing _ = mempty
-    val (Just f) x
+    val _ Nothing _ = mempty
+    val fx (Just f) x
       | typeIsFloating (fieldType f) && x `elem` ["Inf", "-Inf", "+Inf", "inf"] = mempty
       | BSC.null x = mempty
       | fieldMissing f == x = mempty
-      | otherwise = fieldName f J..= recode f x
-    -- recode Field{ fieldIngest = Just "1/(1+z)" } = J.toJSON . (*) s . read . BSC.unpack
-    recode Field{ fieldScale = Just s } = J.toJSON . (*) s . read . BSC.unpack
-    recode _ = J.toJSON . TE.decodeLatin1
+      | otherwise = fieldName f J..= recode fx f x
+    recode fx Field{ fieldIngest = Just "unimach:R", fieldScale = s } =
+      J.toJSON . maybe id ((*) . realToFrac) s . (/ (read (BSC.unpack z) + (1 :: Double))) . read . BSC.unpack
+      where Just (_, z) = find (any (("Z(los)" ==) . fieldName) . fst) fx
+    recode _ Field{ fieldScale = Just s } = J.toJSON . (*) s . read . BSC.unpack
+    recode _ _ = J.toJSON . TE.decodeLatin1
     loop o [] = return o
     loop o s = do
       liftIO $ putStr (show o ++ "\r") >> hFlush stdout
       let (d, s') = genericSplitAt (ingestBlockSize info) s
-          (o', block) = mapAccumL (\i l -> let x = splitDelim delim l in (succ i, (key i x, ingestJConsts info <> foldMap (uncurry val) (zip fields x)))) o d
+          (o', block) = mapAccumL (\i l ->
+              let x = splitDelim delim l
+                  fx = zip fields x
+              in (succ i, (key i x, ingestJConsts info <> foldMap (uncurry $ val fx) fx)))
+            o d
       ES.createBulk cat block
       loop o' s'
   unless (HM.null $ catalogFieldMap missing) $ fail $ "missing fields: " ++ show (fieldName <$> catalogFieldMap missing)

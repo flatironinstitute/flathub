@@ -95,13 +95,12 @@ elasticSearch meth url query body = do
         , HTTP.requestBody = bodyRequest body
         }
   liftIO $ do
-    {-
-    print $ HTTP.path req'
-    case bodyRequest body of
-      HTTP.RequestBodyBS b -> print b
-      HTTP.RequestBodyLBS b -> print b
-      _ -> return ()
-    -}
+    unless True $ do
+      print $ HTTP.path req'
+      case bodyRequest body of
+        HTTP.RequestBodyBS b -> BSC.putStrLn b
+        HTTP.RequestBodyLBS b -> BSLC.putStrLn b
+        _ -> BSC.putStrLn "???"
     r <- either fail return . (J.parseEither J.parseJSON <=< AP.eitherResult)
       =<< HTTP.withResponse req' (globalHTTP glob) parse
     -- print r
