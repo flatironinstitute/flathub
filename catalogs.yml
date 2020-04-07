@@ -4051,7 +4051,7 @@ unimach:
       descr: -1 for central halos, otherwise, ID of largest parent halo
     - name: ""
       title: Position
-      units: 'Mpc/h'
+      units: 'Mpc'
       scale: 1.47059
       sub:
       - name: 'X'
@@ -4093,7 +4093,7 @@ unimach:
       dict: M
       type: float
       descr: Halo mass (Bryan & Norman (BN98) 1998 virial mass)
-      units: '\(M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
       scale: 1e-10
     - name: V
       type: float
@@ -4102,7 +4102,7 @@ unimach:
     - name: MP
       type: float
       descr: Halo peak historical mass (BN98 virial mass)
-      units: '\(M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
       scale: 1e-10
     - name: VMP
       type: float
@@ -4112,9 +4112,9 @@ unimach:
       dict: R
       type: float
       descr: 'Halo raidus (BN98 vir, co-moving kpc/h)'
-      units: 'kpc/h'
-      scale: 1e-3
-      ingest: 'unimach:R'
+      units: 'Mpc'
+      scale: 0.00147059
+      ingest: 'scale:Scale'
     - name: Rank1
       type: float
       descr: 'Halo rank (see UniverseMachine paper)'
@@ -4123,12 +4123,12 @@ unimach:
       dict: M_stellar
       type: float
       descr: True stellar mass
-      units: '\(M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
       scale: 1e-10
     - name: ICL
       type: float
       descr: True intracluster stellar mass
-      units: '\(M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
       scale: 1e-10
     - name: SFR
       dict: SFR
@@ -4138,7 +4138,7 @@ unimach:
     - name: obs_SM
       type: float
       descr: Observed stellar mass, including random & systematic errors
-      units: '\(M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
       scale: 1e-10
     - name: obs_SFR
       type: float

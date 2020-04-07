@@ -15,6 +15,7 @@ import qualified Data.ByteString.Lazy.Char8 as BSLC
 import qualified Data.HashMap.Strict as HM
 import           Data.List (mapAccumL, find, findIndex, genericDrop, genericSplitAt)
 import           Data.Monoid ((<>))
+import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import           Data.Word (Word64)
 import           Text.Read (readMaybe)
@@ -75,9 +76,9 @@ ingestDelim delim info@Ingest{ ingestCatalog = cat, ingestOffset = off } = do
       | BSC.null x = mempty
       | fieldMissing f == x = mempty
       | otherwise = fieldName f J..= recode fx f x
-    recode fx Field{ fieldIngest = Just "unimach:R", fieldScale = s } =
-      J.toJSON . maybe id ((*) . realToFrac) s . (/ (read (BSC.unpack z) + (1 :: Double))) . read . BSC.unpack
-      where Just (_, z) = find (any (("Z(los)" ==) . fieldName) . fst) fx
+    recode fx Field{ fieldIngest = Just (T.stripPrefix "scale:" -> Just sf), fieldScale = s } =
+      J.toJSON . maybe id ((*) . realToFrac) s . (* (read $ BSC.unpack scale :: Double)) . read . BSC.unpack
+      where Just (_, scale) = find (any ((sf ==) . fieldName) . fst) fx
     recode _ Field{ fieldScale = Just s } = J.toJSON . (*) s . read . BSC.unpack
     recode _ _ = J.toJSON . TE.decodeLatin1
     loop o [] = return o
