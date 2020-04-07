@@ -2808,10 +2808,9 @@ candels:
   - name: field
     dict: candels_field
     flag: top
-  - name: candelsid
+  - name: ID
     title: id
     type: int
-    units: dimensionless
     descr: CANDELS object ID
   - name: RA
     dict: ppos_x
@@ -2830,176 +2829,211 @@ candels:
     type: float
     units: AB magnitudes
     descr: observed frame U-band magnitude
+    missing: ['-99','-99.0']
   - name: U_eabmag
     title: U_eabmag
     type: float
     units: AB magnitudes
     descr: uncertainty in observed from U-band magnitude
+    missing: ['-99','-99.0']
   - name: ACS_F435_abmag
     title: ACS_F435_abmag
     type: float
     units: AB magnitudes
     descr: observed frame magnitude in ACS_F435W filter
+    missing: ['-99','-99.0']
   - name: ACS_F435_eabmag
     title: ACS_F435_eabmag
     type: float
     units: AB magnitudes
     descr: uncertainty in observed frame magnitude in ACS_F435W filter
+    missing: ['-99','-99.0']
   - name: ACS_F606_abmag
     title: ACS_F606_abmag
     type: float
     units: AB magnitudes
     descr: observed frame magnitude in ACS F606W filter
+    missing: ['-99','-99.0']
   - name: ACS_F606_eabmag
     title: ACS_F606_eabmag
     type: float
     units: AB magnitudes
     descr: uncertainty in observed frame magnitude in ACS F606W filter
+    missing: ['-99','-99.0']
   - name: ACS_F775_abmag
     title: ACS_F775_abmag
     type: float
     units: AB magnitudes
     descr: observed frame magnitude in ACS F775W filter
+    missing: ['-99','-99.0']
   - name: ACS_F775_eabmag
     title: ACS_F775_eabmag
     type: float
     units: AB magnitudes
     descr: uncertainty in observed frame magnitude in ACS F775W filter
+    missing: ['-99','-99.0']
   - name: ACS_F814_abmag
     title: ACS_F814_abmag
     type: float
     units: AB magnitudes
     descr: observed frame magnitude in ACS F814W filter
+    missing: ['-99','-99.0']
   - name: ACS_F814_eabmag
     title: ACS_F814_eabmag
     type: float
     units: AB magnitudes
     descr: uncertainty in observed frame magnitude in ACS F814W filter
+    missing: ['-99','-99.0']
   - name: ACS_F850_abmag
     title: ACS_F850_abmag
     type: float
     units: AB magnitudes
     descr: observed frame magnitude in ACS F850W filter
+    missing: ['-99','-99.0']
   - name: ACS_F850_eabmag
     title: ACS_F850_eabmag
     type: float
     units: AB magnitudes
     descr: uncertainty in observed frame magnitude in ACS F850W filter
+    missing: ['-99','-99.0']
   - name: WFC3_F098_abmag
     title: WFC3_F098_abmag
     type: float
     units: AB magnitudes
     descr: observed frame magnitude in WFC3 F098M filter
+    missing: ['-99','-99.0']
   - name: WFC3_F098_eabmag
     title: WFC3_F098_eabmag
     type: float
     units: AB magnitudes
     descr: uncertainty in observed frame magnitude in WFC3 F098M filter
+    missing: ['-99','-99.0']
   - name: WFC3_F105_abmag
     title: WFC3_F105_abmag
     type: float
     units: AB magnitudes
     descr: observed frame magnitude in WFC3 F105W filter
+    missing: ['-99','-99.0']
   - name: WFC3_F105_eabmag
     title: WFC3_F105_eabmag
     type: float
     units: AB magnitudes
     descr: uncertainty in observed frame magnitude in WFC3 F105W filter
+    missing: ['-99','-99.0']
   - name: WFC3_F125_abmag
     title: WFC3_F125_abmag
     type: float
     units: AB magnitudes
     descr: observed frame magnitude in WFC3 F125W filter
+    missing: ['-99','-99.0']
   - name: WFC3_F125_eabmag
     title: WFC3_F125_eabmag
     type: float
     units: AB magnitudes
     descr: uncertainty in observed frame magnitude in WFC3 F125W filter
+    missing: ['-99','-99.0']
   - name: WFC3_F140_abmag
     title: WFC3_F140_abmag
     type: float
     units: AB magnitudes
     descr: observed frame magnitude in WFC3 F140W filter
+    missing: ['-99','-99.0']
   - name: WFC3_F140_eabmag
     title: WFC3_F140_eabmag
     type: float
     units: AB magnitudes
     descr: uncertainty in observed frame magnitude in WFC3 F140W filter
+    missing: ['-99','-99.0']
   - name: WFC3_F160_abmag
     title: WFC3_F160_abmag
     type: float
     units: AB magnitudes
     descr: observed frame magnitude in WFC3 F160W filter
+    missing: ['-99','-99.0']
   - name: WFC3_F160_eabmag
     title: WFC3_F160_eabmag
     type: float
     units: AB magnitudes
     descr: uncertainty in observed frame magnitude in WFC3 F160W filter
+    missing: ['-99','-99.0']
   - name: WFC3_F275_abmag
     title: WFC3_F275_abmag
     type: float
     units: AB magnitudes
     descr: observed frame magnitude in WFC3 F275W filter
+    missing: ['-99','-99.0']
   - name: WFC3_F275_eabmag
     title: WFC3_F275_eabmag
     type: float
     units: AB magnitudes
     descr: uncertainty in observed frame magnitude in WFC3 F275W filter
+    missing: ['-99','-99.0']
   - name: K_abmag
     title: K_abmag
     type: float
     units: AB magnitudes
     descr: observed frame magnitude in observed K-band 
+    missing: ['-99','-99.0']
   - name: K_eabmag
     title: K_eabmag
     type: float
     units: AB magnitudes
     descr: uncertainty in observed frame magnitude in observed K-band
+    missing: ['-99','-99.0']
   - name: IRAC_CH1_abmag
     title: IRAC_CH1_abmag
     type: float
     units: AB magnitudes
     descr: observed frame magnitude in IRAC ch1
+    missing: ['-99','-99.0']
   - name: IRAC_CH1_eabmag
     title: IRAC_CH1_eabmag
     type: float
     units: AB magnitudes
     descr: uncertainty in observed frame magnitude in IRAC ch1
+    missing: ['-99','-99.0']
   - name: IRAC_CH2_abmag
     title: IRAC_CH2_abmag
     type: float
     units: AB magnitudes
     descr: observed frame magnitude in IRAC ch2
+    missing: ['-99','-99.0']
   - name: IRAC_CH2_eabmag
     title: IRAC_CH2_eabmag
     type: float
     units: AB magnitudes
     descr: uncertainty in observed frame magnitude in IRAC ch2
+    missing: ['-99','-99.0']
   - name: IRAC_CH3_abmag
     title: IRAC_CH3_abmag
     type: float
     units: AB magnitudes
     descr: observed frame magnitude in IRAC ch3
+    missing: ['-99','-99.0']
   - name: IRAC_CH3_eabmag
     title: IRAC_CH3_eabmag
     type: float
     units: AB magnitudes
     descr: uncertainty in observed frame magnitude in IRAC ch3
+    missing: ['-99','-99.0']
   - name: IRAC_CH4_abmag
     title: IRAC_CH4_abmag
     type: float
     units: AB magnitudes
     descr: observed frame magnitude in IRAC ch4
+    missing: ['-99','-99.0']
   - name: IRAC_CH4_eabmag
     title: IRAC_CH4_eabmag
     type: float
     units: AB magnitudes
     descr: uncertainty in observed frame magnitude in IRAC ch4
+    missing: ['-99','-99.0']
   - name: ztype
     title: ztype
-    type: float
+    type: byte
     units: dimensionless
-    descr: "type of redshift for z best (0=spec, 1=grism, 2=phot)"
+    descr: type of redshift for z best
+    enum: ['spec', 'grism', 'phot']
   - name: zbest
     title: zbest
     type: float
@@ -3025,54 +3059,64 @@ candels:
     type: float
     units: AB mags
     descr: Rest-frame U band magnitude derived with EAZY
+    missing: ['-99','-99.0']
   - name: V_rest_eazy
     title: V_rest_eazy
     type: float
     units: AB mags
     descr: Rest-frame V band magnitude derived with EAZY
+    missing: ['-99','-99.0']
   - name: R_rest_eazy
     title: R_rest_eazy
     type: float
     units: AB mags
     descr: Rest-frame R band magnitude derived with EAZY
+    missing: ['-99','-99.0']
   - name: I_rest_eazy
     title: I_rest_eazy
     type: float
     units: AB mags
     descr: Rest-frame I band magnitude derived with EAZY
+    missing: ['-99','-99.0']
   - name: J_rest_eazy
     title: J_rest_eazy
     type: float
     units: AB mags
     descr: Rest-frame J band magnitude derived with EAZY
+    missing: ['-99','-99.0']
   - name: H_rest_eazy
     title: H_rest_eazy
     type: float
     units: AB mags
     descr: Rest-frame H band magnitude derived with EAZY
+    missing: ['-99','-99.0']
   - name: K_rest_eazy
     title: K_rest_eazy
     type: float
     units: AB mags
     descr: Rest-frame K band magnitude derived with EAZY
+    missing: ['-99','-99.0']
   - name: UV1500_rest_eazy
     title: UV1500_rest_eazy
     type: float
     units: AB mags
     descr: Rest-frame UV1500 Angstrom band magnitude derived with EAZY
+    missing: ['-99','-99.0']
   - name: UV2300_rest_eazy
     title: UV2300_rest_eazy
     type: float
     units: AB mags
     descr: Rest-frame UV2300 Angstrom band magnitude derived with EAZY
+    missing: ['-99','-99.0']
   - name: UV2800_rest_eazy
     title: UV2800_rest_eazy
     type: float
     units: AB mags
     descr: Rest-frame UV2800 Angstrom band magnitude derived with EAZY
+    missing: ['-99','-99.0']
   - name: FLAGS_galactic
     title: FLAGS_galactic
-    type: int
+    type: byte
     units: 
     descr: Galfit flag in F160W band
   - name: re
@@ -3080,216 +3124,258 @@ candels:
     type: float
     units: arcsec
     descr: Galfit effective radius in F160W band 
+    missing: ['-99','-99.0']
   - name: dre
     title: dre
     type: float
     units: arcsec
     descr: uncertainty in galfit effective radius in F160W band
+    missing: ['-99','-99.0']
   - name: 'n'
     title: 'n'
     type: float
     units: 
     descr: galfit Sersic index in F160W band
+    missing: ['-99','-99.0']
   - name: dn
     title: dn
     type: float
     units: 
     descr: uncertainty in galfit Sersic index in F160W band
+    missing: ['-99','-99.0']
   - name: q
     title: q
     type: float
     units: 
     descr: galfit b/a (minor to major axis ratio) in F160W band
+    missing: ['-99','-99.0']
   - name: dq
     title: dq
     type: float
     units: 
     descr: uncertainty in b/a
+    missing: ['-99','-99.0']
   - name: pa
     title: pa
     type: float
     units: 
     descr: galfit position angle in F160W band
+    missing: ['-99','-99.0']
   - name: dpa
     title: dpa
     type: float
     units: 
     descr: uncertainty in galfit position angle
+    missing: ['-99','-99.0']
   - name: sn
     title: sn
     type: float
     units: 
     descr: galfit S/N integrated over the F160W segmentation region
+    missing: ['-99','-99.0']
   - name: logM_P12_50
     title: logM_P12_50
     type: float
     units: log [Msun]
     descr: log10 Median stellar mass at observation
+    missing: ['-99','-99.0']
   - name: logMt_P12_50
     title: logMt_P12_50
     type: float
     units: log [Msun]
     descr: log10 Median stellar mass formed over the galaxy's history
+    missing: ['-99','-99.0']
   - name: logSFR_P12_50
     title: logSFR_P12_50
     type: float
     units: log [Msun/yr]
     descr: log10 median SFR in the last 10 Myr
+    missing: ['-99','-99.0']
   - name: logAGE_P12_50
     title: logAGE_P12_50
     type: float
     units: log [Gyr]
     descr: log10 median light weighted age
+    missing: ['-99','-99.0']
   - name: logha_P12_50
     title: logha_P12_50
     type: float
     units: log ?
     descr: Median Halpha flux
+    missing: ['-99','-99.0']
   - name: VJ_P12_50
     title: VJ_P12_50
     type: float
     units: magnitudes
     descr: Median V-J color (AB)
+    missing: ['-99','-99.0']
   - name: UV_P12_50
     title: UV_P12_50
     type: float
     units: magnitudes
     descr: Median U-V color (AB)
+    missing: ['-99','-99.0']
   - name: AV_P12_50
     title: AV_P12_50
     type: float
     units: magnitudes
     descr: median dust attenuation in V band
+    missing: ['-99','-99.0']
   - name: AFUV_P12_50
     title: AFUV_P12_50
     type: float
     units: magnitudes
     descr: median dust attenuation in FUV band
+    missing: ['-99','-99.0']
   - name: ANUV_P12_50
     title: ANUV_P12_50
     type: float
     units: magnitudes
     descr: median dust attenuation in NUV band
+    missing: ['-99','-99.0']
   - name: logM_P12_16
     title: logM_P12_16
     type: float
     units: log [Msun]
     descr: 16th percentile (log) stellar mass at observation
+    missing: ['-99','-99.0']
   - name: logMt_P12_16
     title: logMt_P12_16
     type: float
     units: log [Msun]
     descr: 16th percentile (log) stellar mass formed
+    missing: ['-99','-99.0']
   - name: logSFR_P12_16
     title: logSFR_P12_16
     type: float
     units: log [Msun/yr]
     descr: 16th percentile SFR in the last 10Myr
+    missing: ['-99','-99.0']
   - name: logAGE_P12_16
     title: logAGE_P12_16
     type: float
     units: log [Gyr]
     descr: 16th percentile light weighted age
+    missing: ['-99','-99.0']
   - name: logha_P12_16
     title: logha_P12_16
     type: float
     units: '?'
     descr: 16th percentile Halpha flux
+    missing: ['-99','-99.0']
   - name: VJ_P12_16
     title: VJ_P12_16
     type: float
     units: magnitudes
     descr: 16th percentile V-J color
+    missing: ['-99','-99.0']
   - name: UV_P12_16
     title: UV_P12_16
     type: float
     units: magnitudes
     descr: 16th percentile U-V color
+    missing: ['-99','-99.0']
   - name: AV_P12_16
     title: AV_P12_16
     type: float
     units: magnitudes
     descr: 16th percentile dust attenuation in V band
+    missing: ['-99','-99.0']
   - name: AFUV_P12_16
     title: AFUV_P12_16
     type: float
     units: magnitudes
     descr: 16th percentile dust attenuation in FUV band
+    missing: ['-99','-99.0']
   - name: ANUV_P12_16
     title: ANUV_P12_16
     type: float
     units: magnitudes
     descr: 16th percentile dust attenuation in NUV band
+    missing: ['-99','-99.0']
   - name: logM_P12_84
     title: logM_P12_84
     type: float
     units: log [Msun]
     descr: 84th percentile (log) stellar mass at observation
+    missing: ['-99','-99.0']
   - name: logMt_P12_84
     title: logMt_P12_84
     type: float
     units: log [Msun]
     descr: 84th percentile (log) stellar mass formed
+    missing: ['-99','-99.0']
   - name: logSFR_P12_84
     title: logSFR_P12_84
     type: float
     units: log [Msun/yr]
     descr: 84th percentile SFR in the last 10Myr
+    missing: ['-99','-99.0']
   - name: logAGE_P12_84
     title: logAGE_P12_84
     type: float
     units: log [Gyr]
     descr: 84th percentile light weighted age
+    missing: ['-99','-99.0']
   - name: logha_P12_84
     title: logha_P12_84
     type: float
     units: '?'
     descr: 84th percentile Halpha flux
+    missing: ['-99','-99.0']
   - name: VJ_P12_84
     title: VJ_P12_84
     type: float
     units: magnitudes
     descr: 84th percentile V-J color
+    missing: ['-99','-99.0']
   - name: UV_P12_84
     title: UV_P12_84
     type: float
     units: magnitudes
     descr: 84th percentile U-V color
+    missing: ['-99','-99.0']
   - name: AV_P12_84
     title: AV_P12_84
     type: float
     units: magnitudes
     descr: 84th percentile dust attenuation in V band
+    missing: ['-99','-99.0']
   - name: AFUV_P12_84
     title: AFUV_P12_84
     type: float
     units: magnitudes
     descr: 84th percentile dust attenuation in V band
+    missing: ['-99','-99.0']
   - name: ANUV_P12_84
     title: ANUV_P12_84
     type: float
     units: magnitudes
     descr: 84th percentile dust attenuation in V band
+    missing: ['-99','-99.0']
   - name: red_chi_P12
     title: red_chi_P12
     type: float
     units: 
     descr: Reduced chi^2 of fit (good<5)
+    missing: ['-99','-99.0']
   - name: nbands_P12
     title: nbands_P12
-    type: int
+    type: byte
     units: 
     descr: number of bands fitted (good>=10)
   - name: FLAGS_P12
     title: FLAGS_P12
-    type: int
+    type: boolean
     units: 
     descr: Zbest_flag (good=red_chi<5 and nbands>=10)
+    missing: ['-99','-99.0']
   - name: Log_mass_zPhot
     title: Log_mass_zPhot
     type: float
     units: log [Msun]
     descr: Best-fit stellar mass
+    missing: '-1.0'
   - name: SFR_zPhot
     title: SFR_zPhot
     type: float
@@ -3350,11 +3436,13 @@ candels:
     type: float
     units: magnitudes
     descr: Limiting magnitude for a point source in F160W
+    missing: ['-99','-99.0']
   - name: RMS
     title: RMS
     type: float
     units: 
     descr: RMS value
+    missing: ['-99','-99.0']
 lusam:
   title: Lu-SAM
   descr: >

@@ -74,13 +74,21 @@ ingestDelim delim info@Ingest{ ingestCatalog = cat, ingestOffset = off } = do
     val fx (Just f) x
       | typeIsFloating (fieldType f) && x `elem` ["Inf", "-Inf", "+Inf", "inf"] = mempty
       | BSC.null x = mempty
-      | fieldMissing f == x = mempty
+      | x `elem` fieldMissing f = mempty
       | otherwise = fieldName f J..= recode fx f x
     recode fx Field{ fieldIngest = Just (T.stripPrefix "scale:" -> Just sf), fieldScale = s } =
       J.toJSON . maybe id ((*) . realToFrac) s . (* (read $ BSC.unpack scale :: Double)) . read . BSC.unpack
       where Just (_, scale) = find (any ((sf ==) . fieldName) . fst) fx
     recode _ Field{ fieldScale = Just s } = J.toJSON . (*) s . read . BSC.unpack
-    recode _ _ = J.toJSON . TE.decodeLatin1
+    recode _ Field{ fieldType = (Boolean _) } = bool
+    recode _ _ = J.String . TE.decodeLatin1
+    bool "0" = J.Bool False
+    bool "0.0" = J.Bool False
+    bool "false" = J.Bool False
+    bool "1" = J.Bool True
+    bool "1.0" = J.Bool True
+    bool "true" = J.Bool True
+    bool s = J.String $ TE.decodeLatin1 s
     loop o [] = return o
     loop o s = do
       liftIO $ putStr (show o ++ "\r") >> hFlush stdout
