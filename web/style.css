@@ -1616,6 +1616,31 @@ table#tcat td {
   text-align: center;
 }
 
+/* Tables
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+.highcharts-data-table table {
+  font-size: 1.5em;
+  /* currently ems cause chrome bug misinterpreting rems on body element */
+  line-height: 1.6;
+  font-weight: 400;
+  font-family: "Open Sans", sans-serif;
+  color: #222222;
+}
+.highcharts-data-table table th,
+.highcharts-data-table table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #e1e1e1;
+}
+.highcharts-data-table table th:first-child,
+.highcharts-data-table table td:first-child {
+  padding-left: 0;
+}
+.highcharts-data-table table th:last-child,
+.highcharts-data-table table td:last-child {
+  padding-right: 0;
+}
+
 /* Toggle
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 .switch-row {

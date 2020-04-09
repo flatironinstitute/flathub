@@ -34,3 +34,31 @@ table#tcat td {
 #tdict > tbody > tr > td.units {
   text-align: center;
 }
+
+/* Tables
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+.highcharts-data-table {
+  table {
+    font-size: 1.2rem;
+    /* currently ems cause chrome bug misinterpreting rems on body element */
+    line-height: 1.6;
+    font-weight: 400;
+    font-family: "Open Sans", sans-serif;
+    color: $black;
+    th,
+    td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #e1e1e1;
+    }
+    th:first-child,
+    td:first-child {
+      padding-left: 0;
+    }
+    th:last-child,
+    td:last-child {
+      padding-right: 0;
+    }
+  }
+}
