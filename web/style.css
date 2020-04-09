@@ -962,13 +962,6 @@ hr {
   height: 0;
 }
 
-.filter-inputs {
-  width: 100%;
-}
-.filter-inputs.filter-inputs-group {
-  color: magenta !important;
-}
-
 .filter-inputs-group {
   display: flex;
   flex-direction: row;
@@ -1444,6 +1437,10 @@ div#hist,
 
 .hist-container {
   margin: 2rem 1rem;
+}
+
+.highcharts-container {
+  overflow: visible !important;
 }
 
 .img-ctr {
