@@ -380,7 +380,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                             H.! vueAttribute "model" "filter.value"
                             H.! vueAttribute "bind:change" "filter.change.bind(filter)"
                             $ mempty
-                          H.div
+                          H.div H.! HA.class_ "filter-inputs-group"
                             H.! vueAttribute "else" "" $ do
                             forM_ [False, True] $ \b ->
                               H.div H.! HA.class_ "filter-input" $ do
