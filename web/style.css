@@ -1861,10 +1861,6 @@ input:checked + .slider:before {
     max-width: 95vw;
   }
 }
-.raw-data {
-  background-color: #222222;
-}
-
 .left-column {
   min-height: 65vh;
   padding: 1rem;
