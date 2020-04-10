@@ -753,26 +753,30 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
 }
 
 // highcharts-data-table
-// function onElementInserted(containerSelector, elementSelector, callback) {
-//   var onMutationsObserved = function (mutations) {
-//     mutations.forEach(function (mutation) {
-//       if (mutation.addedNodes.length) {
-//         var elements = $(mutation.addedNodes).find(elementSelector);
-//         for (var i = 0, len = elements.length; i < len; i++) {
-//           callback(elements[i]);
-//         }
-//       }
-//     });
-//   };
+export function onElementInserted(
+  containerSelector: any,
+  elementSelector: any,
+  callback: any
+) {
+  var onMutationsObserved = function (mutations) {
+    mutations.forEach(function (mutation) {
+      if (mutation.addedNodes.length) {
+        var elements = $(mutation.addedNodes).find(elementSelector);
+        for (var i = 0, len = elements.length; i < len; i++) {
+          callback(elements[i]);
+        }
+      }
+    });
+  };
 
-//   var target = $(containerSelector)[0];
-//   var config = { childList: true, subtree: true };
-//   var MutationObserver =
-//     window.MutationObserver || window.WebKitMutationObserver;
-//   var observer = new MutationObserver(onMutationsObserved);
-//   observer.observe(target, config);
-// }
+  var target = $(containerSelector)[0];
+  var config = { childList: true, subtree: true };
+  var MutationObserver =
+    window.MutationObserver || window.WebKitMutationObserver;
+  var observer = new MutationObserver(onMutationsObserved);
+  observer.observe(target, config);
+}
 
-// onElementInserted("body", ".highcharts-data-table", function (element) {
-//   console.log(element);
-// });
+onElementInserted("body", ".highcharts-data-table", function (element) {
+  console.log(element);
+});
