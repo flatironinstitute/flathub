@@ -100,10 +100,10 @@ Vue.component("select-terms", {
     field: Object, // Field
     aggs: Object, // AggrTerms<string>
     value: String,
-    change: Function
+    change: Function,
   },
   computed: {
-    terms: function() {
+    terms: function () {
       return (
         (<AggrTerms<string>>this.aggs).buckets &&
         this.aggs.buckets.sort(
@@ -111,14 +111,14 @@ Vue.component("select-terms", {
             -(c.key < d.key) || +(c.key > d.key)
         )
       );
-    }
+    },
   },
   template: `
     <select v-bind:value="value" v-on:input="$emit('input',$event.target.value)" v-on:change="change">
       <option v-if="!field.flag" value="">all</option>
       <option v-for="b in terms" v-bind:value="b.key">{{field.enum&&b.key in field.enum?field.enum[b.key]:b.key}} ({{b.doc_count}})</option>
     </select>
-  `
+  `,
 });
 
 export function field_option(f: Field): HTMLOptionElement {
@@ -148,7 +148,7 @@ Vue.component("field-title", {
       <span v-if="field.units">{{field.units}}</span>
       <span v-if="field.descr" class="tooltiptext">{{field.descr}}</span>
     </span>
-  `
+  `,
 });
 
 export function field_title(
@@ -193,9 +193,9 @@ export function render_funct(
   }
   if (field.enum) {
     const e: string[] = field.enum;
-    return data => (data in e ? e[data] : data);
+    return (data) => (data in e ? e[data] : data);
   }
-  return data => data;
+  return (data) => data;
 }
 
 export function toggle_log(chart: Highcharts.Chart) {
@@ -203,12 +203,12 @@ export function toggle_log(chart: Highcharts.Chart) {
   if ((<any>axis).userOptions.type !== "linear") {
     axis.update({
       min: 0,
-      type: "linear"
+      type: "linear",
     });
   } else {
     axis.update({
       min: null,
-      type: "logarithmic"
+      type: "logarithmic",
     });
   }
 }
@@ -216,7 +216,7 @@ export function toggle_log(chart: Highcharts.Chart) {
 export function axis_title(f: Field) {
   return {
     // useHTML: true, // not enough for mathjax
-    text: f.title + (f.units ? " [" + f.units + "]" : "")
+    text: f.title + (f.units ? " [" + f.units + "]" : ""),
   };
 }
 
@@ -228,16 +228,16 @@ export function histogram_options(
   return {
     chart: {
       animation: false,
-      zoomType: "x"
+      zoomType: "x",
     },
     legend: {
-      enabled: false
+      enabled: false,
     },
     title: {
-      text: undefined
+      text: undefined,
     },
     credits: {
-      enabled: false
+      enabled: false,
     },
     xAxis: {
       type: /* log ? "logarithmic" : */ "linear",
@@ -247,14 +247,14 @@ export function histogram_options(
         formatter:
           field.base === "f"
             ? log
-              ? function() {
+              ? function () {
                   const v = Math.exp(this.value);
                   let d = (<any>this.axis).tickInterval;
                   return v.toPrecision(
                     1 + Math.max(0, -Math.floor(Math.log10(Math.exp(d) - 1)))
                   );
                 }
-              : function() {
+              : function () {
                   const v = this.value;
                   const d = (<any>this.axis).tickInterval;
                   return v.toPrecision(
@@ -266,21 +266,21 @@ export function histogram_options(
                       )
                   );
                 }
-            : function() {
+            : function () {
                 return render(this.value);
-              }
-      }
+              },
+      },
     },
     yAxis: {
       id: "tog",
       type: "linear",
       title: { text: "Count" },
       allowDecimals: false,
-      min: 0
+      min: 0,
     },
     tooltip: {
       animation: false,
-      formatter: function(
+      formatter: function (
         this: Highcharts.TooltipFormatterContextObject
       ): string {
         const wid = <number>(
@@ -293,10 +293,10 @@ export function histogram_options(
           ": " +
           this.y
         );
-      }
+      },
     },
     exporting: {
-      enabled: true
+      enabled: true,
     },
     plotOptions: {
       column: {
@@ -309,11 +309,11 @@ export function histogram_options(
         animation: { duration: 0 },
         states: {
           hover: {
-            enabled: false
-          }
-        }
-      }
-    }
+            enabled: false,
+          },
+        },
+      },
+    },
   };
 }
 

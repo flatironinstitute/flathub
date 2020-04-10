@@ -1619,7 +1619,7 @@ table#tcat td {
 /* Tables
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 .highcharts-data-table table {
-  font-size: 1.5em;
+  font-size: 1.2rem;
   /* currently ems cause chrome bug misinterpreting rems on body element */
   line-height: 1.6;
   font-weight: 400;
