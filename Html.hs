@@ -503,7 +503,8 @@ catalogPage = getPath R.parameter $ \sim req -> do
                   $ H.text f
 
         H.div H.! HA.class_ "container-fluid catalog-summary raw-data" H.! HA.id "rawdata" $ do
-          H.h5 $ "Raw Data"
+          H.div H.! HA.class_ "raw-data__header" $ do
+            H.h5 $ "Raw Data"
           H.table H.! HA.id "tcat" $ do
             H.thead $ row (fieldsDepth fields) ((id ,) <$> V.toList fields)
 

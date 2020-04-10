@@ -1584,12 +1584,13 @@ table#tcat {
   width: 100% !important;
   overflow-x: scroll;
   overflow-y: hidden;
+  font-size: 1.2rem !important;
 }
 
 table#tcat th {
-  white-space: nowrap;
   border-right: solid 1px #444;
-  border-left: solid 1px #444;
+  font-size: 1.2rem !important;
+  background: rgba(250, 250, 250, 0.8);
 }
 
 table#tcat td {
@@ -1614,6 +1615,17 @@ table#tcat td {
 
 #tdict > tbody > tr > td.units {
   text-align: center;
+}
+
+#tcat_info {
+  font-size: 1.2rem !important;
+  margin-bottom: 1rem;
+  color: #ff533d;
+}
+#tcat_info:after {
+  content: "Scroll right for more →";
+  font-style: italic;
+  margin-left: 5px;
 }
 
 /* Tables
