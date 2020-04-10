@@ -915,6 +915,61 @@ hr {
   border: 1px solid #8f9296;
 }
 
+.alert {
+  font-size: 1.2rem;
+  line-height: 1.5;
+  padding: 0.75rem;
+}
+
+.alert-horz > div:not(:first-child),
+.alert-info > div:not(:first-child) {
+  margin-left: 4rem;
+  margin-top: 1rem;
+}
+
+@media (min-width: 1880px) {
+  .alert-horz > div:not(:first-child),
+.alert-info > div:not(:first-child) {
+    margin-left: 0;
+    margin-top: 0;
+  }
+}
+.alert-horz > div > span > input,
+.alert-info > div > span > input {
+  margin-bottom: 0rem;
+}
+
+@media (min-width: 1000px) {
+  .alert-horz > div > span > input,
+.alert-info > div > span > input {
+    margin-bottom: 1rem;
+  }
+}
+.filter-row,
+.sample-row {
+  align-items: baseline;
+  justify-content: space-between;
+  margin-right: 0;
+  margin-left: 0;
+}
+
+.sample-row {
+  display: flex;
+}
+
+.break {
+  flex-basis: 100%;
+  height: 0;
+}
+
+.filter-inputs-group {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: space-between;
+  width: 100%;
+}
+
 /* Breadcrumbs
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 .breadcrumb-container {
@@ -1384,6 +1439,10 @@ div#hist,
   margin: 2rem 1rem;
 }
 
+.highcharts-container {
+  overflow: visible !important;
+}
+
 .img-ctr {
   margin-bottom: 2rem;
 }
@@ -1555,6 +1614,31 @@ table#tcat td {
 
 #tdict > tbody > tr > td.units {
   text-align: center;
+}
+
+/* Tables
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+.highcharts-data-table table {
+  font-size: 1.2rem;
+  /* currently ems cause chrome bug misinterpreting rems on body element */
+  line-height: 1.6;
+  font-weight: 400;
+  font-family: "Open Sans", sans-serif;
+  color: #222222;
+}
+.highcharts-data-table table th,
+.highcharts-data-table table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #e1e1e1;
+}
+.highcharts-data-table table th:first-child,
+.highcharts-data-table table td:first-child {
+  padding-left: 0;
+}
+.highcharts-data-table table th:last-child,
+.highcharts-data-table table td:last-child {
+  padding-right: 0;
 }
 
 /* Toggle
@@ -1906,7 +1990,7 @@ input:checked + .slider:before {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-top: 5vh;
+  margin: 5vh 0;
 }
 
 /* Loading screens

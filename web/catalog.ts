@@ -20,7 +20,7 @@ import {
   axis_title,
   render_funct,
   histogram_options,
-  updateMathJax
+  updateMathJax,
 } from "./common";
 
 Datatables(window, $);
@@ -56,8 +56,8 @@ var Show_data: boolean = true;
 
 const downloadVue = new Vue({
   data: {
-    query: ""
-  }
+    query: "",
+  },
 });
 
 function set_download(query: Dict<string>) {
@@ -69,18 +69,18 @@ const plotVue = new Vue({
   data: {
     type: "x",
     xfilter: Histogram,
-    yfilter: Heatmap
+    yfilter: Heatmap,
   },
   methods: {
     // Count log toggle (aka replot)
-    log: function() {
+    log: function () {
       if (Histogram_chart) toggle_log(Histogram_chart);
     },
     // Reload
-    go: function() {
+    go: function () {
       histogramShow(<any>this.type);
     },
-    reset: function() {
+    reset: function () {
       let selx = <HTMLSelectElement>document.getElementById("histsel-x");
       if (selx) {
         selx.selectedIndex = 0;
@@ -91,10 +91,10 @@ const plotVue = new Vue({
       }
       histogramRemove();
     },
-    tooltip: function() {
+    tooltip: function () {
       console.log("hover");
-    }
-  }
+    },
+  },
 });
 
 function histogramRemove() {
@@ -143,7 +143,7 @@ function histogramDraw(
             x.pct.values["50.0"],
             x.pct.values["75.0"],
             x.pct.values["100.0"],
-            x.doc_count
+            x.doc_count,
           ]);
         if (x.doc_count > cmax) cmax = x.doc_count;
       } else if (x.hist)
@@ -168,7 +168,7 @@ function histogramDraw(
   if (heatmap && !cond) {
     (<Highcharts.ChartOptions>opts.chart).zoomType = "xy";
     (<Highcharts.ChartOptions>opts.chart).events = {
-      selection: function(event: Highcharts.ChartSelectionContextObject) {
+      selection: function (event: Highcharts.ChartSelectionContextObject) {
         event.preventDefault();
         zoomRange(hist, xwid, event.xAxis[0]);
         const i = Update_aggs;
@@ -176,10 +176,10 @@ function histogramDraw(
         /* make sure both filters apply, in case y happens to be above x */
         if (Update_aggs < i) Update_aggs = i;
         return false; // Don't zoom
-      }
+      },
     };
     const rendery = render_funct(heatmap.field, heatmap.histLog);
-    (<Highcharts.TooltipOptions>opts.tooltip).formatter = function(
+    (<Highcharts.TooltipOptions>opts.tooltip).formatter = function (
       this: Highcharts.TooltipFormatterContextObject
     ): string {
       const p = this.point;
@@ -206,17 +206,17 @@ function histogramDraw(
         type: "heatmap",
         data: data,
         colsize: 2 * xwid,
-        rowsize: 2 * ywid
-      }
+        rowsize: 2 * ywid,
+      },
     ];
   } else {
     const wid = 2 * xwid;
     (<Highcharts.ChartOptions>opts.chart).events = {
-      selection: function(event: Highcharts.ChartSelectionContextObject) {
+      selection: function (event: Highcharts.ChartSelectionContextObject) {
         event.preventDefault();
         zoomRange(hist, wid, event.xAxis[0]);
         return false; // Don't zoom
-      }
+      },
     };
     (<Highcharts.TooltipOptions>opts.tooltip).footerFormat = "drag to filter";
     (<Highcharts.AxisOptions>opts.xAxis).min = hist.histLog
@@ -227,7 +227,7 @@ function histogramDraw(
       : hist.ubv + wid;
     if (heatmap) {
       /* condmedian */
-      (<Highcharts.TooltipOptions>opts.tooltip).formatter = function(
+      (<Highcharts.TooltipOptions>opts.tooltip).formatter = function (
         this: Highcharts.TooltipFormatterContextObject
       ): string {
         return (
@@ -245,14 +245,14 @@ function histogramDraw(
           type: "boxplot",
           data: data,
           keys: ["x", "low", "q1", "median", "q3", "high", "c"],
-          colorKey: "c"
+          colorKey: "c",
         },
         <Highcharts.SeriesLineOptions>{
           type: "line",
           data: data,
           keys: ["x", "min", "q1", "y", "q3", "max", "c"],
-          colorKey: "c"
-        }
+          colorKey: "c",
+        },
       ];
     } else {
       /* histogram */
@@ -263,8 +263,8 @@ function histogramDraw(
           data: data,
           pointInterval: wid,
           pointRange: wid,
-          color: "#0008"
-        }
+          color: "#0008",
+        },
       ];
     }
   }
@@ -311,9 +311,7 @@ function update(paging: boolean = true) {
 
 function visibleFields(): string[] {
   if (Show_data) {
-    return TCat.columns(":visible")
-      .dataSrc()
-      .toArray();
+    return TCat.columns(":visible").dataSrc().toArray();
   } else {
     const cols = TCat.columns();
     const cvis = (<any>cols.visible()).toArray();
@@ -330,7 +328,7 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
       .map((o: any) => {
         return (o.dir == "asc" ? "" : "-") + data.columns[o.column].data;
       })
-      .join(" ")
+      .join(" "),
   };
 
   const modal = <HTMLSelectElement>document.getElementById("progress-modal");
@@ -353,7 +351,7 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
   query.limit = Show_data ? data.length : 0;
   Last_fields = visibleFields();
   query.fields = Show_data ? Last_fields.join(" ") : "";
-  if (aggs) query.aggs = aggs.map(filt => filt.name).join(" ");
+  if (aggs) query.aggs = aggs.map((filt) => filt.name).join(" ");
   const histogram = Histogram;
   const heatmap = Histogram && Heatmap;
   const histcond = Histcond;
@@ -366,7 +364,7 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
   $.ajax({
     method: "GET",
     url: "/" + Catalog.name + "/catalog",
-    data: query
+    data: query,
   }).then(
     (res: CatalogResponse) => {
       const modal = <HTMLSelectElement>(
@@ -390,7 +388,7 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
         draw: data.draw,
         recordsTotal: Catalog.count,
         recordsFiltered: Math.min(res.hits.total, DisplayLimit),
-        data: res.hits.hits
+        data: res.hits.hits,
       });
       for (let filt of aggs)
         filt.update_aggs((res.aggregations as Dict<Aggr>)[filt.name]);
@@ -426,7 +424,7 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
       callback({
         draw: data.draw,
         data: [],
-        error: msg + ": " + err
+        error: msg + ": " + err,
       });
     }
   );
@@ -583,20 +581,20 @@ class NumericFilter extends Filter {
 
 const filterVue = new Vue({
   data: {
-    filters: Filters
-  }
+    filters: Filters,
+  },
 });
 
 function addFilter(fi: string | Field): Filter | undefined {
   const field = typeof fi === "string" ? Catalog.fields[Fields_idx[fi]] : fi;
   if (!TCat || !field) return;
-  let filt = Filters.find(f => f.field.name === field.name);
+  let filt = Filters.find((f) => f.field.name === field.name);
   if (filt) return filt;
   if (field.terms) return new SelectFilter(field);
   return new NumericFilter(field);
 }
 
-(<any>window).addFilter = function(fn: string) {
+(<any>window).addFilter = function (fn: string) {
   if (addFilter(fn)) update(false);
 };
 
@@ -610,11 +608,11 @@ function colvisNames(box: HTMLInputElement): string[] {
 
 function colvisUpdate(box: HTMLInputElement, vis?: boolean) {
   const v: boolean[] = ((<any>(
-    TCat.columns(colvisNames(box).map(n => n + ":name")).visible()
+    TCat.columns(colvisNames(box).map((n) => n + ":name")).visible()
   )) as JQuery<boolean>).toArray();
   if (vis == null) vis = v.shift() || false;
   box.checked = vis;
-  box.indeterminate = v.some(x => x !== vis);
+  box.indeterminate = v.some((x) => x !== vis);
 }
 
 function columnVisible(name: string, vis: boolean) {
@@ -699,20 +697,20 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
     processing: false,
     language: {
       emptyTable: "",
-      zeroRecords: ""
+      zeroRecords: "",
     },
     dom: 'i<"#download">rtlp',
     deferRender: true,
-    pagingType: "simple"
+    pagingType: "simple",
   };
-  if (Catalog.sort) topts.order = Catalog.sort.map(o => [o, "asc"]);
+  if (Catalog.sort) topts.order = Catalog.sort.map((o) => [o, "asc"]);
   if ((<any>window).Query) {
     if (Query.sample != null) Sample = Query.sample;
     if (Query.seed != null) Seed = Query.seed;
     if (Query.offset) topts.displayStart = Query.offset;
     if (Query.limit) topts.pageLength = Query.limit;
     if (Query.sort)
-      topts.order = Query.sort.map(o => {
+      topts.order = Query.sort.map((o) => {
         return [Fields_idx[o.field], o.asc ? "asc" : "desc"];
       });
     if (Query.fields && Query.fields.length) {
@@ -721,13 +719,13 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
       }
     }
   }
-  topts.columns = Catalog.fields.map(c => {
+  topts.columns = Catalog.fields.map((c) => {
     return {
       name: c.name,
       className:
         c.base === "f" || c.base === "i" ? "dt-body-right" : "dt-body-left",
       visible: c.disp,
-      render: render_funct(c)
+      render: render_funct(c),
     };
   });
   TCat = table.DataTable(topts);
@@ -753,3 +751,32 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
   toggleShowData(false);
   update();
 }
+
+// highcharts-data-table
+export function onElementInserted(
+  containerSelector: any,
+  elementSelector: any,
+  callback: any
+) {
+  var onMutationsObserved = function (mutations) {
+    mutations.forEach(function (mutation) {
+      if (mutation.addedNodes.length) {
+        var elements = $(mutation.addedNodes).find(elementSelector);
+        for (var i = 0, len = elements.length; i < len; i++) {
+          callback(elements[i]);
+        }
+      }
+    });
+  };
+
+  var target = $(containerSelector)[0];
+  var config = { childList: true, subtree: true };
+  var MutationObserver =
+    window.MutationObserver || window.WebKitMutationObserver;
+  var observer = new MutationObserver(onMutationsObserved);
+  observer.observe(target, config);
+}
+
+onElementInserted("body", ".highcharts-data-table", function (element) {
+  console.log(element);
+});
