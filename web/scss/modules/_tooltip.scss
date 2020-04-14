@@ -65,3 +65,7 @@
   display: inline;
   opacity: 1;
 }
+
+.tooltip-container:hover .tooltiptext:disabled {
+  color: pink;
+}

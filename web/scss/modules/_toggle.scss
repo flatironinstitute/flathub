@@ -39,14 +39,6 @@
   transition: 0.4s;
   border-radius: 4px;
 }
-// .slider:disabled {
-//   background-color: #aaa;
-//   color: grey;
-//   border: 1px solid grey;
-// }
-// .slider:disabled:hover {
-//   cursor: not-allowed;
-// }
 .slider:before {
   position: absolute;
   content: "";

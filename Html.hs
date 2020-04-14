@@ -296,15 +296,18 @@ catalogPage = getPath R.parameter $ \sim req -> do
                                   H.!? (not $ fieldDisp f, HA.style "display:none")
                                   H.! HA.value n
                                   $ H.text $ fieldTitle f
-                          H.div H.! HA.class_ "switch-row" H.! vueAttribute "if" (filt <> if x == 'y' then "&&type==='y'" else "") $ do
-                            H.label "lin"
-                            H.label H.! HA.class_ "switch" $ do
-                              H.input
-                                H.! HA.type_ "checkbox"
-                                H.! vueAttribute "bind:disabled" ("!(" <> filt <> ".lbv>0)")
-                                H.! vueAttribute "model" (filt <> ".histLog")
-                              H.span H.! HA.class_ "slider" H.! vueAttribute "bind:disabled" ("!(" <> filt <> ".lbv>0)") $ mempty
-                            H.label "log"
+                          H.div H.! HA.class_ "tooltip-container" $ do
+                            H.span H.! HA.class_ "tooltiptext" H.! vueAttribute "bind:class='coolClass" ("!(" <> filt <> ".lbv>0)") $ do
+                              "For log functionality, set the filter to enable only positive values."
+                            H.div H.! HA.class_ "switch-row" H.! vueAttribute "if" (filt <> if x == 'y' then "&&type==='y'" else "") $ do
+                              H.label "lin"
+                              H.label H.! HA.class_ "switch" $ do
+                                H.input
+                                  H.! HA.type_ "checkbox"
+                                  H.! vueAttribute "bind:disabled" ("!(" <> filt <> ".lbv>0)")
+                                  H.! vueAttribute "model" (filt <> ".histLog")
+                                H.span H.! HA.class_ "slider" H.! vueAttribute "bind:disabled" ("!(" <> filt <> ".lbv>0)") $ mempty
+                              H.label "log"
                   H.div H.! HA.class_ "col-sm-12 col-md-3 plot-col" $ do
                     H.div H.! HA.class_ "tooltip-container" $ do
                       H.span H.! HA.class_ "label-help" $ "Count:"

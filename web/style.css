@@ -1751,7 +1751,6 @@ input:checked + .slider {
 input:disabled + .slider {
   background-color: #aaa;
   color: grey;
-  border: 1px solid grey;
   cursor: not-allowed;
 }
 
@@ -1831,6 +1830,10 @@ input:checked + .slider:before {
   visibility: visible;
   display: inline;
   opacity: 1;
+}
+
+.tooltip-container:hover .tooltiptext:disabled {
+  color: pink;
 }
 
 /* Catalog
