@@ -1037,6 +1037,28 @@ input[type=button] {
   background-color: #fefeff;
 }
 
+.paginate_button {
+  display: inline-block !important;
+  height: 38px !important;
+  padding: 0 30px !important;
+  color: #555 !important;
+  text-align: center !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  line-height: 38px !important;
+  letter-spacing: 0.1rem !important;
+  text-transform: uppercase !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  border-radius: 4px !important;
+  border: 1px solid #bbb !important;
+  cursor: pointer !important;
+  box-sizing: border-box !important;
+  margin-bottom: 0 !important;
+  background-color: #fefeff !important;
+  max-width: 270px !important;
+}
+
 .button:hover,
 button:hover,
 input[type=submit]:hover,
@@ -1628,6 +1650,17 @@ table#tcat td {
   margin-left: 5px;
 }
 
+.dataTables_wrapper .dataTables_paginate,
+.dataTables_wrapper .dataTables_length {
+  margin-top: 1rem;
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
 /* Tables
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 .highcharts-data-table table {
@@ -1713,6 +1746,13 @@ table#tcat td {
 
 input:checked + .slider {
   background-color: #ff533d;
+}
+
+input:disabled + .slider {
+  background-color: #aaa;
+  color: grey;
+  border: 1px solid grey;
+  cursor: not-allowed;
 }
 
 input:focus + .slider {

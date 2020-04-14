@@ -303,7 +303,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                                 H.! HA.type_ "checkbox"
                                 H.! vueAttribute "bind:disabled" ("!(" <> filt <> ".lbv>0)")
                                 H.! vueAttribute "model" (filt <> ".histLog")
-                              H.span H.! HA.class_ "slider" $ mempty
+                              H.span H.! HA.class_ "slider" H.! vueAttribute "bind:disabled" ("!(" <> filt <> ".lbv>0)") $ mempty
                             H.label "log"
                   H.div H.! HA.class_ "col-sm-12 col-md-3 plot-col" $ do
                     H.div H.! HA.class_ "tooltip-container" $ do
