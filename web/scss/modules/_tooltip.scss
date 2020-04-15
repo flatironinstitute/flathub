@@ -6,17 +6,29 @@
 
 .tooltip-dt .tooltiptext {
   display: none;
-  background-color: white;
-  color: black;
+  background-color: $off-black;
+  color: $white;
   text-align: center;
-  padding: 1ex;
-  top: 3em;
+  padding: 5px 0;
+  border-radius: 4px;
+  bottom: -3rem;
+  left: -5px;
   position: absolute;
-  font-weight: normal;
-  font-size: small;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  font-size: 1.1rem;
+  line-height: 1.5;
   z-index: 1;
-  border: 1px solid $gray0;
-  min-width: 150px;
+  width: 120px;
+  &::before {
+    content: " ";
+    position: absolute;
+    bottom: 100%; /* At the bottom of the tooltip */
+    left: 50%;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent $off-black transparent;
+  }
 }
 
 .tooltip-dt:hover .tooltiptext {
@@ -42,7 +54,6 @@
   font-weight: 600;
   font-size: 1.1rem;
   line-height: 1.5;
-  text-transform: uppercase;
   z-index: 1;
   display: none;
   bottom: 100%;

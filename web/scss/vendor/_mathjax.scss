@@ -664,8 +664,8 @@
   text-transform: none;
   font-style: normal;
   font-weight: normal;
-  font-size: 100%;
-  font-size-adjust: none;
+  font-size: 100% !important;
+  font-size-adjust: none !important;
   letter-spacing: normal;
   word-wrap: normal;
   word-spacing: normal;
