@@ -298,7 +298,9 @@ catalogPage = getPath R.parameter $ \sim req -> do
                                   $ H.text $ fieldTitle f
                           H.div H.! HA.class_ "tooltip-container" $ do
                             -- TODO: Add a conditional here that makes the tooltip display: none if the toggle is not disabled.
-                            H.span H.! HA.class_ "tooltiptext" $ do
+                            H.span
+                              H.! HA.class_ "tooltiptext"
+                              H.! vueAttribute "bind:style" ("{display:(" <> filt <> ".lbv>0)?'none':'inline'}") $ do
                               "For log functionality, set the filter to enable only positive values."
                             H.div H.! HA.class_ "switch-row" H.! vueAttribute "if" (filt <> if x == 'y' then "&&type==='y'" else "") $ do
                               H.label "lin"
