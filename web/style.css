@@ -1325,6 +1325,28 @@ select {
   line-height: 1.5;
   color: #555;
 }
+input[type=email]:invalid:not(:placeholder-shown),
+input[type=number]:invalid:not(:placeholder-shown),
+input[type=search]:invalid:not(:placeholder-shown),
+input[type=text]:invalid:not(:placeholder-shown),
+input[type=tel]:invalid:not(:placeholder-shown),
+input[type=url]:invalid:not(:placeholder-shown),
+input[type=password]:invalid:not(:placeholder-shown),
+textarea:invalid:not(:placeholder-shown),
+select:invalid:not(:placeholder-shown) {
+  background: #ffdbd7;
+}
+input[type=email]:invalid:not(:placeholder-shown) + label,
+input[type=number]:invalid:not(:placeholder-shown) + label,
+input[type=search]:invalid:not(:placeholder-shown) + label,
+input[type=text]:invalid:not(:placeholder-shown) + label,
+input[type=tel]:invalid:not(:placeholder-shown) + label,
+input[type=url]:invalid:not(:placeholder-shown) + label,
+input[type=password]:invalid:not(:placeholder-shown) + label,
+textarea:invalid:not(:placeholder-shown) + label,
+select:invalid:not(:placeholder-shown) + label {
+  opacity: 0;
+}
 
 /* Removes awkward default styles on some inputs for iOS */
 input[type=email],
