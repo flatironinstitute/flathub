@@ -78,35 +78,3 @@
 .sample-row {
   display: flex;
 }
-
-.alert {
-  font-size: 1.2rem;
-  line-height: 1.5;
-  padding: 0.75rem;
-}
-
-.alert-horz > div:not(:first-child),
-.alert-info > div:not(:first-child) {
-  margin-left: 4rem;
-  margin-top: 1rem;
-}
-
-@media (min-width: 1880px) {
-  .alert-horz > div:not(:first-child),
-  .alert-info > div:not(:first-child) {
-    margin-left: 0;
-    margin-top: 0;
-  }
-}
-
-.alert-horz > div > span > input,
-.alert-info > div > span > input {
-  margin-bottom: 0rem;
-}
-
-@media (min-width: 1000px) {
-  .alert-horz > div > span > input,
-  .alert-info > div > span > input {
-    margin-bottom: 1rem;
-  }
-}
