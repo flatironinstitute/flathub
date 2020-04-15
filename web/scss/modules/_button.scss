@@ -27,6 +27,28 @@ input[type="button"] {
   background-color: $white;
 }
 
+.paginate_button {
+  display: inline-block !important;
+  height: 38px !important;
+  padding: 0 30px !important;
+  color: #555 !important;
+  text-align: center !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  line-height: 38px !important;
+  letter-spacing: 0.1rem !important;
+  text-transform: uppercase !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  border-radius: 4px !important;
+  border: 1px solid $gray1 !important;
+  cursor: pointer !important;
+  box-sizing: border-box !important;
+  margin-bottom: 0 !important;
+  background-color: $white !important;
+  max-width: 270px !important;
+}
+
 .button:hover,
 button:hover,
 input[type="submit"]:hover,

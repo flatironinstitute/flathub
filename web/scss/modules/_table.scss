@@ -46,6 +46,19 @@ table#tcat td {
   }
 }
 
+.dataTables_wrapper {
+  .dataTables_paginate,
+  .dataTables_length {
+    margin-top: 1rem;
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    line-height: 1.5;
+    text-transform: uppercase;
+  }
+}
+
 /* Tables
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 
