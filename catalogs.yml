@@ -2802,6 +2802,8 @@ ananke:
 candels:
   title: CANDELS
   index: candels
+  descr: >
+    The Cosmic Assembly Near-infrared Deep Extragalactic Survey (CANDELS) observational catalog.
   count: 167137
   order: 'candels-0'
   fields:
