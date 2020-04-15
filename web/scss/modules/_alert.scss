@@ -47,14 +47,13 @@
   height: 0;
 }
 
-// .filter-inputs {
-//   width: 100%;
-// }
-
 .filter-inputs-group {
   display: flex;
   flex-direction: row;
   align-items: baseline;
   justify-content: space-between;
   width: 100%;
+  div {
+    margin-right: 15px;
+  }
 }

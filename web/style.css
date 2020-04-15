@@ -969,6 +969,9 @@ hr {
   justify-content: space-between;
   width: 100%;
 }
+.filter-inputs-group div {
+  margin-right: 15px;
+}
 
 /* Breadcrumbs
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
