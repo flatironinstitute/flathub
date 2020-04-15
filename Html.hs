@@ -322,7 +322,8 @@ catalogPage = getPath R.parameter $ \sim req -> do
                       H.label H.! HA.class_ "switch" $ do
                         H.input
                           H.! HA.type_ "checkbox"
-                          H.! vueAttribute "on:click" "log"
+                          H.! vueAttribute "model" "log"
+                          H.! vueAttribute "on:change" "toggle_log"
                         H.span H.! HA.class_ "slider" $ mempty
                       H.label "log"
                 -- End Vue

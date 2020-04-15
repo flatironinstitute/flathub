@@ -198,19 +198,14 @@ export function render_funct(
   return (data) => data;
 }
 
-export function toggle_log(chart: Highcharts.Chart) {
+export function toggle_log(chart: Highcharts.Chart, log?: boolean) {
   const axis = <Highcharts.Axis>chart.get("tog");
-  if ((<any>axis).userOptions.type !== "linear") {
-    axis.update({
-      min: 0,
-      type: "linear",
-    });
-  } else {
-    axis.update({
-      min: null,
-      type: "logarithmic",
-    });
-  }
+  if (log === undefined)
+    log = (<any>axis).userOptions.type === "linear";
+  axis.update({
+    min: log ? null : 0,
+    type: log ? "logarithmic" : "linear",
+  });
 }
 
 export function axis_title(f: Field) {
@@ -222,7 +217,8 @@ export function axis_title(f: Field) {
 
 export function histogram_options(
   field: Field,
-  log: boolean = false
+  log: boolean = false,
+  ylog: boolean = false
 ): Highcharts.Options {
   const render = render_funct(field, log);
   return {
@@ -273,10 +269,10 @@ export function histogram_options(
     },
     yAxis: {
       id: "tog",
-      type: "linear",
+      type: ylog ? "logarithmic" : "linear",
       title: { text: "Count" },
       allowDecimals: false,
-      min: 0,
+      min: ylog ? null : 0,
     },
     tooltip: {
       animation: false,

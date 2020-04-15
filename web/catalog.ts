@@ -70,11 +70,12 @@ const plotVue = new Vue({
     type: "x",
     xfilter: Histogram,
     yfilter: Heatmap,
+    log: false,
   },
   methods: {
     // Count log toggle (aka replot)
-    log: function () {
-      if (Histogram_chart) toggle_log(Histogram_chart);
+    toggle_log: function () {
+      if (Histogram_chart) toggle_log(Histogram_chart, this.log);
     },
     // Reload
     go: function () {
@@ -158,12 +159,12 @@ function histogramDraw(
     return;
   }
 
-  const opts: Highcharts.Options = histogram_options(field, hist.histLog);
+  const opts: Highcharts.Options = histogram_options(field, hist.histLog, plotVue.log);
   const renderx = render_funct(hist.field, hist.histLog);
   if (heatmap) {
     opts.colorAxis = <Highcharts.ColorAxisOptions>opts.yAxis;
     opts.colorAxis.reversed = false;
-    opts.yAxis = histogram_options(heatmap.field, heatmap.histLog).xAxis;
+    opts.yAxis = histogram_options(heatmap.field, heatmap.histLog, plotVue.log).xAxis;
   }
   if (heatmap && !cond) {
     (<Highcharts.ChartOptions>opts.chart).zoomType = "xy";
