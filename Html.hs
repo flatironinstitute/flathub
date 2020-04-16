@@ -361,7 +361,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                       H.div
                         H.! vueAttribute "for" "filter in filters"
                         H.! vueAttribute "bind:id" "'filt-'+filter.field.name"
-                        H.! HA.class_ "alert fade show row filter-row"
+                        H.! HA.class_ "falert fade show row filter-row"
                         H.! vueAttribute "bind:class" "\
                           \{'alert-info':filter.field.flag!==undefined\
                           \,'alert-warning':filter.field.flag===undefined\

@@ -1,13 +1,87 @@
-.alert {
+.falert {
   font-size: 1.2rem;
   line-height: 1.5;
   padding: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  line-height: 1.5;
+  border-radius: 0.25rem;
+  border: 1px solid transparent;
+}
+
+.falert-horz > div:not(:first-child),
+.falert-info > div:not(:first-child) {
+  margin-left: 2rem;
+  margin-top: 0.5rem;
+}
+
+@media (min-width: 1880px) {
+  .falert-horz > div:not(:first-child),
+  .falert-info > div:not(:first-child) {
+    margin-left: 0;
+    margin-top: 0;
+  }
+}
+
+.falert-horz > div > span > input,
+.falert-info > div > span > input {
+  margin-bottom: 0rem;
+}
+
+@media (min-width: 1000px) {
+  .falert-horz > div > span > input,
+  .falert-info > div > span > input {
+    margin-bottom: 1rem;
+  }
+}
+
+.filter-row,
+.sample-row {
+  align-items: baseline;
+  justify-content: space-between;
+  margin-right: 0;
+  margin-left: 0;
+}
+
+.sample-row {
+  display: flex;
+}
+
+.filter-avg {
+  margin-bottom: 1rem;
+}
+
+.filter-input {
+  p {
+    margin-top: -1rem;
+    margin-bottom: 0;
+  }
+}
+
+.filter-text {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+.filter-inputs-group {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: space-between;
+  width: 100%;
+  flex-wrap: wrap;
+  max-width: 100%;
+  div {
+    margin-right: 15px;
+  }
 }
 
 .alert-horz > div:not(:first-child),
 .alert-info > div:not(:first-child) {
   margin-left: 4rem;
-  margin-top: 1rem;
 }
 
 @media (min-width: 1880px) {
@@ -28,33 +102,4 @@
   .alert-info > div > span > input {
     margin-bottom: 1rem;
   }
-}
-
-.filter-row,
-.sample-row {
-  align-items: baseline;
-  justify-content: space-between;
-  margin-right: 0;
-  margin-left: 0;
-}
-
-.sample-row {
-  display: flex;
-}
-
-.break {
-  flex-basis: 100%;
-  height: 0;
-}
-
-// .filter-inputs {
-//   width: 100%;
-// }
-
-.filter-inputs-group {
-  display: flex;
-  flex-direction: row;
-  align-items: baseline;
-  justify-content: space-between;
-  width: 100%;
 }
