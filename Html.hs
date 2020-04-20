@@ -327,6 +327,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                         H.span H.! HA.class_ "slider" $ mempty
                       H.label "log"
                 -- End Vue
+              H.div H.! HA.class_ "subplot-row" H.! HA.id "subplot" $ "dogs are cool."
               H.div H.! HA.class_ "alert alert-danger" H.! HA.id "error" $ mempty
               H.div H.! HA.class_ "hist-container" $ do
                 H.div H.! HA.id "hist" $ mempty
@@ -487,7 +488,6 @@ catalogPage = getPath R.parameter $ \sim req -> do
                         H.li $ H.a H.! HA.href (WH.routeActionValue groupPage g mempty) $ mintersperseMap "/" H.text g
 
         H.div H.! HA.class_ "container-fluid catalog-summary" $ do
-          -- H.p H.! HA.id "count" $ mempty
           H.div H.! HA.class_ "d-flex justify-content-between" $ do
             H.div H.! HA.class_ "d-flex" $ do
               H.button
@@ -497,16 +497,24 @@ catalogPage = getPath R.parameter $ \sim req -> do
                 H.! HA.onclick "toggleShowData()"
                 $ "Hide Raw Data"
               H.p H.! HA.class_ "download" H.! HA.id "info" $ mempty
+            H.div H.! HA.class_ "d-flex justify-content-between" $ do
+              H.div H.! HA.class_ "click-tab" $ do
+                H.div H.! HA.class_ "click-tab-close" $ mempty
+                H.p H.! HA.class_ "click-tab-content" $ "I am a filter"
+              H.div H.! HA.class_ "click-tab" $ do
+                H.div H.! HA.class_ "click-tab-close" $ mempty
+                H.p H.! HA.class_ "click-tab-content" $ "I am a filter"
             H.p H.! HA.class_ "download" H.! HA.id "download" $ do
               "download as"
-              forM_ [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkECSV Nothing, BulkECSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)] $ \b -> do
-                let f = R.renderParameter b
-                " "
-                H.a
-                  H.! HA.id ("download." <> H.textValue f)
-                  H.! HA.class_ "button button-primary"
-                  H.! vueAttribute "bind:href" ((jsLazyByteStringValue $ BSB.toLazyByteString $ encodePathSegments' $ R.requestPath $ R.requestActionRoute catalogBulk (sim, b)) <> "+query")
-                  $ H.text f
+              H.select $ do
+                forM_ [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkECSV Nothing, BulkECSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)] $ \b -> do
+                  let f = R.renderParameter b
+                  " "
+                  H.option
+                    H.! HA.id ("download." <> H.textValue f)
+                    H.! HA.class_ "download-option"
+                    H.! vueAttribute "bind:value" ((jsLazyByteStringValue $ BSB.toLazyByteString $ encodePathSegments' $ R.requestPath $ R.requestActionRoute catalogBulk (sim, b)) <> "+query")
+                    $ H.text f
 
         H.div H.! HA.class_ "container-fluid catalog-summary raw-data" H.! HA.id "rawdata" $ do
           H.div H.! HA.class_ "raw-data__header" $ do

@@ -159,12 +159,20 @@ function histogramDraw(
     return;
   }
 
-  const opts: Highcharts.Options = histogram_options(field, hist.histLog, plotVue.log);
+  const opts: Highcharts.Options = histogram_options(
+    field,
+    hist.histLog,
+    plotVue.log
+  );
   const renderx = render_funct(hist.field, hist.histLog);
   if (heatmap) {
     opts.colorAxis = <Highcharts.ColorAxisOptions>opts.yAxis;
     opts.colorAxis.reversed = false;
-    opts.yAxis = histogram_options(heatmap.field, heatmap.histLog, plotVue.log).xAxis;
+    opts.yAxis = histogram_options(
+      heatmap.field,
+      heatmap.histLog,
+      plotVue.log
+    ).xAxis;
   }
   if (heatmap && !cond) {
     (<Highcharts.ChartOptions>opts.chart).zoomType = "xy";
@@ -555,6 +563,10 @@ class NumericFilter extends Filter {
     if (Histogram !== this) return false;
     histogramRemove();
     return true;
+  }
+
+  download() {
+    console.log("🐶🐕‍🦺 Download");
   }
 
   reset() {
