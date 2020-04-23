@@ -327,7 +327,6 @@ catalogPage = getPath R.parameter $ \sim req -> do
                         H.span H.! HA.class_ "slider" $ mempty
                       H.label "log"
                 -- End Vue
-              H.div H.! HA.class_ "subplot-row" H.! HA.id "subplot" $ "dogs are cool."
               H.div H.! HA.class_ "alert alert-danger" H.! HA.id "error" $ mempty
               H.div H.! HA.class_ "hist-container" $ do
                 H.div H.! HA.id "hist" $ mempty
@@ -357,28 +356,27 @@ catalogPage = getPath R.parameter $ \sim req -> do
                       H.a H.! HA.class_ "button button-secondary" H.! HA.href (WH.routeActionValue catalogPage sim mempty) $ "reset all"
                     H.div
                       H.! HA.id "filt"
-                      H.! HA.class_ "alert-parent"
-                      H.! HA.role "alert" $ do
+                      H.! HA.class_ "alert-parent" $ do
                       H.div
                         H.! vueAttribute "for" "filter in filters"
                         H.! vueAttribute "bind:id" "'filt-'+filter.field.name"
-                        H.! HA.class_ "falert fade show row filter-row"
+                        H.! HA.class_ "falert filter-row"
                         H.! vueAttribute "bind:class" "\
                           \{'falert-info':filter.field.flag!==undefined\
                           \,'falert-warning':filter.field.flag===undefined\
                           \,'falert-horz':filter.field.flag===undefined\
                           \}"
                         $ do
-                        H.div H.! HA.class_ "filter-text" $
-                          H.customParent "field-title"
-                            H.! vueAttribute "bind:field" "filter.field"
-                            H.! vueAttribute "bind:rmf" "filter.field.flag?undefined:filter.remove.bind(filter)"
-                            $ mempty
-                        H.div H.! HA.class_ "filter-avg"
-                          H.! vueAttribute "if" "filter.aggs.avg!==undefined"
-                          $ do
-                          H.em $ H.preEscapedString "&mu;"
-                          " = {{filter.aggs.avg?filter.render(filter.aggs.avg):'no data'}}"
+                        H.div H.! HA.class_ "filter-text-row" $ do
+                          H.div H.! HA.class_ "filter-text" $
+                            H.customParent "field-title"
+                              H.! vueAttribute "bind:field" "filter.field"
+                              H.! vueAttribute "bind:rmf" "filter.field.flag?undefined:filter.remove.bind(filter)"
+                              $ mempty
+                          H.a H.! HA.class_ "filter-reset"
+                            H.! vueAttribute "on:click" "filter.reset()"
+                            H.! vueAttribute "if" "filter.field.flag===undefined"
+                            $ "reset"
                         H.div H.! HA.class_ "filter-inputs" $ do
                           H.customParent "select-terms"
                             H.! vueAttribute "if" "filter.field.terms"
@@ -400,10 +398,17 @@ catalogPage = getPath R.parameter $ \sim req -> do
                                   H.! vueAttribute "bind:max" "filter.aggs.max"
                                   H.! vueAttribute "model.number" ("filter." <> (if b then "ubv" else "lbv"))
                                   H.! vueAttribute "on:change" "filter.change()"
-                                H.p $ "{{filter.render(filter.aggs." <> (if b then "max" else "min") <> ")}}"
-                            H.button H.! HA.class_ "filter-reset"
-                              H.! vueAttribute "on:click" "filter.reset()"
-                              $ "Reset"
+                        H.div H.! HA.class_ "filter-info-row" H.! vueAttribute "if" "!filter.field.terms" $ do
+                          H.div H.! HA.class_ "filter-avg"
+                            H.! vueAttribute "if" "filter.aggs.avg!==undefined"
+                            $ do
+                            H.em $ H.preEscapedString "&mu;"
+                            " : {{filter.aggs.avg?filter.render(filter.aggs.avg):'no data'}}"
+                          H.div H.! HA.class_ "filter-min-max" $ do
+                            H.p $ "Range: "
+                            forM_ [False, True] $ \b ->
+                              H.p $ " {{filter.render(filter.aggs." <> (if b then "max" else "min") <> ")}}"
+
                       H.div H.! HA.class_ "alert fade show row filter-row alert-secondary" $ do
                         H.div H.! HA.class_ "filter-text" $
                           "Select field to filter"
