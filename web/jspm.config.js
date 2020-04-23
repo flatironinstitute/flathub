@@ -57,7 +57,7 @@ SystemJS.config({
     "highcharts": "npm:highcharts@7.2.1",
     "http": "npm:jspm-nodelibs-http@0.2.0",
     "https": "npm:jspm-nodelibs-https@0.2.2",
-    "jquery": "npm:jquery@3.4.1",
+    "jquery": "npm:jquery@3.5.0",
     "module": "npm:jspm-nodelibs-module@0.2.1",
     "net": "npm:jspm-nodelibs-net@0.2.1",
     "os": "npm:jspm-nodelibs-os@0.2.2",
@@ -79,7 +79,7 @@ SystemJS.config({
   packages: {
     "npm:jspm-nodelibs-buffer@0.2.3": {
       "map": {
-        "buffer": "npm:buffer@5.5.0"
+        "buffer": "npm:buffer@5.6.0"
       }
     },
     "npm:jspm-nodelibs-crypto@0.2.1": {
@@ -333,18 +333,18 @@ SystemJS.config({
     },
     "npm:typescript@2.8.4": {
       "map": {
-        "source-map-support": "npm:source-map-support@0.5.16"
+        "source-map-support": "npm:source-map-support@0.5.18"
       }
     },
     "npm:datatables.net-dt@1.10.20": {
       "map": {
-        "jquery": "npm:jquery@3.4.1",
+        "jquery": "npm:jquery@3.5.0",
         "datatables.net": "npm:datatables.net@1.10.20"
       }
     },
     "npm:datatables.net@1.10.20": {
       "map": {
-        "jquery": "npm:jquery@3.4.1"
+        "jquery": "npm:jquery@3.5.0"
       }
     },
     "npm:bootstrap@4.4.1": {
@@ -373,12 +373,6 @@ SystemJS.config({
         "minimalistic-crypto-utils": "npm:minimalistic-crypto-utils@1.0.1"
       }
     },
-    "npm:source-map-support@0.5.16": {
-      "map": {
-        "source-map": "npm:source-map@0.6.1",
-        "buffer-from": "npm:buffer-from@1.1.1"
-      }
-    },
     "npm:des.js@1.0.1": {
       "map": {
         "inherits": "npm:inherits@2.0.4",
@@ -396,10 +390,16 @@ SystemJS.config({
         "util-deprecate": "npm:util-deprecate@1.0.2"
       }
     },
-    "npm:buffer@5.5.0": {
+    "npm:buffer@5.6.0": {
       "map": {
-        "ieee754": "npm:ieee754@1.1.13",
-        "base64-js": "npm:base64-js@1.3.1"
+        "base64-js": "npm:base64-js@1.3.1",
+        "ieee754": "npm:ieee754@1.1.13"
+      }
+    },
+    "npm:source-map-support@0.5.18": {
+      "map": {
+        "buffer-from": "npm:buffer-from@1.1.1",
+        "source-map": "npm:source-map@0.6.1"
       }
     }
   }
