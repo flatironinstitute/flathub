@@ -14,9 +14,9 @@
     "jspm": "^0.17.0-beta.49"
   },
   "devDependencies": {
-    "@types/bootstrap": "^4.3.1",
-    "@types/datatables.net": "^1.10.18",
-    "@types/jquery": "^3.3.33",
+    "@types/bootstrap": "^4.3.2",
+    "@types/datatables.net": "^1.10.19",
+    "@types/jquery": "^3.3.35",
     "@types/systemjs": "^0.20.7",
     "highcharts": "^7.2.0",
     "popper.js": "^1.16.1",
@@ -101,7 +101,7 @@
           "test.js"
         ]
       },
-      "npm:jquery@3.4.1": {
+      "npm:jquery@3.5.0": {
         "format": "amd"
       },
       "npm:pbkdf2@3.0.17": {
