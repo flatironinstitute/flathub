@@ -356,53 +356,62 @@ catalogPage = getPath R.parameter $ \sim req -> do
                       H.a H.! HA.class_ "button button-secondary" H.! HA.href (WH.routeActionValue catalogPage sim mempty) $ "reset all"
                     H.div
                       H.! HA.id "filt"
-                      H.! HA.class_ "alert-parent"
-                      H.! HA.role "alert" $ do
+                      H.! HA.class_ "alert-parent" $ do
                       H.div
                         H.! vueAttribute "for" "filter in filters"
                         H.! vueAttribute "bind:id" "'filt-'+filter.field.name"
-                        H.! HA.class_ "falert fade show row filter-row"
+                        H.! HA.class_ "falert filter-row"
                         H.! vueAttribute "bind:class" "\
                           \{'falert-info':filter.field.flag!==undefined\
                           \,'falert-warning':filter.field.flag===undefined\
                           \,'falert-horz':filter.field.flag===undefined\
                           \}"
                         $ do
-                        H.div H.! HA.class_ "filter-text" $
-                          H.customParent "field-title"
-                            H.! vueAttribute "bind:field" "filter.field"
-                            H.! vueAttribute "bind:rmf" "filter.field.flag?undefined:filter.remove.bind(filter)"
-                            $ mempty
-                        H.div H.! HA.class_ "filter-avg"
-                          H.! vueAttribute "if" "filter.aggs.avg!==undefined"
+                        H.div H.! HA.class_ "filter-text-row" $ do
+                          H.div H.! HA.class_ "filter-text" $
+                            H.customParent "field-title"
+                              H.! vueAttribute "bind:field" "filter.field"
+                              H.! vueAttribute "bind:rmf" "filter.field.flag?undefined:filter.remove.bind(filter)"
+                              $ mempty
+                          H.button H.! HA.class_ "filter-reset"
+                            H.! vueAttribute "on:click" "filter.reset()"
+                            H.! vueAttribute "if" "filter.field.flag===undefined"
+                            $ "reset"
+                        H.div
+                          H.! HA.class_ "filter-inputs"
+                          H.! vueAttribute "if" "filter.field.terms"
                           $ do
-                          H.em $ H.preEscapedString "&mu;"
-                          " = {{filter.aggs.avg?filter.render(filter.aggs.avg):'no data'}}"
-                        H.div H.! HA.class_ "filter-inputs" $ do
-                          H.customParent "select-terms"
-                            H.! vueAttribute "if" "filter.field.terms"
-                            H.! vueAttribute "bind:field" "filter.field"
-                            H.! vueAttribute "bind:aggs" "filter.aggs"
-                            H.! vueAttribute "model" "filter.value"
-                            H.! vueAttribute "bind:change" "filter.change.bind(filter)"
-                            $ mempty
-                          H.div H.! HA.class_ "filter-inputs-group"
-                            H.! vueAttribute "else" "" $ do
+                            H.customParent "select-terms"
+                              H.! vueAttribute "if" "filter.field.terms"
+                              H.! vueAttribute "bind:field" "filter.field"
+                              H.! vueAttribute "bind:aggs" "filter.aggs"
+                              H.! vueAttribute "model" "filter.value"
+                              H.! vueAttribute "bind:change" "filter.change.bind(filter)"
+                              $ mempty
+                        H.div H.! HA.class_ "filter-inputs-group"
+                          H.! vueAttribute "else" "" $ do
+                          forM_ [False, True] $ \b ->
+                            H.div H.! HA.class_ "filter-input" $ do
+                              H.input
+                                H.! vueAttribute "bind:name" ("filter.field.name+'." <> (if b then "u" else "l") <> "b'")
+                                H.! vueAttribute "bind:title" ("'" <> (if b then "Upper" else "Lower") <> " bound for '+filter.field.title+' values'")
+                                H.! HA.type_ "number"
+                                H.! vueAttribute "bind:step" "filter.field.base=='i'?'1':'any'"
+                                H.! vueAttribute "bind:min" "filter.aggs.min"
+                                H.! vueAttribute "bind:max" "filter.aggs.max"
+                                H.! vueAttribute "model.number" ("filter." <> (if b then "ubv" else "lbv"))
+                                H.! vueAttribute "on:change" "filter.change()"
+                        H.div H.! HA.class_ "filter-info-row" H.! vueAttribute "if" "!filter.field.terms" $ do
+                          H.div H.! HA.class_ "filter-avg"
+                            H.! vueAttribute "if" "filter.aggs.avg!==undefined"
+                            $ do
+                            H.em $ H.preEscapedString "&mu;"
+                            " : {{filter.aggs.avg?filter.render(filter.aggs.avg):'no data'}}"
+                          H.div H.! HA.class_ "filter-min-max" $ do
+                            H.p $ "Range: "
                             forM_ [False, True] $ \b ->
-                              H.div H.! HA.class_ "filter-input" $ do
-                                H.input
-                                  H.! vueAttribute "bind:name" ("filter.field.name+'." <> (if b then "u" else "l") <> "b'")
-                                  H.! vueAttribute "bind:title" ("'" <> (if b then "Upper" else "Lower") <> " bound for '+filter.field.title+' values'")
-                                  H.! HA.type_ "number"
-                                  H.! vueAttribute "bind:step" "filter.field.base=='i'?'1':'any'"
-                                  H.! vueAttribute "bind:min" "filter.aggs.min"
-                                  H.! vueAttribute "bind:max" "filter.aggs.max"
-                                  H.! vueAttribute "model.number" ("filter." <> (if b then "ubv" else "lbv"))
-                                  H.! vueAttribute "on:change" "filter.change()"
-                                H.p $ "{{filter.render(filter.aggs." <> (if b then "max" else "min") <> ")}}"
-                            H.button H.! HA.class_ "filter-reset"
-                              H.! vueAttribute "on:click" "filter.reset()"
-                              $ "Reset"
+                              H.p $ " {{filter.render(filter.aggs." <> (if b then "max" else "min") <> ")}}"
+
                       H.div H.! HA.class_ "alert fade show row filter-row alert-secondary" $ do
                         H.div H.! HA.class_ "filter-text" $
                           "Select field to filter"
@@ -487,7 +496,6 @@ catalogPage = getPath R.parameter $ \sim req -> do
                         H.li $ H.a H.! HA.href (WH.routeActionValue groupPage g mempty) $ mintersperseMap "/" H.text g
 
         H.div H.! HA.class_ "container-fluid catalog-summary" $ do
-          -- H.p H.! HA.id "count" $ mempty
           H.div H.! HA.class_ "d-flex justify-content-between" $ do
             H.div H.! HA.class_ "d-flex" $ do
               H.button
@@ -497,16 +505,27 @@ catalogPage = getPath R.parameter $ \sim req -> do
                 H.! HA.onclick "toggleShowData()"
                 $ "Hide Raw Data"
               H.p H.! HA.class_ "download" H.! HA.id "info" $ mempty
+            H.div H.! HA.class_ "d-flex justify-content-between" $ do
+              H.div
+               -- TODO: Fix this iteration
+                H.! vueAttribute "for" "filter in filters"
+                H.! vueAttribute "bind:id" "'clicktabfilt-'+filter.field.name"
+                  H.! HA.class_ "click-tab" $ do
+                    H.div H.! HA.class_ "click-tab-close" $ mempty
+                    H.p H.! HA.class_ "click-tab-content" $ "filter.field.name"
+            -- TODO: Fix this download function
             H.p H.! HA.class_ "download" H.! HA.id "download" $ do
-              "download as"
-              forM_ [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkECSV Nothing, BulkECSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)] $ \b -> do
-                let f = R.renderParameter b
-                " "
-                H.a
-                  H.! HA.id ("download." <> H.textValue f)
-                  H.! HA.class_ "button button-primary"
-                  H.! vueAttribute "bind:href" ((jsLazyByteStringValue $ BSB.toLazyByteString $ encodePathSegments' $ R.requestPath $ R.requestActionRoute catalogBulk (sim, b)) <> "+query")
-                  $ H.text f
+              "Format"
+              H.select $ do
+                forM_ [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkECSV Nothing, BulkECSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)] $ \b -> do
+                  let f = R.renderParameter b
+                  " "
+                  H.option
+                    H.! HA.id ("download." <> H.textValue f)
+                    H.! HA.class_ "download-option"
+                    H.! vueAttribute "bind:value" ((jsLazyByteStringValue $ BSB.toLazyByteString $ encodePathSegments' $ R.requestPath $ R.requestActionRoute catalogBulk (sim, b)) <> "+query")
+                    $ H.text f
+              H.button H.! HA.class_ "button-secondary" H.! HA.id "download-btn" $ "Download"
 
         H.div H.! HA.class_ "container-fluid catalog-summary raw-data" H.! HA.id "rawdata" $ do
           H.div H.! HA.class_ "raw-data__header" $ do
