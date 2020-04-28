@@ -506,12 +506,14 @@ catalogPage = getPath R.parameter $ \sim req -> do
                 $ "Hide Raw Data"
               H.p H.! HA.class_ "download" H.! HA.id "info" $ mempty
             H.div H.! HA.class_ "d-flex justify-content-between" $ do
-              H.div H.! HA.class_ "click-tab" $ do
-                H.div H.! HA.class_ "click-tab-close" $ mempty
-                H.p H.! HA.class_ "click-tab-content" $ "I am a filter"
-              H.div H.! HA.class_ "click-tab" $ do
-                H.div H.! HA.class_ "click-tab-close" $ mempty
-                H.p H.! HA.class_ "click-tab-content" $ "I am a filter"
+              H.div
+               -- TODO: Fix this iteration
+                H.! vueAttribute "for" "filter in filters"
+                H.! vueAttribute "bind:id" "'clicktabfilt-'+filter.field.name"
+                  H.! HA.class_ "click-tab" $ do
+                    H.div H.! HA.class_ "click-tab-close" $ mempty
+                    H.p H.! HA.class_ "click-tab-content" $ "filter.field.name"
+            -- TODO: Fix this download function
             H.p H.! HA.class_ "download" H.! HA.id "download" $ do
               "Format"
               H.select $ do
