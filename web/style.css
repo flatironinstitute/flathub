@@ -918,7 +918,7 @@ hr {
 .falert {
   font-size: 1.2rem;
   line-height: 1.5;
-  padding: 0.75rem;
+  padding: 0.75rem 1.25rem;
   margin-bottom: 1rem;
   font-size: 1.2rem;
   line-height: 1.5;
@@ -1002,10 +1002,10 @@ hr {
   flex-direction: row;
   align-items: baseline;
   justify-content: space-between;
-  width: calc(100% + 1.5rem);
-  background-color: #fefeff;
-  margin: -0.75rem -0.75rem -0.75rem -0.75rem !important;
-  padding: 0.75rem;
+  width: calc(100% + 2.5rem);
+  background-color: #e2e3e5;
+  margin: -0.75rem -1.25rem !important;
+  padding: 0.75rem 1.25rem;
   border-radius: 0;
 }
 
@@ -1014,6 +1014,7 @@ hr {
   flex-direction: row;
   align-items: baseline;
   justify-content: space-between;
+  padding: 0 5px;
 }
 .filter-min-max p {
   margin-bottom: 0;
@@ -1044,7 +1045,8 @@ hr {
 }
 
 .filter-avg {
-  margin: 0.5rem 0 0 2rem;
+  margin: 0;
+  padding: 0 5px;
 }
 
 .filter-text-row {
@@ -1055,15 +1057,16 @@ hr {
   justify-content: space-between;
 }
 
-.filter-input p {
-  margin-top: -1rem;
-  margin-bottom: 0;
-}
-.filter-input .filter-reset {
+a .filter-reset {
   border: none;
   text-decoration: underline;
   color: #ff533d;
-  padding: 0;
+  padding: 0 5px;
+}
+
+.filter-input p {
+  margin-top: -1rem;
+  margin-bottom: 0;
 }
 
 .filter-text {
@@ -1072,6 +1075,10 @@ hr {
   font-weight: 600;
   font-size: 1.1rem;
   line-height: 1.5;
+}
+
+.filter-alert {
+  padding: 0 5px;
 }
 
 .filter-inputs-group {
