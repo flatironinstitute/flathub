@@ -373,31 +373,34 @@ catalogPage = getPath R.parameter $ \sim req -> do
                               H.! vueAttribute "bind:field" "filter.field"
                               H.! vueAttribute "bind:rmf" "filter.field.flag?undefined:filter.remove.bind(filter)"
                               $ mempty
-                          H.a H.! HA.class_ "filter-reset"
+                          H.button H.! HA.class_ "filter-reset"
                             H.! vueAttribute "on:click" "filter.reset()"
                             H.! vueAttribute "if" "filter.field.flag===undefined"
                             $ "reset"
-                        H.div H.! HA.class_ "filter-inputs" $ do
-                          H.customParent "select-terms"
-                            H.! vueAttribute "if" "filter.field.terms"
-                            H.! vueAttribute "bind:field" "filter.field"
-                            H.! vueAttribute "bind:aggs" "filter.aggs"
-                            H.! vueAttribute "model" "filter.value"
-                            H.! vueAttribute "bind:change" "filter.change.bind(filter)"
-                            $ mempty
-                          H.div H.! HA.class_ "filter-inputs-group"
-                            H.! vueAttribute "else" "" $ do
-                            forM_ [False, True] $ \b ->
-                              H.div H.! HA.class_ "filter-input" $ do
-                                H.input
-                                  H.! vueAttribute "bind:name" ("filter.field.name+'." <> (if b then "u" else "l") <> "b'")
-                                  H.! vueAttribute "bind:title" ("'" <> (if b then "Upper" else "Lower") <> " bound for '+filter.field.title+' values'")
-                                  H.! HA.type_ "number"
-                                  H.! vueAttribute "bind:step" "filter.field.base=='i'?'1':'any'"
-                                  H.! vueAttribute "bind:min" "filter.aggs.min"
-                                  H.! vueAttribute "bind:max" "filter.aggs.max"
-                                  H.! vueAttribute "model.number" ("filter." <> (if b then "ubv" else "lbv"))
-                                  H.! vueAttribute "on:change" "filter.change()"
+                        H.div
+                          H.! HA.class_ "filter-inputs"
+                          H.! vueAttribute "if" "filter.field.terms"
+                          $ do
+                            H.customParent "select-terms"
+                              H.! vueAttribute "if" "filter.field.terms"
+                              H.! vueAttribute "bind:field" "filter.field"
+                              H.! vueAttribute "bind:aggs" "filter.aggs"
+                              H.! vueAttribute "model" "filter.value"
+                              H.! vueAttribute "bind:change" "filter.change.bind(filter)"
+                              $ mempty
+                        H.div H.! HA.class_ "filter-inputs-group"
+                          H.! vueAttribute "else" "" $ do
+                          forM_ [False, True] $ \b ->
+                            H.div H.! HA.class_ "filter-input" $ do
+                              H.input
+                                H.! vueAttribute "bind:name" ("filter.field.name+'." <> (if b then "u" else "l") <> "b'")
+                                H.! vueAttribute "bind:title" ("'" <> (if b then "Upper" else "Lower") <> " bound for '+filter.field.title+' values'")
+                                H.! HA.type_ "number"
+                                H.! vueAttribute "bind:step" "filter.field.base=='i'?'1':'any'"
+                                H.! vueAttribute "bind:min" "filter.aggs.min"
+                                H.! vueAttribute "bind:max" "filter.aggs.max"
+                                H.! vueAttribute "model.number" ("filter." <> (if b then "ubv" else "lbv"))
+                                H.! vueAttribute "on:change" "filter.change()"
                         H.div H.! HA.class_ "filter-info-row" H.! vueAttribute "if" "!filter.field.terms" $ do
                           H.div H.! HA.class_ "filter-avg"
                             H.! vueAttribute "if" "filter.aggs.avg!==undefined"
