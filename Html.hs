@@ -513,7 +513,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                 H.div H.! HA.class_ "click-tab-close" $ mempty
                 H.p H.! HA.class_ "click-tab-content" $ "I am a filter"
             H.p H.! HA.class_ "download" H.! HA.id "download" $ do
-              "download as"
+              "Format"
               H.select $ do
                 forM_ [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkECSV Nothing, BulkECSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)] $ \b -> do
                   let f = R.renderParameter b
@@ -523,6 +523,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                     H.! HA.class_ "download-option"
                     H.! vueAttribute "bind:value" ((jsLazyByteStringValue $ BSB.toLazyByteString $ encodePathSegments' $ R.requestPath $ R.requestActionRoute catalogBulk (sim, b)) <> "+query")
                     $ H.text f
+              H.button H.! HA.class_ "button-secondary" H.! HA.id "download-btn" $ "Download"
 
         H.div H.! HA.class_ "container-fluid catalog-summary raw-data" H.! HA.id "rawdata" $ do
           H.div H.! HA.class_ "raw-data__header" $ do
