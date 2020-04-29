@@ -259,7 +259,6 @@ catalogPage = getPath R.parameter $ \sim req -> do
       H.div H.! HA.class_ "catalog-title" $ do
         H.div H.! HA.class_ "container-fluid" $ do
           H.div H.! HA.class_ "row" $ do
-            -- H.div H.! HA.class_ "col" $ do
               H.h5 $ H.text $ catalogTitle cat
 
       H.div H.! HA.class_ "catalog-tool-container " $ do
@@ -505,14 +504,17 @@ catalogPage = getPath R.parameter $ \sim req -> do
                 H.! HA.onclick "toggleShowData()"
                 $ "Hide Raw Data"
               H.p H.! HA.class_ "download" H.! HA.id "info" $ mempty
-            H.div H.! HA.class_ "d-flex justify-content-between" $ do
-              H.div
-               -- TODO: Fix this iteration
-                H.! vueAttribute "for" "filter in filters"
-                H.! vueAttribute "bind:id" "'clicktabfilt-'+filter.field.name"
-                  H.! HA.class_ "click-tab" $ do
-                    H.div H.! HA.class_ "click-tab-close" $ mempty
-                    H.p H.! HA.class_ "click-tab-content" $ "filter.field.name"
+            H.div
+              H.! HA.id "filt-tab"
+              H.! HA.class_ "d-flex justify-content-between" $ do
+                H.div
+                  H.! HA.class_ "click-tab"
+                  H.! vueAttribute "for" "filter in filters"
+                  H.! vueAttribute "bind:id" "'filt-tab-'+filter.field.name" $ do
+                      H.div H.! HA.class_ "click-tab-close" $ mempty
+                      H.p
+                        H.! vueAttribute "bind:field" "filter.field"
+                        H.! HA.class_ "click-tab-content" $ "filter.field.name"
             -- TODO: Fix this download function
             H.p H.! HA.class_ "download" H.! HA.id "download" $ do
               "Format"

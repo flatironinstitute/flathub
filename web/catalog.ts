@@ -572,10 +572,6 @@ class NumericFilter extends Filter {
     return true;
   }
 
-  download() {
-    console.log("🐶🐕‍🦺 Download");
-  }
-
   reset() {
     this.setRange((<AggrStats>this.aggs).min, (<AggrStats>this.aggs).max);
     this.change();
@@ -592,6 +588,8 @@ class NumericFilter extends Filter {
     if (!(this.lbv > 0)) this.histLog = false;
     /* vue isn't updating when called from highcharts: */
     filterVue.$forceUpdate();
+    filterTab.$forceUpdate();
+    console.log("UPDATE", Filters);
   }
 
   histQuery(n: number): string {
@@ -603,6 +601,10 @@ const filterVue = new Vue({
   data: {
     filters: Filters,
   },
+});
+
+const filterTab = new Vue({
+  data: { filters: Filters },
 });
 
 function addFilter(fi: string | Field): Filter | undefined {
@@ -763,6 +765,7 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
     }
   }
   filterVue.$mount("#filt");
+  filterTab.$mount("#filt-tab");
   for (let b of (<any>(
     document.getElementsByClassName("colvis")
   )) as HTMLInputElement[])
