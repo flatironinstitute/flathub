@@ -506,12 +506,13 @@ catalogPage = getPath R.parameter $ \sim req -> do
               H.p H.! HA.class_ "download" H.! HA.id "info" $ mempty
             H.div
               H.! HA.id "filt-tab"
-              H.! HA.class_ "d-flex justify-content-between" $ do
+              H.! HA.class_ "click-tab-container" $ do
                 H.div
                   H.! HA.class_ "click-tab"
                   H.! vueAttribute "for" "filter in filters"
                   H.! vueAttribute "bind:id" "'filt-tab-'+filter.field.name" $ do
-                      H.div H.! HA.class_ "click-tab-close" $ mempty
+                    -- TODO: Put back in this close button?
+                      -- H.div H.! HA.class_ "click-tab-close" $ mempty
                       H.p
                         H.! vueAttribute "bind:field" "filter.field"
                         H.! HA.class_ "click-tab-content" $ "filter.field.name"
