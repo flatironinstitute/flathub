@@ -103,6 +103,7 @@ function histogramRemove() {
   Histogram_chart = undefined;
   Histogram = undefined;
   Heatmap = undefined;
+  $("#histlabel").remove();
   $("#hist").empty();
 }
 
@@ -127,6 +128,7 @@ function histogramDraw(
   agg: AggrTerms<number>,
   size: Dict<number>
 ) {
+  const histLabel = document.getElementById("histlabel");
   const field = hist.field;
   const data: number[][] = [];
   let xwid = size[field.name] / 2;
@@ -158,9 +160,11 @@ function histogramDraw(
     $("#hist").text("No data for histogram");
     return;
   }
-  $("#hist").before(
-    "<p>Click and drag to zoom into the figures. Plot selections are reflected in the filters in the right column.</p>"
-  );
+  if (!histLabel) {
+    $("#hist").before(
+      `<p id="histlabel">Click and drag to zoom into the figure. Filters in the right column reflect plot selections.</p>`
+    );
+  }
 
   const opts: Highcharts.Options = histogram_options(
     field,
