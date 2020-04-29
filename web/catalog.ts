@@ -158,6 +158,9 @@ function histogramDraw(
     $("#hist").text("No data for histogram");
     return;
   }
+  $("#hist").before(
+    "<p>Click and drag to zoom into the figures. Plot selections are reflected in the filters in the right column.</p>"
+  );
 
   const opts: Highcharts.Options = histogram_options(
     field,
