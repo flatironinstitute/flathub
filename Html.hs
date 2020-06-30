@@ -503,22 +503,24 @@ catalogPage = getPath R.parameter $ \sim req -> do
                 H.! HA.id "rawdata-btn"
                 H.! HA.onclick "toggleShowData()"
                 $ "Hide Raw Data"
-              H.p H.! HA.class_ "download" H.! HA.id "info" $ mempty
+              H.p H.! HA.class_ "horizontal-label" H.! HA.id "info" $ mempty
             H.div
               H.! HA.id "filt-tab"
               H.! HA.class_ "click-tab-container" $ do
+                H.p H.! HA.class_ "horizontal-label" $ "Active Filters"
                 H.div
                   H.! HA.class_ "click-tab"
                   H.! vueAttribute "for" "filter in filters"
                   H.! vueAttribute "bind:id" "'filt-tab-'+filter.field.name" $ do
-                    -- TODO: Put back in this close button?
+                    -- TODO: Add back in ?
                       -- H.div H.! HA.class_ "click-tab-close" $ mempty
                       H.p
                         H.! vueAttribute "bind:field" "filter.field"
-                        H.! HA.class_ "click-tab-content" $ "filter.field.name"
+                        H.! HA.class_ "click-tab-content"
+                        H.! vueAttribute "bind:value" "filter.field.value" $ H.text "{{filter.field.name}}"
             -- TODO: Fix this download function
-            H.p H.! HA.class_ "download" H.! HA.id "download" $ do
-              "Format"
+            H.div H.! HA.class_ "download-container" H.! HA.id "download" $ do
+              H.p H.! HA.class_ "horizontal-label" $ "Format"
               H.select $ do
                 forM_ [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkECSV Nothing, BulkECSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)] $ \b -> do
                   let f = R.renderParameter b
