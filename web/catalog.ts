@@ -103,6 +103,7 @@ function histogramRemove() {
   Histogram_chart = undefined;
   Histogram = undefined;
   Heatmap = undefined;
+  $("#histlabel").remove();
   $("#hist").empty();
 }
 
@@ -127,6 +128,7 @@ function histogramDraw(
   agg: AggrTerms<number>,
   size: Dict<number>
 ) {
+  const histLabel = document.getElementById("histlabel");
   const field = hist.field;
   const data: number[][] = [];
   let xwid = size[field.name] / 2;
@@ -157,6 +159,11 @@ function histogramDraw(
     histogramRemove();
     $("#hist").text("No data for histogram");
     return;
+  }
+  if (!histLabel) {
+    $("#hist").before(
+      `<p id="histlabel">Click and drag to zoom into the figure. Filters in the right column reflect plot selections.</p>`
+    );
   }
 
   const opts: Highcharts.Options = histogram_options(
@@ -565,10 +572,6 @@ class NumericFilter extends Filter {
     return true;
   }
 
-  download() {
-    console.log("🐶🐕‍🦺 Download");
-  }
-
   reset() {
     this.setRange((<AggrStats>this.aggs).min, (<AggrStats>this.aggs).max);
     this.change();
@@ -585,6 +588,8 @@ class NumericFilter extends Filter {
     if (!(this.lbv > 0)) this.histLog = false;
     /* vue isn't updating when called from highcharts: */
     filterVue.$forceUpdate();
+    filterTab.$forceUpdate();
+    console.log("UPDATE", Filters);
   }
 
   histQuery(n: number): string {
@@ -596,6 +601,10 @@ const filterVue = new Vue({
   data: {
     filters: Filters,
   },
+});
+
+const filterTab = new Vue({
+  data: { filters: Filters },
 });
 
 function addFilter(fi: string | Field): Filter | undefined {
@@ -756,6 +765,7 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
     }
   }
   filterVue.$mount("#filt");
+  filterTab.$mount("#filt-tab");
   for (let b of (<any>(
     document.getElementsByClassName("colvis")
   )) as HTMLInputElement[])
