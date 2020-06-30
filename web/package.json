@@ -6,7 +6,7 @@
   "scripts": {
     "postinstall": "sed -i 's/\\r$//' node_modules/.bin/jspm ; ln -s ../{popper.js,highcharts,vue} node_modules/@types ; jspm install",
     "compile": "tsc",
-    "build": "jspm build --minify main.ts index.js && sass scss/main.scss style.css"
+    "build": "jspm build --minify --skip-source-maps main.ts index.js && sass scss/main.scss style.css"
   },
   "author": "Dylan Simon",
   "license": "Apache-2.0",
@@ -14,14 +14,14 @@
     "jspm": "^0.17.0-beta.49"
   },
   "devDependencies": {
-    "@types/bootstrap": "^4.3.2",
+    "@types/bootstrap": "^4.5.0",
     "@types/datatables.net": "^1.10.19",
-    "@types/jquery": "^3.3.35",
+    "@types/jquery": "^3.5.0",
     "@types/systemjs": "^0.20.7",
-    "highcharts": "^7.2.0",
+    "highcharts": "^8.0.0",
     "popper.js": "^1.16.1",
-    "sass": "^1.26.3",
-    "typescript": "^3.8.3",
+    "sass": "^1.26.9",
+    "typescript": "^3.9.5",
     "vue": "^2.6.11"
   },
   "jspm": {
@@ -31,7 +31,7 @@
       "bootstrap": "npm:bootstrap@^4.3.1",
       "datatables.net": "npm:datatables.net@^1.10.16",
       "datatables.net-dt": "npm:datatables.net-dt@^1.10.16",
-      "highcharts": "npm:highcharts@^7.2.0",
+      "highcharts": "npm:highcharts@^8.0.0",
       "ts": "github:frankwallis/plugin-typescript@^9.0.0",
       "vue": "npm:vue@^2.6.11"
     },
@@ -66,7 +66,7 @@
       "zlib": "npm:jspm-nodelibs-zlib@^0.2.0"
     },
     "overrides": {
-      "npm:bootstrap@4.4.1": {
+      "npm:bootstrap@4.5.0": {
         "main": "dist/js/bootstrap",
         "jspmNodeConversion": false,
         "directories": {
@@ -101,13 +101,16 @@
           "test.js"
         ]
       },
-      "npm:jquery@3.5.0": {
+      "npm:jquery@3.5.1": {
         "format": "amd"
       },
-      "npm:pbkdf2@3.0.17": {
+      "npm:pbkdf2@3.1.1": {
         "main": "browser.js"
       },
       "npm:safe-buffer@5.1.2": {
+        "browser": "index.js"
+      },
+      "npm:safe-buffer@5.2.1": {
         "browser": "index.js"
       },
       "npm:typescript@2.8.4": {
