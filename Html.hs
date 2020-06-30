@@ -82,8 +82,8 @@ htmlResponse req hdrs body = do
         H.script H.! HA.type_ "text/javascript" H.! HA.src (staticURI src) $ mempty
       -- TODO: use System.resolve:
       forM_ [
-          ["jspm_packages", "npm", "datatables.net-dt@1.10.20", "css", "jquery.dataTables.css"],
-          ["jspm_packages", "npm", "bootstrap@4.4.1", "dist", "css", "bootstrap.min.css"],
+          ["jspm_packages", "npm", "datatables.net-dt@1.10.21", "css", "jquery.dataTables.css"],
+          ["jspm_packages", "npm", "bootstrap@4.5.0", "dist", "css", "bootstrap.min.css"],
           ["style.css"]
         ] $ \src ->
         H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
