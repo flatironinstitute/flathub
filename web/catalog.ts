@@ -589,7 +589,6 @@ class NumericFilter extends Filter {
     /* vue isn't updating when called from highcharts: */
     filterVue.$forceUpdate();
     filterTab.$forceUpdate();
-    console.log("UPDATE", Filters);
   }
 
   histQuery(n: number): string {
