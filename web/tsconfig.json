@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "module": "system",
+    "outDir": "./dist/",
+    "module": "es6",
     "target": "es5",
     "lib": ["es6", "dom"],
     "noImplicitAny": true,
@@ -10,6 +11,6 @@
     "strictNullChecks": true
   },
   "files": [
-    "main.ts"
+    "./src/main.ts"
   ]
 }
