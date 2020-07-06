@@ -1,7 +1,5 @@
-"use strict";
-
-import Vue from "vue";
 import $ from "jquery";
+import Vue from "vue";
 import Datatables from "datatables.net";
 import Highcharts from "highcharts";
 import Highcharts_more from "highcharts/highcharts-more";

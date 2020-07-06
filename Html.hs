@@ -78,10 +78,11 @@ htmlResponse req hdrs body = do
       cats = globalCatalogs glob
   return $ okResponse hdrs $ H.docTypeHtml $ do
     H.head $ do
-      forM_ ([["jspm_packages", if isdev then "system.src.js" else "system.js"], ["jspm.config.js"]] ++ if isdev then [["dev.js"]] else [["index.js"]]) $ \src ->
-        H.script H.! HA.type_ "text/javascript" H.! HA.src (staticURI src) $ mempty
-      -- TODO: use System.resolve:
+      -- forM_ ([["jspm_packages", if isdev then "system.src.js" else "system.js"], ["jspm.config.js"]] ++ if isdev then [["dev.js"]] else [["index.js"]]) $ \src ->
+      --   H.script H.! HA.type_ "text/javascript" H.! HA.src (staticURI src) $ mempty
+      -- TODO: remove these scripts
       forM_ [
+        -- TODO REMOVE THESE CSS CALLS
           ["jspm_packages", "npm", "datatables.net-dt@1.10.21", "css", "jquery.dataTables.css"],
           ["jspm_packages", "npm", "bootstrap@4.5.0", "dist", "css", "bootstrap.min.css"],
           ["style.css"]
@@ -145,6 +146,8 @@ htmlResponse req hdrs body = do
               H.a H.! HA.href (WH.routeActionValue comparePage [] mempty) $ H.text "Compare"
               H.a H.! HA.href "https://github.com/flatironinstitute/astrosims" $ H.text "Github"
             H.p H.! HA.class_ "footer-company-name" $ "Flatiron Institute, 2019"
+      -- Webpack bundle
+      H.script H.! HA.type_"text/javascript" H.! HA.src (staticURI "bundle.js") $ mempty
 
 acceptable :: [BS.ByteString] -> Wai.Request -> Maybe BS.ByteString
 acceptable l = find (`elem` l) . foldMap parseHttpAccept . lookup hAccept . Wai.requestHeaders

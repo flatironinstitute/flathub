@@ -8,4 +8,5 @@ dist/types.js
 dist/*.js.map
 dist/style.css
 dist/*.css.map
+*.min.css
 *.gz

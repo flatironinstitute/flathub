@@ -1,14 +1,13 @@
 {
   "compilerOptions": {
-    "outDir": "./dist/",
+    "outDir": "./",
+    "sourceMap": true,
     "module": "es6",
     "target": "es5",
-    "lib": ["es6", "dom"],
-    "noImplicitAny": true,
-    "noImplicitThis": true,
-    "sourceMap": true,
+    "allowSyntheticDefaultImports" : true,
+    "esModuleInterop" : true,
     "alwaysStrict": true,
-    "strictNullChecks": true
+    "moduleResolution": "node"
   },
   "files": [
     "./src/main.ts"
