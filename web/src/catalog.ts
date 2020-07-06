@@ -54,8 +54,14 @@ var Show_data: boolean = true;
 
 const downloadVue = new Vue({
   data: {
+    bulk: "",
     query: "",
   },
+  computed: {
+    link: function () {
+      return this.bulk + this.query;
+    }
+  }
 });
 
 function set_download(query: Dict<string>) {

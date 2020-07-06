@@ -17,7 +17,6 @@ import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (ask, asks)
 import qualified Data.Aeson as J
 import qualified Data.ByteString as BS
-import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy as BSL
 import           Data.Char (toUpper)
 import           Data.Foldable (fold)
@@ -38,7 +37,7 @@ import qualified Text.Blaze.Html5.Attributes as HA
 import qualified Text.Blaze.Internal as H (customParent)
 import qualified Waimwork.Blaze as H (text, textValue, preEscapedBuilder)
 import qualified Waimwork.Blaze as WH
-import           Waimwork.HTTP (parseHTTPDate, formatHTTPDate, encodePathSegments')
+import           Waimwork.HTTP (parseHTTPDate, formatHTTPDate)
 import           Waimwork.Response (response, okResponse)
 import           Waimwork.Result (result)
 import qualified Web.Route.Invertible as R
@@ -50,7 +49,6 @@ import Compression
 import Query
 import Monoid
 import Static
-import JSON
 
 jsonEncodingVar :: T.Text -> J.Encoding -> H.Html
 jsonEncodingVar var enc = H.script $ do
@@ -524,16 +522,20 @@ catalogPage = getPath R.parameter $ \sim req -> do
             -- TODO: Fix this download function
             H.div H.! HA.class_ "download-container" H.! HA.id "download" $ do
               H.p H.! HA.class_ "horizontal-label" $ "Format"
-              H.select $ do
+              H.select H.! vueAttribute "model" "bulk" $ do
+                H.option H.! HA.value mempty $ "Choose format..."
                 forM_ [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkECSV Nothing, BulkECSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)] $ \b -> do
                   let f = R.renderParameter b
-                  " "
                   H.option
                     H.! HA.id ("download." <> H.textValue f)
                     H.! HA.class_ "download-option"
-                    H.! vueAttribute "bind:value" ((jsLazyByteStringValue $ BSB.toLazyByteString $ encodePathSegments' $ R.requestPath $ R.requestActionRoute catalogBulk (sim, b)) <> "+query")
+                    H.! HA.value (WH.routeActionValue catalogBulk (sim, b) mempty)
                     $ H.text f
-              H.button H.! HA.class_ "button-secondary" H.! HA.id "download-btn" $ "Download"
+              H.a
+                H.! HA.class_ "button button-secondary"
+                H.! HA.id "download-btn"
+                H.! vueAttribute "bind:href" "link"
+                $ "Download"
 
         H.div H.! HA.class_ "container-fluid catalog-summary raw-data" H.! HA.id "rawdata" $ do
           H.div H.! HA.class_ "raw-data__header" $ do
