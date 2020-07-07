@@ -96,7 +96,7 @@ class CField {
   public cat: string | null;
   public field: Field;
 
-  constructor(cat: Catalog | string | null, field: Field | string) {
+  constructor(cat: any, field: any) {
     if (!cat) {
     } else if (typeof cat === "object") cat = cat.name;
     else if (cat === "dict") cat = null;

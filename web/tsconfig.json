@@ -3,7 +3,7 @@
     "outDir": "./",
     "sourceMap": true,
     "module": "es6",
-    "target": "es5",
+    "target": "ES2015",
     "allowSyntheticDefaultImports" : true,
     "esModuleInterop" : true,
     "alwaysStrict": true,

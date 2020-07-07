@@ -1,4 +1,4 @@
-all: bundle.js.gz jspm_packages/npm/datatables.net-dt@1.10.21/css/jquery.dataTables.css.gz style.css.gz
+all: bundle.js.gz node_modules/datatables.net-dt/css/jquery.dataTables.css.gz style.css.gz
 
 TS:=$(wildcard *.ts)
 
@@ -8,8 +8,8 @@ bundle.js style.css: node_modules/.bin/tsc node_modules/.bin/sass $(TS) scss/mai
 	LC_ALL=en_US.UTF-8 npm run-script build
 
 # Run npm install
-node_modules/.bin/%:
-	npm install
+# node_modules/.bin/%:
+# 	npm install
 
 # Gzip everything
 %.gz: %
