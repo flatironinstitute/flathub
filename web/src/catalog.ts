@@ -1,5 +1,6 @@
 import $ from "jquery";
 import Vue from "vue";
+// TODO: Do I need to swap for proper datatables.
 import Datatables from "datatables.net-dt";
 import Highcharts from "highcharts";
 import Highcharts_more from "highcharts/highcharts-more";
