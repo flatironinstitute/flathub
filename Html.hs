@@ -76,13 +76,12 @@ htmlResponse req hdrs body = do
       cats = globalCatalogs glob
   return $ okResponse hdrs $ H.docTypeHtml $ do
     H.head $ do
-      -- forM_ ([["jspm_packages", if isdev then "system.src.js" else "system.js"], ["jspm.config.js"]] ++ if isdev then [["dev.js"]] else [["index.js"]]) $ \src ->
-      --   H.script H.! HA.type_ "text/javascript" H.! HA.src (staticURI src) $ mempty
-      -- TODO: remove these scripts
+      forM_ ([["bundle.js"]]) $ \src ->
+        H.script H.! HA.type_ "text/javascript" H.! HA.src (staticURI src) $ mempty
       forM_ [
         -- TODO REMOVE THESE CSS CALLS
-          ["jspm_packages", "npm", "datatables.net-dt@1.10.21", "css", "jquery.dataTables.css"],
-          ["jspm_packages", "npm", "bootstrap@4.5.0", "dist", "css", "bootstrap.min.css"],
+          -- ["jspm_packages", "npm", "datatables.net-dt@1.10.21", "css", "jquery.dataTables.css"],
+          -- ["jspm_packages", "npm", "bootstrap@4.5.0", "dist", "css", "bootstrap.min.css"],
           ["style.css"]
         ] $ \src ->
         H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
