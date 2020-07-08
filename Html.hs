@@ -72,17 +72,13 @@ vueAttribute = H.customAttribute . fromString . ("v-" ++)
 htmlResponse :: Wai.Request -> ResponseHeaders -> H.Markup -> M Wai.Response
 htmlResponse req hdrs body = do
   glob <- ask
+  -- TODO: Can I remove this?
   let isdev = globalDevMode glob && any ((==) "dev" . fst) (Wai.queryString req)
       cats = globalCatalogs glob
   return $ okResponse hdrs $ H.docTypeHtml $ do
     H.head $ do
-      forM_ ([["bundle.js"]]) $ \src ->
-        H.script H.! HA.type_ "text/javascript" H.! HA.src (staticURI src) $ mempty
       forM_ [
-        -- TODO REMOVE THESE CSS CALLS
-          -- ["jspm_packages", "npm", "datatables.net-dt@1.10.21", "css", "jquery.dataTables.css"],
-          -- ["jspm_packages", "npm", "bootstrap@4.5.0", "dist", "css", "bootstrap.min.css"],
-          ["style.css"]
+          ["datatables.min.css"],["bootstrap.min.css"], ["style.css"]
         ] $ \src ->
         H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
       H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML" $ mempty
@@ -143,9 +139,8 @@ htmlResponse req hdrs body = do
               H.a H.! HA.href (WH.routeActionValue comparePage [] mempty) $ H.text "Compare"
               H.a H.! HA.href "https://github.com/flatironinstitute/astrosims" $ H.text "Github"
             H.p H.! HA.class_ "footer-company-name" $ "Flatiron Institute, 2019"
-      -- Webpack bundle
-      H.script H.! HA.type_"text/javascript" H.! HA.src (staticURI "bundle.js") $ mempty
-
+      forM_ ([["bundle.js"]]) $ \src ->
+        H.script H.! HA.type_ "text/javascript" H.! HA.src (staticURI src) $ mempty
 acceptable :: [BS.ByteString] -> Wai.Request -> Maybe BS.ByteString
 acceptable l = find (`elem` l) . foldMap parseHttpAccept . lookup hAccept . Wai.requestHeaders
 
