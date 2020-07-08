@@ -1,4 +1,4 @@
-all: index.js.gz jspm.config.js.gz jspm_packages/system.js.gz jspm_packages/npm/datatables.net-dt@1.10.21/css/jquery.dataTables.css.gz style.css.gz
+all: bundle.js.gz node_modules/datatables.net-dt@1.10.21/css/jquery.dataTables.css.gz style.css.gz
 
 TS:=$(wildcard *.ts)
 
@@ -8,6 +8,3 @@ index.js style.css: node_modules/.bin/tsc node_modules/.bin/sass $(TS) scss/main
 
 node_modules/.bin/%:
 	npm install
-
-%.gz: %
-	gzip -fk $< || gzip -c $< > $@

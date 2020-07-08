@@ -1,7 +1,8 @@
 import $ from "jquery";
 import Vue from "vue";
 // TODO: Do I need to swap for proper datatables.
-import Datatables from "datatables.net-dt";
+// import Datatables from "datatables.net";
+import dt from "datatables.net-dt";
 import Highcharts from "highcharts";
 import Highcharts_more from "highcharts/highcharts-more";
 import Highcharts_heatmap from "highcharts/modules/heatmap";
@@ -22,7 +23,7 @@ import {
   updateMathJax,
 } from "./common";
 
-Datatables(window, $);
+dt(window, $);
 Highcharts_more(Highcharts);
 Highcharts_heatmap(Highcharts);
 Highcharts_export_data(Highcharts);
@@ -61,8 +62,8 @@ const downloadVue = new Vue({
   computed: {
     link: function () {
       return this.bulk + this.query;
-    }
-  }
+    },
+  },
 });
 
 function set_download(query: Dict<string>) {
