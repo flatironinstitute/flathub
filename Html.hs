@@ -78,9 +78,10 @@ htmlResponse req hdrs body = do
   return $ okResponse hdrs $ H.docTypeHtml $ do
     H.head $ do
       forM_ [
-          ["datatables.min.css"],["bootstrap.min.css"], ["style.css"]
+          ["style.css"]
         ] $ \src ->
         H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
+      -- TODO: Move mathjax and fonts to bundle.js
       H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML" $ mempty
       H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href "https://fonts.googleapis.com/css?family=Major+Mono+Display|Montserrat"
       jsonVar "Catalogs" (HM.map catalogTitle $ catalogMap cats)

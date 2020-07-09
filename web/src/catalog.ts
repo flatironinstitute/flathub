@@ -1,8 +1,6 @@
-import $ from "jquery";
+// import $ from "jquery";
 import Vue from "vue";
-// TODO: Do I need to swap for proper datatables.
-// import Datatables from "datatables.net";
-import dt from "datatables.net-dt";
+require("datatables.net-dt")(window, $);
 import Highcharts from "highcharts";
 import Highcharts_more from "highcharts/highcharts-more";
 import Highcharts_heatmap from "highcharts/modules/heatmap";
@@ -23,7 +21,7 @@ import {
   updateMathJax,
 } from "./common";
 
-dt(window, $);
+DataTables(window, $);
 Highcharts_more(Highcharts);
 Highcharts_heatmap(Highcharts);
 Highcharts_export_data(Highcharts);
@@ -704,6 +702,7 @@ function url_update(query: Dict<string>) {
   history.replaceState({}, "", url.href);
 }
 
+// todo: how do i get these going?
 function toggleShowData(show?: boolean) {
   Show_data = show === undefined ? !Show_data : show;
   $("#rawdata-btn").text(Show_data ? "Hide Raw Data" : "View Raw Data");
