@@ -1,5 +1,6 @@
 /node_modules/
 /index.js
+/bundle.js
 /main.js
 /common.js
 /compare.js
