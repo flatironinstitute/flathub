@@ -8,7 +8,9 @@
     "esModuleInterop": true,
     "alwaysStrict": true,
     "moduleResolution": "node",
-    "types": ["@types/datatables.net"]
+    "types": ["@types/datatables.net"],
+    "noImplicitAny": true,
+    "noImplicitThis": true
   },
   "files": ["./src/main.ts"]
 }
