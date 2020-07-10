@@ -648,10 +648,10 @@ comparePage = getPath ("compare" R.*< R.manyI R.parameter) $ \path req -> do
           H.tr H.! HA.id "tr-comp" $
             H.td $ H.select H.! HA.id "compf" H.! HA.onchange "compField()" $ mempty
       H.button H.! HA.id "hist-tog" H.! HA.disabled "disabled" H.! HA.onclick "histogramComp()" $ "histogram"
-      H.div H.! HA.id "dhist" $ do
+      H.div H.! HA.id "dhist" H.! HA.class_ "container" $ do
         H.button H.! HA.id "hist-y-tog" H.! HA.onclick "toggleLog()" $
           "Toggle lin/log"
-        H.div H.! HA.id "hist" $ mempty
+        H.div H.! HA.class_ "container" H.! HA.id "hist" $ mempty
 
 
 staticHtml :: Route [FilePathComponent]
