@@ -6,7 +6,7 @@
   "scripts": {
     "compile": "tsc",
     "build-dev": "webpack --mode=development --display-error-details",
-    "build": "webpack"
+    "build": "webpack --mode=production"
   },
   "author": "Dylan Simon",
   "license": "Apache-2.0",
