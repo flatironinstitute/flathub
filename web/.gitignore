@@ -9,6 +9,5 @@
 /*.js.map
 /style.css
 /*.css.map
-*.min.css
 *.gz
 package-lock.json
