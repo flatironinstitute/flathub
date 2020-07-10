@@ -1,6 +1,4 @@
 import Vue from "vue";
-// import DataTable from "datatables.net";
-// // import "datatables.net-dt/css/jquery.datatables.css";
 import Highcharts from "highcharts";
 import Highcharts_more from "highcharts/highcharts-more";
 import Highcharts_heatmap from "highcharts/modules/heatmap";

@@ -27,10 +27,6 @@ module.exports = {
         exclude: /node_modules/,
       },
       {
-        test: require.resolve("dataTables.net"),
-        loader: "imports?define=>false",
-      },
-      {
         test: /\.s[ac]ss$/i,
         use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader"],
         exclude: /node_modules/,

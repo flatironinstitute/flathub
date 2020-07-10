@@ -78,7 +78,8 @@ htmlResponse req hdrs body = do
   return $ okResponse hdrs $ H.docTypeHtml $ do
     H.head $ do
       forM_ [
-          ["style.css"]
+          ["style.css"],
+          ["datatables.min.css"]
         ] $ \src ->
         H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
       -- TODO: Move mathjax and fonts to bundle.js
@@ -630,28 +631,27 @@ comparePage = getPath ("compare" R.*< R.manyI R.parameter) $ \path req -> do
     jsonVar "Dict" $ catalogDict cats
     H.div H.! HA.class_ "compare-container" $ do
       H.h2 "Compare"
-      -- H.p $ "Select catalogs across the top to compare, and fields down the left to apply filters and compare statistics and distributions from these catalogs."
-      H.p "Comparison tool coming soon."
-      H.img H.! HA.class_ "img-ctr" H.! HA.src "https://media.giphy.com/media/3o72FkiKGMGauydfyg/source.gif"
-      -- <div style="width:100%;height:0;padding-bottom:76%;position:relative;"><iframe src="https://giphy.com/embed/3o72FkiKGMGauydfyg" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div><p><a href="https://giphy.com/gifs/arielle-m-coming-soon-3o72FkiKGMGauydfyg">via GIPHY</a></p>
-      -- H.table H.! HA.id "tcompare" H.! HA.class_ "u-full-width" $ do
-      --   H.thead $ H.tr $ do
-      --     H.th "Choose two or more catalogs"
-      --     H.td $ H.select H.! HA.name "selcat" H.! HA.onchange "selectCat(event.target)" $ do
-      --       H.option H.! HA.value mempty H.! HA.selected "selected" $ "Choose catalog..."
-      --       forM_ (catalogsSorted cats) $ \(sim, cat) ->
-      --         H.option H.! HA.value (H.textValue sim) $ H.text $ catalogTitle cat
-      --   H.tbody $ mempty
-      --   H.tfoot $ do
-      --     H.tr H.! HA.id "tr-add" $
-      --       H.td $ H.select H.! HA.id "addf"  H.! HA.onchange "addField()"  $ mempty
-      --     H.tr H.! HA.id "tr-comp" $
-      --       H.td $ H.select H.! HA.id "compf" H.! HA.onchange "compField()" $ mempty
-      -- H.button H.! HA.id "hist-tog" H.! HA.disabled "disabled" H.! HA.onclick "histogramComp()" $ "histogram"
-      -- H.div H.! HA.id "dhist" $ do
-      --   H.button H.! HA.id "hist-y-tog" H.! HA.onclick "toggleLog()" $
-      --     "Toggle lin/log"
-      --   H.div H.! HA.id "hist" $ mempty
+      H.p $ "Select catalogs across the top to compare, and fields down the left to apply filters and compare statistics and distributions from these catalogs."
+      -- H.p "Comparison tool coming soon."
+      -- H.img H.! HA.class_ "img-ctr" H.! HA.src "https://media.giphy.com/media/3o72FkiKGMGauydfyg/source.gif"
+      H.table H.! HA.id "tcompare" H.! HA.class_ "u-full-width" $ do
+        H.thead $ H.tr $ do
+          H.th "Choose two or more catalogs"
+          H.td $ H.select H.! HA.name "selcat" H.! HA.onchange "selectCat(event.target)" $ do
+            H.option H.! HA.value mempty H.! HA.selected "selected" $ "Choose catalog..."
+            forM_ (catalogsSorted cats) $ \(sim, cat) ->
+              H.option H.! HA.value (H.textValue sim) $ H.text $ catalogTitle cat
+        H.tbody $ mempty
+        H.tfoot $ do
+          H.tr H.! HA.id "tr-add" $
+            H.td $ H.select H.! HA.id "addf"  H.! HA.onchange "addField()"  $ mempty
+          H.tr H.! HA.id "tr-comp" $
+            H.td $ H.select H.! HA.id "compf" H.! HA.onchange "compField()" $ mempty
+      H.button H.! HA.id "hist-tog" H.! HA.disabled "disabled" H.! HA.onclick "histogramComp()" $ "histogram"
+      H.div H.! HA.id "dhist" $ do
+        H.button H.! HA.id "hist-y-tog" H.! HA.onclick "toggleLog()" $
+          "Toggle lin/log"
+        H.div H.! HA.id "hist" $ mempty
 
 
 staticHtml :: Route [FilePathComponent]
