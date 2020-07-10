@@ -72,19 +72,16 @@ vueAttribute = H.customAttribute . fromString . ("v-" ++)
 htmlResponse :: Wai.Request -> ResponseHeaders -> H.Markup -> M Wai.Response
 htmlResponse req hdrs body = do
   glob <- ask
+  -- TODO: Can I remove this?
   let isdev = globalDevMode glob && any ((==) "dev" . fst) (Wai.queryString req)
       cats = globalCatalogs glob
   return $ okResponse hdrs $ H.docTypeHtml $ do
     H.head $ do
-      forM_ ([["jspm_packages", if isdev then "system.src.js" else "system.js"], ["jspm.config.js"]] ++ if isdev then [["dev.js"]] else [["index.js"]]) $ \src ->
-        H.script H.! HA.type_ "text/javascript" H.! HA.src (staticURI src) $ mempty
-      -- TODO: use System.resolve:
       forM_ [
-          ["jspm_packages", "npm", "datatables.net-dt@1.10.21", "css", "jquery.dataTables.css"],
-          ["jspm_packages", "npm", "bootstrap@4.5.0", "dist", "css", "bootstrap.min.css"],
           ["style.css"]
         ] $ \src ->
         H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
+      -- TODO: Move mathjax and fonts to bundle.js
       H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML" $ mempty
       H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href "https://fonts.googleapis.com/css?family=Major+Mono+Display|Montserrat"
       jsonVar "Catalogs" (HM.map catalogTitle $ catalogMap cats)
@@ -143,7 +140,8 @@ htmlResponse req hdrs body = do
               H.a H.! HA.href (WH.routeActionValue comparePage [] mempty) $ H.text "Compare"
               H.a H.! HA.href "https://github.com/flatironinstitute/astrosims" $ H.text "Github"
             H.p H.! HA.class_ "footer-company-name" $ "Flatiron Institute, 2019"
-
+      forM_ ([["bundle.js"]]) $ \src ->
+        H.script H.! HA.type_ "text/javascript" H.! HA.src (staticURI src) $ mempty
 acceptable :: [BS.ByteString] -> Wai.Request -> Maybe BS.ByteString
 acceptable l = find (`elem` l) . foldMap parseHttpAccept . lookup hAccept . Wai.requestHeaders
 

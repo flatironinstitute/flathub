@@ -1,5 +1,4 @@
 /node_modules/
-/jspm_packages/
 /index.js
 /main.js
 /common.js
@@ -9,4 +8,6 @@
 /*.js.map
 /style.css
 /*.css.map
+*.min.css
 *.gz
+package-lock.json

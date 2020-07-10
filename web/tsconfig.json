@@ -1,15 +1,14 @@
 {
   "compilerOptions": {
-    "module": "system",
-    "target": "es5",
-    "lib": ["es6", "dom"],
-    "noImplicitAny": true,
-    "noImplicitThis": true,
+    "outDir": "./",
     "sourceMap": true,
+    "module": "es6",
+    "target": "ES2015",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "alwaysStrict": true,
-    "strictNullChecks": true
+    "moduleResolution": "node",
+    "types": ["@types/datatables.net"]
   },
-  "files": [
-    "main.ts"
-  ]
+  "files": ["./src/main.ts"]
 }
