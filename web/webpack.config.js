@@ -27,26 +27,13 @@ module.exports = {
         exclude: /node_modules/,
       },
       {
+        test: require.resolve("dataTables.net"),
+        loader: "imports?define=>false",
+      },
+      {
         test: /\.s[ac]ss$/i,
         use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader"],
         exclude: /node_modules/,
-      },
-      {
-        test: /datatables\.net.*/,
-        use: [
-          {
-            loader: "imports-loader",
-            options: {
-              imports: [
-                {
-                  // syntax: "default",
-                  moduleName: "datatables.net",
-                  name: "Datatables",
-                },
-              ],
-            },
-          },
-        ],
       },
       {
         test: /\.(png|svg|jpg|gif)$/,
@@ -56,6 +43,7 @@ module.exports = {
   },
   resolve: {
     extensions: [".tsx", ".ts", ".js"],
+    alias: { vue: "vue/dist/vue.esm.js" },
   },
   output: {
     filename: "bundle.js",

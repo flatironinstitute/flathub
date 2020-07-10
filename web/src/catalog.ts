@@ -1,6 +1,6 @@
-// import $ from "jquery";
 import Vue from "vue";
-require("datatables.net-dt")(window, $);
+// import DataTable from "datatables.net";
+// // import "datatables.net-dt/css/jquery.datatables.css";
 import Highcharts from "highcharts";
 import Highcharts_more from "highcharts/highcharts-more";
 import Highcharts_heatmap from "highcharts/modules/heatmap";
@@ -21,7 +21,6 @@ import {
   updateMathJax,
 } from "./common";
 
-DataTables(window, $);
 Highcharts_more(Highcharts);
 Highcharts_heatmap(Highcharts);
 Highcharts_export_data(Highcharts);

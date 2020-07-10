@@ -1,5 +1,7 @@
 import $ from "jquery";
 import "bootstrap";
+import "datatables.net";
+import "datatables.net-dt";
 import { initCatalog } from "./catalog";
 import { initCompare } from "./compare";
 

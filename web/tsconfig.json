@@ -4,12 +4,11 @@
     "sourceMap": true,
     "module": "es6",
     "target": "ES2015",
-    "allowSyntheticDefaultImports" : true,
-    "esModuleInterop" : true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "alwaysStrict": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "types": ["@types/datatables.net"]
   },
-  "files": [
-    "./src/main.ts"
-  ]
+  "files": ["./src/main.ts"]
 }
