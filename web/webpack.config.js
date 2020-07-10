@@ -5,7 +5,6 @@ const CompressionPlugin = require("compression-webpack-plugin");
 
 module.exports = {
   entry: ["./src/main.ts", "./src/scss/main.scss"],
-  devtool: "inline-source-map",
   plugins: [
     new CompressionPlugin(),
     new MiniCssExtractPlugin({
