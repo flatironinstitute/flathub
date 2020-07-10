@@ -2218,7 +2218,7 @@ ananke:
   html: |
     <div class="section highlighted-links">
       <img
-        src="/web/ananke-m12f-lsr1-threecolor-medfilt-crop-50-28irpjo.png"
+        src="/web/assets/ananke-m12f-lsr1-threecolor-medfilt-crop-50-28irpjo.png"
         alt="RGB flux map of a synthetic survey of m12f."
         width="100%"
       />
