@@ -2,7 +2,7 @@ version: '2.4'
 
 x-es:
   &es
-  image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.4.2
+  image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.7.1
   ulimits:
     memlock:
       soft: -1
@@ -30,9 +30,6 @@ services:
       - "127.0.0.1:9200:9200"
   es:
     << : *es
-    scale: 4
-  astrosims:
-    build: .
     environment:
       - cluster.name=astrosims
       - bootstrap.memory_lock=true
@@ -40,6 +37,9 @@ services:
       - "discovery.seed_hosts=astrosims-es"
       - "cluster.initial_master_nodes=astrosims-es"
       - "node.max_local_storage_nodes=8"
+    scale: 4
+  astrosims:
+    build: .
     image: flatironinstitute/astrosims-reproto
     networks:
       - esnet

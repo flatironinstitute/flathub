@@ -1,15 +1,4 @@
 dict:
-  - name: candels_field
-    title: field
-    type: byte
-    flag: top
-    descr: "CANDELS field (COSMOS, EGS, GOODS-N, GOODS-S, UDS)"
-    enum: ['COSMOS', 'EGS', 'GOODS-N', 'GOODS-S', 'UDS']
-  - name: candels_realization
-    title: realization
-    type: byte
-    flag: top
-    descr: "Realization between 0-7"
   - name: ppos
     title: coord
     sub:
@@ -35,16 +24,15 @@ dict:
       title: 'Y'
     - name: 'z'
       title: 'Z'
-  - name: candels_gal_id
-    title: gal_id
-    type: long
-  - name: bolshoi_halo_id
-    type: long
-    descr: halo id from Bolshoi halo catalog
+  - name: vel
+    sub:
+    - name: 'x'
+    - name: 'y'
+    - name: 'z'
   - name: halo_mass
     type: float
     descr: host halo virial mass
-    units: '\(10^{10} M_\odot\)'
+    units: '\(10^{10}M_\odot\)'
   - name: V_vir
     type: float
     descr: Host halo virial velocity
@@ -73,47 +61,47 @@ dict:
   - name: M_stellar
     type: float
     descr: stellar mass
-    units: '\(10^{10} M_\odot\)'
+    units: '\(10^{10}M_\odot\)'
   - name: M
     type: float
     descr: mass of sub-halo
-    units: '\(10^{10} M_\odot\)'
+    units: '\(10^{10}M_\odot\)'
   - name: M_star_diffuse
     descr: Mass of stars in a 'diffuse stellar halo'
-    units: '\(10^{10} M_\odot\)'
+    units: '\(10^{10}M_\odot\)'
     type: float
   - name: M_hot_halo
-    units: '\(10^{10} M_\odot\)'
+    units: '\(10^{10}M_\odot\)'
     type: float
     descr: Mass of hot gas in host halo
   - name: M_cold
     descr: Mass of cold gas
-    units: '\(10^{10} M_\odot\)'
+    units: '\(10^{10}M_\odot\)'
     type: float
   - name: M_bulge
     descr: Stellar mass of bulge component
-    units: '\(10^{10} M_\odot\)'
+    units: '\(10^{10}M_\odot\)'
     type: float
   - name: M_BH
     descr: Mass of black hole
-    units: '\(10^{10} M_\odot\)'
+    units: '\(10^{10}M_\odot\)'
     type: float
   - name: BHAR
     descr: Total accretion rate onto black hole
-    units: '\(10^{10} M_\odot\)/yr'
+    units: '\(10^{10}M_\odot\)/yr'
     type: float
   - name: BHAR_radio
     descr: Black hole accretion rate onto black hole
-    units: '\(10^{10} M_\odot\)'
+    units: '\(10^{10}M_\odot\)'
     type: float
   - name: Z_star
     type: float
     descr: Mass weighted metallicity of stars
-    units: '\( Z_\odot\)'
+    units: '\(Z_\odot\)'
   - name: Z_cold
     type: float
     descr: Mass weighted metallicity of cold gas
-    units: '\( Z_\odot\)'
+    units: '\(Z_\odot\)'
   - name: Z_hot_halo
     descr: Metallicity of hot gas in host halo
     units: '\(Z_\odot\)'
@@ -143,8 +131,39 @@ dict:
     type: float
     descr: Maximum rotation velocity of disk
     units: 'km/s'
+
+  - name: candels_field
+    title: field
+    type: byte
+    flag: top
+    descr: "CANDELS field (COSMOS, EGS, GOODS-N, GOODS-S, UDS)"
+    enum: ['COSMOS', 'EGS', 'GOODS-N', 'GOODS-S', 'UDS']
+  - name: candels_realization
+    title: realization
+    type: byte
+    flag: top
+    descr: "Realization between 0-7"
+  - name: candels_gal_id
+    title: gal_id
+    type: long
+  - name: bolshoi_halo_id
+    type: long
+    descr: halo id from Bolshoi halo catalog
   - name: UV1500_rest
     type: float
+
+  - name: parallax
+    type: double
+    descr: Parallax
+    units: mas
+  - name: pmra
+    type: double
+    descr: Proper motion in right ascension direction
+    units: mas/year
+  - name: pmdec
+    type: double
+    descr: Proper motion in declination direction
+    units: mas/year
   - name: GAIA_source_id
     title: source_id
     type: long
@@ -157,14 +176,12 @@ dict:
     title: ra_error
     type: double
     descr: Standard error of right ascension
+    units: deg
   - name: GAIA_ppos_y_error
     title: dec_error
     type: double
     descr: Standard error of declination
-  - name: parallax
-    type: double
-    descr: Parallax
-    units: mas
+    units: deg
   - name: GAIA_parallax_error
     title: parallax_error
     type: double
@@ -174,18 +191,10 @@ dict:
     title: parallax_over_error
     type: float
     descr: Parallax divided by its error
-  - name: pmra
-    type: double
-    descr: Proper motion in right ascension direction
-    units: mas/year
   - name: GAIA_pmra_error
     title: pmra_error
     type: double
     descr: Standard error of proper motion in right ascension direction
-    units: mas/year
-  - name: pmdec
-    type: double
-    descr: Proper motion in declination direction
     units: mas/year
   - name: GAIA_pmdec_error
     title: pmdec_error
@@ -269,8 +278,8 @@ dict:
   - name: GAIA_radial_velocity_error
     title: radial_velocity_error
     type: double
-    descr: km/s
-    units: Radial velocity error
+    units: km/s
+    descr: Radial velocity error
 
 group:
   - name: milkyway
@@ -294,23 +303,22 @@ group:
   - name: dm
     title: Cosmological Dark Matter-Only Simulations
     children:
-      #- quixote
+      - quijote
       - *illustris
   - name: candels
     title: CANDELS
     children:
+      - candels
       - scsam
       - unimach
       - lusam
-      #- candels
     html: |
       <div class="section highlighted-links">
         <h4><a class="subtitle" href="http://arcoiris.ucolick.org/candels/About.html" target="_blank">Project summary</a></h4>
         <p>
         <b>The Cosmic Assembly Near-infrared Deep Extragalactic Survey (CANDELS)</b> is a multi-wavelength deep sky survey anchored in a Multi-cycle Treasury program with the Hubble Space Telescope (HST; PI S. Faber & H. Ferguson). CANDELS took Near-IR images with the Wide Field Camera 3 (WFC3) in five fields that were already well studied at many different wavelengths: COSMOS, EGS, GOODS-N, GOODS-S, and the UDS. The CANDELS team and the community have compiled extensive ancillary observations, both imaging and spectroscopy, in these fields. Physical parameters such as redshifts, stellar masses, star formation rates, etc., have been estimated from the Spectral Energy Distributions (SED).
         </p>
-        <p>
-        As part of the CANDELS program, the theory team created custom "mock CANDELS" catalogs. These were created by extracting the dark matter halos from a large cosmological simulation along the past lightcone corresponding to a field with the same geometry and sky location as one of the real CANDELS fields.  These halos are then populated with galaxy properties using two different techniques: an empirical technique known as Sub-Halo Abundance Matching (using the UniverseMachine built by P. Behroozi & collaborators), and Semi-analytic Models of galaxy formation.
+        <p>As part of the CANDELS program, the theory team created custom "mock CANDELS" catalogs. These were created by extracting the dark matter halos from a large cosmological simulation along the past lightcone corresponding to a field with the same geometry and sky location as one of the real CANDELS fields.  These halos are then populated with galaxy properties using two different techniques: an empirical technique known as Sub-Halo Abundance Matching (using the UniverseMachine built by P. Behroozi & collaborators), and Semi-analytic Models of galaxy formation.
         </p>
         <p>
         In order to facilitate comparison between theoretical models and the CANDELS observations, we have created a set of curated "theory friendly" catalogs for the CANDELS observed quantities and physical properties derived from the observations.
@@ -321,9 +329,10 @@ group:
         <p>For more information about the CANDELS survey, the theory friendly catalogs, and the theoretical mock catalogs, please see the following references:</p>
         <ul>
           <li>CANDELS survey design and execution: <a class="underline" href="https://iopscience.iop.org/article/10.1088/0067-0049/197/2/35" target="_blank">Grogin et al. (2011);</a>  <a class="underline" href="https://arxiv.org/pdf/1105.3754.pdf" target="_blank"> Koekemoer et al. (2011)</a></li>
-          <li>CANDELS theory friendly catalogs: <a class="underline" href="https://www.overleaf.com/read/gvdgkswmprqx" target="_blank">Somerville et al. (2020)</a></li>
-          <li>CANDELS mock catalogs:<a class="underline" href="https://arxiv.org/abs/1312.3233" target="_blank"> Lu et al. (2014);</a> <a class="underline" href="https://www.overleaf.com/read/gvdgkswmprqx"> Somerville et al. (2020)</a></li>
+          <li>CANDELS theory friendly catalogs: <a class="underline" href="" target="_blank">Somerville et al. (2020)</a></li>
+          <li>CANDELS mock catalogs:<a class="underline" href="https://arxiv.org/abs/1312.3233" target="_blank"> Lu et al. (2014);</a> <a class="underline" href=""> Somerville et al. (2020)</a></li>
         </ul>
+      </div>
   - name: zoomin
     title: Cosmological Zoom-in Simulations
     children: []
@@ -376,13 +385,13 @@ illustris:
 
     - name: BHMass
       type: float
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of the BH_Mass field of all blackholes (type 5) in this group.'
       ingest: _optional:Group/GroupBHMass
     - name: BHMdot
       type: float
       title: '\(\dot{M}_{\rm BH}\)'
-      units: '\((10^{10} M_\odot/h) / (0.978Gyr/h)\)'
+      units: '\((10^{10}M_\odot/h)/(0.978Gyr/h)\)'
       descr: 'Sum of the BH_Mdot field of all blackholes (type 5) in this group.'
       ingest: _optional:Group/GroupBHMdot
     - name: CM
@@ -430,12 +439,12 @@ illustris:
     - name: Mass
       type: float
       title: '\(M_{\rm tot}\)'
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of the individual masses of every particle/cell, of all types, in this group.'
       ingest: Group/GroupMass
     - name: MassType
       type: float
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of the individual masses of every particle/cell, split into the six different types, in this group. Note: Wind phase cells are counted as gas (type 0) for GroupMassType.'
       sub:
       - name: gas
@@ -468,7 +477,7 @@ illustris:
       ingest: Group/GroupPos
     - name: SFR
       type: float
-      units: '\( M_\odot / yr \)'
+      units: '\(M_\odot/yr\)'
       descr: 'Sum of the individual star formation rates of all gas cells in this group.'
       dict: SFR
       ingest: _optional:Group/GroupSFR
@@ -478,42 +487,46 @@ illustris:
       ingest: _optional:Group/GroupStarMetallicity
     - name: Vel
       type: float
+      dict: vel
       units: 'km/s/a'
       descr: 'Velocity of the group, computed as the sum of the mass weighted velocities of all particles/cells in this group, of all types. The peculiar velocity is obtained by multiplying this value by \(1/a.\)'
       sub:
       - name: "x"
         title: '\(v_x\)'
+        dict: vel_x
       - name: "y"
         title: '\(v_y\)'
+        dict: vel_y
       - name: "z"
         title: '\(v_z\)'
+        dict: vel_z
       ingest: Group/GroupVel
     - name: WindMass
       type: float
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of the individual masses of all wind phase gas cells (type 4, BirthTime <= 0) in this group.'
       ingest: _optional:Group/GroupWindMass
     - name: M_Crit200
       type: float
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Total Mass of this group enclosed in a sphere whose mean density is 200 times the critical density of the Universe, at the time the halo is considered.'
       flag: hidden
       ingest: Group/Group_M_Crit200
     - name: M_Crit500
       type: float
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Total Mass of this group enclosed in a sphere whose mean density is 500 times the critical density of the Universe, at the time the halo is considered.'
       flag: hidden
       ingest: Group/Group_M_Crit500
     - name: M_Mean200
       type: float
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Total Mass of this group enclosed in a sphere whose mean density is 200 times the mean density of the Universe, at the time the halo is considered.'
       flag: hidden
       ingest: Group/Group_M_Mean200
     - name: M_TopHat200
       type: float
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Total Mass of this group enclosed in a sphere whose mean density is \(\Delta_c\) times the critical density of the Universe, at the time the halo is considered. \(\Delta_c\) derives from the solution of the collapse of a spherical top-hat perturbation (fitting formula from <a href="http://adsabs.harvard.edu/abs/1998ApJ...495...80B">Bryan+ 1998</a>). The subscript 200 can be ignored.'
       flag: hidden
       ingest: Group/Group_M_TopHat200
@@ -622,13 +635,13 @@ tng:
     - name: BHMass
       ingest: Group/GroupBHMass
       type: float
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of the BH_Mass field of all blackholes (type 5) in this group.'
     - name: BHMdot
       ingest: Group/GroupBHMdot
       type: float
       title: '\(\dot{M}_{\rm BH}\)'
-      units: '\((10^{10} M_\odot/h) / (0.978Gyr/h)\)'
+      units: '\((10^{10}M_\odot/h)/(0.978Gyr/h)\)'
       descr: 'Sum of the BH_Mdot field of all blackholes (type 5) in this group.'
     - name: CM
       ingest: Group/GroupCM
@@ -693,12 +706,12 @@ tng:
       ingest: Group/GroupMass
       type: float
       title: '\(M_{\rm tot}\)'
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of the individual masses of every particle/cell, of all types, in this group.'
     - name: MassType
       ingest: Group/GroupMassType
       type: float
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of the individual masses of every particle/cell, split into the six different types, in this group. Note: Wind phase cells are counted as gas (type 0) for GroupMassType.'
       sub:
       - name: gas
@@ -731,7 +744,7 @@ tng:
     - name: SFR
       ingest: Group/GroupSFR
       type: float
-      units: '\( M_\odot / yr \)'
+      units: '\(M_\odot/yr\)'
       descr: 'Sum of the individual star formation rates of all gas cells in this group.'
       dict: SFR
     - name: StarMetalFractions
@@ -758,42 +771,46 @@ tng:
     - name: Vel
       ingest: Group/GroupVel
       type: float
+      dict: vel
       units: 'km/s/a'
       descr: 'Velocity of the group, computed as the sum of the mass weighted velocities of all particles/cells in this group, of all types. The peculiar velocity is obtained by multiplying this value by \(1/a.\)'
       sub:
       - name: "x"
         title: '\(v_x\)'
+        dict: vel_x
       - name: "y"
         title: '\(v_y\)'
+        dict: vel_y
       - name: "z"
         title: '\(v_z\)'
+        dict: vel_z
     - name: WindMass
       ingest: Group/GroupWindMass
       type: float
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of the individual masses of all wind phase gas cells (type 4, BirthTime <= 0) in this group.'
     - name: M_Crit200
       ingest: Group/Group_M_Crit200
       type: float
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Total Mass of this group enclosed in a sphere whose mean density is 200 times the critical density of the Universe, at the time the halo is considered.'
       flag: hidden
     - name: M_Crit500
       ingest: Group/Group_M_Crit500
       type: float
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Total Mass of this group enclosed in a sphere whose mean density is 500 times the critical density of the Universe, at the time the halo is considered.'
       flag: hidden
     - name: M_Mean200
       ingest: Group/Group_M_Mean200
       type: float
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Total Mass of this group enclosed in a sphere whose mean density is 200 times the mean density of the Universe, at the time the halo is considered.'
       flag: hidden
     - name: M_TopHat200
       ingest: Group/Group_M_TopHat200
       type: float
-      units: '\( 10^{10} M_\odot / h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Total Mass of this group enclosed in a sphere whose mean density is \(\Delta_c\) times the critical density of the Universe, at the time the halo is considered. \(\Delta_c\) derives from the solution of the collapse of a spherical top-hat perturbation (fitting formula from <a href="http://adsabs.harvard.edu/abs/1998ApJ...495...80B">Bryan+ 1998</a>). The subscript 200 can be ignored.'
       flag: hidden
     - name: R_Crit200
@@ -868,12 +885,12 @@ illustris_sub:
     - name: BHMass
       ingest: _optional:Subhalo/SubhaloBHMass
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of the masses of all blackholes in this subhalo.'
     - name: BHMdot
       ingest: _optional:Subhalo/SubhaloBHMdot
       type: float
-      units: '\((10^{10} M_\odot/h) / (0.978Gyr/h)\)'
+      units: '\((10^{10}M_\odot/h)/(0.978Gyr/h)\)'
       descr: 'Sum of the instantaneous accretion rates \(\dot{M}\) of all blackholes in this subhalo.'
     - name: CM
       ingest: Subhalo/SubhaloCM
@@ -949,17 +966,17 @@ illustris_sub:
     - name: Mass
       ingest: Subhalo/SubhaloMass
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Total mass of all member particle/cells which are bound to this Subhalo, of all types. Particle/cells bound to subhaloes of this Subhalo are NOT accounted for.'
     - name: MassInHalfRad
       ingest: Subhalo/SubhaloMassInHalfRad
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of masses of all particles/cells within the stellar half mass radius.'
     - name: MassInHalfRadType
       ingest: Subhalo/SubhaloMassInHalfRadType
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of masses of all particles/cells (split by type) within the stellar half mass radius.'
       sub:
       - name: gas
@@ -972,12 +989,12 @@ illustris_sub:
     - name: MassInMaxRad
       ingest: Subhalo/SubhaloMassInMaxRad
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of masses of all particles/cells within the radius of \(V_{max}\).'
     - name: MassInMaxRadType
       ingest: Subhalo/SubhaloMassInMaxRadType
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of masses of all particles/cells (split by type) within the radius of \(V_{max}\).'
       sub:
       - name: gas
@@ -990,12 +1007,12 @@ illustris_sub:
     - name: MassInRad
       ingest: Subhalo/SubhaloMassInRad
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of masses of all particles/cells within <b>twice</b> the stellar half mass radius.'
     - name: MassInRadType
       ingest: Subhalo/SubhaloMassInRadType
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of masses of all particles/cells (split by type) within <b>twice</b> the stellar half mass radius.'
       sub:
       - name: gas
@@ -1008,7 +1025,7 @@ illustris_sub:
     - name: MassType
       ingest: Subhalo/SubhaloMassType
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Total mass of all member particle/cells which are bound to this Subhalo, separated by type. Particle/cells bound to subhaloes of this Subhalo are NOT accounted for. Note: Wind phase cells are counted as gas (type 0) for SubhaloMassType.'
       sub:
       - name: gas
@@ -1034,27 +1051,27 @@ illustris_sub:
     - name: SFR
       ingest: _optional:Subhalo/SubhaloSFR
       type: float
-      units: '\( M_\odot / yr \)'
+      units: '\(M_\odot/yr\)'
       descr: 'Sum of the individual star formation rates of all gas cells in this subhalo.'
     - name: SFRinHalfRad
       ingest: _optional:Subhalo/SubhaloSFRinHalfRad
       type: float
-      units: '\( M_\odot / yr \)'
+      units: '\(M_\odot/yr\)'
       descr: 'Same as SubhaloSFR, but restricted to cells within the stellar half mass radius.'
     - name: SFRinMaxRad
       ingest: _optional:Subhalo/SubhaloSFRinMaxRad
       type: float
-      units: '\( M_\odot / yr \)'
+      units: '\(M_\odot/yr\)'
       descr: 'Same as SubhaloSFR, but restricted to cells within the radius of \(V_{max}\).'
     - name: SFRinRad
       ingest: _optional:Subhalo/SubhaloSFRinRad
       type: float
-      units: '\( M_\odot / yr \)'
+      units: '\(M_\odot/yr\)'
       descr: 'Same as SubhaloSFR, but restricted to cells within <b>twice</b> the stellar half mass radius.'
     - name: Spin
       ingest: Subhalo/SubhaloSpin
       type: float
-      units: '\( (kpc/h) (km/s) \)'
+      units: '\((kpc/h)(km/s)\)'
       descr: 'Total spin per axis, computed for each as the mass weighted sum of the relative coordinate times relative velocity of all member particles/cells.'
       sub:
       - name: "x"
@@ -1091,7 +1108,7 @@ illustris_sub:
     - name: StellarPhotometricsMassInRad
       ingest: _optional:Subhalo/SubhaloStellarPhotometricsMassInRad
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of the mass of the member stellar particles, but restricted to stars within the radius SubhaloStellarPhotometricsRad.'
     - name: StellarPhotometricsRad
       ingest: _optional:Subhalo/SubhaloStellarPhotometricsRad
@@ -1125,7 +1142,7 @@ illustris_sub:
     - name: WindMass
       ingest: _optional:Subhalo/SubhaloWindMass
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of masses of all wind-phase cells in this subhalo (with Type==4 and BirthTime&#60;=0).'
     - name: SnapByType
       type: long
@@ -1198,22 +1215,22 @@ tng_sub:
     - name: BHMass
       ingest: Subhalo/SubhaloBHMass
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of the masses of all blackholes in this subhalo.'
     - name: BHMdot
       ingest: Subhalo/SubhaloBHMdot
       type: float
-      units: '\((10^{10} M_\odot/h) / (0.978Gyr/h)\)'
+      units: '\((10^{10}M_\odot/h)/(0.978Gyr/h)\)'
       descr: 'Sum of the instantaneous accretion rates \(\dot{M}\) of all blackholes in this subhalo.'
     - name: BfldDisk
       ingest: _optional:Subhalo/SubhaloBfldDisk
       type: float
-      units: '\((h/a^2) (\rm{UnitPressure})^{1/2}\)'
+      units: '\((h/a^2)(\rm{UnitPressure})^{1/2}\)'
       descr: "The square root of the volume weighted value of $B^{2}$ for all gas cells within the canonical two times the stellar half mass radius. This value gives a magnetic field strength which would have the same amount of mean magnetic energy as the galaxy cells."
     - name: BfldHalo
       ingest: _optional:Subhalo/SubhaloBfldHalo
       type: float
-      units: '\((h/a^2) (\rm{UnitPressure})^{1/2}\)'
+      units: '\((h/a^2)(\rm{UnitPressure})^{1/2}\)'
       descr: "The square root of the volume weighted value of $B^{2}$ for all gas cells in the subhalo. This value gives a magnetic field strength which would have the same amount of mean magnetic energy as the subhalo cells."
     - name: CM
       ingest: Subhalo/SubhaloCM
@@ -1374,17 +1391,17 @@ tng_sub:
     - name: Mass
       ingest: Subhalo/SubhaloMass
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Total mass of all member particle/cells which are bound to this Subhalo, of all types. Particle/cells bound to subhaloes of this Subhalo are NOT accounted for.'
     - name: MassInHalfRad
       ingest: Subhalo/SubhaloMassInHalfRad
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of masses of all particles/cells within the stellar half mass radius.'
     - name: MassInHalfRadType
       ingest: Subhalo/SubhaloMassInHalfRadType
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of masses of all particles/cells (split by type) within the stellar half mass radius.'
       sub:
       - name: gas
@@ -1397,12 +1414,12 @@ tng_sub:
     - name: MassInMaxRad
       ingest: Subhalo/SubhaloMassInMaxRad
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of masses of all particles/cells within the radius of \(V_{max}\).'
     - name: MassInMaxRadType
       ingest: Subhalo/SubhaloMassInMaxRadType
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of masses of all particles/cells (split by type) within the radius of \(V_{max}\).'
       sub:
       - name: gas
@@ -1415,12 +1432,12 @@ tng_sub:
     - name: MassInRad
       ingest: Subhalo/SubhaloMassInRad
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of masses of all particles/cells within <b>twice</b> the stellar half mass radius.'
     - name: MassInRadType
       ingest: Subhalo/SubhaloMassInRadType
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of masses of all particles/cells (split by type) within <b>twice</b> the stellar half mass radius.'
       sub:
       - name: gas
@@ -1433,7 +1450,7 @@ tng_sub:
     - name: MassType
       ingest: Subhalo/SubhaloMassType
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Total mass of all member particle/cells which are bound to this Subhalo, separated by type. Particle/cells bound to subhaloes of this Subhalo are NOT accounted for. Note: Wind phase cells are counted as gas (type 0) for SubhaloMassType.'
       sub:
       - name: gas
@@ -1459,27 +1476,27 @@ tng_sub:
     - name: SFR
       ingest: Subhalo/SubhaloSFR
       type: float
-      units: '\( M_\odot / yr \)'
+      units: '\(M_\odot/yr\)'
       descr: 'Sum of the individual star formation rates of all gas cells in this subhalo.'
     - name: SFRinHalfRad
       ingest: Subhalo/SubhaloSFRinHalfRad
       type: float
-      units: '\( M_\odot / yr \)'
+      units: '\(M_\odot/yr\)'
       descr: 'Same as SubhaloSFR, but restricted to cells within the stellar half mass radius.'
     - name: SFRinMaxRad
       ingest: Subhalo/SubhaloSFRinMaxRad
       type: float
-      units: '\( M_\odot / yr \)'
+      units: '\(M_\odot/yr\)'
       descr: 'Same as SubhaloSFR, but restricted to cells within the radius of \(V_{max}\).'
     - name: SFRinRad
       ingest: Subhalo/SubhaloSFRinRad
       type: float
-      units: '\( M_\odot / yr \)'
+      units: '\(M_\odot/yr\)'
       descr: 'Same as SubhaloSFR, but restricted to cells within <b>twice</b> the stellar half mass radius.'
     - name: Spin
       ingest: Subhalo/SubhaloSpin
       type: float
-      units: '\( (kpc/h) (km/s) \)'
+      units: '\((kpc/h)(km/s)\)'
       descr: 'Total spin per axis, computed for each as the mass weighted sum of the relative coordinate times relative velocity of all member particles/cells.'
       sub:
       - name: "x"
@@ -1567,7 +1584,7 @@ tng_sub:
     - name: StellarPhotometricsMassInRad
       ingest: Subhalo/SubhaloStellarPhotometricsMassInRad
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of the mass of the member stellar particles, but restricted to stars within the radius SubhaloStellarPhotometricsRad.'
     - name: StellarPhotometricsRad
       ingest: Subhalo/SubhaloStellarPhotometricsRad
@@ -1601,69 +1618,8 @@ tng_sub:
     - name: WindMass
       ingest: Subhalo/SubhaloWindMass
       type: float
-      units: '\( 10^{10} M_\odot/h \)'
+      units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of masses of all wind-phase cells in this subhalo (with Type==4 and BirthTime&#60;=0).'
-neutrino:
-  title: Neutrino
-  index: neutrino
-  order: 'neutrino'
-  fields:
-    - name: simulation
-      type: keyword
-      flag: top
-    - name: snapshot
-      type: short
-      flag: top
-    - name: time
-      type: half_float
-      flag: hidden
-    - name: redshift
-      type: half_float
-      dict: redshift
-    - name: instance
-      type: byte
-      flag: top
-    - name: Mnu
-      type: half_float
-
-    - name: Len
-      type: integer
-    - name: Offset
-      type: integer
-    - name: Mass
-      type: float
-    - name: Pos
-      type: float
-      sub:
-      - name: "x"
-      - name: "y"
-      - name: "z"
-    - name: Vel
-      type: float
-      sub:
-      - name: "x"
-      - name: "y"
-      - name: "z"
-    - name: LenType
-      type: float
-      sub:
-      - name: gas
-      - name: dm
-      - name: unused
-        flag: hidden
-      - name: tracers
-      - name: stars
-      - name: bh
-    - name: MassType
-      type: float
-      sub:
-      - name: gas
-      - name: dm
-      - name: unused
-        flag: hidden
-      - name: tracers
-      - name: stars
-      - name: bh
 gaea:
   title: GAEA
   descr: >
@@ -1703,6 +1659,7 @@ gaea:
     - name: Pos
       type: double
       descr: Position in the catalog in comoving distance from the observer
+      dict: pos
       units: 'Mpc/h'
       sub:
       - name: "x"
@@ -1711,11 +1668,18 @@ gaea:
     - name: Vel
       type: double
       descr: Velocity of the galaxy in the catalog
+      dict: vel
       units: 'km/s'
       sub:
       - name: "x"
+        type: double
+        dict: vel_x
       - name: "y"
+        type: double
+        dict: vel_y
       - name: "z"
+        type: double
+        dict: vel_z
     - name: Type
       type: integer
       descr: Galaxy Type, indicates how this galaxy is related to the HM halo
@@ -1728,11 +1692,11 @@ gaea:
     - name: CentralMvir
       type: float
       descr: '\(M_{200}\) mass of the FoF halo'
-      units: '\(10^{10} M_\odot/h\)'
+      units: '\(10^{10}M_\odot/h\)'
     - name: Mvir
       type: float
       descr: '\(M_{200}\) mass of the hosting SubHalo'
-      units: '\(10^{10} M_\odot/h\)'
+      units: '\(10^{10}M_\odot/h\)'
     - name: Rvir
       type: float
       descr: 'Virial radius calculated from \(M_{200}\)'
@@ -1748,15 +1712,15 @@ gaea:
     - name: StellarMass
       type: float
       descr: 'Total stellar Mass of the galaxy (disk+bulge)'
-      units: '\(10^{10} M_\odot/h\)'
+      units: '\(10^{10}M_\odot/h\)'
     - name: ColdGas
       type: float
       descr: 'Cold gas mass in the gaseous disk'
-      units: '\(10^{10} M_\odot/h\)'
+      units: '\(10^{10}M_\odot/h\)'
     - name: HI
       type: float
       descr: 'HI mass in the gaseous disk'
-      units: '\(10^{10} M_\odot/h\)'
+      units: '\(10^{10}M_\odot/h\)'
     - name: GasDiskRadius
       type: float
       descr: 'Gaseous Disk Radius'
@@ -1768,7 +1732,7 @@ gaea:
     - name: GasSpin
       type: float
       descr: 'Gaseous disk specific angular momentum'
-      units: '\({Mpc/h} \text{ } {km/s}\)'
+      units: '\((Mpc/h)(km/s)\)'
       sub:
       - name: "x"
         title: jx
@@ -1965,12 +1929,12 @@ gaiadr2:
         title: pseudo_colour
         descr: Astrometrically determined pseudocolour of the source
         type: double
-        units: '\(\mu m^{-1}\)'
+        units: '\(\mu{m}^{-1}\)'
       - name: astrometric_pseudo_colour_error
         title: pseudo_colour_error
         descr: Standard error of the pseudocolour of the source
         type: double
-        units: '\(\mu m^{-1}\)'
+        units: '\(\mu{m}^{-1}\)'
       - name: mean_varpi_factor_al
         descr: Mean Parallax factor in the AL direction
         type: float
@@ -2119,7 +2083,7 @@ gaiadr2:
     - name: rv_template_logg
       descr: logg of the template used to compute radial velocity
       type: float
-      units: '\(\log cgs\)'
+      units: 'log cgs'
     - name: rv_template_fe_h
       descr: Fe/H of the template used to compute radial velocity
       type: float
@@ -2254,7 +2218,7 @@ ananke:
   html: |
     <div class="section highlighted-links">
       <img
-        src="/web/ananke-m12f-lsr1-threecolor-medfilt-crop-50-28irpjo.png"
+        src="/web/assets/ananke-m12f-lsr1-threecolor-medfilt-crop-50-28irpjo.png"
         alt="RGB flux map of a synthetic survey of m12f."
         width="100%"
       />
@@ -2780,7 +2744,7 @@ ananke:
       - name: age
         descr: log_10 stellar age; identical for all stars generated from the same particle
         type: float
-        units: log yr
+        units: 'log yr'
         flag: hidden
       - name: logg
         descr: surface gravity
@@ -2835,6 +2799,720 @@ ananke:
         descr: "[Ne/H]"
         type: float
         flag: hidden
+candels:
+  title: CANDELS
+  index: candels
+  descr: >
+    The Cosmic Assembly Near-infrared Deep Extragalactic Survey (CANDELS) observational catalog.
+  count: 167137
+  order: 'candels-0'
+  fields:
+  - name: field
+    dict: candels_field
+    flag: top
+  - name: ID
+    title: id
+    type: int
+    descr: CANDELS object ID
+  - name: RA
+    dict: ppos_x
+    title: RA
+    type: float
+    units: degrees
+    descr: Right Ascension
+  - name: DEC
+    dict: ppos_y
+    title: DEC
+    type: float
+    units: degrees
+    descr: Declination
+  - name: U_abmag
+    title: U_abmag
+    type: float
+    units: AB magnitudes
+    descr: observed frame U-band magnitude
+    missing: ['-99','-99.0']
+  - name: U_eabmag
+    title: U_eabmag
+    type: float
+    units: AB magnitudes
+    descr: uncertainty in observed from U-band magnitude
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: ACS_F435_abmag
+    title: ACS_F435_abmag
+    type: float
+    units: AB magnitudes
+    descr: observed frame magnitude in ACS_F435W filter
+    missing: ['-99','-99.0']
+  - name: ACS_F435_eabmag
+    title: ACS_F435_eabmag
+    type: float
+    units: AB magnitudes
+    descr: uncertainty in observed frame magnitude in ACS_F435W filter
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: ACS_F606_abmag
+    title: ACS_F606_abmag
+    type: float
+    units: AB magnitudes
+    descr: observed frame magnitude in ACS F606W filter
+    missing: ['-99','-99.0']
+  - name: ACS_F606_eabmag
+    title: ACS_F606_eabmag
+    type: float
+    units: AB magnitudes
+    descr: uncertainty in observed frame magnitude in ACS F606W filter
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: ACS_F775_abmag
+    title: ACS_F775_abmag
+    type: float
+    units: AB magnitudes
+    descr: observed frame magnitude in ACS F775W filter
+    missing: ['-99','-99.0']
+  - name: ACS_F775_eabmag
+    title: ACS_F775_eabmag
+    type: float
+    units: AB magnitudes
+    descr: uncertainty in observed frame magnitude in ACS F775W filter
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: ACS_F814_abmag
+    title: ACS_F814_abmag
+    type: float
+    units: AB magnitudes
+    descr: observed frame magnitude in ACS F814W filter
+    missing: ['-99','-99.0']
+  - name: ACS_F814_eabmag
+    title: ACS_F814_eabmag
+    type: float
+    units: AB magnitudes
+    descr: uncertainty in observed frame magnitude in ACS F814W filter
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: ACS_F850_abmag
+    title: ACS_F850_abmag
+    type: float
+    units: AB magnitudes
+    descr: observed frame magnitude in ACS F850W filter
+    missing: ['-99','-99.0']
+  - name: ACS_F850_eabmag
+    title: ACS_F850_eabmag
+    type: float
+    units: AB magnitudes
+    descr: uncertainty in observed frame magnitude in ACS F850W filter
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: WFC3_F098_abmag
+    title: WFC3_F098_abmag
+    type: float
+    units: AB magnitudes
+    descr: observed frame magnitude in WFC3 F098M filter
+    missing: ['-99','-99.0']
+  - name: WFC3_F098_eabmag
+    title: WFC3_F098_eabmag
+    type: float
+    units: AB magnitudes
+    descr: uncertainty in observed frame magnitude in WFC3 F098M filter
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: WFC3_F105_abmag
+    title: WFC3_F105_abmag
+    type: float
+    units: AB magnitudes
+    descr: observed frame magnitude in WFC3 F105W filter
+    missing: ['-99','-99.0']
+  - name: WFC3_F105_eabmag
+    title: WFC3_F105_eabmag
+    type: float
+    units: AB magnitudes
+    descr: uncertainty in observed frame magnitude in WFC3 F105W filter
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: WFC3_F125_abmag
+    title: WFC3_F125_abmag
+    type: float
+    units: AB magnitudes
+    descr: observed frame magnitude in WFC3 F125W filter
+    missing: ['-99','-99.0']
+  - name: WFC3_F125_eabmag
+    title: WFC3_F125_eabmag
+    type: float
+    units: AB magnitudes
+    descr: uncertainty in observed frame magnitude in WFC3 F125W filter
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: WFC3_F140_abmag
+    title: WFC3_F140_abmag
+    type: float
+    units: AB magnitudes
+    descr: observed frame magnitude in WFC3 F140W filter
+    missing: ['-99','-99.0']
+  - name: WFC3_F140_eabmag
+    title: WFC3_F140_eabmag
+    type: float
+    units: AB magnitudes
+    descr: uncertainty in observed frame magnitude in WFC3 F140W filter
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: WFC3_F160_abmag
+    title: WFC3_F160_abmag
+    type: float
+    units: AB magnitudes
+    descr: observed frame magnitude in WFC3 F160W filter
+    missing: ['-99','-99.0']
+  - name: WFC3_F160_eabmag
+    title: WFC3_F160_eabmag
+    type: float
+    units: AB magnitudes
+    descr: uncertainty in observed frame magnitude in WFC3 F160W filter
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: WFC3_F275_abmag
+    title: WFC3_F275_abmag
+    type: float
+    units: AB magnitudes
+    descr: observed frame magnitude in WFC3 F275W filter
+    missing: ['-99','-99.0']
+  - name: WFC3_F275_eabmag
+    title: WFC3_F275_eabmag
+    type: float
+    units: AB magnitudes
+    descr: uncertainty in observed frame magnitude in WFC3 F275W filter
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: K_abmag
+    title: K_abmag
+    type: float
+    units: AB magnitudes
+    descr: observed frame magnitude in observed K-band 
+    missing: ['-99','-99.0']
+  - name: K_eabmag
+    title: K_eabmag
+    type: float
+    units: AB magnitudes
+    descr: uncertainty in observed frame magnitude in observed K-band
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: IRAC_CH1_abmag
+    title: IRAC_CH1_abmag
+    type: float
+    units: AB magnitudes
+    descr: observed frame magnitude in IRAC ch1
+    missing: ['-99','-99.0']
+  - name: IRAC_CH1_eabmag
+    title: IRAC_CH1_eabmag
+    type: float
+    units: AB magnitudes
+    descr: uncertainty in observed frame magnitude in IRAC ch1
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: IRAC_CH2_abmag
+    title: IRAC_CH2_abmag
+    type: float
+    units: AB magnitudes
+    descr: observed frame magnitude in IRAC ch2
+    missing: ['-99','-99.0']
+  - name: IRAC_CH2_eabmag
+    title: IRAC_CH2_eabmag
+    type: float
+    units: AB magnitudes
+    descr: uncertainty in observed frame magnitude in IRAC ch2
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: IRAC_CH3_abmag
+    title: IRAC_CH3_abmag
+    type: float
+    units: AB magnitudes
+    descr: observed frame magnitude in IRAC ch3
+    missing: ['-99','-99.0']
+  - name: IRAC_CH3_eabmag
+    title: IRAC_CH3_eabmag
+    type: float
+    units: AB magnitudes
+    descr: uncertainty in observed frame magnitude in IRAC ch3
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: IRAC_CH4_abmag
+    title: IRAC_CH4_abmag
+    type: float
+    units: AB magnitudes
+    descr: observed frame magnitude in IRAC ch4
+    missing: ['-99','-99.0']
+  - name: IRAC_CH4_eabmag
+    title: IRAC_CH4_eabmag
+    type: float
+    units: AB magnitudes
+    descr: uncertainty in observed frame magnitude in IRAC ch4
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: ztype
+    title: ztype
+    type: byte
+    units: dimensionless
+    descr: type of redshift for z best
+    enum: ['spec', 'grism', 'phot']
+    flag: hidden
+  - name: zbest
+    title: zbest
+    type: float
+    units: dimensionless
+    descr: Best estimate of the redshift
+  - name: zmed
+    title: zmed
+    type: float
+    units: dimensionless
+    descr: median photometric redshift
+    flag: hidden
+  - name: zlow
+    title: zlow
+    type: float
+    units: dimensionless
+    descr: 16th percentile of z phot PDF
+    flag: hidden
+  - name: zhigh
+    title: zhigh
+    type: float
+    units: dimensionless
+    descr: 84th percentile of z phot PDF
+    flag: hidden
+  - name: U_rest_eazy
+    title: U_rest_eazy
+    type: float
+    units: AB mags
+    descr: Rest-frame U band magnitude derived with EAZY
+    missing: ['-99','-99.0']
+  - name: V_rest_eazy
+    title: V_rest_eazy
+    type: float
+    units: AB mags
+    descr: Rest-frame V band magnitude derived with EAZY
+    missing: ['-99','-99.0']
+  - name: R_rest_eazy
+    title: R_rest_eazy
+    type: float
+    units: AB mags
+    descr: Rest-frame R band magnitude derived with EAZY
+    missing: ['-99','-99.0']
+  - name: I_rest_eazy
+    title: I_rest_eazy
+    type: float
+    units: AB mags
+    descr: Rest-frame I band magnitude derived with EAZY
+    missing: ['-99','-99.0']
+  - name: J_rest_eazy
+    title: J_rest_eazy
+    type: float
+    units: AB mags
+    descr: Rest-frame J band magnitude derived with EAZY
+    missing: ['-99','-99.0']
+  - name: H_rest_eazy
+    title: H_rest_eazy
+    type: float
+    units: AB mags
+    descr: Rest-frame H band magnitude derived with EAZY
+    missing: ['-99','-99.0']
+  - name: K_rest_eazy
+    title: K_rest_eazy
+    type: float
+    units: AB mags
+    descr: Rest-frame K band magnitude derived with EAZY
+    missing: ['-99','-99.0']
+  - name: UV1500_rest_eazy
+    title: UV1500_rest_eazy
+    type: float
+    units: AB mags
+    descr: Rest-frame UV1500 Angstrom band magnitude derived with EAZY
+    missing: ['-99','-99.0']
+  - name: UV2300_rest_eazy
+    title: UV2300_rest_eazy
+    type: float
+    units: AB mags
+    descr: Rest-frame UV2300 Angstrom band magnitude derived with EAZY
+    missing: ['-99','-99.0']
+  - name: UV2800_rest_eazy
+    title: UV2800_rest_eazy
+    type: float
+    units: AB mags
+    descr: Rest-frame UV2800 Angstrom band magnitude derived with EAZY
+    missing: ['-99','-99.0']
+  - name: FLAGS_galactic
+    title: FLAGS_galactic
+    type: byte
+    units: 
+    descr: Galfit flag in F160W band
+    flag: hidden
+  - name: re
+    title: re
+    type: float
+    units: arcsec
+    descr: Galfit effective radius in F160W band 
+    missing: ['-99','-99.0']
+  - name: dre
+    title: dre
+    type: float
+    units: arcsec
+    descr: uncertainty in galfit effective radius in F160W band
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: 'n'
+    title: 'n'
+    type: float
+    units: 
+    descr: galfit Sersic index in F160W band
+    missing: ['-99','-99.0']
+  - name: dn
+    title: dn
+    type: float
+    units: 
+    descr: uncertainty in galfit Sersic index in F160W band
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: q
+    title: q
+    type: float
+    units: 
+    descr: galfit b/a (minor to major axis ratio) in F160W band
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: dq
+    title: dq
+    type: float
+    units: 
+    descr: uncertainty in b/a
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: pa
+    title: pa
+    type: float
+    units: 
+    descr: galfit position angle in F160W band
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: dpa
+    title: dpa
+    type: float
+    units: 
+    descr: uncertainty in galfit position angle
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: sn
+    title: sn
+    type: float
+    units: 
+    descr: galfit S/N integrated over the F160W segmentation region
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: logM_P12_50
+    title: logM_P12_50
+    type: float
+    units: log [Msun]
+    descr: log10 Median stellar mass at observation
+    missing: ['-99','-99.0']
+  - name: logMt_P12_50
+    title: logMt_P12_50
+    type: float
+    units: log [Msun]
+    descr: log10 Median stellar mass formed over the galaxy's history
+    missing: ['-99','-99.0']
+  - name: logSFR_P12_50
+    title: logSFR_P12_50
+    type: float
+    units: log [Msun/yr]
+    descr: log10 median SFR in the last 10 Myr
+    missing: ['-99','-99.0']
+  - name: logAGE_P12_50
+    title: logAGE_P12_50
+    type: float
+    units: log [Gyr]
+    descr: log10 median light weighted age
+    missing: ['-99','-99.0']
+  - name: logha_P12_50
+    title: logha_P12_50
+    type: float
+    units: log ?
+    descr: Median Halpha flux
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: VJ_P12_50
+    title: VJ_P12_50
+    type: float
+    units: magnitudes
+    descr: Median V-J color (AB)
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: UV_P12_50
+    title: UV_P12_50
+    type: float
+    units: magnitudes
+    descr: Median U-V color (AB)
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: AV_P12_50
+    title: AV_P12_50
+    type: float
+    units: magnitudes
+    descr: median dust attenuation in V band
+    missing: ['-99','-99.0']
+  - name: AFUV_P12_50
+    title: AFUV_P12_50
+    type: float
+    units: magnitudes
+    descr: median dust attenuation in FUV band
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: ANUV_P12_50
+    title: ANUV_P12_50
+    type: float
+    units: magnitudes
+    descr: median dust attenuation in NUV band
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: logM_P12_16
+    title: logM_P12_16
+    type: float
+    units: log [Msun]
+    descr: 16th percentile (log) stellar mass at observation
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: logMt_P12_16
+    title: logMt_P12_16
+    type: float
+    units: log [Msun]
+    descr: 16th percentile (log) stellar mass formed
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: logSFR_P12_16
+    title: logSFR_P12_16
+    type: float
+    units: log [Msun/yr]
+    descr: 16th percentile SFR in the last 10Myr
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: logAGE_P12_16
+    title: logAGE_P12_16
+    type: float
+    units: log [Gyr]
+    descr: 16th percentile light weighted age
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: logha_P12_16
+    title: logha_P12_16
+    type: float
+    units: '?'
+    descr: 16th percentile Halpha flux
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: VJ_P12_16
+    title: VJ_P12_16
+    type: float
+    units: magnitudes
+    descr: 16th percentile V-J color
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: UV_P12_16
+    title: UV_P12_16
+    type: float
+    units: magnitudes
+    descr: 16th percentile U-V color
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: AV_P12_16
+    title: AV_P12_16
+    type: float
+    units: magnitudes
+    descr: 16th percentile dust attenuation in V band
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: AFUV_P12_16
+    title: AFUV_P12_16
+    type: float
+    units: magnitudes
+    descr: 16th percentile dust attenuation in FUV band
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: ANUV_P12_16
+    title: ANUV_P12_16
+    type: float
+    units: magnitudes
+    descr: 16th percentile dust attenuation in NUV band
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: logM_P12_84
+    title: logM_P12_84
+    type: float
+    units: log [Msun]
+    descr: 84th percentile (log) stellar mass at observation
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: logMt_P12_84
+    title: logMt_P12_84
+    type: float
+    units: log [Msun]
+    descr: 84th percentile (log) stellar mass formed
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: logSFR_P12_84
+    title: logSFR_P12_84
+    type: float
+    units: log [Msun/yr]
+    descr: 84th percentile SFR in the last 10Myr
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: logAGE_P12_84
+    title: logAGE_P12_84
+    type: float
+    units: log [Gyr]
+    descr: 84th percentile light weighted age
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: logha_P12_84
+    title: logha_P12_84
+    type: float
+    units: '?'
+    descr: 84th percentile Halpha flux
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: VJ_P12_84
+    title: VJ_P12_84
+    type: float
+    units: magnitudes
+    descr: 84th percentile V-J color
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: UV_P12_84
+    title: UV_P12_84
+    type: float
+    units: magnitudes
+    descr: 84th percentile U-V color
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: AV_P12_84
+    title: AV_P12_84
+    type: float
+    units: magnitudes
+    descr: 84th percentile dust attenuation in V band
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: AFUV_P12_84
+    title: AFUV_P12_84
+    type: float
+    units: magnitudes
+    descr: 84th percentile dust attenuation in V band
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: ANUV_P12_84
+    title: ANUV_P12_84
+    type: float
+    units: magnitudes
+    descr: 84th percentile dust attenuation in V band
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: red_chi_P12
+    title: red_chi_P12
+    type: float
+    units: 
+    descr: Reduced chi^2 of fit (good<5)
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: nbands_P12
+    title: nbands_P12
+    type: byte
+    units: 
+    descr: number of bands fitted (good>=10)
+    flag: hidden
+  - name: FLAGS_P12
+    title: FLAGS_P12
+    type: boolean
+    units: 
+    descr: Zbest_flag (good=red_chi<5 and nbands>=10)
+    missing: ['-99','-99.0']
+    flag: hidden
+  - name: Log_mass_zPhot
+    title: Log_mass_zPhot
+    type: float
+    units: log [Msun]
+    descr: Best-fit stellar mass
+    missing: '-1.0'
+    flag: hidden
+  - name: SFR_zPhot
+    title: SFR_zPhot
+    type: float
+    units: Msun/yr
+    descr: best-fit SFR
+    flag: hidden
+  - name: age_zPhot
+    title: age_zPhot
+    type: float
+    units: Gyr
+    descr: best-fit age
+    flag: hidden
+  - name: E_BminusV_zPhot
+    title: E_BminusV_zPhot
+    type: float
+    units: magnitudes
+    descr: Best-fit E(B-V)
+    flag: hidden
+  - name: U_zPhot
+    title: U_zPhot
+    type: float
+    units: magnitudes
+    descr: Best-fit rest-frame magnitude in U band (Vega)
+    flag: hidden
+  - name: B_zPhot
+    title: B_zPhot
+    type: float
+    units: magnitudes
+    descr: Best-fit rest-frame magnitude in B band (Vega)
+    flag: hidden
+  - name: V_zPhot
+    title: V_zPhot
+    type: float
+    units: magnitudes
+    descr: Best-fit rest-frame magnitude in V band (Vega)
+    flag: hidden
+  - name: R_zPhot
+    title: R_zPhot
+    type: float
+    units: magnitudes
+    descr: Best-fit rest-frame magnitude in R band (Vega)
+    flag: hidden
+  - name: I_zPhot
+    title: I_zPhot
+    type: float
+    units: magnitudes
+    descr: Best-fit rest-frame magnitude in I band (Vega)
+    flag: hidden
+  - name: J_zPhot
+    title: J_zPhot
+    type: float
+    units: magnitudes
+    descr: Best-fit rest-frame magnitude in J band (Vega)
+    flag: hidden
+  - name: K_zPhot
+    title: K_zPhot
+    type: float
+    units: magnitudes
+    descr: Best-fit rest-frame magnitude in K band (Vega)
+    flag: hidden
+  - name: SFRTOTf
+    title: SFRTOTf
+    type: float
+    units: Msun/yr
+    descr: either SFR^corr_UV or SFR_IR + SFR^obs_UV for IR detected sources
+  - name: LIMMAG_F160W
+    title: LIMMAG_F160W
+    type: float
+    units: magnitudes
+    descr: Limiting magnitude for a point source in F160W
+    missing: ['-99','-99.0']
+  - name: RMS
+    title: RMS
+    type: float
+    units: 
+    descr: RMS value
+    missing: ['-99','-99.0']
 lusam:
   title: Lu-SAM
   descr: >
@@ -2902,26 +3580,29 @@ lusam:
       dict: spin
       type: float
       descr: dimensionless spin parameter (host halo)
+      missing: '-99.9'
     - name: mstar_diffuse
       dict: M_star_diffuse
       type: float
       descr: mass of stars in a 'diffuse stellar halo'
-      units: '\(10^{10} M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
+      missing: '-99.9'
     - name: m_hot_halo
       dict: M_hot_halo
       type: float
       descr: mass of hot gas in host halo
-      units: '\(10^{10} M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
     - name: Z_hot_halo
       dict: Z_hot_halo
       type: float
       descr: metallicity of hot gas in host halo
-      units: '\( Z_\odot\)'
+      units: '\(Z_\odot\)'
     - name: v_disk
       dict: v_disk
       type: float
       descr: maximum rotation velocity of disk
       units: 'km/s'
+      missing: '-99.9'
     - name: r_disk
       dict: r_disk
       type: float
@@ -2932,66 +3613,71 @@ lusam:
       type: float
       descr: line-of-sight velocity dispersion of bulge
       units: 'km/s'
+      missing: '-99.9'
     - name: r_bulge
       dict: r_bulge
       type: float
       descr: effective radius of bulge (projected)
       units: 'kpc'
+      missing: '-99.9'
     - name: mhalo
       dict: M
       type: float
       descr: mass of sub-halo (at the time it became a sub)
-      units: '\(10^{10} M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
     - name: mstar
       dict: M_stellar
       type: float
       descr: stellar mass
-      units: '\(10^{10} M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
     - name: mcold
       dict: M_cold
       type: float
       descr: mass of cold gas
-      units: '\(10^{10} M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
     - name: mbulge
       dict: M_bulge
       type: float
       descr: stellar mass of bulge component
-      units: '\(10^{10} M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
     - name: mBH
       dict: M_BH
       type: float
       descr: mass of black hole
-      units: '\(10^{10} M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
+      missing: '-99.9'
     - name: maccdot
       dict: BHAR
       type: float
       descr: total accretion rate onto black hole
-      units: '\( M_\odot\)/yr'
+      units: '\(M_\odot\)/yr'
+      missing: '-99.9'
     - name: maccdot_radio
       dict: BHAR_radio
       type: float
       descr: BHAR associated with 'radio mode'
-      units: '\( M_\odot\)/yr'
+      units: '\(M_\odot\)/yr'
+      missing: '-99.9'
     - name: Zstar
       dict: Z_star
       type: float
       descr: mass weighted metallicity of stars
-      units: '\( Z_\odot\)'
+      units: '\(Z_\odot\)'
     - name: Zcold
       dict: Z_cold
       type: float
       descr: mass weighted metallicity of cold gas
-      units: '\( Z_\odot\)'
+      units: '\(Z_\odot\)'
     - name: mstardot
       dict: SFR_inst
       type: float
       descr: instantaneous star formation rate
-      units: '\( M_\odot /yr\)'
+      units: '\(M_\odot/yr\)'
     - name: sfr_ave
       dict: SFR
       type: float
       descr: star formation rate averaged over past 1E8 yr
-      units: '\( M_\odot /yr \)'
+      units: '\(M_\odot/yr\)'
     - name: meanage
       dict: age_mean
       type: float
@@ -3002,15 +3688,18 @@ lusam:
       type: float
       descr: time since last merger greater than 1:10
       units: 'Gyr'
+      missing: '99.9'
     - name: tmajmerge
       dict: t_major_merge
       type: float
       descr: time since last merger greater than 1:4
       units: 'Gyr'
+      missing: '99.9'
     - name: UV1500_rest
       type: float
       descr: CANDELS/TOPHAT/UV1500top.dat
       units: 'mag'
+      missing: '99'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3024,6 +3713,7 @@ lusam:
       descr: CANDELS/TOPHAT/UV2300top.dat
       flag: hidden
       units: 'mag'
+      missing: '99'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3036,6 +3726,7 @@ lusam:
       descr: CANDELS/TOPHAT/UV2800top.dat
       flag: hidden
       units: 'mag'
+      missing: '99'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3047,6 +3738,7 @@ lusam:
       type: float
       descr: CANDELS/Johnson/Johnson_U.dat
       units: 'mag'
+      missing: '99'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3059,6 +3751,7 @@ lusam:
       descr: CANDELS/Johnson/Johnson_B.dat
       flag: hidden
       units: 'mag'
+      missing: '99'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3070,6 +3763,7 @@ lusam:
       type: float
       descr: CANDELS/Johnson/Johnson_V.dat
       units: 'mag'
+      missing: '99'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3082,6 +3776,7 @@ lusam:
       descr: CANDELS/Johnson/Cousins_R.dat
       flag: hidden
       units: 'mag'
+      missing: '99'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3094,6 +3789,7 @@ lusam:
       descr: CANDELS/Johnson/Cousins_I.dat
       flag: hidden
       units: 'mag'
+      missing: '99'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3105,6 +3801,7 @@ lusam:
       type: float
       descr: CANDELS/Johnson/Bessell_J.dat
       units: 'mag'
+      missing: '99'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3117,6 +3814,7 @@ lusam:
       descr: CANDELS/Johnson/Bessell_H.dat
       flag: hidden
       units: 'mag'
+      missing: '99'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3129,6 +3827,7 @@ lusam:
       descr: CANDELS/Johnson/Bessell_K.dat
       flag: hidden
       units: 'mag'
+      missing: '99'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3141,6 +3840,7 @@ lusam:
       descr: CANDELS/GALEX/galex_FUV.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3153,6 +3853,7 @@ lusam:
       descr: CANDELS/GALEX/galex_NUV.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3165,6 +3866,7 @@ lusam:
       descr: CANDELS/SDSS/sdss_u.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3177,6 +3879,7 @@ lusam:
       descr: CANDELS/SDSS/sdss_g.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3189,6 +3892,7 @@ lusam:
       descr: CANDELS/SDSS/sdss_r.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3201,6 +3905,7 @@ lusam:
       descr: CANDELS/SDSS/sdss_i.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3213,6 +3918,7 @@ lusam:
       descr: CANDELS/SDSS/sdss_z.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3225,6 +3931,7 @@ lusam:
       descr: CANDELS/ACS/f435w.WFC1.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3237,6 +3944,7 @@ lusam:
       descr: CANDELS/ACS/f606w.WFC1.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3249,6 +3957,7 @@ lusam:
       descr: CANDELS/ACS/f775w.WFC1.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3261,6 +3970,7 @@ lusam:
       descr: CANDELS/ACS/f814w.WFC1.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3273,6 +3983,7 @@ lusam:
       descr: CANDELS/ACS/f850lp.WFC1.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3285,6 +3996,7 @@ lusam:
       descr: CANDELS/WFC3/f275w.UVIS1.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3297,6 +4009,7 @@ lusam:
       descr: CANDELS/WFC3/f336w.UVIS1.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3309,6 +4022,7 @@ lusam:
       descr: CANDELS/WFC3/f105w.IR.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3321,6 +4035,7 @@ lusam:
       descr: CANDELS/WFC3/f125w.IR.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3333,6 +4048,7 @@ lusam:
       descr: CANDELS/WFC3/f160w.IR.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3345,6 +4061,7 @@ lusam:
       descr: CANDELS/CTIO/U_ctio_mosaic_tot.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3357,6 +4074,7 @@ lusam:
       descr: CANDELS/CFHTLS/uMega.fil
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3369,6 +4087,7 @@ lusam:
       descr: CANDELS/MUSYC/ecdfs.U38.filt.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3381,6 +4100,7 @@ lusam:
       descr: CANDELS/UKIRT/J_filter.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3393,6 +4113,7 @@ lusam:
       descr: CANDELS/UKIRT/H_filter.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3405,6 +4126,7 @@ lusam:
       descr: CANDELS/UKIRT/K_filter.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3417,6 +4139,7 @@ lusam:
       descr: CANDELS/IRAC/irac_ch1.dat
       flag: hidden
       units: 'mag'
+      missing: '-99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3429,6 +4152,7 @@ lusam:
       descr: CANDELS/IRAC/irac_ch2.dat
       flag: hidden
       units: 'mag'
+      missing: '-99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3485,44 +4209,49 @@ unimach:
       descr: -1 for central halos, otherwise, ID of largest parent halo
     - name: ""
       title: Position
-      units: 'Mpc/h'
+      units: 'Mpc'
+      scale: 1.47059
       sub:
       - name: 'X'
         title: 'X'
         dict: pos_x
         type: float
-        descr: 'Position of halo relative to axes of lightcone (distance along lightcone) in comoving'
+        descr: 'Position of halo relative to axes of lightcone (distance along lightcone) in comoving Mpc/h'
       - name: 'Y'
         title: 'Y'
         dict: pos_y
         type: float
-        descr: 'Position of halo relative to axes of lightcone (distance perpendicular to lightcone X-axis) in comoving'
+        descr: 'Position of halo relative to axes of lightcone (distance perpendicular to lightcone X-axis) in comoving Mpc/h'
       - name: 'Z'
         title: 'Z'
         dict: pos_z
         type: float
-        descr: 'Position of halo relative to axes of lightcone (distance perpendicular to lightcone X-axis) in comoving'
+        descr: 'Position of halo relative to axes of lightcone (distance perpendicular to lightcone X-axis) in comoving Mpc/h'
     - name: ""
       title: Velocity
       units: 'km/s'
+      dict: vel
       sub:
       - name: VX
-        # title: '\( V_x\)'
+        # title: '\(V_x\)'
         type: float
         descr: 'Peculiar velocity in physical (i.e., non-comoving) km/s, relative to lightcone axes'
+        dict: vel_x
       - name: VY
-        # title: '\( V_y\)'
+        # title: '\(V_y\)'
         type: float
         descr: 'Peculiar velocity in physical (i.e., non-comoving) km/s, relative to lightcone axes'
+        dict: vel_y
       - name: VZ
-        # title: '\( V_z\)'
+        # title: '\(V_z\)'
         type: float
         descr: 'Peculiar velocity in physical (i.e., non-comoving) km/s, relative to lightcone axes'
+        dict: vel_z
     - name: M
       dict: M
       type: float
       descr: Halo mass (Bryan & Norman (BN98) 1998 virial mass)
-      units: '\( M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
       scale: 1e-10
     - name: V
       type: float
@@ -3531,7 +4260,7 @@ unimach:
     - name: MP
       type: float
       descr: Halo peak historical mass (BN98 virial mass)
-      units: '\( M_\odot \)'
+      units: '\(10^{10}M_\odot\)'
       scale: 1e-10
     - name: VMP
       type: float
@@ -3540,8 +4269,10 @@ unimach:
     - name: R
       dict: R
       type: float
-      descr: 'Halo raidus (BN98 vir, co-moving)'
-      units: 'kpc/h'
+      descr: 'Halo raidus (BN98 vir, co-moving kpc/h)'
+      units: 'Mpc'
+      scale: 0.00147059
+      ingest: 'scale:Scale'
     - name: Rank1
       type: float
       descr: 'Halo rank (see UniverseMachine paper)'
@@ -3550,28 +4281,27 @@ unimach:
       dict: M_stellar
       type: float
       descr: True stellar mass
-      units: '\( M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
       scale: 1e-10
     - name: ICL
       type: float
       descr: True intracluster stellar mass
-      units: '\( M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
       scale: 1e-10
     - name: SFR
       dict: SFR
       type: float
       descr: True star formation rate
-      units: '\( M_\odot /yr \)'
-      scale: 1e-10
+      units: '\(M_\odot/yr\)'
     - name: obs_SM
       type: float
       descr: Observed stellar mass, including random & systematic errors
-      units: '\( M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
       scale: 1e-10
     - name: obs_SFR
       type: float
       descr: Observed star formation rate (SFR), including random & systemic errors
-      units: '\( M_\odot /yr \)'
+      units: '\(M_\odot/yr\)'
     - name: SSFR
       type: float
       descr: Observed SSFR
@@ -3582,7 +4312,7 @@ unimach:
       dict: UV1500_rest
       type: float
       descr: Observed UV Magnitude
-      units: '\( M_{1500} AB \)'
+      units: '\(M_{1500} AB\)'
     - name:  A_UV
       type: float
       descr: UV attenuation from dust
@@ -3659,17 +4389,18 @@ scsam:
       dict: M_star_diffuse
       type: float
       descr: mass of stars in a 'diffuse stellar halo'
-      units: '\(10^{10} M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
     - name: m_hot_halo
       dict: M_hot_halo
       type: float
       descr: mass of hot gas in host halo
-      units: '\(10^{10} M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
     - name: Z_hot_halo
       dict: Z_hot_halo
       type: float
       descr: metallicity of hot gas in host halo
-      units: '\( Z_\odot\)'
+      units: '\(Z_\odot\)'
+      missing: '-99.9'
     - name: v_disk
       dict: v_disk
       type: float
@@ -3694,57 +4425,58 @@ scsam:
       dict: M
       type: float
       descr: mass of sub-halo (at the time it became a sub)
-      units: '\(10^{10} M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
     - name: mstar
       dict: M_stellar
       type: float
       descr: stellar mass
-      units: '\(10^{10} M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
     - name: mcold
       dict: M_cold
       type: float
       descr: mass of cold gas
-      units: '\(10^{10} M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
     - name: mbulge
       dict: M_bulge
       type: float
       descr: stellar mass of bulge component
-      units: '\(10^{10} M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
     - name: mbh #mbh in SU SAM
       dict: M_BH
       type: float
       descr: mass of black hole
-      units: '\(10^{10} M_\odot\)'
+      units: '\(10^{10}M_\odot\)'
     - name: maccdot
       dict: BHAR
       type: float
       descr: total accretion rate onto black hole
-      units: '\( M_\odot\)/yr'
+      units: '\(M_\odot\)/yr'
     - name: maccdot_radio
       dict: BHAR_radio
       type: float
       descr: BHAR associated with 'radio mode'
-      units: '\( M_\odot\)/yr'
+      units: '\(M_\odot\)/yr'
     - name: Zstar
       dict: Z_star
       type: float
       descr: mass weighted metallicity of stars
-      units: '\( Z_\odot\)'
+      units: '\(Z_\odot\)'
     - name: Zcold
       dict: Z_cold
       type: float
       descr: mass weighted metallicity of cold gas
-      units: '\( Z_\odot\)'
+      units: '\(Z_\odot\)'
     - name: mstardot
       dict: SFR_inst
       type: float
       descr: instantaneous star formation rate
-      units: '\( M_\odot /yr\)'
+      units: '\(M_\odot/yr\)'
     - name: sfr_ave
       dict: SFR
       type: float
       descr: star formation rate averaged over past 1E8 yr
-      units: '\( M_\odot /yr \)'
+      units: '\(M_\odot/yr\)'
+      missing: '-99.9'
     - name: meanage
       dict: age_mean
       type: float
@@ -3755,11 +4487,13 @@ scsam:
       type: float
       descr: time since last merger greater than 1:10
       units: 'Gyr'
+      missing: '-99.9'
     - name: tmajmerge
       dict: t_major_merge
       type: float
       descr: time since last merger greater than 1:4
       units: 'Gyr'
+      missing: '-99.9'
     - name: cosi
       dict: cosi
       type: float
@@ -3768,6 +4502,7 @@ scsam:
       type: float
       descr: CANDELS/TOPHAT/UV1500top.dat
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3781,6 +4516,7 @@ scsam:
       descr: CANDELS/TOPHAT/UV2300top.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3793,6 +4529,7 @@ scsam:
       descr: CANDELS/TOPHAT/UV2800top.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3804,6 +4541,7 @@ scsam:
       type: float
       descr: CANDELS/Johnson/Johnson_U.dat
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3816,6 +4554,7 @@ scsam:
       descr: CANDELS/Johnson/Johnson_B.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3827,6 +4566,7 @@ scsam:
       type: float
       descr: CANDELS/Johnson/Johnson_V.dat
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3839,6 +4579,7 @@ scsam:
       descr: CANDELS/Johnson/Cousins_R.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3851,6 +4592,7 @@ scsam:
       descr: CANDELS/Johnson/Cousins_I.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3862,6 +4604,7 @@ scsam:
       type: float
       descr: CANDELS/Johnson/Bessell_J.dat
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3874,6 +4617,7 @@ scsam:
       descr: CANDELS/Johnson/Bessell_H.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3886,6 +4630,7 @@ scsam:
       descr: CANDELS/Johnson/Bessell_K.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3898,6 +4643,7 @@ scsam:
       descr: CANDELS/GALEX/galex_FUV.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3910,6 +4656,7 @@ scsam:
       descr: CANDELS/GALEX/galex_NUV.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3922,6 +4669,7 @@ scsam:
       descr: CANDELS/SDSS/sdss_u.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3934,6 +4682,7 @@ scsam:
       descr: CANDELS/SDSS/sdss_g.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3946,6 +4695,7 @@ scsam:
       descr: CANDELS/SDSS/sdss_r.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3958,6 +4708,7 @@ scsam:
       descr: CANDELS/SDSS/sdss_i.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3970,6 +4721,7 @@ scsam:
       descr: CANDELS/SDSS/sdss_z.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3982,6 +4734,7 @@ scsam:
       descr: CANDELS/ACS/f435w.WFC1.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -3994,6 +4747,7 @@ scsam:
       descr: CANDELS/ACS/f606w.WFC1.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -4006,6 +4760,7 @@ scsam:
       descr: CANDELS/ACS/f775w.WFC1.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -4018,6 +4773,7 @@ scsam:
       descr: CANDELS/ACS/f814w.WFC1.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -4030,6 +4786,7 @@ scsam:
       descr: CANDELS/ACS/f850lp.WFC1.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -4042,6 +4799,7 @@ scsam:
       descr: CANDELS/WFC3/f275w.UVIS1.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -4054,6 +4812,7 @@ scsam:
       descr: CANDELS/WFC3/f336w.UVIS1.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -4066,6 +4825,7 @@ scsam:
       descr: CANDELS/WFC3/f105w.IR.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -4078,6 +4838,7 @@ scsam:
       descr: CANDELS/WFC3/f125w.IR.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -4090,6 +4851,7 @@ scsam:
       descr: CANDELS/WFC3/f160w.IR.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -4102,6 +4864,7 @@ scsam:
       descr: CANDELS/CTIO/U_ctio_mosaic_tot.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -4114,6 +4877,7 @@ scsam:
       descr: CANDELS/CFHTLS/uMega.fil
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -4126,6 +4890,7 @@ scsam:
       descr: CANDELS/MUSYC/ecdfs.U38.filt.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -4138,6 +4903,7 @@ scsam:
       descr: CANDELS/UKIRT/J_filter.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -4150,6 +4916,7 @@ scsam:
       descr: CANDELS/UKIRT/H_filter.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -4162,6 +4929,7 @@ scsam:
       descr: CANDELS/UKIRT/K_filter.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -4174,6 +4942,7 @@ scsam:
       descr: CANDELS/IRAC/irac_ch1.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -4186,6 +4955,7 @@ scsam:
       descr: CANDELS/IRAC/irac_ch2.dat
       flag: hidden
       units: 'mag'
+      missing: '99.9'
       sub:
       - name: ""
         descr: total galaxy magnitude, without extinction
@@ -4193,3 +4963,75 @@ scsam:
         descr: magnitude of bulge only, without extinction
       - name: "dust"
         descr: galaxy magnitude, including extinction by dust
+
+quijote:
+  title: Quijote
+  index: quijote
+  descr: >
+    <a href='https://github.com/franciscovillaescusa/Quijote-simulations'>Quijote simulations</a>,
+  #count:
+  fields:
+    - name: simulation
+      flag: top
+      type: byte
+      enum:
+      - fiducial
+      - fiducial_HR
+      - fiducial_LR
+      - fiducial_ZA
+      - Om_p
+      - Om_m
+      - Ob2_p
+      - Ob_p
+      - Ob_m
+      - Ob2_m
+      - h_p
+      - h_m
+      - ns_p
+      - ns_m
+      - s8_p
+      - s8_m
+      - Mnu_ppp
+      - Mnu_pp
+      - Mnu_p
+      - latin_hypercube
+    - name: realization
+      flag: top
+      type: short
+    - name: snapshot
+      type: byte
+      flag: top
+    - name: z
+      dict: redshift
+      type: float
+
+    - name: len
+      type: int
+      descr: 'Number of CDM particles in the halo'
+    - name: mass
+      type: float
+      units: '\(10^{10}M_\odot\)'
+      dict: M
+    - name: pos
+      dict: pos
+      units: 'kpc'
+      type: float
+      sub:
+      - name: 'x'
+        dict: pos_x
+      - name: 'y'
+        dict: pos_y
+      - name: 'z'
+        dict: pos_z
+    - name: vel
+      type: float
+      dict: vel
+      units: 'km/s/(1+z)'
+      descr: 'Halo peculiar velocities'
+      sub:
+      - name: 'x'
+        dict: vel_x
+      - name: 'y'
+        dict: vel_y
+      - name: 'z'
+        dict: vel_z

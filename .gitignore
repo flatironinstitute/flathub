@@ -1,3 +1,17 @@
 /.stack-work/
 /stack.yaml.lock
+/config-*
 .idea
+**/node_modules/
+**/index.js
+**/bundle.js
+**/main.js
+**/common.js
+**/compare.js
+**/catalog.js
+**/types.js
+/*.js.map
+**/style.css
+**/*.css.map
+*.gz
+**/package-lock.json

@@ -1,126 +1,40 @@
 {
   "name": "astrosims",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "",
-  "main": "main.js",
+  "private": true,
   "scripts": {
-    "postinstall": "sed -i 's/\\r$//' node_modules/.bin/jspm ; ln -s ../{popper.js,highcharts} node_modules/@types ; jspm install",
     "compile": "tsc",
-    "build": "jspm build --minify main.ts index.js"
+    "build-dev": "webpack --mode=development --display-error-details",
+    "build": "webpack --mode=production"
   },
   "author": "Dylan Simon",
   "license": "Apache-2.0",
-  "dependencies": {
-    "jspm": "^0.17.0-beta.49"
-  },
   "devDependencies": {
-    "@types/bootstrap": "^4.3.1",
-    "@types/datatables.net": "^1.10.18",
-    "@types/jquery": "^3.3.31",
-    "@types/systemjs": "^0.20.7",
-    "popper.js": "^1.16.0",
-    "highcharts": "^7.2.0",
-    "typescript": "^3.7.2"
+    "compression-webpack-plugin": "^4.0.0",
+    "css-loader": "^3.6.0",
+    "datatables.net": "^1.10.21",
+    "datatables.net-dt": "^1.10.21",
+    "file-loader": "^6.0.0",
+    "imports-loader": "^1.1.0",
+    "mini-css-extract-plugin": "^0.9.0",
+    "sass": "^1.26.10",
+    "sass-loader": "^9.0.1",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.12"
   },
-  "jspm": {
-    "name": "astrosims",
-    "main": "main.ts",
-    "dependencies": {
-      "bootstrap": "npm:bootstrap@^4.3.1",
-      "datatables.net": "npm:datatables.net@^1.10.16",
-      "datatables.net-dt": "npm:datatables.net-dt@^1.10.16",
-      "highcharts": "npm:highcharts@^7.2.0",
-      "ts": "github:frankwallis/plugin-typescript@^9.0.0"
-    },
-    "devDependencies": {
-      "plugin-typescript": "github:frankwallis/plugin-typescript@^9.0.0"
-    },
-    "peerDependencies": {
-      "assert": "npm:jspm-nodelibs-assert@^0.2.0",
-      "buffer": "npm:jspm-nodelibs-buffer@^0.2.0",
-      "child_process": "npm:jspm-nodelibs-child_process@^0.2.0",
-      "constants": "npm:jspm-nodelibs-constants@^0.2.0",
-      "crypto": "npm:jspm-nodelibs-crypto@^0.2.0",
-      "events": "npm:jspm-nodelibs-events@^0.2.0",
-      "fs": "npm:jspm-nodelibs-fs@^0.2.0",
-      "http": "npm:jspm-nodelibs-http@^0.2.0",
-      "https": "npm:jspm-nodelibs-https@^0.2.0",
-      "jquery": "npm:jquery@^3.3.1",
-      "module": "npm:jspm-nodelibs-module@^0.2.0",
-      "net": "npm:jspm-nodelibs-net@^0.2.0",
-      "os": "npm:jspm-nodelibs-os@^0.2.0",
-      "path": "npm:jspm-nodelibs-path@^0.2.0",
-      "popper.js": "npm:popper.js@^1.14.7",
-      "process": "npm:jspm-nodelibs-process@^0.2.0",
-      "querystring": "npm:jspm-nodelibs-querystring@^0.2.0",
-      "readline": "npm:jspm-nodelibs-readline@^0.2.0",
-      "stream": "npm:jspm-nodelibs-stream@^0.2.0",
-      "string_decoder": "npm:jspm-nodelibs-string_decoder@^0.2.0",
-      "typescript": "npm:typescript@~2.8.0",
-      "url": "npm:jspm-nodelibs-url@^0.2.0",
-      "util": "npm:jspm-nodelibs-util@^0.2.0",
-      "vm": "npm:jspm-nodelibs-vm@^0.2.0",
-      "zlib": "npm:jspm-nodelibs-zlib@^0.2.0"
-    },
-    "overrides": {
-      "npm:bootstrap@4.3.1": {
-        "main": "dist/js/bootstrap",
-        "jspmNodeConversion": false,
-        "directories": {
-          "lib": "."
-        },
-        "dependencies": {
-          "jquery": "*",
-          "tether": "github:HubSpot/tether@^1.1.1"
-        },
-        "meta": {
-          "dist/js/bootstrap.js": {
-            "deps": [
-              "jquery",
-              "tether"
-            ],
-            "exports": "$",
-            "format": "global"
-          }
-        }
-      },
-      "npm:browserify-zlib@0.1.4": {
-        "dependencies": {
-          "readable-stream": "^2.0.2",
-          "pako": "~0.2.0"
-        },
-        "map": {
-          "_stream_transform": "readable-stream/transform"
-        }
-      },
-      "npm:inherits@2.0.4": {
-        "ignore": [
-          "test.js"
-        ]
-      },
-      "npm:jquery@3.4.1": {
-        "format": "amd"
-      },
-      "npm:pbkdf2@3.0.17": {
-        "main": "browser.js"
-      },
-      "npm:safe-buffer@5.1.2": {
-        "browser": "index.js"
-      },
-      "npm:typescript@2.8.4": {
-        "browser": {},
-        "map": {
-          "buffer": "@empty",
-          "child_process": "@empty",
-          "fs": "@empty",
-          "path": "@empty",
-          "process": "@empty",
-          "readline": "@empty"
-        },
-        "dependencies": {
-          "source-map-support": "*"
-        }
-      }
-    }
+  "dependencies": {
+    "@types/bootstrap": "^4.5.0",
+    "@types/datatables.net": "^1.10.19",
+    "@types/jquery": "^3.5.0",
+    "@types/vue": "^2.0.0",
+    "bootstrap": "^4.5.0",
+    "highcharts": "^8.1.2",
+    "popper.js": "^1.16.1",
+    "style-loader": "^1.2.1",
+    "ts-loader": "^7.0.5",
+    "typescript": "^3.9.6",
+    "vue": "^2.6.11",
+    "vue-class-component": "^7.2.3"
   }
 }

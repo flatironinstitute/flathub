@@ -1,0 +1,83 @@
+/* Sections
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+.section {
+  padding: 5rem 0 5rem;
+  text-align: center;
+}
+
+.section-heading {
+  margin-bottom: 1.2rem;
+}
+
+.section-description {
+  margin-bottom: 2rem;
+}
+
+.section--catalog {
+  text-align: left;
+  padding: 0 0 3rem 0 !important;
+}
+
+/* Spacing
+  –––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+button,
+.button {
+  margin-bottom: 1rem;
+}
+
+input,
+textarea,
+fieldset {
+  margin-bottom: 1.5rem;
+}
+
+pre,
+blockquote,
+dl,
+figure,
+table,
+p,
+ul,
+ol,
+form {
+  margin-bottom: 2.5rem;
+}
+
+/* Misc
+    –––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+hr {
+  margin-top: 3rem;
+  margin-bottom: 3.5rem;
+  border-width: 0;
+  border-top: 1px solid #e1e1e1;
+}
+
+.hidden {
+  display: none;
+}
+
+.highlighted-links {
+  text-align: left;
+}
+
+.highlighted-links > p > a {
+  border-bottom: 1px solid $red;
+}
+
+.highlighted-links > p > a:hover {
+  text-decoration: none;
+}
+
+.right-column-group {
+  margin: 2rem 0;
+}
+
+.left-column-header-group {
+  background-color: $platinum;
+  padding: 0 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid $gray0;
+}

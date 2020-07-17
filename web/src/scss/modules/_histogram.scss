@@ -1,0 +1,40 @@
+/* Histogram
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+.row--chartfilter {
+  max-height: 55vh;
+  margin-bottom: 5rem;
+}
+
+div#dhist,
+.dhist {
+  display: none;
+  position: relative;
+}
+
+div#hist,
+.hist {
+  width: 100%;
+}
+
+.hist-container {
+  margin: 2rem 1rem;
+  p {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    display: block;
+    margin-bottom: 2rem;
+    font-weight: 600;
+    font-size: 1.2rem;
+    line-height: 1.5;
+    color: #666666;
+  }
+  tspan {
+    font-family: "Open Sans", sans-serif;
+  }
+}
+
+.highcharts-container {
+  overflow: visible !important;
+}
