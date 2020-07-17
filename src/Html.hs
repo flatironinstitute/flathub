@@ -70,11 +70,9 @@ vueAttribute :: String -> H.AttributeValue -> H.Attribute
 vueAttribute = H.customAttribute . fromString . ("v-" ++)
 
 htmlResponse :: Wai.Request -> ResponseHeaders -> H.Markup -> M Wai.Response
-htmlResponse req hdrs body = do
+htmlResponse _req hdrs body = do
   glob <- ask
-  -- TODO: Can I remove this?
-  let isdev = globalDevMode glob && any ((==) "dev" . fst) (Wai.queryString req)
-      cats = globalCatalogs glob
+  let cats = globalCatalogs glob
   return $ okResponse hdrs $ H.docTypeHtml $ do
     H.head $ do
       forM_ [
