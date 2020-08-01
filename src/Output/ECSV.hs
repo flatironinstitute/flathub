@@ -8,7 +8,6 @@ module Output.ECSV
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.ByteString.Builder as B
-import           Data.Monoid ((<>))
 import qualified Data.Text as T
 
 import Monoid

@@ -101,4 +101,4 @@ compressStream (Just CompressionGZip) body = \sendChunk flush -> do
   body sendBuilder flushBuilder
   sendBuilder BSB.flush
   deflatePopper $ SZ.finishDeflate deflate
-compressStream (Just z) _ = fail $ "Unsupported compression format: " ++ show z
+compressStream (Just z) _ = \_ _ -> fail $ "Unsupported compression format: " ++ show z

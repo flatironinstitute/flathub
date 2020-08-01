@@ -155,7 +155,7 @@ transformTypeValue2 f (Byte      x) (Byte      y) = Byte      <$> f x y
 transformTypeValue2 f (Boolean   x) (Boolean   y) = Boolean   <$> f x y
 transformTypeValue2 f (Text      x) (Text      y) = Text      <$> f x y
 transformTypeValue2 f (Keyword   x) (Keyword   y) = Keyword   <$> f x y
-transformTypeValue2 _ _             _             = fail "transformTypeValue2: type mismatch"
+transformTypeValue2 _ _             _             = error "transformTypeValue2: type mismatch"
 
 traverseTypeValue :: Functor g => (forall a . Typed a => f a -> g a) -> TypeValue f -> g Value
 traverseTypeValue f = transformTypeValue (fmap Identity . f)

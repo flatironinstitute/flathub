@@ -16,7 +16,6 @@ import           Control.Monad (guard)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (ask)
 import qualified Data.Map.Strict as Map
-import           Data.Monoid ((<>))
 import           Data.String (IsString)
 import qualified Data.Text as T
 import           Data.Time.Clock (UTCTime)
