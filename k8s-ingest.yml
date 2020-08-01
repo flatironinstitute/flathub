@@ -7,7 +7,7 @@ spec:
   volumes:
   - name: ingest
     hostPath:
-      path: /simons/scratch
+      path: /mnt/sdceph/users
       type: Directory
   imagePullSecrets:
   - name: docker-registry-auth
