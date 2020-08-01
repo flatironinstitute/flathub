@@ -1,4 +1,4 @@
-FROM fpco/stack-build:lts-14.27
+FROM fpco/stack-build:lts-16.8
 RUN apt-get update && \
     apt-get install -y libhdf5-dev && \
     rm -rf /var/lib/apt/lists/*
@@ -16,4 +16,4 @@ RUN make -C web
 EXPOSE 8092
 ENTRYPOINT ["/home/astrosims/.local/bin/astrosims"]
 CMD []
-ENV LD_LIBRARY_PATH=/home/stackage/.stack/programs/x86_64-linux/ghc-8.6.5/lib/ghc-8.6.5/rts
+ENV LD_LIBRARY_PATH=/home/stackage/.stack/programs/x86_64-linux/ghc-8.8.3/lib/ghc-8.8.3/rts

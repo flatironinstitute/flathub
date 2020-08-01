@@ -26,7 +26,6 @@ import           Data.Function (on)
 import qualified Data.HashMap.Strict as HM
 import           Data.List (foldl', unionBy)
 import           Data.Maybe (listToMaybe, maybeToList)
-import           Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V

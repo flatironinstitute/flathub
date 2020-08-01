@@ -23,7 +23,6 @@ import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
 import           Data.List (find, inits, sortOn)
 import           Data.Maybe (isNothing)
-import           Data.Monoid ((<>))
 import           Data.String (fromString)
 import qualified Data.Text as T
 import qualified Data.Vector as V

@@ -10,7 +10,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Lazy as BSL
 import           Data.Maybe (fromMaybe)
-import           Data.Semigroup ((<>), stimesMonoid)
+import           Data.Semigroup (stimesMonoid)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import           Data.Word (Word16, Word32, Word64)

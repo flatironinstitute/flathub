@@ -11,7 +11,6 @@ import qualified Data.Aeson as J
 import qualified Data.Csv.Streaming as CSV
 import           Data.List (mapAccumL)
 import           Data.Maybe (fromMaybe)
-import           Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Vector as V
 import           Data.Word (Word64)
@@ -29,11 +28,11 @@ dropCSV :: Word64 -> CSV.Records a -> (Word64, CSV.Records a)
 dropCSV n (CSV.Cons _ r) | n > 0 = dropCSV (pred n) r
 dropCSV n r = (n, r)
 
-unconsCSV :: Monad m => CSV.Records a -> m (Maybe a, CSV.Records a)
+unconsCSV :: MonadFail m => CSV.Records a -> m (Maybe a, CSV.Records a)
 unconsCSV (CSV.Cons h r) = (, r) . Just <$> either fail return h
 unconsCSV n@(CSV.Nil e _) = (, n) <$> mapM fail e
 
-takeCSV :: Monad m => Word64 -> CSV.Records a -> m ([a], CSV.Records a)
+takeCSV :: MonadFail m => Word64 -> CSV.Records a -> m ([a], CSV.Records a)
 takeCSV 0 r = return ([], r)
 takeCSV n r = do
   (a, r') <- unconsCSV r
