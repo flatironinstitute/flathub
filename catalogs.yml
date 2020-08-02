@@ -4164,11 +4164,11 @@ unimach:
   title: UniverseMachine
   descr: >
     <a href='http://adsabs.harvard.edu/abs/2018arXiv180607893B'>Behroozi et al. 2018</a>.<br>
-    Data Release v0.5 2018-06-05.<br>
+    Data Release v1 2019-07-26.<br>
     UniverseMachine Lightcones for the CANDELS project (based on Early Data Release models presented in Behroozi et al. 2018).
     The full data release is available <a href="https://www.peterbehroozi.com/data.html">here</a>.
   index: unimach
-  count: 253884907
+  count: 250614266
   order: 'candels-2'
   fields:
     - name: field
