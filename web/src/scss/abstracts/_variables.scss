@@ -1,8 +1,91 @@
-@import url("https://fonts.googleapis.com/css?family=Lexend+Zetta|Open+Sans&display=swap");
+@import url("https://use.typekit.net/frn4vny.css");
+//
+// Typography
+//
+
+$body-font-family: "aktiv-grotesk", aktiv-grotesk, -apple-system,
+  BlinkMacSystemFont, "helvetica neue", helvetica, roboto, noto, "segoe ui",
+  arial, sans-serif !default;
+$mono-font-family: "SFMono-Regular", Menlo, Consolas, Monospace !default;
+$root-font-size: 16px !default; // Base font-size for rems
+$body-line-height: 1.4 !default;
+$content-line-height: 1.5 !default;
+$body-heading-line-height: 1.15 !default !default;
+
+//
+// Colors
+//
+
+//
+// Spacing
+//
+
+$spacing-unit: 1rem; // 1rem == 16px
+
+$spacers: (
+  sp-0: 0,
+  sp-1: $spacing-unit * 0.25,
+  sp-2: $spacing-unit * 0.5,
+  sp-3: $spacing-unit * 0.75,
+  sp-4: $spacing-unit,
+  sp-5: $spacing-unit * 1.5,
+  sp-6: $spacing-unit * 2,
+  sp-7: $spacing-unit * 2.5,
+  sp-8: $spacing-unit * 3,
+  sp-9: $spacing-unit * 3.5,
+  sp-10: $spacing-unit * 4,
+) !default;
+
+$sp-1: map-get($spacers, sp-1) !default; // 0.25 rem == 4px
+$sp-2: map-get($spacers, sp-2) !default; // 0.5  rem == 8px
+$sp-3: map-get($spacers, sp-3) !default; // 0.75 rem == 12px
+$sp-4: map-get($spacers, sp-4) !default; // 1    rem == 16px
+$sp-5: map-get($spacers, sp-5) !default; // 1.5  rem == 24px
+$sp-6: map-get($spacers, sp-6) !default; // 2    rem == 32px
+$sp-7: map-get($spacers, sp-7) !default; // 2.5  rem == 40px
+$sp-8: map-get($spacers, sp-8) !default; // 3    rem == 48px
+$sp-9: map-get($spacers, sp-9) !default; // 4    rem == 48px
+$sp-10: map-get($spacers, sp-10) !default; // 4.5  rem == 48px
+
+//
+// Borders
+//
+
+$border: 1px solid !default;
+$border-radius: 4px !default;
+$border-color: $grey-lt-100 !default;
+
+//
+// Grid system
+//
+
+$gutter-spacing: $sp-6 !default;
+$gutter-spacing-sm: $sp-4 !default;
+$nav-width: 248px !default;
+$nav-width-md: 216px !default;
+$content-width: 800px !default;
+$content-width-xl: 1080px !default;
+$header-height: 60px !default;
+$search-results-width: 500px !default;
+
+//
+// Media queries in pixels
+//
+
+$media-queries: (
+  xs: 320px,
+  sm: 500px,
+  md: $content-width,
+  lg: $content-width + $nav-width,
+  xl: 1441px,
+) !default;
+
 /* Variables
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
-$header-font: "Lexend Zetta", sans-serif;
-$body-font: "Open Sans", Helvetica, Arial, sans-serif;
+$header-font: "aktiv-grotesk", aktiv-grotesk, -apple-system, BlinkMacSystemFont,
+  "helvetica neue", helvetica, roboto, noto, "segoe ui", arial, sans-serif !default;
+$body-font: "aktiv-grotesk", aktiv-grotesk, -apple-system, BlinkMacSystemFont,
+  "helvetica neue", helvetica, roboto, noto, "segoe ui", arial, sans-serif !default;
 $off-black: rgba(41, 44, 47, 1);
 $black: rgba(34, 34, 34, 1);
 $white: rgba(254, 254, 255, 1);
