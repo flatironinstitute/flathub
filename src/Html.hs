@@ -281,6 +281,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                           H.string [toUpper x] <> "-Axis:"
                         H.div H.! HA.class_ "input-group" $ do
                           H.select H.! HA.id ("histsel-" <> H.stringValue [x]) $ do
+                            H.option H.! HA.value mempty $ "Choose " <> H.string [toUpper x] <> "-Axis..."
                             forM_ (catalogFields cat) $ \f ->
                               when (typeIsFloating (fieldType f)) $ do
                                 let n = H.textValue $ fieldName f
