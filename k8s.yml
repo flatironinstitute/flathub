@@ -69,4 +69,5 @@ spec:
     targetPort: http
   externalIPs:
   - 132.249.245.247
+  - 132.249.245.248
   - 132.249.246.13
