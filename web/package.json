@@ -11,30 +11,30 @@
   "author": "Dylan Simon",
   "license": "Apache-2.0",
   "devDependencies": {
-    "compression-webpack-plugin": "^4.0.0",
+    "compression-webpack-plugin": "^4.0.1",
     "css-loader": "^3.6.0",
     "datatables.net": "^1.10.21",
     "datatables.net-dt": "^1.10.21",
-    "file-loader": "^6.0.0",
+    "file-loader": "^6.1.0",
     "imports-loader": "^1.1.0",
     "mini-css-extract-plugin": "^0.9.0",
     "sass": "^1.26.10",
-    "sass-loader": "^9.0.1",
-    "webpack": "^4.43.0",
+    "sass-loader": "^9.0.3",
+    "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12"
   },
   "dependencies": {
     "@types/bootstrap": "^4.5.0",
     "@types/datatables.net": "^1.10.19",
-    "@types/jquery": "^3.5.0",
+    "@types/jquery": "^3.5.1",
     "@types/vue": "^2.0.0",
-    "bootstrap": "^4.5.0",
-    "highcharts": "^8.1.2",
+    "bootstrap": "^4.5.2",
+    "highcharts": "^8.2.0",
     "popper.js": "^1.16.1",
     "style-loader": "^1.2.1",
     "ts-loader": "^7.0.5",
-    "typescript": "^3.9.6",
-    "vue": "^2.6.11",
-    "vue-class-component": "^7.2.3"
+    "typescript": "^3.9.7",
+    "vue": "^2.6.12",
+    "vue-class-component": "^7.2.5"
   }
 }
