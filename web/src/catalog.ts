@@ -672,7 +672,7 @@ function py_text(query: Dict<string>) {
   let st =
     "import fi_astrosims.client\n" +
     cat +
-    " = fi_astrosims.client.Simulation(" +
+    " = fi_astrosims.client.Catalog(" +
     JSON.stringify(cat) +
     ", host = " +
     JSON.stringify(location.origin) +
@@ -683,11 +683,11 @@ function py_text(query: Dict<string>) {
     JSON.stringify(query.fields.split(" "));
   for (let i = 0; i < Filters.length; i++) {
     const q = Filters[i].pyQuery();
-    if (q != null) st += ", " + Filters[i].name + " = " + q;
+    if (q != null) st += ",\n  " + Filters[i].name + " = " + q;
   }
-  if (query.sort) st += ", sort = " + JSON.stringify(query.sort.split(" "));
+  if (query.sort) st += ",\n  sort = " + JSON.stringify(query.sort.split(" "));
   if (Sample < 1) {
-    st += ", sample = " + Sample;
+    st += ",\n  sample = " + Sample;
     if (Seed != undefined) st += ", seed = " + Seed;
   }
   st += ")\ndat = q.numpy()";

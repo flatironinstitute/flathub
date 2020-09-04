@@ -457,7 +457,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                     H.h6 H.! HA.class_ "right-column-heading" $ "Python Query"
                     H.p $ do
                       "Example python code to apply the above filters and retrieve data. To use, download and install "
-                      H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto/tree/master/py" $ "this module"
+                      H.a H.! HA.href "https://github.com/flatironinstitute/astrosims/tree/prod/py" $ "this module"
                       "."
                     H.div H.! HA.id "div-py" H.! HA.class_ "python-block" $
                       H.pre H.! HA.id "code-py" $ mempty
