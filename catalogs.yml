@@ -5033,3 +5033,104 @@ quijote:
         dict: vel_y
       - name: 'z'
         dict: vel_z
+gr8:
+  title: Gr8 Stars
+  index: gr8
+  count: 2004
+  fields:
+    - name: gaia_dr2_id
+      descr: Unique source identifier
+      type: long
+      dict: GAIA_source_id
+    - name: ''
+      title: pos
+      descr: Barycentric position
+      sub:
+      - name: ra
+        title: ra
+        descr: Barycentric right ascension of the source
+        type: double
+        units: deg
+        dict: ppos_x
+      - name: dec
+        title: dec
+        descr: Barycentric declination of the source
+        type: double
+        units: deg
+        dict: ppos_y
+    - name: parallax
+      dict: parallax
+      descr: Absolute parallax of the source
+      type: double
+      units: mas
+    - name: parallax_error
+      dict: GAIA_parallax_error
+      descr: Standard error of parallax
+      type: double
+      units: mas
+    - name: ''
+      title: pm
+      descr: Proper motion
+      type: double
+      units: mas/year
+      sub:
+      - name: pmra
+        dict: pmra
+        descr: Proper motion in right ascension (pmra) direction
+        type: double
+      - name: pmra_error
+        dict: GAIA_pmra_error
+        title: ra_error
+        type: double
+      - name: pmdec
+        dict: pmdec
+        descr: Proper motion in declination direction
+        type: double
+      - name: pmdec_error
+        dict: GAIA_pmdec_error
+        descr: Standard error of proper motion in declination direction
+        type: double
+    - name: phot_g_mean_mag
+      dict: GAIA_phot_g_mean_mag
+      title: mean_mag
+      descr: G-band photometry mean magnitude
+      type: float
+      units: mag
+    - name: phot_rp_mean_mag
+      dict: GAIA_phot_rp_mean_mag
+      title: mean_mag
+      descr: Integrated RP photometry mean magnitude
+      type: float
+      units: mag
+    - name: phot_bp_mean_mag
+      dict: GAIA_phot_bp_mean_mag_error
+      title: mean_mag
+      descr: Integrated BP photometry mean magnitude
+      type: float
+      units: mag
+    - name: bp_rp
+      dict: GAIA_bp_rp
+      descr: BP - RP colour
+      type: float
+      units: mag
+    - name: radial_velocity
+      dict: GAIA_radial_velocity
+      descr: Radial velocity
+      type: double
+      units: km/s
+    - name: radial_velocity_error
+      dict: GAIA_radial_velocity_error
+      descr: Radial velocity error
+      type: double
+      units: km/s
+    - name: gaia_teff
+      title: teff
+      descr: stellar effective temperature
+      type: float
+      units: K
+      dict: GAIA_teff_val
+    - name: gaia_radius
+      title: radius
+      descr: stellar radius
+      units: '\(r_\odot\)'
+      type: float
