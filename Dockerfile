@@ -1,6 +1,6 @@
-FROM fpco/stack-build:lts-16.12
+FROM fpco/stack-build-small:lts-16.17
 RUN apt-get update && \
-    apt-get install -y libhdf5-dev && \
+    apt-get install -y libhdf5-dev libbz2-dev pkg-config npm && \
     rm -rf /var/lib/apt/lists/*
 RUN echo /opt/ghc/*/lib/ghc-*/rts > /etc/ld.so.conf.d/ghc.conf && \
     ldconfig
