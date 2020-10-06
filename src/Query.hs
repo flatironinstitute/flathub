@@ -109,7 +109,7 @@ catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do
   cat <- askCatalog sim
   let query = parseQuery cat req
       hsize = histsSize $ queryAggs query
-  unless (queryLimit query <= 100) $
+  unless (queryLimit query <= 1000) $
     result $ response badRequest400 [] ("limit too large" :: String)
   unless (hsize > 0 && hsize <= 256) $
     result $ response badRequest400 [] ("hist too large" :: String)
@@ -150,6 +150,9 @@ data BulkFormat
   | BulkNumpy
     { bulkCompression :: Maybe CompressionFormat
     }
+  | BulkJSON
+    { bulkCompression :: Maybe CompressionFormat
+    }
   deriving (Eq)
 
 instance R.Parameter R.PathString BulkFormat where
@@ -158,6 +161,7 @@ instance R.Parameter R.PathString BulkFormat where
     ("ecsv", z) -> return $ BulkECSV z
     ("npy", z) -> return $ BulkNumpy z
     ("numpy", z) -> return $ BulkNumpy z
+    ("json", z) -> return $ BulkJSON z
     _ -> empty
   renderParameter = T.pack . formatExtension
 
@@ -208,6 +212,14 @@ bulk (BulkNumpy z) _ query count = maybe id compressBulk z Bulk
   , bulkRow = numpyRow $ queryFields query
   , bulkFooter = mempty
   } where (header, size) = numpyHeader (queryFields query) count
+bulk (BulkJSON z) _ query _ = maybe id compressBulk z Bulk
+  { bulkMimeType = "application/json"
+  , bulkExtension = "json"
+  , bulkSize = Nothing
+  , bulkHeader = "[" <> J.fromEncoding (J.toEncoding (map fieldName (queryFields query)))
+  , bulkRow = \j -> "," <> J.fromEncoding (J.toEncoding j)
+  , bulkFooter = "]"
+  }
 
 catalogBulk :: Route (Simulation, BulkFormat)
 catalogBulk = getPath (R.parameter R.>*< R.parameter) $ \(sim, fmt) req -> do
