@@ -269,10 +269,12 @@ catalogPage = getPath R.parameter $ \sim req -> do
                         H.span H.! vueAttribute "if" "type=='x'" $ "Histogram bins the data by a single field and displays count of objects per bin."
                         H.span H.! vueAttribute "if" "type=='y'" $ "Heatmap bins the data by two fields and displays count as color."
                         H.span H.! vueAttribute "if" "type=='c'" $ "Conditional distribution bins the data by one field and displays the distribution of a second field within that bin as a boxplot (range and quartiles)."
+                        H.span H.! vueAttribute "if" "type=='s'" $ "Shows a scatterplot of a (random subset) of actual data points."
                     H.select H.! vueAttribute "model" "type" H.! vueAttribute "on:change" "reset" $ do
                       H.option H.! HA.value "x" H.! HA.selected "selected" $ "histogram"
                       H.option H.! HA.value "y" $ "heatmap"
                       H.option H.! HA.value "c" $ "conditional distribution"
+                      H.option H.! HA.value "s" $ "scatterplot"
                   H.div H.! HA.class_ "col-sm-12 col-md-5 plot-col" $ do
                     forM_ ['x', 'y'] $ \x ->
                       H.div H.! HA.class_ "input-group-row" H.!? (x == 'y', vueAttribute "if" "type!=='x'") H.! vueAttribute "on:change" "go" $ do
@@ -280,7 +282,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                         H.label $ do
                           H.string [toUpper x] <> "-Axis:"
                         H.div H.! HA.class_ "input-group" $ do
-                          H.select H.! HA.id ("histsel-" <> H.stringValue [x]) $ do
+                          H.select H.! HA.id ("plot-" <> H.stringValue [x]) $ do
                             H.option H.! HA.value mempty $ "Choose " <> H.string [toUpper x] <> "-Axis..."
                             forM_ (catalogFields cat) $ \f ->
                               when (typeIsFloating (fieldType f)) $ do
@@ -302,10 +304,10 @@ catalogPage = getPath R.parameter $ \sim req -> do
                                   H.! HA.type_ "checkbox"
                                   H.! HA.name ("log" <> H.stringValue [x])
                                   H.! vueAttribute "bind:disabled" ("!(" <> filt <> ".lbv>0)")
-                                  H.! vueAttribute "model" (filt <> ".histLog")
+                                  H.! vueAttribute "model" (filt <> ".plotLog")
                                 H.span H.! HA.class_ "slider" H.! vueAttribute "bind:disabled" ("!(" <> filt <> ".lbv>0)") $ mempty
                               H.label "log"
-                  H.div H.! HA.class_ "col-sm-12 col-md-3 plot-col" $ do
+                  H.div H.! HA.class_ "col-sm-12 col-md-3 plot-col" H.! vueAttribute "if" "type!='s'" $ do
                     H.div H.! HA.class_ "tooltip-container" $ do
                       H.span H.! HA.class_ "label-help" $ "Count:"
                       H.span H.! HA.class_ "tooltiptext" $ do
@@ -324,8 +326,8 @@ catalogPage = getPath R.parameter $ \sim req -> do
                       H.label "log"
                 -- End Vue
               H.div H.! HA.class_ "alert alert-danger" H.! HA.id "error" $ mempty
-              H.div H.! HA.class_ "hist-container" $ do
-                H.div H.! HA.id "hist" $ mempty
+              H.div H.! HA.class_ "plot-container" $ do
+                H.div H.! HA.id "plot-chart" $ mempty
 
             H.div H.! HA.class_ "col col-sm-12 col-md-4 right-column" $ do
               H.ul H.! HA.class_ "nav nav-tabs" H.! HA.id "myTab" H.! HA.role "tablist" $ do
