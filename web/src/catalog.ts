@@ -442,11 +442,6 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
     data: query,
   }).then(
     (res: CatalogResponse) => {
-      const modal = <HTMLSelectElement>(
-        document.getElementById("progress-modal")
-      );
-      modal.classList.add("hidden");
-      Update = false;
       $("#error").hide();
       Catalog.count = Math.max(Catalog.count || 0, res.hits.total);
       const settings = (<any>TCat.settings())[0];
@@ -492,38 +487,43 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
         }).then(
           (res: CatalogResponse) => {
             scatterplotDraw(plotx, ploty, res.hits.hits);
+            modal.classList.add("hidden");
+            Update = false;
           },
           (xhr, msg, err) => {
             $("#error")
               .text(msg + ": " + err)
               .show();
+            modal.classList.add("hidden");
+            Update = false;
           }
         );
-      } else if (plotx) {
-        if (res.aggregations && res.aggregations.hist)
-          histogramDraw(
-            plotx,
-            ploty,
-            res.aggregations.hist as AggrTerms<number>,
-            res.histsize || {}
-          );
-        else $("#plot-chart").text("No data for histogram");
+      } else {
+        if (plotx) {
+          if (res.aggregations && res.aggregations.hist)
+            histogramDraw(
+              plotx,
+              ploty,
+              res.aggregations.hist as AggrTerms<number>,
+              res.histsize || {}
+            );
+          else $("#plot-chart").text("No data for histogram");
+        }
+        modal.classList.add("hidden");
+        Update = false;
       }
     },
     (xhr, msg, err) => {
-      const modal = <HTMLSelectElement>(
-        document.getElementById("progress-modal")
-      );
-      modal.classList.add("hidden");
-      Update = false;
-      $("#error")
-        .text(msg + ": " + err)
-        .show();
       callback({
         draw: data.draw,
         data: [],
         error: msg + ": " + err,
       });
+      $("#error")
+        .text(msg + ": " + err)
+        .show();
+      modal.classList.add("hidden");
+      Update = false;
     }
   );
 }
