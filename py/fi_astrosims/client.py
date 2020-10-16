@@ -8,7 +8,7 @@ except ImportError:
 import numpy
 import random
 
-__all__ = ['Simulation', 'Query', 'getCatalogs']
+__all__ = ['Catalog', 'Simulation', 'Query', 'getCatalogs']
 
 delim = ' '
 
@@ -44,7 +44,7 @@ def getJSON(url):
     """
     :param: url: (string) url to JSON catalog
     :return: (dict) dictionary of JSON catalog
-    Helper function used in Simulation initialization, count, aggs, and hist.
+    Helper function used in Catalog initialization, count, aggs, and hist.
     """
     res = get(url, headers={'accept': 'application/json'})
     data = res.read()
@@ -61,7 +61,7 @@ def getCatalogs(host = defaultHost):
     """
     return getJSON(host)
 
-class Simulation:
+class Catalog:
     """
     Reference to a particular catalog.
     *name* is the id of the catalog at the *host* url.
@@ -74,22 +74,24 @@ class Simulation:
         self.fields = { f['name']: f for f in self.catalog['fields'] }
 
     def query(self, **kwargs):
-        """Construct a Query using the given arguments and this simulation."""
+        """Construct a Query using the given arguments and this catalog."""
         return Query(self, **kwargs)
+
+Simulation = Catalog
 
 class Query:
     """
-    A query against a Simulation catalog.
-    *simulation* specifies the Simulation object or name to run against.
+    A query against a Catalog.
+    *catalog* specifies the Catalog object or name to run against.
     See *update* for other parameters.
     """
-    def __init__(self, simulation, fields = None, sort = None, sample = 1, seed = None, **filters):
-        if type(simulation) is str:
-            simulation = Simulation(simulation)
-        self.simulation = simulation
+    def __init__(self, catalog, fields = None, sort = None, sample = 1, seed = None, **filters):
+        if type(catalog) is str:
+            catalog = Catalog(catalog)
+        self.catalog = catalog
         self.query = dict()
         if fields is None:
-            fields = [ f['name'] for f in simulation.catalog['fields'] ]
+            fields = catalog.fields.keys()
         if sample > 1:
             self.update(fields, sort, sample, seed, **filters)
             sample = sample / self.count()
@@ -98,7 +100,7 @@ class Query:
     def update(self, fields = None, sort = None, sample = None, seed = None, **filters):
         """
         :param fields: (list) specifies the list of fields to return,
-        defaulting to all simulation fields.
+        defaulting to all catalog fields.
         :param sort: (type) specifies the ordering of result objects, which may
         be the name of a single field, a field name prefixed with '-' for
         descending, or a list of sort fields.
@@ -132,7 +134,7 @@ class Query:
             if seed is not None:
                 self.query['sample'] += '@' + str(seed)
         for (k, v) in filters.items():
-            if not k in self.simulation.fields:
+            if not k in self.catalog.fields:
                 raise KeyError('No such field: ' + k)
             if v is None:
                 try:
@@ -150,7 +152,7 @@ class Query:
         self._count = None
 
     def makeurl(self, path, **query):
-        return makeurl(self.simulation.url, path, dictWith(self.query, **query))
+        return makeurl(self.catalog.url, path, dictWith(self.query, **query))
 
     def count(self):
         """
@@ -201,7 +203,7 @@ class Query:
         """
         res = getJSON(self.makeurl('catalog', limit=0, hist=field+':'+str(bins)))
         return numpy.array([ (b['key'], b['doc_count']) for b in res['aggregations']['hist']['buckets'] ],
-                [('bucket', self.simulation.fields[field]['dtype']), ('count', 'u8')])
+                [('bucket', self.catalog.fields[field]['dtype']), ('count', 'u8')])
 
     def numpy(self):
         """

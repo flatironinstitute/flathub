@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE ViewPatterns #-}
 
@@ -45,17 +46,19 @@ ingestCSV :: Ingest -> M Word64
 ingestCSV info@Ingest{ ingestCatalog = cat, ingestOffset = off } = do
   csv <- liftIO $ CSV.decode CSV.NoHeader <$> decompressFile (ingestFile info)
   (fromMaybe V.empty -> header, rows) <- unconsCSV csv
-  cols <- mapM (\Field{ fieldName = n, fieldIngest = i } ->
-      maybe (fail $ "csv header field missing: " ++ T.unpack n) (return . (,) n) $ V.elemIndex (fromMaybe n i) header)
+  cols <- mapM (\f@Field{ fieldName = n, fieldIngest = i } ->
+      maybe (fail $ "csv header field missing: " ++ T.unpack n) (return . (,) n . (,) f) $ V.elemIndex (fromMaybe n i) header)
     $ catalogFields cat
   let
     (del, rows') = dropCSV off rows
     off' = off - del
     key
-      | Just k <- (`lookup` cols) =<< catalogKey cat = const $ T.unpack . (V.! k)
+      | Just (_, k) <- (`lookup` cols) =<< catalogKey cat = const $ T.unpack . (V.! k)
       | otherwise = const . (ingestPrefix info ++) . show
-    val r (n, i) = mwhen (not $ T.null v) (n J..= v)
+    val r (n, (f, i)) = mwhen (not $ miss f v) (n J..= v)
       where v = r V.! i
+    miss f v = T.null v
+      || typeIsFloating (fieldType f) && v == "nan"
     loop o cs = do
       liftIO $ putStr (show o ++ "\r") >> hFlush stdout
       (rs, cs') <- takeCSV (ingestBlockSize info) cs

@@ -28,14 +28,14 @@ import fi_astrosims.client
 
 ## Running the Module
 
-To start off, create a Simulation object based off the simulation you want to query. From there, you can create a Query object and can query based off fields, sample, seed, and sort).
+To start off, create a Catalog object based off the simulation you want to query. From there, you can create a Query object and can query based off fields, sample, seed, and sort).
 
 ```
-gaea = fi_astrosims.client.Simulation('gaea')
+gaea = fi_astrosims.client.Catalog('gaea')
 q = gaea.query(fields = ['PPos_x', 'PPos_y', 'z'], Mvir = (4700, 4900), sample = 0.01, seed = 0)
 ```
 
-A dict of available fields is available on the Simulation:
+A dict of available fields is available on the Catalog:
 
 ```
 gaea.fields

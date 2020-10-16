@@ -43,7 +43,6 @@ var Seed: undefined | number;
 var Update_aggs: number = -1;
 var Histogram: undefined | NumericFilter;
 var Heatmap: undefined | NumericFilter;
-var Histcond: boolean = false;
 var Histogram_chart: Highcharts.Chart | undefined;
 var Last_fields: string[] = [];
 var Last_query: undefined | Dict<string>;
@@ -79,15 +78,22 @@ const plotVue = new Vue({
       if (Histogram_chart) toggle_log(Histogram_chart, this.log);
     },
     // Reload
-    go: function () {
-      histogramShow(<any>this.type);
+    go: function (ev: any) {
+      if (Histogram_chart && this.type == 'c' && ev.target && ev.target.name == 'logy') {
+        const log = this.yfilter.histLog;
+        Histogram_chart.yAxis[0].update({
+          type: log ? "logarithmic" : "linear"
+        });
+      }
+      else
+        histogramShow(<any>this.type);
     },
     reset: function () {
-      let selx = <HTMLSelectElement>document.getElementById("histsel-x");
+      const selx = <HTMLSelectElement>document.getElementById("histsel-x");
       if (selx) {
         selx.selectedIndex = 0;
       }
-      let sely = <HTMLSelectElement>document.getElementById("histsel-y");
+      const sely = <HTMLSelectElement>document.getElementById("histsel-y");
       if (sely) {
         sely.selectedIndex = 0;
       }
@@ -114,7 +120,7 @@ function zoomRange(
   axis: Highcharts.AxisOptions
 ) {
   /* FIXME histLog may have been updated since plot? */
-  const unlog = f.histLog ? Math.exp : (x: number) => x;
+  const unlog = f.histLog && !f.histCond ? Math.exp : (x: number) => x;
   f.setRange(
     unlog(wid ? wid * Math.floor(<number>axis.min / wid) : <number>axis.min),
     unlog(wid ? wid * Math.ceil(<number>axis.max / wid) : <number>axis.max)
@@ -125,7 +131,6 @@ function zoomRange(
 function histogramDraw(
   hist: NumericFilter,
   heatmap: undefined | NumericFilter,
-  cond: boolean,
   agg: AggrTerms<number>,
   size: Dict<number>
 ) {
@@ -138,7 +143,7 @@ function histogramDraw(
   const key = (x: { key: any }) => parseFloat(x.key);
   for (let x of agg.buckets) {
     if (heatmap) {
-      if (cond && x.pct) {
+      if (heatmap.histCond && x.pct) {
         if (x.doc_count)
           data.push([
             key(x) + xwid,
@@ -176,13 +181,11 @@ function histogramDraw(
   if (heatmap) {
     opts.colorAxis = <Highcharts.ColorAxisOptions>opts.yAxis;
     opts.colorAxis.reversed = false;
-    opts.yAxis = histogram_options(
-      heatmap.field,
-      heatmap.histLog,
-      plotVue.log
-    ).xAxis;
+    opts.yAxis = histogram_options(heatmap.field).xAxis;
+    if (heatmap.histCond && heatmap.histLog)
+      (<Highcharts.AxisOptions>opts.yAxis).type = "logarithmic";
   }
-  if (heatmap && !cond) {
+  if (heatmap && !heatmap.histCond) {
     (<Highcharts.ChartOptions>opts.chart).zoomType = "xy";
     (<Highcharts.ChartOptions>opts.chart).events = {
       selection: function (event: Highcharts.ChartSelectionContextObject) {
@@ -195,7 +198,7 @@ function histogramDraw(
         return false; // Don't zoom
       },
     };
-    const rendery = render_funct(heatmap.field, heatmap.histLog);
+    const rendery = render_funct(heatmap.field, heatmap.histLog && !heatmap.histCond);
     (<Highcharts.TooltipOptions>opts.tooltip).formatter = function (
       this: Highcharts.TooltipFormatterContextObject
     ): string {
@@ -294,13 +297,14 @@ function histogramShow(axis: "x" | "y" | "c") {
   const filt = addFilter(selx.value);
   if (filt instanceof NumericFilter) {
     Histogram = filt;
+    Histogram.histCond = false;
     Heatmap = undefined;
     if (axis != "x") {
       const sely = <HTMLSelectElement>document.getElementById("histsel-y");
       const heat = addFilter(sely.value);
       if (heat instanceof NumericFilter) {
         Heatmap = heat;
-        if ((Histcond = axis == "c")) Heatmap.histLog = false;
+        Heatmap.histCond = axis == "c";
       }
     }
   } else histogramRemove();
@@ -371,10 +375,9 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
   if (aggs) query.aggs = aggs.map((filt) => filt.name).join(" ");
   const histogram = Histogram;
   const heatmap = Histogram && Heatmap;
-  const histcond = Histcond;
   if (histogram) {
     if (heatmap) {
-      if (histcond) query.hist = histogram.histQuery(64) + " " + heatmap.name;
+      if (heatmap.histCond) query.hist = histogram.histQuery(64) + " " + heatmap.name;
       else query.hist = histogram.histQuery(16) + " " + heatmap.histQuery(16);
     } else query.hist = histogram.histQuery(128);
   }
@@ -415,7 +418,6 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
           histogramDraw(
             histogram,
             heatmap,
-            histcond,
             res.aggregations.hist as AggrTerms<number>,
             res.histsize || {}
           );
@@ -542,6 +544,7 @@ class NumericFilter extends Filter {
   lbv: number;
   ubv: number;
   histLog: boolean = false;
+  histCond: boolean = false;
 
   update_aggs(aggs: AggrStats) {
     super.update_aggs(aggs);
@@ -593,7 +596,7 @@ class NumericFilter extends Filter {
   }
 
   histQuery(n: number): string {
-    return this.field.name + (this.histLog ? ":log" : ":") + n.toString();
+    return this.field.name + (this.histLog && !this.histCond ? ":log" : ":") + n.toString();
   }
 }
 
@@ -669,7 +672,7 @@ function py_text(query: Dict<string>) {
   let st =
     "import fi_astrosims.client\n" +
     cat +
-    " = fi_astrosims.client.Simulation(" +
+    " = fi_astrosims.client.Catalog(" +
     JSON.stringify(cat) +
     ", host = " +
     JSON.stringify(location.origin) +
@@ -680,11 +683,11 @@ function py_text(query: Dict<string>) {
     JSON.stringify(query.fields.split(" "));
   for (let i = 0; i < Filters.length; i++) {
     const q = Filters[i].pyQuery();
-    if (q != null) st += ", " + Filters[i].name + " = " + q;
+    if (q != null) st += ",\n  " + Filters[i].name + " = " + q;
   }
-  if (query.sort) st += ", sort = " + JSON.stringify(query.sort.split(" "));
+  if (query.sort) st += ",\n  sort = " + JSON.stringify(query.sort.split(" "));
   if (Sample < 1) {
-    st += ", sample = " + Sample;
+    st += ",\n  sample = " + Sample;
     if (Seed != undefined) st += ", seed = " + Seed;
   }
   st += ")\ndat = q.numpy()";

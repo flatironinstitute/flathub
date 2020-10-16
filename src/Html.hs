@@ -281,6 +281,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                           H.string [toUpper x] <> "-Axis:"
                         H.div H.! HA.class_ "input-group" $ do
                           H.select H.! HA.id ("histsel-" <> H.stringValue [x]) $ do
+                            H.option H.! HA.value mempty $ "Choose " <> H.string [toUpper x] <> "-Axis..."
                             forM_ (catalogFields cat) $ \f ->
                               when (typeIsFloating (fieldType f)) $ do
                                 let n = H.textValue $ fieldName f
@@ -289,7 +290,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                                   H.!? (not $ fieldDisp f, HA.style "display:none")
                                   H.! HA.value n
                                   $ H.text $ fieldTitle f
-                          H.div H.! HA.class_ "tooltip-container" H.! vueAttribute "if" (filt <> if x == 'y' then "&&type==='y'" else "") $ do
+                          H.div H.! HA.class_ "tooltip-container" H.! vueAttribute "if" filt $ do
                             H.span
                               H.! HA.class_ "tooltiptext"
                               H.! vueAttribute "show" ("!(" <> filt <> ".lbv>0)") $ do
@@ -299,6 +300,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                               H.label H.! HA.class_ "switch" $ do
                                 H.input
                                   H.! HA.type_ "checkbox"
+                                  H.! HA.name ("log" <> H.stringValue [x])
                                   H.! vueAttribute "bind:disabled" ("!(" <> filt <> ".lbv>0)")
                                   H.! vueAttribute "model" (filt <> ".histLog")
                                 H.span H.! HA.class_ "slider" H.! vueAttribute "bind:disabled" ("!(" <> filt <> ".lbv>0)") $ mempty
@@ -315,6 +317,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                       H.label H.! HA.class_ "switch" $ do
                         H.input
                           H.! HA.type_ "checkbox"
+                          H.! HA.name "log"
                           H.! vueAttribute "model" "log"
                           H.! vueAttribute "on:change" "toggle_log"
                         H.span H.! HA.class_ "slider" $ mempty
@@ -454,7 +457,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                     H.h6 H.! HA.class_ "right-column-heading" $ "Python Query"
                     H.p $ do
                       "Example python code to apply the above filters and retrieve data. To use, download and install "
-                      H.a H.! HA.href "https://github.com/flatironinstitute/astrosims-reproto/tree/master/py" $ "this module"
+                      H.a H.! HA.href "https://github.com/flatironinstitute/astrosims/tree/prod/py" $ "this module"
                       "."
                     H.div H.! HA.id "div-py" H.! HA.class_ "python-block" $
                       H.pre H.! HA.id "code-py" $ mempty
