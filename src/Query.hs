@@ -109,7 +109,7 @@ catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do
   cat <- askCatalog sim
   let query = parseQuery cat req
       hsize = histsSize $ queryAggs query
-  unless (queryLimit query <= 1000) $
+  unless (queryLimit query <= 5000) $
     result $ response badRequest400 [] ("limit too large" :: String)
   unless (hsize > 0 && hsize <= 256) $
     result $ response badRequest400 [] ("hist too large" :: String)
