@@ -38,13 +38,14 @@ declare const Query: {
 };
 const Fields_idx: Dict<number> = {};
 const Filters: Array<Filter> = [];
+const ScatterCount = 2000;
 var Sample: number = 1;
 var Seed: undefined | number;
 var Update_aggs: number = -1;
-var Histogram: undefined | NumericFilter;
-var Heatmap: undefined | NumericFilter;
-var Histcond: boolean = false;
-var Histogram_chart: Highcharts.Chart | undefined;
+var PlotX: undefined | NumericFilter;
+var PlotY: undefined | NumericFilter;
+var Scatterplot: boolean = false;
+var Chart: Highcharts.Chart | undefined;
 var Last_fields: string[] = [];
 var Last_query: undefined | Dict<string>;
 var Show_data: boolean = true;
@@ -69,25 +70,38 @@ function set_download(query: Dict<string>) {
 const plotVue = new Vue({
   data: {
     type: "x",
-    xfilter: Histogram,
-    yfilter: Heatmap,
+    xfilter: PlotX,
+    yfilter: PlotY,
     log: false,
   },
   methods: {
     // Count log toggle (aka replot)
     toggle_log: function () {
-      if (Histogram_chart) toggle_log(Histogram_chart, this.log);
+      if (Chart) toggle_log(Chart, this.log);
     },
     // Reload
-    go: function () {
-      histogramShow(<any>this.type);
+    go: function (ev: any) {
+      if (Chart && (this.type == 'c' || this.type == 's') && ev.target && ev.target.name == 'logy') {
+        const log = this.yfilter.plotLog;
+        Chart.yAxis[0].update({
+          type: log ? "logarithmic" : "linear"
+        });
+      }
+      else if (Chart && this.type == 's' && ev.target && ev.target.name == 'logx') {
+        const log = this.xfilter.plotLog;
+        Chart.xAxis[0].update({
+          type: log ? "logarithmic" : "linear"
+        });
+      }
+      else
+        histogramShow(<any>this.type);
     },
     reset: function () {
-      let selx = <HTMLSelectElement>document.getElementById("histsel-x");
+      const selx = <HTMLSelectElement>document.getElementById("plot-x");
       if (selx) {
         selx.selectedIndex = 0;
       }
-      let sely = <HTMLSelectElement>document.getElementById("histsel-y");
+      const sely = <HTMLSelectElement>document.getElementById("plot-y");
       if (sely) {
         sely.selectedIndex = 0;
       }
@@ -100,21 +114,22 @@ const plotVue = new Vue({
 });
 
 function histogramRemove() {
-  if (Histogram_chart) Histogram_chart.destroy();
-  Histogram_chart = undefined;
-  Histogram = undefined;
-  Heatmap = undefined;
-  $("#histlabel").remove();
-  $("#hist").empty();
+  if (Chart) Chart.destroy();
+  Chart = undefined;
+  PlotX = undefined;
+  PlotY = undefined;
+  $("#plotlabel").remove();
+  $("#plot-chart").empty();
 }
 
 function zoomRange(
   f: NumericFilter,
   wid: number,
-  axis: Highcharts.AxisOptions
+  axis: Highcharts.AxisOptions,
+  scatter: boolean = false
 ) {
-  /* FIXME histLog may have been updated since plot? */
-  const unlog = f.histLog ? Math.exp : (x: number) => x;
+  /* FIXME plotLog may have been updated since plot? */
+  const unlog = f.plotLog && !f.plotCond && !scatter ? Math.exp : (x: number) => x;
   f.setRange(
     unlog(wid ? wid * Math.floor(<number>axis.min / wid) : <number>axis.min),
     unlog(wid ? wid * Math.ceil(<number>axis.max / wid) : <number>axis.max)
@@ -122,23 +137,36 @@ function zoomRange(
   f.change();
 }
 
+function zoomEvent(plotx: NumericFilter, xwid: number = 0, ploty: NumericFilter|undefined = undefined, ywid: number = 0, scatter: boolean = false): ((event: Highcharts.ChartSelectionContextObject) => boolean) {
+  return function (event: Highcharts.ChartSelectionContextObject) {
+    event.preventDefault();
+    zoomRange(plotx, xwid, event.xAxis[0], scatter);
+    if (ploty) {
+      const i = Update_aggs;
+      zoomRange(ploty, ywid, event.yAxis[0], scatter);
+      /* make sure both filters apply, in case y happens to be above x */
+      if (Update_aggs < i) Update_aggs = i;
+    }
+    return false; // Don't zoom
+  };
+}
+
 function histogramDraw(
-  hist: NumericFilter,
-  heatmap: undefined | NumericFilter,
-  cond: boolean,
+  plotx: NumericFilter,
+  ploty: undefined | NumericFilter,
   agg: AggrTerms<number>,
   size: Dict<number>
 ) {
-  const histLabel = document.getElementById("histlabel");
-  const field = hist.field;
+  const plotLabel = document.getElementById("plotlabel");
+  const field = plotx.field;
   const data: number[][] = [];
   let xwid = size[field.name] / 2;
-  let ywid = heatmap ? size[heatmap.name] / 2 : NaN;
+  let ywid = ploty ? size[ploty.name] / 2 : NaN;
   let cmax = 0;
   const key = (x: { key: any }) => parseFloat(x.key);
   for (let x of agg.buckets) {
-    if (heatmap) {
-      if (cond && x.pct) {
+    if (ploty) {
+      if (ploty.plotCond && x.pct) {
         if (x.doc_count)
           data.push([
             key(x) + xwid,
@@ -158,44 +186,34 @@ function histogramDraw(
   }
   if (data.length <= 1) {
     histogramRemove();
-    $("#hist").text("No data for histogram");
+    $("#plot-chart").text("No data for histogram");
     return;
   }
-  if (!histLabel) {
-    $("#hist").before(
-      `<p id="histlabel">Click and drag to zoom into the figure. Filters in the right column reflect plot selections.</p>`
+  if (!plotLabel) {
+    $("#plot-chart").before(
+      `<p id="plotlabel">Click and drag to zoom into the figure. Filters in the right column reflect plot selections.</p>`
     );
   }
 
   const opts: Highcharts.Options = histogram_options(
     field,
-    hist.histLog,
+    plotx.plotLog,
     plotVue.log
   );
-  const renderx = render_funct(hist.field, hist.histLog);
-  if (heatmap) {
+  const renderx = render_funct(field, plotx.plotLog);
+  if (ploty) {
     opts.colorAxis = <Highcharts.ColorAxisOptions>opts.yAxis;
     opts.colorAxis.reversed = false;
-    opts.yAxis = histogram_options(
-      heatmap.field,
-      heatmap.histLog,
-      plotVue.log
-    ).xAxis;
+    opts.yAxis = histogram_options(ploty.field).xAxis;
+    if (ploty.plotCond && ploty.plotLog)
+      (<Highcharts.AxisOptions>opts.yAxis).type = "logarithmic";
   }
-  if (heatmap && !cond) {
+  if (ploty && !ploty.plotCond) {
     (<Highcharts.ChartOptions>opts.chart).zoomType = "xy";
     (<Highcharts.ChartOptions>opts.chart).events = {
-      selection: function (event: Highcharts.ChartSelectionContextObject) {
-        event.preventDefault();
-        zoomRange(hist, xwid, event.xAxis[0]);
-        const i = Update_aggs;
-        zoomRange(heatmap, ywid, event.yAxis[0]);
-        /* make sure both filters apply, in case y happens to be above x */
-        if (Update_aggs < i) Update_aggs = i;
-        return false; // Don't zoom
-      },
+      selection: zoomEvent(plotx, xwid, ploty, ywid)
     };
-    const rendery = render_funct(heatmap.field, heatmap.histLog);
+    const rendery = render_funct(ploty.field, ploty.plotLog && !ploty.plotCond);
     (<Highcharts.TooltipOptions>opts.tooltip).formatter = function (
       this: Highcharts.TooltipFormatterContextObject
     ): string {
@@ -229,20 +247,16 @@ function histogramDraw(
   } else {
     const wid = 2 * xwid;
     (<Highcharts.ChartOptions>opts.chart).events = {
-      selection: function (event: Highcharts.ChartSelectionContextObject) {
-        event.preventDefault();
-        zoomRange(hist, wid, event.xAxis[0]);
-        return false; // Don't zoom
-      },
+      selection: zoomEvent(plotx, wid)
     };
     (<Highcharts.TooltipOptions>opts.tooltip).footerFormat = "drag to filter";
-    (<Highcharts.AxisOptions>opts.xAxis).min = hist.histLog
-      ? Math.log(hist.lbv)
-      : hist.lbv;
-    (<Highcharts.AxisOptions>opts.xAxis).max = hist.histLog
-      ? Math.log(hist.ubv + wid)
-      : hist.ubv + wid;
-    if (heatmap) {
+    (<Highcharts.AxisOptions>opts.xAxis).min = plotx.plotLog
+      ? Math.log(plotx.lbv)
+      : plotx.lbv;
+    (<Highcharts.AxisOptions>opts.xAxis).max = plotx.plotLog
+      ? Math.log(plotx.ubv + wid)
+      : plotx.ubv + wid;
+    if (ploty) {
       /* condmedian */
       (<Highcharts.TooltipOptions>opts.tooltip).formatter = function (
         this: Highcharts.TooltipFormatterContextObject
@@ -285,27 +299,60 @@ function histogramDraw(
       ];
     }
   }
-  Histogram_chart = Highcharts.chart("hist", opts);
+  Chart = Highcharts.chart("plot-chart", opts);
   plotVue.$forceUpdate();
 }
 
-function histogramShow(axis: "x" | "y" | "c") {
-  const selx = <HTMLSelectElement>document.getElementById("histsel-x");
+function scatterplotDraw(
+  plotx: NumericFilter,
+  ploty: NumericFilter,
+  res: Array<Dict<number>>
+) {
+  const xlog = plotx.plotLog;
+  const ylog = ploty.plotLog;
+  const opts: Highcharts.Options = histogram_options(plotx.field);
+  opts.yAxis = histogram_options(ploty.field).xAxis;
+  if (xlog)
+    (<Highcharts.XAxisOptions>opts.xAxis).type = "logarithmic";
+  if (ylog)
+    (<Highcharts.YAxisOptions>opts.yAxis).type = "logarithmic";
+  (<Highcharts.ChartOptions>opts.chart).zoomType = "xy";
+  (<Highcharts.ChartOptions>opts.chart).events = {
+    selection: zoomEvent(plotx, 0, ploty, 0, true)
+  };
+  const data: number[][] = [];
+  const xname = plotx.field.name;
+  const yname = ploty.field.name;
+  for (let r of res)
+    data.push([r[xname], r[yname]]);
+  opts.series = [{
+    type: "scatter",
+    data: data,
+    // keys: [xname, yname],
+  }];
+  Chart = Highcharts.chart("plot-chart", opts);
+  plotVue.$forceUpdate();
+}
+
+function histogramShow(axis: "x" | "y" | "c" | "s") {
+  const selx = <HTMLSelectElement>document.getElementById("plot-x");
   const filt = addFilter(selx.value);
   if (filt instanceof NumericFilter) {
-    Histogram = filt;
-    Heatmap = undefined;
+    PlotX = filt;
+    PlotX.plotCond = false;
+    PlotY = undefined;
     if (axis != "x") {
-      const sely = <HTMLSelectElement>document.getElementById("histsel-y");
+      const sely = <HTMLSelectElement>document.getElementById("plot-y");
       const heat = addFilter(sely.value);
       if (heat instanceof NumericFilter) {
-        Heatmap = heat;
-        if ((Histcond = axis == "c")) Heatmap.histLog = false;
+        PlotY = heat;
+        PlotY.plotCond = axis == "c";
       }
     }
   } else histogramRemove();
-  plotVue.xfilter = Histogram;
-  plotVue.yfilter = Heatmap;
+  plotVue.xfilter = PlotX;
+  plotVue.yfilter = PlotY;
+  Scatterplot = !!(axis == 's' && PlotX && PlotY);
   update(false);
 }
 
@@ -339,6 +386,12 @@ function visibleFields(): string[] {
   }
 }
 
+function querySample(sample: number, seed: number|undefined): string {
+  let s = <any>sample;
+  if (seed != undefined) s += "@" + seed;
+  return s;
+}
+
 function ajax(data: any, callback: (data: any) => void, opts: any) {
   const query: Dict<string> = {
     sort: data.order
@@ -359,24 +412,29 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
     const q = filt.query();
     if (q != null) query[filt.name] = q;
   }
-  if (Sample < 1) {
-    query.sample = <any>Sample;
-    if (Seed != undefined) query.sample += "@" + Seed;
-  }
+  let sample = Sample;
+  const seed = Seed;
+  if (sample < 1)
+    query.sample = querySample(sample, seed);
 
-  query.offset = data.start;
-  query.limit = Show_data ? data.length : 0;
   Last_fields = visibleFields();
-  query.fields = Show_data ? Last_fields.join(" ") : "";
+  if (Show_data) {
+    query.offset = data.start;
+    query.limit = data.length;
+    query.fields = Last_fields.join(" ");
+  } else {
+    query.limit = <any>0;
+    query.fields = "";
+  }
   if (aggs) query.aggs = aggs.map((filt) => filt.name).join(" ");
-  const histogram = Histogram;
-  const heatmap = Histogram && Heatmap;
-  const histcond = Histcond;
-  if (histogram) {
-    if (heatmap) {
-      if (histcond) query.hist = histogram.histQuery(64) + " " + heatmap.name;
-      else query.hist = histogram.histQuery(16) + " " + heatmap.histQuery(16);
-    } else query.hist = histogram.histQuery(128);
+  const plotx = PlotX;
+  const ploty = plotx && PlotY;
+  const scatter = Scatterplot;
+  if (plotx && !scatter) {
+    if (ploty) {
+      if (ploty.plotCond) query.hist = plotx.histQuery(64) + " " + ploty.name;
+      else query.hist = plotx.histQuery(16) + " " + ploty.histQuery(16);
+    } else query.hist = plotx.histQuery(128);
   }
   $.ajax({
     method: "GET",
@@ -384,11 +442,6 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
     data: query,
   }).then(
     (res: CatalogResponse) => {
-      const modal = <HTMLSelectElement>(
-        document.getElementById("progress-modal")
-      );
-      modal.classList.add("hidden");
-      Update = false;
       $("#error").hide();
       Catalog.count = Math.max(Catalog.count || 0, res.hits.total);
       const settings = (<any>TCat.settings())[0];
@@ -410,17 +463,6 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
       for (let filt of aggs)
         filt.update_aggs((res.aggregations as Dict<Aggr>)[filt.name]);
       Update_aggs = Filters.length;
-      if (histogram) {
-        if (res.aggregations && res.aggregations.hist)
-          histogramDraw(
-            histogram,
-            heatmap,
-            histcond,
-            res.aggregations.hist as AggrTerms<number>,
-            res.histsize || {}
-          );
-        else $("#hist").text("No data for histogram");
-      }
       if (!Show_data) query.fields = Last_fields.join(" ");
       delete query.aggs;
       delete query.hist;
@@ -428,21 +470,60 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
       delete query.limit;
       delete query.offset;
       set_download((Last_query = query));
+
+      /* do another query for scatter plot */
+      if (scatter) {
+        delete query.sort;
+        if (res.hits.total > ScatterCount)
+          sample *= ScatterCount/res.hits.total;
+        if (sample < 1)
+          query.sample = querySample(sample, seed);
+        query.limit = <any>ScatterCount;
+        query.fields = plotx.name + " " + ploty.name;
+        $.ajax({
+          method: "GET",
+          url: "/" + Catalog.name + "/catalog",
+          data: query,
+        }).then(
+          (res: CatalogResponse) => {
+            scatterplotDraw(plotx, ploty, res.hits.hits);
+            modal.classList.add("hidden");
+            Update = false;
+          },
+          (xhr, msg, err) => {
+            $("#error")
+              .text(msg + ": " + err)
+              .show();
+            modal.classList.add("hidden");
+            Update = false;
+          }
+        );
+      } else {
+        if (plotx) {
+          if (res.aggregations && res.aggregations.hist)
+            histogramDraw(
+              plotx,
+              ploty,
+              res.aggregations.hist as AggrTerms<number>,
+              res.histsize || {}
+            );
+          else $("#plot-chart").text("No data for histogram");
+        }
+        modal.classList.add("hidden");
+        Update = false;
+      }
     },
     (xhr, msg, err) => {
-      const modal = <HTMLSelectElement>(
-        document.getElementById("progress-modal")
-      );
-      modal.classList.add("hidden");
-      Update = false;
-      $("#error")
-        .text(msg + ": " + err)
-        .show();
       callback({
         draw: data.draw,
         data: [],
         error: msg + ": " + err,
       });
+      $("#error")
+        .text(msg + ": " + err)
+        .show();
+      modal.classList.add("hidden");
+      Update = false;
     }
   );
 }
@@ -541,7 +622,8 @@ class SelectFilter extends Filter {
 class NumericFilter extends Filter {
   lbv: number;
   ubv: number;
-  histLog: boolean = false;
+  plotLog: boolean = false;
+  plotCond: boolean = false;
 
   update_aggs(aggs: AggrStats) {
     super.update_aggs(aggs);
@@ -568,7 +650,7 @@ class NumericFilter extends Filter {
   }
 
   private histogramRemove(): boolean {
-    if (Histogram !== this) return false;
+    if (PlotX !== this) return false;
     histogramRemove();
     return true;
   }
@@ -586,14 +668,14 @@ class NumericFilter extends Filter {
   setRange(lbv: number, ubv: number) {
     this.lbv = lbv;
     this.ubv = ubv;
-    if (!(this.lbv > 0)) this.histLog = false;
+    if (!(this.lbv > 0)) this.plotLog = false;
     /* vue isn't updating when called from highcharts: */
     filterVue.$forceUpdate();
     filterTab.$forceUpdate();
   }
 
   histQuery(n: number): string {
-    return this.field.name + (this.histLog ? ":log" : ":") + n.toString();
+    return this.field.name + (this.plotLog && !this.plotCond ? ":log" : ":") + n.toString();
   }
 }
 
@@ -669,7 +751,7 @@ function py_text(query: Dict<string>) {
   let st =
     "import fi_astrosims.client\n" +
     cat +
-    " = fi_astrosims.client.Simulation(" +
+    " = fi_astrosims.client.Catalog(" +
     JSON.stringify(cat) +
     ", host = " +
     JSON.stringify(location.origin) +
@@ -680,11 +762,11 @@ function py_text(query: Dict<string>) {
     JSON.stringify(query.fields.split(" "));
   for (let i = 0; i < Filters.length; i++) {
     const q = Filters[i].pyQuery();
-    if (q != null) st += ", " + Filters[i].name + " = " + q;
+    if (q != null) st += ",\n  " + Filters[i].name + " = " + q;
   }
-  if (query.sort) st += ", sort = " + JSON.stringify(query.sort.split(" "));
+  if (query.sort) st += ",\n  sort = " + JSON.stringify(query.sort.split(" "));
   if (Sample < 1) {
-    st += ", sample = " + Sample;
+    st += ",\n  sample = " + Sample;
     if (Seed != undefined) st += ", seed = " + Seed;
   }
   st += ")\ndat = q.numpy()";
