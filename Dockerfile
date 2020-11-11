@@ -16,4 +16,4 @@ RUN make -C web
 EXPOSE 8092
 ENTRYPOINT ["/home/astrosims/.local/bin/astrosims"]
 CMD []
-ENV LD_LIBRARY_PATH=/home/stackage/.stack/programs/x86_64-linux/ghc-8.8.3/lib/ghc-8.8.3/rts
+ENV LD_LIBRARY_PATH=/home/stackage/.stack/programs/x86_64-linux/ghc-8.8.4/lib/ghc-8.8.4/rts
