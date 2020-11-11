@@ -14,7 +14,7 @@ body {
   /* currently ems cause chrome bug misinterpreting rems on body element */
   line-height: 1.6;
   font-weight: 400;
-  font-family: "Open Sans", sans-serif;
+  font-family: $body-font-family;
   color: $black;
   background-color: $white;
   margin: 0px;

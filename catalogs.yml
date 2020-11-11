@@ -328,9 +328,9 @@ group:
         </p>
         <p>For more information about the CANDELS survey, the theory friendly catalogs, and the theoretical mock catalogs, please see the following references:</p>
         <ul>
-          <li>CANDELS survey design and execution: <a class="underline" href="https://iopscience.iop.org/article/10.1088/0067-0049/197/2/35" target="_blank">Grogin et al. (2011);</a>  <a class="underline" href="https://arxiv.org/pdf/1105.3754.pdf" target="_blank"> Koekemoer et al. (2011)</a></li>
-          <li>CANDELS theory friendly catalogs: <a class="underline" href="" target="_blank">Somerville et al. (2020)</a></li>
-          <li>CANDELS mock catalogs:<a class="underline" href="https://arxiv.org/abs/1312.3233" target="_blank"> Lu et al. (2014);</a> <a class="underline" href=""> Somerville et al. (2020)</a></li>
+          <li>CANDELS survey design and execution: <a class="underline" href="https://iopscience.iop.org/article/10.1088/0067-0049/197/2/35" target="_blank">Grogin et al. (2011);</a>  <a class="underline" href="https://iopscience.iop.org/article/10.1088/0067-0049/197/2/36/pdf" target="_blank"> Koekemoer et al. (2011)</a></li>
+          <li>CANDELS theory friendly catalogs: <a class="underline" href="/" target="_blank">Somerville et al. (2020)</a></li>
+          <li>CANDELS mock catalogs:<a class="underline" href="https://iopscience.iop.org/article/10.1088/0004-637X/795/2/123/pdf" target="_blank"> Lu et al. (2014);</a> <a class="underline" href="/"> Somerville et al. (2020)</a></li>
         </ul>
       </div>
   - name: zoomin
@@ -2986,7 +2986,7 @@ candels:
     title: K_abmag
     type: float
     units: AB magnitudes
-    descr: observed frame magnitude in observed K-band 
+    descr: observed frame magnitude in observed K-band
     missing: ['-99','-99.0']
   - name: K_eabmag
     title: K_eabmag
@@ -3140,14 +3140,14 @@ candels:
   - name: FLAGS_galactic
     title: FLAGS_galactic
     type: byte
-    units: 
+    units:
     descr: Galfit flag in F160W band
     flag: hidden
   - name: re
     title: re
     type: float
     units: arcsec
-    descr: Galfit effective radius in F160W band 
+    descr: Galfit effective radius in F160W band
     missing: ['-99','-99.0']
   - name: dre
     title: dre
@@ -3159,48 +3159,48 @@ candels:
   - name: 'n'
     title: 'n'
     type: float
-    units: 
+    units:
     descr: galfit Sersic index in F160W band
     missing: ['-99','-99.0']
   - name: dn
     title: dn
     type: float
-    units: 
+    units:
     descr: uncertainty in galfit Sersic index in F160W band
     missing: ['-99','-99.0']
     flag: hidden
   - name: q
     title: q
     type: float
-    units: 
+    units:
     descr: galfit b/a (minor to major axis ratio) in F160W band
     missing: ['-99','-99.0']
     flag: hidden
   - name: dq
     title: dq
     type: float
-    units: 
+    units:
     descr: uncertainty in b/a
     missing: ['-99','-99.0']
     flag: hidden
   - name: pa
     title: pa
     type: float
-    units: 
+    units:
     descr: galfit position angle in F160W band
     missing: ['-99','-99.0']
     flag: hidden
   - name: dpa
     title: dpa
     type: float
-    units: 
+    units:
     descr: uncertainty in galfit position angle
     missing: ['-99','-99.0']
     flag: hidden
   - name: sn
     title: sn
     type: float
-    units: 
+    units:
     descr: galfit S/N integrated over the F160W segmentation region
     missing: ['-99','-99.0']
     flag: hidden
@@ -3412,20 +3412,20 @@ candels:
   - name: red_chi_P12
     title: red_chi_P12
     type: float
-    units: 
+    units:
     descr: Reduced chi^2 of fit (good<5)
     missing: ['-99','-99.0']
     flag: hidden
   - name: nbands_P12
     title: nbands_P12
     type: byte
-    units: 
+    units:
     descr: number of bands fitted (good>=10)
     flag: hidden
   - name: FLAGS_P12
     title: FLAGS_P12
     type: boolean
-    units: 
+    units:
     descr: Zbest_flag (good=red_chi<5 and nbands>=10)
     missing: ['-99','-99.0']
     flag: hidden
@@ -3510,7 +3510,7 @@ candels:
   - name: RMS
     title: RMS
     type: float
-    units: 
+    units:
     descr: RMS value
     missing: ['-99','-99.0']
 lusam:
