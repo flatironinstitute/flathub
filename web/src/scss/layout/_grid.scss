@@ -17,3 +17,67 @@
 .container--main {
   min-height: calc(100vh - 288px);
 }
+
+.bow-row {
+  display: flex;
+  flex-direction: row;
+  flex-flow: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.three-box {
+  @media all and (min-width: 60em) {
+    justify-content: space-around;
+  }
+}
+
+.box {
+  display: flex;
+  padding: 0.5em;
+  width: 100%;
+  background-color: #e7e7e8;
+  border: $border;
+  border-color: $border-color;
+  border-radius: $border-radius;
+}
+@media all and (min-width: 40em) {
+  .box {
+    width: 48%;
+  }
+}
+@media all and (min-width: 60em) {
+  .box {
+    width: 21%;
+  }
+}
+
+.box-content {
+  border: $border;
+  border-color: #ff533d;
+  border-radius: $border-radius;
+  padding: 1em;
+  min-height: 175px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  width: 100%;
+}
+
+.box-head {
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 38px;
+  letter-spacing: .1rem;
+}
+
+.box-copy {
+  padding: 4px;
+  margin-bottom: 8px;
+  border-radius: $border-radius;
+  p {
+    margin-bottom: .5rem;
+  }
+}
