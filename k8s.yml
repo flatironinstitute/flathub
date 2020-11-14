@@ -3,7 +3,6 @@ kind: Deployment
 metadata:
   name: astrosims
 spec:
-  replicas: 2
   selector:
     matchLabels:
       name: astrosims
@@ -67,7 +66,32 @@ spec:
   - name: https
     port: 443
     targetPort: http
-  externalIPs:
-  - 132.249.245.247
-  - 132.249.245.248
-  - 132.249.246.13
+  type: LoadBalancer
+  loadBalancerIP: 132.249.246.21
+  externalTrafficPolicy: Local
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: astrosims
+spec:
+  rules:
+  - host: astrosims.flatironinstitute.org
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: astrosims
+          servicePort: 80
+  - host: flathub.flatironinstitute.org
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: astrosims
+          servicePort: 80
+  tls:
+    - hosts:
+      - astrosims.flatironinstitute.org
+      - flathub.flatironinstitute.org
+      secretName: astrosims-tls
