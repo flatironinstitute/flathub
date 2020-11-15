@@ -21,7 +21,7 @@ spec:
           - '-c'
           - until wget http://astrosims-es:9200/ ; do sleep 5 ; done
       containers:
-      - image: gordon-dm4:25703/flatironinstitute/astrosims
+      - image: docker-registry:25703/flatironinstitute/astrosims
         name: astrosims
         resources:
           requests:
