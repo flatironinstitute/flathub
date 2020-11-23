@@ -9,10 +9,8 @@ spec:
     hostPath:
       path: /mnt/sdceph/users
       type: Directory
-  imagePullSecrets:
-  - name: docker-registry-auth
   containers:
-  - image: gordon-dm4:25703/flatironinstitute/astrosims
+  - image: docker-registry:25703/flatironinstitute/astrosims
     name: astrosims
     resources:
       requests:

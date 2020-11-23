@@ -11,8 +11,6 @@ spec:
       labels:
         name: astrosims
     spec:
-      imagePullSecrets:
-      - name: docker-registry-auth
       initContainers:
       - name: wait-es
         image: busybox
