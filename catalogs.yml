@@ -5080,7 +5080,6 @@ gr8:
         type: double
       - name: pmra_error
         dict: GAIA_pmra_error
-        title: ra_error
         type: double
       - name: pmdec
         dict: pmdec
@@ -5092,19 +5091,16 @@ gr8:
         type: double
     - name: phot_g_mean_mag
       dict: GAIA_phot_g_mean_mag
-      title: mean_mag
       descr: G-band photometry mean magnitude
       type: float
       units: mag
     - name: phot_rp_mean_mag
       dict: GAIA_phot_rp_mean_mag
-      title: mean_mag
       descr: Integrated RP photometry mean magnitude
       type: float
       units: mag
     - name: phot_bp_mean_mag
       dict: GAIA_phot_bp_mean_mag_error
-      title: mean_mag
       descr: Integrated BP photometry mean magnitude
       type: float
       units: mag
