@@ -111,8 +111,6 @@ htmlResponse _req hdrs body = do
                 forM_ (catalogsSorted cats) $ \(key, cat) ->
                   H.a H.! HA.href (WH.routeActionValue catalogPage key mempty) $ H.text (catalogTitle cat)
             H.li H.! HA.class_ "header__link" $ do
-              H.a H.! HA.href (WH.routeActionValue comparePage [] mempty) $ "Compare"
-            H.li H.! HA.class_ "header__link" $ do
               H.a H.! HA.href (WH.routeActionValue staticHtml ["about"] mempty) $ "About"
       H.div H.! HA.class_ "subheader" $ do
         H.div H.! HA.class_ "subheader-content" $ do
@@ -137,7 +135,7 @@ htmlResponse _req hdrs body = do
               H.a H.! HA.href (WH.routeActionValue groupPage [] mempty) $ H.text "Catalogs"
               H.a H.! HA.href (WH.routeActionValue comparePage [] mempty) $ H.text "Compare"
               H.a H.! HA.href "https://github.com/flatironinstitute/astrosims" $ H.text "Github"
-            H.p H.! HA.class_ "footer-company-name" $ "Flatiron Institute, 2019"
+            H.p H.! HA.class_ "footer-company-name" $ "Flatiron Institute, 2021"
       forM_ ([["bundle.js"]]) $ \src ->
         H.script H.! HA.type_ "text/javascript" H.! HA.src (staticURI src) $ mempty
 acceptable :: [BS.ByteString] -> Wai.Request -> Maybe BS.ByteString
