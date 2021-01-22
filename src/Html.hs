@@ -593,11 +593,12 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
               H.div H.! HA.class_ "heading-content" $ do
                 H.h4 H.! HA.class_("heading-heading " <> H.textValue cat <> "-subheading")  $ H.text catalogTitle
         maybe (do
-          H.div H.! HA.class_ "section section-no-head" $ do
+          H.div H.! HA.class_ "section" $ do
             H.div H.! HA.class_"container" $ do
               H.div H.! HA.class_ "row" $ do
                 H.div H.! HA.class_ "col-md" $ do
                   H.div H.! HA.class_ "body-copy" $ do
+                    H.a  H.! HA.class_ "button button-primary" H.! HA.href (WH.routeActionValue catalogPage cat mempty) $ "explore"
                     mapM_ (H.p . H.preEscapedText) catalogDescr)
                       H.preEscapedText catalogHtml
       -- Collections
@@ -611,10 +612,10 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
           H.div H.! HA.class_"container" $ do
             H.div H.! HA.class_ "row" $ do
               H.div H.! HA.class_ "col-md" $ do
-                H.div H.! HA.class_ "body-copy" $ do
+                H.div H.! HA.class_ "body-copy group-html" $ do
                   mapM_
                     H.preEscapedText groupHtml
-        H.div H.! HA.class_ "section section-no-head" $ do
+        H.div H.! HA.class_ "section" $ do
           H.div H.! HA.class_"container" $ do
             H.div H.! HA.class_ "row" $ do
               H.div H.! HA.class_ "col-md" $ do
