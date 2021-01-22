@@ -148,7 +148,8 @@ topPage = getPath R.unit $ \() req -> do
   case acceptable ["application/json", "text/html"] req of
     Just "application/json" ->
       return $ okResponse [] $ J.encode $ HM.map catalogTitle $ catalogMap cats
-    _ -> htmlResponse req [] $
+    _ -> R.routeAction staticHtml ["top"] req
+    {- htmlResponse req [] $
       H.div $ do
         H.div H.! HA.class_ "section hero gray-heading" $ do
           H.div H.! HA.class_ "container" $ do
@@ -176,6 +177,7 @@ topPage = getPath R.unit $ \() req -> do
                     H.div H.! HA.class_ "catalogs-list main-page" $
                       forM_ (catalogsSorted cats) $ \(sim, cat) -> do
                           H.a H.! HA.href (WH.routeActionValue catalogPage sim mempty) H.! HA.class_ "collection-card-heading" $ H.text $ catalogTitle cat
+    -}
 
 
 catalogPage :: Route Simulation

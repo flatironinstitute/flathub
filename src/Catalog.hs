@@ -71,6 +71,7 @@ data Catalog = Catalog
   { catalogEnabled :: !Bool
   , catalogOrder :: !T.Text -- ^display order in catalog list
   , catalogTitle :: !T.Text
+  , catalogSynopsis :: Maybe T.Text
   , catalogDescr :: Maybe T.Text
   , catalogHtml :: Maybe T.Text
   , catalogStore :: !CatalogStore
@@ -87,6 +88,7 @@ parseCatalog dict = J.withObject "catalog" $ \c -> do
   catalogEnabled <- c J..:! "enabled" J..!= True
   catalogFieldGroups <- parseJSONField "fields" (J.withArray "fields" $ mapM (parseFieldGroup dict)) c
   catalogTitle <- c J..: "title"
+  catalogSynopsis <- c J..:? "synopsis"
   catalogDescr <- c J..:? "descr"
   catalogHtml <- c J..:? "html"
   catalogKey <- c J..:? "key"
@@ -113,6 +115,7 @@ instance J.FromJSON Catalog where
 instance J.ToJSON Catalog where
   toJSON Catalog{..} = J.object $
     [ "title" J..= catalogTitle
+    , "synopsis"  J..= catalogSynopsis
     , "descr"  J..= catalogDescr
     , "fields" J..= catalogFields
     ] ++ concatMap maybeToList
