@@ -19,11 +19,10 @@
 }
 
 .box-row {
-  display: flex;
-  flex-direction: row;
-  flex-flow: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
+  display: grid;
+  align-items: start;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-gap: 20px;
 }
 
 .three-box {
@@ -40,16 +39,6 @@
   border: $border;
   border-color: $border-color;
   border-radius: $border-radius;
-}
-@media all and (min-width: 40em) {
-  .box {
-    width: 48%;
-  }
-}
-@media all and (min-width: 60em) {
-  .box {
-    width: 21%;
-  }
 }
 
 .box-content {
