@@ -2871,8 +2871,9 @@ ananke:
 candels:
   title: CANDELS
   index: candels
+  synopsis: Observational data and derived physical parameters
   descr: >
-    The Cosmic Assembly Near-infrared Deep Extragalactic Survey (CANDELS) "theory friendly" observational catalog. Data Release 2019-12-13
+    The Cosmic Assembly Near-infrared Deep Extragalactic Survey (CANDELS) "theory friendly" observational catalog. Data Release 2019-12-13.
   count: 167137
   order: 'candels-0'
   fields:
@@ -3584,6 +3585,7 @@ candels:
     missing: ['-99','-99.0']
 lusam:
   title: Lu-SAM
+  synopsis: Santa Cruz semi-analytic model
   descr: >
     <a href='https://ui.adsabs.harvard.edu/abs/2014ApJ...795..123L'>Lu et al. 2014</a>.<br>
     Data Release v0.5 2018-06-20.<br>
@@ -4230,6 +4232,7 @@ lusam:
         descr: galaxy magnitude, including extinction by dust
 unimach:
   title: UniverseMachine
+  synopsis: Empirical model developed by P. Behroozi and collaborators
   descr: >
     <a href='http://adsabs.harvard.edu/abs/2018arXiv180607893B'>Behroozi et al. 2018</a>.<br>
     Data Release v1 2019-07-26.<br>
@@ -4387,6 +4390,7 @@ unimach:
       units: 'AB Mag'
 scsam:
   title: SC-SAM
+  synopsis: Santa Cruz semi-analytic model
   descr: >
     <a href='http://adsabs.harvard.edu/abs/2015MNRAS.453.4337S'>Somerville et al. 2015</a>,
     <a href='http://adsabs.harvard.edu/abs/2019MNRAS.483.2983Y'>Yung et al. 2019</a>.<br>
