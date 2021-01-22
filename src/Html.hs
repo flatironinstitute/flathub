@@ -592,11 +592,14 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
             H.div H.! HA.class_ "row" $ do
               H.div H.! HA.class_ "heading-content" $ do
                 H.h4 H.! HA.class_("heading-heading " <> H.textValue cat <> "-subheading")  $ H.text catalogTitle
-                H.a  H.! HA.class_ "button button-primary" H.! HA.href (WH.routeActionValue catalogPage cat mempty) $ "explore"
         maybe (do
           H.div H.! HA.class_ "section highlighted-links" $ do
-            mapM_ (H.p . H.preEscapedText) catalogDescr)
-            H.preEscapedText catalogHtml
+            H.div H.! HA.class_"container" $ do
+              H.div H.! HA.class_ "row" $ do
+                H.div H.! HA.class_ "col-md" $ do
+                  H.div H.! HA.class_ "body-copy" $ do
+                    mapM_ (H.p . H.preEscapedText) catalogDescr)
+                      H.preEscapedText catalogHtml
       -- Collections
       Grouping{..} -> do
         H.div H.! HA.class_ ("section gray-heading " <> H.textValue groupName <> "-heading") $ do
@@ -604,23 +607,77 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
             H.div H.! HA.class_ "row" $ do
               H.div H.! HA.class_ "heading-content" $ do
                 H.h4 H.! HA.class_ ("heading-heading " <> H.textValue groupName <> "-subheading") $ H.text groupTitle
-                H.a H.! HA.class_ "button button-primary" H.! HA.href (WH.routeActionValue comparePage path mempty) $ "compare"
-        mapM_
-          H.preEscapedText groupHtml
-        H.dl H.! HA.class_ "section catalogs-list" $
-          forM_ (groupList groupings) $ \g -> do
-            let cat' = groupingCatalog cats g
-            H.dt $ H.a H.! HA.href (WH.routeActionValue groupPage (path ++ [groupingName g]) mempty) $
-              H.text $ groupingTitle g cat'
-            case g of
-              Grouping{ groupings = gs } ->
-                forM_ (groupList gs) $ \gc ->
-                  H.dd $ H.a H.! HA.href (WH.routeActionValue groupPage (path ++ [groupingName g, groupingName gc]) mempty) $
-                    H.text $ groupingTitle gc (groupingCatalog cats gc)
-              GroupCatalog{} ->
-                forM_ cat' $ \cat -> H.dd $ do
-                  mapM_ H.preEscapedText $ catalogDescr cat
-                  mapM_ ((" " <>) . (<> " rows.") . H.toMarkup) $ catalogCount cat
+        H.div H.! HA.class_ "section highlighted-links" $ do
+          H.div H.! HA.class_"container" $ do
+            H.div H.! HA.class_ "row" $ do
+              H.div H.! HA.class_ "col-md" $ do
+                H.div H.! HA.class_ "body-copy" $ do
+                  mapM_
+                    H.preEscapedText groupHtml
+        H.div H.! HA.class_ "section section-no-head" $ do
+          H.div H.! HA.class_"container" $ do
+            H.div H.! HA.class_ "row" $ do
+              H.div H.! HA.class_ "col-md" $ do
+                H.div H.! HA.class_ "body-copy" $ do
+                  H.h4 $ "Catalogs"
+            -- Catalogs list
+            H.div H.! HA.class_ "box-row" $ do
+              forM_ (groupList groupings) $ \g -> do
+                let cat' = groupingCatalog cats g
+                H.div H.! HA.class_ "box" $ H.div H.! HA.class_ "box-content" $ do
+                  H.div H.! HA.class_ "box-copy" $ do
+                    H.div H.! HA.class_ "box-head" $ H.text $ groupingTitle g cat'
+                    case g of
+                      Grouping{ groupings = gs } ->
+                        forM_ (groupList gs) $ \gc ->
+                          H.div H.! HA.class_ "box-desc" $ H.a H.! HA.href (WH.routeActionValue groupPage (path ++ [groupingName g, groupingName gc]) mempty) $
+                            H.text $ groupingTitle gc (groupingCatalog cats gc)
+                      GroupCatalog{} ->
+                        forM_ cat' $ \cat -> H.div H.! HA.class_ "box-desc" $ do
+                          mapM_ H.preEscapedText $ catalogDescr cat
+                          mapM_ ((" " <>) . (<> " rows.") . H.toMarkup) $ catalogCount cat
+                  H.a H.! HA.class_ "button" H.! HA.href (WH.routeActionValue groupPage (path ++ [groupingName g]) mempty) $ "Explore"
+      -- Grouping{..} -> do
+      --   H.div H.! HA.class_ ("section gray-heading " <> H.textValue groupName <> "-heading") $ do
+      --     H.div H.! HA.class_"container" $ do
+      --       H.div H.! HA.class_ "row" $ do
+      --         H.div H.! HA.class_ "heading-content" $ do
+      --           H.h4 H.! HA.class_ ("heading-heading " <> H.textValue groupName <> "-subheading") $ H.text groupTitle
+      --   mapM_
+      --     H.preEscapedText groupHtml
+      --   H.div H.! HA.class_ "section section-no-head" $
+      --     H.div H.! HA.class_"container" $ do
+      --       H.div H.! HA.class_ "row" $ do
+      --         H.div H.! HA.class_ "col-md" $ do
+      --           H.div H.! HA.class_ "body-copy" $ do
+      --             H.h4 "Catalogs"
+      --       H.div H.! HA.class_ "box-row" $ do
+      --         forM_ (groupList groupings) $ \g -> do
+      --           let cat' = groupingCatalog cats g
+      --           -- H.div H.! HA.class_ "box" $ do
+      --           --   H.div H.! HA.class_ "box-content" $ do
+      --           --     H.div H.! HA.class_ "box-copy" $ do
+      --           --       H.div H.! HA.class_ "box-head" H.text $ groupingTitle g cat'
+      --           --       H.p H.! HA.class_ "box-desc" H.text $ groupingTitle gc (groupingCatalog cats gc)
+      --           --   H.a H.! HA.class_ "button" H.! HA.href (WH.routeActionValue groupPage (path ++ [groupingName g]) mempty) $ H.text $ groupingTitle g cat'
+      --           case g of
+      --             Grouping{ groupings = gs } ->
+      --               forM_ (groupList gs) $ \gc ->
+      --                 H.div H.! HA.class_ "box" $ do
+      --                   H.div H.! HA.class_ "box-content" $ do
+      --                     H.div H.! HA.class_ "box-copy" $ do
+      --                       H.div H.! HA.class_ "box-head" $ H.text groupingTitle g cat'
+      --                       H.p H.! HA.class_ "box-desc" $  H.text groupingTitle gc (groupingCatalog cats gc)
+      --                     H.a H.! HA.class_ "button" H.! HA.href (WH.routeActionValue groupPage (path ++ [groupingName g]) mempty) $ H.text $ groupingTitle g cat'
+      --                 -- H.div H.! HA.class_ "box" $ do
+      --                 --   H.div H.! HA.class_ "box-content" $ do
+      --                 --     H.div H.! HA.class_ "box-copy" $ do
+      --                 --       H.div $ H.a H.! HA.href (WH.routeActionValue groupPage (path ++ [groupingName g, groupingName gc]) mempty) $
+      --                 --         H.text $ groupingTitle gc (groupingCatalog cats gc)
+      --             GroupCatalog{} ->
+      --               forM_ cat' $ \cat -> H.dd $ do
+      --                 mapM_ H.preEscapedText $ catalogDescr cat
+      --                 mapM_ ((" " <>) . (<> " rows.") . H.toMarkup) $ catalogCount cat
 
 comparePage :: Route [T.Text]
 comparePage = getPath ("compare" R.*< R.manyI R.parameter) $ \path req -> do

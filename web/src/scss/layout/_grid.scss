@@ -18,7 +18,7 @@
   min-height: calc(100vh - 288px);
 }
 
-.bow-row {
+.box-row {
   display: flex;
   flex-direction: row;
   flex-flow: wrap;
@@ -70,7 +70,7 @@
   font-size: 16px;
   font-weight: 600;
   line-height: 38px;
-  letter-spacing: .1rem;
+  letter-spacing: 0.1rem;
 }
 
 .box-copy {
@@ -78,6 +78,6 @@
   margin-bottom: 8px;
   border-radius: $border-radius;
   p {
-    margin-bottom: .5rem;
+    margin-bottom: 0.5rem;
   }
 }
