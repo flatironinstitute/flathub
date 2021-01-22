@@ -8,19 +8,27 @@
   padding: 2rem 0;
 }
 
+.footer-center {
+  text-align: center;
+}
+
 .footer__left {
   float: left;
 }
 
 .footer__title {
   display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
+  align-items: center;
+  justify-content: center;
   margin: 4rem 0 2rem 0;
 }
 
-.footer__title img {
-  margin-right: 1.8rem;
+.footer-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 4rem 1rem 2rem 0;
+  height: 55px;
 }
 
 .footer__title h3 {
@@ -52,8 +60,12 @@
   text-decoration: none;
 }
 
+.footer-links a:last-of-type {
+  margin-right: 0;
+}
+
 .footer-links a:hover {
-  color: $red;
+  color: $fh-blue2;
 }
 
 .footer-company-name {

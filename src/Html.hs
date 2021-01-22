@@ -81,7 +81,6 @@ htmlResponse _req hdrs body = do
         H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
       -- TODO: Move mathjax and fonts to bundle.js
       H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML" $ mempty
-      H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href "https://fonts.googleapis.com/css?family=Major+Mono+Display|Montserrat"
       jsonVar "Catalogs" (HM.map catalogTitle $ catalogMap cats)
     H.body $ do
       H.div H.! HA.class_ "modal-container hidden"  H.! HA.id "progress-modal" $ do
@@ -97,7 +96,7 @@ htmlResponse _req hdrs body = do
       H.header H.! HA.class_ "header" $ do
         H.div H.! HA.class_ "header__logo" $ do
           H.a H.! HA.href (WH.routeActionValue topPage () mempty) H.! HA.class_ "header__logo-link" $ do
-            H.span H.! HA.class_ "header__logo-style" $ "FLATHUB"
+            H.img H.! HA.class_ "header__logo-image" H.! HA.src "/web/FlatHubLogo.svg"
         H.nav H.! HA.class_ "header__nav" $ do
           H.ul H.! HA.id "topbar" $ do
             H.li H.! HA.class_ "header__link--dropdown" $ do
@@ -112,9 +111,9 @@ htmlResponse _req hdrs body = do
                   H.a H.! HA.href (WH.routeActionValue catalogPage key mempty) $ H.text (catalogTitle cat)
             H.li H.! HA.class_ "header__link" $ do
               H.a H.! HA.href (WH.routeActionValue staticHtml ["about"] mempty) $ "About"
-      H.div H.! HA.class_ "subheader" $ do
-        H.div H.! HA.class_ "subheader-content" $ do
-          H.p $ "Please note that this is a beta version. The website is still undergoing final testing before the official release."
+      -- H.div H.! HA.class_ "subheader" $ do
+      --   H.div H.! HA.class_ "subheader-content" $ do
+      --     H.p $ "Please note that this is a beta version. The website is still undergoing final testing before the official release."
       H.div H.! HA.class_ "modal-container hidden" H.! HA.id "browser-modal" $ do
         H.div H.! HA.class_ "modal-background" $ do
           H.span $ mempty
@@ -127,15 +126,14 @@ htmlResponse _req hdrs body = do
         body
       H.footer H.! HA.class_"footer-distributed" $ do
         H.div H.! HA.class_ "container" $ do
-          H.div H.! HA.class_ "footer-left" $ do
+          H.div H.! HA.class_ "footer-center" $ do
             H.div H.! HA.class_ "footer__title" $ do
-              H.h3 $ "Flathub"
+              H.img H.! HA.class_ "footer-logo" H.! HA.src "/web/FlatHubLogo.svg"
             H.p H.! HA.class_ "footer-links" $ do
               H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Home"
               H.a H.! HA.href (WH.routeActionValue groupPage [] mempty) $ H.text "Catalogs"
-              H.a H.! HA.href (WH.routeActionValue comparePage [] mempty) $ H.text "Compare"
+              -- H.a H.! HA.href (WH.routeActionValue comparePage [] mempty) $ H.text "Compare"
               H.a H.! HA.href "https://github.com/flatironinstitute/astrosims" $ H.text "Github"
-            H.p H.! HA.class_ "footer-company-name" $ "Flatiron Institute, 2021"
       forM_ ([["bundle.js"]]) $ \src ->
         H.script H.! HA.type_ "text/javascript" H.! HA.src (staticURI src) $ mempty
 acceptable :: [BS.ByteString] -> Wai.Request -> Maybe BS.ByteString

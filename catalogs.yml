@@ -347,10 +347,10 @@ group:
                 <p>
                   This site is a portal to explore and compare the "theory friendly" CANDELS observational catalogs and
                   three of the sets of CANDELS mock catalogs: SC-SAM (created by R. Somerville & collaborators), Lu-SAM (Y.
-                  Lu & collaborators), and UniverseMachine (P. Behroozi & collaborators).
+                  Lu & collaborators), and UniverseMachine (P. Behroozi & collaborators). For each of these models, mock catalogs have been created representing the sky locations of each of the five CANDELS fields. There are eight realizations of each CANDELS field sky region.
                 </p>
                 <p>
-                  For more information about the CANDELS survey, the theory friendly catalogs, and the theoretical mock
+                  For more information about the CANDELS survey, the "theory friendly" catalogs, and the theoretical mock
                   catalogs, please see the following references:
                 </p>
                 <ul>
@@ -385,6 +385,16 @@ group:
                       >Lu et al. (2014)</a
                     >
                     ; <a class="underline" target="_blank" rel="noopener" href="/">Somerville et al. (2020)</a>
+                  </li>
+                  <li>
+                    Supplementary information is available on the
+                    <a
+                      class="underline"
+                      target="_blank"
+                      rel="noopener"
+                      href="https://www.simonsfoundation.org/candels-survey/"
+                      >Simons Foundation</a
+                    > website.
                   </li>
                 </ul>
               </div>
@@ -2862,7 +2872,7 @@ candels:
   title: CANDELS
   index: candels
   descr: >
-    The Cosmic Assembly Near-infrared Deep Extragalactic Survey (CANDELS) observational catalog.
+    The Cosmic Assembly Near-infrared Deep Extragalactic Survey (CANDELS) "theory friendly" observational catalog. Data Release 2019-12-13
   count: 167137
   order: 'candels-0'
   fields:
