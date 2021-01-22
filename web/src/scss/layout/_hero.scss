@@ -6,18 +6,13 @@
 }
 
 .gray-heading {
-  margin: 0 calc(-2.5vw + -20px) 2rem calc(-2.5vw + -20px);
+  margin: 0 calc(-2.5vw + -20px) 0 calc(-2.5vw + -20px);
   background-color: $platinum;
 }
 
 .candels-heading {
   // todo: add alternate background: url(./candels-bg.jpg) repeat-x center center;
   // background: pink repeat-x center center;
-}
-
-.candels-subheading {
-  color: $white !important;
-  background: $gray2;
 }
 
 .section__heading {

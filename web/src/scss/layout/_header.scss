@@ -5,7 +5,7 @@
   display: flex;
   flex-direction: column;
   box-shadow: rgba(31, 53, 78, 0.11) 0 1px;
-  border-bottom: 1px solid $fh-blue2;
+  border-bottom: 1px solid $fh-blue1;
   height: 125px;
 }
 
@@ -67,7 +67,7 @@ li.header__link a.active {
 li.header__link--dropdown a:hover,
 li.header__link a:hover {
   color: $fh-blue2;
-  border-bottom: 1px solid $fh-blue2;
+  border-bottom: 1px solid $fh-blue1;
 }
 
 .dropdown:hover,

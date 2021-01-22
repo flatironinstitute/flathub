@@ -8,7 +8,7 @@ dt {
 dt > a {
   font-weight: bolder;
   font-size: 1.6rem;
-  border-bottom: 1px solid $fh-blue2;
+  border-bottom: 1px solid $fh-blue1;
 }
 
 dd {
@@ -21,13 +21,13 @@ dd:before {
 }
 
 dd > a {
-  border-bottom: 1px solid $fh-blue2;
+  border-bottom: 1px solid $fh-blue1;
 }
 
 a.underline,
 a.underline:hover {
   text-decoration: none;
-  border-bottom: 1px solid $fh-blue2;
+  border-bottom: 1px solid $fh-blue1;
 }
 
 dt > a:hover,
