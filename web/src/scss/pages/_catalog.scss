@@ -90,11 +90,11 @@
 }
 
 .right-column-heading-leader {
-  border-bottom: 1px solid #ff533d;
+  border-bottom: 1px solid $fh-blue1;
 }
 
 .right-column-heading-group {
-  border-bottom: 1px solid #ff533d;
+  border-bottom: 1px solid $fh-blue1;
   display: flex;
   flex-direction: row;
   align-items: baseline;
@@ -136,7 +136,7 @@
 }
 
 .plot-col {
-  border-right: 1px solid $red;
+  border-right: 1px solid $fh-blue2;
   padding-left: 15px;
 }
 

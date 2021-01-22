@@ -16,12 +16,12 @@
   position: absolute;
   margin-bottom: 0.5rem;
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   line-height: 1.5;
   z-index: 1;
   width: 120px;
   &::before {
-    content: " ";
+    content: ' ';
     position: absolute;
     bottom: 100%; /* At the bottom of the tooltip */
     left: 50%;
@@ -52,7 +52,7 @@
   position: absolute;
   margin-bottom: 0.5rem;
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   line-height: 1.5;
   z-index: 1;
   display: none;
@@ -61,7 +61,7 @@
   opacity: 0;
   transition: opacity 1s;
   &::after {
-    content: " ";
+    content: ' ';
     position: absolute;
     top: 100%; /* At the bottom of the tooltip */
     left: 50%;

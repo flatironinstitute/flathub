@@ -313,25 +313,94 @@ group:
       - unimach
       - lusam
     html: |
-      <div class="section highlighted-links">
-        <h4><a class="subtitle" href="http://arcoiris.ucolick.org/candels/About.html" target="_blank">Project summary</a></h4>
-        <p>
-        <b>The Cosmic Assembly Near-infrared Deep Extragalactic Survey (CANDELS)</b> is a multi-wavelength deep sky survey anchored in a Multi-cycle Treasury program with the Hubble Space Telescope (HST; PI S. Faber & H. Ferguson). CANDELS took Near-IR images with the Wide Field Camera 3 (WFC3) in five fields that were already well studied at many different wavelengths: COSMOS, EGS, GOODS-N, GOODS-S, and the UDS. The CANDELS team and the community have compiled extensive ancillary observations, both imaging and spectroscopy, in these fields. Physical parameters such as redshifts, stellar masses, star formation rates, etc., have been estimated from the Spectral Energy Distributions (SED).
-        </p>
-        <p>As part of the CANDELS program, the theory team created custom "mock CANDELS" catalogs. These were created by extracting the dark matter halos from a large cosmological simulation along the past lightcone corresponding to a field with the same geometry and sky location as one of the real CANDELS fields.  These halos are then populated with galaxy properties using two different techniques: an empirical technique known as Sub-Halo Abundance Matching (using the UniverseMachine built by P. Behroozi & collaborators), and Semi-analytic Models of galaxy formation.
-        </p>
-        <p>
-        In order to facilitate comparison between theoretical models and the CANDELS observations, we have created a set of curated "theory friendly" catalogs for the CANDELS observed quantities and physical properties derived from the observations.
-        </p>
-        <p>
-        This site is a portal to explore and compare the "theory friendly" CANDELS observational catalogs and three of the sets of CANDELS mock catalogs: SC-SAM (created by R. Somerville & collaborators), Lu-SAM (Y. Lu & collaborators), and UniverseMachine (P. Behroozi & collaborators).
-        </p>
-        <p>For more information about the CANDELS survey, the theory friendly catalogs, and the theoretical mock catalogs, please see the following references:</p>
-        <ul>
-          <li>CANDELS survey design and execution: <a class="underline" href="https://iopscience.iop.org/article/10.1088/0067-0049/197/2/35" target="_blank">Grogin et al. (2011);</a>  <a class="underline" href="https://iopscience.iop.org/article/10.1088/0067-0049/197/2/36/pdf" target="_blank"> Koekemoer et al. (2011)</a></li>
-          <li>CANDELS theory friendly catalogs: <a class="underline" href="/" target="_blank">Somerville et al. (2020)</a></li>
-          <li>CANDELS mock catalogs:<a class="underline" href="https://iopscience.iop.org/article/10.1088/0004-637X/795/2/123/pdf" target="_blank"> Lu et al. (2014);</a> <a class="underline" href="/"> Somerville et al. (2020)</a></li>
-        </ul>
+      <div class="section">
+        <div class="container">
+          <div class="row">
+            <div class="col-md">
+              <div class="body-copy">
+                <h4>Project summary</h4>
+                <p>
+                  The
+                  <a class="underline" target="_blank" rel="noopener" href="http://arcoiris.ucolick.org/candels/"
+                    >Cosmic Assembly Near-infrared Deep Extragalactic Survey (CANDELS)</a
+                  >
+                  is a multi-wavelength deep sky survey anchored in a Multi-cycle Treasury program with the Hubble Space
+                  Telescope (HST; PI S. Faber & H. Ferguson). CANDELS took Near-IR images with the Wide Field Camera 3
+                  (WFC3) in five fields that were already well studied at many different wavelengths: COSMOS, EGS, GOODS-N,
+                  GOODS-S, and the UDS. The CANDELS team and the community have compiled extensive ancillary observations,
+                  both imaging and spectroscopy, in these fields. Physical parameters such as redshifts, stellar masses,
+                  star formation rates, etc., have been estimated from the Spectral Energy Distributions (SED).
+                </p>
+                <p>
+                  As part of the CANDELS program, the theory team created custom "mock CANDELS" catalogs. These were created
+                  by extracting the dark matter halos from a large cosmological simulation along the past lightcone
+                  corresponding to a field with the same geometry and sky location as one of the real CANDELS fields. These
+                  halos are then populated with galaxy properties using two different techniques: an empirical technique
+                  known as Sub-Halo Abundance Matching (using the UniverseMachine built by P. Behroozi & collaborators), and
+                  Semi-analytic Models of galaxy formation.
+                </p>
+                <p>
+                  In order to facilitate comparison between theoretical models and the CANDELS observations, we have created
+                  a set of curated "theory friendly" catalogs for the CANDELS observed quantities and physical properties
+                  derived from the observations.
+                </p>
+                <p>
+                  This site is a portal to explore and compare the "theory friendly" CANDELS observational catalogs and
+                  three of the sets of CANDELS mock catalogs: SC-SAM (created by R. Somerville & collaborators), Lu-SAM (Y.
+                  Lu & collaborators), and UniverseMachine (P. Behroozi & collaborators). For each of these models, mock catalogs have been created representing the sky locations of each of the five CANDELS fields. There are eight realizations of each CANDELS field sky region.
+                </p>
+                <p>
+                  For more information about the CANDELS survey, the "theory friendly" catalogs, and the theoretical mock
+                  catalogs, please see the following references:
+                </p>
+                <ul>
+                  <li>
+                    CANDELS survey design and execution:
+                    <a
+                      class="underline"
+                      target="_blank"
+                      rel="noopener"
+                      href="https://iopscience.iop.org/article/10.1088/0067-0049/197/2/35"
+                      >Grogin et al. (2011)</a
+                    >;
+                    <a
+                      class="underline"
+                      target="_blank"
+                      rel="noopener"
+                      href="https://iopscience.iop.org/article/10.1088/0067-0049/197/2/36/pdf"
+                      >Koekemoer et al. (2011)</a
+                    >
+                  </li>
+                  <li>
+                    CANDELS theory friendly catalogs:
+                    <a class="underline" target="_blank" rel="noopener" href="/">Somerville et al. (2020)</a>
+                  </li>
+                  <li>
+                    CANDELS mock catalogs:
+                    <a
+                      class="underline"
+                      target="_blank"
+                      rel="noopener"
+                      href="https://iopscience.iop.org/article/10.1088/0004-637X/795/2/123/pdf"
+                      >Lu et al. (2014)</a
+                    >
+                    ; <a class="underline" target="_blank" rel="noopener" href="/">Somerville et al. (2020)</a>
+                  </li>
+                  <li>
+                    Supplementary information is available on the
+                    <a
+                      class="underline"
+                      target="_blank"
+                      rel="noopener"
+                      href="https://www.simonsfoundation.org/candels-survey/"
+                      >Simons Foundation</a
+                    > website.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
   - name: zoomin
     title: Cosmological Zoom-in Simulations
@@ -2802,8 +2871,9 @@ ananke:
 candels:
   title: CANDELS
   index: candels
+  synopsis: Observational data and derived physical parameters
   descr: >
-    The Cosmic Assembly Near-infrared Deep Extragalactic Survey (CANDELS) observational catalog.
+    The Cosmic Assembly Near-infrared Deep Extragalactic Survey (CANDELS) "theory friendly" observational catalog. Data Release 2019-12-13.
   count: 167137
   order: 'candels-0'
   fields:
@@ -3515,6 +3585,7 @@ candels:
     missing: ['-99','-99.0']
 lusam:
   title: Lu-SAM
+  synopsis: Santa Cruz semi-analytic model
   descr: >
     <a href='https://ui.adsabs.harvard.edu/abs/2014ApJ...795..123L'>Lu et al. 2014</a>.<br>
     Data Release v0.5 2018-06-20.<br>
@@ -4161,6 +4232,7 @@ lusam:
         descr: galaxy magnitude, including extinction by dust
 unimach:
   title: UniverseMachine
+  synopsis: Empirical model developed by P. Behroozi and collaborators
   descr: >
     <a href='http://adsabs.harvard.edu/abs/2018arXiv180607893B'>Behroozi et al. 2018</a>.<br>
     Data Release v1 2019-07-26.<br>
@@ -4318,6 +4390,7 @@ unimach:
       units: 'AB Mag'
 scsam:
   title: SC-SAM
+  synopsis: Santa Cruz semi-analytic model
   descr: >
     <a href='http://adsabs.harvard.edu/abs/2015MNRAS.453.4337S'>Somerville et al. 2015</a>,
     <a href='http://adsabs.harvard.edu/abs/2019MNRAS.483.2983Y'>Yung et al. 2019</a>.<br>

@@ -7,9 +7,9 @@
 }
 
 .click-tab {
-  background-color: $red;
+  background-color: $fh-blue1;
   color: $white;
-  margin: .25rem .25rem;
+  margin: 0.25rem 0.25rem;
   border-radius: 4px;
   display: flex;
   flex-direction: row;
@@ -20,7 +20,7 @@
   .click-tab-close {
     color: $white;
     &:before {
-      content: "x";
+      content: 'x';
       font-weight: 300;
     }
   }
@@ -36,12 +36,12 @@
     background-color: transparent;
     border: 1px solid transparent;
     padding: 0.375rem 0.75rem;
-    font-size: 1rem;
+    font-size: 1.2rem;
     line-height: 1.5;
     border-radius: 0.25rem;
     text-overflow: ellipsis;
-    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
-      border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out,
+      box-shadow 0.15s ease-in-out;
   }
 }
 

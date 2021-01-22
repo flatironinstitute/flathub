@@ -41,9 +41,9 @@ table#tcat td {
 #tcat_info {
   font-size: 1.2rem !important;
   margin-bottom: 1rem;
-  color: $red;
+  color: $fh-blue2;
   &:after {
-    content: "Scroll right for more fields→";
+    content: 'Scroll right for more fields→';
     font-style: italic;
     margin-left: 5px;
   }
@@ -56,7 +56,7 @@ table#tcat td {
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 600;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     line-height: 1.5;
     text-transform: uppercase;
   }
@@ -71,7 +71,7 @@ table#tcat td {
     /* currently ems cause chrome bug misinterpreting rems on body element */
     line-height: 1.6;
     font-weight: 400;
-    font-family: "Open Sans", sans-serif;
+    font-family: 'Open Sans', sans-serif;
     color: $black;
     th,
     td {

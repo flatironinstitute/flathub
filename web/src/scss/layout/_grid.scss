@@ -15,15 +15,14 @@
 }
 
 .container--main {
-  min-height: calc(100vh - 288px);
+  min-height: calc(100vh - 170px);
 }
 
-.bow-row {
-  display: flex;
-  flex-direction: row;
-  flex-flow: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
+.box-row {
+  display: grid;
+  align-items: start;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-gap: 20px;
 }
 
 .three-box {
@@ -41,20 +40,10 @@
   border-color: $border-color;
   border-radius: $border-radius;
 }
-@media all and (min-width: 40em) {
-  .box {
-    width: 48%;
-  }
-}
-@media all and (min-width: 60em) {
-  .box {
-    width: 21%;
-  }
-}
 
 .box-content {
   border: $border;
-  border-color: #ff533d;
+  border-color: $fh-blue1;
   border-radius: $border-radius;
   padding: 1em;
   min-height: 175px;
@@ -70,7 +59,7 @@
   font-size: 16px;
   font-weight: 600;
   line-height: 38px;
-  letter-spacing: .1rem;
+  letter-spacing: 0.1rem;
 }
 
 .box-copy {
@@ -78,6 +67,6 @@
   margin-bottom: 8px;
   border-radius: $border-radius;
   p {
-    margin-bottom: .5rem;
+    margin-bottom: 0.5rem;
   }
 }
