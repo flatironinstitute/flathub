@@ -3,9 +3,9 @@
 
 .button,
 button,
-input[type="submit"],
-input[type="reset"],
-input[type="button"] {
+input[type='submit'],
+input[type='reset'],
+input[type='button'] {
   display: inline-block;
   height: 38px;
   padding: 0 30px;
@@ -51,14 +51,14 @@ input[type="button"] {
 
 .button:hover,
 button:hover,
-input[type="submit"]:hover,
-input[type="reset"]:hover,
-input[type="button"]:hover,
+input[type='submit']:hover,
+input[type='reset']:hover,
+input[type='button']:hover,
 .button:focus,
 button:focus,
-input[type="submit"]:focus,
-input[type="reset"]:focus,
-input[type="button"]:focus {
+input[type='submit']:focus,
+input[type='reset']:focus,
+input[type='button']:focus {
   color: #333;
   border-color: #888;
   outline: 0;
@@ -67,34 +67,34 @@ input[type="button"]:focus {
 
 .button.button-primary,
 button.button-primary,
-input[type="submit"].button-primary,
-input[type="reset"].button-primary,
-input[type="button"].button-primary {
+input[type='submit'].button-primary,
+input[type='reset'].button-primary,
+input[type='button'].button-primary {
   background-color: $white;
   max-width: 270px;
 }
 
 .button.button-primary:hover,
 button.button-primary:hover,
-input[type="submit"].button-primary:hover,
-input[type="reset"].button-primary:hover,
-input[type="button"].button-primary:hover,
+input[type='submit'].button-primary:hover,
+input[type='reset'].button-primary:hover,
+input[type='button'].button-primary:hover,
 .button.button-primary:focus,
 button.button-primary:focus,
-input[type="submit"].button-primary:focus,
-input[type="reset"].button-primary:focus,
-input[type="button"].button-primary:focus {
+input[type='submit'].button-primary:focus,
+input[type='reset'].button-primary:focus,
+input[type='button'].button-primary:focus {
   color: $white;
-  background-color: $red;
-  border-color: $red;
+  background-color: $fh-blue2;
+  border-color: $fh-blue2;
   text-decoration: none;
 }
 
 .button.button-secondary,
 button.button-secondary,
-input[type="submit"].button-secondary,
-input[type="reset"].button-secondary,
-input[type="button"].button-secondary {
+input[type='submit'].button-secondary,
+input[type='reset'].button-secondary,
+input[type='button'].button-secondary {
   background-color: #333;
   color: $white;
   border-color: #333;
@@ -103,14 +103,14 @@ input[type="button"].button-secondary {
 
 .button.button-secondary:hover,
 button.button-secondary:hover,
-input[type="submit"].button-secondary:hover,
-input[type="reset"].button-secondary:hover,
-input[type="button"].button-secondary:hover,
+input[type='submit'].button-secondary:hover,
+input[type='reset'].button-secondary:hover,
+input[type='button'].button-secondary:hover,
 .button.button-secondary:focus,
 button.button-secondary:focus,
-input[type="submit"].button-secondary:focus,
-input[type="reset"].button-secondary:focus,
-input[type="button"].button-secondary:focus {
+input[type='submit'].button-secondary:focus,
+input[type='reset'].button-secondary:focus,
+input[type='button'].button-secondary:focus {
   color: #333;
   background-color: $white;
   border-color: #333;
@@ -123,9 +123,9 @@ input[type="button"].button-secondary:focus {
 
 .button.button-remove,
 button.button-remove,
-input[type="submit"].button-remove,
-input[type="reset"].button-remove,
-input[type="button"].button-remove {
+input[type='submit'].button-remove,
+input[type='reset'].button-remove,
+input[type='button'].button-remove {
   max-width: 270px;
   margin-bottom: 0;
   color: $off-black;
@@ -143,14 +143,14 @@ input[type="button"].button-remove {
 
 .button.button-remove:hover,
 button.button-remove:hover,
-input[type="submit"].button-remove:hover,
-input[type="reset"].button-remove:hover,
-input[type="button"].button-remove:hover,
+input[type='submit'].button-remove:hover,
+input[type='reset'].button-remove:hover,
+input[type='button'].button-remove:hover,
 .button.button-remove:focus,
 button.button-remove:focus,
-input[type="submit"].button-remove:focus,
-input[type="reset"].button-remove:focus,
-input[type="button"].button-remove:focus {
+input[type='submit'].button-remove:focus,
+input[type='reset'].button-remove:focus,
+input[type='button'].button-remove:focus {
   color: $off-black;
   opacity: 1;
   text-decoration: none;

@@ -49,9 +49,9 @@
   align-self: flex-start;
 }
 .modal-close:before {
-  content: "X";
+  content: 'X';
   font-weight: 300;
-  font-family: "Lexend Zetta", sans-serif;
+  font-family: 'Lexend Zetta', sans-serif;
 }
 
 /* Progress Bar
@@ -72,30 +72,14 @@
 .progress-interior {
   height: 18px;
   border-radius: 4px;
-  background-image: linear-gradient(
-    to right,
-    #ff513a,
-    #c93926,
-    #c42d19,
-    #ffada3,
-    #ff533d,
-    #ff2d55
-  );
+  background-image: linear-gradient(to right, #1c377c, #162c63, #12234f, #7893d8, $fh-blue1, #23459b);
   transition: 0.4s linear;
   transition-property: width, background-color;
 }
 
 .progress-exterior .progress-interior {
   width: 100%;
-  background-image: linear-gradient(
-    to right,
-    #ff513a,
-    #c93926,
-    #c42d19,
-    #ffada3,
-    #ff533d,
-    #ff2d55
-  );
+  background-image: linear-gradient(to right, #1c377c, #162c63, #12234f, #7893d8, $fh-blue1, #23459b);
   animation: colorAnimation 1s infinite;
 }
 
@@ -105,59 +89,19 @@
 
 @keyframes colorAnimation {
   0% {
-    background-image: linear-gradient(
-      to right,
-      #ff513a,
-      #c93926,
-      #c42d19,
-      #ffada3,
-      #ff533d,
-      #ff2d55
-    );
+    background-image: linear-gradient(to right, #1c377c, #162c63, #12234f, #7893d8, $fh-blue1, #23459b);
   }
   20% {
-    background-image: linear-gradient(
-      to right,
-      #c93926,
-      #c42d19,
-      #ffada3,
-      #ff533d,
-      #ff2d55,
-      #ff513a
-    );
+    background-image: linear-gradient(to right, #162c63, #12234f, #7893d8, $fh-blue1, #23459b, #1c377c);
   }
   40% {
-    background-image: linear-gradient(
-      to right,
-      #c42d19,
-      #ffada3,
-      #ff533d,
-      #ff2d55,
-      #ff513a,
-      #c93926
-    );
+    background-image: linear-gradient(to right, #12234f, #7893d8, $fh-blue1, #23459b, #1c377c, #162c63);
   }
   60% {
-    background-image: linear-gradient(
-      to right,
-      #ffada3,
-      #ff533d,
-      #ff2d55,
-      #ff513a,
-      #c93926,
-      #c42d19
-    );
+    background-image: linear-gradient(to right, #7893d8, $fh-blue1, #23459b, #1c377c, #162c63, #12234f);
   }
   100% {
-    background-image: linear-gradient(
-      to right,
-      #ffada3,
-      #ff533d,
-      #ff2d55,
-      #ff513a,
-      #c93926,
-      #c42d19
-    );
+    background-image: linear-gradient(to right, #7893d8, $fh-blue1, #23459b, #1c377c, #162c63, #12234f);
   }
 }
 

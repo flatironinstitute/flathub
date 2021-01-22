@@ -5,7 +5,7 @@
   display: flex;
   flex-direction: column;
   box-shadow: rgba(31, 53, 78, 0.11) 0 1px;
-  border-bottom: 1px solid $red;
+  border-bottom: 1px solid $fh-blue1;
   height: 125px;
 }
 
@@ -26,11 +26,12 @@
   font-size: 2rem;
   letter-spacing: 0.2rem;
   font-weight: 300;
-  font-family: "Lexend Zetta", sans-serif;
+  font-family: 'Lexend Zetta', sans-serif;
 }
 
-.header__logo img {
+.header__logo-image {
   display: block;
+  height: 32px;
 }
 
 nav.header__nav {
@@ -65,8 +66,8 @@ li.header__link a.active {
 
 li.header__link--dropdown a:hover,
 li.header__link a:hover {
-  color: $red;
-  border-bottom: 1px solid $red;
+  color: $fh-blue2;
+  border-bottom: 1px solid $fh-blue1;
 }
 
 .dropdown:hover,
@@ -127,7 +128,7 @@ container a:hover:not(.active) {
 }
 
 .nav-link {
-  font-family: "Lexend Zetta", sans-serif;
+  // font-family: 'Lexend Zetta', sans-serif;
   font-size: 1.4rem;
 }
 
@@ -135,7 +136,7 @@ container a:hover:not(.active) {
   flex-direction: row;
   justify-content: space-between;
   align-items: flex-end;
-  background-color: $red;
+  background-color: $fh-blue2;
 }
 
 .subheader-content {

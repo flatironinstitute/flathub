@@ -3,13 +3,13 @@
 form {
   margin-bottom: 2.5rem;
 }
-input[type="email"],
-input[type="number"],
-input[type="search"],
-input[type="text"],
-input[type="tel"],
-input[type="url"],
-input[type="password"],
+input[type='email'],
+input[type='number'],
+input[type='search'],
+input[type='text'],
+input[type='tel'],
+input[type='url'],
+input[type='password'],
 textarea,
 select {
   height: 38px;
@@ -31,13 +31,13 @@ select {
   }
 }
 /* Removes awkward default styles on some inputs for iOS */
-input[type="email"],
-input[type="number"],
-input[type="search"],
-input[type="text"],
-input[type="tel"],
-input[type="url"],
-input[type="password"],
+input[type='email'],
+input[type='number'],
+input[type='search'],
+input[type='text'],
+input[type='tel'],
+input[type='url'],
+input[type='password'],
 textarea {
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -48,13 +48,13 @@ textarea {
   padding-top: 6px;
   padding-bottom: 6px;
 }
-input[type="email"]:focus,
-input[type="number"]:focus,
-input[type="search"]:focus,
-input[type="text"]:focus,
-input[type="tel"]:focus,
-input[type="url"]:focus,
-input[type="password"]:focus,
+input[type='email']:focus,
+input[type='number']:focus,
+input[type='search']:focus,
+input[type='text']:focus,
+input[type='tel']:focus,
+input[type='url']:focus,
+input[type='password']:focus,
 textarea:focus,
 select:focus {
   border: 1px solid $blue;
@@ -65,7 +65,7 @@ legend {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   line-height: 1.5;
   text-transform: uppercase;
 }
@@ -73,8 +73,8 @@ fieldset {
   padding: 0;
   border-width: 0;
 }
-input[type="checkbox"],
-input[type="radio"] {
+input[type='checkbox'],
+input[type='radio'] {
   display: inline;
 }
 label > .label-body {
@@ -92,7 +92,7 @@ select {
 input.colvis {
   margin-right: 7px;
 }
-input[type="number"] {
+input[type='number'] {
   width: 100px;
 }
 span.units {
@@ -100,10 +100,10 @@ span.units {
   font-weight: normal;
 }
 span.units::before {
-  content: " [";
+  content: ' [';
 }
 span.units::after {
-  content: "]";
+  content: ']';
 }
 .input-group {
   flex-wrap: nowrap;
@@ -113,14 +113,14 @@ span.units::after {
   margin-top: 1rem;
 }
 .label-help::after {
-  content: "ℹ️";
+  content: 'ℹ️';
   padding: 3px;
 }
 .label-help {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   line-height: 1.5;
   text-transform: uppercase;
   opacity: 1;

@@ -17,6 +17,7 @@ export type Field = {
   name: string;
   type: string;
   title: string;
+  synopsis?: null | string;
   descr?: null | string;
   units?: null | string;
   flag?: boolean;

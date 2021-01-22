@@ -81,7 +81,6 @@ htmlResponse _req hdrs body = do
         H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
       -- TODO: Move mathjax and fonts to bundle.js
       H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML" $ mempty
-      H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href "https://fonts.googleapis.com/css?family=Major+Mono+Display|Montserrat"
       jsonVar "Catalogs" (HM.map catalogTitle $ catalogMap cats)
     H.body $ do
       H.div H.! HA.class_ "modal-container hidden"  H.! HA.id "progress-modal" $ do
@@ -97,7 +96,7 @@ htmlResponse _req hdrs body = do
       H.header H.! HA.class_ "header" $ do
         H.div H.! HA.class_ "header__logo" $ do
           H.a H.! HA.href (WH.routeActionValue topPage () mempty) H.! HA.class_ "header__logo-link" $ do
-            H.span H.! HA.class_ "header__logo-style" $ "FLATHUB"
+            H.img H.! HA.class_ "header__logo-image" H.! HA.src "/web/FlatHubLogo.svg"
         H.nav H.! HA.class_ "header__nav" $ do
           H.ul H.! HA.id "topbar" $ do
             H.li H.! HA.class_ "header__link--dropdown" $ do
@@ -111,12 +110,10 @@ htmlResponse _req hdrs body = do
                 forM_ (catalogsSorted cats) $ \(key, cat) ->
                   H.a H.! HA.href (WH.routeActionValue catalogPage key mempty) $ H.text (catalogTitle cat)
             H.li H.! HA.class_ "header__link" $ do
-              H.a H.! HA.href (WH.routeActionValue comparePage [] mempty) $ "Compare"
-            H.li H.! HA.class_ "header__link" $ do
               H.a H.! HA.href (WH.routeActionValue staticHtml ["about"] mempty) $ "About"
-      H.div H.! HA.class_ "subheader" $ do
-        H.div H.! HA.class_ "subheader-content" $ do
-          H.p $ "Please note that this is a beta version. The website is still undergoing final testing before the official release."
+      -- H.div H.! HA.class_ "subheader" $ do
+      --   H.div H.! HA.class_ "subheader-content" $ do
+      --     H.p $ "Please note that this is a beta version. The website is still undergoing final testing before the official release."
       H.div H.! HA.class_ "modal-container hidden" H.! HA.id "browser-modal" $ do
         H.div H.! HA.class_ "modal-background" $ do
           H.span $ mempty
@@ -129,15 +126,14 @@ htmlResponse _req hdrs body = do
         body
       H.footer H.! HA.class_"footer-distributed" $ do
         H.div H.! HA.class_ "container" $ do
-          H.div H.! HA.class_ "footer-left" $ do
+          H.div H.! HA.class_ "footer-center" $ do
             H.div H.! HA.class_ "footer__title" $ do
-              H.h3 $ "Flathub"
+              H.img H.! HA.class_ "footer-logo" H.! HA.src "/web/FlatHubLogo.svg"
             H.p H.! HA.class_ "footer-links" $ do
               H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Home"
               H.a H.! HA.href (WH.routeActionValue groupPage [] mempty) $ H.text "Catalogs"
-              H.a H.! HA.href (WH.routeActionValue comparePage [] mempty) $ H.text "Compare"
+              -- H.a H.! HA.href (WH.routeActionValue comparePage [] mempty) $ H.text "Compare"
               H.a H.! HA.href "https://github.com/flatironinstitute/astrosims" $ H.text "Github"
-            H.p H.! HA.class_ "footer-company-name" $ "Flatiron Institute, 2019"
       forM_ ([["bundle.js"]]) $ \src ->
         H.script H.! HA.type_ "text/javascript" H.! HA.src (staticURI src) $ mempty
 acceptable :: [BS.ByteString] -> Wai.Request -> Maybe BS.ByteString
@@ -150,7 +146,8 @@ topPage = getPath R.unit $ \() req -> do
   case acceptable ["application/json", "text/html"] req of
     Just "application/json" ->
       return $ okResponse [] $ J.encode $ HM.map catalogTitle $ catalogMap cats
-    _ -> htmlResponse req [] $
+    _ -> R.routeAction staticHtml ["top"] req
+    {- htmlResponse req [] $
       H.div $ do
         H.div H.! HA.class_ "section hero gray-heading" $ do
           H.div H.! HA.class_ "container" $ do
@@ -178,6 +175,7 @@ topPage = getPath R.unit $ \() req -> do
                     H.div H.! HA.class_ "catalogs-list main-page" $
                       forM_ (catalogsSorted cats) $ \(sim, cat) -> do
                           H.a H.! HA.href (WH.routeActionValue catalogPage sim mempty) H.! HA.class_ "collection-card-heading" $ H.text $ catalogTitle cat
+    -}
 
 
 catalogPage :: Route Simulation
@@ -594,11 +592,15 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
             H.div H.! HA.class_ "row" $ do
               H.div H.! HA.class_ "heading-content" $ do
                 H.h4 H.! HA.class_("heading-heading " <> H.textValue cat <> "-subheading")  $ H.text catalogTitle
-                H.a  H.! HA.class_ "button button-primary" H.! HA.href (WH.routeActionValue catalogPage cat mempty) $ "explore"
         maybe (do
-          H.div H.! HA.class_ "section highlighted-links" $ do
-            mapM_ (H.p . H.preEscapedText) catalogDescr)
-            H.preEscapedText catalogHtml
+          H.div H.! HA.class_ "section" $ do
+            H.div H.! HA.class_"container" $ do
+              H.div H.! HA.class_ "row" $ do
+                H.div H.! HA.class_ "col-md" $ do
+                  H.div H.! HA.class_ "body-copy" $ do
+                    H.a  H.! HA.class_ "button button-primary" H.! HA.href (WH.routeActionValue catalogPage cat mempty) $ "explore"
+                    mapM_ (H.p . H.preEscapedText) catalogDescr)
+                      H.preEscapedText catalogHtml
       -- Collections
       Grouping{..} -> do
         H.div H.! HA.class_ ("section gray-heading " <> H.textValue groupName <> "-heading") $ do
@@ -606,23 +608,35 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
             H.div H.! HA.class_ "row" $ do
               H.div H.! HA.class_ "heading-content" $ do
                 H.h4 H.! HA.class_ ("heading-heading " <> H.textValue groupName <> "-subheading") $ H.text groupTitle
-                H.a H.! HA.class_ "button button-primary" H.! HA.href (WH.routeActionValue comparePage path mempty) $ "compare"
-        mapM_
-          H.preEscapedText groupHtml
-        H.dl H.! HA.class_ "section catalogs-list" $
-          forM_ (groupList groupings) $ \g -> do
-            let cat' = groupingCatalog cats g
-            H.dt $ H.a H.! HA.href (WH.routeActionValue groupPage (path ++ [groupingName g]) mempty) $
-              H.text $ groupingTitle g cat'
-            case g of
-              Grouping{ groupings = gs } ->
-                forM_ (groupList gs) $ \gc ->
-                  H.dd $ H.a H.! HA.href (WH.routeActionValue groupPage (path ++ [groupingName g, groupingName gc]) mempty) $
-                    H.text $ groupingTitle gc (groupingCatalog cats gc)
-              GroupCatalog{} ->
-                forM_ cat' $ \cat -> H.dd $ do
-                  mapM_ H.preEscapedText $ catalogDescr cat
-                  mapM_ ((" " <>) . (<> " rows.") . H.toMarkup) $ catalogCount cat
+        H.div H.! HA.class_ "section highlighted-links" $ do
+          H.div H.! HA.class_"container" $ do
+            H.div H.! HA.class_ "row" $ do
+              H.div H.! HA.class_ "col-md" $ do
+                H.div H.! HA.class_ "body-copy group-html" $ do
+                  mapM_
+                    H.preEscapedText groupHtml
+        H.div H.! HA.class_ "section" $ do
+          H.div H.! HA.class_"container" $ do
+            H.div H.! HA.class_ "row" $ do
+              H.div H.! HA.class_ "col-md" $ do
+                H.div H.! HA.class_ "body-copy" $ do
+                  H.h4 $ "Catalogs"
+            -- Catalogs list
+            H.div H.! HA.class_ "box-row" $ do
+              forM_ (groupList groupings) $ \g -> do
+                let cat' = groupingCatalog cats g
+                H.div H.! HA.class_ "box" $ H.div H.! HA.class_ "box-content" $ do
+                  H.div H.! HA.class_ "box-copy" $ do
+                    H.div H.! HA.class_ "box-head" $ H.text $ groupingTitle g cat'
+                    case g of
+                      Grouping{ groupings = gs } ->
+                        forM_ (groupList gs) $ \gc ->
+                          H.div H.! HA.class_ "box-desc" $ H.a H.! HA.href (WH.routeActionValue groupPage (path ++ [groupingName g, groupingName gc]) mempty) $
+                            H.text $ groupingTitle gc (groupingCatalog cats gc)
+                      GroupCatalog{} ->
+                        forM_ cat' $ \cat -> H.div H.! HA.class_ "box-desc" $ do
+                          mapM_ H.preEscapedText $ catalogSynopsis cat
+                  H.a H.! HA.class_ "button" H.! HA.href (WH.routeActionValue groupPage (path ++ [groupingName g]) mempty) $ "Explore"
 
 comparePage :: Route [T.Text]
 comparePage = getPath ("compare" R.*< R.manyI R.parameter) $ \path req -> do
@@ -634,8 +648,6 @@ comparePage = getPath ("compare" R.*< R.manyI R.parameter) $ \path req -> do
     H.div H.! HA.class_ "compare-container" $ do
       H.h2 "Compare"
       H.p $ "Select catalogs across the top to compare, and fields down the left to apply filters and compare statistics and distributions from these catalogs."
-      -- H.p "Comparison tool coming soon."
-      -- H.img H.! HA.class_ "img-ctr" H.! HA.src "https://media.giphy.com/media/3o72FkiKGMGauydfyg/source.gif"
       H.table H.! HA.id "tcompare" H.! HA.class_ "u-full-width" $ do
         H.thead $ H.tr $ do
           H.th "Choose two or more catalogs"

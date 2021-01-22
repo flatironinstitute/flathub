@@ -1,12 +1,11 @@
-@import url("https://use.typekit.net/frn4vny.css");
+@import url('https://use.typekit.net/frn4vny.css');
 //
 // Typography
 //
 
-$body-font-family: "aktiv-grotesk", aktiv-grotesk, -apple-system,
-  BlinkMacSystemFont, "helvetica neue", helvetica, roboto, noto, "segoe ui",
-  arial, sans-serif !default;
-$mono-font-family: "SFMono-Regular", Menlo, Consolas, Monospace !default;
+$body-font-family: 'aktiv-grotesk', aktiv-grotesk, -apple-system, BlinkMacSystemFont, 'helvetica neue', helvetica,
+  roboto, noto, 'segoe ui', arial, sans-serif !default;
+$mono-font-family: 'SFMono-Regular', Menlo, Consolas, Monospace !default;
 $root-font-size: 16px !default; // Base font-size for rems
 $body-line-height: 1.4 !default;
 $content-line-height: 1.5 !default;
@@ -82,10 +81,10 @@ $media-queries: (
 
 /* Variables
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
-$header-font: "aktiv-grotesk", aktiv-grotesk, -apple-system, BlinkMacSystemFont,
-  "helvetica neue", helvetica, roboto, noto, "segoe ui", arial, sans-serif !default;
-$body-font: "aktiv-grotesk", aktiv-grotesk, -apple-system, BlinkMacSystemFont,
-  "helvetica neue", helvetica, roboto, noto, "segoe ui", arial, sans-serif !default;
+$header-font: 'aktiv-grotesk', aktiv-grotesk, -apple-system, BlinkMacSystemFont, 'helvetica neue', helvetica, roboto,
+  noto, 'segoe ui', arial, sans-serif !default;
+$body-font: 'aktiv-grotesk', aktiv-grotesk, -apple-system, BlinkMacSystemFont, 'helvetica neue', helvetica, roboto, noto,
+  'segoe ui', arial, sans-serif !default;
 $off-black: rgba(41, 44, 47, 1);
 $black: rgba(34, 34, 34, 1);
 $white: rgba(254, 254, 255, 1);
@@ -99,3 +98,6 @@ $gray0: rgba(143, 146, 150, 1);
 $gray1: #bbb;
 $gray2: rgba(143, 146, 150, 0.5);
 $gray3: rgba(143, 146, 150, 0.1);
+$fh-blue1: #107bf4;
+$fh-blue2: #2c56c2;
+$fh-gray: #76776e;
