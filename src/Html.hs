@@ -592,15 +592,18 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
             H.div H.! HA.class_ "row" $ do
               H.div H.! HA.class_ "heading-content" $ do
                 H.h4 H.! HA.class_("heading-heading " <> H.textValue cat <> "-subheading")  $ H.text catalogTitle
+                H.a  H.! HA.class_ "button button-primary" H.! HA.href (WH.routeActionValue catalogPage cat mempty) $ "explore"
         maybe (do
-          H.div H.! HA.class_ "section" $ do
-            H.div H.! HA.class_"container" $ do
-              H.div H.! HA.class_ "row" $ do
-                H.div H.! HA.class_ "col-md" $ do
-                  H.div H.! HA.class_ "body-copy" $ do
-                    H.a  H.! HA.class_ "button button-primary" H.! HA.href (WH.routeActionValue catalogPage cat mempty) $ "explore"
-                    mapM_ (H.p . H.preEscapedText) catalogDescr)
-                      H.preEscapedText catalogHtml
+          H.span H.! HA.class_ "holder" $ do
+            H.div H.! HA.class_ "section" $ do
+              H.div H.! HA.class_"container" $ do
+                H.div H.! HA.class_ "row" $ do
+                  H.div H.! HA.class_ "col-md" $ do
+                    H.div H.! HA.class_ "body-copy" $ do
+                      H.h4 $ "Catalog summary"
+                      mapM_ (H.p . H.preEscapedText) catalogDescr)
+                        H.preEscapedText catalogHtml
+
       -- Collections
       Grouping{..} -> do
         H.div H.! HA.class_ ("section gray-heading " <> H.textValue groupName <> "-heading") $ do
@@ -636,7 +639,7 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
                       GroupCatalog{} ->
                         forM_ cat' $ \cat -> H.div H.! HA.class_ "box-desc" $ do
                           mapM_ H.preEscapedText $ catalogSynopsis cat
-                  H.a H.! HA.class_ "button" H.! HA.href (WH.routeActionValue groupPage (path ++ [groupingName g]) mempty) $ "Explore"
+                  H.a H.! HA.class_ "button button-primary" H.! HA.href (WH.routeActionValue groupPage (path ++ [groupingName g]) mempty) $ "Learn More"
 
 comparePage :: Route [T.Text]
 comparePage = getPath ("compare" R.*< R.manyI R.parameter) $ \path req -> do
