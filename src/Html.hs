@@ -639,7 +639,7 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
                       GroupCatalog{} ->
                         forM_ cat' $ \cat -> H.div H.! HA.class_ "box-desc" $ do
                           mapM_ H.preEscapedText $ catalogSynopsis cat
-                  H.a H.! HA.class_ "button" H.! HA.href (WH.routeActionValue groupPage (path ++ [groupingName g]) mempty) $ "Explore"
+                  H.a H.! HA.class_ "button button-primary" H.! HA.href (WH.routeActionValue groupPage (path ++ [groupingName g]) mempty) $ "Learn More"
 
 comparePage :: Route [T.Text]
 comparePage = getPath ("compare" R.*< R.manyI R.parameter) $ \path req -> do
