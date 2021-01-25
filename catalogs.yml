@@ -3587,7 +3587,7 @@ lusam:
   title: Lu-SAM
   synopsis: Santa Cruz semi-analytic model
   descr: >
-    These lightcones have been populated using the semi-analytic models developed by Y. Lu and collaborators, as documented in <a target="_blank" href='https://ui.adsabs.harvard.edu/abs/2014ApJ...795..123L'>Lu et al.</a> (2014) and <a target="_blank" href="http://flathub.flatironinstitute.org/group/candels"> Somerville et al.</a> (2020).
+    These lightcones have been populated using the semi-analytic models developed by Y. Lu and collaborators, as documented in <a target="_blank" class="underline" href='https://ui.adsabs.harvard.edu/abs/2014ApJ...795..123L'>Lu et al.</a> (2014) and <a target="_blank" class="underline" href="http://flathub.flatironinstitute.org/group/candels"> Somerville et al.</a> (2020).
     <br></br>
     Data Release: v0.5 2018-06-20.
   index: lusam
@@ -4234,9 +4234,9 @@ unimach:
   title: UniverseMachine
   synopsis: Empirical model developed by P. Behroozi and collaborators
   descr: >
-    These lightcones have been populated using the UniverseMachine empirical model. For more details please see <a href='http://adsabs.harvard.edu/abs/2018arXiv180607893B'>Behroozi et al.</a> (2019) and <a href="http://flathub.flatironinstitute.org/group/candels" target="_blank">Somerville et al.</a> (2020).<br></br>
+    These lightcones have been populated using the UniverseMachine empirical model. For more details please see <a class="underline" target="_blank" href='http://adsabs.harvard.edu/abs/2018arXiv180607893B'>Behroozi et al.</a> (2019) and <a class="underline" href="http://flathub.flatironinstitute.org/group/candels">Somerville et al. </a> (2020).<br></br>
     Data Release: v1 2019-07-26.<br></br>
-    Data also available at <a href="https://www.peterbehroozi.com/data.html">peterbehroozi.com</a>.
+    Data also available at <a class="underline" target="_blank" href="https://www.peterbehroozi.com/data.html">peterbehroozi.com</a>.
   index: unimach
   count: 250614266
   order: 'candels-2'
@@ -4391,9 +4391,9 @@ scsam:
   title: SC-SAM
   synopsis: Santa Cruz semi-analytic model
   descr: >
-    These lightcones have been populated using the Santa Cruz semi-analytic models, as documented in <a target="_blank" href='http://adsabs.harvard.edu/abs/2015MNRAS.453.4337S'>Somerville et al.</a> (2015) and <a target="_blank" href='http://adsabs.harvard.edu/abs/2019MNRAS.483.2983Y'>Yung et al.</a>.<br> (2019). Please see <a href="http://flathub.flatironinstitute.org/group/candels">Somerville et al.</a> (2020) and for more details.<br></br>
+    These lightcones have been populated using the Santa Cruz semi-analytic models, as documented in <a target="_blank" class="underline" href='http://adsabs.harvard.edu/abs/2015MNRAS.453.4337S'>Somerville et al.</a> (2015) and <a target="_blank" class="underline" href='http://adsabs.harvard.edu/abs/2019MNRAS.483.2983Y'>Yung et al.</a>.<br> (2019). Please see <a href="http://flathub.flatironinstitute.org/group/candels" class="underline">Somerville et al.</a> (2020) and for more details.<br></br>
     Data Release: v2 2020-03-11.
-    index: scsam
+  index: scsam
   order: 'candels-1'
   count: 34312506
   fields:
