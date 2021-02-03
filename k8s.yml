@@ -15,6 +15,7 @@ spec:
       initContainers:
       - name: wait-es
         image: busybox
+        imagePullPolicy: IfNotPresent
         command:
           - sh
           - '-c'
