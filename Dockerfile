@@ -7,11 +7,15 @@ RUN echo /opt/ghc/*/lib/ghc-*/rts > /etc/ld.so.conf.d/ghc.conf && \
 RUN useradd -u 999 -m astrosims
 USER astrosims
 
-COPY --chown=astrosims . /home/astrosims/astrosims
+COPY --chown=astrosims stack.yaml *.cabal Setup.hs COPYING /home/astrosims/astrosims/
 WORKDIR /home/astrosims/astrosims
-RUN stack install --system-ghc --extra-include-dirs=/usr/include/hdf5/serial --extra-lib-dirs=/usr/lib/x86_64-linux-gnu/hdf5/serial && \
-    rm -rf .stack-work
+RUN stack build --dependencies-only --extra-include-dirs=/usr/include/hdf5/serial --extra-lib-dirs=/usr/lib/x86_64-linux-gnu/hdf5/serial
+COPY --chown=astrosims src ./src
+RUN stack install && rm -rf .stack-work
+COPY --chown=astrosims web ./web
 RUN make -C web
+COPY --chown=astrosims html ./html
+COPY --chown=astrosims config catalogs.yml ./
 
 EXPOSE 8092
 ENTRYPOINT ["/home/astrosims/.local/bin/astrosims"]
