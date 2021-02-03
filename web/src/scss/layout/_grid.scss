@@ -35,14 +35,10 @@
   display: flex;
   padding: 0.5em;
   width: 100%;
-  background-color: #e7e7e8;
-  border: $border;
-  border-color: $border-color;
-  border-radius: $border-radius;
 }
 
 .box-content {
-  border: $border;
+  border: 3px solid;
   border-color: $fh-blue1;
   border-radius: $border-radius;
   padding: 1em;
