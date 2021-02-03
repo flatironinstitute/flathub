@@ -3585,7 +3585,7 @@ candels:
     missing: ['-99','-99.0']
 lusam:
   title: Lu-SAM
-  synopsis: Santa Cruz semi-analytic model
+  synopsis: Lu et al. semi-analytic model
   descr: >
     These lightcones have been populated using the semi-analytic models developed by Y. Lu and collaborators, as documented in <a target="_blank" class="underline" href='https://ui.adsabs.harvard.edu/abs/2014ApJ...795..123L'>Lu et al.</a> (2014) and <a target="_blank" class="underline" href="https://arxiv.org/abs/2102.00108"> Somerville et al.</a> (2020).
     <br></br>
