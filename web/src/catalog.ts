@@ -749,9 +749,9 @@ function columnVisible(name: string, vis: boolean) {
 function py_text(query: Dict<string>) {
   const cat = Catalog.name;
   let st =
-    "import fi_astrosims.client\n" +
+    "import flathub.client\n" +
     cat +
-    " = fi_astrosims.client.Catalog(" +
+    " = flathub.client.Catalog(" +
     JSON.stringify(cat) +
     ", host = " +
     JSON.stringify(location.origin) +

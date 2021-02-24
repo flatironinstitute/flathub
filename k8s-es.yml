@@ -2,30 +2,30 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: astrosims-es
+  name: flathub-es
 spec:
   selector:
     matchLabels:
-      name: astrosims-es
+      name: flathub-es
   template:
     metadata:
       labels:
-        name: astrosims-es
+        name: flathub-es
     spec:
       containers:
-      - name: astrosims-es
+      - name: flathub-es
         image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.7.1
         env:
           - name: cluster.name
-            value: "astrosims"
+            value: "astrosims" # XXX backwards compatibility
           #- name: bootstrap.memory_lock
           #  value: "true"
           - name: ES_JAVA_OPTS
             value: "-Xms24g -Xmx24g"
           - name: discovery.seed_hosts
-            value: "astrosims-es-trans"
+            value: "flathub-es-trans"
           - name: cluster.initial_master_nodes
-            value: "astrosims-es" # FIXME valid node.name
+            value: "flathub-es" # FIXME valid node.name
           - name: node.max_local_storage_nodes
             value: "8"
           - name: node.master
@@ -79,10 +79,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: astrosims-es-trans
+  name: flathub-es-trans
 spec:
   selector:
-    name: astrosims-es
+    name: flathub-es
   publishNotReadyAddresses: true
   ports:
   - name: transport
@@ -92,10 +92,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: astrosims-es
+  name: flathub-es
 spec:
   selector:
-    name: astrosims-es
+    name: flathub-es
   ports:
   - name: http
     port: 9200

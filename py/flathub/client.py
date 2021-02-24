@@ -52,7 +52,7 @@ def getJSON(url):
         data = data.decode(res.info().get_content_charset('utf-8'))
     return json.loads(data)
 
-defaultHost = "http://astrosims.flatironinstitute.org"
+defaultHost = "http://flathub.flatironinstitute.org"
 
 def getCatalogs(host = defaultHost):
     """

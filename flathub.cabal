@@ -1,6 +1,6 @@
-name:           astrosims
+name:           flathub
 version:        0.1
-description:    Astronomy simulation catalog repository
+description:    Flatiron simulation catalog repository
 author:         Dylan Simon
 maintainer:     dylan@dylex.net
 copyright:      2018 Dylan Simon, Flatiron Institute
@@ -11,9 +11,9 @@ cabal-version:  >= 1.10
 
 source-repository head
   type:     git
-  location: git://github.com/flatironinstitute/astrosims-reproto
+  location: git://github.com/flatironinstitute/flathub
 
-executable astrosims
+executable flathub
   main-is: Main.hs
   other-modules:
     Catalog

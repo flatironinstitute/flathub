@@ -133,7 +133,7 @@ htmlResponse _req hdrs body = do
               H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Home"
               H.a H.! HA.href (WH.routeActionValue groupPage [] mempty) $ H.text "Catalogs"
               -- H.a H.! HA.href (WH.routeActionValue comparePage [] mempty) $ H.text "Compare"
-              H.a H.! HA.href "https://github.com/flatironinstitute/astrosims" $ H.text "Github"
+              H.a H.! HA.href "https://github.com/flatironinstitute/flathub" $ H.text "Github"
       forM_ ([["bundle.js"]]) $ \src ->
         H.script H.! HA.type_ "text/javascript" H.! HA.src (staticURI src) $ mempty
 acceptable :: [BS.ByteString] -> Wai.Request -> Maybe BS.ByteString
@@ -457,7 +457,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                     H.h6 H.! HA.class_ "right-column-heading" $ "Python Query"
                     H.p $ do
                       "Example python code to apply the above filters and retrieve data. To use, download and install "
-                      H.a H.! HA.href "https://github.com/flatironinstitute/astrosims/tree/prod/py" $ "this module"
+                      H.a H.! HA.href "https://github.com/flatironinstitute/flathub/tree/prod/py" $ "this module"
                       "."
                     H.div H.! HA.id "div-py" H.! HA.class_ "python-block" $
                       H.pre H.! HA.id "code-py" $ mempty

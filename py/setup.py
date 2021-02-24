@@ -1,12 +1,12 @@
 import setuptools
 
 setuptools.setup(
-    name="fi_astrosims",
+    name="flathub",
     version="0.1",
     author="Dylan Simon, Flatiron Institute",
     author_email="dsimon@flatironinstitute.org",
-    description="Client library for astrosims.flatironinstitute.org simulation data",
-    url="https://github.com/flatironinstitute/astrosims-reproto",
+    description="Client library for flathub.flatironinstitute.org simulation data",
+    url="https://github.com/flatironinstitute/flathub",
     packages=setuptools.find_packages(),
     classifiers=(
         "Programming Language :: Python :: 2",
