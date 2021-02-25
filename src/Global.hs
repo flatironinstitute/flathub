@@ -33,6 +33,7 @@ data Global = Global
   , globalHTTP :: HTTP.Manager
   , globalES :: HTTP.Request
   , globalCatalogs :: Catalogs
+  , globalDataDir :: FilePath
   , globalDevMode :: Bool
   }
 

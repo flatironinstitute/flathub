@@ -14,6 +14,7 @@ import qualified Network.HTTP.Client as HTTP
 import qualified System.Console.GetOpt as Opt
 import           System.Environment (getProgName, getArgs)
 import           System.Exit (exitFailure)
+import           System.FilePath ((</>))
 import           System.IO (hPutStrLn, stderr)
 import qualified Waimwork.Config as C
 import           Waimwork.Response (response)
@@ -29,6 +30,7 @@ import Static
 import Query
 import Ingest
 import Html
+import Attach
 
 routes :: R.RouteMap Action
 routes = R.routes
@@ -42,6 +44,7 @@ routes = R.routes
   , R.routeNormCase catalogBulk
   , R.routeNormCase sqlSchema
   , R.routeNormCase csvSchema
+  , R.routeNormCase attachment
   ]
 
 data Opts = Opts
@@ -89,6 +92,7 @@ main = do
         , globalHTTP = httpmgr
         , globalES = es
         , globalCatalogs = catalogs
+        , globalDataDir = fromMaybe "." $ conf C.! "datadir"
         , globalDevMode = fromMaybe False $ conf C.! "dev"
         }
 
@@ -109,7 +113,7 @@ main = do
             v <- maybe (fail $ "Invalid value: " ++ show s) return $ parseFieldValue f s
             first (v:) <$> pconst c' r
       (consts, cat) <- pconst (catalogMap catalogs HM.! sim) $ optConstFields opts
-      n <- ingest cat consts args
+      n <- ingest cat consts $ map (globalDataDir global </>) args
       liftIO $ print n
       when (n > 0) $ void $ ES.flushIndex cat
 

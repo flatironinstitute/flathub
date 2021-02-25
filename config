@@ -5,3 +5,4 @@ elasticsearch {
   server = "http://flathub-es:9200/"
 }
 dev = true
+datadir = "."

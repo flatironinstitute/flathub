@@ -6,6 +6,7 @@
 module Catalog
   ( ESStoreField(..)
   , CatalogStore(..)
+  , AttachmentPath(..)
   , Catalog(..)
   , takeCatalogField
   , Grouping(..)
@@ -35,7 +36,6 @@ import qualified Data.HashMap.Strict as HM
 import qualified Data.HashSet as HS
 import           Data.Maybe (catMaybes, maybeToList)
 import           Data.Proxy (Proxy(Proxy))
-import           Data.Semigroup (Semigroup((<>)))
 import qualified Data.Text as T
 import qualified Data.Vector as V
 
@@ -67,6 +67,15 @@ data CatalogStore
     , catalogStoreField :: !ESStoreField
     }
 
+data AttachmentPath
+  = AttachmentPathLiteral FilePath
+  | AttachmentPathField T.Text
+
+instance J.FromJSON AttachmentPath where
+  parseJSON (J.String s) = return $ AttachmentPathLiteral $ T.unpack s
+  parseJSON o = J.withObject "attachment path" 
+    (fmap AttachmentPathField . (J..: "field")) o
+
 data Catalog = Catalog
   { catalogEnabled :: !Bool
   , catalogOrder :: !T.Text -- ^display order in catalog list
@@ -81,6 +90,7 @@ data Catalog = Catalog
   , catalogKey :: Maybe T.Text -- ^primary key (not really used)
   , catalogSort :: [T.Text] -- ^sort field(s) for index
   , catalogCount :: Maybe Word
+  , catalogAttachments :: HM.HashMap T.Text [AttachmentPath]
   }
 
 parseCatalog :: HM.HashMap T.Text FieldGroup -> J.Value -> J.Parser Catalog
@@ -103,6 +113,7 @@ parseCatalog dict = J.withObject "catalog" $ \c -> do
       <*> (c J..:? "settings" J..!= HM.empty)
       <*> (c J..:? "store" J..!= ESStoreValues)
   catalogOrder <- c J..:? "order" J..!= catalogIndex catalogStore
+  catalogAttachments <- c J..:? "attachments" J..!= HM.empty
   let catalogFields = expandFields catalogFieldGroups
       catalogFieldMap = HM.fromList $ map (fieldName &&& id) catalogFields
   mapM_ (\k -> unless (HM.member k catalogFieldMap) $ fail "key field not found in catalog") catalogKey
@@ -312,7 +323,7 @@ data Query = Query
   , queryLimit :: Word
   , querySort :: [(Field, Bool)]
   , queryFields :: [Field]
-  , queryFilter :: [(FieldSub Filter Proxy)]
+  , queryFilter :: [FieldSub Filter Proxy]
   , querySample :: Double
   , querySeed :: Maybe Word
   , queryAggs :: [QueryAgg]

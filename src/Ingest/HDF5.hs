@@ -19,7 +19,6 @@ import qualified Data.ByteString.Char8 as BSC
 import           Data.Foldable (fold)
 import           Data.List (find, nub)
 import           Data.Maybe (fromMaybe)
-import           Data.Monoid ((<>))
 import           Data.Proxy (Proxy(Proxy))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE

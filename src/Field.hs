@@ -31,6 +31,7 @@ module Field
   , FieldValue
   , parseFieldValue
   , isTermsField
+  , idField
   , fieldsCSV
   ) where
 
@@ -49,7 +50,7 @@ import           Data.Int (Int64, Int32, Int16, Int8)
 import           Data.Maybe (maybeToList)
 import           Data.Proxy (Proxy(Proxy))
 import           Data.Scientific (Scientific)
-import           Data.Semigroup (Max(getMax), Semigroup((<>)))
+import           Data.Semigroup (Max(getMax))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import           Data.Typeable (Typeable)
@@ -487,6 +488,10 @@ isTermsField Field{ fieldType = Text _ } = True
 isTermsField Field{ fieldType = Byte _, fieldEnum = Just _ } = True
 isTermsField f@Field{ fieldType = Byte _ } = fieldFlag f >= FieldTop
 isTermsField _ = False
+
+-- |pseudo field representing ES _id
+idField :: Field
+idField = def{ fieldName = "_id", fieldType = Text Proxy, fieldTitle = "_id", fieldFlag = FieldHidden }
 
 fieldsCSV :: Fields -> B.Builder
 fieldsCSV l = csvTextRow ["variable", "name", "type", "units", "description", "values","dict","scale"] <> foldMap fieldCSV l where

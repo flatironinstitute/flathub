@@ -3,7 +3,6 @@ module Ingest.Types
 
 import qualified Data.Aeson as J
 import           Data.Word (Word64)
-import           System.FilePath (FilePath)
 
 import Catalog
 import Field

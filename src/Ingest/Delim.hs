@@ -14,7 +14,6 @@ import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy.Char8 as BSLC
 import qualified Data.HashMap.Strict as HM
 import           Data.List (mapAccumL, find, findIndex, genericDrop, genericSplitAt)
-import           Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import           Data.Word (Word64)

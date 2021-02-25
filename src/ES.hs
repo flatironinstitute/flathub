@@ -9,6 +9,7 @@ module ES
   ( initServer
   , createIndex
   , checkIndices
+  , storedFields
   , queryIndex
   , queryBulk
   , createBulk
@@ -18,7 +19,7 @@ module ES
   ) where
 
 import           Control.Arrow ((&&&))
-import           Control.Monad ((<=<), forM, forM_, unless)
+import           Control.Monad ((<=<), forM, forM_, when, unless)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (ask, asks)
 import qualified Data.Aeson as J
@@ -36,7 +37,6 @@ import qualified Data.HashMap.Strict as HM
 import           Data.IORef (newIORef, readIORef, writeIORef)
 import           Data.List (find)
 import           Data.Maybe (mapMaybe)
-import           Data.Monoid ((<>))
 import           Data.Proxy (Proxy)
 import           Data.String (IsString)
 import qualified Data.Text as T
@@ -95,7 +95,7 @@ elasticSearch meth url query body = do
         , HTTP.requestBody = bodyRequest body
         }
   liftIO $ do
-    unless True $ do
+    when debug $ do
       print $ HTTP.path req'
       case bodyRequest body of
         HTTP.RequestBodyBS b -> BSC.putStrLn b
@@ -103,10 +103,11 @@ elasticSearch meth url query body = do
         _ -> BSC.putStrLn "???"
     r <- either fail return . (J.parseEither J.parseJSON <=< AP.eitherResult)
       =<< HTTP.withResponse req' (globalHTTP glob) parse
-    -- print r
+    when debug $ print r
     return r
   where
   parse r = AP.parseWith (HTTP.responseBody r) (J.json <* AP.endOfInput) BS.empty
+  debug = False
 
 catalogURL :: Catalog -> [String]
 catalogURL Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } =
@@ -171,6 +172,14 @@ checkIndices = do
   boolish (J.String "true") = return True
   boolish (J.String "false") = return False
   boolish v = J.typeMismatch "bool" v
+
+storedFields :: MonadFail m => ESStoreField -> J.Object -> m J.Object
+storedFields ESStoreSource o = case HM.lookup "_source" o of
+  Just (J.Object s) -> return s
+  _ -> fail "missing source object"
+storedFields _ o = case HM.lookup "fields" o of
+  Just (J.Object s) -> return $ HM.map unsingletonJSON s
+  _ -> fail "missing fields object"
 
 scrollTime :: IsString s => s
 scrollTime = "60s"
@@ -320,13 +329,10 @@ queryBulk cat@Catalog{ catalogStore = CatalogES{ catalogStoreField = store } } q
     <*> parseJSONField "hits" (J.withObject "hits" $ \hits -> (,)
       <$> (hits J..: "total" >>= (J..: "value"))
       <*> parseJSONField "hits" (J.withArray "hits" $
-        V.mapM $ J.withObject "hit" $ case store of
-          ESStoreSource ->
-            parseJSONField "_source" $ J.withObject "source" $ \d ->
-              return $ map (\f -> HM.lookupDefault J.Null (fieldName f) d) queryFields
-          _ ->
-            parseJSONField "fields" $ J.withObject "fields" $ \d ->
-              return $ map (\f -> unsingletonJSON $ HM.lookupDefault J.Null (fieldName f) d) queryFields) hits)
+        V.mapM $ J.withObject "hit" $ \h -> do
+          d <- storedFields store h
+          return $ map (\f -> HM.lookupDefault J.Null (fieldName f) d) queryFields)
+        hits)
       q
 
 createBulk :: Catalog -> [(String, J.Series)] -> M ()
