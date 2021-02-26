@@ -6,7 +6,8 @@
 module Catalog
   ( ESStoreField(..)
   , CatalogStore(..)
-  , AttachmentPath(..)
+  , DynamicPathComponent(..)
+  , DynamicPath
   , Catalog(..)
   , takeCatalogField
   , Grouping(..)
@@ -67,14 +68,17 @@ data CatalogStore
     , catalogStoreField :: !ESStoreField
     }
 
-data AttachmentPath
-  = AttachmentPathLiteral FilePath
-  | AttachmentPathField T.Text
+data DynamicPathComponent
+  = DynamicPathLiteral FilePath
+  | DynamicPathField T.Text
 
-instance J.FromJSON AttachmentPath where
-  parseJSON (J.String s) = return $ AttachmentPathLiteral $ T.unpack s
-  parseJSON o = J.withObject "attachment path" 
-    (fmap AttachmentPathField . (J..: "field")) o
+instance J.FromJSON DynamicPathComponent where
+  parseJSON (J.String s) = return $ DynamicPathLiteral $ T.unpack s
+  parseJSON o = J.withObject "dynamic path" 
+    (fmap DynamicPathField . (J..: "field")) o
+
+-- |a path that can be constructed from a data row by filling in field values
+type DynamicPath = [DynamicPathComponent]
 
 data Catalog = Catalog
   { catalogEnabled :: !Bool
@@ -90,7 +94,7 @@ data Catalog = Catalog
   , catalogKey :: Maybe T.Text -- ^primary key (not really used)
   , catalogSort :: [T.Text] -- ^sort field(s) for index
   , catalogCount :: Maybe Word
-  , catalogAttachments :: HM.HashMap T.Text [AttachmentPath]
+  , catalogAttachments :: HM.HashMap T.Text DynamicPath
   }
 
 parseCatalog :: HM.HashMap T.Text FieldGroup -> J.Value -> J.Parser Catalog

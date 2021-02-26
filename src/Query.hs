@@ -174,8 +174,8 @@ data Bulk = Bulk
   , bulkFooter :: B.Builder
   }
 
-bulkBlock :: Bulk -> V.Vector [J.Value] -> B.Builder
-bulkBlock = foldMap . bulkRow
+bulkBlock :: Bulk -> [T.Text] -> V.Vector J.Object -> B.Builder
+bulkBlock b l = foldMap (\o -> bulkRow b $ map (\f -> HM.lookupDefault J.Null f o) l)
 
 compressBulk :: CompressionFormat -> Bulk -> Bulk
 compressBulk z b = b
@@ -223,8 +223,7 @@ catalogBulk = getPath (R.parameter R.>*< R.parameter) $ \(sim, fmt) req -> do
   cat <- askCatalog sim
   let query = parseQuery cat req
       enc = bulkCompression fmt <|> listToMaybe (acceptCompressionEncoding req)
-  unless (queryOffset query == 0 && null (queryAggs query)) $
-    result $ response badRequest400 [] ("offset,aggs not supported for download" :: String)
+      fields = map fieldName $ queryFields query
   nextes <- ES.queryBulk cat query
   (count, block1) <- liftIO nextes
   let b@Bulk{..} = bulk fmt cat query count
@@ -239,7 +238,7 @@ catalogBulk = getPath (R.parameter R.>*< R.parameter) $ \(sim, fmt) req -> do
     case catalogStore cat of
       CatalogES{} -> do
         let loop block = unless (V.null block) $ do
-              chunk $ bulkBlock b block
+              chunk $ bulkBlock b fields block
               loop . snd =<< nextes
         loop block1
     chunk bulkFooter

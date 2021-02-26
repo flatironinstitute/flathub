@@ -47,6 +47,7 @@ executable flathub
     , bytestring
     , bzlib
     , cassava
+    , conduit
     , containers
     , data-default
     , directory
@@ -64,6 +65,7 @@ executable flathub
     , streaming-commons
     , text
     , time
+    , unix
     , unordered-containers
     , vector
     , wai
@@ -72,4 +74,5 @@ executable flathub
     , warp
     , web-inv-route
     , yaml
+    , zip-stream
     , zlib

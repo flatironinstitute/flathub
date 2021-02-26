@@ -44,10 +44,13 @@ import qualified Data.Vector as V
 import qualified Network.HTTP.Client as HTTP
 import           Network.HTTP.Types.Header (hAccept, hContentType)
 import           Network.HTTP.Types.Method (StdMethod(GET, PUT, POST), renderStdMethod)
+import           Network.HTTP.Types.Status (badRequest400)
 import qualified Network.HTTP.Types.URI as HTTP (Query)
 import qualified Network.URI as URI
 import           Text.Read (readEither)
 import qualified Waimwork.Config as C
+import           Waimwork.Response (response)
+import           Waimwork.Result (result)
 
 import Monoid
 import JSON
@@ -310,8 +313,10 @@ scrollSearch sid = elasticSearch GET ["_search", "scroll"] [] $ JE.pairs $
      "scroll" J..= J.String scrollTime
   <> "scroll_id" J..= sid
 
-queryBulk :: Catalog -> Query -> M (IO (Word, V.Vector [J.Value]))
+queryBulk :: Catalog -> Query -> M (IO (Word, V.Vector J.Object))
 queryBulk cat@Catalog{ catalogStore = CatalogES{ catalogStoreField = store } } query@Query{..} = do
+  unless (queryOffset == 0 && null queryAggs) $
+    result $ response badRequest400 [] ("offset,aggs not supported for download" :: String)
   glob <- ask
   sidv <- liftIO $ newIORef Nothing
   return $ do
@@ -329,9 +334,7 @@ queryBulk cat@Catalog{ catalogStore = CatalogES{ catalogStoreField = store } } q
     <*> parseJSONField "hits" (J.withObject "hits" $ \hits -> (,)
       <$> (hits J..: "total" >>= (J..: "value"))
       <*> parseJSONField "hits" (J.withArray "hits" $
-        V.mapM $ J.withObject "hit" $ \h -> do
-          d <- storedFields store h
-          return $ map (\f -> HM.lookupDefault J.Null (fieldName f) d) queryFields)
+        V.mapM $ J.withObject "hit" $ storedFields store)
         hits)
       q
 
