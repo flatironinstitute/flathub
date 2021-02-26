@@ -37,6 +37,7 @@ export type Catalog = {
   fields: Field[];
   count?: number;
   sort?: string[];
+  attachments?: string[];
 };
 
 export type AggrStats = {

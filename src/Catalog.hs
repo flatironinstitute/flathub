@@ -138,6 +138,8 @@ instance J.ToJSON Catalog where
     , case catalogSort of
       [] -> Nothing
       s -> Just $ "sort" J..= s
+    , "attachments" J..= HM.keys catalogAttachments
+      <$ guard (not $ HM.null catalogAttachments)
     ]
 
 takeCatalogField :: T.Text -> Catalog -> Maybe (Field, Catalog)

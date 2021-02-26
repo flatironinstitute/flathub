@@ -108,7 +108,6 @@ const plotVue = new Vue({
       histogramRemove();
     },
     tooltip: function () {
-      console.log("hover");
     },
   },
 });
@@ -375,14 +374,17 @@ function update(paging: boolean = true) {
 
 function visibleFields(): string[] {
   if (Show_data) {
-    return TCat.columns(":visible").dataSrc().toArray();
+    return TCat.columns(":visible")
+      .dataSrc()
+      .toArray()
+      .filter((n) => n !== "_id");
   } else {
     const cols = TCat.columns();
     const cvis = (<any>cols.visible()).toArray();
     return cols
       .dataSrc()
       .toArray()
-      .filter((n, i) => cvis[i]);
+      .filter((n, i) => n !== "_id" && cvis[i]);
   }
 }
 
@@ -790,6 +792,12 @@ function toggleShowData(show?: boolean) {
 }
 (<any>window).toggleShowData = toggleShowData;
 
+function render_attach(
+  att: string
+): (data: string) => string {
+  return (data) => ("<a href='/" + Catalog.name + "/attachment/" + att + "/" + encodeURIComponent(data) + "'>download</a>");
+}
+
 export function initCatalog(table: JQuery<HTMLTableElement>) {
   downloadVue.$mount("#download");
   for (let i = 0; i < Catalog.fields.length; i++)
@@ -824,15 +832,20 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
       }
     }
   }
-  topts.columns = Catalog.fields.map((c) => {
+  topts.columns = [];
+  if (Catalog.attachments)
+    topts.columns.push.apply(topts.columns, Catalog.attachments.map((a) => {
+      return {
+        name: a,
+        render: render_attach(a),
+      };
+    }));
+  topts.columns.push.apply(topts.columns, Catalog.fields.map((c) => {
     return {
       name: c.name,
-      className:
-        c.base === "f" || c.base === "i" ? "dt-body-right" : "dt-body-left",
-      visible: c.disp,
       render: render_funct(c),
     };
-  });
+  }));
   TCat = table.DataTable(topts);
 
   for (let f of Catalog.fields) {

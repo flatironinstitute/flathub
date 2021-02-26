@@ -184,63 +184,19 @@ catalogPage = getPath R.parameter $ \sim req -> do
   groups <- asks (catalogGroupings . globalCatalogs)
   let
     fields = catalogFieldGroups cat
-    fields' = catalogFields cat
+    -- rendundant with ToJSON Catalog but with name:
     jcat = J.pairs $
          "name" J..= sim
       <> "title" J..= catalogTitle cat
       <> "descr" J..= catalogDescr cat
       <> foldMap ("count" J..=) (catalogCount cat)
-      <> "fields" J..= fields'
-    fieldBody :: Word -> FieldGroup -> H.Html
-    fieldBody d f = H.span $ do
-      -- Writes the title to the span
-      H.text $ fieldTitle f
-      -- Writes the unit to the span
-      forM_ (fieldUnits f) $ \u -> do
-        when (d > 1) H.br
-        H.span H.! HA.class_ "units" $ H.preEscapedText u
-      mapM_ ((H.span H.! HA.class_ "tooltiptext") . H.text) (fieldDescr f)
-    field :: Word -> FieldGroup -> FieldGroup -> H.Html
-    field d f' f@Field{ fieldSub = Nothing } = do
-      H.th
-          H.! HA.rowspan (H.toValue d)
-          H.! H.dataAttribute "data" (H.textValue $ fieldName f')
-          H.! H.dataAttribute "name" (H.textValue $ fieldName f')
-          H.! H.dataAttribute "type" (baseType ("num","num","string","string") $ fieldType f)
-          H.!? (not (fieldDisp f), H.dataAttribute "visible" "false")
-          H.! H.dataAttribute "default-content" mempty
-          H.! HA.class_ "tooltip-dt" $
-        fieldBody d f
-    field _ _ f@Field{ fieldSub = Just s } = do
-      H.th
-          H.! HA.colspan (H.toValue $ length $ expandFields s)
-          H.! HA.class_ "tooltip-dt" $
-        fieldBody 1 f
-    row :: Word -> [(FieldGroup -> FieldGroup, FieldGroup)] -> H.Html
-    row d l = do
-      H.tr $ mapM_ (\(p, f) -> field d (p f) f) l
-      when (d > 1) $ row (pred d) $ foldMap (\(p, f) -> foldMap (fmap (p . mappend f, ) . V.toList) $ fieldSub f) l
+      <> "fields" J..= catalogFields cat
+      <> mwhen (not $ null $ catalogSort cat)
+        ("sort" J..= catalogSort cat)
+      <> mwhen (not $ HM.null $ catalogAttachments cat)
+        ("attachments" J..= HM.keys (catalogAttachments cat))
     query = parseQuery cat req
 
-    fielddesc :: FieldGroup -> FieldGroup -> Int -> H.Html
-    fielddesc f g d = do
-        H.tr $ do
-            H.td H.! HA.class_ ("depth-" <> H.stringValue (show d)) $ do
-                H.input H.! HA.type_ "checkbox"
-                    H.!? (isNothing (fieldSub g), HA.id $ H.textValue $ key f)
-                    H.! HA.class_ (H.textValue $ T.unwords $ "colvis" : map key fs)
-                    H.!? (fieldDisp g, HA.checked "checked")
-                    H.! HA.onclick "colvisSet(event)"
-                H.text (fieldTitle g)
-            H.td $ when (isNothing (fieldSub g)) (H.text (fieldName f))
-            H.td $ H.string (show $ fieldType g)
-            H.td H.! HA.class_ "units" $ foldMap H.text (fieldUnits g)
-            H.td $ foldMap H.text (fieldDescr g)
-        forM_ (fold (fieldSub g)) $ \sf ->
-            fielddesc (f <> sf) sf (d+1)
-      where
-      fs = expandField f
-      key = ("colvis-" <>) . fieldName
 
   case acceptable ["application/json", "text/html"] req of
     Just "application/json" ->
@@ -536,8 +492,67 @@ catalogPage = getPath R.parameter $ \sim req -> do
         H.div H.! HA.class_ "container-fluid catalog-summary raw-data" H.! HA.id "rawdata" $ do
           H.div H.! HA.class_ "raw-data__header" $ do
             H.h5 $ "Raw Data"
-          H.table H.! HA.id "tcat" $ do
-            H.thead $ row (fieldsDepth fields) ((id ,) <$> V.toList fields)
+          H.table H.! HA.id "tcat" $
+            H.thead $ do
+              row (HM.keys $ catalogAttachments cat) (fieldsDepth fields) ((id ,) <$> V.toList fields)
+  where
+  fielddesc :: FieldGroup -> FieldGroup -> Int -> H.Html
+  fielddesc f g d = do
+      H.tr $ do
+          H.td H.! HA.class_ ("depth-" <> H.stringValue (show d)) $ do
+              H.input H.! HA.type_ "checkbox"
+                  H.!? (isNothing (fieldSub g), HA.id $ H.textValue $ key f)
+                  H.! HA.class_ (H.textValue $ T.unwords $ "colvis" : map key fs)
+                  H.!? (fieldDisp g, HA.checked "checked")
+                  H.! HA.onclick "colvisSet(event)"
+              H.text (fieldTitle g)
+          H.td $ when (isNothing (fieldSub g)) (H.text (fieldName f))
+          H.td $ H.string (show $ fieldType g)
+          H.td H.! HA.class_ "units" $ foldMap H.text (fieldUnits g)
+          H.td $ foldMap H.text (fieldDescr g)
+      forM_ (fold (fieldSub g)) $ \sf ->
+          fielddesc (f <> sf) sf (d+1)
+    where
+    fs = expandField f
+    key = ("colvis-" <>) . fieldName
+  fieldBody :: Word -> FieldGroup -> H.Html
+  fieldBody d f = H.span $ do
+    -- Writes the title to the span
+    H.text $ fieldTitle f
+    -- Writes the unit to the span
+    forM_ (fieldUnits f) $ \u -> do
+      when (d > 1) H.br
+      H.span H.! HA.class_ "units" $ H.preEscapedText u
+    mapM_ ((H.span H.! HA.class_ "tooltiptext") . H.text) (fieldDescr f)
+  field :: Word -> FieldGroup -> FieldGroup -> H.Html
+  field d f' f@Field{ fieldSub = Nothing } = H.th
+    H.! HA.rowspan (H.toValue d)
+    H.! H.dataAttribute "data" (H.textValue $ fieldName f')
+    H.! H.dataAttribute "name" (H.textValue $ fieldName f')
+    H.! H.dataAttribute "type" (baseType ("num","num","string","string") $ fieldType f)
+    H.! H.dataAttribute "class-name" (if typeIsNumeric (fieldType f) then "dt-body-right" else "dt-body-left")
+    H.!? (not (fieldDisp f), H.dataAttribute "visible" "false")
+    H.! H.dataAttribute "default-content" mempty
+    H.! HA.class_ "tooltip-dt" $
+    fieldBody d f
+  field _ _ f@Field{ fieldSub = Just s } = H.th
+    H.! HA.colspan (H.toValue $ length $ expandFields s)
+    H.! HA.class_ "tooltip-dt" $
+    fieldBody 1 f
+  row :: [T.Text] -> Word -> [(FieldGroup -> FieldGroup, FieldGroup)] -> H.Html
+  row atts d l = do
+    H.tr $ do
+      forM_ atts $ \a -> H.th
+        H.! HA.rowspan (H.toValue d)
+        H.! H.dataAttribute "data" "_id"
+        H.! H.dataAttribute "name" (H.textValue a)
+        H.! H.dataAttribute "type" "string"
+        H.! H.dataAttribute "default-content" mempty
+        H.! H.dataAttribute "orderable" "false"
+        H.! H.dataAttribute "searchable" "false"
+        $ H.text a
+      mapM_ (\(p, f) -> field d (p f) f) l
+    when (d > 1) $ row [] (pred d) $ foldMap (\(p, f) -> foldMap (fmap (p . mappend f, ) . V.toList) $ fieldSub f) l
 
 
 sqlSchema :: Route Simulation
