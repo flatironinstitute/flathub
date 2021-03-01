@@ -47,6 +47,7 @@ import Global
 import Compression
 import Query
 import Monoid
+import Attach
 import Static
 
 jsonEncodingVar :: T.Text -> J.Encoding -> H.Html
@@ -483,6 +484,12 @@ catalogPage = getPath R.parameter $ \sim req -> do
                     H.! HA.class_ "download-option"
                     H.! HA.value (WH.routeActionValue catalogBulk (sim, b) mempty)
                     $ H.text f
+                forM_ (HM.keys $ catalogAttachments cat) $ \a ->
+                  H.option
+                    H.! HA.id ("download." <> H.textValue a)
+                    H.! HA.class_ "download-option"
+                    H.! HA.value (WH.routeActionValue attachmentsBulk (sim, a) mempty)
+                    $ H.text a <> ".zip"
               H.a
                 H.! HA.class_ "button button-secondary"
                 H.! HA.id "download-btn"

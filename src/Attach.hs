@@ -2,7 +2,7 @@
 
 module Attach
   ( attachment
-  , attachments
+  , attachmentsBulk
   ) where
 
 import qualified Codec.Archive.Zip.Conduit.Zip as Zip
@@ -90,8 +90,8 @@ attachment = getPath (R.parameter R.>* "attachment" R.>*<< R.parameter R.>*< R.p
     $ parseJSONField "hits" $ J.withArray "hits"
     $ \v -> if V.length v == 1 then J.withObject "hit" (ES.storedFields store) (V.head v) else fail ("found " <> show (V.length v) <> " documents")
 
-attachments :: Route (Simulation, T.Text)
-attachments = getPath (R.parameter R.>* "attachment" R.>*< R.parameter) $ \(sim, att) req -> do
+attachmentsBulk :: Route (Simulation, T.Text)
+attachmentsBulk = getPath (R.parameter R.>* "attachment" R.>*< R.parameter) $ \(sim, att) req -> do
   cat <- askCatalog sim
   paths <- askAttachment cat att
   let query = parseQuery cat req
