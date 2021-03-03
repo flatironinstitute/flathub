@@ -795,7 +795,7 @@ function toggleShowData(show?: boolean) {
 function render_attach(
   att: string
 ): (data: string) => string {
-  return (data) => ("<a href='/" + Catalog.name + "/attachment/" + att + "/" + encodeURIComponent(data) + "'>download</a>");
+  return (data) => ("<a href='/" + Catalog.name + "/attachment/" + att + "/" + encodeURIComponent(data) + "'><img class='download-icon' src='/web/download.svg'></img></a>");
 }
 
 export function initCatalog(table: JQuery<HTMLTableElement>) {
