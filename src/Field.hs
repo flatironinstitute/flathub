@@ -21,6 +21,8 @@ module Field
   , typeIsFloating, typeIsIntegral, typeIsNumeric, typeIsString
   , numpySize, numpyDtype
   , sqlType
+  , DynamicPathComponent(..)
+  , DynamicPath
   , FieldSub(..)
   , fieldDisp
   , Field, FieldGroup
@@ -341,6 +343,20 @@ instance J.FromJSON FieldFlag where
   parseJSON J.Null = return FieldNormal
   parseJSON j = J.typeMismatch "FieldFlag" j
 
+data DynamicPathComponent
+  = DynamicPathLiteral FilePath
+  | DynamicPathField T.Text
+
+instance J.FromJSON DynamicPathComponent where
+  parseJSON (J.String s) = return $ DynamicPathLiteral $ T.unpack s
+  parseJSON o = J.withObject "dynamic path" 
+    (fmap DynamicPathField . (J..: "field")) o
+
+-- |a path that can be constructed from a data row by filling in field values
+type DynamicPath = [DynamicPathComponent]
+
+type Attachment = DynamicPath
+
 data FieldSub t m = Field
   { fieldName :: T.Text
   , fieldType :: TypeValue t
@@ -354,6 +370,7 @@ data FieldSub t m = Field
   , fieldScale :: Maybe Scientific
   , fieldIngest :: Maybe T.Text
   , fieldMissing :: [BS.ByteString]
+  , fieldAttachment :: Maybe Attachment
   }
 
 fieldDisp :: FieldSub t m -> Bool
@@ -381,6 +398,7 @@ instance Alternative m => Default (FieldSub Proxy m) where
     , fieldScale = Nothing
     , fieldIngest = Nothing
     , fieldMissing = []
+    , fieldAttachment = Nothing
     }
 
 instance J.ToJSON Field where
@@ -402,6 +420,7 @@ instance J.ToJSON Field where
     , bool "terms" $ isTermsField f
     , ("dict" J..=) <$> fieldDict
     , ("scale" J..=) <$> fieldScale
+    , ("attachment" J..= True) <$ fieldAttachment
     ] where
     bool _ False = Nothing
     bool n b = Just $ n J..= b
@@ -429,6 +448,7 @@ parseFieldGroup dict = parseFieldDefs def where
       Just (J.String s) -> return [s]
       Just (J.Array l) -> mapM J.parseJSON $ V.toList l
       Just j -> J.typeMismatch "missing string" j
+    fieldAttachment <- f J..:! "attachment"
     fieldSub <- (<|> fieldSub d) <$> J.explicitParseFieldMaybe' (J.withArray "subfields" $ V.mapM $
         parseFieldDefs defd
           { fieldType = fieldType
