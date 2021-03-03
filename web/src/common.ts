@@ -22,7 +22,7 @@ export type Field = {
   units?: null | string;
   flag?: boolean;
   disp: boolean;
-  base: "f" | "i" | "b" | "s";
+  base: "f" | "i" | "b" | "s" | "v";
   terms?: boolean;
   enum?: null | string[];
   dict?: null | string;

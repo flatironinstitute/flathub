@@ -536,7 +536,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
     H.! HA.rowspan (H.toValue d)
     H.! H.dataAttribute "data" (H.textValue $ fieldName f')
     H.! H.dataAttribute "name" (H.textValue $ fieldName f')
-    H.! H.dataAttribute "type" (baseType ("num","num","string","string") $ fieldType f)
+    H.! H.dataAttribute "type" (baseType ("num","num","string","string","string") $ fieldType f)
     H.! H.dataAttribute "class-name" (if typeIsNumeric (fieldType f) then "dt-body-right" else "dt-body-left")
     H.!? (not (fieldDisp f), H.dataAttribute "visible" "false")
     H.! H.dataAttribute "default-content" mempty

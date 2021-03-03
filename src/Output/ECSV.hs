@@ -27,6 +27,7 @@ ecsvType (Double _)    = "float64"
 ecsvType (Float _)     = "float32"
 ecsvType (HalfFloat _) = "float16"
 ecsvType (Boolean _)   = "bool"
+ecsvType (Void _)      = "string"
 
 ecsvHeader :: Catalog -> Query -> B.Builder
 ecsvHeader cat query = (mintersperseMap (B.char8 '\n') (B.string8 "# " <>) $

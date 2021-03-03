@@ -15,6 +15,7 @@ module Field
   , typeOfValue
   , unTypeValue
   , parseTypeValue
+  , parseJSONTypeValue
   , parseTypeJSONValue
   , baseType
   , typeIsFloating, typeIsIntegral, typeIsNumeric, typeIsString
@@ -99,6 +100,7 @@ data TypeValue f
   | Short     !(f Int16)
   | Byte      !(f Int8)
   | Boolean   !(f Bool)
+  | Void      !(f ())
   | Text      !(f T.Text)
   | Keyword   !(f T.Text)
 
@@ -120,6 +122,7 @@ instance Typed Double where typeValue = Double
 instance Typed Float  where typeValue = Float
 instance Typed Half   where typeValue = HalfFloat
 instance Typed Bool   where typeValue = Boolean
+instance Typed ()     where typeValue = Void
 
 unTypeValue :: (forall a . Typed a => f a -> b) -> TypeValue f -> b
 unTypeValue f (Double    x) = f x
@@ -132,6 +135,7 @@ unTypeValue f (Byte      x) = f x
 unTypeValue f (Boolean   x) = f x
 unTypeValue f (Text      x) = f x
 unTypeValue f (Keyword   x) = f x
+unTypeValue f (Void      x) = f x
 
 transformTypeValue :: Functor g => (forall a . Typed a => f a -> g (h a)) -> TypeValue f -> g (TypeValue h)
 transformTypeValue f (Double    x) = Double    <$> f x
@@ -144,6 +148,7 @@ transformTypeValue f (Byte      x) = Byte      <$> f x
 transformTypeValue f (Boolean   x) = Boolean   <$> f x
 transformTypeValue f (Text      x) = Text      <$> f x
 transformTypeValue f (Keyword   x) = Keyword   <$> f x
+transformTypeValue f (Void      x) = Void      <$> f x
 
 transformTypeValue2 :: Monad g => (forall a . Typed a => f a -> f a -> g (h a)) -> TypeValue f -> TypeValue f -> g (TypeValue h)
 transformTypeValue2 f (Double    x) (Double    y) = Double    <$> f x y
@@ -156,6 +161,7 @@ transformTypeValue2 f (Byte      x) (Byte      y) = Byte      <$> f x y
 transformTypeValue2 f (Boolean   x) (Boolean   y) = Boolean   <$> f x y
 transformTypeValue2 f (Text      x) (Text      y) = Text      <$> f x y
 transformTypeValue2 f (Keyword   x) (Keyword   y) = Keyword   <$> f x y
+transformTypeValue2 f (Void      x) (Void      y) = Void      <$> f x y
 transformTypeValue2 _ _             _             = error "transformTypeValue2: type mismatch"
 
 traverseTypeValue :: Functor g => (forall a . Typed a => f a -> g a) -> TypeValue f -> g Value
@@ -199,6 +205,9 @@ instance {-# OVERLAPPABLE #-} J.ToJSON1 f => J.ToJSON (TypeValue f) where
   toJSON = unTypeValue J.toJSON1
   toEncoding = unTypeValue J.toEncoding1
 
+parseJSONTypeValue :: Type -> J.Value -> J.Parser Value
+parseJSONTypeValue t j = traverseTypeValue (\Proxy -> J.parseJSON j) t
+
 parseTypeJSONValue :: Type -> J.Value -> TypeValue Maybe
 parseTypeJSONValue t (J.String s) = parseTypeValue t s
 parseTypeJSONValue t j = fmapTypeValue (\Proxy -> J.parseMaybe J.parseJSON j) t
@@ -217,6 +226,7 @@ instance {-# OVERLAPPING #-} Show Type where
   show (Float _)     = "float"
   show (HalfFloat _) = "half_float"
   show (Boolean _)   = "boolean"
+  show (Void _)      = "void"
 
 instance Read Type where
   readPrec = do
@@ -241,6 +251,7 @@ instance Read Type where
       "float2"      -> return (HalfFloat Proxy)
       "bool"        -> return (Boolean Proxy)
       "boolean"     -> return (Boolean Proxy)
+      "void"        -> return (Void Proxy)
       _ -> fail "Unknown type"
       
 instance {-# OVERLAPPING #-} J.ToJSON Type where
@@ -271,12 +282,13 @@ typeIsString (Keyword   _) = True
 typeIsString (Text      _) = True
 typeIsString _ = False
 
-baseType :: (a,a,a,a) -> Type -> a
-baseType (f,i,_,s) t
+baseType :: (a,a,a,a,a) -> Type -> a
+baseType (f,i,_,s,_) t
   | typeIsFloating t = f
   | typeIsIntegral t = i
   | typeIsString   t = s
-baseType (_,_,b,_) ~(Boolean   _) = b
+baseType (_,_,b,_,_) (Boolean _) = b
+baseType (_,_,_,_,v) ~(Void _) = v
 
 numpySize :: Type -> Word
 numpySize (Double    _) = 8
@@ -289,10 +301,11 @@ numpySize (Byte      _) = 1
 numpySize (Boolean   _) = 1
 numpySize (Keyword   _) = 8
 numpySize (Text      _) = 16
+numpySize (Void      _) = 0
 
 numpyDtype :: Type -> String
 numpyDtype (Boolean _) = "?"
-numpyDtype t = '<' : baseType ('f','i','?','S') t : show (numpySize t) where
+numpyDtype t = '<' : baseType ('f','i','?','S','V') t : show (numpySize t) where
 
 sqlType :: Type -> T.Text
 sqlType (Text _)      = "text"
@@ -305,6 +318,7 @@ sqlType (Double _)    = "double precision"
 sqlType (Float _)     = "real"
 sqlType (HalfFloat _) = "real"
 sqlType (Boolean _)   = "boolean"
+sqlType (Void _)      = "void"
 
 data FieldFlag
   = FieldHidden
@@ -375,7 +389,7 @@ instance J.ToJSON Field where
     , "type" J..= fieldType
     , "title" J..= fieldTitle
     , "disp" J..= (fieldFlag > FieldHidden)
-    , "base" J..= baseType ('f','i','b','s') fieldType
+    , "base" J..= baseType ('f','i','b','s','v') fieldType
     , "dtype" J..= numpyDtype fieldType
     ] ++ concatMap maybeToList
     [ ("enum" J..=) <$> fieldEnum
