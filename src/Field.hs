@@ -3,6 +3,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Field
@@ -79,9 +80,13 @@ instance J.FromJSON DynamicPathComponent where
   parseJSON (J.String s) = return $ DynamicPathLiteral $ T.unpack s
   parseJSON o = J.withObject "dynamic path" 
     (fmap DynamicPathField . (J..: "field")) o
-  parseJSONList (J.String s) = return $ DynamicPathLiteral (T.unpack p) : concatMap f r where
-    p:r = T.split ('$'==) s
-    f v = [DynamicPathField n, DynamicPathLiteral (T.unpack l)] where (n, l) = T.span (\c -> isAlphaNum c || c == '_') v
+  parseJSONList (J.String s) = return $ pl s where
+    pl (T.break ('$'==) -> (a, v)) =
+      DynamicPathLiteral (T.unpack a) : maybe [] (pv . snd) (T.uncons v)
+    pv t = case T.uncons t of
+      Nothing -> [DynamicPathLiteral "$"]
+      Just ('{',T.break ('}'==) -> (n,T.uncons -> Just ('}',l))) -> DynamicPathField n : pl l
+      _ -> DynamicPathField n : pl l where (n, l) = T.span (\c -> isAlphaNum c || c == '_') t
   parseJSONList (J.Array a) = mapM J.parseJSON $ V.toList a
   parseJSONList j = J.typeMismatch "dynamic path" j
 

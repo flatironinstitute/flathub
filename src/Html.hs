@@ -483,13 +483,19 @@ catalogPage = getPath R.parameter $ \sim req -> do
                     H.! HA.class_ "download-option"
                     H.! HA.value (WH.routeActionValue catalogBulk (sim, b) mempty)
                     $ H.text f
-                forM_ (catalogFieldMap cat) $ \f ->
-                  when (isJust $ fieldAttachment f) $
+                let att = HM.filter (isJust . fieldAttachment) $ catalogFieldMap cat
+                forM_ att $ \f ->
                   H.option
-                    H.! HA.id ("download." <> H.textValue (fieldName f))
+                    H.! HA.id ("download.attachment." <> H.textValue (fieldName f))
                     H.! HA.class_ "download-option"
                     H.! HA.value (WH.routeActionValue attachmentBulk (sim, fieldName f) mempty)
-                    $ H.text (fieldName f) <> ".zip"
+                    $ H.text (fieldTitle f) <> ".zip"
+                when (not $ HM.null att) $
+                  H.option
+                    H.! HA.id "download.attachments"
+                    H.! HA.class_ "download-option"
+                    H.! HA.value (WH.routeActionValue attachmentsBulk sim mempty)
+                    $ "all attachments.zip"
               H.a
                 H.! HA.class_ "button button-secondary"
                 H.! HA.id "download-btn"

@@ -5205,6 +5205,5 @@ gr8:
       - name: instrument
         type: boolean
         attachment:
-          - gr8/spectra/
-          - field: gaia_dr2_id
-          - _instrument.fits
+          path: gr8/spectra/${gaia_dr2_id}_instrument.fits
+          name: gr8_spectra_${gaia_dr2_id}_instrument.fits
