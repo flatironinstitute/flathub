@@ -603,7 +603,7 @@ class SelectFilter extends Filter {
 
   change() {
     const val = this.value;
-    super.change(val, !val);
+    super.change(val, this.field.attachment ? val !== '0' : !val);
   }
 
   setValue(val: string) {
