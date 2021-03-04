@@ -6,7 +6,7 @@ module Attach
   ) where
 
 import qualified Codec.Archive.Zip.Conduit.Zip as Zip
-import           Control.Monad (void, guard)
+import           Control.Monad (void, guard, (<=<))
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (asks)
 import qualified Data.Aeson as J
@@ -36,6 +36,7 @@ import           Waimwork.Result (result)
 import qualified Web.Route.Invertible as R
 
 import JSON
+import Type
 import Field
 import Catalog
 import Query
@@ -45,7 +46,7 @@ import qualified ES
 askAttachment :: Catalog -> T.Text -> M DynamicPath
 askAttachment cat att = do
   maybe (result $ response notFound404 [] ("No such attachment" :: String)) return
-    $ HM.lookup att $ catalogAttachments cat
+    $ fieldAttachment <=< HM.lookup att $ catalogFieldMap cat
 
 pathFields :: Catalog -> DynamicPath -> [Field]
 pathFields cat = mapMaybe pathField where

@@ -41,6 +41,7 @@ import           Waimwork.Response (response, okResponse)
 import           Waimwork.Result (result)
 import qualified Web.Route.Invertible as R
 
+import Type
 import Field
 import Catalog
 import Global

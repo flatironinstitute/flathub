@@ -13,6 +13,7 @@ import qualified Data.Text as T
 import Monoid
 import JSON ((.=*))
 import Catalog
+import Type
 import Field
 import Output.CSV
 

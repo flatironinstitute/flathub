@@ -54,6 +54,7 @@ import           Waimwork.Result (result)
 
 import Monoid
 import JSON
+import Type
 import Field
 import Catalog
 import Global

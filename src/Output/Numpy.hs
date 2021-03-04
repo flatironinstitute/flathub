@@ -18,6 +18,7 @@ import           Foreign.C.Types (CUShort(CUShort))
 import           Numeric.Half (Half(Half))
 import           Unsafe.Coerce (unsafeCoerce)
 
+import Type
 import Field
 import Monoid
 

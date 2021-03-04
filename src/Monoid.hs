@@ -5,8 +5,6 @@ module Monoid
   , joinMaybeWith
   ) where
 
-import           Data.Monoid ((<>))
-
 mwhen :: Monoid m => Bool -> m -> m
 mwhen True v = v
 mwhen False _ = mempty

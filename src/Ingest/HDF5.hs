@@ -28,6 +28,7 @@ import qualified Data.Vector.Storable.Mutable as VSM
 import           Data.Word (Word64, Word8)
 import           System.IO (hFlush, stdout)
 
+import Type
 import Field
 import Catalog
 import Global
