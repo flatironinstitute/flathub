@@ -19,7 +19,7 @@ module Type
   , parseJSONTypeValue
   , parseTypeJSONValue
   , baseType
-  , typeIsFloating, typeIsIntegral, typeIsNumeric, typeIsString
+  , typeIsFloating, typeIsIntegral, typeIsNumeric, typeIsString, typeIsBoolean
   , numpySize, numpyDtype
   , sqlType
   ) where
@@ -257,12 +257,16 @@ typeIsString (Keyword   _) = True
 typeIsString (Text      _) = True
 typeIsString _ = False
 
+typeIsBoolean :: Type -> Bool
+typeIsBoolean (Boolean _) = True
+typeIsBoolean _ = False
+
 baseType :: (a,a,a,a,a) -> Type -> a
-baseType (f,i,_,s,_) t
+baseType (f,i,b,s,_) t
   | typeIsFloating t = f
   | typeIsIntegral t = i
   | typeIsString   t = s
-baseType (_,_,b,_,_) (Boolean _) = b
+  | typeIsBoolean  t = b
 baseType (_,_,_,_,v) ~(Void _) = v
 
 numpySize :: Type -> Word

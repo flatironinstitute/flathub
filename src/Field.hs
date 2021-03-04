@@ -24,6 +24,7 @@ module Field
   ) where
 
 import           Control.Applicative (Alternative, empty, (<|>))
+import           Control.Monad (guard, join)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Types as J
 import qualified Data.ByteString as BS
@@ -157,7 +158,8 @@ parseFieldGroup dict = parseFieldDefs def where
       fieldDict
     fieldName <- f J..:? "name" J..!= fieldName d
     fieldType <- f J..:! "type" J..!= fieldType d
-    fieldEnum <- (<|> fieldEnum d) <$> f J..:? "enum"
+    fieldEnum <- maybe (fieldEnum d <|> V.fromList ["false","true"] <$ guard (typeIsBoolean fieldType)) join
+      <$> f J..:! "enum"
     fieldTitle <- f J..:! "title" J..!= if T.null (fieldTitle d) then fieldName else fieldTitle d
     fieldDescr <- (<|> fieldDescr d) <$> f J..:? "descr"
     fieldUnits <- (<|> fieldUnits d) <$> f J..:? "units"
@@ -243,6 +245,7 @@ isTermsField Field{ fieldType = Keyword _ } = True
 isTermsField Field{ fieldType = Text _ } = True
 isTermsField Field{ fieldType = Byte _, fieldEnum = Just _ } = True
 isTermsField f@Field{ fieldType = Byte _ } = fieldFlag f >= FieldTop
+isTermsField Field{ fieldType = Boolean _, fieldEnum = Just _ } = True
 isTermsField _ = False
 
 -- |pseudo field representing ES _id
