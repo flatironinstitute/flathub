@@ -794,7 +794,7 @@ function toggleShowData(show?: boolean) {
 
 function cell_render(field: Field): (data: any, type: string, row: any) => string {
   if (field.attachment)
-    return (data, type, row) => (data ? "<a href='/" + Catalog.name + "/attachment/" + field.name + "/" + encodeURIComponent(row._id) + "'>download</a>" : "");
+    return (data, type, row) => (data ? "<a href='/" + Catalog.name + "/attachment/" + field.name + "/" + encodeURIComponent(row._id) + "'><img class='download-icon' src='/web/download.svg'></a>" : "");
   return render_funct(field);
 }
 
