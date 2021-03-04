@@ -22,7 +22,6 @@ import           Waimwork.Warp (runWaimwork)
 import qualified Web.Route.Invertible as R
 import           Web.Route.Invertible.Wai (routeWaiError)
 
-import Type
 import Field
 import Catalog
 import Global
