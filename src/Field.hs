@@ -8,6 +8,7 @@
 module Field
   ( DynamicPathComponent(..)
   , DynamicPath
+  , Attachment(..)
   , FieldSub(..)
   , fieldDisp
   , Field, FieldGroup
@@ -29,6 +30,7 @@ import qualified Data.Aeson as J
 import qualified Data.Aeson.Types as J
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
+import           Data.Char (isAlphaNum)
 import           Data.Default (Default(def))
 import           Data.Foldable (fold)
 import           Data.Functor.Identity (Identity)
@@ -70,15 +72,31 @@ data DynamicPathComponent
   = DynamicPathLiteral FilePath
   | DynamicPathField T.Text
 
+-- |a path that can be constructed from a data row by filling in field values
+type DynamicPath = [DynamicPathComponent]
+
 instance J.FromJSON DynamicPathComponent where
   parseJSON (J.String s) = return $ DynamicPathLiteral $ T.unpack s
   parseJSON o = J.withObject "dynamic path" 
     (fmap DynamicPathField . (J..: "field")) o
+  parseJSONList (J.String s) = return $ DynamicPathLiteral (T.unpack p) : concatMap f r where
+    p:r = T.split ('$'==) s
+    f v = [DynamicPathField n, DynamicPathLiteral (T.unpack l)] where (n, l) = T.span (\c -> isAlphaNum c || c == '_') v
+  parseJSONList (J.Array a) = mapM J.parseJSON $ V.toList a
+  parseJSONList j = J.typeMismatch "dynamic path" j
 
--- |a path that can be constructed from a data row by filling in field values
-type DynamicPath = [DynamicPathComponent]
+data Attachment = Attachment
+  { attachmentPath, attachmentName :: DynamicPath }
 
-type Attachment = DynamicPath
+instance J.FromJSON Attachment where
+  parseJSON (J.Object o) = Attachment
+    <$> o J..: "path"
+    <*> o J..: "name"
+  parseJSON j@(J.String s) = Attachment
+    <$> J.parseJSON j
+    <*> J.parseJSON (J.String $ snd $ T.breakOnEnd "/" s)
+  -- parseJSON j@(J.Array a) = TODO
+  parseJSON j = J.typeMismatch "attachment" j
 
 data FieldSub t m = Field
   { fieldName :: T.Text

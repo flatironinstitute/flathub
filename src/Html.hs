@@ -488,7 +488,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                   H.option
                     H.! HA.id ("download." <> H.textValue (fieldName f))
                     H.! HA.class_ "download-option"
-                    H.! HA.value (WH.routeActionValue attachmentsBulk (sim, fieldName f) mempty)
+                    H.! HA.value (WH.routeActionValue attachmentBulk (sim, fieldName f) mempty)
                     $ H.text (fieldName f) <> ".zip"
               H.a
                 H.! HA.class_ "button button-secondary"
