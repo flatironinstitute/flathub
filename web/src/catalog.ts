@@ -792,10 +792,10 @@ function toggleShowData(show?: boolean) {
 }
 (<any>window).toggleShowData = toggleShowData;
 
-function render_attach(
-  att: string
-): (data: string) => string {
-  return (data) => ("<a href='/" + Catalog.name + "/attachment/" + att + "/" + encodeURIComponent(data) + "'>download</a>");
+function cell_render(field: Field): (data: any, type: string, row: any) => string {
+  if (field.attachment)
+    return (data, type, row) => (data ? "<a href='/" + Catalog.name + "/attachment/" + field.name + "/" + encodeURIComponent(row._id) + "'>download</a>" : "");
+  return render_funct(field);
 }
 
 export function initCatalog(table: JQuery<HTMLTableElement>) {
@@ -833,17 +833,10 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
     }
   }
   topts.columns = [];
-  if (Catalog.attachments)
-    topts.columns.push.apply(topts.columns, Catalog.attachments.map((a) => {
-      return {
-        name: a,
-        render: render_attach(a),
-      };
-    }));
   topts.columns.push.apply(topts.columns, Catalog.fields.map((c) => {
     return {
       name: c.name,
-      render: render_funct(c),
+      render: cell_render(c),
     };
   }));
   TCat = table.DataTable(topts);

@@ -5107,11 +5107,6 @@ gr8:
   title: Gr8 Stars
   index: gr8
   count: 2004
-  attachments:
-    spectra:
-      - gr8/spectra/
-      - field: gaia_dr2_id
-      - .fits
   fields:
     - name: gaia_dr2_id
       descr: Unique source identifier
@@ -5205,3 +5200,11 @@ gr8:
       descr: stellar radius
       units: '\(r_\odot\)'
       type: float
+    - name: spectra
+      sub:
+      - name: instrument
+        type: boolean
+        attachment:
+          - gr8/spectra/
+          - field: gaia_dr2_id
+          - _instrument.fits
