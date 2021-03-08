@@ -476,26 +476,28 @@ catalogPage = getPath R.parameter $ \sim req -> do
               H.p H.! HA.class_ "horizontal-label" $ "Format"
               H.select H.! vueAttribute "model" "bulk" $ do
                 H.option H.! HA.value mempty $ "Choose format..."
-                forM_ [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkECSV Nothing, BulkECSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)] $ \b -> do
-                  let f = R.renderParameter b
-                  H.option
-                    H.! HA.id ("download." <> H.textValue f)
-                    H.! HA.class_ "download-option"
-                    H.! HA.value (WH.routeActionValue catalogBulk (sim, b) mempty)
-                    $ H.text f
-                let att = HM.filter (isJust . fieldAttachment) $ catalogFieldMap cat
-                forM_ att $ \f ->
-                  H.option
-                    H.! HA.id ("download.attachment." <> H.textValue (fieldName f))
-                    H.! HA.class_ "download-option"
-                    H.! HA.value (WH.routeActionValue attachmentBulk (sim, fieldName f) mempty)
-                    $ H.text (fieldTitle f) <> ".zip"
-                when (not $ HM.null att) $
-                  H.option
-                    H.! HA.id "download.attachments"
-                    H.! HA.class_ "download-option"
-                    H.! HA.value (WH.routeActionValue attachmentsBulk sim mempty)
-                    $ "all attachments.zip"
+                H.optgroup H.! HA.label "raw data" $ do
+                  forM_ [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkECSV Nothing, BulkECSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)] $ \b -> do
+                    let f = R.renderParameter b
+                    H.option
+                      H.! HA.id ("download." <> H.textValue f)
+                      H.! HA.class_ "download-option"
+                      H.! HA.value (WH.routeActionValue catalogBulk (sim, b) mempty)
+                      $ H.text f
+                H.optgroup H.! HA.label "attachment files" $ do
+                  let att = HM.filter (isJust . fieldAttachment) $ catalogFieldMap cat
+                  forM_ att $ \f ->
+                    H.option
+                      H.! HA.id ("download.attachment." <> H.textValue (fieldName f))
+                      H.! HA.class_ "download-option"
+                      H.! HA.value (WH.routeActionValue attachmentBulk (sim, fieldName f) mempty)
+                      $ H.text (fieldTitle f) <> ".zip"
+                  when (not $ HM.null att) $
+                    H.option
+                      H.! HA.id "download.attachments"
+                      H.! HA.class_ "download-option"
+                      H.! HA.value (WH.routeActionValue attachmentsBulk sim mempty)
+                      $ "all.zip"
               H.a
                 H.! HA.class_ "button button-secondary"
                 H.! HA.id "download-btn"
