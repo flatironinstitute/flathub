@@ -21,6 +21,7 @@ import           Text.Read (readMaybe)
 import           System.IO (hFlush, stdout)
 
 import Global
+import Type
 import Field
 import Catalog
 import Compression

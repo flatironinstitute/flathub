@@ -22,7 +22,7 @@ import           Data.Char (toUpper)
 import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
 import           Data.List (find, inits, sortOn)
-import           Data.Maybe (isNothing)
+import           Data.Maybe (isNothing, isJust)
 import           Data.String (fromString)
 import qualified Data.Text as T
 import qualified Data.Vector as V
@@ -41,6 +41,7 @@ import           Waimwork.Response (response, okResponse)
 import           Waimwork.Result (result)
 import qualified Web.Route.Invertible as R
 
+import Type
 import Field
 import Catalog
 import Global
@@ -194,8 +195,6 @@ catalogPage = getPath R.parameter $ \sim req -> do
       <> "fields" J..= catalogFields cat
       <> mwhen (not $ null $ catalogSort cat)
         ("sort" J..= catalogSort cat)
-      <> mwhen (not $ HM.null $ catalogAttachments cat)
-        ("attachments" J..= HM.keys (catalogAttachments cat))
     query = parseQuery cat req
 
 
@@ -477,19 +476,28 @@ catalogPage = getPath R.parameter $ \sim req -> do
               H.p H.! HA.class_ "horizontal-label" $ "Format"
               H.select H.! vueAttribute "model" "bulk" $ do
                 H.option H.! HA.value mempty $ "Choose format..."
-                forM_ [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkECSV Nothing, BulkECSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)] $ \b -> do
-                  let f = R.renderParameter b
-                  H.option
-                    H.! HA.id ("download." <> H.textValue f)
-                    H.! HA.class_ "download-option"
-                    H.! HA.value (WH.routeActionValue catalogBulk (sim, b) mempty)
-                    $ H.text f
-                forM_ (HM.keys $ catalogAttachments cat) $ \a ->
-                  H.option
-                    H.! HA.id ("download." <> H.textValue a)
-                    H.! HA.class_ "download-option"
-                    H.! HA.value (WH.routeActionValue attachmentsBulk (sim, a) mempty)
-                    $ H.text a <> ".zip"
+                H.optgroup H.! HA.label "raw data" $ do
+                  forM_ [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkECSV Nothing, BulkECSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)] $ \b -> do
+                    let f = R.renderParameter b
+                    H.option
+                      H.! HA.id ("download." <> H.textValue f)
+                      H.! HA.class_ "download-option"
+                      H.! HA.value (WH.routeActionValue catalogBulk (sim, b) mempty)
+                      $ H.text f
+                H.optgroup H.! HA.label "attachment files" $ do
+                  let att = HM.filter (isJust . fieldAttachment) $ catalogFieldMap cat
+                  forM_ att $ \f ->
+                    H.option
+                      H.! HA.id ("download.attachment." <> H.textValue (fieldName f))
+                      H.! HA.class_ "download-option"
+                      H.! HA.value (WH.routeActionValue attachmentBulk (sim, fieldName f) mempty)
+                      $ H.text (fieldTitle f) <> ".zip"
+                  when (not $ HM.null att) $
+                    H.option
+                      H.! HA.id "download.attachments"
+                      H.! HA.class_ "download-option"
+                      H.! HA.value (WH.routeActionValue attachmentsBulk sim mempty)
+                      $ "all.zip"
               H.a
                 H.! HA.class_ "button button-secondary"
                 H.! HA.id "download-btn"
@@ -501,7 +509,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
             H.h5 $ "Raw Data"
           H.table H.! HA.id "tcat" $
             H.thead $ do
-              row (HM.keys $ catalogAttachments cat) (fieldsDepth fields) ((id ,) <$> V.toList fields)
+              row (fieldsDepth fields) ((id ,) <$> V.toList fields)
   where
   fielddesc :: FieldGroup -> FieldGroup -> Int -> H.Html
   fielddesc f g d = do
@@ -536,7 +544,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
     H.! HA.rowspan (H.toValue d)
     H.! H.dataAttribute "data" (H.textValue $ fieldName f')
     H.! H.dataAttribute "name" (H.textValue $ fieldName f')
-    H.! H.dataAttribute "type" (baseType ("num","num","string","string") $ fieldType f)
+    H.! H.dataAttribute "type" (baseType ("num","num","string","string","string") $ fieldType f)
     H.! H.dataAttribute "class-name" (if typeIsNumeric (fieldType f) then "dt-body-right" else "dt-body-left")
     H.!? (not (fieldDisp f), H.dataAttribute "visible" "false")
     H.! H.dataAttribute "default-content" mempty
@@ -546,20 +554,10 @@ catalogPage = getPath R.parameter $ \sim req -> do
     H.! HA.colspan (H.toValue $ length $ expandFields s)
     H.! HA.class_ "tooltip-dt" $
     fieldBody 1 f
-  row :: [T.Text] -> Word -> [(FieldGroup -> FieldGroup, FieldGroup)] -> H.Html
-  row atts d l = do
-    H.tr $ do
-      forM_ atts $ \a -> H.th
-        H.! HA.rowspan (H.toValue d)
-        H.! H.dataAttribute "data" "_id"
-        H.! H.dataAttribute "name" (H.textValue a)
-        H.! H.dataAttribute "type" "string"
-        H.! H.dataAttribute "default-content" mempty
-        H.! H.dataAttribute "orderable" "false"
-        H.! H.dataAttribute "searchable" "false"
-        $ H.text a
-      mapM_ (\(p, f) -> field d (p f) f) l
-    when (d > 1) $ row [] (pred d) $ foldMap (\(p, f) -> foldMap (fmap (p . mappend f, ) . V.toList) $ fieldSub f) l
+  row :: Word -> [(FieldGroup -> FieldGroup, FieldGroup)] -> H.Html
+  row d l = do
+    H.tr $ mapM_ (\(p, f) -> field d (p f) f) l
+    when (d > 1) $ row (pred d) $ foldMap (\(p, f) -> foldMap (fmap (p . mappend f, ) . V.toList) $ fieldSub f) l
 
 
 sqlSchema :: Route Simulation

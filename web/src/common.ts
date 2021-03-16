@@ -22,11 +22,12 @@ export type Field = {
   units?: null | string;
   flag?: boolean;
   disp: boolean;
-  base: "f" | "i" | "b" | "s";
+  base: "f" | "i" | "b" | "s" | "v";
   terms?: boolean;
   enum?: null | string[];
   dict?: null | string;
   scale?: number;
+  attachment?: boolean;
 };
 
 export type Catalog = {
@@ -37,7 +38,6 @@ export type Catalog = {
   fields: Field[];
   count?: number;
   sort?: string[];
-  attachments?: string[];
 };
 
 export type AggrStats = {
@@ -193,7 +193,7 @@ export function render_funct(
 ): (data: any) => string {
   if (field.base === "f") {
     const p = log ? (x: any) => Math.exp(parseFloat(x)) : parseFloat;
-    return (data: any) => (data != undefined ? p(data).toPrecision(8) : data);
+    return (data) => (data != undefined ? p(data).toPrecision(8) : data);
   }
   if (field.enum) {
     const e: string[] = field.enum;

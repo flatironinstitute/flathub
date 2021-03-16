@@ -6,8 +6,6 @@
 module Catalog
   ( ESStoreField(..)
   , CatalogStore(..)
-  , DynamicPathComponent(..)
-  , DynamicPath
   , Catalog(..)
   , takeCatalogField
   , Grouping(..)
@@ -41,6 +39,7 @@ import qualified Data.Text as T
 import qualified Data.Vector as V
 
 import Monoid
+import Type
 import Field
 import JSON
 
@@ -68,18 +67,6 @@ data CatalogStore
     , catalogStoreField :: !ESStoreField
     }
 
-data DynamicPathComponent
-  = DynamicPathLiteral FilePath
-  | DynamicPathField T.Text
-
-instance J.FromJSON DynamicPathComponent where
-  parseJSON (J.String s) = return $ DynamicPathLiteral $ T.unpack s
-  parseJSON o = J.withObject "dynamic path" 
-    (fmap DynamicPathField . (J..: "field")) o
-
--- |a path that can be constructed from a data row by filling in field values
-type DynamicPath = [DynamicPathComponent]
-
 data Catalog = Catalog
   { catalogEnabled :: !Bool
   , catalogOrder :: !T.Text -- ^display order in catalog list
@@ -94,7 +81,6 @@ data Catalog = Catalog
   , catalogKey :: Maybe T.Text -- ^primary key (not really used)
   , catalogSort :: [T.Text] -- ^sort field(s) for index
   , catalogCount :: Maybe Word
-  , catalogAttachments :: HM.HashMap T.Text DynamicPath
   }
 
 parseCatalog :: HM.HashMap T.Text FieldGroup -> J.Value -> J.Parser Catalog
@@ -117,7 +103,6 @@ parseCatalog dict = J.withObject "catalog" $ \c -> do
       <*> (c J..:? "settings" J..!= HM.empty)
       <*> (c J..:? "store" J..!= ESStoreValues)
   catalogOrder <- c J..:? "order" J..!= catalogIndex catalogStore
-  catalogAttachments <- c J..:? "attachments" J..!= HM.empty
   let catalogFields = expandFields catalogFieldGroups
       catalogFieldMap = HM.fromList $ map (fieldName &&& id) catalogFields
   mapM_ (\k -> unless (HM.member k catalogFieldMap) $ fail "key field not found in catalog") catalogKey
@@ -138,8 +123,6 @@ instance J.ToJSON Catalog where
     , case catalogSort of
       [] -> Nothing
       s -> Just $ "sort" J..= s
-    , "attachments" J..= HM.keys catalogAttachments
-      <$ guard (not $ HM.null catalogAttachments)
     ]
 
 takeCatalogField :: T.Text -> Catalog -> Maybe (Field, Catalog)

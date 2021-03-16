@@ -38,6 +38,7 @@ import           Waimwork.Result (result)
 import           System.FilePath ((<.>))
 import qualified Web.Route.Invertible as R
 
+import Type
 import Field
 import Catalog
 import Global

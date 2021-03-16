@@ -11,7 +11,6 @@ import qualified Data.ByteString.Char8 as BSC
 import           Data.ByteString.Internal (c2w)
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.ByteString.Lazy.Char8 as BSLC
-import           Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import           Data.Word (Word8)
