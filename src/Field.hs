@@ -113,7 +113,8 @@ data FieldSub t m = Field
   , fieldFlag :: FieldFlag
   , fieldSub :: m (FieldsSub t m)
   , fieldDict :: Maybe T.Text
-  , fieldScale :: Maybe Scientific
+  , fieldScale :: Maybe Scientific -- ^scale factor, to display scale*x instead
+  , fieldReversed :: Bool -- ^reverse axis on plotting
   , fieldIngest :: Maybe T.Text
   , fieldMissing :: [BS.ByteString]
   , fieldAttachment :: Maybe Attachment
@@ -142,6 +143,7 @@ instance Alternative m => Default (FieldSub Proxy m) where
     , fieldSub = empty
     , fieldDict = Nothing
     , fieldScale = Nothing
+    , fieldReversed = False
     , fieldIngest = Nothing
     , fieldMissing = []
     , fieldAttachment = Nothing
@@ -166,6 +168,7 @@ instance J.ToJSON Field where
     , bool "terms" $ isTermsField f
     , ("dict" J..=) <$> fieldDict
     , ("scale" J..=) <$> fieldScale
+    , ("reversed" J..= fieldReversed) <$ guard fieldReversed
     , ("attachment" J..= True) <$ fieldAttachment
     ] where
     bool _ False = Nothing
@@ -188,6 +191,7 @@ parseFieldGroup dict = parseFieldDefs def where
     fieldUnits <- (<|> fieldUnits d) <$> f J..:? "units"
     fieldFlag <- f J..:? "flag" J..!= fieldFlag d
     fieldScale <- f J..:! "scale"
+    fieldReversed <- f J..:? "reversed" J..!= False
     fieldIngest <- f J..:! "ingest"
     fieldMissing <- map TE.encodeUtf8 <$> case HM.lookup "missing" f of
       Nothing -> return []

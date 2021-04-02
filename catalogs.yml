@@ -215,6 +215,7 @@ dict:
     title: phot_g_mean_mag
     type: float
     descr: Extincted apparent G-band mean magnitude
+    reversed: true
   - name: GAIA_phot_g_mean_mag_error
     title: phot_g_mean_mag_error
     type: float
@@ -223,6 +224,7 @@ dict:
     title: phot_bp_mean_mag
     type: float
     descr: Extincted apparent G_Bp-band mean magnitude
+    reversed: true
   - name: GAIA_phot_bp_mean_mag_error
     title: phot_bp_mean_mag_error
     type: float
@@ -231,6 +233,7 @@ dict:
     title: phot_rp_mean_mag
     type: float
     descr: Extincted apparent G_Rp-band mean magnitude
+    reversed: true
   - name: GAIA_phot_rp_mean_mag_error
     title: phot_rp_mean_mag_error
     type: float
@@ -477,7 +480,7 @@ illustris:
       ingest: _optional:Group/GroupCM
     - name: FirstSub
       type: integer
-      descr: 'Index into the <code>Subhalo</code> table of the first/primary/most massive Subfind group within this FoF group. Note: This value is signed (or should be interpreted as signed)! In this case, a value of -1 indicates that this FoF group has no subhalos.'
+      descr: 'Index into the Subhalo table of the first/primary/most massive Subfind group within this FoF group. Note: This value is signed (or should be interpreted as signed)! In this case, a value of -1 indicates that this FoF group has no subhalos.'
       flag: hidden
       ingest: Group/GroupFirstSub
     - name: GasMetallicity
@@ -596,7 +599,7 @@ illustris:
     - name: M_TopHat200
       type: float
       units: '\(10^{10}M_\odot/h\)'
-      descr: 'Total Mass of this group enclosed in a sphere whose mean density is \(\Delta_c\) times the critical density of the Universe, at the time the halo is considered. \(\Delta_c\) derives from the solution of the collapse of a spherical top-hat perturbation (fitting formula from <a href="http://adsabs.harvard.edu/abs/1998ApJ...495...80B">Bryan+ 1998</a>). The subscript 200 can be ignored.'
+      descr: 'Total Mass of this group enclosed in a sphere whose mean density is \(\Delta_c\) times the critical density of the Universe, at the time the halo is considered. \(\Delta_c\) derives from the solution of the collapse of a spherical top-hat perturbation (fitting formula from Bryan+ 1998, http://adsabs.harvard.edu/abs/1998ApJ...495...80B). The subscript 200 can be ignored.'
       flag: hidden
       ingest: Group/Group_M_TopHat200
     - name: R_Crit200
@@ -727,7 +730,7 @@ tng:
     - name: FirstSub
       ingest: Group/GroupFirstSub
       type: integer
-      descr: 'Index into the <code>Subhalo</code> table of the first/primary/most massive Subfind group within this FoF group. Note: This value is signed (or should be interpreted as signed)! In this case, a value of -1 indicates that this FoF group has no subhalos.'
+      descr: 'Index into the Subhalo table of the first/primary/most massive Subfind group within this FoF group. Note: This value is signed (or should be interpreted as signed)! In this case, a value of -1 indicates that this FoF group has no subhalos.'
       flag: hidden
     - name: GasMetalFractions
       ingest: Group/GroupGasMetalFractions
@@ -880,7 +883,7 @@ tng:
       ingest: Group/Group_M_TopHat200
       type: float
       units: '\(10^{10}M_\odot/h\)'
-      descr: 'Total Mass of this group enclosed in a sphere whose mean density is \(\Delta_c\) times the critical density of the Universe, at the time the halo is considered. \(\Delta_c\) derives from the solution of the collapse of a spherical top-hat perturbation (fitting formula from <a href="http://adsabs.harvard.edu/abs/1998ApJ...495...80B">Bryan+ 1998</a>). The subscript 200 can be ignored.'
+      descr: 'Total Mass of this group enclosed in a sphere whose mean density is \(\Delta_c\) times the critical density of the Universe, at the time the halo is considered. \(\Delta_c\) derives from the solution of the collapse of a spherical top-hat perturbation (fitting formula from Bryan+ 1998, http://adsabs.harvard.edu/abs/1998ApJ...495...80B). The subscript 200 can be ignored.'
       flag: hidden
     - name: R_Crit200
       ingest: Group/Group_R_Crit200
@@ -973,7 +976,7 @@ illustris_sub:
     - name: GasMetallicity
       ingest: _optional:Subhalo/SubhaloGasMetallicity
       type: float
-      descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of the gas cells bound to this Subhalo, but restricted to cells within <b>twice</b> the stellar half mass radius.'
+      descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of the gas cells bound to this Subhalo, but restricted to cells within twice the stellar half mass radius.'
     - name: GasMetallicityHalfRad
       ingest: _optional:Subhalo/SubhaloGasMetallicityHalfRad
       type: float
@@ -1077,12 +1080,12 @@ illustris_sub:
       ingest: Subhalo/SubhaloMassInRad
       type: float
       units: '\(10^{10}M_\odot/h\)'
-      descr: 'Sum of masses of all particles/cells within <b>twice</b> the stellar half mass radius.'
+      descr: 'Sum of masses of all particles/cells within twice the stellar half mass radius.'
     - name: MassInRadType
       ingest: Subhalo/SubhaloMassInRadType
       type: float
       units: '\(10^{10}M_\odot/h\)'
-      descr: 'Sum of masses of all particles/cells (split by type) within <b>twice</b> the stellar half mass radius.'
+      descr: 'Sum of masses of all particles/cells (split by type) within twice the stellar half mass radius.'
       sub:
       - name: gas
       - name: dm
@@ -1136,7 +1139,7 @@ illustris_sub:
       ingest: _optional:Subhalo/SubhaloSFRinRad
       type: float
       units: '\(M_\odot/yr\)'
-      descr: 'Same as SubhaloSFR, but restricted to cells within <b>twice</b> the stellar half mass radius.'
+      descr: 'Same as SubhaloSFR, but restricted to cells within twice the stellar half mass radius.'
     - name: Spin
       ingest: Subhalo/SubhaloSpin
       type: float
@@ -1150,7 +1153,7 @@ illustris_sub:
       ingest: _optional:Subhalo/SubhaloStarMetallicity
       type: float
       units: '-'
-      descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of the star particles bound to this Subhalo, but restricted to stars within <b>twice</b> the stellar half mass radius.'
+      descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of the star particles bound to this Subhalo, but restricted to stars within twice the stellar half mass radius.'
     - name: StarMetallicityHalfRad
       ingest: _optional:Subhalo/SubhaloStarMetallicityHalfRad
       type: float
@@ -1398,7 +1401,7 @@ tng_sub:
     - name: GasMetallicity
       ingest: Subhalo/SubhaloGasMetallicity
       type: float
-      descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of the gas cells bound to this Subhalo, but restricted to cells within <b>twice</b> the stellar half mass radius.'
+      descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of the gas cells bound to this Subhalo, but restricted to cells within twice the stellar half mass radius.'
     - name: GasMetallicityHalfRad
       ingest: Subhalo/SubhaloGasMetallicityHalfRad
       type: float
@@ -1502,12 +1505,12 @@ tng_sub:
       ingest: Subhalo/SubhaloMassInRad
       type: float
       units: '\(10^{10}M_\odot/h\)'
-      descr: 'Sum of masses of all particles/cells within <b>twice</b> the stellar half mass radius.'
+      descr: 'Sum of masses of all particles/cells within twice the stellar half mass radius.'
     - name: MassInRadType
       ingest: Subhalo/SubhaloMassInRadType
       type: float
       units: '\(10^{10}M_\odot/h\)'
-      descr: 'Sum of masses of all particles/cells (split by type) within <b>twice</b> the stellar half mass radius.'
+      descr: 'Sum of masses of all particles/cells (split by type) within twice the stellar half mass radius.'
       sub:
       - name: gas
       - name: dm
@@ -1561,7 +1564,7 @@ tng_sub:
       ingest: Subhalo/SubhaloSFRinRad
       type: float
       units: '\(M_\odot/yr\)'
-      descr: 'Same as SubhaloSFR, but restricted to cells within <b>twice</b> the stellar half mass radius.'
+      descr: 'Same as SubhaloSFR, but restricted to cells within twice the stellar half mass radius.'
     - name: Spin
       ingest: Subhalo/SubhaloSpin
       type: float
@@ -1574,7 +1577,7 @@ tng_sub:
     - name: StarMetalFractions
       ingest: Subhalo/SubhaloStarMetalFractions
       type: float
-      descr: "Individual abundances: dimensionless ratio of the total mass in that species divided by the total stellar mass, both restricted to stars within <b>twice</b> the stellar half mass radius."
+      descr: "Individual abundances: dimensionless ratio of the total mass in that species divided by the total stellar mass, both restricted to stars within twice the stellar half mass radius."
       flag: hidden
       sub:
       - name: "H"
@@ -1626,7 +1629,7 @@ tng_sub:
       ingest: Subhalo/SubhaloStarMetallicity
       type: float
       units: '-'
-      descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of the star particles bound to this Subhalo, but restricted to stars within <b>twice</b> the stellar half mass radius.'
+      descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of the star particles bound to this Subhalo, but restricted to stars within twice the stellar half mass radius.'
     - name: StarMetallicityHalfRad
       ingest: Subhalo/SubhaloStarMetallicityHalfRad
       type: float
@@ -2056,6 +2059,7 @@ gaiadr2:
         descr: G-band mean magnitude
         type: float
         units: mag
+        reversed: true
     - name: ''
       title: phot_bp
       descr: BP photometry
@@ -2084,6 +2088,7 @@ gaiadr2:
         descr: Integrated BP mean magnitude
         type: float
         units: mag
+        reversed: true
     - name: ''
       title: phot_rp
       descr: RP photometry
@@ -2112,6 +2117,7 @@ gaiadr2:
         descr: Integrated RP mean magnitude
         type: float
         units: mag
+        reversed: true
     - name: phot_bp_rp_excess_factor
       descr: BP/RP excess factor
       type: float
@@ -2642,6 +2648,7 @@ ananke:
             title: mag
             descr: Extincted apparent G-band mean magnitude
             dict: GAIA_phot_g_mean_mag
+            reversed: true
           - name: phot_g_mean_mag_error
             title: mag_error
             descr: Standard error of G-band mean magnitude
@@ -2663,6 +2670,7 @@ ananke:
             title: mag
             descr: Extincted apparent G_Bp-band mean magnitude
             dict: GAIA_phot_bp_mean_mag
+            reversed: true
           - name: phot_bp_mean_mag_error
             title: mag_error
             descr: Standard error of G_Bp-band mean magnitude
@@ -2684,6 +2692,7 @@ ananke:
             title: mag
             descr: Extincted apparent G_Rp-band mean magnitude
             dict: GAIA_phot_rp_mean_mag
+            reversed: true
           - name: phot_rp_mean_mag_error
             title: mag_error
             descr: Standard error of G_Rp-band mean magnitude
@@ -5164,16 +5173,19 @@ gr8:
       descr: G-band photometry mean magnitude
       type: float
       units: mag
+      reversed: true
     - name: phot_rp_mean_mag
       dict: GAIA_phot_rp_mean_mag
       descr: Integrated RP photometry mean magnitude
       type: float
       units: mag
+      reversed: true
     - name: phot_bp_mean_mag
       dict: GAIA_phot_bp_mean_mag_error
       descr: Integrated BP photometry mean magnitude
       type: float
       units: mag
+      reversed: true
     - name: bp_rp
       dict: GAIA_bp_rp
       descr: BP - RP colour

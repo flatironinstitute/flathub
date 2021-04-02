@@ -27,6 +27,7 @@ export type Field = {
   enum?: null | string[];
   dict?: null | string;
   scale?: number;
+  reversed?: boolean;
   attachment?: boolean;
 };
 
@@ -270,6 +271,7 @@ export function histogram_options(
                 return render(this.value);
               },
       },
+      reversed: field.reversed || false
     },
     yAxis: {
       id: "tog",
