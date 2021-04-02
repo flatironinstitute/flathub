@@ -328,6 +328,7 @@ function scatterplotDraw(
     type: "scatter",
     data: data,
     // keys: [xname, yname],
+    marker: { radius: 1.5 }
   }];
   Chart = Highcharts.chart("plot-chart", opts);
   plotVue.$forceUpdate();
