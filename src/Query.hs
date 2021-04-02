@@ -110,7 +110,7 @@ catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do
       hsize = histsSize $ queryAggs query
   unless (queryLimit query <= 5000) $
     result $ response badRequest400 [] ("limit too large" :: String)
-  unless (hsize > 0 && hsize <= 256) $
+  unless (hsize > 0 && hsize <= 1024) $
     result $ response badRequest400 [] ("hist too large" :: String)
   case catalogStore cat of
     CatalogES{ catalogStoreField = store } -> do

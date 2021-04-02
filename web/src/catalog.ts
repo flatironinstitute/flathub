@@ -200,6 +200,10 @@ function histogramDraw(
     plotVue.log
   );
   const renderx = render_funct(field, plotx.plotLog);
+  (<Highcharts.AxisOptions>opts.xAxis).min =
+    plotx.plotLog ? Math.log(plotx.lbv) : plotx.lbv;
+  (<Highcharts.AxisOptions>opts.xAxis).max =
+    plotx.plotLog ? Math.log(plotx.ubv) : plotx.ubv;
   if (ploty) {
     opts.colorAxis = <Highcharts.ColorAxisOptions>opts.yAxis;
     opts.colorAxis.reversed = false;
@@ -208,6 +212,10 @@ function histogramDraw(
       (<Highcharts.AxisOptions>opts.yAxis).type = "logarithmic";
   }
   if (ploty && !ploty.plotCond) {
+    (<Highcharts.AxisOptions>opts.yAxis).min =
+      ploty.plotLog ? Math.log(ploty.lbv) : ploty.lbv;
+    (<Highcharts.AxisOptions>opts.yAxis).max =
+      ploty.plotLog ? Math.log(ploty.ubv) : ploty.ubv;
     (<Highcharts.ChartOptions>opts.chart).zoomType = "xy";
     (<Highcharts.ChartOptions>opts.chart).events = {
       selection: zoomEvent(plotx, xwid, ploty, ywid)
@@ -249,12 +257,6 @@ function histogramDraw(
       selection: zoomEvent(plotx, wid)
     };
     (<Highcharts.TooltipOptions>opts.tooltip).footerFormat = "drag to filter";
-    (<Highcharts.AxisOptions>opts.xAxis).min = plotx.plotLog
-      ? Math.log(plotx.lbv)
-      : plotx.lbv;
-    (<Highcharts.AxisOptions>opts.xAxis).max = plotx.plotLog
-      ? Math.log(plotx.ubv + wid)
-      : plotx.ubv + wid;
     if (ploty) {
       /* condmedian */
       (<Highcharts.TooltipOptions>opts.tooltip).formatter = function (
@@ -436,7 +438,7 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
   if (plotx && !scatter) {
     if (ploty) {
       if (ploty.plotCond) query.hist = plotx.histQuery(64) + " " + ploty.name;
-      else query.hist = plotx.histQuery(16) + " " + ploty.histQuery(16);
+      else query.hist = plotx.histQuery(64) + " " + ploty.histQuery(16);
     } else query.hist = plotx.histQuery(128);
   }
   $.ajax({
