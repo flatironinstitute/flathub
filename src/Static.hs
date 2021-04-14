@@ -46,9 +46,12 @@ instance R.Parameter R.PathString FilePathComponent where
 getMimeType :: Mime.FileName -> Mime.MimeType
 getMimeType = Mime.mimeByExt (Map.insert "ts" "text/typescript" Mime.defaultMimeMap) Mime.defaultMimeType
 
+handleDoesNotExist :: IO a -> IO a -> IO a
+handleDoesNotExist e = handleJust (guard . isDoesNotExistError) $ \() -> e
+
 getModificationTime' :: FilePath -> IO (Maybe UTCTime)
 getModificationTime' f =
-  handleJust (guard . isDoesNotExistError) (\() -> return Nothing) $ Just <$> getModificationTime f
+  handleDoesNotExist (return Nothing) $ Just <$> getModificationTime f
 
 findM :: Monad m => (a -> m Bool) -> [a] -> m (Maybe a)
 findM _ [] = return Nothing

@@ -15,7 +15,8 @@ RUN stack install && rm -rf .stack-work
 COPY --chown=flathub web ./web
 RUN make -C web
 COPY --chown=flathub html ./html
-COPY --chown=flathub config catalogs.yml ./
+COPY --chown=flathub config ./config
+COPY --chown=flathub catalogs ./catalogs
 
 EXPOSE 8092
 ENTRYPOINT ["/home/flathub/.local/bin/flathub"]

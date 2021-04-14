@@ -1,0 +1,467 @@
+title: Gaia DR2
+index: gaiadr2
+descr: >
+  <a href='https://www.cosmos.esa.int/web/gaia/dr2'>Gaia Data Release 2</a> source catalog from the <a href='http://www.esa.int/ESA'>European Space Agency</a>, released Apr 25 2018.
+key: source_id
+sort: source_id
+count: 1692919135
+fields:
+#    - name: solution_id
+#      descr: Solution Identifier
+#      type: long
+#      flag: hidden
+#    - name: designation
+#      descr: Unique source designation
+#      type: text
+#      flag: hidden
+  - name: source_id
+    descr: Unique source identifier
+    type: long
+    dict: GAIA_source_id
+  - name: random_index
+    descr: Random index used to select subsets
+    type: long
+    flag: hidden
+    dict: GAIA_random_index
+  - name: ref_epoch
+    descr: Reference epoch (J2015.5) in Julian years
+    flag: hidden
+    type: double
+    units: year
+  - name: ''
+    title: pos
+    descr: Barycentric position
+    sub:
+    - name: ra
+      title: ra
+      descr: Barycentric right ascension of the source
+      type: double
+      units: deg
+      dict: ppos_x
+    - name: ra_error
+      descr: Standard error of right ascension
+      type: double
+      units: mas
+    - name: dec
+      title: dec
+      descr: Barycentric declination of the source
+      type: double
+      units: deg
+      dict: ppos_y
+    - name: dec_error
+      descr: Standard error of declination
+      type: double
+      units: mas
+  - name: parallax
+    dict: parallax
+    descr: Absolute parallax of the source
+    type: double
+    units: mas
+  - name: parallax_error
+    dict: GAIA_parallax_error
+    descr: Standard error of parallax
+    type: double
+    units: mas
+  - name: parallax_over_error
+    dict: GAIA_parallax_over_error
+    descr: Parallax divided by its standard error
+    type: float
+  - name: ''
+    title: pm
+    descr: Proper motion
+    type: double
+    units: mas/year
+    sub:
+    - name: pmra
+      dict: pmra
+      descr: Proper motion in right ascension (pmra) direction
+      type: double
+    - name: pmra_error
+      dict: GAIA_pmra_error
+      title: ra_error
+      type: double
+    - name: pmdec
+      dict: pmdec
+      descr: Proper motion in declination direction
+      type: double
+    - name: pmdec_error
+      dict: GAIA_pmdec_error
+      descr: Standard error of proper motion in declination direction
+      type: double
+  - name: ''
+    title: corr
+    descr: Correlation
+    type: float
+    sub:
+    - name: ra_dec_corr
+      title: ra_dec
+      descr: Correlation between right ascension and declination
+      type: float
+    - name: ra_parallax_corr
+      title: ra_parallax
+      descr: Correlation between right ascension and parallax
+      type: float
+    - name: ra_pmra_corr
+      title: ra_pmra
+      descr: Correlation between right ascension and pmra
+      type: float
+    - name: ra_pmdec_corr
+      title: ra_pmdec
+      descr: Correlation between right ascension and proper motion in declination
+      type: float
+    - name: dec_parallax_corr
+      title: dec_parallax
+      descr: Correlation between declination and parallax
+      type: float
+    - name: dec_pmra_corr
+      title: dec_pmra
+      descr: Correlation between declination and pmra
+      type: float
+    - name: dec_pmdec_corr
+      title: dec_pmdec
+      descr: Correlation between declination and proper motion in declination
+      type: float
+    - name: parallax_pmra_corr
+      title: parallax_pmra
+      descr: Correlation between parallax and pmra
+      type: float
+    - name: parallax_pmdec_corr
+      title: parallax_pmdec
+      descr: Correlation between parallax and proper motion in declination
+      type: float
+    - name: pmra_pmdec_corr
+      title: pmra_pmdec
+      descr: Correlation between pmra and proper motion in declination
+      type: float
+  - name: ''
+    title: astrometry
+    sub:
+    - name: astrometric_n_obs_al
+      title: n_obs_al
+      descr: Total number of AL observations (=CCD transits), independent of their weight
+      type: int
+    - name: astrometric_n_obs_ac
+      title: n_obs_ac
+      descr: Total number of AC observations (=CCD transits), independent of their weight
+      type: int
+    - name: astrometric_n_good_obs_al
+      title: n_good_obs_al
+      descr: Number of good AL observations (not strongly downweighted)
+      type: int
+    - name: astrometric_n_bad_obs_al
+      title: n_bad_obs_al
+      descr: Number of bad AL observations (strongly downweighted)
+      type: int
+    - name: astrometric_gof_al
+      title: gof_al
+      descr: Goodness of fit statistic of model wrt along-scan observations
+      type: float
+    - name: astrometric_chi2_al
+      title: chi2_al
+      descr: '\({\chi}^2\) value in the AL direction'
+      type: float
+    - name: astrometric_excess_noise
+      title: excess_noise
+      descr: Excess noise of the source
+      type: double
+      units: mas
+    - name: astrometric_excess_noise_sig
+      title: excess_noise_sig
+      descr: Significance of excess noise
+      type: double
+    - name: astrometric_params_solved
+      title: params_solved
+      descr: Binary code indicating which parameters were estimated for the source
+      type: byte
+    - name: astrometric_primary_flag
+      title: primary_flag
+      descr: Indicator if this source was used as a primary (true) or secondary (false)
+      type: boolean
+    - name: astrometric_weight_al
+      title: weight_al
+      descr: Mean astrometric weight of the source in the AL direction
+      type: float
+      units: '\(mas^{-2}\)'
+    - name: astrometric_pseudo_colour
+      title: pseudo_colour
+      descr: Astrometrically determined pseudocolour of the source
+      type: double
+      units: '\(\mu{m}^{-1}\)'
+    - name: astrometric_pseudo_colour_error
+      title: pseudo_colour_error
+      descr: Standard error of the pseudocolour of the source
+      type: double
+      units: '\(\mu{m}^{-1}\)'
+    - name: mean_varpi_factor_al
+      descr: Mean Parallax factor in the AL direction
+      type: float
+    - name: astrometric_matched_observations
+      title: matched_observations
+      descr: Matched FOV transits used in the AGIS solution
+      type: short
+    - name: visibility_periods_used
+      descr: Number of visibility periods used in astrometric solution
+      type: short
+    - name: astrometric_sigma5d_max
+      title: sigma5d_max
+      descr: The longest semi-major axis of the 5-d error ellipsoid
+      type: float
+      units: mas
+  - name: frame_rotator_object_type
+    descr: The type of the source mainly used for frame rotation
+    type: int
+  - name: matched_observations
+    descr: Amount of observations matched to this source
+    type: short
+  - name: duplicated_source
+    descr: Source with duplicate sources
+    type: boolean
+  - name: ''
+    title: phot_g
+    descr: G-band photometry
+    sub:
+    - name: phot_g_n_obs
+      title: n_obs
+      descr: Number of observations contributing to G photometry
+      type: int
+    - name: phot_g_mean_flux
+      title: mean_flux
+      descr: G-band mean flux
+      type: double
+      units: '\({e^-}/s\)'
+    - name: phot_g_mean_flux_error
+      title: mean_flux_error
+      descr: Error on G-band mean flux
+      type: double
+      units: '\({e^-}/s\)'
+    - name: phot_g_mean_flux_over_error
+      title: mean_flux_over_error
+      descr: G-band mean flux divided by its error
+      type: float
+    - name: phot_g_mean_mag
+      dict: GAIA_phot_g_mean_mag
+      title: mean_mag
+      descr: G-band mean magnitude
+      type: float
+      units: mag
+      reversed: true
+  - name: ''
+    title: phot_bp
+    descr: BP photometry
+    sub:
+    - name: phot_bp_n_obs
+      title: n_obj
+      descr: Number of observations contributing to BP photometry
+      type: int
+    - name: phot_bp_mean_flux
+      title: mean_flux
+      descr: Integrated BP mean flux
+      type: double
+      units: '\({e^-}/s\)'
+    - name: phot_bp_mean_flux_error
+      title: mean_flux_error
+      descr: Error on the integrated BP mean flux
+      type: double
+      units: '\({e^-}/s\)'
+    - name: phot_bp_mean_flux_over_error
+      title: mean_flux_over_error
+      descr: Integrated BP mean flux divided by its error
+      type: float
+    - name: phot_bp_mean_mag
+      dict: GAIA_phot_bp_mean_mag_error
+      title: mean_mag
+      descr: Integrated BP mean magnitude
+      type: float
+      units: mag
+      reversed: true
+  - name: ''
+    title: phot_rp
+    descr: RP photometry
+    sub:
+    - name: phot_rp_n_obs
+      title: n_obs
+      descr: Number of observations contributing to RP photometry
+      type: int
+    - name: phot_rp_mean_flux
+      title: mean_flux
+      descr: Integrated RP mean flux
+      type: double
+      units: '\({e^-}/s\)'
+    - name: phot_rp_mean_flux_error
+      title: mean_flux_error
+      descr: Error on the integrated RP mean flux
+      type: double
+      units: '\({e^-}/s\)'
+    - name: phot_rp_mean_flux_over_error
+      title: mean_flux_over_error
+      descr: Integrated RP mean flux divided by its error
+      type: float
+    - name: phot_rp_mean_mag
+      dict: GAIA_phot_rp_mean_mag
+      title: mean_mag
+      descr: Integrated RP mean magnitude
+      type: float
+      units: mag
+      reversed: true
+  - name: phot_bp_rp_excess_factor
+    descr: BP/RP excess factor
+    type: float
+  - name: phot_proc_mode
+    descr: Photometry processing mode (0=gold, 1=silver, 2=bronze)
+    type: byte
+  - name: bp_rp
+    dict: GAIA_bp_rp
+    descr: BP - RP colour
+    type: float
+    units: mag
+  - name: bp_g
+    descr: BP - G colour
+    type: float
+    units: mag
+  - name: g_rp
+    dict: GAIA_g_rp
+    descr: G - RP colour
+    type: float
+    units: mag
+  - name: radial_velocity
+    dict: GAIA_radial_velocity
+    descr: Radial velocity
+    type: double
+    units: km/s
+  - name: radial_velocity_error
+    dict: GAIA_radial_velocity_error
+    descr: Radial velocity error
+    type: double
+    units: km/s
+  - name: rv_nb_transits
+    descr: Number of transits used to compute radial velocity
+    type: int
+  - name: rv_template_teff
+    descr: Teff of the template used to compute radial velocity
+    type: float
+    units: K
+  - name: rv_template_logg
+    descr: logg of the template used to compute radial velocity
+    type: float
+    units: 'log cgs'
+  - name: rv_template_fe_h
+    descr: Fe/H of the template used to compute radial velocity
+    type: float
+    units: dex
+  - name: phot_variable_flag
+    descr: Photometric variability flag (-1=NOT_AVAILABLE)
+    type: byte
+    enum: ['CONSTANT', 'VARIABLE']
+  - name: l
+    dict: GAIA_l
+    descr: Galactic longitude
+    type: double
+    units: deg
+  - name: b
+    dict: GAIA_b
+    descr: Galactic latitude
+    type: double
+    units: deg
+  - name: ecl_lon
+    descr: Ecliptic longitude
+    type: double
+    units: deg
+  - name: ecl_lat
+    descr: Ecliptic latitude
+    type: double
+    units: deg
+  - name: priam_flags
+    descr: flags for the Apsis-Priam results
+    type: long
+  - name: ''
+    title: teff
+    descr: stellar effective temperature
+    type: float
+    units: K
+    sub:
+    - name: teff_val
+      dict: GAIA_teff_val
+      title: val
+      type: float
+    - name: teff_percentile_lower
+      title: lower
+      descr: lower uncertainty
+      type: float
+    - name: teff_percentile_upper
+      title: upper
+      descr: upper uncertainty
+      type: float
+  - name: ''
+    title: a_g
+    descr: line-of-sight extinction in the G band, A_G
+    type: float
+    units: 'mag'
+    sub:
+    - name: a_g_val
+      dict: GAIA_a_g_val
+      title: val
+      type: float
+    - name: a_g_percentile_lower
+      title: lower
+      descr: lower uncertainty
+      type: float
+    - name: a_g_percentile_upper
+      title: upper
+      descr: upper uncertainty
+      type: float
+  - name: ''
+    title: e_bp_min_rp
+    descr: line-of-sight reddening E(BP-RP)
+    type: float
+    units: 'mag'
+    sub:
+    - name: e_bp_min_rp_val
+      dict: GAIA_e_bp_min_rp_val
+      title: val
+      type: float
+    - name: e_bp_min_rp_percentile_lower
+      title: lower
+      descr: lower uncertainty
+      type: float
+    - name: e_bp_min_rp_percentile_upper
+      title: upper
+      descr: upper uncertainty
+      type: float
+  - name: flame_flags
+    descr: Flags for the Apsis-FLAME results
+    type: long
+  - name: ''
+    title: radius
+    descr: stellar radius
+    units: '\(r_\odot\)'
+    type: float
+    sub:
+    - name: radius_val
+      title: val
+      type: float
+    - name: radius_percentile_lower
+      title: lower
+      descr: lower uncertainty
+      type: float
+    - name: radius_percentile_upper
+      title: upper
+      descr: upper uncertainty
+      type: float
+  - name: ''
+    title: lum
+    descr: stellar luminosity
+    units: '\(L_\odot\)'
+    type: float
+    sub:
+    - name: lum_val
+      dict: GAIA_lum_val
+      title: val
+      type: float
+    - name: lum_percentile_lower
+      title: lower
+      descr: lower uncertainty
+      type: float
+    - name: lum_percentile_upper
+      title: upper
+      descr: upper uncertainty
+      type: float

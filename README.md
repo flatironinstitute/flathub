@@ -11,7 +11,7 @@ These are kubernetes definitions for [elastic search](k8s-es.yml) and the [web s
 
 There is also a [docker-compose](docker-compose.yml) definition for installing everything you need on a single machine.  To use it:
 
-- Edit the [catalog definitions](catalogs.yml) to define the object catalog(s) and fields.  There are a number of examples there already.
+- Edit the [catalog definitions](catalogs) to define the object catalog(s) and fields.  There are a number of examples there already.
 - Change `ES_JAVA_OPTS` and `scale` in docker-compose.yml as appropriate for your environment and needs
    - The current settings start 5\*20GB nodes on a single machine (requiring 100+GB memory)
    - You can also setup your own elasticsearch cluster on multiple machines, in which case you only need the flathub service

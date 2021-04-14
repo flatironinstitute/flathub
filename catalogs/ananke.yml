@@ -1,0 +1,596 @@
+title: "Ananke: GAIA on FIRE"
+index: ananke
+descr: >
+  <a href='https://arxiv.org/abs/1806.10564'>Sanderson et al 2018</a>.<br>
+  Data release v- ____-__-__.<br>
+  The ananke framework, which generates realistic synthetic stellar surveys from cosmological baryonic simulations, was used to create a
+  set of synthetic phase-space surveys designed to resemble Data Release 2 of the Gaia astrometric survey from different solar viewpoints
+  in the Latte suite of FIRE-2 simulations of Milky Way-mass galaxies. The synthetic surveys are described in detail in <a href='https://arxiv.org/abs/1806.10564'>Sanderson et al 2018</a>.
+  The full dataset is available <a href='https://girder.hub.yt/#collection/5b0427b2e9914800018237da'>here</a>.
+html: |
+  <div class="section highlighted-links">
+    <img
+      src="/web/assets/ananke-m12f-lsr1-threecolor-medfilt-crop-50-28irpjo.png"
+      alt="RGB flux map of a synthetic survey of m12f."
+      width="100%"
+    />
+    <h3>About</h3>
+    <h3>Citation</h3>
+    <p>
+      If you use any of the Latte FIRE-2 simulations, please including the
+      following citation: <br /><br />
+      "The Latte suite of FIRE-2 cosmological zoom-in baryonic simulations of
+      Milky Way-mass galaxies (Wetzel et al 2016), part of the Feedback In
+      Realistic Environments (FIRE) simulation project, were run using the Gizmo
+      gravity plus hydrodynamics code in meshless finite-mass (MFM) mode (Hopkins
+      2015) and the FIRE-2 physics model (Hopkins et al 2018)."<br /><br />
+      Furthermore, if you use the Ananke synthetic Gaia DR2 surveys of the Latte
+      simulations, please including the following citation:<br /><br />
+      "Synthetic Gaia DR2-like surveys of the Latte suite of FIRE-2 simulations
+      were created via the Ananke framework (Sanderson et al 2018)."
+    </p>
+    <h3>License</h3>
+    <p>This data is made available under Creative Commons BY 4.0.</p>
+    <h3>Specifications</h3>
+    <table>
+      <tr>
+        <th>label</th>
+        <th>counts</th>
+        <th>\(x_{LSR}\)</th>
+        <th>\(y_{LSR}\)</th>
+        <th>\(z_{LSR}\)</th>
+        <th>\(v_{x,LSR}\)</th>
+        <th>\(v_{y,LSR}\)</th>
+        <th>\(v_{z,LSR}\)</th>
+        <th>\(v_{R,LSR}\)</th>
+        <th>\(v_{Z,LSR}\)</th>
+        <th>\(v_{\phi,LSR}\)</th>
+      </tr>
+      <tr>
+        <td><a href="/ananke?galaxy=0&lsr=0">m12i-lsr0</a></td>
+        <td></td>
+        <td>0.0</td>
+        <td>8.2</td>
+        <td>0.0</td>
+        <td>224.7092</td>
+        <td>-20.3801</td>
+        <td>3.8954</td>
+        <td>-17.8</td>
+        <td>-3.9</td>
+        <td>224.4</td>
+      </tr>
+      <td><a href="/ananke?galaxy=0&lsr=1">m12i-lsr1</a></td>
+      <td></td>
+      <td>-7.1014</td>
+      <td>-4.1</td>
+      <td>0.0</td>
+      <td>-80.4269</td>
+      <td>191.7240</td>
+      <td>1.5039</td>
+      <td>-24.4</td>
+      <td>-1.5</td>
+      <td>210.9</td>
+      <tr>
+        <td><a href="/ananke?galaxy=0&lsr=2">m12i-lsr2</a></td>
+        <td></td>
+        <td>7.1014</td>
+        <td>-4.1</td>
+        <td>0.0</td>
+        <td>-87.2735</td>
+        <td>-186.8567</td>
+        <td>-9.4608</td>
+        <td>22.1</td>
+        <td>9.5</td>
+        <td>206.5</td>
+      </tr>
+      <tr>
+        <td><a href="/ananke?galaxy=1&lsr=0">m12f-lsr0</a></td>
+        <td></td>
+        <td>0.0</td>
+        <td>8.2</td>
+        <td>0.0</td>
+        <td>226.1849</td>
+        <td>14.3773</td>
+        <td>-4.8906</td>
+        <td>14.9</td>
+        <td>4.9</td>
+        <td>227.9</td>
+      </tr>
+      <tr>
+        <td><a href="/ananke?galaxy=1&lsr=1">m12f-lsr1</a></td>
+        <td></td>
+        <td>-7.1014</td>
+        <td>-4.1</td>
+        <td>0.0</td>
+        <td>-114.0351</td>
+        <td>208.7267</td>
+        <td>5.0635</td>
+        <td>-3.4</td>
+        <td>-5.1</td>
+        <td>244.3</td>
+      </tr>
+      <tr>
+        <td><a href="/ananke?galaxy=1&lsr=2">m12f-lsr2</a></td>
+        <td></td>
+        <td>7.1014</td>
+        <td>-4.1</td>
+        <td>0.0</td>
+        <td>-118.1430</td>
+        <td>-187.7631</td>
+        <td>-3.8905</td>
+        <td>-11.4</td>
+        <td>3.9</td>
+        <td>227.4</td>
+      </tr>
+      <tr>
+        <td><a href="/ananke?galaxy=2&lsr=0">m12m-lsr0</a></td>
+        <td></td>
+        <td>0.0</td>
+        <td>8.2</td>
+        <td>0.0</td>
+        <td>254.9187</td>
+        <td>16.7901</td>
+        <td>1.9648</td>
+        <td>16.2</td>
+        <td>-2.0</td>
+        <td>254.7</td>
+      </tr>
+      <tr>
+        <td><a href="/ananke?galaxy=2&lsr=1">m12m-lsr1</a></td>
+        <td></td>
+        <td>-7.1014</td>
+        <td>-4.1</td>
+        <td>0.0</td>
+        <td>-128.2480</td>
+        <td>221.1489</td>
+        <td>5.8506</td>
+        <td>2.4</td>
+        <td>-5.9</td>
+        <td>252.7</td>
+      </tr>
+      <tr>
+        <td><a href="/ananke?galaxy=2&lsr=2">m12m-lsr2</a></td>
+        <td></td>
+        <td>7.1014</td>
+        <td>-4.1</td>
+        <td>0.0</td>
+        <td>-106.6203</td>
+        <td>-232.2056</td>
+        <td>-6.4185</td>
+        <td>15.4</td>
+        <td>6.4</td>
+        <td>265.3</td>
+      </tr>
+    </table>
+
+    <h3>Model</h3>
+  </div>
+
+key: source_id
+fields:
+  - name: galaxy
+    type: byte
+    flag: top
+    descr: "Simulated galaxy"
+    enum: ['m12i', 'm12f', 'm12m']
+  - name: lsr
+    type: byte
+    flag: top
+    descr: "Local Standard of Rest (LSR) between 0-2"
+  - name: slice
+    type: byte
+    flag: top
+    descr: "slices between 0-9"
+  - name: ""
+    title: Indices
+    sub:
+    - name: source_id
+      descr: Unique source identifier (per mock catalog)
+      type: long
+      dict: GAIA_source_id
+    - name: random_index
+      descr: Random index used to select subsets
+      type: long
+      dict: GAIA_random_index
+      flag: hidden
+    - name: parentid
+      descr: array index of the generating star particle in the snapshot file
+      type: long
+      flag: hidden
+    - name: partid
+      descr: 0 if phase-space coordinates are identical to generating star particle, 1 otherwise
+      type: short
+      flag: hidden
+  - name: ""
+    title: Astrometry
+    sub:
+    - name: ""
+      title: Coord
+      units: deg
+      sub:
+      - name: ra
+        title: ra
+        descr: Right ascension
+        type: double
+        dict: ppos_x
+      - name: ra_error
+        descr: Standard error of right ascension
+        type: double
+        dict: GAIA_ppos_x_error
+      - name: dec
+        title: dec
+        descr: Declination
+        type: double
+        dict: ppos_y
+      - name: dec_error
+        descr: Standard error of declination
+        type: double
+        dict: GAIA_ppos_y_error
+    - name: parallax
+      descr: Parallax
+      type: double
+      units: mas
+      dict: parallax
+    - name: parallax_error
+      descr: Standard error of parallax
+      type: double
+      units: mas
+      dict: GAIA_parallax_error
+    - name: parallax_over_error
+      descr: Parallax divided by its error
+      type: float
+      dict: GAIA_parallax_over_error
+    - name: pmra
+      descr: Proper motion in right ascension direction
+      type: double
+      units: mas/year
+      dict: pmra
+    - name: pmra_error
+      descr: Standard error of proper motion in right ascension direction
+      type: double
+      units: mas/year
+      dict: GAIA_pmra_error
+    - name: pmdec
+      descr: Proper motion in declination direction
+      type: double
+      units: mas/year
+      dict: pmdec
+    - name: pmdec_error
+      descr: Standard error of proper motion in declination direction
+      type: double
+      units: mas/year
+      dict: GAIA_pmdec_error
+    - name: l
+      descr: Galactic longitude
+      type: double
+      units: deg
+      dict: GAIA_l
+    - name: b
+      descr: Galactic latitude
+      type: double
+      units: deg
+      dict: GAIA_b
+  - name: ""
+    title: Phase Space
+    sub:
+    - name: ra_true
+      descr: true right ascension
+      type: double
+      units: deg
+      flag: hidden
+    - name: dec_true
+      descr: true declination
+      type: double
+      units: deg
+      flag: hidden
+    #- name: rad_true
+    #  descr: true LSR-centric distance
+    #  type: double
+    #  units: kpc
+    #  flag: hidden
+    - name: dmod_true
+      descr: true distance modulus
+      type: double
+      units: mag
+      flag: hidden
+    - name: parallax_true
+      descr: true parallax
+      type: double
+      units: mas
+      flag: hidden
+    - name: pmra_true
+      descr: true proper motion in right ascension direction
+      type: double
+      units: mas/year
+      flag: hidden
+    - name: pmdec_true
+      descr: true proper motion in declination direction
+      type: double
+      units: mas/year
+      flag: hidden
+    - name: radial_velocity_true
+      descr: true radial velocity
+      type: double
+      units: km/s
+      flag: hidden
+    - name: l_true
+      descr: true galactic longitude
+      type: double
+      units: deg
+      flag: hidden
+    - name: b_true
+      descr: true galactic latitude
+      type: double
+      units: deg
+      flag: hidden
+    - name: px_true
+      type: double
+      units: kpc
+      flag: hidden
+      descr: true position relative to LSR
+    - name: py_true
+      type: double
+      units: kpc
+      flag: hidden
+      descr: true position relative to LSR
+    - name: pz_true
+      type: double
+      units: kpc
+      flag: hidden
+      descr: true position relative to LSR
+    - name: vx_true
+      type: double
+      units: km/s
+      flag: hidden
+      descr: true velocity relative to LSR
+    - name: vy_true
+      type: double
+      units: km/s
+      flag: hidden
+      descr: true velocity relative to LSR
+    - name: vz_true
+      type: double
+      units: km/s
+      flag: hidden
+      descr: true velocity relative to LSR
+  - name: ""
+    title: Photometry
+    sub:
+    - name: ""
+      title: phot_g_mean_mag
+      type: float
+      units: mag
+      sub:
+        - name: phot_g_mean_mag
+          title: mag
+          descr: Extincted apparent G-band mean magnitude
+          dict: GAIA_phot_g_mean_mag
+          reversed: true
+        - name: phot_g_mean_mag_error
+          title: mag_error
+          descr: Standard error of G-band mean magnitude
+          dict: GAIA_phot_g_mean_mag_error
+        - name: phot_g_mean_mag_true
+          title: mag_true
+          descr: true (i.e. after extinction, but before error convolution) apparent G-Band mean magnitude
+          flag: hidden
+        - name: phot_g_mean_mag_int
+          title: mag_int
+          descr: intrinsic (i.e. after extinction, but before error convolution) apparent G-Band mean magnitude
+          flag: hidden
+    - name: ""
+      title: phot_bp_mean_mag
+      type: float
+      units: mag
+      sub:
+        - name: phot_bp_mean_mag
+          title: mag
+          descr: Extincted apparent G_Bp-band mean magnitude
+          dict: GAIA_phot_bp_mean_mag
+          reversed: true
+        - name: phot_bp_mean_mag_error
+          title: mag_error
+          descr: Standard error of G_Bp-band mean magnitude
+          dict: GAIA_phot_bp_mean_mag_error
+        - name: phot_bp_mean_mag_true
+          title: mag_true
+          descr: true apparent of G_Bp-band mean magnitude
+          flag: hidden
+        - name: phot_bp_mean_mag_int
+          title: mag_int
+          descr: intrinsic apparent of G_Bp-band mean magnitude
+          flag: hidden
+    - name: ""
+      type: float
+      title: phot_rp_mean_mag
+      units: mag
+      sub:
+        - name: phot_rp_mean_mag
+          title: mag
+          descr: Extincted apparent G_Rp-band mean magnitude
+          dict: GAIA_phot_rp_mean_mag
+          reversed: true
+        - name: phot_rp_mean_mag_error
+          title: mag_error
+          descr: Standard error of G_Rp-band mean magnitude
+          dict: GAIA_phot_rp_mean_mag_error
+        - name: phot_rp_mean_mag_true
+          title: mag_true
+          descr: true apparent of G_Rp-band mean magnitude
+          flag: hidden
+        - name: phot_rp_mean_mag_int
+          title: mag_int
+          descr: intrinsic apparent of G_Rp-band mean magnitude
+          flag: hidden
+    - name: bp_rp
+      descr: BP - RP colour
+      type: float
+      units: mag
+      dict: GAIA_bp_rp
+    - name: bp_rp_true
+      descr: true BP - RP colour
+      type: float
+      units: mag
+      flag: hidden
+    - name: bp_rp_int
+      descr: intrinsic BP - RP colour
+      type: float
+      units: mag
+      flag: hidden
+    - name: bp_g
+      descr: BP - G colour
+      type: float
+      units: mag
+      dict: GAIA_bp_g
+    - name: bp_g_true
+      descr: true BP - G colour
+      type: float
+      units: mag
+      flag: hidden
+    - name: bp_g_int
+      descr: intrinsic BP - G colour
+      type: float
+      units: mag
+      flag: hidden
+    - name: g_rp
+      descr: G - RP colour
+      type: float
+      units: mag
+      dict: GAIA_g_rp
+    - name: g_rp_true
+      descr: true G - RP colour
+      type: float
+      units: mag
+      flag: hidden
+    - name: g_rp_int
+      descr: intrinsic G - RP colour
+      type: float
+      units: mag
+      flag: hidden
+    - name: a_g_val
+      descr: line-of-sight extinction in the G band, A_G
+      type: float
+      units: mag
+      dict: GAIA_a_g_val
+    - name: e_bp_min_rp_val
+      descr: line-of-sight reddening E(BP-RP)
+      type: float
+      units: mag
+      dict: GAIA_e_bp_min_rp_val
+  - name: ""
+    title: Extinction
+    sub:
+    - name: lognh
+      descr: log_10 equivalent H column density along line of sight to star
+      type: float
+      units: cm-2
+      flag: hidden
+    - name: ebv
+      descr: E(B-V) reddening, calculated from equivalent N_H
+      type: float
+      units: mag
+      flag: hidden
+    - name: A0
+      descr: A_0 extinction at 550 nm, assuming R_v = 3.1
+      type: float
+      units: mag
+      flag: hidden
+  - name: ""
+    title: Spectroscopy
+    sub:
+    - name: radial_velocity
+      descr: Radial velocity
+      type: double
+      units: km/s
+      dict: GAIA_radial_velocity
+    - name: radial_velocity_error
+      descr: Radial velocity error
+      type: double
+      units: km/s
+      dict: GAIA_radial_velocity_error
+  - name: ""
+    title: Stellar Parameters
+    sub:
+    - name: teff_val
+      descr: stellar effective temperature
+      type: float
+      units: K
+      dict: GAIA_teff_val
+    - name: lum_val
+      descr: stellar luminosity
+      type: float
+      units: L_sun
+      dict: GAIA_lum_val
+    - name: mact
+      descr: current stellar mass
+      type: float
+      units: '\(M_\odot\)'
+      flag: hidden
+    - name: mtip
+      descr: mass of a star at tip of giant branch for given age, metallicity
+      type: float
+      units: '\(M_\odot\)'
+      flag: hidden
+    - name: mini
+      descr: stellar mass on zero-age main sequence
+      type: float
+      units: '\(M_\odot\)'
+      flag: hidden
+    - name: age
+      descr: log_10 stellar age; identical for all stars generated from the same particle
+      type: float
+      units: 'log yr'
+      flag: hidden
+    - name: logg
+      descr: surface gravity
+      type: float
+      units: log cgs
+      flag: hidden
+  - name: ""
+    title: Abundances
+    units: dex
+    sub:
+    - name: feh
+      descr: "[Fe/H]"
+      type: float
+      flag: hidden
+    - name: alpha
+      descr: "[Mg/Fe]"
+      type: float
+      flag: hidden
+    - name: carbon
+      descr: "[C/H]"
+      type: float
+      flag: hidden
+    - name: helium
+      descr: "[He/H]"
+      type: float
+      flag: hidden
+    - name: nitrogen
+      descr: "[N/H]"
+      type: float
+      flag: hidden
+    - name: sulphur
+      descr: "[S/H]"
+      type: float
+      flag: hidden
+    - name: oxygen
+      descr: "[O/H]"
+      type: float
+      flag: hidden
+    - name: silicon
+      descr: "[Si/H]"
+      type: float
+      flag: hidden
+    - name: calcium
+      descr: "[Ca/H]"
+      type: float
+      flag: hidden
+    - name: magnesium
+      descr: "[Mg/H]"
+      type: float
+      flag: hidden
+    - name: neon
+      descr: "[Ne/H]"
+      type: float
+      flag: hidden

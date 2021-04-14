@@ -1,0 +1,284 @@
+- name: ppos
+  title: coord
+  sub:
+  - name: 'x'
+    title: RA
+    descr: Right Ascension
+  - name: 'y'
+    title: Dec
+    descr: Declination
+- name: redshift
+  title: 'z'
+  type: float
+  descr: Measured redshift (distance + peculiar velocity)
+- name: true_redshift
+  title: 'z_nopec'
+  type: float
+  descr: Redshift with no peculiar velocity
+- name: pos
+  sub:
+  - name: 'x'
+    title: 'X'
+  - name: 'y'
+    title: 'Y'
+  - name: 'z'
+    title: 'Z'
+- name: vel
+  sub:
+  - name: 'x'
+  - name: 'y'
+  - name: 'z'
+- name: halo_mass
+  type: float
+  descr: host halo virial mass
+  units: '\(10^{10}M_\odot\)'
+- name: V_vir
+  type: float
+  descr: Host halo virial velocity
+  units: 'km/s'
+- name: c_NFW
+  type: float
+  descr: NFW concentration (host halo)
+- name: spin
+  type: float
+  descr: Dimensionless spin parameter (host halo)
+- name: R
+  type: float
+  descr: host halo virial radius (physical coordinates)
+  units: 'Mpc'
+- name: r_disk
+  type: float
+  descr: scale length of a disk
+  units: 'kpc'
+- name: r_bulge
+  type: float
+  descr: effective radius of bulge (projected)
+  units: 'kpc'
+- name: sigma_bulge
+  type: float
+  descr: line-of-sight velocity dispersion of bulge
+- name: M_stellar
+  type: float
+  descr: stellar mass
+  units: '\(10^{10}M_\odot\)'
+- name: M
+  type: float
+  descr: mass of sub-halo
+  units: '\(10^{10}M_\odot\)'
+- name: M_star_diffuse
+  descr: Mass of stars in a 'diffuse stellar halo'
+  units: '\(10^{10}M_\odot\)'
+  type: float
+- name: M_hot_halo
+  units: '\(10^{10}M_\odot\)'
+  type: float
+  descr: Mass of hot gas in host halo
+- name: M_cold
+  descr: Mass of cold gas
+  units: '\(10^{10}M_\odot\)'
+  type: float
+- name: M_bulge
+  descr: Stellar mass of bulge component
+  units: '\(10^{10}M_\odot\)'
+  type: float
+- name: M_BH
+  descr: Mass of black hole
+  units: '\(10^{10}M_\odot\)'
+  type: float
+- name: BHAR
+  descr: Total accretion rate onto black hole
+  units: '\(10^{10}M_\odot\)/yr'
+  type: float
+- name: BHAR_radio
+  descr: Black hole accretion rate onto black hole
+  units: '\(10^{10}M_\odot\)'
+  type: float
+- name: Z_star
+  type: float
+  descr: Mass weighted metallicity of stars
+  units: '\(Z_\odot\)'
+- name: Z_cold
+  type: float
+  descr: Mass weighted metallicity of cold gas
+  units: '\(Z_\odot\)'
+- name: Z_hot_halo
+  descr: Metallicity of hot gas in host halo
+  units: '\(Z_\odot\)'
+  type: float
+- name: SFR_inst
+  descr: Instantaneous star formation rate (SFR)
+  units: '\(M_\odot\)/yr'
+  type: float
+- name: SFR
+  type: float
+  descr: star formation rate averaged over past 1E8 yr
+  units: '\(M_\odot\)/yr'
+- name: cosi
+- name: t_merge
+  descr: Time since last merger greater than 1:10
+  units: 'Gyr'
+  type: float
+- name: t_major_merge
+  descr: Time since last merger greater than 1:4
+  type: float
+  units: 'Gyr'
+- name: age_mean
+  units: 'Gyr'
+  descr: Mean stellar mass weighted age of stars
+  type: float
+- name: v_disk
+  type: float
+  descr: Maximum rotation velocity of disk
+  units: 'km/s'
+
+- name: candels_field
+  title: field
+  type: byte
+  flag: top
+  descr: "CANDELS field (COSMOS, EGS, GOODS-N, GOODS-S, UDS)"
+  enum: ['COSMOS', 'EGS', 'GOODS-N', 'GOODS-S', 'UDS']
+- name: candels_realization
+  title: realization
+  type: byte
+  flag: top
+  descr: "Realization between 0-7"
+- name: candels_gal_id
+  title: gal_id
+  type: long
+- name: bolshoi_halo_id
+  type: long
+  descr: halo id from Bolshoi halo catalog
+- name: UV1500_rest
+  type: float
+
+- name: parallax
+  type: double
+  descr: Parallax
+  units: mas
+- name: pmra
+  type: double
+  descr: Proper motion in right ascension direction
+  units: mas/year
+- name: pmdec
+  type: double
+  descr: Proper motion in declination direction
+  units: mas/year
+- name: GAIA_source_id
+  title: source_id
+  type: long
+  descr: Unique source Identifier
+- name: GAIA_random_index
+  title: random_index
+  type: long
+  descr: Random index used to select subsets
+- name: GAIA_ppos_x_error
+  title: ra_error
+  type: double
+  descr: Standard error of right ascension
+  units: deg
+- name: GAIA_ppos_y_error
+  title: dec_error
+  type: double
+  descr: Standard error of declination
+  units: deg
+- name: GAIA_parallax_error
+  title: parallax_error
+  type: double
+  descr: Standard error of parallax
+  units: mas
+- name: GAIA_parallax_over_error
+  title: parallax_over_error
+  type: float
+  descr: Parallax divided by its error
+- name: GAIA_pmra_error
+  title: pmra_error
+  type: double
+  descr: Standard error of proper motion in right ascension direction
+  units: mas/year
+- name: GAIA_pmdec_error
+  title: pmdec_error
+  type: double
+  descr: Standard error of proper motion in declination direction
+  units: mas/year
+- name: GAIA_l
+  title: l
+  type: double
+  descr: Galactic longitude
+  units: deg
+- name: GAIA_b
+  title: b
+  type: double
+  descr: Galactic latitude
+  units: deg
+- name: GAIA_phot_g_mean_mag
+  title: phot_g_mean_mag
+  type: float
+  descr: Extincted apparent G-band mean magnitude
+  reversed: true
+- name: GAIA_phot_g_mean_mag_error
+  title: phot_g_mean_mag_error
+  type: float
+  descr: true (i.e. after extinction, but before error convolution) apparent G-Band mean magnitude
+- name: GAIA_phot_bp_mean_mag
+  title: phot_bp_mean_mag
+  type: float
+  descr: Extincted apparent G_Bp-band mean magnitude
+  reversed: true
+- name: GAIA_phot_bp_mean_mag_error
+  title: phot_bp_mean_mag_error
+  type: float
+  descr: Standard error of G_Bp-band mean magnitude
+- name: GAIA_phot_rp_mean_mag
+  title: phot_rp_mean_mag
+  type: float
+  descr: Extincted apparent G_Rp-band mean magnitude
+  reversed: true
+- name: GAIA_phot_rp_mean_mag_error
+  title: phot_rp_mean_mag_error
+  type: float
+  descr: Standard error of G_Rp-band mean magnitude
+- name: GAIA_bp_rp
+  title: bp_rp
+  type: float
+  descr: true BP - RP colour
+  units: mag
+- name: GAIA_bp_g
+  title: bp_g
+  type: float
+  descr: BP - G colour
+  units: mag
+- name: GAIA_g_rp
+  title: g_rp
+  type: float
+  descr: true G - RP colour
+  units: mag
+- name: GAIA_a_g_val
+  title: a_g_val
+  type: float
+  descr: line-of-sight extinction in the G band, A_G
+  units: mag
+- name: GAIA_e_bp_min_rp_val
+  title: e_bp_min_rp_val
+  type: float
+  descr: line-of-sight reddening E(BP-RP)
+  units: mag
+- name: GAIA_teff_val
+  title: teff_val
+  type: float
+  descr: Stellar effective temperature
+  units: K
+- name: GAIA_lum_val
+  title: lum_val
+  type: float
+  descr: Stellar luminosity
+  units: L_sun
+- name: GAIA_radial_velocity
+  title: radial_velocity
+  type: double
+  descr: Radial velocity
+  units: km/s
+- name: GAIA_radial_velocity_error
+  title: radial_velocity_error
+  type: double
+  units: km/s
+  descr: Radial velocity error

@@ -2,14 +2,12 @@
 {-# LANGUAGE ViewPatterns #-}
 
 import           Control.Arrow (first, second)
-import           Control.Exception (throwIO)
 import           Control.Monad ((<=<), forM_, when, unless, void)
 import           Control.Monad.IO.Class (liftIO)
 import           Data.Default (Default(def))
 import qualified Data.HashMap.Strict as HM
 import           Data.Maybe (fromMaybe, isNothing, isJust)
 import qualified Data.Text as T
-import qualified Data.Yaml as YAML
 import qualified Network.HTTP.Client as HTTP
 import qualified System.Console.GetOpt as Opt
 import           System.Environment (getProgName, getArgs)
@@ -31,6 +29,7 @@ import Query
 import Ingest
 import Html
 import Attach
+import JSON
 
 routes :: R.RouteMap Action
 routes = R.routes
@@ -84,7 +83,7 @@ main = do
       putStrLn $ Opt.usageInfo ("Usage: " ++ prog ++ " [OPTION...]\n       " ++ prog ++ " [OPTION...] -i SIM FILE[@OFFSET] ...") optDescr
       exitFailure
   conf <- C.load $ optConfig opts
-  catalogs <- either throwIO return =<< YAML.decodeFileEither (fromMaybe "catalogs.yml" $ conf C.! "catalogs")
+  catalogs <- loadYamlPath (fromMaybe "catalogs" $ conf C.! "catalogs")
   httpmgr <- HTTP.newManager HTTP.defaultManagerSettings
     { HTTP.managerResponseTimeout = HTTP.responseTimeoutMicro 300000000
     }

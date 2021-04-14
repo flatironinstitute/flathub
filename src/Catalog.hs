@@ -243,9 +243,9 @@ instance Monoid Catalogs where
 
 instance J.FromJSON Catalogs where
   parseJSON = J.withObject "top" $ \o -> do
-    dict <- o J..:? "dict" J..!= mempty
-    groups <- o J..:? "group" J..!= mempty
-    cats <- mapM (parseCatalog $ expandAllFields dict) (HM.delete "dict" $ HM.delete "group" o)
+    dict <- o J..:? "_dict" J..!= mempty
+    groups <- o J..:? "_group" J..!= mempty
+    cats <- mapM (parseCatalog $ expandAllFields dict) (HM.delete "_dict" $ HM.delete "_group" o)
     mapM_ (\c -> unless (HM.member c cats) $ fail $ "Group catalog " ++ show c ++ " not found") $ groupingsCatalogs groups
     return $ Catalogs (expandFields dict) cats groups
 
