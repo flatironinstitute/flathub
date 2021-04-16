@@ -1,6 +1,10 @@
-FROM fpco/stack-build-small:lts-16.31
-RUN apt-get update && \
-    apt-get install -y libhdf5-dev libbz2-dev pkg-config npm && \
+FROM fpco/stack-build-small:lts-17.8
+ADD https://deb.nodesource.com/gpgkey/nodesource.gpg.key /tmp/
+RUN apt-key add /tmp/nodesource.gpg.key && \
+    echo deb https://deb.nodesource.com/node_12.x bionic main > /etc/apt/sources.list.d/nodesource.list && \
+    apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y libhdf5-dev libbz2-dev pkg-config nodejs && \
     rm -rf /var/lib/apt/lists/*
 RUN echo /opt/ghc/*/lib/ghc-*/rts > /etc/ld.so.conf.d/ghc.conf && \
     ldconfig
