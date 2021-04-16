@@ -1,4 +1,4 @@
-FROM fpco/stack-build-small:lts-16.31
+FROM fpco/stack-build-small:lts-17.8
 RUN apt-get update && \
     apt-get install -y libhdf5-dev libbz2-dev pkg-config npm && \
     rm -rf /var/lib/apt/lists/*
