@@ -26,7 +26,7 @@ module Field
   ) where
 
 import           Control.Applicative (Alternative, empty, (<|>))
-import           Control.Monad (guard, join)
+import           Control.Monad (guard, join, when)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Types as J
 import qualified Data.ByteString as BS
@@ -183,6 +183,7 @@ parseFieldGroup dict = parseFieldDefs def where
       (\n -> maybe (fail $ "Unknown dict key: " ++ show n) return $ HM.lookup n dict)
       fieldDict
     fieldName <- f J..:? "name" J..!= fieldName d
+    when (T.any ('.' ==) fieldName) $ fail $ "Invalid field name: " ++ show fieldName
     fieldType <- f J..:! "type" J..!= fieldType d
     fieldEnum <- maybe (fieldEnum d <|> V.fromList ["false","true"] <$ guard (typeIsBoolean fieldType)) join
       <$> f J..:! "enum"

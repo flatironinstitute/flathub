@@ -10,7 +10,6 @@ module JSON
   , loadYamlPath
   ) where
 
-import           Control.Exception (throwIO)
 import qualified Data.Aeson.Types as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.ByteString.Builder as B
@@ -85,9 +84,9 @@ loadYamlPath :: J.FromJSON a => FilePath -> IO a
 loadYamlPath f = do
   d <- doesDirectoryExist f
   either (fail . p) return . J.parseEither J.parseJSON =<< if d then
-      J.Object . HM.fromList <$> (mapM ent =<< listDirectory f)
+      J.Object . HM.fromList <$> (mapM ent . filter (not . ('.' ==) . head) =<< listDirectory f)
     else do
-      (w, r) <- either throwIO return =<< Y.decodeFileWithWarnings f
+      (w, r) <- either (fail . p . Y.prettyPrintParseException) return =<< Y.decodeFileWithWarnings f
       mapM_ (hPutStrLn stderr . p . show) w
       return r
   where
