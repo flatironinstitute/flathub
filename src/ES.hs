@@ -9,6 +9,7 @@ module ES
   ( initServer
   , createIndex
   , checkIndices
+  , storedFields
   , queryIndex
   , queryBulk
   , createBulk
@@ -18,7 +19,7 @@ module ES
   ) where
 
 import           Control.Arrow ((&&&))
-import           Control.Monad ((<=<), forM, forM_, unless)
+import           Control.Monad ((<=<), forM, forM_, when, unless)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (ask, asks)
 import qualified Data.Aeson as J
@@ -36,7 +37,6 @@ import qualified Data.HashMap.Strict as HM
 import           Data.IORef (newIORef, readIORef, writeIORef)
 import           Data.List (find)
 import           Data.Maybe (mapMaybe)
-import           Data.Monoid ((<>))
 import           Data.Proxy (Proxy)
 import           Data.String (IsString)
 import qualified Data.Text as T
@@ -44,13 +44,17 @@ import qualified Data.Vector as V
 import qualified Network.HTTP.Client as HTTP
 import           Network.HTTP.Types.Header (hAccept, hContentType)
 import           Network.HTTP.Types.Method (StdMethod(GET, PUT, POST), renderStdMethod)
+import           Network.HTTP.Types.Status (badRequest400)
 import qualified Network.HTTP.Types.URI as HTTP (Query)
 import qualified Network.URI as URI
 import           Text.Read (readEither)
 import qualified Waimwork.Config as C
+import           Waimwork.Response (response)
+import           Waimwork.Result (result)
 
 import Monoid
 import JSON
+import Type
 import Field
 import Catalog
 import Global
@@ -95,7 +99,7 @@ elasticSearch meth url query body = do
         , HTTP.requestBody = bodyRequest body
         }
   liftIO $ do
-    unless True $ do
+    when debug $ do
       print $ HTTP.path req'
       case bodyRequest body of
         HTTP.RequestBodyBS b -> BSC.putStrLn b
@@ -103,10 +107,11 @@ elasticSearch meth url query body = do
         _ -> BSC.putStrLn "???"
     r <- either fail return . (J.parseEither J.parseJSON <=< AP.eitherResult)
       =<< HTTP.withResponse req' (globalHTTP glob) parse
-    -- print r
+    when debug $ print r
     return r
   where
   parse r = AP.parseWith (HTTP.responseBody r) (J.json <* AP.endOfInput) BS.empty
+  debug = False
 
 catalogURL :: Catalog -> [String]
 catalogURL Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } =
@@ -171,6 +176,14 @@ checkIndices = do
   boolish (J.String "true") = return True
   boolish (J.String "false") = return False
   boolish v = J.typeMismatch "bool" v
+
+storedFields :: MonadFail m => ESStoreField -> J.Object -> m J.Object
+storedFields ESStoreSource o = case HM.lookup "_source" o of
+  Just (J.Object s) -> return s
+  _ -> fail "missing source object"
+storedFields _ o = case HM.lookup "fields" o of
+  Just (J.Object s) -> return $ HM.map unsingletonJSON s
+  _ -> fail "missing fields object"
 
 scrollTime :: IsString s => s
 scrollTime = "60s"
@@ -301,8 +314,10 @@ scrollSearch sid = elasticSearch GET ["_search", "scroll"] [] $ JE.pairs $
      "scroll" J..= J.String scrollTime
   <> "scroll_id" J..= sid
 
-queryBulk :: Catalog -> Query -> M (IO (Word, V.Vector [J.Value]))
+queryBulk :: Catalog -> Query -> M (IO (Word, V.Vector J.Object))
 queryBulk cat@Catalog{ catalogStore = CatalogES{ catalogStoreField = store } } query@Query{..} = do
+  unless (queryOffset == 0 && null queryAggs) $
+    result $ response badRequest400 [] ("offset,aggs not supported for download" :: String)
   glob <- ask
   sidv <- liftIO $ newIORef Nothing
   return $ do
@@ -320,13 +335,8 @@ queryBulk cat@Catalog{ catalogStore = CatalogES{ catalogStoreField = store } } q
     <*> parseJSONField "hits" (J.withObject "hits" $ \hits -> (,)
       <$> (hits J..: "total" >>= (J..: "value"))
       <*> parseJSONField "hits" (J.withArray "hits" $
-        V.mapM $ J.withObject "hit" $ case store of
-          ESStoreSource ->
-            parseJSONField "_source" $ J.withObject "source" $ \d ->
-              return $ map (\f -> HM.lookupDefault J.Null (fieldName f) d) queryFields
-          _ ->
-            parseJSONField "fields" $ J.withObject "fields" $ \d ->
-              return $ map (\f -> unsingletonJSON $ HM.lookupDefault J.Null (fieldName f) d) queryFields) hits)
+        V.mapM $ J.withObject "hit" $ storedFields store)
+        hits)
       q
 
 createBulk :: Catalog -> [(String, J.Series)] -> M ()

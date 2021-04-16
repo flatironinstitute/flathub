@@ -13,17 +13,18 @@ x-es:
     - esdata:/usr/share/elasticsearch/data
 
 services:
-  astrosims-es:
+  flathub-es:
     << : *es
-    container_name: astrosims-es
+    container_name: flathub-es
     environment:
-      - cluster.name=astrosims
+      # backward compatibility for cluster name:
+      - cluster.name=astrosums
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms16g -Xmx16g"
-      - "discovery.seed_hosts=astrosims-es"
-      - "cluster.initial_master_nodes=astrosims-es"
+      - "discovery.seed_hosts=flathub-es"
+      - "cluster.initial_master_nodes=flathub-es"
       - "node.max_local_storage_nodes=8"
-      - "node.name=astrosims-es"
+      - "node.name=flathub-es"
     expose:
       - "9200"
     ports:
@@ -31,22 +32,22 @@ services:
   es:
     << : *es
     environment:
-      - cluster.name=astrosims
+      - cluster.name=flathub
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms16g -Xmx16g"
-      - "discovery.seed_hosts=astrosims-es"
-      - "cluster.initial_master_nodes=astrosims-es"
+      - "discovery.seed_hosts=flathub-es"
+      - "cluster.initial_master_nodes=flathub-es"
       - "node.max_local_storage_nodes=8"
     scale: 4
-  astrosims:
+  flathub:
     build: .
-    image: flatironinstitute/astrosims-reproto
+    image: flatironinstitute/flathub
     networks:
       - esnet
     ports:
       - "80:8092"
     depends_on:
-      - astrosims-es
+      - flathub-es
 
 volumes:
   esdata:

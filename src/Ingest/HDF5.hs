@@ -7,6 +7,7 @@ module Ingest.HDF5
   ( ingestHDF5
   ) where
 
+import           Control.Arrow ((&&&))
 import           Control.Exception (bracket, handleJust)
 import           Control.Monad (foldM, guard, when, unless)
 import           Control.Monad.IO.Class (liftIO)
@@ -16,10 +17,9 @@ import qualified Bindings.HDF5.Error as H5E
 import qualified Bindings.HDF5.ErrorCodes as H5E
 import qualified Data.Aeson as J
 import qualified Data.ByteString.Char8 as BSC
+import           Data.Char (toLower)
 import           Data.Foldable (fold)
 import           Data.List (find, nub)
-import           Data.Maybe (fromMaybe)
-import           Data.Monoid ((<>))
 import           Data.Proxy (Proxy(Proxy))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -29,6 +29,7 @@ import qualified Data.Vector.Storable.Mutable as VSM
 import           Data.Word (Word64, Word8)
 import           System.IO (hFlush, stdout)
 
+import Type
 import Field
 import Catalog
 import Global
@@ -37,11 +38,24 @@ import Ingest.Types
 
 type DataBlock = [(T.Text, TypeValue V.Vector)]
 
-attributePrefix :: T.Text
-attributePrefix = "_attribute:"
+data IngestFlag
+  = IngestAttribute
+  | IngestOptional
+  | IngestConst
+  | IngestIllustris
+  deriving (Eq, Enum, Bounded, Show)
 
-optionalPrefix :: T.Text
-optionalPrefix = "_optional:"
+ingestFlags :: [(T.Text, IngestFlag)]
+ingestFlags = map (s . show &&& id) $ enumFromTo minBound maxBound where
+  s ~('I':'n':'g':'e':'s':'t':u:r) = T.pack (toLower u : r)
+
+parseIngest :: FieldSub t m -> (Maybe IngestFlag, T.Text)
+parseIngest Field{ fieldName = n, fieldIngest = Nothing } = (Nothing, n)
+parseIngest Field{ fieldName = n, fieldIngest = Just (T.stripPrefix "_" -> Just (T.breakOn ":" -> ((`lookup` ingestFlags) -> Just f, s))) } = 
+  (Just f, case T.uncons s of
+    Nothing -> n
+    Just (~':', r) -> r)
+parseIngest Field{ fieldIngest = Just i } = (Nothing, i)
 
 hdf5ReadVector :: H5.NativeType a => H5.Dataset -> [H5.HSize] -> Word64 -> IO (V.Vector a)
 hdf5ReadVector d o l = do
@@ -84,17 +98,18 @@ hdf5ReadType t           _ = fail $ "Unsupported HDF5 type: " ++ show t
 
 loadBlock :: Ingest -> H5.File -> IO DataBlock
 loadBlock info@Ingest{ ingestCatalog = Catalog{ catalogFieldGroups = cat }, ingestOffset = off } hf = concat <$> mapM loadf cat where
-  loadf f = case fromMaybe (fieldName f) $ fieldIngest f of
-    "" -> concat <$> mapM (loadf . mappend f) (fold $ fieldSub f)
-    n | attributePrefix `T.isPrefixOf` n -> return []
-    (T.stripPrefix optionalPrefix -> Just n) ->
+  loadf f = case parseIngest f of
+    (Nothing, "") -> concat <$> mapM (loadf . mappend f) (fold $ fieldSub f)
+    (Just IngestAttribute, _) -> return []
+    (Just IngestConst, _) -> return []
+    (Just IngestOptional, n) -> 
       handleJust
         (\(H5E.errorStack -> (H5E.HDF5Error{ H5E.classId = cls, H5E.majorNum = Just H5E.Sym, H5E.minorNum = Just H5E.NotFound }:_)) -> guard (cls == H5E.hdfError))
         (\() -> return [])
-      $ loadf f{ fieldIngest = Just n }
-    n | "_illustris:" `T.isPrefixOf` n ->
+      $ loadf f{ fieldIngest = Just n } -- not quite right name handling
+    (Just IngestIllustris, _) ->
       return [(fieldName f, Long (V.generate (fromIntegral $ maybe id (min . subtract off) (ingestSize info) $ ingestBlockSize info) ((+) (fromIntegral $ ingestStart info + off) . fromIntegral)))]
-    n -> bracket (H5.openDataset hf (TE.encodeUtf8 n) Nothing) H5.closeDataset $ \hd -> do
+    (Nothing, n) -> withDataset hf n $ \hd -> do
       let
         loop _ [] = return []
         loop i (f':fs') = do
@@ -106,7 +121,7 @@ ingestBlock :: Ingest -> DataBlock -> M Int
 ingestBlock info@Ingest{ ingestCatalog = cat@Catalog{ catalogStore = ~CatalogES{} }, ingestOffset = off } dat = do
   n <- case nub $ map (unTypeValue V.length . snd) dat of
     [n] -> return n
-    n -> fail $ "Inconsistent data length: " ++ show n
+    n -> fail $ "Inconsistent data lengths: " ++ show n
   when (n /= 0) $ ES.createBulk cat $ map doc [0..pred n]
   return n
   where
@@ -117,24 +132,31 @@ ingestBlock info@Ingest{ ingestCatalog = cat@Catalog{ catalogStore = ~CatalogES{
 withHDF5 :: FilePath -> (H5.File -> IO a) -> IO a
 withHDF5 fn = bracket (H5.openFile (BSC.pack fn) [H5.ReadOnly] Nothing) H5.closeFile
 
-withAttribute :: H5.File -> BSC.ByteString -> (H5.Attribute -> IO a) -> IO a
+withDataset :: H5.File -> T.Text -> (H5.Dataset -> IO a) -> IO a
+withDataset hf n = bracket
+  (H5.openDataset hf (TE.encodeUtf8 n) Nothing)
+  H5.closeDataset
+
+withAttribute :: H5.File -> T.Text -> (H5.Attribute -> IO a) -> IO a
 withAttribute hf p = bracket
   (if BSC.null g then H5.openAttribute hf a else bracket
     (H5.openGroup hf g Nothing)
     H5.closeGroup $ \hg -> H5.openAttribute hg a)
   H5.closeAttribute
-  where (g, a) = BSC.breakEnd ('/'==) p
+  where (g, a) = BSC.breakEnd ('/'==) (TE.encodeUtf8 p)
 
-readAttribute :: H5.File -> BSC.ByteString -> Type -> IO (TypeValue V.Vector)
+readAttribute :: H5.File -> T.Text -> Type -> IO (TypeValue V.Vector)
 readAttribute hf p t = withAttribute hf p $ \a ->
   hdf5ReadType t $ VS.convert <$> H5.readAttribute a
 
-readScalarAttribute :: H5.File -> BSC.ByteString -> Type -> IO Value
-readScalarAttribute hf p t = do
-  r <- readAttribute hf p t
-  let l = unTypeValue V.length r
-  unless (l == 1) $ fail ("attribute " ++ show p ++ ": expected scalar, got " ++ show l)
-  return $ fmapTypeValue1 V.head r
+readScalarValue :: T.Text -> TypeValue V.Vector -> Value
+readScalarValue p r
+  | unTypeValue V.length r == 1 = fmapTypeValue1 V.head r
+  | otherwise = error $ "non-scalar const value: " ++ show p
+
+readScalarAttribute :: H5.File -> T.Text -> Type -> IO Value
+readScalarAttribute hf p t =
+  readScalarValue p <$> readAttribute hf p t
 
 ingestHFile :: Ingest -> H5.File -> M Word64
 ingestHFile info hf = do
@@ -143,23 +165,27 @@ ingestHFile info hf = do
     then return 0
     else loop info'
   where
-  infof i f@Field{ fieldIngest = (>>= T.stripPrefix attributePrefix) -> Just n } = liftIO $ do
-    v <- readScalarAttribute hf (TE.encodeUtf8 n) (fieldType f)
-    return i{ ingestConsts = f{ fieldType = v, fieldSub = Proxy } : ingestConsts i }
-  infof i Field{ fieldIngest = (>>= T.stripPrefix "_illustris:") -> Just ill } = liftIO $ do
-    Long sz <- readScalarAttribute hf ("Header/N" <> case ill of { "Subhalo" -> "subgroup" ; s -> TE.encodeUtf8 (T.toLower s) } <> "s_ThisFile") (Long Proxy)
-    handleJust
-      (\(H5E.errorStack -> (H5E.HDF5Error{ H5E.classId = cls, H5E.majorNum = Just H5E.Attr, H5E.minorNum = Just H5E.NotFound }:_)) -> guard (cls == H5E.hdfError)) return $ do
-        Long fi <- readScalarAttribute hf "Header/Num_ThisFile" (Long Proxy)
-        Long ids <- readAttribute hf ("Header/FileOffsets_" <> TE.encodeUtf8 ill) (Long Proxy)
-        let si = fromIntegral (ids V.! fromIntegral fi)
-        unless (si == ingestStart i) $ fail "start offset mismatch"
-    si <- constv "simulation" i
-    sn <- constv "snapshot" i
-    return i
-      { ingestPrefix = si ++ '_' : sn ++ "_"
-      , ingestSize = Just (fromIntegral sz) }
-  infof i _ = return i
+  infof i f = liftIO $ case parseIngest f of
+    (Just IngestAttribute, n) -> do
+      v <- readScalarAttribute hf n (fieldType f)
+      return i{ ingestConsts = f{ fieldType = v, fieldSub = Proxy } : ingestConsts i }
+    (Just IngestConst, n) -> do
+      v <- readScalarValue n <$> withDataset hf n (\hd -> hdf5ReadType (fieldType f) $ hdf5ReadVector hd [] 2)
+      return i{ ingestConsts = f{ fieldType = v, fieldSub = Proxy } : ingestConsts i }
+    (Just IngestIllustris, ill) -> do
+      Long sz <- readScalarAttribute hf ("Header/N" <> case ill of { "Subhalo" -> "subgroup" ; s -> T.toLower s } <> "s_ThisFile") (Long Proxy)
+      handleJust
+        (\(H5E.errorStack -> (H5E.HDF5Error{ H5E.classId = cls, H5E.majorNum = Just H5E.Attr, H5E.minorNum = Just H5E.NotFound }:_)) -> guard (cls == H5E.hdfError)) return $ do
+          Long fi <- readScalarAttribute hf "Header/Num_ThisFile" (Long Proxy)
+          Long ids <- readAttribute hf ("Header/FileOffsets_" <> ill) (Long Proxy)
+          let si = fromIntegral (ids V.! fromIntegral fi)
+          unless (si == ingestStart i) $ fail "start offset mismatch"
+      si <- constv "simulation" i
+      sn <- constv "snapshot" i
+      return i
+        { ingestPrefix = si ++ '_' : sn ++ "_"
+        , ingestSize = Just (fromIntegral sz) }
+    _ -> return i
   constv f = maybe (fail $ "const field " ++ show f ++ " not fonud")
     (return . show . fieldType)
     . find ((f ==) . fieldName) . ingestConsts

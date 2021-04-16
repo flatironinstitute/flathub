@@ -5,6 +5,7 @@ http {
   ssl.insecure = true
 }
 elasticsearch {
-  server = "http://astrosims-es:9200/"
+  server = "http://flathub-es:9200/"
 }
 dev = false
+datadir = "/data"

@@ -9,7 +9,7 @@ import struct
 import sys
 
 argp = argparse.ArgumentParser(description="gaea catalog pgsql import")
-argp.add_argument('-D', '--database', default='astrosims', help="Database name")
+argp.add_argument('-D', '--database', default='flathub', help="Database name")
 argp.add_argument('-T', '--table', default='gaea', help="Table name")
 argp.add_argument('-o', '--offset', type=int, default=0, help="Initial starting offset")
 argp.add_argument('file', nargs='+', help="Simulation files")

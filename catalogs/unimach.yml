@@ -1,0 +1,156 @@
+title: UniverseMachine
+synopsis: Empirical model developed by P. Behroozi and collaborators
+descr: >
+  These lightcones have been populated using the UniverseMachine empirical model. For more details please see <a class="underline" target="_blank" href='http://adsabs.harvard.edu/abs/2018arXiv180607893B'>Behroozi et al.</a> (2019) and <a class="underline" href="https://arxiv.org/abs/2102.00108">Somerville et al. </a> (2020).<br></br>
+  Data Release: v1 2019-07-26.<br></br>
+  Data also available at <a class="underline" target="_blank" href="https://www.peterbehroozi.com/data.html">peterbehroozi.com</a>.
+index: unimach
+count: 250614266
+order: 'candels-2'
+fields:
+  - name: field
+    dict: candels_field
+    flag: top
+  - name: realization
+    dict: candels_realization
+    flag: top
+
+  - name: RA
+    dict: ppos_x
+    type: float
+    units: 'deg'
+  - name: Dec
+    dict: ppos_y
+    type: float
+    units: 'deg'
+  - name: Z(los)
+    dict: redshift
+    type: float
+    descr: Redshift including redshift-space distortions.
+  - name: Z(cosmo)
+    dict: true_redshift
+    type: float
+    descr: Cosmological redshift---i.e., without redshift-space distortions.
+  - name: Scale
+    type: float
+    descr: Scale factor of the timestep from which the halo was taken
+  - name: ID
+    dict: candels_gal_id # also halo_id
+    type: long
+    descr: Halo ID (unique across all timesteps)
+  - name: DescID
+    type: long
+    descr: ID of descendant halo (or -1 at z = 0)
+  - name: UPID
+    type: long
+    descr: -1 for central halos, otherwise, ID of largest parent halo
+  - name: ""
+    title: Position
+    units: 'Mpc'
+    scale: 1.47059
+    sub:
+    - name: 'X'
+      title: 'X'
+      dict: pos_x
+      type: float
+      descr: 'Position of halo relative to axes of lightcone (distance along lightcone) in comoving Mpc/h'
+    - name: 'Y'
+      title: 'Y'
+      dict: pos_y
+      type: float
+      descr: 'Position of halo relative to axes of lightcone (distance perpendicular to lightcone X-axis) in comoving Mpc/h'
+    - name: 'Z'
+      title: 'Z'
+      dict: pos_z
+      type: float
+      descr: 'Position of halo relative to axes of lightcone (distance perpendicular to lightcone X-axis) in comoving Mpc/h'
+  - name: ""
+    title: Velocity
+    units: 'km/s'
+    dict: vel
+    sub:
+    - name: VX
+      # title: '\(V_x\)'
+      type: float
+      descr: 'Peculiar velocity in physical (i.e., non-comoving) km/s, relative to lightcone axes'
+      dict: vel_x
+    - name: VY
+      # title: '\(V_y\)'
+      type: float
+      descr: 'Peculiar velocity in physical (i.e., non-comoving) km/s, relative to lightcone axes'
+      dict: vel_y
+    - name: VZ
+      # title: '\(V_z\)'
+      type: float
+      descr: 'Peculiar velocity in physical (i.e., non-comoving) km/s, relative to lightcone axes'
+      dict: vel_z
+  - name: M
+    dict: M
+    type: float
+    descr: Halo mass (Bryan & Norman (BN98) 1998 virial mass)
+    units: '\(10^{10}M_\odot\)'
+    scale: 1e-10
+  - name: V
+    type: float
+    descr: 'Halo \(v_{max}\) (physical)'
+    units: 'km/s'
+  - name: MP
+    type: float
+    descr: Halo peak historical mass (BN98 virial mass)
+    units: '\(10^{10}M_\odot\)'
+    scale: 1e-10
+  - name: VMP
+    type: float
+    descr: Halo vmax at the time when peak mass was reached
+    units: 'km/s'
+  - name: R
+    dict: R
+    type: float
+    descr: 'Halo raidus (BN98 vir, co-moving kpc/h)'
+    units: 'Mpc'
+    scale: 0.00147059
+    ingest: 'scale:Scale'
+  - name: Rank1
+    type: float
+    descr: 'Halo rank (see UniverseMachine paper)'
+    units: '\(\Delta v_{max}\)'
+  - name: SM
+    dict: M_stellar
+    type: float
+    descr: True stellar mass
+    units: '\(10^{10}M_\odot\)'
+    scale: 1e-10
+  - name: ICL
+    type: float
+    descr: True intracluster stellar mass
+    units: '\(10^{10}M_\odot\)'
+    scale: 1e-10
+  - name: SFR
+    dict: SFR
+    type: float
+    descr: True star formation rate
+    units: '\(M_\odot/yr\)'
+  - name: obs_SM
+    type: float
+    descr: Observed stellar mass, including random & systematic errors
+    units: '\(10^{10}M_\odot\)'
+    scale: 1e-10
+  - name: obs_SFR
+    type: float
+    descr: Observed star formation rate (SFR), including random & systemic errors
+    units: '\(M_\odot/yr\)'
+  - name: SSFR
+    type: float
+    descr: Observed SSFR
+  - name: "SM/HM"
+    type: float
+    descr: SM/HM ratio
+  - name: obs_UV
+    dict: UV1500_rest
+    type: float
+    descr: Observed UV Magnitude
+    units: '\(M_{1500} AB\)'
+  - name:  A_UV
+    type: float
+    descr: UV attenuation from dust
+    units: 'AB Mag'

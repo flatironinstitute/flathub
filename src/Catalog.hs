@@ -35,11 +35,11 @@ import qualified Data.HashMap.Strict as HM
 import qualified Data.HashSet as HS
 import           Data.Maybe (catMaybes, maybeToList)
 import           Data.Proxy (Proxy(Proxy))
-import           Data.Semigroup (Semigroup((<>)))
 import qualified Data.Text as T
 import qualified Data.Vector as V
 
 import Monoid
+import Type
 import Field
 import JSON
 
@@ -243,9 +243,9 @@ instance Monoid Catalogs where
 
 instance J.FromJSON Catalogs where
   parseJSON = J.withObject "top" $ \o -> do
-    dict <- o J..:? "dict" J..!= mempty
-    groups <- o J..:? "group" J..!= mempty
-    cats <- mapM (parseCatalog $ expandAllFields dict) (HM.delete "dict" $ HM.delete "group" o)
+    dict <- o J..:? "_dict" J..!= mempty
+    groups <- o J..:? "_group" J..!= mempty
+    cats <- mapM (parseCatalog $ expandAllFields dict) (HM.delete "_dict" $ HM.delete "_group" o)
     mapM_ (\c -> unless (HM.member c cats) $ fail $ "Group catalog " ++ show c ++ " not found") $ groupingsCatalogs groups
     return $ Catalogs (expandFields dict) cats groups
 
@@ -312,7 +312,7 @@ data Query = Query
   , queryLimit :: Word
   , querySort :: [(Field, Bool)]
   , queryFields :: [Field]
-  , queryFilter :: [(FieldSub Filter Proxy)]
+  , queryFilter :: [FieldSub Filter Proxy]
   , querySample :: Double
   , querySeed :: Maybe Word
   , queryAggs :: [QueryAgg]

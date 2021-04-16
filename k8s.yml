@@ -1,15 +1,15 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: astrosims
+  name: flathub
 spec:
   selector:
     matchLabels:
-      name: astrosims
+      name: flathub
   template:
     metadata:
       labels:
-        name: astrosims
+        name: flathub
     spec:
       initContainers:
       - name: wait-es
@@ -18,10 +18,10 @@ spec:
         command:
           - sh
           - '-c'
-          - until wget http://astrosims-es:9200/ ; do sleep 5 ; done
+          - until wget http://flathub-es:9200/ ; do sleep 5 ; done
       containers:
-      - image: docker-registry:25703/flatironinstitute/astrosims
-        name: astrosims
+      - image: docker-registry:25703/flatironinstitute/flathub
+        name: flathub
         resources:
           requests:
             cpu: 2
@@ -54,10 +54,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: astrosims
+  name: flathub
 spec:
   selector:
-    name: astrosims
+    name: flathub
   ports:
   - name: http
     port: 80

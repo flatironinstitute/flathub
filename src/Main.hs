@@ -2,18 +2,17 @@
 {-# LANGUAGE ViewPatterns #-}
 
 import           Control.Arrow (first, second)
-import           Control.Exception (throwIO)
 import           Control.Monad ((<=<), forM_, when, unless, void)
 import           Control.Monad.IO.Class (liftIO)
 import           Data.Default (Default(def))
 import qualified Data.HashMap.Strict as HM
 import           Data.Maybe (fromMaybe, isNothing, isJust)
 import qualified Data.Text as T
-import qualified Data.Yaml as YAML
 import qualified Network.HTTP.Client as HTTP
 import qualified System.Console.GetOpt as Opt
 import           System.Environment (getProgName, getArgs)
 import           System.Exit (exitFailure)
+import           System.FilePath ((</>))
 import           System.IO (hPutStrLn, stderr)
 import qualified Waimwork.Config as C
 import           Waimwork.Response (response)
@@ -29,6 +28,8 @@ import Static
 import Query
 import Ingest
 import Html
+import Attach
+import JSON
 
 routes :: R.RouteMap Action
 routes = R.routes
@@ -42,6 +43,9 @@ routes = R.routes
   , R.routeNormCase catalogBulk
   , R.routeNormCase sqlSchema
   , R.routeNormCase csvSchema
+  , R.routeNormCase attachment
+  , R.routeNormCase attachmentBulk
+  , R.routeNormCase attachmentsBulk
   ]
 
 data Opts = Opts
@@ -79,7 +83,7 @@ main = do
       putStrLn $ Opt.usageInfo ("Usage: " ++ prog ++ " [OPTION...]\n       " ++ prog ++ " [OPTION...] -i SIM FILE[@OFFSET] ...") optDescr
       exitFailure
   conf <- C.load $ optConfig opts
-  catalogs <- either throwIO return =<< YAML.decodeFileEither (fromMaybe "catalogs.yml" $ conf C.! "catalogs")
+  catalogs <- loadYamlPath (fromMaybe "catalogs" $ conf C.! "catalogs")
   httpmgr <- HTTP.newManager HTTP.defaultManagerSettings
     { HTTP.managerResponseTimeout = HTTP.responseTimeoutMicro 300000000
     }
@@ -89,6 +93,7 @@ main = do
         , globalHTTP = httpmgr
         , globalES = es
         , globalCatalogs = catalogs
+        , globalDataDir = fromMaybe "." $ conf C.! "datadir"
         , globalDevMode = fromMaybe False $ conf C.! "dev"
         }
 
@@ -109,7 +114,7 @@ main = do
             v <- maybe (fail $ "Invalid value: " ++ show s) return $ parseFieldValue f s
             first (v:) <$> pconst c' r
       (consts, cat) <- pconst (catalogMap catalogs HM.! sim) $ optConstFields opts
-      n <- ingest cat consts args
+      n <- ingest cat consts $ map (globalDataDir global </>) args
       liftIO $ print n
       when (n > 0) $ void $ ES.flushIndex cat
 

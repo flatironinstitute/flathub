@@ -18,6 +18,7 @@ import           Data.Word (Word64)
 import           System.IO (hFlush, stdout)
 
 import Monoid
+import Type
 import Field
 import Catalog
 import Global

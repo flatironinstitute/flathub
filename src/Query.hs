@@ -17,7 +17,6 @@ import           Control.Applicative (empty, (<|>))
 import           Control.Monad (guard, unless)
 import           Control.Monad.IO.Class (liftIO)
 import qualified Data.Aeson as J
-import qualified Data.Aeson.Types as J
 import           Data.Bits (xor)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
@@ -25,7 +24,7 @@ import qualified Data.ByteString.Char8 as BSC
 import           Data.Function (on)
 import qualified Data.HashMap.Strict as HM
 import           Data.List (foldl', unionBy)
-import           Data.Maybe (listToMaybe, maybeToList)
+import           Data.Maybe (listToMaybe, maybeToList, fromMaybe)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V
@@ -39,10 +38,10 @@ import           Waimwork.Result (result)
 import           System.FilePath ((<.>))
 import qualified Web.Route.Invertible as R
 
+import Type
 import Field
 import Catalog
 import Global
-import JSON
 import Output.CSV
 import Output.ECSV
 import qualified ES
@@ -111,7 +110,7 @@ catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do
       hsize = histsSize $ queryAggs query
   unless (queryLimit query <= 5000) $
     result $ response badRequest400 [] ("limit too large" :: String)
-  unless (hsize > 0 && hsize <= 256) $
+  unless (hsize > 0 && hsize <= 1024) $
     result $ response badRequest400 [] ("hist too large" :: String)
   case catalogStore cat of
     CatalogES{ catalogStoreField = store } -> do
@@ -128,11 +127,10 @@ catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do
   cleanTop _ _ = const Nothing
   cleanHits _ "total" (J.Object o) = HM.lookup "value" o
   cleanHits _ "total" v = Just v
-  cleanHits store "hits" a = Just $ mapArray (V.map $ sourceOnly store) a
+  cleanHits store "hits" a = Just $ mapArray (V.map $ cleanHit store) a
   cleanHits _ _ _ = Nothing
-  sourceOnly ESStoreSource (J.Object o) = HM.lookupDefault J.emptyObject "_source" o
-  sourceOnly _ (J.Object o) = mapObject (HM.map unsingletonJSON) $ HM.lookupDefault J.emptyObject "fields" o
-  sourceOnly _ v = v
+  cleanHit store (J.Object o) = J.Object $ maybe id (HM.insert "_id") (HM.lookup "_id" o) $ fromMaybe HM.empty $ ES.storedFields store o
+  cleanHit _ v = v
   mapObject :: (J.Object -> J.Object) -> J.Value -> J.Value
   mapObject f (J.Object o) = J.Object (f o)
   mapObject _ v = v
@@ -177,8 +175,8 @@ data Bulk = Bulk
   , bulkFooter :: B.Builder
   }
 
-bulkBlock :: Bulk -> V.Vector [J.Value] -> B.Builder
-bulkBlock = foldMap . bulkRow
+bulkBlock :: Bulk -> [T.Text] -> V.Vector J.Object -> B.Builder
+bulkBlock b l = foldMap (\o -> bulkRow b $ map (\f -> HM.lookupDefault J.Null f o) l)
 
 compressBulk :: CompressionFormat -> Bulk -> Bulk
 compressBulk z b = b
@@ -226,8 +224,7 @@ catalogBulk = getPath (R.parameter R.>*< R.parameter) $ \(sim, fmt) req -> do
   cat <- askCatalog sim
   let query = parseQuery cat req
       enc = bulkCompression fmt <|> listToMaybe (acceptCompressionEncoding req)
-  unless (queryOffset query == 0 && null (queryAggs query)) $
-    result $ response badRequest400 [] ("offset,aggs not supported for download" :: String)
+      fields = map fieldName $ queryFields query
   nextes <- ES.queryBulk cat query
   (count, block1) <- liftIO nextes
   let b@Bulk{..} = bulk fmt cat query count
@@ -242,7 +239,7 @@ catalogBulk = getPath (R.parameter R.>*< R.parameter) $ \(sim, fmt) req -> do
     case catalogStore cat of
       CatalogES{} -> do
         let loop block = unless (V.null block) $ do
-              chunk $ bulkBlock b block
+              chunk $ bulkBlock b fields block
               loop . snd =<< nextes
         loop block1
     chunk bulkFooter

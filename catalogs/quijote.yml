@@ -1,0 +1,70 @@
+title: Quijote
+index: quijote
+descr: >
+  <a href='https://github.com/franciscovillaescusa/Quijote-simulations'>Quijote simulations</a>,
+#count:
+fields:
+  - name: simulation
+    flag: top
+    type: byte
+    enum:
+    - fiducial
+    - fiducial_HR
+    - fiducial_LR
+    - fiducial_ZA
+    - Om_p
+    - Om_m
+    - Ob2_p
+    - Ob_p
+    - Ob_m
+    - Ob2_m
+    - h_p
+    - h_m
+    - ns_p
+    - ns_m
+    - s8_p
+    - s8_m
+    - Mnu_ppp
+    - Mnu_pp
+    - Mnu_p
+    - latin_hypercube
+  - name: realization
+    flag: top
+    type: short
+  - name: snapshot
+    type: byte
+    flag: top
+  - name: z
+    dict: redshift
+    type: float
+
+  - name: len
+    type: int
+    descr: 'Number of CDM particles in the halo'
+  - name: mass
+    type: float
+    units: '\(10^{10}M_\odot\)'
+    dict: M
+  - name: pos
+    dict: pos
+    units: 'kpc'
+    type: float
+    sub:
+    - name: 'x'
+      dict: pos_x
+    - name: 'y'
+      dict: pos_y
+    - name: 'z'
+      dict: pos_z
+  - name: vel
+    type: float
+    dict: vel
+    units: 'km/s/(1+z)'
+    descr: 'Halo peculiar velocities'
+    sub:
+    - name: 'x'
+      dict: vel_x
+    - name: 'y'
+      dict: vel_y
+    - name: 'z'
+      dict: vel_z

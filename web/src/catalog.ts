@@ -108,7 +108,6 @@ const plotVue = new Vue({
       histogramRemove();
     },
     tooltip: function () {
-      console.log("hover");
     },
   },
 });
@@ -201,6 +200,10 @@ function histogramDraw(
     plotVue.log
   );
   const renderx = render_funct(field, plotx.plotLog);
+  (<Highcharts.AxisOptions>opts.xAxis).min =
+    plotx.plotLog ? Math.log(plotx.lbv) : plotx.lbv;
+  (<Highcharts.AxisOptions>opts.xAxis).max =
+    plotx.plotLog ? Math.log(plotx.ubv) : plotx.ubv;
   if (ploty) {
     opts.colorAxis = <Highcharts.ColorAxisOptions>opts.yAxis;
     opts.colorAxis.reversed = false;
@@ -209,6 +212,10 @@ function histogramDraw(
       (<Highcharts.AxisOptions>opts.yAxis).type = "logarithmic";
   }
   if (ploty && !ploty.plotCond) {
+    (<Highcharts.AxisOptions>opts.yAxis).min =
+      ploty.plotLog ? Math.log(ploty.lbv) : ploty.lbv;
+    (<Highcharts.AxisOptions>opts.yAxis).max =
+      ploty.plotLog ? Math.log(ploty.ubv) : ploty.ubv;
     (<Highcharts.ChartOptions>opts.chart).zoomType = "xy";
     (<Highcharts.ChartOptions>opts.chart).events = {
       selection: zoomEvent(plotx, xwid, ploty, ywid)
@@ -250,12 +257,6 @@ function histogramDraw(
       selection: zoomEvent(plotx, wid)
     };
     (<Highcharts.TooltipOptions>opts.tooltip).footerFormat = "drag to filter";
-    (<Highcharts.AxisOptions>opts.xAxis).min = plotx.plotLog
-      ? Math.log(plotx.lbv)
-      : plotx.lbv;
-    (<Highcharts.AxisOptions>opts.xAxis).max = plotx.plotLog
-      ? Math.log(plotx.ubv + wid)
-      : plotx.ubv + wid;
     if (ploty) {
       /* condmedian */
       (<Highcharts.TooltipOptions>opts.tooltip).formatter = function (
@@ -329,6 +330,7 @@ function scatterplotDraw(
     type: "scatter",
     data: data,
     // keys: [xname, yname],
+    marker: { radius: 1.5 }
   }];
   Chart = Highcharts.chart("plot-chart", opts);
   plotVue.$forceUpdate();
@@ -375,14 +377,17 @@ function update(paging: boolean = true) {
 
 function visibleFields(): string[] {
   if (Show_data) {
-    return TCat.columns(":visible").dataSrc().toArray();
+    return TCat.columns(":visible")
+      .dataSrc()
+      .toArray()
+      .filter((n) => n !== "_id");
   } else {
     const cols = TCat.columns();
     const cvis = (<any>cols.visible()).toArray();
     return cols
       .dataSrc()
       .toArray()
-      .filter((n, i) => cvis[i]);
+      .filter((n, i) => n !== "_id" && cvis[i]);
   }
 }
 
@@ -433,7 +438,7 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
   if (plotx && !scatter) {
     if (ploty) {
       if (ploty.plotCond) query.hist = plotx.histQuery(64) + " " + ploty.name;
-      else query.hist = plotx.histQuery(16) + " " + ploty.histQuery(16);
+      else query.hist = plotx.histQuery(64) + " " + ploty.histQuery(16);
     } else query.hist = plotx.histQuery(128);
   }
   $.ajax({
@@ -601,7 +606,7 @@ class SelectFilter extends Filter {
 
   change() {
     const val = this.value;
-    super.change(val, !val);
+    super.change(val, this.field.attachment ? val !== '0' : !val);
   }
 
   setValue(val: string) {
@@ -749,9 +754,9 @@ function columnVisible(name: string, vis: boolean) {
 function py_text(query: Dict<string>) {
   const cat = Catalog.name;
   let st =
-    "import fi_astrosims.client\n" +
+    "import flathub.client\n" +
     cat +
-    " = fi_astrosims.client.Catalog(" +
+    " = flathub.client.Catalog(" +
     JSON.stringify(cat) +
     ", host = " +
     JSON.stringify(location.origin) +
@@ -790,6 +795,12 @@ function toggleShowData(show?: boolean) {
 }
 (<any>window).toggleShowData = toggleShowData;
 
+function cell_render(field: Field): (data: any, type: string, row: any) => string {
+  if (field.attachment)
+    return (data, type, row) => (data ? "<a href='/" + Catalog.name + "/attachment/" + field.name + "/" + encodeURIComponent(row._id) + "'><img class='download-icon' src='/web/download.svg'></a>" : "");
+  return render_funct(field);
+}
+
 export function initCatalog(table: JQuery<HTMLTableElement>) {
   downloadVue.$mount("#download");
   for (let i = 0; i < Catalog.fields.length; i++)
@@ -824,15 +835,13 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
       }
     }
   }
-  topts.columns = Catalog.fields.map((c) => {
+  topts.columns = [];
+  topts.columns.push.apply(topts.columns, Catalog.fields.map((c) => {
     return {
       name: c.name,
-      className:
-        c.base === "f" || c.base === "i" ? "dt-body-right" : "dt-body-left",
-      visible: c.disp,
-      render: render_funct(c),
+      render: cell_render(c),
     };
-  });
+  }));
   TCat = table.DataTable(topts);
 
   for (let f of Catalog.fields) {

@@ -22,7 +22,7 @@ import           Data.Char (toUpper)
 import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
 import           Data.List (find, inits, sortOn)
-import           Data.Maybe (isNothing)
+import           Data.Maybe (isNothing, isJust)
 import           Data.String (fromString)
 import qualified Data.Text as T
 import qualified Data.Vector as V
@@ -41,12 +41,14 @@ import           Waimwork.Response (response, okResponse)
 import           Waimwork.Result (result)
 import qualified Web.Route.Invertible as R
 
+import Type
 import Field
 import Catalog
 import Global
 import Compression
 import Query
 import Monoid
+import Attach
 import Static
 
 jsonEncodingVar :: T.Text -> J.Encoding -> H.Html
@@ -133,7 +135,7 @@ htmlResponse _req hdrs body = do
               H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Home"
               H.a H.! HA.href (WH.routeActionValue groupPage [] mempty) $ H.text "Catalogs"
               -- H.a H.! HA.href (WH.routeActionValue comparePage [] mempty) $ H.text "Compare"
-              H.a H.! HA.href "https://github.com/flatironinstitute/astrosims" $ H.text "Github"
+              H.a H.! HA.href "https://github.com/flatironinstitute/flathub" $ H.text "Github"
       forM_ ([["bundle.js"]]) $ \src ->
         H.script H.! HA.type_ "text/javascript" H.! HA.src (staticURI src) $ mempty
 acceptable :: [BS.ByteString] -> Wai.Request -> Maybe BS.ByteString
@@ -184,63 +186,17 @@ catalogPage = getPath R.parameter $ \sim req -> do
   groups <- asks (catalogGroupings . globalCatalogs)
   let
     fields = catalogFieldGroups cat
-    fields' = catalogFields cat
+    -- rendundant with ToJSON Catalog but with name:
     jcat = J.pairs $
          "name" J..= sim
       <> "title" J..= catalogTitle cat
       <> "descr" J..= catalogDescr cat
       <> foldMap ("count" J..=) (catalogCount cat)
-      <> "fields" J..= fields'
-    fieldBody :: Word -> FieldGroup -> H.Html
-    fieldBody d f = H.span $ do
-      -- Writes the title to the span
-      H.text $ fieldTitle f
-      -- Writes the unit to the span
-      forM_ (fieldUnits f) $ \u -> do
-        when (d > 1) H.br
-        H.span H.! HA.class_ "units" $ H.preEscapedText u
-      mapM_ ((H.span H.! HA.class_ "tooltiptext") . H.text) (fieldDescr f)
-    field :: Word -> FieldGroup -> FieldGroup -> H.Html
-    field d f' f@Field{ fieldSub = Nothing } = do
-      H.th
-          H.! HA.rowspan (H.toValue d)
-          H.! H.dataAttribute "data" (H.textValue $ fieldName f')
-          H.! H.dataAttribute "name" (H.textValue $ fieldName f')
-          H.! H.dataAttribute "type" (baseType ("num","num","string","string") $ fieldType f)
-          H.!? (not (fieldDisp f), H.dataAttribute "visible" "false")
-          H.! H.dataAttribute "default-content" mempty
-          H.! HA.class_ "tooltip-dt" $
-        fieldBody d f
-    field _ _ f@Field{ fieldSub = Just s } = do
-      H.th
-          H.! HA.colspan (H.toValue $ length $ expandFields s)
-          H.! HA.class_ "tooltip-dt" $
-        fieldBody 1 f
-    row :: Word -> [(FieldGroup -> FieldGroup, FieldGroup)] -> H.Html
-    row d l = do
-      H.tr $ mapM_ (\(p, f) -> field d (p f) f) l
-      when (d > 1) $ row (pred d) $ foldMap (\(p, f) -> foldMap (fmap (p . mappend f, ) . V.toList) $ fieldSub f) l
+      <> "fields" J..= catalogFields cat
+      <> mwhen (not $ null $ catalogSort cat)
+        ("sort" J..= catalogSort cat)
     query = parseQuery cat req
 
-    fielddesc :: FieldGroup -> FieldGroup -> Int -> H.Html
-    fielddesc f g d = do
-        H.tr $ do
-            H.td H.! HA.class_ ("depth-" <> H.stringValue (show d)) $ do
-                H.input H.! HA.type_ "checkbox"
-                    H.!? (isNothing (fieldSub g), HA.id $ H.textValue $ key f)
-                    H.! HA.class_ (H.textValue $ T.unwords $ "colvis" : map key fs)
-                    H.!? (fieldDisp g, HA.checked "checked")
-                    H.! HA.onclick "colvisSet(event)"
-                H.text (fieldTitle g)
-            H.td $ when (isNothing (fieldSub g)) (H.text (fieldName f))
-            H.td $ H.string (show $ fieldType g)
-            H.td H.! HA.class_ "units" $ foldMap H.text (fieldUnits g)
-            H.td $ foldMap H.text (fieldDescr g)
-        forM_ (fold (fieldSub g)) $ \sf ->
-            fielddesc (f <> sf) sf (d+1)
-      where
-      fs = expandField f
-      key = ("colvis-" <>) . fieldName
 
   case acceptable ["application/json", "text/html"] req of
     Just "application/json" ->
@@ -457,7 +413,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                     H.h6 H.! HA.class_ "right-column-heading" $ "Python Query"
                     H.p $ do
                       "Example python code to apply the above filters and retrieve data. To use, download and install "
-                      H.a H.! HA.href "https://github.com/flatironinstitute/astrosims/tree/prod/py" $ "this module"
+                      H.a H.! HA.href "https://github.com/flatironinstitute/flathub/tree/prod/py" $ "this module"
                       "."
                     H.div H.! HA.id "div-py" H.! HA.class_ "python-block" $
                       H.pre H.! HA.id "code-py" $ mempty
@@ -520,13 +476,28 @@ catalogPage = getPath R.parameter $ \sim req -> do
               H.p H.! HA.class_ "horizontal-label" $ "Format"
               H.select H.! vueAttribute "model" "bulk" $ do
                 H.option H.! HA.value mempty $ "Choose format..."
-                forM_ [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkECSV Nothing, BulkECSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)] $ \b -> do
-                  let f = R.renderParameter b
-                  H.option
-                    H.! HA.id ("download." <> H.textValue f)
-                    H.! HA.class_ "download-option"
-                    H.! HA.value (WH.routeActionValue catalogBulk (sim, b) mempty)
-                    $ H.text f
+                H.optgroup H.! HA.label "raw data" $ do
+                  forM_ [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkECSV Nothing, BulkECSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)] $ \b -> do
+                    let f = R.renderParameter b
+                    H.option
+                      H.! HA.id ("download." <> H.textValue f)
+                      H.! HA.class_ "download-option"
+                      H.! HA.value (WH.routeActionValue catalogBulk (sim, b) mempty)
+                      $ H.text f
+                H.optgroup H.! HA.label "attachment files" $ do
+                  let att = HM.filter (isJust . fieldAttachment) $ catalogFieldMap cat
+                  forM_ att $ \f ->
+                    H.option
+                      H.! HA.id ("download.attachment." <> H.textValue (fieldName f))
+                      H.! HA.class_ "download-option"
+                      H.! HA.value (WH.routeActionValue attachmentBulk (sim, fieldName f) mempty)
+                      $ H.text (fieldTitle f) <> ".zip"
+                  when (not $ HM.null att) $
+                    H.option
+                      H.! HA.id "download.attachments"
+                      H.! HA.class_ "download-option"
+                      H.! HA.value (WH.routeActionValue attachmentsBulk sim mempty)
+                      $ "all.zip"
               H.a
                 H.! HA.class_ "button button-secondary"
                 H.! HA.id "download-btn"
@@ -536,8 +507,57 @@ catalogPage = getPath R.parameter $ \sim req -> do
         H.div H.! HA.class_ "container-fluid catalog-summary raw-data" H.! HA.id "rawdata" $ do
           H.div H.! HA.class_ "raw-data__header" $ do
             H.h5 $ "Raw Data"
-          H.table H.! HA.id "tcat" $ do
-            H.thead $ row (fieldsDepth fields) ((id ,) <$> V.toList fields)
+          H.table H.! HA.id "tcat" $
+            H.thead $ do
+              row (fieldsDepth fields) ((id ,) <$> V.toList fields)
+  where
+  fielddesc :: FieldGroup -> FieldGroup -> Int -> H.Html
+  fielddesc f g d = do
+      H.tr $ do
+          H.td H.! HA.class_ ("depth-" <> H.stringValue (show d)) $ do
+              H.input H.! HA.type_ "checkbox"
+                  H.!? (isNothing (fieldSub g), HA.id $ H.textValue $ key f)
+                  H.! HA.class_ (H.textValue $ T.unwords $ "colvis" : map key fs)
+                  H.!? (fieldDisp g, HA.checked "checked")
+                  H.! HA.onclick "colvisSet(event)"
+              H.text (fieldTitle g)
+          H.td $ when (isNothing (fieldSub g)) (H.text (fieldName f))
+          H.td $ H.string (show $ fieldType g)
+          H.td H.! HA.class_ "units" $ foldMap H.text (fieldUnits g)
+          H.td $ foldMap H.text (fieldDescr g)
+      forM_ (fold (fieldSub g)) $ \sf ->
+          fielddesc (f <> sf) sf (d+1)
+    where
+    fs = expandField f
+    key = ("colvis-" <>) . fieldName
+  fieldBody :: Word -> FieldGroup -> H.Html
+  fieldBody d f = H.span $ do
+    -- Writes the title to the span
+    H.text $ fieldTitle f
+    -- Writes the unit to the span
+    forM_ (fieldUnits f) $ \u -> do
+      when (d > 1) H.br
+      H.span H.! HA.class_ "units" $ H.preEscapedText u
+    mapM_ ((H.span H.! HA.class_ "tooltiptext") . H.text) (fieldDescr f)
+  field :: Word -> FieldGroup -> FieldGroup -> H.Html
+  field d f' f@Field{ fieldSub = Nothing } = H.th
+    H.! HA.rowspan (H.toValue d)
+    H.! H.dataAttribute "data" (H.textValue $ fieldName f')
+    H.! H.dataAttribute "name" (H.textValue $ fieldName f')
+    H.! H.dataAttribute "type" (baseType ("num","num","string","string","string") $ fieldType f)
+    H.! H.dataAttribute "class-name" (if typeIsNumeric (fieldType f) then "dt-body-right" else "dt-body-left")
+    H.!? (not (fieldDisp f), H.dataAttribute "visible" "false")
+    H.! H.dataAttribute "default-content" mempty
+    H.! HA.class_ "tooltip-dt" $
+    fieldBody d f
+  field _ _ f@Field{ fieldSub = Just s } = H.th
+    H.! HA.colspan (H.toValue $ length $ expandFields s)
+    H.! HA.class_ "tooltip-dt" $
+    fieldBody 1 f
+  row :: Word -> [(FieldGroup -> FieldGroup, FieldGroup)] -> H.Html
+  row d l = do
+    H.tr $ mapM_ (\(p, f) -> field d (p f) f) l
+    when (d > 1) $ row (pred d) $ foldMap (\(p, f) -> foldMap (fmap (p . mappend f, ) . V.toList) $ fieldSub f) l
 
 
 sqlSchema :: Route Simulation

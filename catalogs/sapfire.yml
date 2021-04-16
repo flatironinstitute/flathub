@@ -1,0 +1,104 @@
+title: "SAPFIRE: Streams on FIRE"
+index: sapfire
+count: 594409
+descr: >
+  Streams And their Progenitors in FIRE cosmological simulations<br>
+  Panithanpaisal et al 2021.<br>
+  This is a catalogue of present-day simulated stellar streams with galaxy
+  progenitors. These streams are selected from the Latte suite and ElVIS
+  suite of FIRE-2 cosmological simulations of isolated and paired Milky
+  Way-mass galaxies. The stream classification and determination of important
+  timescales are described in detail in Panithanpaisal et al 2021.
+fields:
+- name: simname
+  type: byte
+  enum:
+  - m12i_res7100
+  - m12f_res7100
+  - m12m_res7100
+  - m12c_res7100
+  - m12b_res7100
+  - m12r_res7100
+  - m12w_res7100
+  - m12_elvis_RomeoJuliet_res3500
+  - m12_elvis_RomulusRemus_res4000
+  - m12_elvis_ThelmaLouise_res4000
+  flag: top
+- name: index
+  type: byte
+  flag: top
+- name: st_index
+  title: star particle id
+  type: int
+  descr: star particle indices at the present day snapshot (z=0)
+- name: position
+  title: position
+  dict: pos
+  type: float
+  units: km/s
+  descr: positions of star particles (x,y,z) in principal axes cartesian coordinates with respect to the center of the host galaxy. The z-direction is perpendicular to the disk.
+- name: velocity
+  title: velocity
+  type: float
+  units: km/s
+  dict: vel
+  descr: velocities of star particles (vx, vy, vz) in principal axes cartesian coordinates with respect to the center of the host galaxy. The z-direction is perpendicular to the disk.
+- name: particle_mass_z0
+  title: mass
+  type: float
+  unit: M_sun
+  descr: particle masses at present day snapshot (z=0) in solar masses
+- name: metallicity_iron
+  title: iron abundance
+  type: float
+  units: dex
+  descr: iron abundances [Fe/H] of star particles 
+  ingest: metallicity.iron
+- name: metallicity_alpha
+  title: alpha-element abundance
+  type: float
+  units: dex
+  descr: alpha-element abundances [alpha/H] of star particles
+  ingest: metallicity.iron
+- name: t_infall
+  title: infall time
+  type: float
+  units: Gyr
+  ingest: _const
+  descr: infall look-back time of the progenitor defined as the first virial radius crossing
+- name: t_peak
+  title: peak stellar mass time
+  type: float
+  units: Gyr 
+  ingest: _const
+  descr: peak stellar mass look-back time throughout the evolution of the progenitor
+- name: t_stream
+  title: stream-formation time
+  type: float
+  units: Gyr
+  ingest: _const
+  descr: stream-formation look-back time
+- name: mass_infall
+  title: infall mass
+  type: float
+  units: M_sun
+  ingest: _const
+  descr: total mass of the progenitor bound part at infall
+- name: stellar_mass_infall
+  title: infall stellar mass
+  type: float
+  units: M_sun
+  ingest: _const
+  descr: stellar mass of the progenitor bound part at infall
+- name: stellar_mass_peak
+  title: peak stellar mass
+  type: float 
+  units: M_sun
+  ingest: _const
+  descr: peak stellar mass of the progenitor bound part throughout its evolution
+- name: stellar_mass_z0
+  title: present stellar mass
+  type: float
+  units: M_sun
+  ingest: _const
+  descr: stellar mass of the stream at present day, defined as the sum of all the particle masses at present day 
