@@ -1,8 +1,16 @@
-title: "FIRE Streams"
-index: fire_streams
+title: "SAPFIRE: Streams on FIRE"
+index: sapfire
 count: 594409
+descr: >
+  Streams And their Progenitors in FIRE cosmological simulations<br>
+  Panithanpaisal et al 2021.<br>
+  This is a catalogue of present-day simulated stellar streams with galaxy
+  progenitors. These streams are selected from the Latte suite and ElVIS
+  suite of FIRE-2 cosmological simulations of isolated and paired Milky
+  Way-mass galaxies. The stream classification and determination of important
+  timescales are described in detail in Panithanpaisal et al 2021.
 fields:
-- name: name
+- name: simname
   type: byte
   enum:
   - m12i_res7100
@@ -16,7 +24,7 @@ fields:
   - m12_elvis_RomulusRemus_res4000
   - m12_elvis_ThelmaLouise_res4000
   flag: top
-- name: object
+- name: index
   type: byte
   flag: top
 - name: st_index
