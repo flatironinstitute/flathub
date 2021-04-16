@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: astrosims-ingest
+  name: flathub-ingest
 spec:
   restartPolicy: Never
   volumes:
@@ -10,8 +10,8 @@ spec:
       path: /mnt/sdceph/users
       type: Directory
   containers:
-  - image: docker-registry:25703/flatironinstitute/astrosims
-    name: astrosims
+  - image: docker-registry:25703/flatironinstitute/flathub
+    name: flathub
     resources:
       requests:
         cpu: 2
