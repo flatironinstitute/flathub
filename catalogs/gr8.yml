@@ -97,10 +97,10 @@ fields:
     descr: stellar radius
     units: '\(r_\odot\)'
     type: float
-  - name: spectra
-    sub:
-    - name: instrument
-      type: boolean
-      attachment:
-        path: gr8/spectra/${gaia_dr2_id}_instrument.fits
-        name: gr8_spectra_${gaia_dr2_id}_instrument.fits
+# - name: spectra
+#   sub:
+#   - name: instrument
+#     type: boolean
+#     attachment:
+#       path: gr8/spectra/${gaia_dr2_id}_instrument.fits
+#       name: gr8_spectra_${gaia_dr2_id}_instrument.fits
