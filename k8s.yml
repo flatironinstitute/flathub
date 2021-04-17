@@ -43,7 +43,7 @@ spec:
           timeoutSeconds: 15
           periodSeconds: 60
         volumeMounts:
-          - mountPath: /home/astrosims/astrosims/tls
+          - mountPath: /home/flathub/flathub/tls
             name: tls
       volumes:
         - name: tls
@@ -72,7 +72,7 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: astrosims
+  name: flathub
 spec:
   rules:
   - host: astrosims.flatironinstitute.org
@@ -80,14 +80,14 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: astrosims
+          serviceName: flathub
           servicePort: 80
   - host: flathub.flatironinstitute.org
     http:
       paths:
       - path: /
         backend:
-          serviceName: astrosims
+          serviceName: flathub
           servicePort: 80
   tls:
     - hosts:
