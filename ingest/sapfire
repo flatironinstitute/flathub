@@ -1,0 +1,14 @@
+#!/bin/sh -ex
+s=`basename $0`
+d=$1
+[[ -d $d ]]
+nl=($(yaml2json catalogs/$s.yml | jq -r '.fields[0].enum[]'))
+for i in "${!nl[@]}" ; do
+	n="${nl[$i]}"
+	for f in $d/$n/streams/stream*.hdf5 ; do
+		o=`basename $f`
+		o=${o#stream}
+		o=${o%.hdf5}
+		~/.local/bin/flathub -i $s -c simname=$n -c index=$o $i-$o=$f
+	done
+done
