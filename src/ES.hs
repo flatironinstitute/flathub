@@ -121,7 +121,7 @@ defaultSettings :: Catalog -> J.Object
 defaultSettings cat = HM.fromList
   [ "index" J..= J.object (
     [ "number_of_shards" J..= (clusterSize * min 100 (maybe 2 (succ . (`div` (clusterSize * docsPerShard))) (catalogCount cat)))
-    , "number_of_replicas" J..= J.Number 1
+    , "number_of_replicas" J..= J.Number 2
     , "refresh_interval" J..= J.Number (-1)
     , "max_docvalue_fields_search" J..= (8 + length (catalogFields cat))
     ] ++ case catalogSort cat of
