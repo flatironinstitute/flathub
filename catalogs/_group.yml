@@ -10,7 +10,7 @@
       name: illustris
       title: Illustris
       children:
-        - illustris
+        - illustris_fof
         - illustris_sub
         - tng
         - tng_sub
