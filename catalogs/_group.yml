@@ -3,7 +3,7 @@
   children:
     - gaiadr2
     - ananke
-- name: galaxy
+- name: cosmo-hydro
   title: Cosmological Galaxy Formation Simulations
   children:
     - &illustris
@@ -16,7 +16,7 @@
         - tng_sub
     #- simba
     - gaea
-- name: dm
+- name: cosmo-dm
   title: Cosmological Dark Matter-Only Simulations
   children:
     - quijote
