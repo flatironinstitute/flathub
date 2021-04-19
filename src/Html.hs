@@ -224,7 +224,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                         H.span H.! vueAttribute "if" "type=='y'" $ "Heatmap bins the data by two fields and displays count as color."
                         H.span H.! vueAttribute "if" "type=='c'" $ "Conditional distribution bins the data by one field and displays the distribution of a second field within that bin as a boxplot (range and quartiles)."
                         H.span H.! vueAttribute "if" "type=='s'" $ "Shows a scatterplot of a (random subset) of actual data points."
-                    H.select H.! vueAttribute "model" "type" H.! vueAttribute "on:change" "reset" $ do
+                    H.select H.! vueAttribute "model" "type" H.! vueAttribute "on:change" "go" $ do
                       H.option H.! HA.value "x" H.! HA.selected "selected" $ "histogram"
                       H.option H.! HA.value "y" $ "heatmap"
                       H.option H.! HA.value "c" $ "conditional distribution"

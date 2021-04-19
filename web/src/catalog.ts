@@ -96,17 +96,6 @@ const plotVue = new Vue({
       else
         histogramShow(<any>this.type);
     },
-    reset: function () {
-      const selx = <HTMLSelectElement>document.getElementById("plot-x");
-      if (selx) {
-        selx.selectedIndex = 0;
-      }
-      const sely = <HTMLSelectElement>document.getElementById("plot-y");
-      if (sely) {
-        sely.selectedIndex = 0;
-      }
-      histogramRemove();
-    },
     tooltip: function () {
     },
   },
@@ -337,24 +326,30 @@ function scatterplotDraw(
 }
 
 function histogramShow(axis: "x" | "y" | "c" | "s") {
+  const oldx = PlotX;
+  const oldy = PlotY;
   const selx = <HTMLSelectElement>document.getElementById("plot-x");
-  const filt = addFilter(selx.value);
+  const filt = selx && addFilter(selx.value);
   if (filt instanceof NumericFilter) {
     PlotX = filt;
     PlotX.plotCond = false;
     PlotY = undefined;
-    if (axis != "x") {
+    if (axis !== "x") {
       const sely = <HTMLSelectElement>document.getElementById("plot-y");
-      const heat = addFilter(sely.value);
+      const heat = sely && addFilter(sely.value);
       if (heat instanceof NumericFilter) {
         PlotY = heat;
-        PlotY.plotCond = axis == "c";
+        PlotY.plotCond = axis === "c";
       }
     }
   } else histogramRemove();
   plotVue.xfilter = PlotX;
   plotVue.yfilter = PlotY;
-  Scatterplot = !!(axis == 's' && PlotX && PlotY);
+  Scatterplot = !!(axis === 's' && PlotX && PlotY);
+  if (oldx && PlotX !== oldx)
+    oldx.removeIfClear();
+  if (oldy && PlotY !== oldy)
+    oldy.removeIfClear();
   update(false);
 }
 
@@ -668,6 +663,11 @@ class NumericFilter extends Filter {
   remove() {
     this.histogramRemove();
     super.remove();
+  }
+
+  removeIfClear() {
+    if (this.lbv == (<AggrStats>this.aggs).min && this.ubv == (<AggrStats>this.aggs).max)
+      this.remove();
   }
 
   setRange(lbv: number, ubv: number) {
