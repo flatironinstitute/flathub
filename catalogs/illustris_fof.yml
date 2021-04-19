@@ -2,7 +2,8 @@ title: Illustris FoF Halos
 index: illustris
 count: 1259309875
 descr: >
-  <a href='http://arxiv.org/abs/1504.00362'>Nelson+ (2015)</a>, <a href='https://www.illustris-project.org/'>Illustris</a> <a href='https://www.illustris-project.org/data/docs/specifications/#sec2a'>FoF Halo catalog</a> derived with a standard friends-of-friends (FoF) algorithm.
+  <a href='https://www.illustris-project.org/'>Illustris</a> <a href='https://www.illustris-project.org/data/docs/specifications/#sec2a'>FoF Halo catalog</a> derived with a standard friends-of-friends (FoF) algorithm.
+  Any publication using these data should cite <a href="https://ui.adsabs.harvard.edu/abs/2014Natur.509..177V/abstract">Vogelsberger+ (2014)</a> and <a href="https://ui.adsabs.harvard.edu/abs/2015A%26C....13...12N/abstract">Nelson+ (2015)</a>.
 sort:
 - simulation
 - snapshot

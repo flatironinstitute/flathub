@@ -12,7 +12,7 @@
       children:
         - illustris_fof
         - illustris_sub
-        - tng
+        - tng_fof
         - tng_sub
     #- simba
     - gaea
