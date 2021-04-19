@@ -20,7 +20,6 @@ module Field
   , fieldsDepth
   , FieldValue
   , parseFieldValue
-  , isTermsField
   , idField
   , fieldsCSV
   ) where
@@ -36,7 +35,7 @@ import           Data.Default (Default(def))
 import           Data.Foldable (fold)
 import           Data.Functor.Identity (Identity)
 import qualified Data.HashMap.Strict as HM
-import           Data.Maybe (maybeToList)
+import           Data.Maybe (isJust, maybeToList)
 import           Data.Proxy (Proxy(Proxy))
 import           Data.Scientific (Scientific)
 import           Data.Semigroup (Max(getMax))
@@ -111,6 +110,7 @@ data FieldSub t m = Field
   , fieldDescr :: Maybe T.Text
   , fieldUnits :: Maybe T.Text
   , fieldFlag :: FieldFlag
+  , fieldTerms :: Bool
   , fieldSub :: m (FieldsSub t m)
   , fieldDict :: Maybe T.Text
   , fieldScale :: Maybe Scientific -- ^scale factor, to display scale*x instead
@@ -140,6 +140,7 @@ instance Alternative m => Default (FieldSub Proxy m) where
     , fieldDescr = Nothing
     , fieldUnits = Nothing
     , fieldFlag = FieldNormal
+    , fieldTerms = False
     , fieldSub = empty
     , fieldDict = Nothing
     , fieldScale = Nothing
@@ -150,7 +151,7 @@ instance Alternative m => Default (FieldSub Proxy m) where
     }
 
 instance J.ToJSON Field where
-  toJSON f@Field{..} = J.object $
+  toJSON Field{..} = J.object $
     [ "name" J..= fieldName
     , "type" J..= fieldType
     , "title" J..= fieldTitle
@@ -165,14 +166,12 @@ instance J.ToJSON Field where
         FieldTop -> Just False
         FieldRequired -> Just True
         _ -> Nothing
-    , bool "terms" $ isTermsField f
+    , ("terms" J..= fieldTerms) <$ guard fieldTerms
     , ("dict" J..=) <$> fieldDict
     , ("scale" J..=) <$> fieldScale
     , ("reversed" J..= fieldReversed) <$ guard fieldReversed
     , ("attachment" J..= True) <$ fieldAttachment
-    ] where
-    bool _ False = Nothing
-    bool n b = Just $ n J..= b
+    ]
 
 parseFieldGroup :: HM.HashMap T.Text FieldGroup -> J.Value -> J.Parser FieldGroup
 parseFieldGroup dict = parseFieldDefs def where
@@ -201,6 +200,7 @@ parseFieldGroup dict = parseFieldDefs def where
       Just (J.Array l) -> mapM J.parseJSON $ V.toList l
       Just j -> J.typeMismatch "missing string" j
     fieldAttachment <- f J..:! "attachment"
+    fieldTerms <- f J..:? "terms" J..!= (isJust fieldEnum || typeIsString fieldType)
     fieldSub <- (<|> fieldSub d) <$> J.explicitParseFieldMaybe' (J.withArray "subfields" $ V.mapM $
         parseFieldDefs defd
           { fieldType = fieldType
@@ -267,14 +267,6 @@ parseFieldValue f = fmap sv . pv f where
     { fieldType = v
     , fieldSub = Proxy
     }
-
-isTermsField :: Field -> Bool
-isTermsField Field{ fieldType = Keyword _ } = True
-isTermsField Field{ fieldType = Text _ } = True
-isTermsField Field{ fieldType = Byte _, fieldEnum = Just _ } = True
-isTermsField f@Field{ fieldType = Byte _ } = fieldFlag f >= FieldTop
-isTermsField Field{ fieldType = Boolean _, fieldEnum = Just _ } = True
-isTermsField _ = False
 
 -- |pseudo field representing ES _id
 idField :: Field
