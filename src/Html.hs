@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TupleSections #-}
 
@@ -34,12 +35,15 @@ import qualified System.FilePath as FP
 import qualified Text.Blaze.Html5 as H hiding (text, textValue)
 import qualified Text.Blaze.Html5.Attributes as HA
 import qualified Text.Blaze.Internal as H (customParent)
+import qualified Text.Hamlet as Hamlet
 import qualified Waimwork.Blaze as H (text, textValue, preEscapedBuilder)
 import qualified Waimwork.Blaze as WH
 import           Waimwork.HTTP (parseHTTPDate, formatHTTPDate)
 import           Waimwork.Response (response, okResponse)
 import           Waimwork.Result (result)
 import qualified Web.Route.Invertible as R
+import           Web.Route.Invertible ((!:?))
+import qualified Web.Route.Invertible.Render as R
 
 import Type
 import Field
@@ -69,6 +73,9 @@ groupingTitle g = maybe (groupTitle g) catalogTitle
 
 vueAttribute :: String -> H.AttributeValue -> H.Attribute
 vueAttribute = H.customAttribute . fromString . ("v-" ++)
+
+hamlet :: Hamlet.HtmlUrl R.BoundRoute -> H.Html
+hamlet f = f R.renderHamletUrl
 
 htmlResponse :: Wai.Request -> ResponseHeaders -> H.Markup -> M Wai.Response
 htmlResponse _req hdrs body = do
@@ -148,37 +155,42 @@ topPage = getPath R.unit $ \() req -> do
   case acceptable ["application/json", "text/html"] req of
     Just "application/json" ->
       return $ okResponse [] $ J.encode $ HM.map catalogTitle $ catalogMap cats
-    _ -> R.routeAction staticHtml ["top"] req
-    {- htmlResponse req [] $
-      H.div $ do
-        H.div H.! HA.class_ "section hero gray-heading" $ do
-          H.div H.! HA.class_ "container" $ do
-            H.div H.! HA.class_ "row" $ do
-              H.div H.! HA.class_ "hero-content" $ do
-                H.h4 H.! HA.class_ "hero-heading" $ "FLATHUB"
-                H.h4 H.! HA.class_ "hero-subheading" $ mempty
-        H.div H.! HA.class_ "section" $ do
-          H.div H.! HA.class_ "container" $ do
-            H.div H.! HA.class_ "row" $ do
-              H.div H.! HA.class_ "col-md" $ do
-                H.div H.! HA.class_ "collections" $ do
-                  H.div H.! HA.class_ "collections-container" $ do
-                    H.h3 H.! HA.class_ "section__heading" $ H.a H.! HA.href (WH.routeActionValue groupPage [] mempty) $ "Collections"
-                    H.p H.! HA.class_ "section-description" $ mempty
-                    H.div H.! HA.class_ "row" $ do
-                      H.div H.! HA.class_ "collections-list" $ do
-                        forM_ (groupList $ catalogGroupings cats) $ \g ->
-                            H.a H.! HA.href (WH.routeActionValue groupPage [groupingName g] mempty) H.! HA.class_ "collection-card-heading" $ H.text $ groupingTitle g $ groupingCatalog cats g
-              H.div H.! HA.class_ "col-md col-border" $ do
-                H.div H.! HA.class_ "catalogs" $ do
-                  H.div H.! HA.class_ "catalogs-container" $ do
-                    H.h3 H.! HA.class_ "section__heading" $ "Catalogs"
-                    H.p H.! HA.class_ "section-description" $ "Simulation datasets"
-                    H.div H.! HA.class_ "catalogs-list main-page" $
-                      forM_ (catalogsSorted cats) $ \(sim, cat) -> do
-                          H.a H.! HA.href (WH.routeActionValue catalogPage sim mempty) H.! HA.class_ "collection-card-heading" $ H.text $ catalogTitle cat
-    -}
-
+    _ -> htmlResponse req [] $ hamlet [Hamlet.hamlet|
+      <div>
+        <div class="section gray-heading">
+          <div class="container">
+            <div class="row">
+              <div class="heading-content">
+                <h4 class="heading-heading">Flatiron Institute Data Exploration and Comparison Hub</h4>
+        <div class="section">
+          <div class="container">
+            <div class="row">
+              <div class="col-md">
+                <div class="body-copy narrow-body">
+                  <p>
+                    <b>Flatiron Institute Data Exploration and Comparison Hub (FlatHUB)</b> is a science platform for diverse
+                    types of data, that allows users to explore and compare data from different simulations and datasets with
+                    one another and with curated observational/experimental collections. Users can browse and filter the data
+                    collections, make simple preview plots, and download sub-samples of the data.
+            <div class="section">
+              <div class="box-row">
+                <div class="box">
+                  <div class="box-content">
+                    <div class="box-copy">
+                      <div class="box-head">Catalogs
+                    <ul class="link-list">
+                      $forall (sim, cat) <- catalogsSorted cats
+                        <li>
+                          <a class="underline" href="@{catalogPage !:? sim}">#{catalogTitle cat}
+                <div class="box">
+                  <div class="box-content">
+                    <div class="box-copy">
+                      <div class="box-head">Collections
+                    <ul class="link-list">
+                      $forall g <- groupList (catalogGroupings cats)
+                        <li>
+                          <a class="underline" href="@{groupPage !:? [groupingName g]}">#{groupingTitle g (groupingCatalog cats g)}
+      |]
 
 catalogPage :: Route Simulation
 catalogPage = getPath R.parameter $ \sim req -> do

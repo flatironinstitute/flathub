@@ -2,12 +2,11 @@ resolver: lts-17.9
 packages:
 - '.'
 extra-deps:
-  - web-inv-route-0.1.2.3
+  - web-inv-route-0.1.3.1
   - git: git://github.com/dylex/waimwork
-    commit: c00627599674ebf19cf5a403bd27c1965051a1c0
+    commit: 0ec1caed3aaa4583430484b2b63b5793b94cdb61
   - git: git://github.com/dylex/hs-hdf5
-    commit: 826f8aa693313ad8b5c1bf4f3adcbd5dcc294488
-  - postgresql-typed-0.6.1.2
+    commit: 49c9a85136d14c551c9c533ff5f0410ef3feb498
   - bzlib-0.5.1.0
 flags:
   web-inv-route:
