@@ -2,6 +2,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TupleSections #-}
+{-# OPTIONS_GHC -Wno-unused-matches #-}
 
 module Html
   ( topPage
@@ -22,6 +23,7 @@ import qualified Data.ByteString.Lazy as BSL
 import           Data.Char (toUpper)
 import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
+import           Data.HashMap.Strict ((!))
 import           Data.List (find, inits, sortOn)
 import           Data.Maybe (isNothing, isJust)
 import           Data.String (fromString)
@@ -621,100 +623,114 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
   cats <- asks globalCatalogs
   grp <- maybe (result $ response notFound404 [] (T.intercalate "/" path <> " not found")) return $
     lookupGrouping path $ catalogGrouping cats
-  htmlResponse req [] $ do
-    H.nav H.! HA.class_"breadcrumb-container" $ do
-      H.ol H.! HA.class_"breadcrumb" $ fold $ zipWith (\p n ->
-        H.li H.! HA.class_ "breadcrumb-item" $ do
-          H.a H.! HA.href (WH.routeActionValue groupPage p mempty) $ H.text n)
-        (inits path) ("collections":path)
-    case grp of
-      -- Single Catalog
-      GroupCatalog cat -> do
-        let Catalog{..} = catalogMap cats HM.! cat
-        H.div H.! HA.class_ ("section gray-heading " <> H.textValue cat <> "-heading") $ do
-          H.div H.! HA.class_"container" $ do
-            H.div H.! HA.class_ "row" $ do
-              H.div H.! HA.class_ "heading-content" $ do
-                H.h4 H.! HA.class_("heading-heading " <> H.textValue cat <> "-subheading")  $ H.text catalogTitle
-                H.a  H.! HA.class_ "button button-primary" H.! HA.href (WH.routeActionValue catalogPage cat mempty) $ "explore"
-        maybe (do
-          H.span H.! HA.class_ "holder" $ do
-            H.div H.! HA.class_ "section" $ do
-              H.div H.! HA.class_"container" $ do
-                H.div H.! HA.class_ "row" $ do
-                  H.div H.! HA.class_ "col-md" $ do
-                    H.div H.! HA.class_ "body-copy" $ do
-                      H.h4 $ "Catalog summary"
-                      mapM_ (H.p . H.preEscapedText) catalogDescr)
-                        H.preEscapedText catalogHtml
+  htmlResponse req [] $ hamlet [Hamlet.hamlet|
+    <nav .breadcrumb-container>
+      <ol .breadcrumb>
+        $forall (p, n) <- zip (inits path) ("collections" : path)
+          <li .breadcrumb-item>
+            <a href="@{groupPage !:? p}">
+              <text>#{n}
+    $case grp
+      $of GroupCatalog cat
+        <!-- Single Catalog -->
+        $with Catalog{..} <- catalogMap cats ! cat
+          <div .section .gray-heading class="#{cat}-heading">
+            <div .container>
+              <div .row>
+                <div .heading-content>
+                  <h4 .heading-heading class="#{cat}-subheading">
+                    <text>#{catalogTitle}
+                  <a .button .button-primary href="@{catalogPage !:? cat}">explore
+          $maybe html <- catalogHtml
+            #{H.preEscapedText html}
+          $nothing
+            <span .holder>
+              <div .section>
+                <div .container>
+                  <div .row>
+                    <div .col-md>
+                      <div .body-copy>
+                        <h4>Catalog summary
+                        $forall desc <- catalogDescr
+                          <p>#{H.preEscapedText desc}
 
-      -- Collections
-      Grouping{..} -> do
-        H.div H.! HA.class_ ("section gray-heading " <> H.textValue groupName <> "-heading") $ do
-          H.div H.! HA.class_"container" $ do
-            H.div H.! HA.class_ "row" $ do
-              H.div H.! HA.class_ "heading-content" $ do
-                H.h4 H.! HA.class_ ("heading-heading " <> H.textValue groupName <> "-subheading") $ H.text groupTitle
-        H.div H.! HA.class_ "section highlighted-links" $ do
-          H.div H.! HA.class_"container" $ do
-            H.div H.! HA.class_ "row" $ do
-              H.div H.! HA.class_ "col-md" $ do
-                H.div H.! HA.class_ "body-copy group-html" $ do
-                  mapM_
-                    H.preEscapedText groupHtml
-        H.div H.! HA.class_ "section" $ do
-          H.div H.! HA.class_"container" $ do
-            H.div H.! HA.class_ "row" $ do
-              H.div H.! HA.class_ "col-md" $ do
-                H.div H.! HA.class_ "body-copy" $ do
-                  H.h4 $ "Catalogs"
-            -- Catalogs list
-            H.div H.! HA.class_ "box-row" $ do
-              forM_ (groupList groupings) $ \g -> do
-                let cat' = groupingCatalog cats g
-                H.div H.! HA.class_ "box" $ H.div H.! HA.class_ "box-content" $ do
-                  H.div H.! HA.class_ "box-copy" $ do
-                    H.div H.! HA.class_ "box-head" $ H.text $ groupingTitle g cat'
-                    case g of
-                      Grouping{ groupings = gs } ->
-                        forM_ (groupList gs) $ \gc ->
-                          H.div H.! HA.class_ "box-desc" $ H.a H.! HA.href (WH.routeActionValue groupPage (path ++ [groupingName g, groupingName gc]) mempty) $
-                            H.text $ groupingTitle gc (groupingCatalog cats gc)
-                      GroupCatalog{} ->
-                        forM_ cat' $ \cat -> H.div H.! HA.class_ "box-desc" $ do
-                          mapM_ H.preEscapedText $ catalogSynopsis cat
-                  H.a H.! HA.class_ "button button-primary" H.! HA.href (WH.routeActionValue groupPage (path ++ [groupingName g]) mempty) $ "Learn More"
+      $of Grouping{..}
+        <!-- Collections -->
+        <div .section .gray-heading class="#{groupName}-heading">
+          <div .container>
+            <div .row>
+              <div .heading-content>
+                <h4 .heading-heading class="#{groupName}-subheading">
+                  <text>#{groupTitle}
+        <div .section .highlighted-links>
+          <div .container>
+            <div .row>
+              <div .col-md>
+                <div .body-copy .group-html>
+                  $forall html <- groupHtml
+                    #{H.preEscapedText html}
+        <div .section>
+          <div .container>
+            <div .row>
+              <div .col-md>
+                <div .body-copy>
+                  <h4>Catalogs
+            <!-- Catalogs list -->
+            <div .box-row>
+              $forall g <- groupList groupings
+                $with cat' <- groupingCatalog cats g
+                  <div .box>
+                    <div .box-content>
+                      <div .box-copy>
+                        <div .box-head>
+                          <text>#{groupingTitle g cat'}
+                        $case g
+                          $of Grouping{ groupings = gs }
+                            $forall gc <- groupList gs
+                              <div .box-desc>
+                                <a href="@{groupPage !:? (path ++ [groupingName g, groupingName gc])}">
+                                <text>#{groupingTitle gc (groupingCatalog cats gc)}
+                          $of GroupCatalog{}
+                            $forall cat <- cat'
+                              <div .box-desc>
+                                $forall syn <- catalogSynopsis cat
+                                  #{H.preEscapedText syn}
+                      <a .button .button-primary href="@{groupPage !:? (path ++ [groupingName g])}">Learn More
+    |]
 
 comparePage :: Route [T.Text]
 comparePage = getPath ("compare" R.*< R.manyI R.parameter) $ \path req -> do
   cats <- maybe (result $ response notFound404 [] (T.intercalate "/" path <> " not found")) return .
     groupedCatalogs path =<< asks globalCatalogs
-  htmlResponse req [] $ do
-    H.script $ do
-      jsonVar "Catalogs" $ catalogMap cats
-      jsonVar "Dict" $ catalogDict cats
-    H.div H.! HA.class_ "compare-container" $ do
-      H.h2 "Compare"
-      H.p $ "Select catalogs across the top to compare, and fields down the left to apply filters and compare statistics and distributions from these catalogs."
-      H.table H.! HA.id "tcompare" H.! HA.class_ "u-full-width" $ do
-        H.thead $ H.tr $ do
-          H.th "Choose two or more catalogs"
-          H.td $ H.select H.! HA.name "selcat" H.! HA.onchange "selectCat(event.target)" $ do
-            H.option H.! HA.value mempty H.! HA.selected "selected" $ "Choose catalog..."
-            forM_ (catalogsSorted cats) $ \(sim, cat) ->
-              H.option H.! HA.value (H.textValue sim) $ H.text $ catalogTitle cat
-        H.tbody $ mempty
-        H.tfoot $ do
-          H.tr H.! HA.id "tr-add" $
-            H.td $ H.select H.! HA.id "addf"  H.! HA.onchange "addField()"  $ mempty
-          H.tr H.! HA.id "tr-comp" $
-            H.td $ H.select H.! HA.id "compf" H.! HA.onchange "compField()" $ mempty
-      H.button H.! HA.id "hist-tog" H.! HA.disabled "disabled" H.! HA.onclick "histogramComp()" $ "histogram"
-      H.div H.! HA.id "dhist" H.! HA.class_ "container" $ do
-        H.button H.! HA.id "hist-y-tog" H.! HA.onclick "toggleLog()" $
-          "Toggle lin/log"
-        H.div H.! HA.class_ "container" H.! HA.id "hist" $ mempty
-
+  htmlResponse req [] $ hamlet [Hamlet.hamlet|
+    <script>
+      #{jsonVar "Catalogs" $ catalogMap cats}
+      #{jsonVar "Dict" $ catalogDict cats}
+    <div class="compare-container">
+      <h2>Compare
+      <p>Select catalogs across the top to compare, and fields down the left to apply filters and compare statistics and distributions from these catalogs.
+      <table id="tcompare" class="u-full-width">
+        <thead>
+          <tr>
+            <th>Choose two or more catalogs
+            <td>
+              <select name="selcat" onchange="selectCat(event.target)">
+                <option value="" selected="selected">Choose catalog...
+                $forall (sim, cat) <- catalogsSorted cats
+                  <option value="#{sim}">
+                    <text>#{catalogTitle cat}
+        <tbody>
+        <tfoot>
+          <tr id="tr-add">
+            <td><select id="addf" onchange="addField()">
+          <tr id="tr-comp">
+            <td><select id="compf" onchange="compField()">
+      <button id="hist-tog" disabled="disabled" onclick="histogramComp()">histogram
+      <div id="dhist" class="container">
+        <button id="hist-y-tog" onclick="toggleLog()">
+          Toggle lin/log
+        <div class="container" id="hist">
+    |]
 
 staticHtml :: Route [FilePathComponent]
 staticHtml = getPath ("html" R.*< R.manyI R.parameter) $ \paths q -> do
