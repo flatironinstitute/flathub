@@ -14,19 +14,17 @@ module Html
   , staticHtml
   ) where
 
-import           Control.Monad (forM_, when, unless)
+import           Control.Monad (forM_, when)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (ask, asks)
 import qualified Data.Aeson as J
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
-import           Data.Char (toUpper)
 import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
-import           Data.HashMap.Strict ((!))
+import           Data.HashMap.Strict ((!)) -- hamlet doesn't like qualified operators
 import           Data.List (find, inits, sortOn)
 import           Data.Maybe (isNothing, isJust)
-import           Data.String (fromString)
 import qualified Data.Text as T
 import qualified Data.Vector as V
 import           Network.HTTP.Types.Header (ResponseHeaders, hAccept, hIfModifiedSince, hLastModified, hContentType)
@@ -35,11 +33,8 @@ import qualified Network.Wai as Wai
 import           Network.Wai.Parse (parseHttpAccept)
 import qualified System.FilePath as FP
 import qualified Text.Blaze.Html5 as H hiding (text, textValue)
-import qualified Text.Blaze.Html5.Attributes as HA
-import qualified Text.Blaze.Internal as H (customParent)
 import qualified Text.Hamlet as Hamlet
-import qualified Waimwork.Blaze as H (text, textValue, preEscapedBuilder)
-import qualified Waimwork.Blaze as WH
+import qualified Waimwork.Blaze as H (text, preEscapedBuilder)
 import           Waimwork.HTTP (parseHTTPDate, formatHTTPDate)
 import           Waimwork.Response (response, okResponse)
 import           Waimwork.Result (result)
@@ -73,14 +68,8 @@ catalogsSorted = sortOn (catalogOrder . snd) . HM.toList . catalogMap
 groupingTitle :: Grouping -> Maybe Catalog -> T.Text
 groupingTitle g = maybe (groupTitle g) catalogTitle
 
-vueAttribute :: String -> H.AttributeValue -> H.Attribute
-vueAttribute = H.customAttribute . fromString . ("v-" ++)
-
 hamlet :: Hamlet.HtmlUrl R.BoundRoute -> H.Html
 hamlet f = f R.renderHamletUrl
-
-unit :: ()
-unit = ()
 
 htmlResponse :: Wai.Request -> ResponseHeaders -> H.Markup -> M Wai.Response
 htmlResponse _req hdrs body = do
@@ -107,7 +96,7 @@ htmlResponse _req hdrs body = do
             <p>One moment, please. The data you requested is being retrieved.
       <header .header>
         <div .header__logo>
-          <a href="@{topPage !:? unit}" .header__logo-link>
+          <a href="@{topPage !:? mempty}" .header__logo-link>
             <img .header__logo-image src="/web/FlatHubLogo.svg">
         <nav .header__nav>
           <ul #topbar>
@@ -118,7 +107,7 @@ htmlResponse _req hdrs body = do
                   <a href="@{groupPage !:? [groupingName g]}">
                     <text>#{groupingTitle g $ groupingCatalog cats g}
             <li .header__link--dropdown>
-              <a href="@{topPage !:? unit}">Catalogs
+              <a href="@{topPage !:? mempty}">Catalogs
               <div .dropdown-content .dropdown-second>
                 $forall (key, cat) <- catalogsSorted cats
                   <a href="@{catalogPage !:? key}">
@@ -146,7 +135,7 @@ htmlResponse _req hdrs body = do
             <div .footer__title>
               <img .footer-logo src="/web/FlatHubLogo.svg">
             <p .footer-links>
-              <a href="@{topPage !:? unit}">
+              <a href="@{topPage !:? mempty}">
                 <text>Home
               <a href="@{groupPage !:? []}">
                 <text>Catalogs
@@ -205,12 +194,27 @@ topPage = getPath R.unit $ \() req -> do
                           <a .underline href="@{groupPage !:? [groupingName g]}">#{groupingTitle g (groupingCatalog cats g)}
       |]
 
+
+data Axis = AxisX | AxisY
+  deriving (Eq)
+
+instance H.ToMarkup Axis where
+  toMarkup AxisX = H.string "x"
+  toMarkup AxisY = H.string "y"
+
+instance Show Axis where
+  show AxisX = "X"
+  show AxisY = "Y"
+
+ifs :: Bool -> String -> String -> String
+ifs True a _ = a
+ifs False _ a = a
+
 catalogPage :: Route Simulation
 catalogPage = getPath R.parameter $ \sim req -> do
   cat <- askCatalog sim
   groups <- asks (catalogGroupings . globalCatalogs)
   let
-    fields = catalogFieldGroups cat
     -- rendundant with ToJSON Catalog but with name:
     jcat = J.pairs $
          "name" J..= sim
@@ -221,365 +225,338 @@ catalogPage = getPath R.parameter $ \sim req -> do
       <> mwhen (not $ null $ catalogSort cat)
         ("sort" J..= catalogSort cat)
     query = parseQuery cat req
-
+    fields = catalogFieldGroups cat
+    toprow = row (fieldsDepth fields) ((id ,) <$> V.toList fields)
 
   case acceptable ["application/json", "text/html"] req of
     Just "application/json" ->
       return $ okResponse [] jcat
-    _ -> htmlResponse req [] $ do
-      H.script $ do
-        jsonEncodingVar "Catalog" jcat
-        jsonVar "Query" query
-      H.div H.! HA.class_ "catalog-title" $ do
-        H.div H.! HA.class_ "container-fluid" $ do
-          H.div H.! HA.class_ "row" $ do
-              H.h5 $ H.text $ catalogTitle cat
+    _ -> htmlResponse req [] $ hamlet [Hamlet.hamlet|
+      <script>
+        #{jsonEncodingVar "Catalog" jcat}
+        #{jsonVar "Query" query}
+      <div .catalog-title>
+        <div .container-fluid>
+          <div .row>
+              <h5>
+                <text>#{catalogTitle cat}
 
-      H.div H.! HA.class_ "catalog-tool-container " $ do
-        H.div H.! HA.class_ "container-fluid catalog-tool" $ do
-          H.div H.! HA.class_ "row" $ do
-            H.div H.! HA.class_ "col col-sm-12 col-md-8 left-column" $ do
-              H.div H.! HA.id "plot" $ do
-                -- Start Vue
-                H.div H.! HA.class_ "row plot-controls-row" $ do
-                  H.div H.! HA.class_ "col-sm-12 col-md-4 plot-col" $ do
-                    H.div H.! HA.class_ "tooltip-container" $ do
-                      H.span H.! HA.class_ "label-help" $ "Plot type:"
-                      H.span H.! HA.class_ "tooltiptext" $ do
-                        H.span H.! vueAttribute "if" "type=='x'" $ "Histogram bins the data by a single field and displays count of objects per bin."
-                        H.span H.! vueAttribute "if" "type=='y'" $ "Heatmap bins the data by two fields and displays count as color."
-                        H.span H.! vueAttribute "if" "type=='c'" $ "Conditional distribution bins the data by one field and displays the distribution of a second field within that bin as a boxplot (range and quartiles)."
-                        H.span H.! vueAttribute "if" "type=='s'" $ "Shows a scatterplot of a (random subset) of actual data points."
-                    H.select H.! vueAttribute "model" "type" H.! vueAttribute "on:change" "go" $ do
-                      H.option H.! HA.value "x" H.! HA.selected "selected" $ "histogram"
-                      H.option H.! HA.value "y" $ "heatmap"
-                      H.option H.! HA.value "c" $ "conditional distribution"
-                      H.option H.! HA.value "s" $ "scatterplot"
-                  H.div H.! HA.class_ "col-sm-12 col-md-5 plot-col" $ do
-                    forM_ ['x', 'y'] $ \x ->
-                      H.div H.! HA.class_ "input-group-row" H.!? (x == 'y', vueAttribute "if" "type!=='x'") H.! vueAttribute "on:change" "go" $ do
-                        let filt = H.stringValue [x] <> "filter"
-                        H.label $ do
-                          H.string [toUpper x] <> "-Axis:"
-                        H.div H.! HA.class_ "input-group" $ do
-                          H.select H.! HA.id ("plot-" <> H.stringValue [x]) $ do
-                            H.option H.! HA.value mempty $ "Choose " <> H.string [toUpper x] <> "-Axis..."
-                            forM_ (catalogFields cat) $ \f ->
-                              when (typeIsFloating (fieldType f)) $ do
-                                let n = H.textValue $ fieldName f
-                                H.option
-                                  H.! HA.class_ ("sel-" <> n)
-                                  H.!? (not $ fieldDisp f, HA.style "display:none")
-                                  H.! HA.value n
-                                  $ H.text $ fieldTitle f
-                          H.div H.! HA.class_ "tooltip-container" H.! vueAttribute "if" filt $ do
-                            H.span
-                              H.! HA.class_ "tooltiptext"
-                              H.! vueAttribute "show" ("!(" <> filt <> ".lbv>0)") $ do
-                              "For log functionality, set the filter to enable only positive values."
-                            H.div H.! HA.class_ "switch-row" $ do
-                              H.label "lin"
-                              H.label H.! HA.class_ "switch" $ do
-                                H.input
-                                  H.! HA.type_ "checkbox"
-                                  H.! HA.name ("log" <> H.stringValue [x])
-                                  H.! vueAttribute "bind:disabled" ("!(" <> filt <> ".lbv>0)")
-                                  H.! vueAttribute "model" (filt <> ".plotLog")
-                                H.span H.! HA.class_ "slider" H.! vueAttribute "bind:disabled" ("!(" <> filt <> ".lbv>0)") $ mempty
-                              H.label "log"
-                  H.div H.! HA.class_ "col-sm-12 col-md-3 plot-col" H.! vueAttribute "if" "type!='s'" $ do
-                    H.div H.! HA.class_ "tooltip-container" $ do
-                      H.span H.! HA.class_ "label-help" $ "Count:"
-                      H.span H.! HA.class_ "tooltiptext" $ do
-                        "Choose whether the object count per bin is shown in linear or log scale. "
-                        H.span H.! vueAttribute "if" "type=='x'" $ "Count is shown on the Y axis."
-                        H.span H.! vueAttribute "else" "" $ "Count is shown on the color (Z) axis."
-                    H.div H.! HA.class_ "switch-row solo-row" $ do
-                      H.label "lin"
-                      H.label H.! HA.class_ "switch" $ do
-                        H.input
-                          H.! HA.type_ "checkbox"
-                          H.! HA.name "log"
-                          H.! vueAttribute "model" "log"
-                          H.! vueAttribute "on:change" "toggle_log"
-                        H.span H.! HA.class_ "slider" $ mempty
-                      H.label "log"
-                -- End Vue
-              H.div H.! HA.class_ "alert alert-danger" H.! HA.id "error" $ mempty
-              H.div H.! HA.class_ "plot-container" $ do
-                H.div H.! HA.id "plot-chart" $ mempty
+      <div .catalog-tool-container>
+        <div .container-fluid .catalog-tool>
+          <div .row>
+            <div .col .col-sm-12 .col-md-8 .left-column>
+              <div #plot>
+                <!-- Start Vue -->
+                <div .row .plot-controls-row>
+                  <div .col-sm-12 .col-md-4 .plot-col>
+                    <div .tooltip-container>
+                      <span .label-help>Plot type:
+                      <span .tooltiptext>
+                        <span v-if="type=='x'">Histogram bins the data by a single field and displays count of objects per bin.
+                        <span v-else-if="type=='y'">Heatmap bins the data by two fields and displays count as color.
+                        <span v-else-if="type=='c'">Conditional distribution bins the data by one field and displays the distribution of a second field within that bin as a boxplot (range and quartiles).
+                        <span v-else-if="type=='s'">Shows a scatterplot of a (random subset) of actual data points.
+                    <select v-model="type" v-on:change="go">
+                      <option value="x" selected=selected>histogram
+                      <option value="y">heatmap
+                      <option value="c">conditional distribution
+                      <option value="s">scatterplot
+                  <div .col-sm-12 .col-md-5 .plot-col>
+                    $forall axis <- [AxisX,AxisY]
+                      <div .input-group-row :axis == AxisY:v-if="type!=='x'" v-on:change="go">
+                        <label>
+                          #{show axis}-Axis:
+                        <div .input-group>
+                          <select #plot-#{axis}>
+                            <option value="">Choose #{show axis}-Axis...
+                            $forall f <- catalogFields cat
+                              $if typeIsFloating (fieldType f)
+                                <option
+                                  .sel-#{fieldName f}
+                                  :not (fieldDisp f):style="display:none"
+                                  value="#{fieldName f}">
+                                  #{fieldTitle f}
+                          <div .tooltip-container v-if="#{axis}filter">
+                            <span .tooltiptext v-show="!(#{axis}filter.lbv>0)">
+                              For log functionality, set the filter to enable only positive values.
+                            <div .switch-row>
+                              <label>lin
+                              <label .switch>
+                                <input
+                                  type="checkbox"
+                                  name="log#{axis}"
+                                  v-bind:disabled="!(#{axis}filter.lbv>0)"
+                                  v-model="#{axis}filter.plotLog">
+                                <span .slider v-bind:disabled="!(#{axis}filter.lbv>0)">
+                              <label>log
+                  <div .col-sm-12 .col-md-3 .plot-col v-if="type!='s'">
+                    <div .tooltip-container>
+                      <span .label-help>Count:
+                      <span .tooltiptext>
+                        Choose whether the object count per bin is shown in linear or log scale.
+                        <span v-if="type=='x'">Count is shown on the Y axis.
+                        <span v-else>Count is shown on the color (Z) axis.
+                    <div .switch-row .solo-row>
+                      <label>lin
+                      <label .switch>
+                        <input
+                          type="checkbox"
+                          name="log"
+                          v-model="log"
+                          v-on:change="toggle_log">
+                        <span .slider>
+                      <label>log
+                <!-- End Vue -->
+              <div .alert .alert-danger #error>
+              <div .plot-container>
+                <div #plot-chart>
 
-            H.div H.! HA.class_ "col col-sm-12 col-md-4 right-column" $ do
-              H.ul H.! HA.class_ "nav nav-tabs" H.! HA.id "myTab" H.! HA.role "tablist" $ do
-                forM_ ["Filter", "Python", "Fields", "About"] $ \t -> do
-                  H.li H.! HA.class_ "nav-item" $ do
-                    H.a
-                      H.! HA.class_ ("nav-link" <> if t == "Filter" then " active" else mempty)
-                      H.! HA.id (H.stringValue t <> "-tab")
-                      H.! H.dataAttribute "toggle" "tab"
-                      H.! HA.href ("#" <> H.stringValue t)
-                      H.! HA.role "tab"
-                      H.! H.customAttribute "aria-controls" "filter"
-                      H.! H.customAttribute "aria-selected" "true"
-                      $ H.string (if t == "Fields" then "All Fields" else t)
-              H.div H.! HA.class_ "tab-content" H.! HA.id "myTabContent" $ do
-                H.div
-                  H.! HA.class_ "tab-pane fade show active right-column-container"
-                  H.! HA.id "Filter"
-                  H.! HA.role "tabpanel"
-                  H.! H.customAttribute "aria-labelledby" "filter-tab" $ do
-                  H.div H.! HA.class_ "right-column-group" $ do
-                    H.div H.! HA.class_ "right-column-heading-group" $ do
-                      H.h6 H.! HA.class_ "right-column-heading" $ "Active Filters"
-                      H.a H.! HA.class_ "button button-secondary" H.! HA.href (WH.routeActionValue catalogPage sim mempty) $ "reset all"
-                    H.div
-                      H.! HA.id "filt"
-                      H.! HA.class_ "alert-parent" $ do
-                      H.div
-                        H.! vueAttribute "for" "filter in filters"
-                        H.! vueAttribute "bind:id" "'filt-'+filter.field.name"
-                        H.! HA.class_ "falert filter-row"
-                        H.! vueAttribute "bind:class" "\
-                          \{'falert-info':filter.field.flag!==undefined\
-                          \,'falert-warning':filter.field.flag===undefined\
-                          \,'falert-horz':filter.field.flag===undefined\
-                          \}"
-                        $ do
-                        H.div H.! HA.class_ "filter-text-row" $ do
-                          H.div H.! HA.class_ "filter-text" $
-                            H.customParent "field-title"
-                              H.! vueAttribute "bind:field" "filter.field"
-                              H.! vueAttribute "bind:rmf" "filter.field.flag?undefined:filter.remove.bind(filter)"
-                              $ mempty
-                          H.button H.! HA.class_ "filter-reset"
-                            H.! vueAttribute "on:click" "filter.reset()"
-                            H.! vueAttribute "if" "filter.field.flag===undefined"
-                            $ "reset"
-                        H.div
-                          H.! HA.class_ "filter-inputs"
-                          H.! vueAttribute "if" "filter.field.terms"
-                          $ do
-                            H.customParent "select-terms"
-                              H.! vueAttribute "if" "filter.field.terms"
-                              H.! vueAttribute "bind:field" "filter.field"
-                              H.! vueAttribute "bind:aggs" "filter.aggs"
-                              H.! vueAttribute "model" "filter.value"
-                              H.! vueAttribute "bind:change" "filter.change.bind(filter)"
-                              $ mempty
-                        H.div H.! HA.class_ "filter-inputs-group"
-                          H.! vueAttribute "else" "" $ do
-                          forM_ [False, True] $ \b ->
-                            H.div H.! HA.class_ "filter-input" $ do
-                              H.input
-                                H.! vueAttribute "bind:name" ("filter.field.name+'." <> (if b then "u" else "l") <> "b'")
-                                H.! vueAttribute "bind:title" ("'" <> (if b then "Upper" else "Lower") <> " bound for '+filter.field.title+' values'")
-                                H.! HA.type_ "number"
-                                H.! vueAttribute "bind:step" "filter.field.base=='i'?'1':'any'"
-                                H.! vueAttribute "bind:min" "filter.aggs.min"
-                                H.! vueAttribute "bind:max" "filter.aggs.max"
-                                H.! vueAttribute "model.number" ("filter." <> (if b then "ubv" else "lbv"))
-                                H.! vueAttribute "on:change" "filter.change()"
-                        H.div H.! HA.class_ "filter-info-row" H.! vueAttribute "if" "!filter.field.terms" $ do
-                          H.div H.! HA.class_ "filter-avg"
-                            H.! vueAttribute "if" "filter.aggs.avg!==undefined"
-                            $ do
-                            H.em $ H.preEscapedString "&mu;"
-                            " : {{filter.aggs.avg?filter.render(filter.aggs.avg):'no data'}}"
-                          H.div H.! HA.class_ "filter-min-max" $ do
-                            H.p $ "Range: "
-                            forM_ [False, True] $ \b ->
-                              H.p $ " {{filter.render(filter.aggs." <> (if b then "max" else "min") <> ")}}"
+            <div .col .col-sm-12 .col-md-4 .right-column>
+              <ul .nav .nav-tabs #myTab role="tablist">
+                $forall t <- [asTypeOf "Filter" T.empty, "Python", "Fields", "About"]
+                  <li .nav-item>
+                    <a ##{t}-tab .nav-link
+                      :t == "Filter":class="active"
+                      data-toggle=tab
+                      href="##{t}"
+                      role="tab"
+                      aria-controls="filter"
+                      aria-selected="true">
+                      <string>
+                        $if t == "Fields"
+                          All Fields
+                        $else
+                          #{t}
+              <div .tab-content #myTabContent>
+                <div .tab-pane .fade .show .active .right-column-container #Filter role="tabpanel" aria-labelledby="filter-tab">
+                  <div .right-column-group>
+                    <div .right-column-heading-group>
+                      <h6 .right-column-heading>Active Filters
+                      <a .button .button-secondary href="@{catalogPage !:? sim}">reset all
+                    <div #filt .alert-parent>
+                      <div
+                        v-for="filter in filters"
+                        v-bind:id="'filt-'+filter.field.name"
+                        .falert .filter-row
+                        v-bind:class="{'falert-info':filter.field.flag!==undefined,'falert-warning':filter.field.flag===undefined,'falert-horz':filter.field.flag===undefined}">
+                        <div .filter-text-row>
+                          <div .filter-text>
+                            <field-title
+                              v-bind:field="filter.field"
+                              v-bind:rmf="filter.field.flag?undefined:filter.remove.bind(filter)">
+                          <button .filter-reset
+                            v-on:click="filter.reset()"
+                            v-if="filter.field.flag===undefined">
+                            reset
+                        <div .filter-inputs v-if="filter.field.terms">
+                          <select-terms
+                              v-if="filter.field.terms"
+                              v-bind:field="filter.field"
+                              v-bind:aggs="filter.aggs"
+                              v-model="filter.value"
+                              v-bind:change="filter.change.bind(filter)">
+                        <div .filter-inputs-group v-else>
+                          $forall b <- [False, True]
+                            <div .filter-input>
+                              <input
+                                type="number"
+                                v-bind:name="filter.field.name+'.#{ifs b "u" "l"}b'"
+                                v-bind:title="'#{ifs b "Upper" "Lower"} bound for '+filter.field.title+' values'"
+                                v-bind:step="filter.field.base=='i'?'1':'any'"
+                                v-bind:min="filter.aggs.min"
+                                v-bind:max="filter.aggs.max"
+                                v-model.number="filter.#{ifs b "u" "l"}bv"
+                                v-on:change="filter.change()">
+                        <div .filter-info-row v-if="!filter.field.terms">
+                          <div .filter-avg v-if="filter.aggs.avg!==undefined">
+                            <em>&mu; : {{filter.aggs.avg?filter.render(filter.aggs.avg):'no data'}}
+                          <div .filter-min-max>
+                            <p>Range:
+                            $forall b <- [False, True]
+                              <p>{{filter.render(filter.aggs.#{ifs b "max" "min"})}}
 
-                      H.div H.! HA.class_ "alert fade show row filter-row alert-secondary" $ do
-                        H.div H.! HA.class_ "filter-text" $
-                          "Select field to filter"
-                        H.div H.! HA.class_ "filter-inputs" $
-                          H.select H.! HA.id "addfilt" H.! HA.onchange "addFilter(event.target.value)" $ do
-                            H.option H.! HA.value "" $ "Add filter..."
-                            forM_ (catalogFields cat) $ \f -> do
-                              let n = H.textValue $ fieldName f
-                              H.option
-                                H.! HA.value n
-                                H.! HA.id ("addfilt-" <> n)
-                                H.! HA.class_ ("sel-" <> n)
-                                H.!? (not $ fieldDisp f, HA.style "display:none")
-                                -- H.! vueAttribute "bind:style" ("{display:disp[" <> WH.lazyByteStringValue (J.encode $ fieldName f) <> "]?'':'none'}")
-                                $ H.text $ fieldTitle f
-                  H.div H.! HA.class_ "right-column-group" $ do
-                    H.h6 H.! HA.class_ "right-column-heading-leader" $ "Random Sample"
-                    H.div H.! HA.class_ "sample-row" $ do
-                      H.label H.! HA.for "sample" $ "fraction"
-                      H.input
-                        H.! HA.id "sample"
-                        H.! HA.name "sample"
-                        H.! HA.type_ "number"
-                        H.! HA.step "any"
-                        H.! HA.min "0"
-                        H.! HA.max "1"
-                        H.! HA.value (H.toValue $ querySample query)
-                        H.! HA.title "Probability (0,1] with which to include each item"
-                        H.! HA.onchange "sampleChange()"
-                      H.label H.! HA.for "seed" $ "seed"
-                      H.input
-                        H.! HA.id "seed"
-                        H.! HA.name "seed"
-                        H.! HA.type_ "number"
-                        H.! HA.step "1"
-                        H.! HA.min "0"
-                        WH.!? (HA.value . H.toValue <$> querySeed query)
-                        H.!? (querySample query < 1, HA.disabled "disabled")
-                        H.! HA.title "Random seed to generate sample selection"
-                        H.! HA.onchange "sampleChange()"
-                H.div
-                  H.! HA.class_ "tab-pane fade"
-                  H.! HA.id "Python"
-                  H.! HA.role "tabpanel"
-                  H.! H.customAttribute "aria-labelledby" "python-tab" $ do
-                  H.div H.! HA.class_ "right-column-group" $ do
-                    H.h6 H.! HA.class_ "right-column-heading" $ "Python Query"
-                    H.p $ do
-                      "Example python code to apply the above filters and retrieve data. To use, download and install "
-                      H.a H.! HA.href "https://github.com/flatironinstitute/flathub/tree/prod/py" $ "this module"
-                      "."
-                    H.div H.! HA.id "div-py" H.! HA.class_ "python-block" $
-                      H.pre H.! HA.id "code-py" $ mempty
-                H.div
-                  H.! HA.class_ "tab-pane fade"
-                  H.! HA.id "Fields"
-                  H.! HA.role "tabpanel"
-                  H.! H.customAttribute "aria-labelledby" "dict-tab" $ do
-                  H.div H.! HA.class_ "right-column-group" $ do
-                    H.h6 H.! HA.class_ "right-column-heading" $ "Fields Dictionary"
-                    H.div $ H.table H.! HA.id "tdict" H.! HA.class_ "table table-striped table-sm" $ do
-                      H.thead $ H.tr $ do
-                          H.th $ "Field"
-                          H.th $ "Variable"
-                          H.th $ "Type"
-                          H.th $ "Units"
-                          H.th $ "Description"
-                      H.tbody $ forM_ (catalogFieldGroups cat) $ \f -> do
-                          fielddesc f f 0
-                H.div
-                  H.! HA.class_ "tab-pane fade"
-                  H.! HA.id "About"
-                  H.! HA.role "tabpanel"
-                  H.! H.customAttribute "aria-labelledby" "about-tab" $ do
-                  H.div H.! HA.class_ "right-column-group" $ do
-                    H.h6 H.! HA.class_ "right-column-heading" $ "About Catalog"
-                    mapM_ (H.p . H.preEscapedText) $ catalogDescr cat
-                    let gs = findGroupsCatalog sim groups
-                    unless (null gs) $ H.div $ do
-                      "More under:"
-                      H.ul $ forM_ gs $ \g ->
-                        H.li $ H.a H.! HA.href (WH.routeActionValue groupPage g mempty) $ mintersperseMap "/" H.text g
+                      <div .alert .fade .show .row .filter-row .alert-secondary>
+                        <div .filter-text>Select field to filter
+                        <div .filter-inputs>
+                          <select #addfilt onchange="addFilter(event.target.value)">
+                            <option value="">Add filter...
+                            $forall f <- catalogFields cat
+                              <option #addfilt-#{fieldName f}
+                                .sel-#{fieldName f}
+                                value="#{fieldName f}"
+                                :not (fieldDisp f):style="display:none">
+                                #{fieldTitle f}
+                  <div .right-column-group>
+                    <h6 .right-column-heading-leader>Random Sample
+                    <div .sample-row>
+                      <label for="sample">fraction
+                      <input #sample
+                        name="sample"
+                        type="number"
+                        step="any"
+                        min="0"
+                        max="1"
+                        value="#{querySample query}"
+                        title="Probability (0,1] with which to include each item"
+                        onchange="sampleChange()">
+                      <label for="seed">seed
+                      <input #seed
+                        name="seed"
+                        type="number"
+                        step="1"
+                        min="0"
+                        value="#{maybe mempty H.toMarkup $ querySeed query}"
+                        :querySample query < 1:disabled=disabled
+                        title="Random seed to generate sample selection"
+                        onchange="sampleChange()">
+                <div .tab-pane .fade #Python role="tabpanel" aria-labelledby="python-tab">
+                  <div .right-column-group>
+                    <h6 .right-column-heading>Python Query
+                    <p>
+                      Example python code to apply the above filters and retrieve data. To use, download and install 
+                      <a href="https://github.com/flatironinstitute/flathub/tree/prod/py">this module
+                      .
+                    <div #div-py .python-block>
+                      <pre #code-py>
+                <div .tab-pane .fade #Fields role="tabpanel" aria-labelledby="dict-tab">
+                  <div .right-column-group>
+                    <h6 .right-column-heading>Fields Dictionary
+                    <div>
+                      <table #tdict .table .table-striped .table-sm>
+                        <thead>
+                          <tr>
+                            <th>Field
+                            <th>Variable
+                            <th>Type
+                            <th>Units
+                            <th>Description
+                        <tbody>
+                          $forall f <- catalogFieldGroups cat
+                            #{fielddesc f f 0}
+                <div .tab-pane .fade #About role="tabpanel" aria-labelledby="about-tab">
+                  <div .right-column-group>
+                    <h6 .right-column-heading>About Catalog
+                    $forall desc <- catalogDescr cat
+                      <p>#{H.preEscapedText desc}
+                    $with gs <- findGroupsCatalog sim groups
+                      $if not (null gs)
+                        <div>
+                          More under:
+                          <ul>
+                            $forall g <- gs
+                              <li>
+                                <a href="@{groupPage !:? g}">#{mintersperseMap "/" H.text g}
 
-        H.div H.! HA.class_ "container-fluid catalog-summary" $ do
-          H.div H.! HA.class_ "d-flex justify-content-between" $ do
-            H.div H.! HA.class_ "d-flex" $ do
-              H.button
-                H.! HA.type_ "button"
-                H.! HA.class_ "btn btn-warning"
-                H.! HA.id "rawdata-btn"
-                H.! HA.onclick "toggleShowData()"
-                $ "Hide Raw Data"
-              H.p H.! HA.class_ "horizontal-label" H.! HA.id "info" $ mempty
-            H.div
-              H.! HA.id "filt-tab"
-              H.! HA.class_ "click-tab-container" $ do
-                H.p H.! HA.class_ "horizontal-label" $ "Active Filters"
-                H.div
-                  H.! HA.class_ "click-tab"
-                  H.! vueAttribute "for" "filter in filters"
-                  H.! vueAttribute "bind:id" "'filt-tab-'+filter.field.name" $ do
-                    -- TODO: Add back in ?
-                      -- H.div H.! HA.class_ "click-tab-close" $ mempty
-                      H.p
-                        H.! vueAttribute "bind:field" "filter.field"
-                        H.! HA.class_ "click-tab-content"
-                        H.! vueAttribute "bind:value" "filter.field.value" $ H.text "{{filter.field.name}}"
-            -- TODO: Fix this download function
-            H.div H.! HA.class_ "download-container" H.! HA.id "download" $ do
-              H.p H.! HA.class_ "horizontal-label" $ "Format"
-              H.select H.! vueAttribute "model" "bulk" $ do
-                H.option H.! HA.value mempty $ "Choose format..."
-                H.optgroup H.! HA.label "raw data" $ do
-                  forM_ [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkECSV Nothing, BulkECSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)] $ \b -> do
-                    let f = R.renderParameter b
-                    H.option
-                      H.! HA.id ("download." <> H.textValue f)
-                      H.! HA.class_ "download-option"
-                      H.! HA.value (WH.routeActionValue catalogBulk (sim, b) mempty)
-                      $ H.text f
-                H.optgroup H.! HA.label "attachment files" $ do
-                  let att = HM.filter (isJust . fieldAttachment) $ catalogFieldMap cat
-                  forM_ att $ \f ->
-                    H.option
-                      H.! HA.id ("download.attachment." <> H.textValue (fieldName f))
-                      H.! HA.class_ "download-option"
-                      H.! HA.value (WH.routeActionValue attachmentBulk (sim, fieldName f) mempty)
-                      $ H.text (fieldTitle f) <> ".zip"
-                  when (not $ HM.null att) $
-                    H.option
-                      H.! HA.id "download.attachments"
-                      H.! HA.class_ "download-option"
-                      H.! HA.value (WH.routeActionValue attachmentsBulk sim mempty)
-                      $ "all.zip"
-              H.a
-                H.! HA.class_ "button button-secondary"
-                H.! HA.id "download-btn"
-                H.! vueAttribute "bind:href" "link"
-                $ "Download"
+        <div .container-fluid .catalog-summary>
+          <div .d-flex .justify-content-between>
+            <div .d-flex>
+              <button .btn .btn-warning #rawdata-btn
+                type="button"
+                onclick="toggleShowData()">
+                Hide Raw Data
+              <p .horizontal-label #info>
+            <div #filt-tab .click-tab-container>
+                <p .horizontal-label>Active Filters
+                <div .click-tab
+                  v-for="filter in filters"
+                  v-bind:id="'filt-tab-'+filter.field.name">
+                    <!-- TODO: Add back in ?
+                    <div .click-tab-close $ mempty
+                    -->
+                    <p .click-tab-content
+                      v-bind:field="filter.field"
+                      v-bind:value="filter.field.value">
+                      {{filter.field.name}}
+            <!-- TODO: Fix this download function -->
+            <div .download-container #download>
+              <p .horizontal-label>Format
+              <select v-model="bulk">
+                <option value="">Choose format...
+                <optgroup label="raw data">
+                  $forall b <- [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkECSV Nothing, BulkECSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)]
+                    $with f <- asTypeOf (R.renderParameter b) T.empty
+                      <option #download.#{f} .download-option
+                        value="@{catalogBulk !:? (sim, b)}">
+                        #{f}
+                <optgroup label="attachment files">
+                  $with att <- HM.filter (isJust . fieldAttachment) $ catalogFieldMap cat
+                    $forall f <- att
+                      <option #download.attachment.#{fieldName f} .download-option
+                        value="@{attachmentBulk !:? (sim, fieldName f)}">
+                        #{fieldTitle f}.zip
+                    $if not $ HM.null att
+                      <option #download.attachments .download-option
+                        value="@{attachmentsBulk !:? sim}">
+                        all.zip
+              <a .button .button-secondary #download-btn
+                v-bind:href="link">
+                Download
 
-        H.div H.! HA.class_ "container-fluid catalog-summary raw-data" H.! HA.id "rawdata" $ do
-          H.div H.! HA.class_ "raw-data__header" $ do
-            H.h5 $ "Raw Data"
-          H.table H.! HA.id "tcat" $
-            H.thead $ do
-              row (fieldsDepth fields) ((id ,) <$> V.toList fields)
+        <div .container-fluid .catalog-summary .raw-data #rawdata>
+          <div .raw-data__header>
+            <h5>Raw Data
+          <table #tcat>
+            <thead>
+              #{toprow}
+      |]
   where
   fielddesc :: FieldGroup -> FieldGroup -> Int -> H.Html
   fielddesc f g d = do
-      H.tr $ do
-          H.td H.! HA.class_ ("depth-" <> H.stringValue (show d)) $ do
-              H.input H.! HA.type_ "checkbox"
-                  H.!? (isNothing (fieldSub g), HA.id $ H.textValue $ key f)
-                  H.! HA.class_ (H.textValue $ T.unwords $ "colvis" : map key fs)
-                  H.!? (fieldDisp g, HA.checked "checked")
-                  H.! HA.onclick "colvisSet(event)"
-              H.text (fieldTitle g)
-          H.td $ when (isNothing (fieldSub g)) (H.text (fieldName f))
-          H.td $ H.string (show $ fieldType g)
-          H.td H.! HA.class_ "units" $ foldMap H.text (fieldUnits g)
-          H.td $ foldMap H.text (fieldDescr g)
-      forM_ (fold (fieldSub g)) $ \sf ->
-          fielddesc (f <> sf) sf (d+1)
+    hamlet [Hamlet.hamlet|
+      <tr>
+        <td .depth-#{d}>
+          <input type="checkbox"
+              :isNothing (fieldSub g):id="#{key f}"
+              class="colvis #{T.unwords $ map key fs}"
+              :fieldDisp g:checked=checked
+              onclick="colvisSet(event)">
+          #{fieldTitle g}
+        <td>
+          $if isNothing (fieldSub g)
+            #{fieldName f}
+        <td>#{show $ fieldType g}
+        <td .units>
+          $forall u <- fieldUnits g
+            #{u}
+        <td>
+          $forall d <- fieldDescr g
+            #{d}
+      |]
+    forM_ (fold (fieldSub g)) $ \sf ->
+      fielddesc (f <> sf) sf (d+1)
     where
     fs = expandField f
     key = ("colvis-" <>) . fieldName
   fieldBody :: Word -> FieldGroup -> H.Html
-  fieldBody d f = H.span $ do
-    -- Writes the title to the span
-    H.text $ fieldTitle f
-    -- Writes the unit to the span
-    forM_ (fieldUnits f) $ \u -> do
-      when (d > 1) H.br
-      H.span H.! HA.class_ "units" $ H.preEscapedText u
-    mapM_ ((H.span H.! HA.class_ "tooltiptext") . H.text) (fieldDescr f)
+  fieldBody d f = hamlet [Hamlet.hamlet|
+    <span>
+      <!-- Writes the title to the span -->
+      #{fieldTitle f}
+      <!-- Writes the unit to the span -->
+      $forall u <- fieldUnits f
+        $if d > 1
+          <br>
+        <span class="units">#{H.preEscapedText u}
+      $forall d <- fieldDescr f
+        <span class="tooltiptext">#{d}
+    |]
   field :: Word -> FieldGroup -> FieldGroup -> H.Html
-  field d f' f@Field{ fieldSub = Nothing } = H.th
-    H.! HA.rowspan (H.toValue d)
-    H.! H.dataAttribute "data" (H.textValue $ fieldName f')
-    H.! H.dataAttribute "name" (H.textValue $ fieldName f')
-    H.! H.dataAttribute "type" (baseType ("num","num","string","string","string") $ fieldType f)
-    H.! H.dataAttribute "class-name" (if typeIsNumeric (fieldType f) then "dt-body-right" else "dt-body-left")
-    H.!? (not (fieldDisp f), H.dataAttribute "visible" "false")
-    H.! H.dataAttribute "default-content" mempty
-    H.! HA.class_ "tooltip-dt" $
-    fieldBody d f
-  field _ _ f@Field{ fieldSub = Just s } = H.th
-    H.! HA.colspan (H.toValue $ length $ expandFields s)
-    H.! HA.class_ "tooltip-dt" $
-    fieldBody 1 f
+  field d f' f@Field{ fieldSub = Nothing } = hamlet [Hamlet.hamlet|
+    <th .tooltip-dt
+      rowspan=#{d}
+      data-data=#{fieldName f'}
+      data-name=#{fieldName f'}
+      data-type=#{baseType (asTypeOf "num" T.empty,"num","string","string","string") $ fieldType f}
+      data-class-name="dt-body-#{ifs (typeIsNumeric (fieldType f)) "right" "left"}"
+      :not (fieldDisp f):data-visible="false"
+      data-default-content="">
+      #{fieldBody d f}
+    |]
+  field _ _ f@Field{ fieldSub = Just s } = hamlet [Hamlet.hamlet|
+    <th .tooltip-dt
+      colspan=#{length $ expandFields s}>
+      #{fieldBody 1 f}
+    |]
   row :: Word -> [(FieldGroup -> FieldGroup, FieldGroup)] -> H.Html
   row d l = do
     H.tr $ mapM_ (\(p, f) -> field d (p f) f) l
