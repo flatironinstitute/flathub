@@ -95,57 +95,57 @@ htmlResponse _req hdrs body = do
       <script>
         #{jsonVar "Catalogs" $ HM.map catalogTitle $ catalogMap cats}
     <body>
-      <div class="modal-container hidden" id="progress-modal">
-        <div class="modal-background">
+      <div .modal-container .hidden #progress-modal>
+        <div .modal-background>
           <span>
-        <div class="modal-body">
-          <div class="modal-content">
+        <div .modal-body>
+          <div .modal-content>
             <h3>Processing...
-            <div class="progress-container">
-              <div class="progress-exterior">
-                <div class="progress-interior">
+            <div .progress-container>
+              <div .progress-exterior>
+                <div .progress-interior>
             <p>One moment, please. The data you requested is being retrieved.
-      <header class="header">
-        <div class="header__logo">
-          <a href="@{topPage !:? unit}" class="header__logo-link">
-            <img class="header__logo-image" src="/web/FlatHubLogo.svg">
-        <nav class="header__nav">
-          <ul id="topbar">
-            <li class="header__link--dropdown">
+      <header .header>
+        <div .header__logo>
+          <a href="@{topPage !:? unit}" .header__logo-link>
+            <img .header__logo-image src="/web/FlatHubLogo.svg">
+        <nav .header__nav>
+          <ul #topbar>
+            <li .header__link--dropdown>
               <a href="@{groupPage !:? []}">Collections
-              <div class="dropdown-content">
+              <div .dropdown-content>
                 $forall g <- groupList $ catalogGroupings cats
                   <a href="@{groupPage !:? [groupingName g]}">
                     <text>#{groupingTitle g $ groupingCatalog cats g}
-            <li class="header__link--dropdown">
+            <li .header__link--dropdown>
               <a href="@{topPage !:? unit}">Catalogs
-              <div class="dropdown-content dropdown-second">
+              <div .dropdown-content .dropdown-second>
                 $forall (key, cat) <- catalogsSorted cats
                   <a href="@{catalogPage !:? key}">
                     <text>#{catalogTitle cat}
-            <li class="header__link">
+            <li .header__link>
               <a href="@{staticHtml !:? ["about"]}">About
       <!--
-      <div class="subheader">
-        <div class="subheader-content">
+      <div .subheader>
+        <div .subheader-content>
           <p>Please note that this is a beta version. The website is still undergoing final testing before the official release.
       -->
-      <div class="modal-container hidden" id="browser-modal">
-        <div class="modal-background">
+      <div .modal-container .hidden #browser-modal>
+        <div .modal-background>
           <span>
-        <div class="modal-body">
-          <div class="modal-content">
-            <p class="modal-close" id="browser-modal-close" onclick="closeModal()">
+        <div .modal-body>
+          <div .modal-content>
+            <p .modal-close #browser-modal-close onclick="closeModal()">
             <h3>Unsupported Browser
             <p>Flathub requires an up-to-date web browser to make sure that you can use all of the features. Please consider using one of the preferred browsers: Google Chrome, Mozilla Firefox, Apple Safari.
-      <div class="container container--main">
+      <div .container .container--main>
         #{body}
-      <footer class="footer-distributed">
-        <div class="container">
-          <div class="footer-center">
-            <div class="footer__title">
-              <img class="footer-logo" src="/web/FlatHubLogo.svg">
-            <p class="footer-links">
+      <footer .footer-distributed>
+        <div .container>
+          <div .footer-center>
+            <div .footer__title>
+              <img .footer-logo src="/web/FlatHubLogo.svg">
+            <p .footer-links>
               <a href="@{topPage !:? unit}">
                 <text>Home
               <a href="@{groupPage !:? []}">
@@ -170,39 +170,39 @@ topPage = getPath R.unit $ \() req -> do
       return $ okResponse [] $ J.encode $ HM.map catalogTitle $ catalogMap cats
     _ -> htmlResponse req [] $ hamlet [Hamlet.hamlet|
       <div>
-        <div class="section gray-heading">
-          <div class="container">
-            <div class="row">
-              <div class="heading-content">
-                <h4 class="heading-heading">Flatiron Institute Data Exploration and Comparison Hub</h4>
-        <div class="section">
-          <div class="container">
-            <div class="row">
-              <div class="col-md">
-                <div class="body-copy narrow-body">
+        <div .section .gray-heading>
+          <div .container>
+            <div .row>
+              <div .heading-content>
+                <h4 .heading-heading>Flatiron Institute Data Exploration and Comparison Hub</h4>
+        <div .section>
+          <div .container>
+            <div .row>
+              <div .col-md>
+                <div .body-copy .narrow-body>
                   <p>
                     <b>Flatiron Institute Data Exploration and Comparison Hub (FlatHUB)</b> is a science platform for diverse
                     types of data, that allows users to explore and compare data from different simulations and datasets with
                     one another and with curated observational/experimental collections. Users can browse and filter the data
                     collections, make simple preview plots, and download sub-samples of the data.
-            <div class="section">
-              <div class="box-row">
-                <div class="box">
-                  <div class="box-content">
-                    <div class="box-copy">
-                      <div class="box-head">Catalogs
-                    <ul class="link-list">
+            <div .section>
+              <div .box-row>
+                <div .box>
+                  <div .box-content>
+                    <div .box-copy>
+                      <div .box-head>Catalogs
+                    <ul .link-list>
                       $forall (sim, cat) <- catalogsSorted cats
                         <li>
-                          <a class="underline" href="@{catalogPage !:? sim}">#{catalogTitle cat}
-                <div class="box">
-                  <div class="box-content">
-                    <div class="box-copy">
-                      <div class="box-head">Collections
-                    <ul class="link-list">
+                          <a .underline href="@{catalogPage !:? sim}">#{catalogTitle cat}
+                <div .box>
+                  <div .box-content>
+                    <div .box-copy>
+                      <div .box-head>Collections
+                    <ul .link-list>
                       $forall g <- groupList (catalogGroupings cats)
                         <li>
-                          <a class="underline" href="@{groupPage !:? [groupingName g]}">#{groupingTitle g (groupingCatalog cats g)}
+                          <a .underline href="@{groupPage !:? [groupingName g]}">#{groupingTitle g (groupingCatalog cats g)}
       |]
 
 catalogPage :: Route Simulation
@@ -634,11 +634,11 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
       $of GroupCatalog cat
         <!-- Single Catalog -->
         $with Catalog{..} <- catalogMap cats ! cat
-          <div .section .gray-heading class="#{cat}-heading">
+          <div .section .gray-heading .#{cat}-heading>
             <div .container>
               <div .row>
                 <div .heading-content>
-                  <h4 .heading-heading class="#{cat}-subheading">
+                  <h4 .heading-heading .#{cat}-subheading>
                     <text>#{catalogTitle}
                   <a .button .button-primary href="@{catalogPage !:? cat}">explore
           $maybe html <- catalogHtml
@@ -656,11 +656,11 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
 
       $of Grouping{..}
         <!-- Collections -->
-        <div .section .gray-heading class="#{groupName}-heading">
+        <div .section .gray-heading .#{groupName}-heading>
           <div .container>
             <div .row>
               <div .heading-content>
-                <h4 .heading-heading class="#{groupName}-subheading">
+                <h4 .heading-heading .#{groupName}-subheading>
                   <text>#{groupTitle}
         <div .section .highlighted-links>
           <div .container>
@@ -706,10 +706,10 @@ comparePage = getPath ("compare" R.*< R.manyI R.parameter) $ \path req -> do
     <script>
       #{jsonVar "Catalogs" $ catalogMap cats}
       #{jsonVar "Dict" $ catalogDict cats}
-    <div class="compare-container">
+    <div .compare-container>
       <h2>Compare
       <p>Select catalogs across the top to compare, and fields down the left to apply filters and compare statistics and distributions from these catalogs.
-      <table id="tcompare" class="u-full-width">
+      <table #tcompare .u-full-width>
         <thead>
           <tr>
             <th>Choose two or more catalogs
@@ -721,15 +721,17 @@ comparePage = getPath ("compare" R.*< R.manyI R.parameter) $ \path req -> do
                     <text>#{catalogTitle cat}
         <tbody>
         <tfoot>
-          <tr id="tr-add">
-            <td><select id="addf" onchange="addField()">
-          <tr id="tr-comp">
-            <td><select id="compf" onchange="compField()">
-      <button id="hist-tog" disabled="disabled" onclick="histogramComp()">histogram
-      <div id="dhist" class="container">
-        <button id="hist-y-tog" onclick="toggleLog()">
+          <tr #tr-add>
+            <td>
+              <select #addf onchange="addField()">
+          <tr #tr-comp>
+            <td>
+              <select #compf onchange="compField()">
+      <button #hist-tog disabled="disabled" onclick="histogramComp()">histogram
+      <div #dhist .container>
+        <button #hist-y-tog onclick="toggleLog()">
           Toggle lin/log
-        <div class="container" id="hist">
+        <div .container #hist>
     |]
 
 staticHtml :: Route [FilePathComponent]
