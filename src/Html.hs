@@ -56,7 +56,7 @@ import Attach
 import Static
 
 jsonEncodingVar :: T.Text -> J.Encoding -> H.Html
-jsonEncodingVar var enc = H.script $ do
+jsonEncodingVar var enc = do
   H.text var
   "="
   H.preEscapedBuilder $ J.fromEncoding enc
@@ -77,74 +77,85 @@ vueAttribute = H.customAttribute . fromString . ("v-" ++)
 hamlet :: Hamlet.HtmlUrl R.BoundRoute -> H.Html
 hamlet f = f R.renderHamletUrl
 
+unit :: ()
+unit = ()
+
 htmlResponse :: Wai.Request -> ResponseHeaders -> H.Markup -> M Wai.Response
 htmlResponse _req hdrs body = do
   glob <- ask
   let cats = globalCatalogs glob
-  return $ okResponse hdrs $ H.docTypeHtml $ do
-    H.head $ do
-      forM_ [
-          ["style.css"],
-          ["datatables.min.css"]
-        ] $ \src ->
-        H.link H.! HA.rel "stylesheet" H.! HA.type_ "text/css" H.! HA.href (staticURI src)
-      -- TODO: Move mathjax and fonts to bundle.js
-      H.script H.! HA.type_ "text/javascript" H.! HA.src "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML" $ mempty
-      jsonVar "Catalogs" (HM.map catalogTitle $ catalogMap cats)
-    H.body $ do
-      H.div H.! HA.class_ "modal-container hidden"  H.! HA.id "progress-modal" $ do
-        H.div H.! HA.class_ "modal-background" $ do
-          H.span $ mempty
-        H.div H.! HA.class_ "modal-body" $ do
-          H.div H.! HA.class_ "modal-content" $ do
-            H.h3 "Processing..."
-            H.div H.! HA.class_ "progress-container" $ do
-              H.div H.! HA.class_ "progress-exterior" $ do
-                H.div H.! HA.class_ "progress-interior" $ mempty
-            H.p "One moment, please. The data you requested is being retrieved."
-      H.header H.! HA.class_ "header" $ do
-        H.div H.! HA.class_ "header__logo" $ do
-          H.a H.! HA.href (WH.routeActionValue topPage () mempty) H.! HA.class_ "header__logo-link" $ do
-            H.img H.! HA.class_ "header__logo-image" H.! HA.src "/web/FlatHubLogo.svg"
-        H.nav H.! HA.class_ "header__nav" $ do
-          H.ul H.! HA.id "topbar" $ do
-            H.li H.! HA.class_ "header__link--dropdown" $ do
-              H.a H.! HA.href (WH.routeActionValue groupPage [] mempty) $ "Collections"
-              H.div H.! HA.class_ "dropdown-content" $ do
-                forM_ (groupList $ catalogGroupings cats) $ \g ->
-                  H.a H.! HA.href (WH.routeActionValue groupPage [groupingName g] mempty) $ H.text $ groupingTitle g $ groupingCatalog cats g
-            H.li H.! HA.class_ "header__link--dropdown" $ do
-              H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ "Catalogs"
-              H.div H.! HA.class_ "dropdown-content dropdown-second" $ do
-                forM_ (catalogsSorted cats) $ \(key, cat) ->
-                  H.a H.! HA.href (WH.routeActionValue catalogPage key mempty) $ H.text (catalogTitle cat)
-            H.li H.! HA.class_ "header__link" $ do
-              H.a H.! HA.href (WH.routeActionValue staticHtml ["about"] mempty) $ "About"
-      -- H.div H.! HA.class_ "subheader" $ do
-      --   H.div H.! HA.class_ "subheader-content" $ do
-      --     H.p $ "Please note that this is a beta version. The website is still undergoing final testing before the official release."
-      H.div H.! HA.class_ "modal-container hidden" H.! HA.id "browser-modal" $ do
-        H.div H.! HA.class_ "modal-background" $ do
-          H.span $ mempty
-        H.div H.! HA.class_ "modal-body" $ do
-          H.div H.! HA.class_ "modal-content" $ do
-            H.p H.! HA.class_ "modal-close" H.! HA.id "browser-modal-close" H.! HA.onclick "closeModal()" $ mempty
-            H.h3 "Unsupported Browser"
-            H.p "Flathub requires an up-to-date web browser to make sure that you can use all of the features. Please consider using one of the preferred browsers: Google Chrome, Mozilla Firefox, Apple Safari."
-      H.div H.! HA.class_ "container container--main" $ do
-        body
-      H.footer H.! HA.class_"footer-distributed" $ do
-        H.div H.! HA.class_ "container" $ do
-          H.div H.! HA.class_ "footer-center" $ do
-            H.div H.! HA.class_ "footer__title" $ do
-              H.img H.! HA.class_ "footer-logo" H.! HA.src "/web/FlatHubLogo.svg"
-            H.p H.! HA.class_ "footer-links" $ do
-              H.a H.! HA.href (WH.routeActionValue topPage () mempty) $ H.text "Home"
-              H.a H.! HA.href (WH.routeActionValue groupPage [] mempty) $ H.text "Catalogs"
-              -- H.a H.! HA.href (WH.routeActionValue comparePage [] mempty) $ H.text "Compare"
-              H.a H.! HA.href "https://github.com/flatironinstitute/flathub" $ H.text "Github"
-      forM_ ([["bundle.js"]]) $ \src ->
-        H.script H.! HA.type_ "text/javascript" H.! HA.src (staticURI src) $ mempty
+  return $ okResponse hdrs $ H.docTypeHtml $ hamlet [Hamlet.hamlet|
+    <head>
+      $forall src <- [["style.css"],["datatables.min.css"]]
+        <link rel="stylesheet" type="text/css" href="@{static !:? src}">
+      <!-- TODO: Move mathjax and fonts to bundle.js -->
+      <script type=text/javascript src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML">
+      <script>
+        #{jsonVar "Catalogs" $ HM.map catalogTitle $ catalogMap cats}
+    <body>
+      <div class="modal-container hidden" id="progress-modal">
+        <div class="modal-background">
+          <span>
+        <div class="modal-body">
+          <div class="modal-content">
+            <h3>Processing...
+            <div class="progress-container">
+              <div class="progress-exterior">
+                <div class="progress-interior">
+            <p>One moment, please. The data you requested is being retrieved.
+      <header class="header">
+        <div class="header__logo">
+          <a href="@{topPage !:? unit}" class="header__logo-link">
+            <img class="header__logo-image" src="/web/FlatHubLogo.svg">
+        <nav class="header__nav">
+          <ul id="topbar">
+            <li class="header__link--dropdown">
+              <a href="@{groupPage !:? []}">Collections
+              <div class="dropdown-content">
+                $forall g <- groupList $ catalogGroupings cats
+                  <a href="@{groupPage !:? [groupingName g]}">
+                    <text>#{groupingTitle g $ groupingCatalog cats g}
+            <li class="header__link--dropdown">
+              <a href="@{topPage !:? unit}">Catalogs
+              <div class="dropdown-content dropdown-second">
+                $forall (key, cat) <- catalogsSorted cats
+                  <a href="@{catalogPage !:? key}">
+                    <text>#{catalogTitle cat}
+            <li class="header__link">
+              <a href="@{staticHtml !:? ["about"]}">About
+      <!--
+      <div class="subheader">
+        <div class="subheader-content">
+          <p>Please note that this is a beta version. The website is still undergoing final testing before the official release.
+      -->
+      <div class="modal-container hidden" id="browser-modal">
+        <div class="modal-background">
+          <span>
+        <div class="modal-body">
+          <div class="modal-content">
+            <p class="modal-close" id="browser-modal-close" onclick="closeModal()">
+            <h3>Unsupported Browser
+            <p>Flathub requires an up-to-date web browser to make sure that you can use all of the features. Please consider using one of the preferred browsers: Google Chrome, Mozilla Firefox, Apple Safari.
+      <div class="container container--main">
+        #{body}
+      <footer class="footer-distributed">
+        <div class="container">
+          <div class="footer-center">
+            <div class="footer__title">
+              <img class="footer-logo" src="/web/FlatHubLogo.svg">
+            <p class="footer-links">
+              <a href="@{topPage !:? unit}">
+                <text>Home
+              <a href="@{groupPage !:? []}">
+                <text>Catalogs
+              <!-- <a href="@{comparePage !:? []}">
+                <text>Compare -->
+              <a href="https://github.com/flatironinstitute/flathub">
+                <text>Github
+      $forall src <- [["bundle.js"]]
+        <script type="text/javascript" src="@{static !:? src}">
+    |]
+
 acceptable :: [BS.ByteString] -> Wai.Request -> Maybe BS.ByteString
 acceptable l = find (`elem` l) . foldMap parseHttpAccept . lookup hAccept . Wai.requestHeaders
 
@@ -214,8 +225,9 @@ catalogPage = getPath R.parameter $ \sim req -> do
     Just "application/json" ->
       return $ okResponse [] jcat
     _ -> htmlResponse req [] $ do
-      jsonEncodingVar "Catalog" jcat
-      jsonVar "Query" query
+      H.script $ do
+        jsonEncodingVar "Catalog" jcat
+        jsonVar "Query" query
       H.div H.! HA.class_ "catalog-title" $ do
         H.div H.! HA.class_ "container-fluid" $ do
           H.div H.! HA.class_ "row" $ do
@@ -678,8 +690,9 @@ comparePage = getPath ("compare" R.*< R.manyI R.parameter) $ \path req -> do
   cats <- maybe (result $ response notFound404 [] (T.intercalate "/" path <> " not found")) return .
     groupedCatalogs path =<< asks globalCatalogs
   htmlResponse req [] $ do
-    jsonVar "Catalogs" $ catalogMap cats
-    jsonVar "Dict" $ catalogDict cats
+    H.script $ do
+      jsonVar "Catalogs" $ catalogMap cats
+      jsonVar "Dict" $ catalogDict cats
     H.div H.! HA.class_ "compare-container" $ do
       H.h2 "Compare"
       H.p $ "Select catalogs across the top to compare, and fields down the left to apply filters and compare statistics and distributions from these catalogs."
