@@ -3,12 +3,13 @@ index: sapfire
 count: 594409
 descr: >
   Streams And their Progenitors in FIRE cosmological simulations<br>
-  Panithanpaisal et al 2021.<br>
+  <a href="https://arxiv.org/abs/2104.09660">Panithanpaisal et al 2021.</a><br>
   This is a catalogue of present-day simulated stellar streams with galaxy
   progenitors. These streams are selected from the Latte suite and ElVIS
   suite of FIRE-2 cosmological simulations of isolated and paired Milky
   Way-mass galaxies. The stream classification and determination of important
-  timescales are described in detail in Panithanpaisal et al 2021.
+  timescales are described in detail in Panithanpaisal et al 2021.<br>
+  This dataset is made available under Creative Commons BY 4.0
 fields:
 - name: simname
   type: byte
@@ -27,6 +28,7 @@ fields:
 - name: index
   type: byte
   flag: top
+  terms: true
 - name: st_index
   title: star particle id
   type: int

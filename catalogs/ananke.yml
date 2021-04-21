@@ -177,10 +177,12 @@ fields:
     type: byte
     flag: top
     descr: "Local Standard of Rest (LSR) between 0-2"
+    terms: true
   - name: slice
     type: byte
     flag: top
     descr: "slices between 0-9"
+    terms: true
   - name: ""
     title: Indices
     sub:

@@ -63,6 +63,7 @@ executable flathub
     , mtl
     , network-uri
     , scientific
+    , shakespeare
     , streaming-commons
     , text
     , time

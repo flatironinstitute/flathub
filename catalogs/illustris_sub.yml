@@ -2,7 +2,8 @@ title: Illustris Subfind Subhalos
 index: illustris_sub
 count: 1175372132
 descr: >
-  <a href='http://arxiv.org/abs/1504.00362'>Nelson+ (2015)</a>, <a href='https://www.illustris-project.org/'>Illustris</a> <a href='https://www.illustris-project.org/data/docs/specifications/#sec2b'>Subfind Subhalo catalog</a> derived with the Subfind algorithm.
+  <a href='https://www.illustris-project.org/'>Illustris</a> <a href='https://www.illustris-project.org/data/docs/specifications/#sec2b'>Subfind Subhalo catalog</a> derived with the Subfind algorithm.
+  Any publication using these data should cite <a href="https://ui.adsabs.harvard.edu/abs/2014Natur.509..177V/abstract">Vogelsberger+ (2014)</a> and <a href="https://ui.adsabs.harvard.edu/abs/2015A%26C....13...12N/abstract">Nelson+ (2015)</a>.
 sort:
 - simulation
 - snapshot

@@ -142,6 +142,7 @@
   type: byte
   flag: top
   descr: "Realization between 0-7"
+  terms: true
 - name: candels_gal_id
   title: gal_id
   type: long

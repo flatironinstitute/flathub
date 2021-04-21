@@ -309,6 +309,7 @@ fields:
   - name: phot_proc_mode
     descr: Photometry processing mode (0=gold, 1=silver, 2=bronze)
     type: byte
+    terms: true
   - name: bp_rp
     dict: GAIA_bp_rp
     descr: BP - RP colour

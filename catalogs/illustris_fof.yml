@@ -1,8 +1,9 @@
-title: IllustrisTNG FoF Halos
-index: tng
-count: 4652128910
+title: Illustris FoF Halos
+index: illustris
+count: 1259309875
 descr: >
-  <a href='http://arxiv.org/abs/1812.05609'>Nelson+ (2019a)</a>, <a href='https://www.tng-project.org/'>IllustrisTNG</a> <a href='https://www.tng-project.org/data/docs/specifications/#sec2a'>FoF Halo catalog</a> derived with a standard friends-of-friends (FoF) algorithm.
+  <a href='https://www.illustris-project.org/'>Illustris</a> <a href='https://www.illustris-project.org/data/docs/specifications/#sec2a'>FoF Halo catalog</a> derived with a standard friends-of-friends (FoF) algorithm.
+  Any publication using these data should cite <a href="https://ui.adsabs.harvard.edu/abs/2014Natur.509..177V/abstract">Vogelsberger+ (2014)</a> and <a href="https://ui.adsabs.harvard.edu/abs/2015A%26C....13...12N/abstract">Nelson+ (2015)</a>.
 sort:
 - simulation
 - snapshot
@@ -19,24 +20,13 @@ fields:
       - Illustris-2-Dark
       - Illustris-3
       - Illustris-3-Dark
-      # above are not included
-      - TNG100-1
-      - TNG100-1-Dark
-      - TNG100-2
-      - TNG100-2-Dark
-      - TNG100-3
-      - TNG100-3-Dark
-      - TNG300-1
-      - TNG300-1-Dark
-      - TNG300-2
-      - TNG300-2-Dark
-      - TNG300-3
-      - TNG300-3-Dark
+    ingest: _attribute:Header/SimulationName
   - name: snapshot
     type: short
     title: 'snap'
     flag: top
     descr: 'snapshot number'
+    ingest: _attribute:Header/SnapshotNumber
   - name: time
     type: float
     descr: 'Scalefactor of the snapshot corresponding to this group catalog.'
@@ -53,18 +43,17 @@ fields:
     ingest: _illustris:Group
 
   - name: BHMass
-    ingest: Group/GroupBHMass
     type: float
     units: '\(10^{10}M_\odot/h\)'
     descr: 'Sum of the BH_Mass field of all blackholes (type 5) in this group.'
+    ingest: _optional:Group/GroupBHMass
   - name: BHMdot
-    ingest: Group/GroupBHMdot
     type: float
     title: '\(\dot{M}_{\rm BH}\)'
     units: '\((10^{10}M_\odot/h)/(0.978Gyr/h)\)'
     descr: 'Sum of the BH_Mdot field of all blackholes (type 5) in this group.'
+    ingest: _optional:Group/GroupBHMdot
   - name: CM
-    ingest: Group/GroupCM
     type: float
     units: 'ckpc/h'
     descr: 'Center of mass of the group, computed as the sum of the mass weighted relative coordinates of all particles/cells in the group, of all types. Comoving coordinate. (Available only for the Illustris-3 run)'
@@ -75,39 +64,22 @@ fields:
       title: '\({\rm CM}_y\)'
     - name: "z"
       title: '\({\rm CM}_z\)'
+    ingest: _optional:Group/GroupCM
   - name: FirstSub
-    ingest: Group/GroupFirstSub
     type: integer
     descr: 'Index into the Subhalo table of the first/primary/most massive Subfind group within this FoF group. Note: This value is signed (or should be interpreted as signed)! In this case, a value of -1 indicates that this FoF group has no subhalos.'
     flag: hidden
-  - name: GasMetalFractions
-    ingest: Group/GroupGasMetalFractions
-    type: float
-    descr: "Individual abundances: dimensionless ratio of the total mass in that species divided by the total gas mass, for all gas cells in the group."
-    flag: hidden
-    sub:
-    - name: "H"
-    - name: "He"
-    - name: "C"
-    - name: "N"
-    - name: "O"
-    - name: "Ne"
-    - name: "Mg"
-    - name: "Si"
-    - name: "Fi"
-    - name: "total"
-      descr: "The 'total' of all other (i.e. untracked) metals."
+    ingest: Group/GroupFirstSub
   - name: GasMetallicity
-    ingest: Group/GroupGasMetallicity
     type: float
     descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of all gas cells in this FOF group.'
+    ingest: _optional:Group/GroupGasMetallicity
   - name: Len
-    ingest: Group/GroupLen
     type: integer
     title: '\(N_{\rm part}\)'
     descr: 'Integer counter of the total number of particles/cells of all types in this group.'
+    ingest: Group/GroupLen
   - name: LenType
-    ingest: Group/GroupLenType
     type: integer
     descr: 'Integer counter of the total number of particles/cells, split into the six different types, in this group. Note: Wind phase cells are counted as stars (type 4) for GroupLenType.'
     sub:
@@ -122,14 +94,14 @@ fields:
       title: '\(N_{\rm stars}\)'
     - name: bh
       title: '\(N_{\rm BH}\)'
+    ingest: Group/GroupLenType
   - name: Mass
-    ingest: Group/GroupMass
     type: float
     title: '\(M_{\rm tot}\)'
     units: '\(10^{10}M_\odot/h\)'
     descr: 'Sum of the individual masses of every particle/cell, of all types, in this group.'
+    ingest: Group/GroupMass
   - name: MassType
-    ingest: Group/GroupMassType
     type: float
     units: '\(10^{10}M_\odot/h\)'
     descr: 'Sum of the individual masses of every particle/cell, split into the six different types, in this group. Note: Wind phase cells are counted as gas (type 0) for GroupMassType.'
@@ -145,12 +117,12 @@ fields:
       title: '\(M_{\star}\)'
     - name: bh
       title: '\(M_{\rm BH}\)'
+    ingest: Group/GroupMassType
   - name: Nsubs
-    ingest: Group/GroupNsubs
     type: integer
     descr: 'Count of the total number of Subfind groups within this FoF group.'
+    ingest: Group/GroupNsubs
   - name: Pos
-    ingest: Group/GroupPos
     type: float
     units: 'ckpc/h'
     descr: 'Spatial position within the periodic box of the maximum bound particle. Comoving coordinate.'
@@ -161,35 +133,18 @@ fields:
       title: 'y'
     - name: "z"
       title: 'z'
+    ingest: Group/GroupPos
   - name: SFR
-    ingest: Group/GroupSFR
     type: float
     units: '\(M_\odot/yr\)'
     descr: 'Sum of the individual star formation rates of all gas cells in this group.'
     dict: SFR
-  - name: StarMetalFractions
-    ingest: Group/GroupStarMetalFractions
-    type: float
-    descr: "Individual abundances: dimensionless ratio of the total mass in that species divided by the total stellar mass, for all stars in the group."
-    flag: hidden
-    sub:
-    - name: "H"
-    - name: "He"
-    - name: "C"
-    - name: "N"
-    - name: "O"
-    - name: "Ne"
-    - name: "Mg"
-    - name: "Si"
-    - name: "Fi"
-    - name: "total"
-      descr: "The 'total' of all other (i.e. untracked) metals."
+    ingest: _optional:Group/GroupSFR
   - name: StarMetallicity
-    ingest: Group/GroupStarMetallicity
     type: float
     descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of all star particles in this FOF group.'
+    ingest: _optional:Group/GroupStarMetallicity
   - name: Vel
-    ingest: Group/GroupVel
     type: float
     dict: vel
     units: 'km/s/a'
@@ -204,56 +159,79 @@ fields:
     - name: "z"
       title: '\(v_z\)'
       dict: vel_z
+    ingest: Group/GroupVel
   - name: WindMass
-    ingest: Group/GroupWindMass
     type: float
     units: '\(10^{10}M_\odot/h\)'
     descr: 'Sum of the individual masses of all wind phase gas cells (type 4, BirthTime <= 0) in this group.'
+    ingest: _optional:Group/GroupWindMass
   - name: M_Crit200
-    ingest: Group/Group_M_Crit200
     type: float
     units: '\(10^{10}M_\odot/h\)'
     descr: 'Total Mass of this group enclosed in a sphere whose mean density is 200 times the critical density of the Universe, at the time the halo is considered.'
     flag: hidden
+    ingest: Group/Group_M_Crit200
   - name: M_Crit500
-    ingest: Group/Group_M_Crit500
     type: float
     units: '\(10^{10}M_\odot/h\)'
     descr: 'Total Mass of this group enclosed in a sphere whose mean density is 500 times the critical density of the Universe, at the time the halo is considered.'
     flag: hidden
+    ingest: Group/Group_M_Crit500
   - name: M_Mean200
-    ingest: Group/Group_M_Mean200
     type: float
     units: '\(10^{10}M_\odot/h\)'
     descr: 'Total Mass of this group enclosed in a sphere whose mean density is 200 times the mean density of the Universe, at the time the halo is considered.'
     flag: hidden
+    ingest: Group/Group_M_Mean200
   - name: M_TopHat200
-    ingest: Group/Group_M_TopHat200
     type: float
     units: '\(10^{10}M_\odot/h\)'
     descr: 'Total Mass of this group enclosed in a sphere whose mean density is \(\Delta_c\) times the critical density of the Universe, at the time the halo is considered. \(\Delta_c\) derives from the solution of the collapse of a spherical top-hat perturbation (fitting formula from Bryan+ 1998, http://adsabs.harvard.edu/abs/1998ApJ...495...80B). The subscript 200 can be ignored.'
     flag: hidden
+    ingest: Group/Group_M_TopHat200
   - name: R_Crit200
-    ingest: Group/Group_R_Crit200
     type: float
     units: 'ckpc/h'
     descr: 'Comoving Radius of a sphere centered at the GroupPos of this Group whose mean density is 200 times the critical density of the Universe, at the time the halo is considered.'
     flag: hidden
+    ingest: Group/Group_R_Crit200
   - name: R_Crit500
-    ingest: Group/Group_R_Crit500
     type: float
     units: 'ckpc/h'
     descr: 'Comoving Radius of a sphere centered at the GroupPos of this Group whose mean density is 500 times the critical density of the Universe, at the time the halo is considered.'
     flag: hidden
+    ingest: Group/Group_R_Crit500
   - name: R_Mean200
-    ingest: Group/Group_R_Mean200
     type: float
     units: 'ckpc/h'
     descr: 'Comoving Radius of a sphere centered at the GroupPos of this Group whose mean density is 200 times the mean density of the Universe, at the time the halo is considered.'
     flag: hidden
+    ingest: Group/Group_R_Mean200
   - name: R_TopHat200
-    ingest: Group/Group_R_TopHat200
     type: float
     units: 'ckpc/h'
     descr: 'Comoving Radius of a sphere centered at the GroupPos of this Group whose mean density is \(\Delta_c\) times the critical density of the Universe, at the time the halo is considered.'
     flag: hidden
+    ingest: Group/Group_R_TopHat200
+  - name: SnapByType
+    type: long
+    flag: hidden
+    sub:
+    - name: gas
+    - name: dm
+    - name: unused
+    - name: tracers
+    - name: stars
+    - name: bh
+    ingest: Offsets/Group_SnapByType
+  - name: FuzzByType
+    type: long
+    flag: hidden
+    sub:
+    - name: gas
+    - name: dm
+    - name: unused
+    - name: tracers
+    - name: stars
+    - name: bh
+    ingest: _optional:Offsets/Group_FuzzByType

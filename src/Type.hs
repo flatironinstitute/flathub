@@ -31,6 +31,7 @@ import           Data.Functor.Classes (Eq1, eq1, Show1, showsPrec1)
 import           Data.Functor.Const (Const(Const, getConst))
 import           Data.Functor.Identity (Identity(Identity, runIdentity))
 import           Data.Int (Int64, Int32, Int16, Int8)
+import           Data.Maybe (fromMaybe)
 import           Data.Proxy (Proxy(Proxy))
 import qualified Data.Text as T
 import           Data.Typeable (Typeable)
@@ -125,7 +126,7 @@ transformTypeValue f (Text      x) = Text      <$> f x
 transformTypeValue f (Keyword   x) = Keyword   <$> f x
 transformTypeValue f (Void      x) = Void      <$> f x
 
-transformTypeValue2 :: Monad g => (forall a . Typed a => f a -> f a -> g (h a)) -> TypeValue f -> TypeValue f -> g (TypeValue h)
+transformTypeValue2 :: MonadFail g => (forall a . Typed a => f a -> f a -> g (h a)) -> TypeValue f -> TypeValue f -> g (TypeValue h)
 transformTypeValue2 f (Double    x) (Double    y) = Double    <$> f x y
 transformTypeValue2 f (Float     x) (Float     y) = Float     <$> f x y
 transformTypeValue2 f (HalfFloat x) (HalfFloat y) = HalfFloat <$> f x y
@@ -137,7 +138,7 @@ transformTypeValue2 f (Boolean   x) (Boolean   y) = Boolean   <$> f x y
 transformTypeValue2 f (Text      x) (Text      y) = Text      <$> f x y
 transformTypeValue2 f (Keyword   x) (Keyword   y) = Keyword   <$> f x y
 transformTypeValue2 f (Void      x) (Void      y) = Void      <$> f x y
-transformTypeValue2 _ _             _             = error "transformTypeValue2: type mismatch"
+transformTypeValue2 _ _             _             = fail "transformTypeValue2: type mismatch"
 
 traverseTypeValue :: Functor g => (forall a . Typed a => f a -> g a) -> TypeValue f -> g Value
 traverseTypeValue f = transformTypeValue (fmap Identity . f)
@@ -153,7 +154,7 @@ fmapTypeValue1 :: (forall a . Typed a => f a -> a) -> TypeValue f -> Value
 fmapTypeValue1 f = fmapTypeValue (Identity . f)
 
 fmapTypeValue2 :: (forall a . Typed a => f a -> f a -> g a) -> TypeValue f -> TypeValue f -> TypeValue g
-fmapTypeValue2 f = (runIdentity .) . transformTypeValue2 ((Identity .) . f)
+fmapTypeValue2 f = (fromMaybe (error "fmapTypeValue2: type mismatch") .) . transformTypeValue2 ((Just .) . f)
 
 typeOfValue :: TypeValue f -> Type
 typeOfValue = fmapTypeValue (const Proxy)
