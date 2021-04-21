@@ -1,6 +1,6 @@
 #!/bin/bash -ex
 s=`basename $0`
-d=$1
+d=${1:-/mnt/ceph/users/firesims/fire2/metaldiff}
 [[ -d $d ]]
 nl=($(yaml2json catalogs/$s.yml | jq -r '.fields[0].enum[]'))
 for i in "${!nl[@]}" ; do

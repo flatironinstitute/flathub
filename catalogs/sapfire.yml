@@ -27,6 +27,7 @@ fields:
 - name: index
   type: byte
   flag: top
+  terms: true
 - name: st_index
   title: star particle id
   type: int
