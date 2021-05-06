@@ -300,6 +300,43 @@ function histogramDraw(
   plotVue.$forceUpdate();
 }
 
+function chartDrag3D(ev: MouseEvent|TouchEvent|PointerEvent) {
+    const eStart = Chart.pointer.normalize(ev);
+
+    const alpha = Chart.options.chart.options3d.alpha,
+	beta = Chart.options.chart.options3d.beta,
+	sensitivity = 4,  // lower is more sensitive
+	handlers: Function[] = [];
+
+    function drag(e: MouseEvent|TouchEvent|PointerEvent) {
+	// Get e.chartX and e.chartY
+	const eEnd = Chart.pointer.normalize(e);
+
+	Chart.update({
+	    chart: {
+		options3d: {
+		    alpha: alpha + (eEnd.chartY - eStart.chartY) / sensitivity,
+		    beta: beta + (eStart.chartX - eEnd.chartX) / sensitivity
+		}
+	    }
+	}, undefined, undefined, false);
+    }
+
+    function unbindAll() {
+	handlers.forEach(function (unbind) {
+	    if (unbind) {
+		unbind();
+	    }
+	});
+	handlers.length = 0;
+    }
+
+    handlers.push(Highcharts.addEvent(document, 'mousemove', drag));
+    handlers.push(Highcharts.addEvent(document, 'touchmove', drag));
+    handlers.push(Highcharts.addEvent(document, 'mouseup', unbindAll));
+    handlers.push(Highcharts.addEvent(document, 'touchend', unbindAll));
+};
+
 function scatterplotDraw(
   plotx: NumericFilter,
   ploty: NumericFilter,
@@ -328,19 +365,23 @@ function scatterplotDraw(
   };
   if (plotz) {
     opts.chart.options3d = {
-      enabled: true
+      enabled: true,
+      alpha: 10,
+      beta: 20,
+      depth: 400
     };
     opts.zAxis = histogram_options(plotz.field).xAxis;
     if (plotz.plotLog)
-      (<Highcharts.XAxisOptions>opts.zAxis).type = "logarithmic";
+      (<Highcharts.ZAxisOptions>opts.zAxis).type = "logarithmic";
     const zname = plotz.field.name;
     getData = (r) => [r[xname],r[yname],r[zname]];
     stype = 'scatter3d';
     opts.plotOptions.scatter3d = sopts;
+    opts.chart.zoomType = undefined;
   } else {
     opts.plotOptions.scatter = sopts;
-    (<Highcharts.ChartOptions>opts.chart).zoomType = "xy";
-    (<Highcharts.ChartOptions>opts.chart).events = {
+    opts.chart.zoomType = "xy";
+    opts.chart.events = {
       selection: zoomEvent(plotx, 0, ploty, 0, true)
     };
   }
@@ -405,6 +446,10 @@ function scatterplotDraw(
     }];
   }
   Chart = Highcharts.chart("plot-chart", opts);
+  if (plotz) {
+    Highcharts.addEvent(Chart.container, 'mousedown', chartDrag3D);
+    Highcharts.addEvent(Chart.container, 'touchstart', chartDrag3D);
+  }
   plotVue.$forceUpdate();
 }
 
