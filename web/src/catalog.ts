@@ -1,5 +1,6 @@
 import Vue from "vue";
 import Highcharts from "highcharts";
+import Highcharts_3d from "highcharts/highcharts-3d";
 import Highcharts_more from "highcharts/highcharts-more";
 import Highcharts_heatmap from "highcharts/modules/heatmap";
 import Highcharts_export_data from "highcharts/modules/export-data";
@@ -19,6 +20,7 @@ import {
   updateMathJax,
 } from "./common";
 
+Highcharts_3d(Highcharts);
 Highcharts_more(Highcharts);
 Highcharts_heatmap(Highcharts);
 Highcharts_export_data(Highcharts);
@@ -39,6 +41,7 @@ declare const Query: {
 const Fields_idx: Dict<number> = {};
 const Filters: Array<Filter> = [];
 const ScatterCount = 2000;
+const Scatter3DCount = 1000;
 var Sample: number = 1;
 var Seed: undefined | number;
 var Update_aggs: number = -1;
@@ -312,18 +315,35 @@ function scatterplotDraw(
     (<Highcharts.XAxisOptions>opts.xAxis).type = "logarithmic";
   if (ylog)
     (<Highcharts.YAxisOptions>opts.yAxis).type = "logarithmic";
-  (<Highcharts.ChartOptions>opts.chart).zoomType = "xy";
-  (<Highcharts.ChartOptions>opts.chart).events = {
-    selection: zoomEvent(plotx, 0, ploty, 0, true)
-  };
-  opts.plotOptions.scatter = {
+  const xname = plotx.field.name;
+  const yname = ploty.field.name;
+  let getData = (r: Dict<number>) => [r[xname],r[yname]];
+  let stype: 'scatter'|'scatter3d' = 'scatter';
+  const sopts = {
     marker: {
       symbol: 'circle',
       radius: 1.5
-    }
+    },
+    turboThreshold: 0,
   };
-  const xname = plotx.field.name;
-  const yname = ploty.field.name;
+  if (plotz) {
+    opts.chart.options3d = {
+      enabled: true
+    };
+    opts.zAxis = histogram_options(plotz.field).xAxis;
+    if (plotz.plotLog)
+      (<Highcharts.XAxisOptions>opts.zAxis).type = "logarithmic";
+    const zname = plotz.field.name;
+    getData = (r) => [r[xname],r[yname],r[zname]];
+    stype = 'scatter3d';
+    opts.plotOptions.scatter3d = sopts;
+  } else {
+    opts.plotOptions.scatter = sopts;
+    (<Highcharts.ChartOptions>opts.chart).zoomType = "xy";
+    (<Highcharts.ChartOptions>opts.chart).events = {
+      selection: zoomEvent(plotx, 0, ploty, 0, true)
+    };
+  }
   if (plotc) {
     opts.legend.enabled = true;
     opts.legend.title = axis_title(plotc);
@@ -331,32 +351,37 @@ function scatterplotDraw(
     if (plotc.terms) {
       /* categorical plotc */
       opts.series = [];
-      const series: { [val: number]: Highcharts.SeriesScatterOptions } = {};
+      const series: { [val: number]: Highcharts.SeriesScatterOptions|Highcharts.SeriesScatter3dOptions } = {};
       for (let r of res) {
         const z = r[cname];
         if (!(z in series)) {
           series[z] = {
-            type: "scatter",
+            type: stype,
             name: plotc.enum ? plotc.enum[z] : <any>z,
             legendIndex: z,
             data: [],
           };
           opts.series.push(series[z]);
         }
-        series[z].data.push([r[xname], r[yname]]);
+        series[z].data.push(getData(r));
       }
     } else {
       /* color scale */
       /* coloraxis extremes calculation is broken, do it manually: */
       let min: number, max: number;
-      const data: {x: number; y: number; c:number}[] = [];
+      type Point = {x: number; y: number; z?: number; c:number};
+      const data: Point[] = [];
       for (let r of res) {
         const c = r[cname];
         if (min == null || c < min)
           min = c;
         if (max == null || c > max)
           max = c;
-        data.push({x:r[xname], y:r[yname], c:r[cname]});
+        const d = getData(r);
+        const p: Point = {x:d[0], y:d[1], c:c};
+        if (plotz)
+          p.z = d[2];
+        data.push(p);
       }
       opts.colorAxis = {
         min: min,
@@ -365,8 +390,7 @@ function scatterplotDraw(
         maxColor: '#0000ff',
       };
       opts.series = [{
-        type: "scatter",
-        turboThreshold: 0,
+        type: stype,
         colorKey: 'c',
         data: data,
       }];
@@ -374,9 +398,9 @@ function scatterplotDraw(
   } else {
     const data: number[][] = [];
     for (let r of res)
-      data.push([r[xname], r[yname]]);
+      data.push(getData(r));
     opts.series = [{
-      type: "scatter",
+      type: stype,
       data: data,
     }];
   }
@@ -546,11 +570,12 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
       /* do another query for scatter plot */
       if (scatter) {
         delete query.sort;
-        if (res.hits.total > ScatterCount)
-          sample *= ScatterCount/res.hits.total;
+        const count = plotz ? Scatter3DCount : ScatterCount;
+        if (res.hits.total > count)
+          sample *= count/res.hits.total;
         if (sample < 1)
           query.sample = querySample(sample, seed);
-        query.limit = <any>ScatterCount;
+        query.limit = <any>count;
         query.fields = plotx.name + " " + ploty.name;
         if (plotz)
           query.fields += " " + plotz.name;

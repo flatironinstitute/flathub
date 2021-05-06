@@ -288,13 +288,18 @@ export function histogram_options(
         const wid = <number>(
           (<Highcharts.SeriesColumnOptions>this.series.options).pointInterval
         );
-        return (
-          (wid
+        let t = wid
             ? "[" + render(this.x) + "," + render(this.x + wid) + ")"
-            : render(this.x)) +
-          " " +
-          this.y
-        );
+            : render(this.x);
+        /* FIXME: format these better (and log xform?) */
+        if (this.y != null)
+          t += " " + this.y;
+        let p = <any>this.point;
+        if (p.z != null)
+          t += " " + p.z;
+        if (p.c != null)
+          t += " (" + p.c + ")";
+        return t;
       },
     },
     exporting: {
