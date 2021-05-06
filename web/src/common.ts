@@ -249,14 +249,14 @@ export function histogram_options(
           field.base === "f"
             ? log
               ? function () {
-                  const v = Math.exp(this.value);
+                  const v = Math.exp(<number>this.value);
                   let d = (<any>this.axis).tickInterval;
                   return v.toPrecision(
                     1 + Math.max(0, -Math.floor(Math.log10(Math.exp(d) - 1)))
                   );
                 }
               : function () {
-                  const v = this.value;
+                  const v = <number>this.value;
                   const d = (<any>this.axis).tickInterval;
                   return v.toPrecision(
                     1 +
@@ -292,7 +292,7 @@ export function histogram_options(
           (wid
             ? "[" + render(this.x) + "," + render(this.x + wid) + ")"
             : render(this.x)) +
-          ": " +
+          " " +
           this.y
         );
       },
@@ -301,6 +301,9 @@ export function histogram_options(
       enabled: true,
     },
     plotOptions: {
+      series: {
+        animation: { duration: 0 },
+      },
       column: {
         grouping: false,
         groupPadding: 0,
@@ -308,7 +311,6 @@ export function histogram_options(
         borderWidth: 0,
         shadow: false,
         pointPlacement: 0.5,
-        animation: { duration: 0 },
         states: {
           hover: {
             enabled: false,

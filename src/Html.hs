@@ -289,6 +289,18 @@ catalogPage = getPath R.parameter $ \sim req -> do
                                   v-model="#{axis}filter.plotLog">
                                 <span .slider v-bind:disabled="!(#{axis}filter.lbv>0)">
                               <label>log
+                    <div .input-group-row v-if="type==='s'" v-on:change="go">
+                      <label>
+                        Color:
+                      <div .input-group>
+                        <select #plot-c>
+                          <option value="">None
+                          $forall f <- catalogFields cat
+                            <option
+                              .sel-#{fieldName f}
+                              :not (fieldDisp f):style="display:none"
+                              value="#{fieldName f}">
+                              #{fieldTitle f}
                   <div .col-sm-12 .col-md-3 .plot-col v-if="type!='s'">
                     <div .tooltip-container>
                       <span .label-help>Count:

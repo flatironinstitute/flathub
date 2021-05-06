@@ -44,6 +44,7 @@ var Seed: undefined | number;
 var Update_aggs: number = -1;
 var PlotX: undefined | NumericFilter;
 var PlotY: undefined | NumericFilter;
+var PlotC: undefined | Field; /* color for Scatterplot */
 var Scatterplot: boolean = false;
 var Chart: Highcharts.Chart | undefined;
 var Last_fields: string[] = [];
@@ -106,6 +107,7 @@ function histogramRemove() {
   Chart = undefined;
   PlotX = undefined;
   PlotY = undefined;
+  PlotC = undefined;
   $("#plotlabel").remove();
   $("#plot-chart").empty();
 }
@@ -296,6 +298,7 @@ function histogramDraw(
 function scatterplotDraw(
   plotx: NumericFilter,
   ploty: NumericFilter,
+  plotc: Field,
   res: Array<Dict<number>>
 ) {
   const xlog = plotx.plotLog;
@@ -310,17 +313,70 @@ function scatterplotDraw(
   (<Highcharts.ChartOptions>opts.chart).events = {
     selection: zoomEvent(plotx, 0, ploty, 0, true)
   };
-  const data: number[][] = [];
+  opts.plotOptions.scatter = {
+    marker: {
+      symbol: 'circle',
+      radius: 1.5
+    }
+  };
   const xname = plotx.field.name;
   const yname = ploty.field.name;
-  for (let r of res)
-    data.push([r[xname], r[yname]]);
-  opts.series = [{
-    type: "scatter",
-    data: data,
-    // keys: [xname, yname],
-    marker: { radius: 1.5 }
-  }];
+  if (plotc) {
+    opts.legend.enabled = true;
+    opts.legend.title = axis_title(plotc);
+    const cname = plotc.name;
+    if (plotc.terms) {
+      /* categorical plotc */
+      opts.series = [];
+      const series: { [val: number]: Highcharts.SeriesScatterOptions } = {};
+      for (let r of res) {
+        const z = r[cname];
+        if (!(z in series)) {
+          series[z] = {
+            type: "scatter",
+            name: plotc.enum ? plotc.enum[z] : <any>z,
+            legendIndex: z,
+            data: [],
+          };
+          opts.series.push(series[z]);
+        }
+        series[z].data.push([r[xname], r[yname]]);
+      }
+    } else {
+      /* color scale */
+      /* coloraxis extremes calculation is broken, do it manually: */
+      let min: number, max: number;
+      const data: {x: number; y: number; c:number}[] = [];
+      for (let r of res) {
+        const c = r[cname];
+        if (min == null || c < min)
+          min = c;
+        if (max == null || c > max)
+          max = c;
+        data.push({x:r[xname], y:r[yname], c:r[cname]});
+      }
+      opts.colorAxis = {
+        min: min,
+        max: max,
+        minColor: '#ff0000',
+        maxColor: '#0000ff',
+      };
+      opts.series = [{
+        type: "scatter",
+        turboThreshold: 0,
+        colorKey: 'c',
+        data: data,
+      }];
+    }
+  } else {
+    const data: number[][] = [];
+    for (let r of res)
+      data.push([r[xname], r[yname]]);
+    opts.series = [{
+      type: "scatter",
+      data: data,
+    }];
+  }
   Chart = Highcharts.chart("plot-chart", opts);
   plotVue.$forceUpdate();
 }
@@ -334,12 +390,17 @@ function histogramShow(axis: "x" | "y" | "c" | "s") {
     PlotX = filt;
     PlotX.plotCond = false;
     PlotY = undefined;
+    PlotC = undefined;
     if (axis !== "x") {
       const sely = <HTMLSelectElement>document.getElementById("plot-y");
       const heat = sely && addFilter(sely.value);
       if (heat instanceof NumericFilter) {
         PlotY = heat;
         PlotY.plotCond = axis === "c";
+        if (axis == "s") {
+          const selc = <HTMLSelectElement>document.getElementById("plot-c");
+          PlotC = selc && Catalog.fields[Fields_idx[selc.value]];
+        }
       }
     }
   } else histogramRemove();
@@ -430,6 +491,7 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
   const plotx = PlotX;
   const ploty = plotx && PlotY;
   const scatter = Scatterplot;
+  const plotc = scatter && PlotC;
   if (plotx && !scatter) {
     if (ploty) {
       if (ploty.plotCond) query.hist = plotx.histQuery(64) + " " + ploty.name;
@@ -480,13 +542,15 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
           query.sample = querySample(sample, seed);
         query.limit = <any>ScatterCount;
         query.fields = plotx.name + " " + ploty.name;
+        if (plotc)
+          query.fields += " " + plotc.name;
         $.ajax({
           method: "GET",
           url: "/" + Catalog.name + "/catalog",
           data: query,
         }).then(
           (res: CatalogResponse) => {
-            scatterplotDraw(plotx, ploty, res.hits.hits);
+            scatterplotDraw(plotx, ploty, plotc, res.hits.hits);
             modal.classList.add("hidden");
             Update = false;
           },
