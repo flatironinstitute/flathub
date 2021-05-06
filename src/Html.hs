@@ -195,16 +195,18 @@ topPage = getPath R.unit $ \() req -> do
       |]
 
 
-data Axis = AxisX | AxisY
+data Axis = AxisX | AxisY | AxisZ
   deriving (Eq)
 
 instance H.ToMarkup Axis where
   toMarkup AxisX = H.string "x"
   toMarkup AxisY = H.string "y"
+  toMarkup AxisZ = H.string "z"
 
 instance Show Axis where
   show AxisX = "X"
   show AxisY = "Y"
+  show AxisZ = "Z"
 
 ifs :: Bool -> String -> String -> String
 ifs True a _ = a
@@ -262,8 +264,8 @@ catalogPage = getPath R.parameter $ \sim req -> do
                       <option value="c">conditional distribution
                       <option value="s">scatterplot
                   <div .col-sm-12 .col-md-5 .plot-col>
-                    $forall axis <- [AxisX,AxisY]
-                      <div .input-group-row :axis == AxisY:v-if="type!=='x'" v-on:change="go">
+                    $forall axis <- [AxisX,AxisY,AxisZ]
+                      <div .input-group-row :axis == AxisY:v-if="type!=='x'" :axis == AxisZ:v-if="type==='s'" v-on:change="go">
                         <label>
                           #{show axis}-Axis:
                         <div .input-group>
