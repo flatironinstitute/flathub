@@ -44,6 +44,7 @@ var Seed: undefined | number;
 var Update_aggs: number = -1;
 var PlotX: undefined | NumericFilter;
 var PlotY: undefined | NumericFilter;
+var PlotZ: undefined | NumericFilter;
 var PlotC: undefined | Field; /* color for Scatterplot */
 var Scatterplot: boolean = false;
 var Chart: Highcharts.Chart | undefined;
@@ -71,8 +72,11 @@ function set_download(query: Dict<string>) {
 const plotVue = new Vue({
   data: {
     type: "x",
-    xfilter: PlotX,
-    yfilter: PlotY,
+    filter: {
+      x: PlotX,
+      y: PlotY,
+      z: PlotZ
+    },
     log: false,
   },
   methods: {
@@ -82,20 +86,17 @@ const plotVue = new Vue({
     },
     // Reload
     go: function (ev: any) {
-      if (Chart && (this.type == 'c' || this.type == 's') && ev.target && ev.target.name == 'logy') {
-        const log = this.yfilter.plotLog;
-        Chart.yAxis[0].update({
-          type: log ? "logarithmic" : "linear"
-        });
+      if (Chart && ev.target && ev.target.name.startsWith('log')) {
+        const a: 'x'|'y'|'z' = ev.target.name.slice(3);
+        if (a in this.filter && this.type == 's' || (this.type == 'c' && a == 'y')) {
+          const log = this.filter[a].plotLog;
+          (<Array<Highcharts.Axis>>(<any>Chart)[a+'Axis'])[0].update({
+            type: log ? "logarithmic" : "linear"
+          });
+          return;
+        }
       }
-      else if (Chart && this.type == 's' && ev.target && ev.target.name == 'logx') {
-        const log = this.xfilter.plotLog;
-        Chart.xAxis[0].update({
-          type: log ? "logarithmic" : "linear"
-        });
-      }
-      else
-        histogramShow(<any>this.type);
+      histogramShow(<any>this.type);
     },
     tooltip: function () {
     },
@@ -107,6 +108,7 @@ function histogramRemove() {
   Chart = undefined;
   PlotX = undefined;
   PlotY = undefined;
+  PlotZ = undefined;
   PlotC = undefined;
   $("#plotlabel").remove();
   $("#plot-chart").empty();
@@ -298,6 +300,7 @@ function histogramDraw(
 function scatterplotDraw(
   plotx: NumericFilter,
   ploty: NumericFilter,
+  plotz: NumericFilter,
   plotc: Field,
   res: Array<Dict<number>>
 ) {
@@ -382,14 +385,13 @@ function scatterplotDraw(
 }
 
 function histogramShow(axis: "x" | "y" | "c" | "s") {
-  const oldx = PlotX;
-  const oldy = PlotY;
   const selx = <HTMLSelectElement>document.getElementById("plot-x");
   const filt = selx && addFilter(selx.value);
   if (filt instanceof NumericFilter) {
     PlotX = filt;
     PlotX.plotCond = false;
     PlotY = undefined;
+    PlotZ = undefined;
     PlotC = undefined;
     if (axis !== "x") {
       const sely = <HTMLSelectElement>document.getElementById("plot-y");
@@ -398,19 +400,26 @@ function histogramShow(axis: "x" | "y" | "c" | "s") {
         PlotY = heat;
         PlotY.plotCond = axis === "c";
         if (axis == "s") {
+          const selz = <HTMLSelectElement>document.getElementById("plot-z");
+          const z = selz && addFilter(selz.value);
+          if (z instanceof NumericFilter)
+            PlotZ = z;
           const selc = <HTMLSelectElement>document.getElementById("plot-c");
           PlotC = selc && Catalog.fields[Fields_idx[selc.value]];
         }
       }
     }
   } else histogramRemove();
-  plotVue.xfilter = PlotX;
-  plotVue.yfilter = PlotY;
   Scatterplot = !!(axis === 's' && PlotX && PlotY);
-  if (oldx && PlotX !== oldx)
-    oldx.removeIfClear();
-  if (oldy && PlotY !== oldy)
-    oldy.removeIfClear();
+  const old = plotVue.filter;
+  plotVue.filter = {
+    x: PlotX,
+    y: PlotY,
+    z: PlotZ
+  };
+  for (let o of Object.values(old))
+    if (o && !Object.values(plotVue.filter).includes(o))
+      o.removeIfClear();
   update(false);
 }
 
@@ -490,7 +499,8 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
   if (aggs) query.aggs = aggs.map((filt) => filt.name).join(" ");
   const plotx = PlotX;
   const ploty = plotx && PlotY;
-  const scatter = Scatterplot;
+  const scatter = plotx && ploty && Scatterplot;
+  const plotz = scatter && PlotZ;
   const plotc = scatter && PlotC;
   if (plotx && !scatter) {
     if (ploty) {
@@ -542,6 +552,8 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
           query.sample = querySample(sample, seed);
         query.limit = <any>ScatterCount;
         query.fields = plotx.name + " " + ploty.name;
+        if (plotz)
+          query.fields += " " + plotz.name;
         if (plotc)
           query.fields += " " + plotc.name;
         $.ajax({
@@ -550,7 +562,7 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
           data: query,
         }).then(
           (res: CatalogResponse) => {
-            scatterplotDraw(plotx, ploty, plotc, res.hits.hits);
+            scatterplotDraw(plotx, ploty, plotz, plotc, res.hits.hits);
             modal.classList.add("hidden");
             Update = false;
           },

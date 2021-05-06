@@ -278,8 +278,8 @@ catalogPage = getPath R.parameter $ \sim req -> do
                                   :not (fieldDisp f):style="display:none"
                                   value="#{fieldName f}">
                                   #{fieldTitle f}
-                          <div .tooltip-container v-if="#{axis}filter">
-                            <span .tooltiptext v-show="!(#{axis}filter.lbv>0)">
+                          <div .tooltip-container v-if="filter.#{axis}">
+                            <span .tooltiptext v-show="!(filter.#{axis}.lbv>0)">
                               For log functionality, set the filter to enable only positive values.
                             <div .switch-row>
                               <label>lin
@@ -287,9 +287,9 @@ catalogPage = getPath R.parameter $ \sim req -> do
                                 <input
                                   type="checkbox"
                                   name="log#{axis}"
-                                  v-bind:disabled="!(#{axis}filter.lbv>0)"
-                                  v-model="#{axis}filter.plotLog">
-                                <span .slider v-bind:disabled="!(#{axis}filter.lbv>0)">
+                                  v-bind:disabled="!(filter.#{axis}.lbv>0)"
+                                  v-model="filter.#{axis}.plotLog">
+                                <span .slider v-bind:disabled="!(filter.#{axis}.lbv>0)">
                               <label>log
                     <div .input-group-row v-if="type==='s'" v-on:change="go">
                       <label>
