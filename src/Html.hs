@@ -84,7 +84,7 @@ htmlResponse _req hdrs body = do
       <script>
         #{jsonVar "Catalogs" $ HM.map catalogTitle $ catalogMap cats}
     <body>
-      <div .modal-container .hidden #progress-modal>
+      <div .modal-container #progress v-show="update" style="display: none;">
         <div .modal-background>
           <span>
         <div .modal-body>
@@ -94,6 +94,7 @@ htmlResponse _req hdrs body = do
               <div .progress-exterior>
                 <div .progress-interior>
             <p>One moment, please. The data you requested is being retrieved.
+            <button v-on:click="cancel">Cancel
       <header .header>
         <div .header__logo>
           <a href="@{topPage !:? mempty}" .header__logo-link>
