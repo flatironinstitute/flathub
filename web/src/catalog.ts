@@ -104,25 +104,12 @@ const plotVue = new Vue({
           return;
         }
       }
-      plotShow(<any>this.type);
+      plotShow();
     },
     tooltip: function () {
     },
   },
 });
-
-function plotRemove() {
-  if (Chart) Chart.destroy();
-  Chart = undefined;
-  PlotX = undefined;
-  PlotCond = undefined;
-  PlotY = undefined;
-  PlotZ = undefined;
-  PlotC = undefined;
-  Scatterplot = false;
-  $("#plotlabel").remove();
-  $("#plot-chart").empty();
-}
 
 function zoomRange(
   f: NumericFilter,
@@ -166,8 +153,8 @@ function plotDraw(
   let cmax = 0;
   const key = (x: { key: any }) => parseFloat(x.key);
   for (let x of agg.buckets) {
-    if (PlotCond && x.pct) {
-      if (x.doc_count)
+    if (PlotCond) {
+      if (x.doc_count && x.pct) {
         data.push([
           key(x) + xwid,
           x.pct.values["0.0"],
@@ -177,16 +164,24 @@ function plotDraw(
           x.pct.values["100.0"],
           x.doc_count,
         ]);
-      if (x.doc_count > cmax) cmax = x.doc_count;
+        if (x.doc_count > cmax)
+          cmax = x.doc_count;
+      }
     } else if (PlotY && x.hist) {
       for (let y of x.hist.buckets)
-        if (y.doc_count)
+        if (y.doc_count) {
           data.push([key(x) + xwid, key(y) + ywid, y.doc_count]);
-    } else if (x.doc_count) data.push([key(x), x.doc_count]);
+          if (y.doc_count > cmax)
+            cmax = y.doc_count;
+        }
+    } else if (x.doc_count) {
+      data.push([key(x), x.doc_count]);
+      if (x.doc_count > cmax)
+        cmax = x.doc_count;
+    }
   }
   if (data.length <= 1) {
-    plotRemove();
-    $("#plot-chart").text("No data for histogram");
+    $("#plot-chart").text("No data for plot");
     return;
   }
   if (!plotLabel) {
@@ -201,6 +196,7 @@ function plotDraw(
   if (PlotY) {
     opts.colorAxis = <Highcharts.ColorAxisOptions>opts.yAxis;
     opts.colorAxis.reversed = false;
+    opts.colorAxis.max = cmax;
     opts.yAxis = PlotY.axisOptions();
     (<Highcharts.ChartOptions>opts.chart).zoomType = "xy";
     (<Highcharts.ChartOptions>opts.chart).events = {
@@ -235,8 +231,8 @@ function plotDraw(
       opts.tooltip.formatter = tooltip_formatter([
           {key: 'x', render: renderx, left: xwid, right: xwid}
         ], {key: 'y'});
-      (<Highcharts.ColorAxisOptions>opts.colorAxis).minColor = "#bbbbbb";
-      (<Highcharts.ColorAxisOptions>opts.colorAxis).max = cmax;
+      opts.colorAxis.minColor = "#bbbbbb";
+      opts.colorAxis.max = cmax;
       opts.series = [
         <Highcharts.SeriesBoxplotOptions>{
           type: "boxplot",
@@ -423,17 +419,19 @@ function scatterplotDraw(
   plotVue.$forceUpdate();
 }
 
-function plotShow(axis: "x" | "y" | "c" | "s") {
+function plotShow() {
   if (progressVue.update)
     return;
+  PlotX = undefined;
+  PlotCond = undefined;
+  PlotY = undefined;
+  PlotZ = undefined;
+  PlotC = undefined;
+  const axis = plotVue.type;
   const selx = <HTMLSelectElement>document.getElementById("plot-x");
   const x = selx && addFilter(selx.value);
   if (x instanceof NumericFilter) {
     PlotX = x;
-    PlotCond = undefined;
-    PlotY = undefined;
-    PlotZ = undefined;
-    PlotC = undefined;
     if (axis !== "x") {
       const sely = <HTMLSelectElement>document.getElementById("plot-y");
       const y = sely && addFilter(sely.value);
@@ -453,7 +451,7 @@ function plotShow(axis: "x" | "y" | "c" | "s") {
         }
       }
     }
-  } else plotRemove();
+  }
   Scatterplot = !!(axis === 's' && PlotX && PlotY);
   const old = plotVue.filter;
   plotVue.filter = {
@@ -464,7 +462,14 @@ function plotShow(axis: "x" | "y" | "c" | "s") {
   for (let o of Object.values(old))
     if (o && !Object.values(plotVue.filter).includes(o))
       o.removeIfClear();
-  update(false);
+  if (PlotX)
+    update(false);
+  else {
+    if (Chart) Chart.destroy();
+    Chart = undefined;
+    $("#plotlabel").remove();
+    $("#plot-chart").empty();
+  }
 }
 
 /* elasticsearch max_result_window */
@@ -759,8 +764,16 @@ class NumericFilter extends Filter {
   }
 
   private plotRemove(): boolean {
-    if (PlotX === this || PlotY === this || PlotZ === this) {
-      plotRemove();
+    let ch = false;
+    for (let x of "xyz") {
+      const sel = <HTMLSelectElement>document.getElementById("plot-"+x);
+      if (sel && sel.value == this.name) {
+        ch = true;
+        sel.value = '';
+      }
+    }
+    if (ch) {
+      plotShow();
       return true;
     }
   }
