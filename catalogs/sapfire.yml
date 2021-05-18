@@ -9,7 +9,8 @@ descr: >
   suite of FIRE-2 cosmological simulations of isolated and paired Milky
   Way-mass galaxies. The stream classification and determination of important
   timescales are described in detail in Panithanpaisal et al 2021.<br>
-  This dataset is made available under Creative Commons BY 4.0
+  Accompanying potential models for all of the simulations can be found <a href="https://web.sas.upenn.edu/dynamics/data/pot_models/">here</a>.<br>
+  This dataset is made available under Creative Commons BY 4.0<br>
 fields:
 - name: simname
   type: byte
