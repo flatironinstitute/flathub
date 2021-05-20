@@ -1,0 +1,16 @@
+#!/bin/bash -ex
+sim=`basename $0`
+sub=s
+gals=(i f m)
+lsrs=(0 1 2)
+slices=(`seq 0 9`)
+d=${1:-/mnt/ceph/users/firesims/ananke/GaiaMocks}
+[[ -d $d ]]
+for g in "${gals[@]}" ; do
+	gal=m12$g
+	for l in "${lsrs[@]}" ; do
+		for s in "${slices[@]}" ; do
+			~/.local/bin/flathub -i $sim -c galaxy=$gal -c lsr=$l -c slice=$s $g$l-$s$sub=$d/$gal/${sub:+test/}lsr-$l-rslice-$s.$gal-res7100-md-sliced-gcat-dr2.hdf5
+		done
+	done
+done
