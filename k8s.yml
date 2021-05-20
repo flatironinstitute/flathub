@@ -25,10 +25,10 @@ spec:
         resources:
           requests:
             cpu: 2
-            memory: 4Gi
+            memory: 8Gi
           limits:
-            cpu: 4
-            memory: 16Gi
+            cpu: 8
+            memory: 32Gi
         ports:
         - containerPort: 8092
           name: http
@@ -55,6 +55,9 @@ apiVersion: v1
 kind: Service
 metadata:
   name: flathub
+  annotations:
+    external-dns.alpha.kubernetes.io/enabled: "true"
+    external-dns.alpha.kubernetes.io/hostname: flathub.flatironinstitute.org.,astrosims.flatironinstitute.org.
 spec:
   selector:
     name: flathub
