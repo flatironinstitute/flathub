@@ -15,6 +15,9 @@ html: |
       width="100%"
     />
     <h3>About</h3>
+    <p>
+      We currently provide a subset of the full dataset.  See Specifications below for which data are currently available.
+    </p>
     <h3>Citation</h3>
     <p>
       If you use any of the Latte FIRE-2 simulations, please including the
@@ -32,9 +35,10 @@ html: |
     <h3>License</h3>
     <p>This data is made available under Creative Commons BY 4.0.</p>
     <h3>Specifications</h3>
-    <table>
+    <table style="text-align:right;">
       <tr>
         <th>label</th>
+        <th>available</th>
         <th>counts</th>
         <th>\(x_{LSR}\)</th>
         <th>\(y_{LSR}\)</th>
@@ -47,8 +51,9 @@ html: |
         <th>\(v_{\phi,LSR}\)</th>
       </tr>
       <tr>
-        <td><a href="/ananke?galaxy=0&lsr=0">m12i-lsr0</a></td>
-        <td></td>
+        <td><a href="/ananke?galaxy=m12i&lsr=0">m12i-lsr0</a></td>
+        <td>full slice=0</td>
+        <td>317,251,458</td>
         <td>0.0</td>
         <td>8.2</td>
         <td>0.0</td>
@@ -59,20 +64,24 @@ html: |
         <td>-3.9</td>
         <td>224.4</td>
       </tr>
-      <td><a href="/ananke?galaxy=0&lsr=1">m12i-lsr1</a></td>
-      <td></td>
-      <td>-7.1014</td>
-      <td>-4.1</td>
-      <td>0.0</td>
-      <td>-80.4269</td>
-      <td>191.7240</td>
-      <td>1.5039</td>
-      <td>-24.4</td>
-      <td>-1.5</td>
-      <td>210.9</td>
       <tr>
-        <td><a href="/ananke?galaxy=0&lsr=2">m12i-lsr2</a></td>
-        <td></td>
+        <td><a href="/ananke?galaxy=m12i&lsr=1">m12i-lsr1</a></td>
+        <td>none</td>
+        <td>-</td>
+        <td>-7.1014</td>
+        <td>-4.1</td>
+        <td>0.0</td>
+        <td>-80.4269</td>
+        <td>191.7240</td>
+        <td>1.5039</td>
+        <td>-24.4</td>
+        <td>-1.5</td>
+        <td>210.9</td>
+      </tr>
+      <tr>
+        <td><a href="/ananke?galaxy=m12i&lsr=2">m12i-lsr2</a></td>
+        <td>1/100 sample</td>
+        <td>29,292,862</td>
         <td>7.1014</td>
         <td>-4.1</td>
         <td>0.0</td>
@@ -84,8 +93,9 @@ html: |
         <td>206.5</td>
       </tr>
       <tr>
-        <td><a href="/ananke?galaxy=1&lsr=0">m12f-lsr0</a></td>
-        <td></td>
+        <td><a href="/ananke?galaxy=m12f&lsr=0">m12f-lsr0</a></td>
+        <td>none</td>
+        <td>-</td>
         <td>0.0</td>
         <td>8.2</td>
         <td>0.0</td>
@@ -97,8 +107,9 @@ html: |
         <td>227.9</td>
       </tr>
       <tr>
-        <td><a href="/ananke?galaxy=1&lsr=1">m12f-lsr1</a></td>
-        <td></td>
+        <td><a href="/ananke?galaxy=m12f&lsr=1">m12f-lsr1</a></td>
+        <td>1/100 sample</td>
+        <td>47,032,092</td>
         <td>-7.1014</td>
         <td>-4.1</td>
         <td>0.0</td>
@@ -110,8 +121,9 @@ html: |
         <td>244.3</td>
       </tr>
       <tr>
-        <td><a href="/ananke?galaxy=1&lsr=2">m12f-lsr2</a></td>
-        <td></td>
+        <td><a href="/ananke?galaxy=m12f&lsr=2">m12f-lsr2</a></td>
+        <td>none</td>
+        <td>-</td>
         <td>7.1014</td>
         <td>-4.1</td>
         <td>0.0</td>
@@ -123,8 +135,9 @@ html: |
         <td>227.4</td>
       </tr>
       <tr>
-        <td><a href="/ananke?galaxy=2&lsr=0">m12m-lsr0</a></td>
-        <td></td>
+        <td><a href="/ananke?galaxy=m12m&lsr=0">m12m-lsr0</a></td>
+        <td>1/100 sample</td>
+        <td>56,972,027</td>
         <td>0.0</td>
         <td>8.2</td>
         <td>0.0</td>
@@ -136,7 +149,8 @@ html: |
         <td>254.7</td>
       </tr>
       <tr>
-        <td><a href="/ananke?galaxy=2&lsr=1">m12m-lsr1</a></td>
+        <td><a href="/ananke?galaxy=m12m&lsr=1">m12m-lsr1</a></td>
+        <td>none</td>
         <td></td>
         <td>-7.1014</td>
         <td>-4.1</td>
@@ -149,7 +163,8 @@ html: |
         <td>252.7</td>
       </tr>
       <tr>
-        <td><a href="/ananke?galaxy=2&lsr=2">m12m-lsr2</a></td>
+        <td><a href="/ananke?galaxy=m12m&lsr=2">m12m-lsr2</a></td>
+        <td>none</td>
         <td></td>
         <td>7.1014</td>
         <td>-4.1</td>

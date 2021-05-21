@@ -532,6 +532,8 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
       delete query.limit;
       delete query.offset;
       set_download((Last_query = query));
+      if (!filterVue.$el)
+        filterVue.$mount("#filt");
 
       /* do another query for scatter plot */
       if (scatter) {
@@ -917,10 +919,10 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
       if (filt instanceof NumericFilter && typeof f.value === "object")
         filt.setRange(f.value.lb, f.value.ub);
       if (filt instanceof SelectFilter && typeof f.value !== "object")
-        filt.setValue(f.value);
+        filt.setValue(f.value.toString());
     }
   }
-  filterVue.$mount("#filt");
+  // defer mounting #filt until we get the first data (and aggregates) back
   filterTab.$mount("#filt-tab");
   for (let b of (<any>(
     document.getElementsByClassName("colvis")
