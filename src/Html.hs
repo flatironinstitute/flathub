@@ -82,15 +82,12 @@ htmlResponse _req hdrs body = do
       <!-- TODO: Move mathjax and fonts to bundle.js -->
       <script type=text/javascript src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML">
       <script>
+        #{jsonVar "Catalogs" $ HM.map catalogTitle $ catalogMap cats}
+      <script>
         window.onUsersnapCXLoad = function(api) {
           api.init();
         }
-        var script = document.createElement(‘script’);
-        script.defer = 1;
-        script.src = ‘https://widget.usersnap.com/global/load/a964b199-4df3-4ba5-82d0-44fffad1ac0c?onload=onUsersnapCXLoad’;
-        document.getElementsByTagName(‘head’)[0].appendChild(script);
-      <script>
-        #{jsonVar "Catalogs" $ HM.map catalogTitle $ catalogMap cats}
+      <script type=text/javascript defer=1 src="https://widget.usersnap.com/global/load/a964b199-4df3-4ba5-82d0-44fffad1ac0c?onload=onUsersnapCXLoad">
     <body>
       <div .modal-container .hidden #progress-modal>
         <div .modal-background>
