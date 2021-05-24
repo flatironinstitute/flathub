@@ -734,6 +734,12 @@ class SelectFilter extends Filter {
     const val = this.value;
     if (val) return JSON.stringify(val);
   }
+
+  reset() {
+    this.value = '';
+    this.change();
+    filterVue.$forceUpdate();
+  }
 }
 
 class NumericFilter extends Filter {
@@ -833,6 +839,7 @@ function addFilter(fi: string | Field): Filter | undefined {
   let filt = Filters.find((f) => f.field.name === field.name);
   if (filt) return filt;
   if (field.terms) return new SelectFilter(field);
+  if (field.base === 's') return new SelectFilter(field);
   return new NumericFilter(field);
 }
 

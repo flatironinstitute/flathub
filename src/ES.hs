@@ -288,8 +288,8 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreFiel
   term f (FilterRange l u) = "range" .=* (fieldName f .=* (bound "gte" l <> bound "lte" u)) where
     bound t = foldMap (t J..=)
   agg :: HM.HashMap T.Text (TypeValue HistogramInterval) -> QueryAgg -> J.Series
-  agg _ (QueryStats f) = fieldName f .=* (if fieldTerms f
-    then "terms" .=* (field f <> "size" J..= (32 :: Int))
+  agg _ (QueryStats f) = fieldName f .=* (if fieldTerms f || typeIsString (fieldType f)
+    then "terms" .=* (field f <> "size" J..= (if fieldTerms f then 32 else 4 :: Int))
     else "stats" .=* field f)
   agg _ (QueryPercentiles f p) = "pct" .=* ("percentiles" .=* (field f <> "percents" J..= p))
   agg h (QueryHist f _ _ a)

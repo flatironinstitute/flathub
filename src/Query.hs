@@ -80,7 +80,8 @@ parseQuery cat req = fill $ foldl' parseQueryItem mempty $ Wai.queryString req w
   parseHist _ = fail "invalid hist"
   histn s = (t, ) <$> rmbs r where
     (t, r) = maybe (False, s) (True ,) $ BS.stripPrefix "log" s
-  parseFilt f (spl delim -> Just (a, b)) = FilterRange <$> parseVal f a <*> parseVal f b
+  parseFilt f (spl delim -> Just (a, b))
+    | not (typeIsString (fieldType f)) = FilterRange <$> parseVal f a <*> parseVal f b
   parseFilt f a = FilterEQ <$> parseVal' f a
   parseVal _ "" = return Nothing
   parseVal f v = Just <$> parseVal' f v

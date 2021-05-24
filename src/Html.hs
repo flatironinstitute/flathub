@@ -370,11 +370,16 @@ catalogPage = getPath R.parameter $ \sim req -> do
                             reset
                         <div .filter-inputs v-if="filter.field.terms">
                           <select-terms
-                              v-if="filter.field.terms"
                               v-bind:field="filter.field"
                               v-bind:aggs="filter.aggs"
                               v-model="filter.value"
                               v-bind:change="filter.change.bind(filter)">
+                        <div .filter-inputs v-else-if="filter.field.base==='s'">
+                          <input
+                            type="text"
+                            v-bind:name="filter.field.name"
+                            v-model="filter.value"
+                            v-on:change="filter.change()">
                         <div .filter-inputs-group v-else>
                           $forall b <- [False, True]
                             <div .filter-input>
@@ -390,7 +395,12 @@ catalogPage = getPath R.parameter $ \sim req -> do
                         <div .filter-info-row v-if="!filter.field.terms">
                           <div .filter-avg v-if="filter.aggs.avg!==undefined">
                             <em>&mu; : {{filter.aggs.avg?filter.render(filter.aggs.avg):'no data'}}
-                          <div .filter-min-max>
+                          <div .filter-examples v-if="filter.aggs.buckets!==undefined">
+                            Examples:
+                            <ul>
+                              <li v-for="bucket in filter.aggs.buckets">
+                                {{ bucket.key }}
+                          <div v-else .filter-min-max>
                             <p>Range:
                             $forall b <- [False, True]
                               <p>{{filter.render(filter.aggs.#{ifs b "max" "min"})}}

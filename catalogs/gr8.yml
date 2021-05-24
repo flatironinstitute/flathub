@@ -22,6 +22,7 @@ fields:
       title: 'primary_name'
       type: keyword
       descr: Unique identifier used as primary display (including file naming) (Common name if available, followed by HD, followed by Gaia eDR3)
+      terms: false
     - name: 'gaiadr2_source_id'
       title: 'gaiadr2_source_id'
       type: long
@@ -42,6 +43,7 @@ fields:
       type: keyword
       flag: hidden
       descr: HD ID
+      terms: false
     - name: 'tic'
       title: 'tic'
       type: int
@@ -52,11 +54,13 @@ fields:
       type: keyword
       flag: hidden
       descr: 2MASS ID
+      terms: false
     - name: 'wisea'
       title: 'wisea'
       type: keyword
       flag: hidden
       descr: AllWISE Source Catalog ID
+      terms: false
   - name: ''
     title: gaia
     sub:
@@ -131,6 +135,7 @@ fields:
       type: keyword
       flag: hidden
       descr: Gaia eDR3 reference epoch
+      terms: true
     - name: 'gmag'
       title: 'gmag'
       type: float
@@ -314,6 +319,7 @@ fields:
 #     title: 'primary'
 #     type: keyword
 #     descr: Which instrument spectrum was used to derive the spectral and isochrone properties
+#     terms: true
 #   - name: ''
 #     title: fies
 #     sub:
