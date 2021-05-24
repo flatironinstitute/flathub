@@ -89,7 +89,7 @@ htmlResponse _req hdrs body = do
         }
       <script type=text/javascript defer=1 src="https://widget.usersnap.com/global/load/a964b199-4df3-4ba5-82d0-44fffad1ac0c?onload=onUsersnapCXLoad">
     <body>
-      <div .modal-container .hidden #progress-modal>
+      <div .modal-container #progress v-show="update" style="display: none;">
         <div .modal-background>
           <span>
         <div .modal-body>
@@ -99,6 +99,7 @@ htmlResponse _req hdrs body = do
               <div .progress-exterior>
                 <div .progress-interior>
             <p>One moment, please. The data you requested is being retrieved.
+            <button v-on:click="cancel">Cancel
       <header .header>
         <div .header__logo>
           <a href="@{topPage !:? mempty}" .header__logo-link>
@@ -200,16 +201,18 @@ topPage = getPath R.unit $ \() req -> do
       |]
 
 
-data Axis = AxisX | AxisY
+data Axis = AxisX | AxisY | AxisZ
   deriving (Eq)
 
 instance H.ToMarkup Axis where
   toMarkup AxisX = H.string "x"
   toMarkup AxisY = H.string "y"
+  toMarkup AxisZ = H.string "z"
 
 instance Show Axis where
   show AxisX = "X"
   show AxisY = "Y"
+  show AxisZ = "Z"
 
 ifs :: Bool -> String -> String -> String
 ifs True a _ = a
@@ -267,8 +270,8 @@ catalogPage = getPath R.parameter $ \sim req -> do
                       <option value="c">conditional distribution
                       <option value="s">scatterplot
                   <div .col-sm-12 .col-md-5 .plot-col>
-                    $forall axis <- [AxisX,AxisY]
-                      <div .input-group-row :axis == AxisY:v-if="type!=='x'" v-on:change="go">
+                    $forall axis <- [AxisX,AxisY,AxisZ]
+                      <div .input-group-row :axis == AxisY:v-if="type!=='x'" :axis == AxisZ:v-if="type==='s'" v-on:change="go">
                         <label>
                           #{show axis}-Axis:
                         <div .input-group>
@@ -281,8 +284,8 @@ catalogPage = getPath R.parameter $ \sim req -> do
                                   :not (fieldDisp f):style="display:none"
                                   value="#{fieldName f}">
                                   #{fieldTitle f}
-                          <div .tooltip-container v-if="#{axis}filter">
-                            <span .tooltiptext v-show="!(#{axis}filter.lbv>0)">
+                          <div .tooltip-container v-if="filter.#{axis}">
+                            <span .tooltiptext v-show="!(filter.#{axis}.lbv>0)">
                               For log functionality, set the filter to enable only positive values.
                             <div .switch-row>
                               <label>lin
@@ -290,9 +293,9 @@ catalogPage = getPath R.parameter $ \sim req -> do
                                 <input
                                   type="checkbox"
                                   name="log#{axis}"
-                                  v-bind:disabled="!(#{axis}filter.lbv>0)"
-                                  v-model="#{axis}filter.plotLog">
-                                <span .slider v-bind:disabled="!(#{axis}filter.lbv>0)">
+                                  v-bind:disabled="!(filter.#{axis}.lbv>0)"
+                                  v-model="filter.#{axis}.plotLog">
+                                <span .slider v-bind:disabled="!(filter.#{axis}.lbv>0)">
                               <label>log
                     <div .input-group-row v-if="type==='s'" v-on:change="go">
                       <label>

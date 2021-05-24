@@ -69,6 +69,10 @@ export type CatalogResponse = {
   histsize: Dict<number>;
 };
 
+export type LogScale = 'client'|'server'|null;
+
+type RenderFun = (x: any) => string;
+
 export function closeModal() {
   const modal = <HTMLSelectElement>document.getElementById("browser-modal");
   modal.classList.add("hidden");
@@ -133,7 +137,7 @@ export function field_option(f: Field): HTMLOptionElement {
 }
 
 export function updateMathJax() {
-  let MathJax = (<any>window).MathJax;
+  const MathJax = (<any>window).MathJax;
 
   if (MathJax)
     setTimeout(() => {
@@ -191,7 +195,7 @@ export function field_title(
 export function render_funct(
   field: Field,
   log: boolean = false
-): (data: any) => string {
+): RenderFun {
   if (field.base === "f") {
     const p = log ? (x: any) => Math.exp(parseFloat(x)) : parseFloat;
     return (data) => (data != undefined ? p(data).toPrecision(8) : data);
@@ -220,12 +224,81 @@ export function axis_title(f: Field) {
   };
 }
 
+type PointDim = {
+  key: string,
+  render?: RenderFun,
+  left?: number,
+  right?: number
+};
+
+function point_formatter(d: PointDim): (x: Highcharts.Point) => string {
+  const r = d.render || ((x: any) => x);
+  if (d.left || d.right) {
+    const left = d.left || 0;
+    const right = d.right || 0;
+    return (p: any) => {
+      const x = p[d.key];
+      return '['+r(x-left)+','+r(x+right)+')'
+    };
+  } else
+    return (p: any) => r(p[d.key]);
+}
+
+export function tooltip_formatter(dim: Array<PointDim>, val: PointDim|undefined=undefined):
+  (this: Highcharts.TooltipFormatterContextObject) => string {
+  const dimf = dim.map(point_formatter);
+  const valf = val && point_formatter(val);
+  return function (this: Highcharts.TooltipFormatterContextObject) {
+    const p = this.point;
+    let r = dimf.map((f) => f(p)).join(', ');
+    if (valf)
+      r += ": " + valf(p);
+    return r;
+  };
+}
+
+export function axis_options(field: Field, log: LogScale, min: number|undefined=undefined, max: number|undefined=undefined): Highcharts.AxisOptions {
+  return {
+    type: log == 'client' ? "logarithmic" : "linear",
+    title: axis_title(field),
+    gridLineWidth: 1,
+    labels: {
+      formatter:
+        field.base === "f"
+          ? log == 'server'
+            ? function () {
+                const v = Math.exp(<number>this.value);
+                let d = (<any>this.axis).tickInterval;
+                return v.toPrecision(
+                  1 + Math.max(0, -Math.floor(Math.log10(Math.exp(d) - 1)))
+                );
+              }
+            : function () {
+                const v = <number>this.value;
+                const d = (<any>this.axis).tickInterval;
+                return v.toPrecision(
+                  1 +
+                    Math.max(
+                      0,
+                      Math.floor(Math.log10(Math.abs(v))) -
+                        Math.floor(Math.log10(d))
+                    )
+                );
+              }
+          : render_funct(field, log == 'server')
+    },
+    min: log == 'server' ? Math.log(min) : min,
+    max: log == 'server' ? Math.log(max) : max,
+    reversed: field.reversed || false
+  };
+}
+
 export function histogram_options(
   field: Field,
-  log: boolean = false,
+  log: LogScale = null,
   ylog: boolean = false
 ): Highcharts.Options {
-  const render = render_funct(field, log);
+  const render = render_funct(field, log == 'server');
   return {
     chart: {
       animation: false,
@@ -240,39 +313,7 @@ export function histogram_options(
     credits: {
       enabled: false,
     },
-    xAxis: {
-      type: /* log ? "logarithmic" : */ "linear",
-      title: axis_title(field),
-      gridLineWidth: 1,
-      labels: {
-        formatter:
-          field.base === "f"
-            ? log
-              ? function () {
-                  const v = Math.exp(<number>this.value);
-                  let d = (<any>this.axis).tickInterval;
-                  return v.toPrecision(
-                    1 + Math.max(0, -Math.floor(Math.log10(Math.exp(d) - 1)))
-                  );
-                }
-              : function () {
-                  const v = <number>this.value;
-                  const d = (<any>this.axis).tickInterval;
-                  return v.toPrecision(
-                    1 +
-                      Math.max(
-                        0,
-                        Math.floor(Math.log10(Math.abs(v))) -
-                          Math.floor(Math.log10(d))
-                      )
-                  );
-                }
-            : function () {
-                return render(this.value);
-              },
-      },
-      reversed: field.reversed || false
-    },
+    xAxis: <Highcharts.XAxisOptions>axis_options(field, log),
     yAxis: {
       id: "tog",
       type: ylog ? "logarithmic" : "linear",
@@ -282,20 +323,6 @@ export function histogram_options(
     },
     tooltip: {
       animation: false,
-      formatter: function (
-        this: Highcharts.TooltipFormatterContextObject
-      ): string {
-        const wid = <number>(
-          (<Highcharts.SeriesColumnOptions>this.series.options).pointInterval
-        );
-        return (
-          (wid
-            ? "[" + render(this.x) + "," + render(this.x + wid) + ")"
-            : render(this.x)) +
-          " " +
-          this.y
-        );
-      },
     },
     exporting: {
       enabled: true,
@@ -321,6 +348,15 @@ export function histogram_options(
   };
 }
 
-(<any>window).toggleDisplay = function toggleDisplay(ele: string) {
-  $("#" + ele).toggle();
-};
+export const progressVue = new Vue({
+  data: {
+    update: undefined
+  },
+  methods: {
+    cancel: function () {
+      if (this.update && this.update.abort)
+        this.update.abort('update canceled');
+    }
+  }
+});
+
