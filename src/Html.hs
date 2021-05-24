@@ -82,6 +82,14 @@ htmlResponse _req hdrs body = do
       <!-- TODO: Move mathjax and fonts to bundle.js -->
       <script type=text/javascript src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML">
       <script>
+        window.onUsersnapCXLoad = function(api) {
+          api.init();
+        }
+        var script = document.createElement(‘script’);
+        script.defer = 1;
+        script.src = ‘https://widget.usersnap.com/global/load/a964b199-4df3-4ba5-82d0-44fffad1ac0c?onload=onUsersnapCXLoad’;
+        document.getElementsByTagName(‘head’)[0].appendChild(script);
+      <script>
         #{jsonVar "Catalogs" $ HM.map catalogTitle $ catalogMap cats}
     <body>
       <div .modal-container .hidden #progress-modal>
@@ -425,7 +433,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                   <div .right-column-group>
                     <h6 .right-column-heading>Python Query
                     <p>
-                      Example python code to apply the above filters and retrieve data. To use, download and install 
+                      Example python code to apply the above filters and retrieve data. To use, download and install
                       <a href="https://github.com/flatironinstitute/flathub/tree/prod/py">this module
                       .
                     <div #div-py .python-block>
