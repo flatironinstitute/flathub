@@ -1,5 +1,6 @@
 import Vue from "vue";
 import Highcharts from "highcharts";
+import Highcharts_3d from "highcharts/highcharts-3d";
 import Highcharts_more from "highcharts/highcharts-more";
 import Highcharts_heatmap from "highcharts/modules/heatmap";
 import Highcharts_export_data from "highcharts/modules/export-data";
@@ -12,13 +13,18 @@ import {
   AggrTerms,
   Aggr,
   CatalogResponse,
+  LogScale,
   toggle_log,
   axis_title,
   render_funct,
+  tooltip_formatter,
+  axis_options,
   histogram_options,
   updateMathJax,
+  progressVue,
 } from "./common";
 
+Highcharts_3d(Highcharts);
 Highcharts_more(Highcharts);
 Highcharts_heatmap(Highcharts);
 Highcharts_export_data(Highcharts);
@@ -39,11 +45,15 @@ declare const Query: {
 const Fields_idx: Dict<number> = {};
 const Filters: Array<Filter> = [];
 const ScatterCount = 2000;
+const Scatter3DCount = 1000;
 var Sample: number = 1;
 var Seed: undefined | number;
 var Update_aggs: number = -1;
 var PlotX: undefined | NumericFilter;
 var PlotY: undefined | NumericFilter;
+var PlotCond: undefined | NumericFilter; /* mutually exclusive with PlotY */
+var PlotZ: undefined | NumericFilter;
+var PlotC: undefined | Field; /* color for Scatterplot */
 var Scatterplot: boolean = false;
 var Chart: Highcharts.Chart | undefined;
 var Last_fields: string[] = [];
@@ -70,9 +80,12 @@ function set_download(query: Dict<string>) {
 const plotVue = new Vue({
   data: {
     type: "x",
-    xfilter: PlotX,
-    yfilter: PlotY,
-    log: false,
+    filter: {
+      x: PlotX,
+      y: PlotY || PlotCond,
+      z: PlotZ
+    },
+    log: false, /* for histogram */
   },
   methods: {
     // Count log toggle (aka replot)
@@ -81,34 +94,22 @@ const plotVue = new Vue({
     },
     // Reload
     go: function (ev: any) {
-      if (Chart && (this.type == 'c' || this.type == 's') && ev.target && ev.target.name == 'logy') {
-        const log = this.yfilter.plotLog;
-        Chart.yAxis[0].update({
-          type: log ? "logarithmic" : "linear"
-        });
+      if (Chart && ev.target && ev.target.name.startsWith('log')) {
+        const a: 'x'|'y'|'z' = ev.target.name.slice(3);
+        if (a in this.filter && this.type == 's' || (this.type == 'c' && a == 'y')) {
+          const log = this.filter[a].plotLog;
+          (<Array<Highcharts.Axis>>(<any>Chart)[a+'Axis'])[0].update({
+            type: log ? "logarithmic" : "linear"
+          });
+          return;
+        }
       }
-      else if (Chart && this.type == 's' && ev.target && ev.target.name == 'logx') {
-        const log = this.xfilter.plotLog;
-        Chart.xAxis[0].update({
-          type: log ? "logarithmic" : "linear"
-        });
-      }
-      else
-        histogramShow(<any>this.type);
+      plotShow();
     },
     tooltip: function () {
     },
   },
 });
-
-function histogramRemove() {
-  if (Chart) Chart.destroy();
-  Chart = undefined;
-  PlotX = undefined;
-  PlotY = undefined;
-  $("#plotlabel").remove();
-  $("#plot-chart").empty();
-}
 
 function zoomRange(
   f: NumericFilter,
@@ -116,8 +117,7 @@ function zoomRange(
   axis: Highcharts.AxisOptions,
   scatter: boolean = false
 ) {
-  /* FIXME plotLog may have been updated since plot? */
-  const unlog = f.plotLog && !f.plotCond && !scatter ? Math.exp : (x: number) => x;
+  const unlog = f.plotLogScale == 'server' ? Math.exp : (x: number) => x;
   f.setRange(
     unlog(wid ? wid * Math.floor(<number>axis.min / wid) : <number>axis.min),
     unlog(wid ? wid * Math.ceil(<number>axis.max / wid) : <number>axis.max)
@@ -125,7 +125,10 @@ function zoomRange(
   f.change();
 }
 
-function zoomEvent(plotx: NumericFilter, xwid: number = 0, ploty: NumericFilter|undefined = undefined, ywid: number = 0, scatter: boolean = false): ((event: Highcharts.ChartSelectionContextObject) => boolean) {
+function zoomEvent(xwid: number = 0, ywid: number = 0): (event: Highcharts.ChartSelectionContextObject) => boolean {
+  const plotx = PlotX;
+  const ploty = PlotY;
+  const scatter = Scatterplot;
   return function (event: Highcharts.ChartSelectionContextObject) {
     event.preventDefault();
     zoomRange(plotx, xwid, event.xAxis[0], scatter);
@@ -139,42 +142,46 @@ function zoomEvent(plotx: NumericFilter, xwid: number = 0, ploty: NumericFilter|
   };
 }
 
-function histogramDraw(
-  plotx: NumericFilter,
-  ploty: undefined | NumericFilter,
+function plotDraw(
   agg: AggrTerms<number>,
   size: Dict<number>
 ) {
   const plotLabel = document.getElementById("plotlabel");
-  const field = plotx.field;
   const data: number[][] = [];
-  let xwid = size[field.name] / 2;
-  let ywid = ploty ? size[ploty.name] / 2 : NaN;
+  let xwid = size[PlotX.name] / 2;
+  let ywid = PlotY ? size[PlotY.name] / 2 : NaN;
   let cmax = 0;
   const key = (x: { key: any }) => parseFloat(x.key);
   for (let x of agg.buckets) {
-    if (ploty) {
-      if (ploty.plotCond && x.pct) {
-        if (x.doc_count)
-          data.push([
-            key(x) + xwid,
-            x.pct.values["0.0"],
-            x.pct.values["25.0"],
-            x.pct.values["50.0"],
-            x.pct.values["75.0"],
-            x.pct.values["100.0"],
-            x.doc_count,
-          ]);
-        if (x.doc_count > cmax) cmax = x.doc_count;
-      } else if (x.hist)
-        for (let y of x.hist.buckets)
-          if (y.doc_count)
-            data.push([key(x) + xwid, key(y) + ywid, y.doc_count]);
-    } else if (x.doc_count) data.push([key(x), x.doc_count]);
+    if (PlotCond) {
+      if (x.doc_count && x.pct) {
+        data.push([
+          key(x) + xwid,
+          x.pct.values["0.0"],
+          x.pct.values["25.0"],
+          x.pct.values["50.0"],
+          x.pct.values["75.0"],
+          x.pct.values["100.0"],
+          x.doc_count,
+        ]);
+        if (x.doc_count > cmax)
+          cmax = x.doc_count;
+      }
+    } else if (PlotY && x.hist) {
+      for (let y of x.hist.buckets)
+        if (y.doc_count) {
+          data.push([key(x) + xwid, key(y) + ywid, y.doc_count]);
+          if (y.doc_count > cmax)
+            cmax = y.doc_count;
+        }
+    } else if (x.doc_count) {
+      data.push([key(x), x.doc_count]);
+      if (x.doc_count > cmax)
+        cmax = x.doc_count;
+    }
   }
   if (data.length <= 1) {
-    histogramRemove();
-    $("#plot-chart").text("No data for histogram");
+    $("#plot-chart").text("No data for plot");
     return;
   }
   if (!plotLabel) {
@@ -183,53 +190,23 @@ function histogramDraw(
     );
   }
 
-  const opts: Highcharts.Options = histogram_options(
-    field,
-    plotx.plotLog,
-    plotVue.log
-  );
-  const renderx = render_funct(field, plotx.plotLog);
-  (<Highcharts.AxisOptions>opts.xAxis).min =
-    plotx.plotLog ? Math.log(plotx.lbv) : plotx.lbv;
-  (<Highcharts.AxisOptions>opts.xAxis).max =
-    plotx.plotLog ? Math.log(plotx.ubv) : plotx.ubv;
-  if (ploty) {
+  const opts: Highcharts.Options = histogram_options(PlotX.field, PlotX.plotLogScale, plotVue.log);
+  opts.xAxis = <Highcharts.XAxisOptions>PlotX.axisOptions();
+  const renderx = PlotX.render;
+  if (PlotY) {
     opts.colorAxis = <Highcharts.ColorAxisOptions>opts.yAxis;
     opts.colorAxis.reversed = false;
-    opts.yAxis = histogram_options(ploty.field).xAxis;
-    if (ploty.plotCond && ploty.plotLog)
-      (<Highcharts.AxisOptions>opts.yAxis).type = "logarithmic";
-  }
-  if (ploty && !ploty.plotCond) {
-    (<Highcharts.AxisOptions>opts.yAxis).min =
-      ploty.plotLog ? Math.log(ploty.lbv) : ploty.lbv;
-    (<Highcharts.AxisOptions>opts.yAxis).max =
-      ploty.plotLog ? Math.log(ploty.ubv) : ploty.ubv;
+    opts.colorAxis.max = cmax;
+    opts.yAxis = PlotY.axisOptions();
     (<Highcharts.ChartOptions>opts.chart).zoomType = "xy";
     (<Highcharts.ChartOptions>opts.chart).events = {
-      selection: zoomEvent(plotx, xwid, ploty, ywid)
+      selection: zoomEvent(xwid, ywid)
     };
-    const rendery = render_funct(ploty.field, ploty.plotLog && !ploty.plotCond);
-    (<Highcharts.TooltipOptions>opts.tooltip).formatter = function (
-      this: Highcharts.TooltipFormatterContextObject
-    ): string {
-      const p = this.point;
-      return (
-        (xwid
-          ? "[" + renderx(p.x - xwid) + "," + renderx(p.x + xwid) + ")"
-          : renderx(p.x)) +
-        " & " +
-        (ywid
-          ? "[" +
-            rendery(<number>p.y - ywid) +
-            "," +
-            rendery(<number>p.y + ywid) +
-            ")"
-          : rendery(p.y)) +
-        ": " +
-        (<any>p).value
-      );
-    };
+    const rendery = PlotY.render;
+    opts.tooltip.formatter = tooltip_formatter([
+        {key: 'x', render: renderx, left: xwid, right: xwid},
+        {key: 'y', render: rendery, left: ywid, right: ywid}
+      ], {key: 'value'});
     (<Highcharts.ColorAxisOptions>opts.colorAxis).minColor = "#ffffff";
     (<Highcharts.LegendOptions>opts.legend).enabled = true;
     opts.series = [
@@ -243,24 +220,19 @@ function histogramDraw(
   } else {
     const wid = 2 * xwid;
     (<Highcharts.ChartOptions>opts.chart).events = {
-      selection: zoomEvent(plotx, wid)
+      selection: zoomEvent(wid)
     };
     (<Highcharts.TooltipOptions>opts.tooltip).footerFormat = "drag to filter";
-    if (ploty) {
+    if (PlotCond) {
       /* condmedian */
-      (<Highcharts.TooltipOptions>opts.tooltip).formatter = function (
-        this: Highcharts.TooltipFormatterContextObject
-      ): string {
-        return (
-          (xwid
-            ? "[" + renderx(this.x - xwid) + "," + renderx(this.x + xwid) + ")"
-            : renderx(this.x)) +
-          ": " +
-          this.y
-        );
-      };
-      (<Highcharts.ColorAxisOptions>opts.colorAxis).minColor = "#bbbbbb";
-      (<Highcharts.ColorAxisOptions>opts.colorAxis).max = cmax;
+      opts.colorAxis = <Highcharts.ColorAxisOptions>opts.yAxis;
+      opts.colorAxis.reversed = false;
+      opts.yAxis = PlotCond.axisOptions();
+      opts.tooltip.formatter = tooltip_formatter([
+          {key: 'x', render: renderx, left: xwid, right: xwid}
+        ], {key: 'y'});
+      opts.colorAxis.minColor = "#bbbbbb";
+      opts.colorAxis.max = cmax;
       opts.series = [
         <Highcharts.SeriesBoxplotOptions>{
           type: "boxplot",
@@ -277,6 +249,9 @@ function histogramDraw(
       ];
     } else {
       /* histogram */
+      opts.tooltip.formatter = tooltip_formatter([
+          {key: 'x', render: renderx, right: wid}
+        ], {key: 'y'});
       opts.series = [
         <Highcharts.SeriesColumnOptions>{
           showInLegend: true,
@@ -293,81 +268,221 @@ function histogramDraw(
   plotVue.$forceUpdate();
 }
 
+function chartDrag3D(ev: MouseEvent|TouchEvent|PointerEvent) {
+    const eStart = Chart.pointer.normalize(ev);
+
+    const alpha = Chart.options.chart.options3d.alpha,
+	beta = Chart.options.chart.options3d.beta,
+	sensitivity = 4,  // lower is more sensitive
+	handlers: Function[] = [];
+
+    function drag(e: MouseEvent|TouchEvent|PointerEvent) {
+	// Get e.chartX and e.chartY
+	const eEnd = Chart.pointer.normalize(e);
+
+	Chart.update({
+	    chart: {
+		options3d: {
+		    alpha: alpha + (eEnd.chartY - eStart.chartY) / sensitivity,
+		    beta: beta + (eStart.chartX - eEnd.chartX) / sensitivity
+		}
+	    }
+	}, undefined, undefined, false);
+    }
+
+    function unbindAll() {
+	handlers.forEach(function (unbind) {
+	    if (unbind) {
+		unbind();
+	    }
+	});
+	handlers.length = 0;
+    }
+
+    handlers.push(Highcharts.addEvent(document, 'mousemove', drag));
+    handlers.push(Highcharts.addEvent(document, 'touchmove', drag));
+    handlers.push(Highcharts.addEvent(document, 'mouseup', unbindAll));
+    handlers.push(Highcharts.addEvent(document, 'touchend', unbindAll));
+};
+
 function scatterplotDraw(
-  plotx: NumericFilter,
-  ploty: NumericFilter,
   res: Array<Dict<number>>
 ) {
-  const xlog = plotx.plotLog;
-  const ylog = ploty.plotLog;
-  const opts: Highcharts.Options = histogram_options(plotx.field);
-  opts.yAxis = histogram_options(ploty.field).xAxis;
-  if (xlog)
-    (<Highcharts.XAxisOptions>opts.xAxis).type = "logarithmic";
-  if (ylog)
-    (<Highcharts.YAxisOptions>opts.yAxis).type = "logarithmic";
-  (<Highcharts.ChartOptions>opts.chart).zoomType = "xy";
-  (<Highcharts.ChartOptions>opts.chart).events = {
-    selection: zoomEvent(plotx, 0, ploty, 0, true)
+  const opts: Highcharts.Options = histogram_options(PlotX.field);
+  opts.xAxis = <Highcharts.XAxisOptions>PlotX.axisOptions();
+  opts.yAxis = <Highcharts.YAxisOptions>PlotY.axisOptions();
+  const xname = PlotX.name;
+  const yname = PlotY.name;
+  let getData = (r: Dict<number>) => [r[xname],r[yname]];
+  let stype: 'scatter'|'scatter3d' = 'scatter';
+  const sopts = {
+    marker: {
+      symbol: 'circle',
+      radius: 1.5
+    },
+    turboThreshold: 0,
   };
-  const data: number[][] = [];
-  const xname = plotx.field.name;
-  const yname = ploty.field.name;
-  for (let r of res)
-    data.push([r[xname], r[yname]]);
-  opts.series = [{
-    type: "scatter",
-    data: data,
-    // keys: [xname, yname],
-    marker: { radius: 1.5 }
-  }];
+  const dims = [
+    {key: 'x', render: PlotX.render},
+    {key: 'y', render: PlotY.render}
+  ];
+  if (PlotZ) {
+    opts.chart.options3d = {
+      enabled: true,
+      alpha: 10,
+      beta: 20,
+      depth: 400
+    };
+    opts.zAxis = <Highcharts.ZAxisOptions>PlotZ.axisOptions();
+    const zname = PlotZ.name;
+    getData = (r) => [r[xname],r[yname],r[zname]];
+    stype = 'scatter3d';
+    opts.plotOptions.scatter3d = sopts;
+    opts.chart.zoomType = undefined;
+    dims.push({key: 'z', render: PlotZ.render});
+  } else {
+    opts.plotOptions.scatter = sopts;
+    opts.chart.zoomType = "xy";
+    opts.chart.events = {
+      selection: zoomEvent()
+    };
+  }
+  let val;
+  if (PlotC) {
+    opts.legend.enabled = true;
+    opts.legend.title = axis_title(PlotC);
+    const cname = PlotC.name;
+    const render = render_funct(PlotC);
+    if (PlotC.terms) {
+      /* categorical plotc */
+      opts.series = [];
+      const series: { [val: number]: Highcharts.SeriesScatterOptions|Highcharts.SeriesScatter3dOptions } = {};
+      for (let r of res) {
+        const z = r[cname];
+        if (!(z in series)) {
+          series[z] = {
+            type: stype,
+            name: render_funct(PlotC)(z),
+            legendIndex: z,
+            data: [],
+          };
+          opts.series.push(series[z]);
+        }
+        series[z].data.push(getData(r));
+      }
+    } else {
+      /* color scale */
+      /* coloraxis extremes calculation is broken, do it manually: */
+      let min: number, max: number;
+      type Point = {x: number; y: number; z?: number; c:number};
+      const data: Point[] = [];
+      for (let r of res) {
+        const c = r[cname];
+        if (min == null || c < min)
+          min = c;
+        if (max == null || c > max)
+          max = c;
+        const d = getData(r);
+        const p: Point = {x:d[0], y:d[1], c:c};
+        if (PlotZ)
+          p.z = d[2];
+        data.push(p);
+      }
+      opts.colorAxis = {
+        min: min,
+        max: max,
+        minColor: '#ff0000',
+        maxColor: '#0000ff',
+      };
+      opts.series = [{
+        type: stype,
+        colorKey: 'c',
+        data: data,
+      }];
+      val = {key:'c', render: render};
+    }
+  } else {
+    const data: number[][] = [];
+    for (let r of res)
+      data.push(getData(r));
+    opts.series = [{
+      type: stype,
+      data: data,
+    }];
+  }
+  opts.tooltip.formatter = tooltip_formatter(dims, val);
   Chart = Highcharts.chart("plot-chart", opts);
+  if (PlotZ) {
+    Highcharts.addEvent(Chart.container, 'mousedown', chartDrag3D);
+    Highcharts.addEvent(Chart.container, 'touchstart', chartDrag3D);
+  }
   plotVue.$forceUpdate();
 }
 
-function histogramShow(axis: "x" | "y" | "c" | "s") {
-  const oldx = PlotX;
-  const oldy = PlotY;
+function plotShow() {
+  if (progressVue.update)
+    return;
+  PlotX = undefined;
+  PlotCond = undefined;
+  PlotY = undefined;
+  PlotZ = undefined;
+  PlotC = undefined;
+  const axis = plotVue.type;
   const selx = <HTMLSelectElement>document.getElementById("plot-x");
-  const filt = selx && addFilter(selx.value);
-  if (filt instanceof NumericFilter) {
-    PlotX = filt;
-    PlotX.plotCond = false;
-    PlotY = undefined;
+  const x = selx && addFilter(selx.value);
+  if (x instanceof NumericFilter) {
+    PlotX = x;
     if (axis !== "x") {
       const sely = <HTMLSelectElement>document.getElementById("plot-y");
-      const heat = sely && addFilter(sely.value);
-      if (heat instanceof NumericFilter) {
-        PlotY = heat;
-        PlotY.plotCond = axis === "c";
+      const y = sely && addFilter(sely.value);
+      if (y instanceof NumericFilter) {
+        if (axis === 'c')
+          PlotCond = y;
+        else {
+          PlotY = y;
+          if (axis == "s") {
+            const selz = <HTMLSelectElement>document.getElementById("plot-z");
+            const z = selz && addFilter(selz.value);
+            if (z instanceof NumericFilter)
+              PlotZ = z;
+            const selc = <HTMLSelectElement>document.getElementById("plot-c");
+            PlotC = selc && Catalog.fields[Fields_idx[selc.value]];
+          }
+        }
       }
     }
-  } else histogramRemove();
-  plotVue.xfilter = PlotX;
-  plotVue.yfilter = PlotY;
+  }
   Scatterplot = !!(axis === 's' && PlotX && PlotY);
-  if (oldx && PlotX !== oldx)
-    oldx.removeIfClear();
-  if (oldy && PlotY !== oldy)
-    oldy.removeIfClear();
-  update(false);
+  const old = plotVue.filter;
+  plotVue.filter = {
+    x: PlotX,
+    y: PlotY || PlotCond,
+    z: PlotZ
+  };
+  for (let o of Object.values(old))
+    if (o && !Object.values(plotVue.filter).includes(o))
+      o.removeIfClear();
+  if (PlotX)
+    update(false);
+  else {
+    if (Chart) Chart.destroy();
+    Chart = undefined;
+    $("#plotlabel").remove();
+    $("#plot-chart").empty();
+  }
 }
 
 /* elasticsearch max_result_window */
 const DisplayLimit = 10000;
-var Update: boolean | number = false;
 var Update_paging: boolean = false;
 
 function update(paging: boolean = true) {
-  if (Update) return;
+  if (progressVue.update) return;
   if (paging) Update_paging = paging;
-  Update = setTimeout(() => {
-    Update = true;
+  progressVue.update = setTimeout(() => {
     TCat.draw(Update_paging);
     Update_paging = false;
   });
-  const modal = <HTMLSelectElement>document.getElementById("progress-modal");
-  modal.classList.remove("hidden");
 }
 
 function visibleFields(): string[] {
@@ -401,9 +516,6 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
       .join(" "),
   };
 
-  const modal = <HTMLSelectElement>document.getElementById("progress-modal");
-  modal.classList.remove("hidden");
-
   let aggs = Filters;
   if (Update_aggs >= 0) aggs = aggs.slice(Update_aggs);
   else Update_aggs = Filters.length;
@@ -427,20 +539,18 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
     query.fields = "";
   }
   if (aggs) query.aggs = aggs.map((filt) => filt.name).join(" ");
-  const plotx = PlotX;
-  const ploty = plotx && PlotY;
-  const scatter = Scatterplot;
-  if (plotx && !scatter) {
-    if (ploty) {
-      if (ploty.plotCond) query.hist = plotx.histQuery(64) + " " + ploty.name;
-      else query.hist = plotx.histQuery(64) + " " + ploty.histQuery(16);
-    } else query.hist = plotx.histQuery(128);
+  if (PlotX && !Scatterplot) {
+    if (PlotCond)   query.hist = PlotX.histQuery(64) + " " + PlotCond.name;
+    else if (PlotY) query.hist = PlotX.histQuery(64) + " " + PlotY.histQuery(16);
+    else            query.hist = PlotX.histQuery(128);
   }
-  $.ajax({
+  const xhr = $.ajax({
     method: "GET",
     url: "/" + Catalog.name + "/catalog",
     data: query,
-  }).then(
+  });
+  progressVue.update = xhr;
+  xhr.then(
     (res: CatalogResponse) => {
       $("#error").hide();
       Catalog.count = Math.max(Catalog.count || 0, res.hits.total);
@@ -470,47 +580,51 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
       delete query.limit;
       delete query.offset;
       set_download((Last_query = query));
+      if (!filterVue.$el)
+        filterVue.$mount("#filt");
 
       /* do another query for scatter plot */
-      if (scatter) {
+      if (Scatterplot) {
         delete query.sort;
-        if (res.hits.total > ScatterCount)
-          sample *= ScatterCount/res.hits.total;
+        const count = PlotZ ? Scatter3DCount : ScatterCount;
+        if (res.hits.total > count)
+          sample *= count/res.hits.total;
         if (sample < 1)
           query.sample = querySample(sample, seed);
-        query.limit = <any>ScatterCount;
-        query.fields = plotx.name + " " + ploty.name;
-        $.ajax({
+        query.limit = <any>count;
+        query.fields = PlotX.name + " " + PlotY.name;
+        if (PlotZ)
+          query.fields += " " + PlotZ.name;
+        if (PlotC)
+          query.fields += " " + PlotC.name;
+        const xhr = $.ajax({
           method: "GET",
           url: "/" + Catalog.name + "/catalog",
           data: query,
-        }).then(
+        });
+        progressVue.update = xhr;
+        xhr.then(
           (res: CatalogResponse) => {
-            scatterplotDraw(plotx, ploty, res.hits.hits);
-            modal.classList.add("hidden");
-            Update = false;
+            scatterplotDraw(res.hits.hits);
+            progressVue.update = undefined;
           },
           (xhr, msg, err) => {
             $("#error")
               .text(msg + ": " + err)
               .show();
-            modal.classList.add("hidden");
-            Update = false;
+            progressVue.update = undefined;
           }
         );
       } else {
-        if (plotx) {
+        if (PlotX) {
           if (res.aggregations && res.aggregations.hist)
-            histogramDraw(
-              plotx,
-              ploty,
+            plotDraw(
               res.aggregations.hist as AggrTerms<number>,
               res.histsize || {}
             );
           else $("#plot-chart").text("No data for histogram");
         }
-        modal.classList.add("hidden");
-        Update = false;
+        progressVue.update = undefined;
       }
     },
     (xhr, msg, err) => {
@@ -522,8 +636,7 @@ function ajax(data: any, callback: (data: any) => void, opts: any) {
       $("#error")
         .text(msg + ": " + err)
         .show();
-      modal.classList.add("hidden");
-      Update = false;
+      progressVue.update = undefined;
     }
   );
 }
@@ -546,7 +659,7 @@ abstract class Filter {
 
   constructor(public field: Field) {
     this.tcol = TCat.column(this.name + ":name");
-    this.render = render_funct(this.field);
+    this.render = render_funct(this.field, this.plotLogScale == 'server');
     this.add();
   }
 
@@ -590,6 +703,10 @@ abstract class Filter {
 
   abstract query(): string | undefined;
   abstract pyQuery(): string | undefined;
+
+  get plotLogScale(): LogScale {
+    return null;
+  }
 }
 
 class SelectFilter extends Filter {
@@ -617,13 +734,18 @@ class SelectFilter extends Filter {
     const val = this.value;
     if (val) return JSON.stringify(val);
   }
+
+  reset() {
+    this.value = '';
+    this.change();
+    filterVue.$forceUpdate();
+  }
 }
 
 class NumericFilter extends Filter {
   lbv: number;
   ubv: number;
   plotLog: boolean = false;
-  plotCond: boolean = false;
 
   update_aggs(aggs: AggrStats) {
     super.update_aggs(aggs);
@@ -649,10 +771,19 @@ class NumericFilter extends Filter {
     else return "(" + JSON.stringify(lbv) + ", " + JSON.stringify(ubv) + ")";
   }
 
-  private histogramRemove(): boolean {
-    if (PlotX !== this) return false;
-    histogramRemove();
-    return true;
+  private plotRemove(): boolean {
+    let ch = false;
+    for (let x of "xyz") {
+      const sel = <HTMLSelectElement>document.getElementById("plot-"+x);
+      if (sel && sel.value == this.name) {
+        ch = true;
+        sel.value = '';
+      }
+    }
+    if (ch) {
+      plotShow();
+      return true;
+    }
   }
 
   reset() {
@@ -661,7 +792,7 @@ class NumericFilter extends Filter {
   }
 
   remove() {
-    this.histogramRemove();
+    this.plotRemove();
     super.remove();
   }
 
@@ -679,8 +810,16 @@ class NumericFilter extends Filter {
     filterTab.$forceUpdate();
   }
 
+  get plotLogScale(): LogScale {
+    return this.plotLog ? Scatterplot || this === PlotCond ? 'client' : 'server' : null;
+  }
+
   histQuery(n: number): string {
-    return this.field.name + (this.plotLog && !this.plotCond ? ":log" : ":") + n.toString();
+    return this.field.name + (this.plotLogScale == 'server' ? ":log" : ":") + n.toString();
+  }
+
+  axisOptions(): Highcharts.AxisOptions {
+    return axis_options(this.field, this.plotLogScale, this.lbv, this.ubv);
   }
 }
 
@@ -700,6 +839,7 @@ function addFilter(fi: string | Field): Filter | undefined {
   let filt = Filters.find((f) => f.field.name === field.name);
   if (filt) return filt;
   if (field.terms) return new SelectFilter(field);
+  if (field.base === 's') return new SelectFilter(field);
   return new NumericFilter(field);
 }
 
@@ -853,10 +993,10 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
       if (filt instanceof NumericFilter && typeof f.value === "object")
         filt.setRange(f.value.lb, f.value.ub);
       if (filt instanceof SelectFilter && typeof f.value !== "object")
-        filt.setValue(f.value);
+        filt.setValue(f.value.toString());
     }
   }
-  filterVue.$mount("#filt");
+  // defer mounting #filt until we get the first data (and aggregates) back
   filterTab.$mount("#filt-tab");
   for (let b of (<any>(
     document.getElementsByClassName("colvis")

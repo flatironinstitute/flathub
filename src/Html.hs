@@ -83,8 +83,13 @@ htmlResponse _req hdrs body = do
       <script type=text/javascript src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML">
       <script>
         #{jsonVar "Catalogs" $ HM.map catalogTitle $ catalogMap cats}
+      <script>
+        window.onUsersnapCXLoad = function(api) {
+          api.init();
+        }
+      <script type=text/javascript defer=1 src="https://widget.usersnap.com/global/load/a964b199-4df3-4ba5-82d0-44fffad1ac0c?onload=onUsersnapCXLoad">
     <body>
-      <div .modal-container .hidden #progress-modal>
+      <div .modal-container #progress v-show="update" style="display: none;">
         <div .modal-background>
           <span>
         <div .modal-body>
@@ -94,6 +99,7 @@ htmlResponse _req hdrs body = do
               <div .progress-exterior>
                 <div .progress-interior>
             <p>One moment, please. The data you requested is being retrieved.
+            <button v-on:click="cancel">Cancel
       <header .header>
         <div .header__logo>
           <a href="@{topPage !:? mempty}" .header__logo-link>
@@ -195,16 +201,18 @@ topPage = getPath R.unit $ \() req -> do
       |]
 
 
-data Axis = AxisX | AxisY
+data Axis = AxisX | AxisY | AxisZ
   deriving (Eq)
 
 instance H.ToMarkup Axis where
   toMarkup AxisX = H.string "x"
   toMarkup AxisY = H.string "y"
+  toMarkup AxisZ = H.string "z"
 
 instance Show Axis where
   show AxisX = "X"
   show AxisY = "Y"
+  show AxisZ = "Z"
 
 ifs :: Bool -> String -> String -> String
 ifs True a _ = a
@@ -262,8 +270,8 @@ catalogPage = getPath R.parameter $ \sim req -> do
                       <option value="c">conditional distribution
                       <option value="s">scatterplot
                   <div .col-sm-12 .col-md-5 .plot-col>
-                    $forall axis <- [AxisX,AxisY]
-                      <div .input-group-row :axis == AxisY:v-if="type!=='x'" v-on:change="go">
+                    $forall axis <- [AxisX,AxisY,AxisZ]
+                      <div .input-group-row :axis == AxisY:v-if="type!=='x'" :axis == AxisZ:v-if="type==='s'" v-on:change="go">
                         <label>
                           #{show axis}-Axis:
                         <div .input-group>
@@ -276,8 +284,8 @@ catalogPage = getPath R.parameter $ \sim req -> do
                                   :not (fieldDisp f):style="display:none"
                                   value="#{fieldName f}">
                                   #{fieldTitle f}
-                          <div .tooltip-container v-if="#{axis}filter">
-                            <span .tooltiptext v-show="!(#{axis}filter.lbv>0)">
+                          <div .tooltip-container v-if="filter.#{axis}">
+                            <span .tooltiptext v-show="!(filter.#{axis}.lbv>0)">
                               For log functionality, set the filter to enable only positive values.
                             <div .switch-row>
                               <label>lin
@@ -285,10 +293,23 @@ catalogPage = getPath R.parameter $ \sim req -> do
                                 <input
                                   type="checkbox"
                                   name="log#{axis}"
-                                  v-bind:disabled="!(#{axis}filter.lbv>0)"
-                                  v-model="#{axis}filter.plotLog">
-                                <span .slider v-bind:disabled="!(#{axis}filter.lbv>0)">
+                                  v-bind:disabled="!(filter.#{axis}.lbv>0)"
+                                  v-model="filter.#{axis}.plotLog">
+                                <span .slider v-bind:disabled="!(filter.#{axis}.lbv>0)">
                               <label>log
+                    <div .input-group-row v-if="type==='s'" v-on:change="go">
+                      <label>
+                        Color:
+                      <div .input-group>
+                        <select #plot-c>
+                          <option value="">None
+                          $forall f <- catalogFields cat
+                            $if fieldTerms f || not (typeIsString (fieldType f))
+                              <option
+                                .sel-#{fieldName f}
+                                :not (fieldDisp f):style="display:none"
+                                value="#{fieldName f}">
+                                #{fieldTitle f}
                   <div .col-sm-12 .col-md-3 .plot-col v-if="type!='s'">
                     <div .tooltip-container>
                       <span .label-help>Count:
@@ -350,11 +371,16 @@ catalogPage = getPath R.parameter $ \sim req -> do
                             reset
                         <div .filter-inputs v-if="filter.field.terms">
                           <select-terms
-                              v-if="filter.field.terms"
                               v-bind:field="filter.field"
                               v-bind:aggs="filter.aggs"
                               v-model="filter.value"
                               v-bind:change="filter.change.bind(filter)">
+                        <div .filter-inputs v-else-if="filter.field.base==='s'">
+                          <input
+                            type="text"
+                            v-bind:name="filter.field.name"
+                            v-model="filter.value"
+                            v-on:change="filter.change()">
                         <div .filter-inputs-group v-else>
                           $forall b <- [False, True]
                             <div .filter-input>
@@ -370,7 +396,12 @@ catalogPage = getPath R.parameter $ \sim req -> do
                         <div .filter-info-row v-if="!filter.field.terms">
                           <div .filter-avg v-if="filter.aggs.avg!==undefined">
                             <em>&mu; : {{filter.aggs.avg?filter.render(filter.aggs.avg):'no data'}}
-                          <div .filter-min-max>
+                          <div .filter-examples v-if="filter.aggs.buckets!==undefined">
+                            Examples:
+                            <ul>
+                              <li v-for="bucket in filter.aggs.buckets">
+                                {{ bucket.key }}
+                          <div v-else .filter-min-max>
                             <p>Range:
                             $forall b <- [False, True]
                               <p>{{filter.render(filter.aggs.#{ifs b "max" "min"})}}
@@ -413,7 +444,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                   <div .right-column-group>
                     <h6 .right-column-heading>Python Query
                     <p>
-                      Example python code to apply the above filters and retrieve data. To use, download and install 
+                      Example python code to apply the above filters and retrieve data. To use, download and install
                       <a href="https://github.com/flatironinstitute/flathub/tree/prod/py">this module
                       .
                     <div #div-py .python-block>
