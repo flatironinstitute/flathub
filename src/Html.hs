@@ -304,11 +304,12 @@ catalogPage = getPath R.parameter $ \sim req -> do
                         <select #plot-c>
                           <option value="">None
                           $forall f <- catalogFields cat
-                            <option
-                              .sel-#{fieldName f}
-                              :not (fieldDisp f):style="display:none"
-                              value="#{fieldName f}">
-                              #{fieldTitle f}
+                            $if fieldTerms f || not (typeIsString (fieldType f))
+                              <option
+                                .sel-#{fieldName f}
+                                :not (fieldDisp f):style="display:none"
+                                value="#{fieldName f}">
+                                #{fieldTitle f}
                   <div .col-sm-12 .col-md-3 .plot-col v-if="type!='s'">
                     <div .tooltip-container>
                       <span .label-help>Count:

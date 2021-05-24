@@ -362,7 +362,7 @@ function scatterplotDraw(
         if (!(z in series)) {
           series[z] = {
             type: stype,
-            name: PlotC.enum ? PlotC.enum[z] : <any>z,
+            name: render_funct(PlotC)(z),
             legendIndex: z,
             data: [],
           };
