@@ -1,106 +1,556 @@
 title: Gr8 Stars
 index: gr8
-count: 2004
+count: 2858
 fields:
-  - name: gaia_dr2_id
-    descr: Unique source identifier
-    type: long
-    dict: GAIA_source_id
   - name: ''
     title: pos
-    descr: Barycentric position
     sub:
-    - name: ra
-      title: ra
-      descr: Barycentric right ascension of the source
-      type: double
-      units: deg
-      dict: ppos_x
-    - name: dec
-      title: dec
-      descr: Barycentric declination of the source
-      type: double
-      units: deg
-      dict: ppos_y
-  - name: parallax
-    dict: parallax
-    descr: Absolute parallax of the source
-    type: double
-    units: mas
-  - name: parallax_error
-    dict: GAIA_parallax_error
-    descr: Standard error of parallax
-    type: double
-    units: mas
+    - name: 'ra_j2000'
+      title: 'ra_j2000'
+      type: float
+      units: 'deg'
+      descr: Gaia eDR3 RA shifted to J2000
+    - name: 'dec_j2000'
+      title: 'dec_j2000'
+      type: float
+      units: 'deg'
+      descr: Gaia eDR3 Dec shifted to J2000
   - name: ''
-    title: pm
-    descr: Proper motion
-    type: double
-    units: mas/year
+    title: name
     sub:
-    - name: pmra
-      dict: pmra
-      descr: Proper motion in right ascension (pmra) direction
-      type: double
-    - name: pmra_error
-      dict: GAIA_pmra_error
-      type: double
-    - name: pmdec
-      dict: pmdec
-      descr: Proper motion in declination direction
-      type: double
-    - name: pmdec_error
-      dict: GAIA_pmdec_error
-      descr: Standard error of proper motion in declination direction
-      type: double
-  - name: phot_g_mean_mag
-    dict: GAIA_phot_g_mean_mag
-    descr: G-band photometry mean magnitude
-    type: float
-    units: mag
-    reversed: true
-  - name: phot_rp_mean_mag
-    dict: GAIA_phot_rp_mean_mag
-    descr: Integrated RP photometry mean magnitude
-    type: float
-    units: mag
-    reversed: true
-  - name: phot_bp_mean_mag
-    dict: GAIA_phot_bp_mean_mag_error
-    descr: Integrated BP photometry mean magnitude
-    type: float
-    units: mag
-    reversed: true
-  - name: bp_rp
-    dict: GAIA_bp_rp
-    descr: BP - RP colour
-    type: float
-    units: mag
-  - name: radial_velocity
-    dict: GAIA_radial_velocity
-    descr: Radial velocity
-    type: double
-    units: km/s
-  - name: radial_velocity_error
-    dict: GAIA_radial_velocity_error
-    descr: Radial velocity error
-    type: double
-    units: km/s
-  - name: gaia_teff
-    title: teff
-    descr: stellar effective temperature
-    type: float
-    units: K
-    dict: GAIA_teff_val
-  - name: gaia_radius
-    title: radius
-    descr: stellar radius
-    units: '\(r_\odot\)'
-    type: float
-# - name: spectra
+    - name: 'primary_name'
+      title: 'primary_name'
+      type: keyword
+      descr: Unique identifier used as primary display (including file naming) (Common name if available, followed by HD, followed by Gaia eDR3)
+    - name: 'gaiadr2_source_id'
+      title: 'gaiadr2_source_id'
+      type: long
+      flag: hidden
+      descr: Gaia DR2 ID
+    - name: 'gaiaedr3_source_id'
+      title: 'gaiaedr3_source_id'
+      type: long
+      flag: hidden
+      descr: Gaia EDR3 ID
+    - name: 'hip'
+      title: 'hip'
+      type: int
+      flag: hidden
+      descr: HIP ID
+    - name: 'hd'
+      title: 'hd'
+      type: keyword
+      flag: hidden
+      descr: HD ID
+    - name: 'tic'
+      title: 'tic'
+      type: int
+      flag: hidden
+      descr: TESS Input Catalog ID
+    - name: '2mass'
+      title: '2mass'
+      type: keyword
+      flag: hidden
+      descr: 2MASS ID
+    - name: 'wisea'
+      title: 'wisea'
+      type: keyword
+      flag: hidden
+      descr: AllWISE Source Catalog ID
+  - name: ''
+    title: gaia
+    sub:
+    - name: ''
+      title: pos
+      descr: Barycentric position
+      sub:
+      - name: 'ra'
+        title: 'ra'
+        type: float
+        units: 'deg'
+        flag: hidden
+        descr: Gaia eDR3 RA
+      - name: 'ra_error'
+        title: 'ra_error'
+        type: float
+        units: 'deg'
+        flag: hidden
+        descr: Gaia eDR3 RA error
+      - name: 'dec'
+        title: 'dec'
+        type: float
+        units: 'deg'
+        flag: hidden
+        descr: Gaia eDR3 Dec
+      - name: 'dec_error'
+        title: 'dec_error'
+        type: float
+        units: 'deg'
+        flag: hidden
+        descr: Gaia eDR3 Dec error
+    - name: 'parallax'
+      title: 'parallax'
+      type: float
+      units: 'mas'
+      descr: Gaia eDR3 parallax
+    - name: 'parallax_error'
+      title: 'parallax_error'
+      type: float
+      units: 'mas'
+      flag: hidden
+      descr: Gaia eDR3 parallax error
+    - name: ''
+      title: pm
+      descr: Proper motion
+      units: mas/year
+      sub:
+      - name: 'pmra'
+        title: 'pmra'
+        type: float
+        units: 'mas/yr'
+        descr: Gaia eDR3 proper motion in RA * cosDec
+      - name: 'pmra_error'
+        title: 'pmra_error'
+        type: float
+        units: 'mas/yr'
+        flag: hidden
+        descr: Gaia eDR3 proper motion in RA * cosDec error
+      - name: 'pmdec'
+        title: 'pmdec'
+        type: float
+        units: 'mas/yr'
+        descr: Gaia eDR3 proper motion in Dec
+      - name: 'pmdec_error'
+        title: 'pmdec_error'
+        type: float
+        units: 'mas/yr'
+        flag: hidden
+        descr: Gaia eDR3 proper motion in Dec error
+    - name: 'ref_epoch'
+      title: 'ref_epoch'
+      type: keyword
+      flag: hidden
+      descr: Gaia eDR3 reference epoch
+    - name: 'gmag'
+      title: 'gmag'
+      type: float
+      units: 'mag'
+      descr: Gaia eDR3 G magnitude
+    - name: 'bp_rp'
+      title: 'bp_rp'
+      type: float
+      units: 'mag'
+      descr: Gaia eDR3 color
+    - name: 'radial_velocity'
+      title: 'radial_velocity'
+      type: float
+      units: 'km/s'
+      flag: hidden
+      descr: Gaia DR2 RV
+    - name: 'radial_velocity_error'
+      title: 'radial_velocity_error'
+      type: float
+      units: 'km/s'
+      flag: hidden
+      descr: Gaia DR2 RV error
+    - name: 'gaia_teff'
+      title: 'teff'
+      type: float
+      units: 'K'
+      flag: hidden
+      descr: Gaia DR2 effective temperature
+    - name: 'gaia_teff_lower'
+      title: 'teff_lower'
+      type: float
+      units: 'K'
+      flag: hidden
+      descr: One-sigma lower limit on Gaia DR2 effective temperature
+    - name: 'gaia_teff_upper'
+      title: 'teff_upper'
+      type: float
+      units: 'K'
+      flag: hidden
+      descr: One-sigma upper limit on Gaia DR2 effective temperature
+    - name: 'gaia_radius'
+      title: 'radius'
+      type: float
+      units: 'R_{\odot}'
+      flag: hidden
+      descr: Gaia DR2 stellar radius
+    - name: 'gaia_radius_lower'
+      title: 'radius_lower'
+      type: float
+      units: 'R_{\odot}'
+      flag: hidden
+      descr: One-sigma lower limit on Gaia DR2 stellar radius
+    - name: 'gaia_radius_upper'
+      title: 'radius_upper'
+      type: float
+      units: 'R_{\odot}'
+      flag: hidden
+      descr: One-sigma upper limit on Gaia stellar radius
+    - name: 'gaia_lum'
+      title: 'lum'
+      type: float
+      units: 'L_{\odot}'
+      flag: hidden
+      descr: Gaia DR2 stellar luminosity
+    - name: 'gaia_lum_lower'
+      title: 'lum_lower'
+      type: float
+      units: 'L_{\odot}'
+      flag: hidden
+      descr: One-sigma lower limit on Gaia DR2 stellar luminosity
+    - name: 'gaia_lum_upper'
+      title: 'lum_upper'
+      type: float
+      units: 'L_{\odot}'
+      flag: hidden
+      descr: One-sigma upper limit on Gaia stellar luminosity
+# - name: 'teff'
+#   title: 'teff'
+#   type: float
+#   units: 'K'
+#   descr: Effective temperature from spectra
+# - name: 'teff_error'
+#   title: 'teff_error'
+#   type: float
+#   units: 'K'
+#   flag: hidden
+# - name: 'logg'
+#   title: 'logg'
+#   type: float
+#   descr: Stellar surface gravity from spectra
+# - name: 'logg_error'
+#   title: 'logg_error'
+#   type: float
+#   flag: hidden
+# - name: 'feh'
+#   title: 'feh'
+#   type: float
+#   units: 'dex'
+#   descr: Iron abundance from spectra
+# - name: 'feh_error'
+#   title: 'feh_error'
+#   type: float
+#   units: 'dex'
+#   flag: hidden
+# - name: 'vsini'
+#   title: 'vsini'
+#   type: float
+#   units: 'km/s'
+#   descr: Rotational velocity from spectra
+# - name: 'vsini_error'
+#   title: 'vsini_error'
+#   type: float
+#   units: 'km/s'
+#   flag: hidden
+# - name: 'r_hk'
+#   title: 'r_hk'
+#   type: float
+#   descr: Ca II H&K indicator R'_HK
+# - name: 'r_hk_error'
+#   title: 'r_hk_error'
+#   type: float
+#   flag: hidden
+# - name: ''
+#   title: isochrone
 #   sub:
-#   - name: instrument
-#     type: boolean
-#     attachment:
-#       path: gr8/spectra/${gaia_dr2_id}_instrument.fits
-#       name: gr8_spectra_${gaia_dr2_id}_instrument.fits
+#   - name: 'mass'
+#     title: 'mass'
+#     type: float
+#     units: 'M_{\odot}'
+#     descr: Stellar mass from isochrone fit
+#   - name: 'mass_lower'
+#     title: 'mass_lower'
+#     type: float
+#     units: 'M_{\odot}'
+#     flag: hidden
+#     descr: One-sigma lower limit on stellar mass from isochrone fit
+#   - name: 'mass_upper'
+#     title: 'mass_upper'
+#     type: float
+#     units: 'M_{\odot}'
+#     flag: hidden
+#     descr: One-sigma upper limit on stellar mass from isochrone fit
+#   - name: 'radius'
+#     title: 'radius'
+#     type: float
+#     units: 'R_{\odot}'
+#     descr: Stellar radius from isochrone fit
+#   - name: 'radius_lower'
+#     title: 'radius_lower'
+#     type: float
+#     units: 'R_{\odot}'
+#     flag: hidden
+#     descr: One-sigma lower limit on stellar radius from isochrone fit
+#   - name: 'radius_upper'
+#     title: 'radius_upper'
+#     type: float
+#     units: 'R_{\odot}'
+#     flag: hidden
+#     descr: One-sigma upper limit on stellar radius from isochrone fit
+#   - name: 'age'
+#     title: 'age'
+#     type: float
+#     units: 'Gyr'
+#     descr: Stellar age from isochrone fit
+#   - name: 'age_lower'
+#     title: 'age_lower'
+#     type: float
+#     units: 'Gyr'
+#     flag: hidden
+#     descr: One-sigma lower limit on stellar age from isochrone fit
+#   - name: 'age_upper'
+#     title: 'age_upper'
+#     type: float
+#     units: 'Gyr'
+#     flag: hidden
+#     descr: One-sigma upper limit on stellar age from isochrone fit
+  - name: ''
+    title: spectrum
+    sub:
+#   - name: 'spectrum_primary'
+#     title: 'primary'
+#     type: keyword
+#     descr: Which instrument spectrum was used to derive the spectral and isochrone properties
+#   - name: ''
+#     title: fies
+#     sub:
+#     - name: 'spectrum_fies'
+#       title: 'download'
+#       type: boolean
+#       attachment:
+#         path: gr8/spectra/${primary_name}_fies.fits
+#         name: gr8_spectra_${primary_name}_fies.fits
+#     - name: 'spectrum_fies_resolution'
+#       title: 'resolution'
+#       type: float
+#       flag: hidden
+#       descr: Spectral resolution
+#     - name: 'spectrum_fies_snr'
+#       title: 'snr'
+#       type: float
+#       flag: hidden
+#       descr: Signal-to-noise per pixel at 600 nm
+#     - name: 'spectrum_fies_date'
+#       title: 'date'
+#       type: float
+#       units: 'BJD'
+#       flag: hidden
+#       descr: Date of observation (or effective average date if nobs > 1)
+#     - name: 'spectrum_fies_nobs'
+#       title: 'nobs'
+#       type: int
+#       flag: hidden
+#       descr: Number of observations averaged to create the spectrum
+#   - name: ''
+#     title: feros
+#     sub:
+#     - name: 'spectrum_feros'
+#       title: 'download'
+#       type: boolean
+#       attachment:
+#         path: gr8/spectra/${primary_name}_feros.fits
+#         name: gr8_spectra_${primary_name}_feros.fits
+#     - name: 'spectrum_feros_resolution'
+#       title: 'resolution'
+#       type: float
+#       flag: hidden
+#       descr: Spectral resolution
+#     - name: 'spectrum_feros_snr'
+#       title: 'snr'
+#       type: float
+#       flag: hidden
+#       descr: Signal-to-noise per pixel at 600 nm
+#     - name: 'spectrum_feros_date'
+#       title: 'date'
+#       type: float
+#       units: 'BJD'
+#       flag: hidden
+#       descr: Date of observation (or effective average date if nobs > 1)
+#     - name: 'spectrum_feros_nobs'
+#       title: 'nobs'
+#       type: int
+#       flag: hidden
+#       descr: Number of observations averaged to create the spectrum
+#   - name: ''
+#     title: harps
+#     sub:
+#     - name: 'spectrum_harps'
+#       title: 'download'
+#       type: boolean
+#       attachment:
+#         path: gr8/spectra/${primary_name}_harps.fits
+#         name: gr8_spectra_${primary_name}_harps.fits
+#     - name: 'spectrum_harps_resolution'
+#       title: 'resolution'
+#       type: float
+#       flag: hidden
+#       descr: Spectral resolution
+#     - name: 'spectrum_harps_snr'
+#       title: 'snr'
+#       type: float
+#       flag: hidden
+#       descr: Signal-to-noise per pixel at 600 nm
+#     - name: 'spectrum_harps_date'
+#       title: 'date'
+#       type: float
+#       units: 'BJD'
+#       flag: hidden
+#       descr: Date of observation (or effective average date if nobs > 1)
+#     - name: 'spectrum_harps_nobs'
+#       title: 'nobs'
+#       type: int
+#       flag: hidden
+#       descr: Number of observations averaged to create the spectrum
+#   - name: ''
+#     title: harpsn
+#     sub:
+#     - name: 'spectrum_harpsn'
+#       title: 'download'
+#       type: boolean
+#       attachment:
+#         path: gr8/spectra/${primary_name}_harpsn.fits
+#         name: gr8_spectra_${primary_name}_harpsn.fits
+#     - name: 'spectrum_harpsn_resolution'
+#       title: 'resolution'
+#       type: float
+#       flag: hidden
+#       descr: Spectral resolution
+#     - name: 'spectrum_harpsn_snr'
+#       title: 'snr'
+#       type: float
+#       flag: hidden
+#       descr: Signal-to-noise per pixel at 600 nm
+#     - name: 'spectrum_harpsn_date'
+#       title: 'date'
+#       type: float
+#       units: 'BJD'
+#       flag: hidden
+#       descr: Date of observation (or effective average date if nobs > 1)
+#     - name: 'spectrum_harpsn_nobs'
+#       title: 'nobs'
+#       type: int
+#       flag: hidden
+#       descr: Number of observations averaged to create the spectrum
+#   - name: ''
+#     title: hermes
+#     sub:
+#     - name: 'spectrum_hermes'
+#       title: 'download'
+#       type:  boolean
+#       attachment:
+#         path: gr8/spectra/${primary_name}_hermes.fits
+#         name: gr8_spectra_${primary_name}_hermes.fits
+#     - name: 'spectrum_hermes_resolution'
+#       title: 'resolution'
+#       type: float
+#       flag: hidden
+#       descr: Spectral resolution
+#     - name: 'spectrum_hermes_snr'
+#       title: 'snr'
+#       type: float
+#       flag: hidden
+#       descr: Signal-to-noise per pixel at 600 nm
+#     - name: 'spectrum_hermes_date'
+#       title: 'date'
+#       type: float
+#       units: 'BJD'
+#       flag: hidden
+#       descr: Date of observation (or effective average date if nobs > 1)
+#     - name: 'spectrum_hermes_nobs'
+#       title: 'nobs'
+#       type: int
+#       flag: hidden
+#       descr: Number of observations averaged to create the spectrum
+    - name: ''
+      title: hires
+      sub:
+      - name: 'spectrum_hires'
+        title: 'download'
+        type: boolean
+        attachment:
+          path: gr8/spectra/${primary_name}_hires.fits
+          name: gr8_spectra_${primary_name}_hires.fits
+      - name: 'spectrum_hires_resolution'
+        title: 'resolution'
+        type: float
+        flag: hidden
+        descr: Spectral resolution
+      - name: 'spectrum_hires_snr'
+        title: 'snr'
+        type: float
+        flag: hidden
+        descr: Signal-to-noise per pixel at 600 nm
+#     - name: 'spectrum_hires_date'
+#       title: 'date'
+#       type: float
+#       units: 'BJD'
+#       flag: hidden
+#       descr: Date of observation (or effective average date if nobs > 1)
+      - name: 'spectrum_hires_nobs'
+        title: 'nobs'
+        type: int
+        flag: hidden
+        descr: Number of observations averaged to create the spectrum
+#   - name: ''
+#     title: sophie
+#     sub:
+#     - name: 'spectrum_sophie'
+#       title: 'download'
+#       type: boolean
+#       attachment:
+#         path: gr8/spectra/${primary_name}_sophie.fits
+#         name: gr8_spectra_${primary_name}_sophie.fits
+#     - name: 'spectrum_sophie_resolution'
+#       title: 'resolution'
+#       type: float
+#       flag: hidden
+#       descr: Spectral resolution
+#     - name: 'spectrum_sophie_snr'
+#       title: 'snr'
+#       type: float
+#       flag: hidden
+#       descr: Signal-to-noise per pixel at 600 nm
+#     - name: 'spectrum_sophie_date'
+#       title: 'date'
+#       type: float
+#       units: 'BJD'
+#       flag: hidden
+#       descr: Date of observation (or effective average date if nobs > 1)
+#     - name: 'spectrum_sophie_nobs'
+#       title: 'nobs'
+#       type: int
+#       flag: hidden
+#       descr: Number of observations averaged to create the spectrum
+#   - name: ''
+#     title: uves
+#     sub:
+#     - name: 'spectrum_uves'
+#       title: 'download'
+#       type: boolean
+#       attachment:
+#         path: gr8/spectra/${primary_name}_uves.fits
+#         name: gr8_spectra_${primary_name}_uves.fits
+#     - name: 'spectrum_uves_resolution'
+#       title: 'resolution'
+#       type: float
+#       flag: hidden
+#       descr: Spectral resolution
+#     - name: 'spectrum_uves_snr'
+#       title: 'snr'
+#       type: float
+#       flag: hidden
+#       descr: Signal-to-noise per pixel at 600 nm
+#     - name: 'spectrum_uves_date'
+#       title: 'date'
+#       type: float
+#       units: 'BJD'
+#       flag: hidden
+#       descr: Date of observation (or effective average date if nobs > 1)
+#     - name: 'spectrum_uves_nobs'
+#       title: 'nobs'
+#       type: int
+#       flag: hidden
+#       descr: Number of observations averaged to create the spectrum
