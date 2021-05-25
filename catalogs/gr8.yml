@@ -36,12 +36,10 @@ fields:
     - name: 'hip'
       title: 'hip'
       type: int
-      flag: hidden
       descr: HIP ID
     - name: 'hd'
       title: 'hd'
       type: keyword
-      flag: hidden
       descr: HD ID
       terms: false
     - name: 'tic'
