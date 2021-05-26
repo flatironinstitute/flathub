@@ -12,7 +12,7 @@ fields:
 #      flag: hidden
 #    - name: designation
 #      descr: Unique source designation
-#      type: text
+#      type: keyword
 #      flag: hidden
   - name: source_id
     descr: Unique source identifier

@@ -18,7 +18,6 @@ import Field
 import Output.CSV
 
 ecsvType :: Type -> T.Text
-ecsvType (Text _)      = "string"
 ecsvType (Keyword _)   = "string"
 ecsvType (Long _)      = "int64"
 ecsvType (Integer _)   = "int32"

@@ -381,6 +381,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                             v-bind:name="filter.field.name"
                             v-model="filter.value"
                             v-on:change="filter.change()">
+                          <span v-if="filter.field.wildcard">Use "*" as wildcard <!-- TODO make me a tooltip or something? -->
                         <div .filter-inputs-group v-else>
                           $forall b <- [False, True]
                             <div .filter-input>

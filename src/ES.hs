@@ -40,6 +40,7 @@ import           Data.Maybe (mapMaybe)
 import           Data.Proxy (Proxy)
 import           Data.String (IsString)
 import qualified Data.Text as T
+import           Data.Typeable (cast)
 import qualified Data.Vector as V
 import qualified Network.HTTP.Client as HTTP
 import           Network.HTTP.Types.Header (hAccept, hContentType)
@@ -284,7 +285,9 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreFiel
   amend _ j = j
 
   filts = "bool" .=* ("filter" `JE.pair` JE.list (\f -> JE.pairs $ unTypeValue (term f) $ fieldType f) queryFilter)
-  term f (FilterEQ v) = "term" .=* (fieldName f J..= v)
+  term f (FilterEQ v)
+    | fieldWildcard f && any (T.any ('*' ==)) (cast v) = "wildcard" .=* (fieldName f J..= v)
+    | otherwise = "term" .=* (fieldName f J..= v)
   term f (FilterRange l u) = "range" .=* (fieldName f .=* (bound "gte" l <> bound "lte" u)) where
     bound t = foldMap (t J..=)
   agg :: HM.HashMap T.Text (TypeValue HistogramInterval) -> QueryAgg -> J.Series

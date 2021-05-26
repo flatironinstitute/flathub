@@ -83,7 +83,7 @@ attachment = getPath (R.parameter R.>* "attachment" R.>*<< R.parameter R.>*< R.p
   att <- askAttachment cat atn
   res <- ES.queryIndex cat mempty
     { queryLimit = 1
-    , queryFilter = [idField{ fieldSub = Proxy, fieldType = Text (FilterEQ rid) }]
+    , queryFilter = [idField{ fieldSub = Proxy, fieldType = Keyword (FilterEQ rid) }]
     , queryFields = attachmentsFields cat [att]
     }
   doc <- either (result . response notFound404 [] . ("Could not get item: " <>)) return

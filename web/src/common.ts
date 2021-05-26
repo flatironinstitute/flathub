@@ -29,6 +29,7 @@ export type Field = {
   scale?: number;
   reversed?: boolean;
   attachment?: boolean;
+  wildcard?: boolean;
 };
 
 export type Catalog = {
