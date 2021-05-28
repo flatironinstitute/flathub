@@ -77,7 +77,6 @@ data TypeValue f
   | Byte      !(f Int8)
   | Boolean   !(f Bool)
   | Void      !(f ())
-  | Text      !(f T.Text)
   | Keyword   !(f T.Text)
 
 type Type = TypeValue Proxy
@@ -89,7 +88,6 @@ class (Eq a, Ord a, Show a, Read a, J.ToJSON a, J.FromJSON a, Typeable a) => Typ
 typeValue1 :: Typed a => a -> Value
 typeValue1 = typeValue . Identity
 
-instance Typed T.Text where typeValue = Text
 instance Typed Int64  where typeValue = Long
 instance Typed Int32  where typeValue = Integer
 instance Typed Int16  where typeValue = Short
@@ -98,20 +96,20 @@ instance Typed Double where typeValue = Double
 instance Typed Float  where typeValue = Float
 instance Typed Half   where typeValue = HalfFloat
 instance Typed Bool   where typeValue = Boolean
+instance Typed T.Text where typeValue = Keyword
 instance Typed ()     where typeValue = Void
 
 unTypeValue :: (forall a . Typed a => f a -> b) -> TypeValue f -> b
-unTypeValue f (Double    x) = f x
-unTypeValue f (Float     x) = f x
-unTypeValue f (HalfFloat x) = f x
-unTypeValue f (Long      x) = f x
-unTypeValue f (Integer   x) = f x
-unTypeValue f (Short     x) = f x
-unTypeValue f (Byte      x) = f x
-unTypeValue f (Boolean   x) = f x
-unTypeValue f (Text      x) = f x
-unTypeValue f (Keyword   x) = f x
-unTypeValue f (Void      x) = f x
+unTypeValue f (Double    x) = f $! x
+unTypeValue f (Float     x) = f $! x
+unTypeValue f (HalfFloat x) = f $! x
+unTypeValue f (Long      x) = f $! x
+unTypeValue f (Integer   x) = f $! x
+unTypeValue f (Short     x) = f $! x
+unTypeValue f (Byte      x) = f $! x
+unTypeValue f (Boolean   x) = f $! x
+unTypeValue f (Keyword   x) = f $! x
+unTypeValue f (Void      x) = f $! x
 
 transformTypeValue :: Functor g => (forall a . Typed a => f a -> g (h a)) -> TypeValue f -> g (TypeValue h)
 transformTypeValue f (Double    x) = Double    <$> f x
@@ -122,7 +120,6 @@ transformTypeValue f (Integer   x) = Integer   <$> f x
 transformTypeValue f (Short     x) = Short     <$> f x
 transformTypeValue f (Byte      x) = Byte      <$> f x
 transformTypeValue f (Boolean   x) = Boolean   <$> f x
-transformTypeValue f (Text      x) = Text      <$> f x
 transformTypeValue f (Keyword   x) = Keyword   <$> f x
 transformTypeValue f (Void      x) = Void      <$> f x
 
@@ -135,7 +132,6 @@ transformTypeValue2 f (Integer   x) (Integer   y) = Integer   <$> f x y
 transformTypeValue2 f (Short     x) (Short     y) = Short     <$> f x y
 transformTypeValue2 f (Byte      x) (Byte      y) = Byte      <$> f x y
 transformTypeValue2 f (Boolean   x) (Boolean   y) = Boolean   <$> f x y
-transformTypeValue2 f (Text      x) (Text      y) = Text      <$> f x y
 transformTypeValue2 f (Keyword   x) (Keyword   y) = Keyword   <$> f x y
 transformTypeValue2 f (Void      x) (Void      y) = Void      <$> f x y
 transformTypeValue2 _ _             _             = fail "transformTypeValue2: type mismatch"
@@ -169,11 +165,10 @@ instance Show Value where
   showsPrec i = unTypeValue (showsPrec i . runIdentity)
 
 parseTypeValue :: Type -> T.Text -> TypeValue Maybe
-parseTypeValue (Text    _) s       = Text    $ Just s
 parseTypeValue (Keyword _) s       = Keyword $ Just s
 parseTypeValue (Boolean _) "0"     = Boolean $ Just False
-parseTypeValue (Boolean _) "false" = Boolean $ Just False
 parseTypeValue (Boolean _) "1"     = Boolean $ Just True
+parseTypeValue (Boolean _) "false" = Boolean $ Just False
 parseTypeValue (Boolean _) "true"  = Boolean $ Just True
 parseTypeValue t s = fmapTypeValue (\Proxy -> readMaybe $ T.unpack s) t
 
@@ -192,7 +187,6 @@ instance Default Type where
   def = Float Proxy
 
 instance {-# OVERLAPPING #-} Show Type where
-  show (Text _)      = "text"
   show (Keyword _)   = "keyword"
   show (Long _)      = "long"
   show (Integer _)   = "integer"
@@ -208,8 +202,6 @@ instance Read Type where
   readPrec = do
     Ident s <- lexP
     case s of
-      "text"        -> return (Text Proxy)
-      "string"      -> return (Text Proxy)
       "keyword"     -> return (Keyword Proxy)
       "long"        -> return (Long Proxy)
       "int"         -> return (Integer Proxy)
@@ -255,7 +247,6 @@ typeIsNumeric t = typeIsFloating t || typeIsIntegral t
 
 typeIsString :: Type -> Bool
 typeIsString (Keyword   _) = True
-typeIsString (Text      _) = True
 typeIsString _ = False
 
 typeIsBoolean :: Type -> Bool
@@ -280,7 +271,6 @@ numpySize (Short     _) = 2
 numpySize (Byte      _) = 1
 numpySize (Boolean   _) = 1
 numpySize (Keyword   _) = 8
-numpySize (Text      _) = 16
 numpySize (Void      _) = 0
 
 numpyDtype :: Type -> String
@@ -288,7 +278,6 @@ numpyDtype (Boolean _) = "?"
 numpyDtype t = '<' : baseType ('f','i','?','S','V') t : show (numpySize t) where
 
 sqlType :: Type -> T.Text
-sqlType (Text _)      = "text"
 sqlType (Keyword _)   = "text"
 sqlType (Long _)      = "bigint"
 sqlType (Integer _)   = "integer"

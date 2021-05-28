@@ -71,6 +71,7 @@ instance J.FromJSON FieldFlag where
 data DynamicPathComponent
   = DynamicPathLiteral FilePath
   | DynamicPathField T.Text
+  deriving (Show, Eq)
 
 -- |a path that can be constructed from a data row by filling in field values
 type DynamicPath = [DynamicPathComponent]
@@ -91,6 +92,7 @@ instance J.FromJSON DynamicPathComponent where
 
 data Attachment = Attachment
   { attachmentPath, attachmentName :: DynamicPath }
+  deriving (Show, Eq)
 
 instance J.FromJSON Attachment where
   parseJSON (J.Object o) = Attachment
@@ -118,6 +120,7 @@ data FieldSub t m = Field
   , fieldIngest :: Maybe T.Text
   , fieldMissing :: [BS.ByteString]
   , fieldAttachment :: Maybe Attachment
+  , fieldWildcard :: Bool -- ^allow wildcard text filter
   }
 
 fieldDisp :: FieldSub t m -> Bool
@@ -148,6 +151,7 @@ instance Alternative m => Default (FieldSub Proxy m) where
     , fieldIngest = Nothing
     , fieldMissing = []
     , fieldAttachment = Nothing
+    , fieldWildcard = False
     }
 
 instance J.ToJSON Field where
@@ -167,6 +171,7 @@ instance J.ToJSON Field where
         FieldRequired -> Just True
         _ -> Nothing
     , ("terms" J..= fieldTerms) <$ guard fieldTerms
+    , ("wildcard" J..= fieldWildcard) <$ guard fieldWildcard
     , ("dict" J..=) <$> fieldDict
     , ("scale" J..=) <$> fieldScale
     , ("reversed" J..= fieldReversed) <$ guard fieldReversed
@@ -201,6 +206,7 @@ parseFieldGroup dict = parseFieldDefs def where
       Just j -> J.typeMismatch "missing string" j
     fieldAttachment <- f J..:! "attachment"
     fieldTerms <- f J..:? "terms" J..!= (isJust fieldEnum || typeIsString fieldType)
+    fieldWildcard <- f J..:? "wildcard" J..!= False
     fieldSub <- (<|> fieldSub d) <$> J.explicitParseFieldMaybe' (J.withArray "subfields" $ V.mapM $
         parseFieldDefs defd
           { fieldType = fieldType
@@ -270,7 +276,7 @@ parseFieldValue f = fmap sv . pv f where
 
 -- |pseudo field representing ES _id
 idField :: Field
-idField = def{ fieldName = "_id", fieldType = Text Proxy, fieldTitle = "_id", fieldFlag = FieldHidden }
+idField = def{ fieldName = "_id", fieldType = Keyword Proxy, fieldTitle = "_id", fieldFlag = FieldHidden }
 
 fieldsCSV :: Fields -> B.Builder
 fieldsCSV l = csvTextRow ["variable", "name", "type", "units", "description", "values","dict","scale"] <> foldMap fieldCSV l where

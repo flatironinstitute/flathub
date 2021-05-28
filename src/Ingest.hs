@@ -52,6 +52,7 @@ ingest cat consts fs = do
       }
   proc f = case takeExtension $ fst $ decompressExtension f of
     ".hdf5" -> Just ingestHDF5
+    ".h5" -> Just ingestHDF5
     ".csv" -> Just ingestCSV
     ".dat" -> Just ingestDat
     ".txt" -> Just ingestTxt
