@@ -12,7 +12,6 @@ import qualified Network.HTTP.Client as HTTP
 import qualified System.Console.GetOpt as Opt
 import           System.Environment (getProgName, getArgs)
 import           System.Exit (exitFailure)
-import           System.FilePath ((</>))
 import           System.IO (hPutStrLn, stderr)
 import qualified Waimwork.Config as C
 import           Waimwork.Response (response)
@@ -114,7 +113,7 @@ main = do
             v <- maybe (fail $ "Invalid value: " ++ show s) return $ parseFieldValue f s
             first (v:) <$> pconst c' r
       (consts, cat) <- pconst (catalogMap catalogs HM.! sim) $ optConstFields opts
-      n <- ingest cat consts $ map (globalDataDir global </>) args
+      n <- ingest cat consts args
       liftIO $ print n
       when (n > 0) $ void $ ES.flushIndex cat
 
