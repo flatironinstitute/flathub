@@ -71,6 +71,7 @@ data CatalogStore
 
 data Catalog = Catalog
   { catalogEnabled :: !Bool
+  , catalogVisible :: !Bool
   , catalogOrder :: !T.Text -- ^display order in catalog list
   , catalogTitle :: !T.Text
   , catalogSynopsis :: Maybe T.Text
@@ -88,6 +89,7 @@ data Catalog = Catalog
 parseCatalog :: HM.HashMap T.Text FieldGroup -> J.Value -> J.Parser Catalog
 parseCatalog dict = J.withObject "catalog" $ \c -> do
   catalogEnabled <- c J..:! "enabled" J..!= True
+  catalogVisible <- c J..:! "visible" J..!= True
   catalogFieldGroups <- parseJSONField "fields" (J.withArray "fields" $ mapM (parseFieldGroup dict)) c
   catalogTitle <- c J..: "title"
   catalogSynopsis <- c J..:? "synopsis"

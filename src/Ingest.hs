@@ -8,6 +8,7 @@ module Ingest
 import           Control.Arrow (first)
 import           Control.Monad (foldM)
 import           Control.Monad.IO.Class (liftIO)
+import           Control.Monad.Reader (asks)
 import           Data.List (sort)
 import           Data.Maybe (isJust, fromMaybe)
 import           Data.Word (Word64)
@@ -26,16 +27,18 @@ import Compression
 
 ingest :: Catalog -> [FieldValue] -> [String] -> M Word64
 ingest cat consts fs = do
-  fs' <- liftIO $ concat <$> mapM expand fs
+  base <- asks globalDataDir
+  fs' <- liftIO $ concat <$> mapM (expand base) fs
   foldM run 0 fs'
   where
-  expand (splitoff -> (splitpfx -> (p,f),o)) = do
+  expand base (splitoff -> (splitpfx -> (p,f'),o)) = do
     d <- doesDirectoryExist f
     if d
       then map ((p, , 0) . (f </>)) . drop (fromIntegral o) . sort . filter (isJust . proc) <$> listDirectory f
       else return [(p,f,o)]
+    where f = base </> f'
   run start (p, f, off) = do
-    liftIO $ putStrLn f
+    liftIO $ putStrLn $ f <> " [" <> p <> "]"
     n <- ing f p start off
     liftIO $ print n
     return (start + n)

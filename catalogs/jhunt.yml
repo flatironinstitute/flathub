@@ -1,5 +1,6 @@
 index: jhunt
 title: jhunt test
+visible: false
 fields:
   - name: model
     type: byte

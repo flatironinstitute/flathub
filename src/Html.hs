@@ -63,7 +63,7 @@ jsonVar :: J.ToJSON a => T.Text -> a -> H.Html
 jsonVar var = jsonEncodingVar var . J.toEncoding
 
 catalogsSorted :: Catalogs -> [(T.Text, Catalog)]
-catalogsSorted = sortOn (catalogOrder . snd) . HM.toList . catalogMap
+catalogsSorted = sortOn (catalogOrder . snd) . filter (catalogVisible . snd) . HM.toList . catalogMap
 
 groupingTitle :: Grouping -> Maybe Catalog -> T.Text
 groupingTitle g = maybe (groupTitle g) catalogTitle
