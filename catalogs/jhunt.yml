@@ -1,0 +1,108 @@
+index: jhunt
+title: jhunt test
+fields:
+  - name: model
+    type: byte
+    flag: required
+    enum:
+      - M1-dark
+      - M1-stellar
+      - M2-dark
+      - M2-stellar
+      - D1-dark
+      - D1-stellar
+      - D2-dark
+      - D2-stellar
+  - name: Mass
+    units: '\(M_\odot\)'
+    type: float
+    descr: particle mass
+  - name: ''
+    type: float
+    title: position
+    units: kpc
+    sub:
+    - name: 'x'
+      units: kpc
+      type: float
+      descr: position in x
+    - name: 'y'
+      units: kpc
+      type: float
+      descr: position in y
+    - name: 'z'
+      units: kpc
+      type: float
+      descr: position in z
+  - name: ''
+    type: float
+    title: velocity
+    units: kpc
+    sub:
+    - name: v_x
+      units: km/s
+      type: float
+      descr: velocity in x
+    - name: v_y
+      units: km/s
+      type: float
+      descr: velocity in y
+    - name: v_z
+      units: km/s
+      type: float
+      descr: velocity in z
+  - name: ID
+    type: long
+    descr: particle ID
+  - name: J_R
+    units: km/s kpc
+    type: float
+    descr: radial action
+  - name: J_phi
+    units: km/s kpc
+    type: float
+    descr: azimuthal action
+  - name: J_z
+    units: km/s kpc
+    type: float
+    descr: vertical action
+  - name: Omega_R
+    units: km/s /kpc
+    type: float
+    descr: radial frequency
+  - name: Omega_phi
+    units: km/s /kpc
+    type: float
+    descr: azimuthal frequency
+  - name: Omega_z
+    units: km/s /kpc
+    type: float
+    descr: vertical frequency
+  - name: Theta_R
+    units: radians
+    type: float
+    descr: radial angle
+  - name: Theta_phi
+    units: radians
+    type: float
+    descr: azimuthal angle
+  - name: Theta_z
+    units: radians
+    type: float
+    descr: vertical angle
+  - name: R
+    units: kpc
+    type: float
+    descr: Galactocentric radius
+  - name: phi
+    units: radians
+    type: float
+    descr: Galactocentric azimuth
+  - name: v_R
+    units: km/s
+    type: float
+    descr: Galactocentric radial velocity
+  - name: v_phi
+    units: km/s
+    type: float
+    descr: Galactocentric azimuthal velocity
