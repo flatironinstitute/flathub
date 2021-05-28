@@ -71,6 +71,7 @@ instance J.FromJSON FieldFlag where
 data DynamicPathComponent
   = DynamicPathLiteral FilePath
   | DynamicPathField T.Text
+  deriving (Show, Eq)
 
 -- |a path that can be constructed from a data row by filling in field values
 type DynamicPath = [DynamicPathComponent]
@@ -91,6 +92,7 @@ instance J.FromJSON DynamicPathComponent where
 
 data Attachment = Attachment
   { attachmentPath, attachmentName :: DynamicPath }
+  deriving (Show, Eq)
 
 instance J.FromJSON Attachment where
   parseJSON (J.Object o) = Attachment

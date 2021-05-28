@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE StandaloneDeriving #-}
@@ -30,6 +31,7 @@ import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
 import           Data.Bits (xor)
+import           Data.Functor.Classes (Show1(liftShowsPrec))
 import           Data.Functor.Identity (Identity(runIdentity))
 import qualified Data.HashMap.Strict as HM
 import qualified Data.HashSet as HS
@@ -250,8 +252,15 @@ instance J.FromJSON Catalogs where
     return $ Catalogs (expandFields dict) cats groups
 
 data Filter a
-  = FilterEQ !a
+  = FilterEQ a
   | FilterRange{ filterLB, filterUB :: Maybe a }
+  deriving (Show)
+
+instance Show1 Filter where
+  liftShowsPrec sp _ p (FilterEQ x) = showParen (p > 10) $
+    showString "FilterEQ " . sp 11 x
+  liftShowsPrec sp lsp p (FilterRange l u) = showParen (p > 10) $
+    showString "FilterRange " . liftShowsPrec sp lsp 11 l . showChar ' ' . liftShowsPrec sp lsp 11 u
 
 -- |Intersection
 instance Ord a => Semigroup (Filter a) where
@@ -354,7 +363,7 @@ instance J.ToJSON Query where
     , "fields" J..= map fieldName queryFields
     , "filter" J..= [ J.object
       [ "field" J..= fieldName f
-      , "value" J..= unTypeValue J.toJSON1 (fieldType f)
+      , "value" J..= fieldType f
       ] | f <- queryFilter ]
     , "seed"   J..= querySeed
     , "sample" J..= querySample

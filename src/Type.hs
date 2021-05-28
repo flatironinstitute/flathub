@@ -100,16 +100,16 @@ instance Typed T.Text where typeValue = Keyword
 instance Typed ()     where typeValue = Void
 
 unTypeValue :: (forall a . Typed a => f a -> b) -> TypeValue f -> b
-unTypeValue f (Double    x) = f x
-unTypeValue f (Float     x) = f x
-unTypeValue f (HalfFloat x) = f x
-unTypeValue f (Long      x) = f x
-unTypeValue f (Integer   x) = f x
-unTypeValue f (Short     x) = f x
-unTypeValue f (Byte      x) = f x
-unTypeValue f (Boolean   x) = f x
-unTypeValue f (Keyword   x) = f x
-unTypeValue f (Void      x) = f x
+unTypeValue f (Double    x) = f $! x
+unTypeValue f (Float     x) = f $! x
+unTypeValue f (HalfFloat x) = f $! x
+unTypeValue f (Long      x) = f $! x
+unTypeValue f (Integer   x) = f $! x
+unTypeValue f (Short     x) = f $! x
+unTypeValue f (Byte      x) = f $! x
+unTypeValue f (Boolean   x) = f $! x
+unTypeValue f (Keyword   x) = f $! x
+unTypeValue f (Void      x) = f $! x
 
 transformTypeValue :: Functor g => (forall a . Typed a => f a -> g (h a)) -> TypeValue f -> g (TypeValue h)
 transformTypeValue f (Double    x) = Double    <$> f x
@@ -167,8 +167,8 @@ instance Show Value where
 parseTypeValue :: Type -> T.Text -> TypeValue Maybe
 parseTypeValue (Keyword _) s       = Keyword $ Just s
 parseTypeValue (Boolean _) "0"     = Boolean $ Just False
-parseTypeValue (Boolean _) "false" = Boolean $ Just False
 parseTypeValue (Boolean _) "1"     = Boolean $ Just True
+parseTypeValue (Boolean _) "false" = Boolean $ Just False
 parseTypeValue (Boolean _) "true"  = Boolean $ Just True
 parseTypeValue t s = fmapTypeValue (\Proxy -> readMaybe $ T.unpack s) t
 
