@@ -20,7 +20,7 @@ module Type
   , parseTypeJSONValue
   , baseType
   , typeIsFloating, typeIsIntegral, typeIsNumeric, typeIsString, typeIsBoolean
-  , numpySize, numpyDtype
+  , numpyTypeSize
   , sqlType
   ) where
 
@@ -261,21 +261,17 @@ baseType (f,i,b,s,_) t
   | typeIsBoolean  t = b
 baseType (_,_,_,_,v) ~(Void _) = v
 
-numpySize :: Type -> Word
-numpySize (Double    _) = 8
-numpySize (Float     _) = 4
-numpySize (HalfFloat _) = 2
-numpySize (Long      _) = 8
-numpySize (Integer   _) = 4
-numpySize (Short     _) = 2
-numpySize (Byte      _) = 1
-numpySize (Boolean   _) = 1
-numpySize (Keyword   _) = 8
-numpySize (Void      _) = 0
-
-numpyDtype :: Type -> String
-numpyDtype (Boolean _) = "?"
-numpyDtype t = '<' : baseType ('f','i','?','S','V') t : show (numpySize t) where
+numpyTypeSize :: Type -> Word
+numpyTypeSize (Double    _) = 8
+numpyTypeSize (Float     _) = 4
+numpyTypeSize (HalfFloat _) = 2
+numpyTypeSize (Long      _) = 8
+numpyTypeSize (Integer   _) = 4
+numpyTypeSize (Short     _) = 2
+numpyTypeSize (Byte      _) = 1
+numpyTypeSize (Boolean   _) = 1
+numpyTypeSize (Keyword   _) = 8 -- XXX overridden in numpyFieldSize
+numpyTypeSize (Void      _) = 0
 
 sqlType :: Type -> T.Text
 sqlType (Keyword _)   = "text"

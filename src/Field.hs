@@ -22,6 +22,8 @@ module Field
   , parseFieldValue
   , idField
   , fieldsCSV
+  , numpyFieldSize
+  , numpyDtype
   ) where
 
 import           Control.Applicative (Alternative, empty, (<|>))
@@ -117,10 +119,11 @@ data FieldSub t m = Field
   , fieldDict :: Maybe T.Text
   , fieldScale :: Maybe Scientific -- ^scale factor, to display scale*x instead
   , fieldReversed :: Bool -- ^reverse axis on plotting
+  , fieldWildcard :: Bool -- ^allow wildcard text filter
+  , fieldSize :: Word -- ^string length
   , fieldIngest :: Maybe T.Text
   , fieldMissing :: [BS.ByteString]
   , fieldAttachment :: Maybe Attachment
-  , fieldWildcard :: Bool -- ^allow wildcard text filter
   }
 
 fieldDisp :: FieldSub t m -> Bool
@@ -152,16 +155,25 @@ instance Alternative m => Default (FieldSub Proxy m) where
     , fieldMissing = []
     , fieldAttachment = Nothing
     , fieldWildcard = False
+    , fieldSize = 8
     }
 
+numpyFieldSize :: Field -> Word
+numpyFieldSize Field{ fieldType = Keyword _, fieldSize = n } = n
+numpyFieldSize Field{ fieldType = t } = numpyTypeSize t
+
+numpyDtype :: Field -> String
+numpyDtype Field{ fieldType = Boolean _ } = "?"
+numpyDtype f = '<' : baseType ('f','i','?','S','V') (fieldType f) : show (numpyFieldSize f)
+
 instance J.ToJSON Field where
-  toJSON Field{..} = J.object $
+  toJSON f@Field{..} = J.object $
     [ "name" J..= fieldName
     , "type" J..= fieldType
     , "title" J..= fieldTitle
     , "disp" J..= (fieldFlag > FieldHidden)
     , "base" J..= baseType ('f','i','b','s','v') fieldType
-    , "dtype" J..= numpyDtype fieldType
+    , "dtype" J..= numpyDtype f
     ] ++ concatMap maybeToList
     [ ("enum" J..=) <$> fieldEnum
     , ("descr" J..=) <$> fieldDescr
@@ -196,7 +208,7 @@ parseFieldGroup dict = parseFieldDefs def where
     fieldUnits <- (<|> fieldUnits d) <$> f J..:? "units"
     fieldFlag <- f J..:? "flag" J..!= fieldFlag d
     fieldScale <- f J..:! "scale"
-    fieldReversed <- f J..:? "reversed" J..!= False
+    fieldReversed <- f J..:? "reversed" J..!= fieldReversed d
     fieldIngest <- f J..:! "ingest"
     fieldMissing <- map TE.encodeUtf8 <$> case HM.lookup "missing" f of
       Nothing -> return []
@@ -206,7 +218,8 @@ parseFieldGroup dict = parseFieldDefs def where
       Just j -> J.typeMismatch "missing string" j
     fieldAttachment <- f J..:! "attachment"
     fieldTerms <- f J..:? "terms" J..!= (isJust fieldEnum || typeIsString fieldType)
-    fieldWildcard <- f J..:? "wildcard" J..!= False
+    fieldWildcard <- f J..:? "wildcard" J..!= fieldWildcard d
+    fieldSize <- f J..:? "size" J..!= fieldSize d
     fieldSub <- (<|> fieldSub d) <$> J.explicitParseFieldMaybe' (J.withArray "subfields" $ V.mapM $
         parseFieldDefs defd
           { fieldType = fieldType

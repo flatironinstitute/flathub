@@ -25,26 +25,27 @@ import Monoid
 getHalf' :: Half -> Word16
 getHalf' (Half (CUShort x)) = x
 
-numpyString :: Int -> Maybe T.Text -> B.Builder
-numpyString l t = B.byteString s <> stimesMonoid (l - BS.length s) (B.char7 '\0') where
-  s = BS.take l $ foldMap TE.encodeUtf8 t
+numpyString :: Word -> Maybe T.Text -> B.Builder
+numpyString l t = B.byteString s <> stimesMonoid (l' - BS.length s) (B.char7 '\0') where
+  s = BS.take l' $ foldMap TE.encodeUtf8 t
+  l' = fromIntegral l
 
-numpyBuild :: TypeValue Maybe -> B.Builder
-numpyBuild (Double    x) = B.doubleLE $ fromMaybe (unsafeCoerce (0x7ff80000ffffffff::Word64)) x
-numpyBuild (Float     x) = B.floatLE  $ fromMaybe (unsafeCoerce (0x7fc0ffff::Word32)) x
-numpyBuild (HalfFloat x) = B.word16LE $ maybe 0x7cff getHalf' x
-numpyBuild (Long      x) = B.int64LE  $ fromMaybe (-1) x
-numpyBuild (Integer   x) = B.int32LE  $ fromMaybe (-1) x
-numpyBuild (Short     x) = B.int16LE  $ fromMaybe (-1) x
-numpyBuild (Byte      x) = B.int8     $ fromMaybe (-1) x
-numpyBuild (Boolean Nothing) = B.int8 0
-numpyBuild (Boolean (Just False)) = B.int8 0
-numpyBuild (Boolean (Just True)) = B.int8 1
-numpyBuild (Keyword   x) = numpyString 8 x
-numpyBuild (Void      _) = mempty
+numpyBuild :: Field -> TypeValue Maybe -> B.Builder
+numpyBuild _ (Double    x) = B.doubleLE $ fromMaybe (unsafeCoerce (0x7ff80000ffffffff::Word64)) x
+numpyBuild _ (Float     x) = B.floatLE  $ fromMaybe (unsafeCoerce (0x7fc0ffff::Word32)) x
+numpyBuild _ (HalfFloat x) = B.word16LE $ maybe 0x7cff getHalf' x
+numpyBuild _ (Long      x) = B.int64LE  $ fromMaybe (-1) x
+numpyBuild _ (Integer   x) = B.int32LE  $ fromMaybe (-1) x
+numpyBuild _ (Short     x) = B.int16LE  $ fromMaybe (-1) x
+numpyBuild _ (Byte      x) = B.int8     $ fromMaybe (-1) x
+numpyBuild _ (Boolean Nothing) = B.int8 0
+numpyBuild _ (Boolean (Just False)) = B.int8 0
+numpyBuild _ (Boolean (Just True)) = B.int8 1
+numpyBuild f (Keyword   x) = numpyString (fieldSize f) x
+numpyBuild _ (Void      _) = mempty
 
 numpyRowSize :: [Field] -> Word
-numpyRowSize = sum . map (numpySize . fieldType)
+numpyRowSize = sum . map numpyFieldSize
 
 numpyHeader :: [Field] -> Word -> (B.Builder, Word)
 numpyHeader fields count = (B.string8 "\147NUMPY"
@@ -60,7 +61,7 @@ numpyHeader fields count = (B.string8 "\147NUMPY"
   header = "{'descr':["
     <> mintersperseMap (B.char7 ',') field fields 
     <> "],'fortran_order':False,'shape':(" <> B.wordDec count <> ",)}"
-  field f = B.char7 '(' <> jenc (fieldName f) <> B.char7 ',' <> B.char7 '\'' <> B.string7 (numpyDtype (fieldType f)) <> B.char7 '\'' <> B.char7 ')'
+  field f = B.char7 '(' <> jenc (fieldName f) <> B.char7 ',' <> B.char7 '\'' <> B.string7 (numpyDtype f) <> B.char7 '\'' <> B.char7 ')'
   len = succ $ BSL.length $ B.toLazyByteString header
   pad = negate $ (plen + len) `mod` (-64)
   len' = len + pad
@@ -68,7 +69,7 @@ numpyHeader fields count = (B.string8 "\147NUMPY"
   jenc = J.fromEncoding . J.toEncoding -- json is similar enough to python for most things
 
 numpyValue :: Field -> J.Value -> B.Builder
-numpyValue f = numpyBuild . parseTypeJSONValue (fieldType f)
+numpyValue f = numpyBuild f . parseTypeJSONValue (fieldType f)
 
 unconsJ :: [J.Value] -> (J.Value, [J.Value])
 unconsJ [] = (J.Null, [])
