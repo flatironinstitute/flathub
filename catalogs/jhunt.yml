@@ -59,51 +59,64 @@ fields:
     units: km/s kpc
     type: float
     descr: radial action
+    ingest: _optional
   - name: J_phi
     units: km/s kpc
     type: float
     descr: azimuthal action
+    ingest: _optional
   - name: J_z
     units: km/s kpc
     type: float
     descr: vertical action
+    ingest: _optional
   - name: Omega_R
     units: km/s /kpc
     type: float
     descr: radial frequency
+    ingest: _optional
   - name: Omega_phi
     units: km/s /kpc
     type: float
     descr: azimuthal frequency
+    ingest: _optional
   - name: Omega_z
     units: km/s /kpc
     type: float
     descr: vertical frequency
+    ingest: _optional
   - name: Theta_R
     units: radians
     type: float
     descr: radial angle
+    ingest: _optional
   - name: Theta_phi
     units: radians
     type: float
     descr: azimuthal angle
+    ingest: _optional
   - name: Theta_z
     units: radians
     type: float
     descr: vertical angle
+    ingest: _optional
   - name: R
     units: kpc
     type: float
     descr: Galactocentric radius
+    ingest: _optional
   - name: phi
     units: radians
     type: float
     descr: Galactocentric azimuth
+    ingest: _optional
   - name: v_R
     units: km/s
     type: float
     descr: Galactocentric radial velocity
+    ingest: _optional
   - name: v_phi
     units: km/s
     type: float
     descr: Galactocentric azimuthal velocity
+    ingest: _optional
