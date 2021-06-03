@@ -10,7 +10,7 @@ spec:
       path: /mnt/sdceph/users
       type: Directory
   containers:
-  - image: docker-registry:25703/flatironinstitute/flathub
+  - image: docker-registry:25703/flathub
     name: flathub
     resources:
       requests:
