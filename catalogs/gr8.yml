@@ -24,6 +24,7 @@ fields:
       descr: Unique identifier used as primary display (including file naming) (Common name if available, followed by HD, followed by Gaia eDR3)
       terms: false
       wildcard: true
+      size: 32
     - name: 'gaiadr2_source_id'
       title: 'gaiadr2_source_id'
       type: long
@@ -44,6 +45,7 @@ fields:
       descr: HD ID
       terms: false
       wildcard: true
+      size: 8
     - name: 'tic'
       title: 'tic'
       type: int
@@ -56,6 +58,7 @@ fields:
       descr: 2MASS ID
       terms: false
       wildcard: true
+      size: 16
     - name: 'wisea'
       title: 'wisea'
       type: keyword
@@ -63,6 +66,7 @@ fields:
       descr: AllWISE Source Catalog ID
       terms: false
       wildcard: true
+      size: 20
   - name: ''
     title: gaia
     sub:
