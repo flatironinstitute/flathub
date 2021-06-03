@@ -14,24 +14,14 @@ spec:
     spec:
       containers:
       - name: flathub-es
-        image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2-amd64
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.13.1-amd64
         env:
           - name: cluster.name
             value: "astrosims" # XXX backwards compatibility
-          #- name: bootstrap.memory_lock
-          #  value: "true"
-          - name: ES_JAVA_OPTS
-            value: "-Xms24g -Xmx24g"
           - name: discovery.seed_hosts
             value: "flathub-es-trans"
           - name: cluster.initial_master_nodes
-            value: "popeye-k8s-1"
-          - name: node.max_local_storage_nodes
-            value: "8"
-          - name: node.master
-            value: "true"
-          - name: node.data
-            value: "true"
+            value: "popeye-k8s-1,popeye-k8s-2,popeye-k8s-4"
           - name: node.name
             valueFrom:
               fieldRef:
@@ -45,10 +35,10 @@ spec:
         resources:
           requests:
             cpu: 4
-            memory: 28Gi
+            memory: 32Gi
           limits:
             cpu: 8
-            memory: 32Gi
+            memory: 48Gi
         ports:
           - containerPort: 9200
             name: http
