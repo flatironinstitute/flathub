@@ -1,6 +1,9 @@
-index: jhunt
-title: jhunt test
+index: jhunt2021
+title: jhunt2021
 visible: false
+settings:
+  index:
+    number_of_shards: 32
 fields:
   - name: model
     type: byte
@@ -14,6 +17,14 @@ fields:
       - D1-stellar
       - D2-dark
       - D2-stellar
+  - name: snapshot
+    type: short
+    ingest: _attribute
+    flag: top
+  - name: time
+    type: float
+    ingest: _attribute
+    flag: hidden
   - name: Mass
     units: '\(M_\odot\)'
     type: float
