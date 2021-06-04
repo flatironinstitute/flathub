@@ -357,8 +357,8 @@ createBulk cat@Catalog{ catalogStore = ~CatalogES{} } docs = do
 
 flushIndex :: Catalog -> M (J.Value, J.Value)
 flushIndex Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } = (,)
-  <$> elasticSearch POST ([T.unpack idxn, "_refresh"]) [] EmptyJSON
-  <*> elasticSearch POST ([T.unpack idxn, "_flush"]) [] EmptyJSON
+  <$> elasticSearch POST ([T.unpack idxn, "_refresh"]) [] ()
+  <*> elasticSearch POST ([T.unpack idxn, "_flush"]) [] ()
 
 newtype ESCount = ESCount{ esCount :: Word } deriving (Show)
 instance J.FromJSON ESCount where
