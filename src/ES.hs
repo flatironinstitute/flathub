@@ -163,7 +163,7 @@ checkIndices = do
   idx isdev cat = J.withObject "index" $ \i -> do
     sets <- i J..: "settings" >>= (J..: "index")
     ro <- sets J..:? "blocks" >>= maybe (return Nothing) (J..:? "read_only") >>= maybe (return False) boolish
-    unless (isdev || ro) $ fail "open (not read_only)"
+    unless (isdev || ro || not (catalogVisible cat)) $ fail "open (not read_only)"
     parseJSONField "mappings" (mapping $ catalogFields cat) i
   mapping :: Fields -> J.Value -> J.Parser ()
   mapping fields = J.withObject "mapping" $ parseJSONField "properties" $ J.withObject "properties" $ \ps ->
