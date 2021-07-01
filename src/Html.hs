@@ -110,8 +110,9 @@ htmlResponse _req hdrs body = do
               <a href="@{groupPage !:? []}">Collections
               <div .dropdown-content>
                 $forall g <- groupList $ catalogGroupings cats
-                  <a href="@{groupPage !:? [groupingName g]}">
-                    <text>#{groupingTitle g $ groupingCatalog cats g}
+                  $if groupVisible g
+                    <a href="@{groupPage !:? [groupingName g]}">
+                      <text>#{groupingTitle g $ groupingCatalog cats g}
             <li .header__link--dropdown>
               <a href="@{topPage !:? mempty}">Catalogs
               <div .dropdown-content .dropdown-second>
@@ -196,8 +197,9 @@ topPage = getPath R.unit $ \() req -> do
                       <div .box-head>Collections
                     <ul .link-list>
                       $forall g <- groupList (catalogGroupings cats)
-                        <li>
-                          <a .underline href="@{groupPage !:? [groupingName g]}">#{groupingTitle g (groupingCatalog cats g)}
+                        $if groupVisible g
+                          <li>
+                            <a .underline href="@{groupPage !:? [groupingName g]}">#{groupingTitle g (groupingCatalog cats g)}
       |]
 
 
@@ -361,14 +363,9 @@ catalogPage = getPath R.parameter $ \sim req -> do
                         .falert .filter-row
                         v-bind:class="{'falert-info':filter.field.flag!==undefined,'falert-warning':filter.field.flag===undefined,'falert-horz':filter.field.flag===undefined}">
                         <div .filter-text-row>
-                          <div .filter-text>
-                            <field-title
-                              v-bind:field="filter.field"
-                              v-bind:rmf="filter.field.flag?undefined:filter.remove.bind(filter)">
-                          <button .filter-reset
-                            v-on:click="filter.reset()"
-                            v-if="filter.field.flag===undefined">
-                            reset
+                          <field-title
+                            v-bind:field="filter.field"
+                            v-bind:rmf="filter.field.flag?undefined:filter.remove.bind(filter)">
                         <div .filter-inputs v-if="filter.field.terms">
                           <select-terms
                               v-bind:field="filter.field"
@@ -376,12 +373,12 @@ catalogPage = getPath R.parameter $ \sim req -> do
                               v-model="filter.value"
                               v-bind:change="filter.change.bind(filter)">
                         <div .filter-inputs v-else-if="filter.field.base==='s'">
+                          <span v-if="filter.field.wildcard">Use "*" as wildcard</span>
                           <input
                             type="text"
                             v-bind:name="filter.field.name"
                             v-model="filter.value"
                             v-on:change="filter.change()">
-                          <span v-if="filter.field.wildcard">Use "*" as wildcard <!-- TODO make me a tooltip or something? -->
                         <div .filter-inputs-group v-else>
                           $forall b <- [False, True]
                             <div .filter-input>
@@ -399,15 +396,14 @@ catalogPage = getPath R.parameter $ \sim req -> do
                             <em>&mu; : {{filter.aggs.avg?filter.render(filter.aggs.avg):'no data'}}
                           <div .filter-examples v-if="filter.aggs.buckets!==undefined">
                             Examples:
-                            <ul>
-                              <li v-for="bucket in filter.aggs.buckets">
+                              <span class="example-item" v-for="bucket in filter.aggs.buckets">
                                 {{ bucket.key }}
                           <div v-else .filter-min-max>
                             <p>Range:
                             $forall b <- [False, True]
                               <p>{{filter.render(filter.aggs.#{ifs b "max" "min"})}}
 
-                      <div .alert .fade .show .row .filter-row .alert-secondary>
+                      <div .falert .filter-row .alert-secondary>
                         <div .filter-text>Select field to filter
                         <div .filter-inputs>
                           <select #addfilt onchange="addFilter(event.target.value)">

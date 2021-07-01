@@ -143,6 +143,7 @@ data Grouping
     , groupTitle :: !T.Text
     , groupHtml :: Maybe T.Text
     , groupings :: Groupings
+    , groupVisible :: !Bool
     }
   deriving (Show)
 
@@ -166,6 +167,7 @@ instance J.FromJSON Grouping where
     groupTitle <- g J..: "title"
     groupHtml <- g J..:? "html"
     groupings <- g J..: "children"
+    groupVisible <- g J..:! "visible" J..!= True
     return Grouping{..}) j
 
 grouping :: V.Vector Grouping -> Groupings
@@ -226,7 +228,7 @@ pruneCatalogs errs cats = cats
 
 -- |Virtual top-level grouping
 catalogGrouping :: Catalogs -> Grouping
-catalogGrouping Catalogs{ catalogGroupings = g } = Grouping "collections" "Collections" Nothing g
+catalogGrouping Catalogs{ catalogGroupings = g } = Grouping "collections" "Collections" Nothing g True
 
 groupedCatalogs :: [T.Text] -> Catalogs -> Maybe Catalogs
 groupedCatalogs [] c = Just c

@@ -118,6 +118,15 @@
         </div>
       </div>
     </div>
+- name: galaxy-iso
+  title: Isolated Galaxy Simulations
+  visible: false
+  children:
+    - &beefy
+      name: beefy
+      title: Beefy
+      children:
+        - jhunt2021
 - name: zoomin
   title: Cosmological Zoom-in Simulations
   children: []
