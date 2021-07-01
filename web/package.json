@@ -13,27 +13,27 @@
   "devDependencies": {
     "compression-webpack-plugin": "^7.0.1",
     "css-loader": "^5.2.6",
-    "datatables.net": "^1.10.24",
-    "datatables.net-dt": "^1.10.24",
+    "datatables.net": "^1.10.25",
+    "datatables.net-dt": "^1.10.25",
     "file-loader": "^6.2.0",
     "imports-loader": "^2.0.0",
-    "mini-css-extract-plugin": "^1.6.0",
-    "sass": "^1.34.1",
+    "mini-css-extract-plugin": "^1.6.2",
+    "sass": "^1.35.1",
     "sass-loader": "^11.1.1",
-    "webpack": "^5.38.1",
-    "webpack-cli": "^4.7.0"
+    "webpack": "^5.41.1",
+    "webpack-cli": "^4.7.2"
   },
   "dependencies": {
     "@types/bootstrap": "^4.6.0",
     "@types/datatables.net": "^1.10.19",
     "@types/jquery": "^3.5.5",
     "bootstrap": "^4.6.0",
-    "highcharts": "^9.1.0",
+    "highcharts": "^9.1.2",
     "popper.js": "^1.16.1",
     "style-loader": "^2.0.0",
-    "ts-loader": "^9.2.2",
-    "typescript": "^4.3.2",
-    "vue": "^2.6.13",
+    "ts-loader": "^9.2.3",
+    "typescript": "^4.3.5",
+    "vue": "^2.6.14",
     "vue-class-component": "^7.2.6"
   }
 }
