@@ -4,7 +4,7 @@
 .idea
 /web/node_modules/
 /web/index.js
-/web/bundle.js
+/web/bundle.js*
 /web/main.js
 /web/common.js
 /web/compare.js

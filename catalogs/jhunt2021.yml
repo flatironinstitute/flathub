@@ -9,6 +9,7 @@ descr: >
   <p>Model M1 is the merger of the L2 dwarf galaxy from <a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2018MNRAS.481..286L/abstract">Laporte et al. (2018)</a> into Model D1. This is an excellent test case for the structure and kinematics induced by the merger, as the disc otherwise remains stable. We present step 702 on Flathub as the `present day’ snapshot, where the dwarf is closest to the location of Sgr in the Milky Way.</p>
   <p>Model M2 is the merger of the L2 dwarf galaxy from <a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2018MNRAS.481..286L/abstract">Laporte et al. (2018)</a> into Model D2. This is a violent merger which creates a thick disc and inner halo from the dwarf remnant. We present snapshot 557 on Flathub as the ‘final’ state of the system.</p>
   <p>Note that these models are not intended to be accurate reproductions of the Milky Way - Sgr system, merely test cases for the dynamical processes involved in Disc-dwarf mergers. See Bennet, Bovy & Hunt (2021) for our attempts to better match observations of the Milky Way - Sagittarius dwarf galaxy merger.</p>
+count: 4686066326
 settings:
   index:
     number_of_shards: 32
@@ -29,6 +30,7 @@ fields:
     type: short
     ingest: _attribute
     flag: top
+    terms: true
   - name: time
     type: float
     ingest: _attribute

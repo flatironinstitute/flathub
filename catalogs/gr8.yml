@@ -19,19 +19,19 @@ fields:
     title: name
     sub:
     - name: 'primary_name'
-      title: 'primary_name'
+      title: 'primary'
       type: keyword
       descr: Unique identifier used as primary display (including file naming) (Common name if available, followed by HD, followed by Gaia eDR3)
       terms: false
       wildcard: true
       size: 32
     - name: 'gaiadr2_source_id'
-      title: 'gaiadr2_source_id'
+      title: 'gaiadr2'
       type: long
       flag: hidden
       descr: Gaia DR2 ID
     - name: 'gaiaedr3_source_id'
-      title: 'gaiaedr3_source_id'
+      title: 'gaiaedr3'
       type: long
       flag: hidden
       descr: Gaia EDR3 ID
