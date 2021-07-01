@@ -120,6 +120,7 @@
     </div>
 - name: galaxy-iso
   title: Isolated Galaxy Simulations
+  visible: false
   children:
     - &beefy
       name: beefy
