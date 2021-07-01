@@ -363,10 +363,9 @@ catalogPage = getPath R.parameter $ \sim req -> do
                         .falert .filter-row
                         v-bind:class="{'falert-info':filter.field.flag!==undefined,'falert-warning':filter.field.flag===undefined,'falert-horz':filter.field.flag===undefined}">
                         <div .filter-text-row>
-                          <div .filter-text>
-                            <field-title
-                              v-bind:field="filter.field"
-                              v-bind:rmf="filter.field.flag?undefined:filter.remove.bind(filter)">
+                          <field-title
+                            v-bind:field="filter.field"
+                            v-bind:rmf="filter.field.flag?undefined:filter.remove.bind(filter)">
                         <div .filter-inputs v-if="filter.field.terms">
                           <select-terms
                               v-bind:field="filter.field"
@@ -374,12 +373,12 @@ catalogPage = getPath R.parameter $ \sim req -> do
                               v-model="filter.value"
                               v-bind:change="filter.change.bind(filter)">
                         <div .filter-inputs v-else-if="filter.field.base==='s'">
+                          <span v-if="field.wildcard">Use "*" as wildcard</span>
                           <input
                             type="text"
                             v-bind:name="filter.field.name"
                             v-model="filter.value"
                             v-on:change="filter.change()">
-                          <span v-if="filter.field.wildcard">Use "*" as wildcard <!-- TODO make me a tooltip or something? -->
                         <div .filter-inputs-group v-else>
                           $forall b <- [False, True]
                             <div .filter-input>
@@ -397,8 +396,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                             <em>&mu; : {{filter.aggs.avg?filter.render(filter.aggs.avg):'no data'}}
                           <div .filter-examples v-if="filter.aggs.buckets!==undefined">
                             Examples:
-                            <ul>
-                              <li v-for="bucket in filter.aggs.buckets">
+                              <span class="example-item" v-for="bucket in filter.aggs.buckets">
                                 {{ bucket.key }}
                           <div v-else .filter-min-max>
                             <p>Range:

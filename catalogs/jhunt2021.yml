@@ -1,6 +1,6 @@
 title: JHunt 2021
 index: jhunt2021
-visible: true
+visible: false
 descr: >
   <p>The simulations presented here are Models D1, D2, M1 and M2 from Hunt et al. (2021). They are freely available, but please cite Hunt et al. (2021) if you use them! Currently available are the snapshots presented in the paper, but we intend to make the full time evolution available (at 9.77 Myr intervals) available shortly.</p>
   <p>For the dark matter particles we provide x, y, z (kpc), v_x, v_y, v_z (km/s), mass (Solar mass), and particle ID. For the stellar particles, we provide as above, but also include actions, angles and frequencies derived with Agama (<a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2019MNRAS.482.1525V/abstract">Vasiliev 2019</a>): J_R, J_phi, J_z (kpc km/s), theta_R, theta_phi, theta_z (radians) and Omega_R, Omega_phi, Omega_z (km/s /kpc).</p>

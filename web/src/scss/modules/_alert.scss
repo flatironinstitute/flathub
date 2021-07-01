@@ -1,7 +1,7 @@
 .falert {
   font-size: 1.2rem;
   line-height: 1.5;
-  padding: 0.75rem 1.25rem;
+  padding: 0.75rem;
   margin-bottom: 1rem;
   font-size: 1.2rem;
   line-height: 1.5;
@@ -162,6 +162,29 @@
   font-size: 1.2rem;
   line-height: 1.5;
 }
+
+.example-item {
+  &:first-of-type {
+    &::before {
+      content: '';
+      margin-right: 5px;
+    }
+  }
+  &::after {
+    content: ', ';
+  }
+   &:last-of-type {
+    &::after {
+      content: '';
+    }
+  }
+}
+.filter-text-units {
+  font-style: italic;
+  font-size: 90%;
+  margin-left: 46px;
+}
+
 
 // .filter-row {
 //   // &.alert-secondary {

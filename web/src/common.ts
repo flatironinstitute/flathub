@@ -150,13 +150,13 @@ export function updateMathJax() {
 Vue.component("field-title", {
   props: ["field", "rmf"],
   template: `
-  <div>
+  <div class="filter-text">
     <button v-if="rmf" class="button-remove" v-on:click="rmf">&times;</button>
     <span v-bind:class="{ 'tooltip-dt': field.descr }">
       {{field.title}}
-      <span v-if="field.units">{{field.units}}</span>
       <span v-if="field.descr" class="tooltiptext">{{field.descr}}</span>
     </span>
+    <span v-if="field.units" class="filter-text-units">{{field.units}}</span>
   </div>
   `,
 });
