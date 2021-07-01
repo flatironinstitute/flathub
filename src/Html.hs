@@ -373,7 +373,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                               v-model="filter.value"
                               v-bind:change="filter.change.bind(filter)">
                         <div .filter-inputs v-else-if="filter.field.base==='s'">
-                          <span v-if="field.wildcard">Use "*" as wildcard</span>
+                          <span v-if="filter.field.wildcard">Use "*" as wildcard</span>
                           <input
                             type="text"
                             v-bind:name="filter.field.name"
