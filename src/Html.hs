@@ -110,8 +110,9 @@ htmlResponse _req hdrs body = do
               <a href="@{groupPage !:? []}">Collections
               <div .dropdown-content>
                 $forall g <- groupList $ catalogGroupings cats
-                  <a href="@{groupPage !:? [groupingName g]}">
-                    <text>#{groupingTitle g $ groupingCatalog cats g}
+                  $if groupVisible g
+                    <a href="@{groupPage !:? [groupingName g]}">
+                      <text>#{groupingTitle g $ groupingCatalog cats g}
             <li .header__link--dropdown>
               <a href="@{topPage !:? mempty}">Catalogs
               <div .dropdown-content .dropdown-second>
@@ -196,8 +197,9 @@ topPage = getPath R.unit $ \() req -> do
                       <div .box-head>Collections
                     <ul .link-list>
                       $forall g <- groupList (catalogGroupings cats)
-                        <li>
-                          <a .underline href="@{groupPage !:? [groupingName g]}">#{groupingTitle g (groupingCatalog cats g)}
+                        $if groupVisible g
+                          <li>
+                            <a .underline href="@{groupPage !:? [groupingName g]}">#{groupingTitle g (groupingCatalog cats g)}
       |]
 
 

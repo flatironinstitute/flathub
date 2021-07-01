@@ -6,8 +6,9 @@
 }
 
 .gray-heading {
-  margin: 0 calc(-2.5vw + -20px) 0 calc(-2.5vw + -20px);
+  margin: 0;
   background-color: $platinum;
+  max-width: 100vw;
 }
 
 .candels-heading {
