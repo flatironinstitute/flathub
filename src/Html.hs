@@ -367,10 +367,6 @@ catalogPage = getPath R.parameter $ \sim req -> do
                             <field-title
                               v-bind:field="filter.field"
                               v-bind:rmf="filter.field.flag?undefined:filter.remove.bind(filter)">
-                          <button .filter-reset
-                            v-on:click="filter.reset()"
-                            v-if="filter.field.flag===undefined">
-                            reset
                         <div .filter-inputs v-if="filter.field.terms">
                           <select-terms
                               v-bind:field="filter.field"
@@ -409,7 +405,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                             $forall b <- [False, True]
                               <p>{{filter.render(filter.aggs.#{ifs b "max" "min"})}}
 
-                      <div .alert .fade .show .row .filter-row .alert-secondary>
+                      <div .falert .filter-row .alert-secondary>
                         <div .filter-text>Select field to filter
                         <div .filter-inputs>
                           <select #addfilt onchange="addFilter(event.target.value)">
