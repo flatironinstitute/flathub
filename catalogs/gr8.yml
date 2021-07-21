@@ -386,36 +386,36 @@ fields:
 #       type: int
 #       flag: hidden
 #       descr: Number of observations averaged to create the spectrum
-#   - name: ''
-#     title: harps
-#     sub:
-#     - name: 'spectrum_harps'
-#       title: 'download'
-#       type: boolean
-#       attachment:
-#         path: gr8/spectra/${primary_name}_harps.fits
-#         name: gr8_spectra_${primary_name}_harps.fits
+    - name: ''
+      title: harps
+      sub:
+      - name: 'spectrum_harps'
+        title: 'download'
+        type: boolean
+        attachment:
+          path: gr8/spectra/HARPS/${primary_name/ /}.tgz
+          name: gr8_spectra_HARPS_${primary_name/ /}.tgz
 #     - name: 'spectrum_harps_resolution'
 #       title: 'resolution'
 #       type: float
 #       flag: hidden
 #       descr: Spectral resolution
-#     - name: 'spectrum_harps_snr'
-#       title: 'snr'
-#       type: float
-#       flag: hidden
-#       descr: Signal-to-noise per pixel at 600 nm
+      - name: 'spectrum_harps_snr'
+        title: 'snr'
+        type: float
+        flag: hidden
+        descr: Signal-to-noise per pixel at 600 nm
 #     - name: 'spectrum_harps_date'
 #       title: 'date'
 #       type: float
 #       units: 'BJD'
 #       flag: hidden
 #       descr: Date of observation (or effective average date if nobs > 1)
-#     - name: 'spectrum_harps_nobs'
-#       title: 'nobs'
-#       type: int
-#       flag: hidden
-#       descr: Number of observations averaged to create the spectrum
+      - name: 'spectrum_harps_nobs'
+        title: 'nobs'
+        type: int
+        flag: hidden
+        descr: Number of observations averaged to create the spectrum
 #   - name: ''
 #     title: harpsn
 #     sub:

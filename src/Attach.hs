@@ -54,8 +54,9 @@ askAttachment cat att = do
 
 pathFields :: DynamicPath -> [T.Text]
 pathFields = mapMaybe pathField where
-  pathField (DynamicPathField f) = Just f
-  pathField _ = Nothing
+  pathField (DynamicPathField f) = return f
+  pathField (DynamicPathSubstitute f _ _) = return f
+  pathField _ = mempty
 
 attachmentFields :: Attachment -> [T.Text]
 attachmentFields (Attachment p n) = pathFields p ++ pathFields n
@@ -67,15 +68,18 @@ attachmentsFields cat =
 pathStr :: DynamicPath -> J.Object -> String
 pathStr path doc = foldMap ps path where
   ps (DynamicPathLiteral s) = s
-  ps (DynamicPathField f) = case HM.lookup f doc of
-    Just (J.String s) -> T.unpack s
-    Just (J.Number n) -> formatScientific Fixed (Just 0) n -- XXX assuming integers
-    Just (J.Bool False) -> "0"
-    Just (J.Bool True) -> "1"
-    Just (J.Array _) -> "array"
-    Just (J.Object _) -> "object"
-    Just J.Null -> ""
-    Nothing -> "?"
+  ps (DynamicPathField f) = rf $ HM.lookup f doc
+  ps (DynamicPathSubstitute f a b) = case HM.lookup f doc of
+    Just (J.String s) -> T.unpack $ T.replace a b s
+    x -> rf x
+  rf (Just (J.String s)) = T.unpack s
+  rf (Just (J.Number n)) = formatScientific Fixed (Just 0) n -- XXX assuming integers
+  rf (Just (J.Bool False)) = "0"
+  rf (Just (J.Bool True)) = "1"
+  rf (Just (J.Array _)) = "array"
+  rf (Just (J.Object _)) = "object"
+  rf (Just J.Null) = ""
+  rf Nothing = "?"
 
 attachment :: Route (Simulation, T.Text, T.Text)
 attachment = getPath (R.parameter R.>* "attachment" R.>*<< R.parameter R.>*< R.parameter) $ \(sim, atn, rid) _ -> do
