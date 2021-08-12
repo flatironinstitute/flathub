@@ -1,5 +1,13 @@
 title: Gr8 Stars
 index: gr8
+descr: >
+  The gr8stars catalog is an assembly of stellar properties and downloadable high-resolution spectra of bright Sun-like stars in the Northern hemisphere. gr8stars targets are uniformly selected from Gaia EDR3 to fulfill the following criteria:<br>
+    - Bright: Gaia G magnitude <= 8 <br>
+    - Observable from northern hemisphere facilities: Declination >= -15 degrees <br>
+    - Cool: Gaia B-R color >= 0.6 <br>
+    - Main-sequence: based on isochronal cuts in Gaia color-magnitude space <br>
+  The resulting catalog of nearly 3,000 targets encompasses a prime sample for Northern-hemisphere radial velocity exoplanet surveys, precision stellar abundances, future direct imaging surveys, and more. Publications are currently in preparation.<br>
+  The gr8stars team is led by Annelies Mortier (University of Cambridge) and Megan Bedell (Flatiron Institute) and includes the following scientists from institutions worldwide: Vardan Adibekyan (Universidade do Porto), John Brewer (San Francisco State University), Ernst De Mooij (Queen’s University Belfast), Elisa Delgado Mena (Universidade do Porto), Jonay González Hernández (Instituto de Astrofísica de Canarias), Raphaelle Haywood (University of Exeter), David Jackson (Queen's University Belfast), Baptiste Klein (University of Oxford), Suvrath Mahadevan (Penn State University), Tim Naylor (University of Exeter), Belinda Nicholson (University of Oxford), Nikolai Piskunov (Uppsala University), Andreas Quirrenbach (University of Heidelberg), Ansgar Reiners (University of Göttingen), Arpita Roy (Space Telescope Science Institute), Nuno Santos (Universidade do Porto), Sérgio Sousa (Universidade do Porto), Alejandro Suárez Mascareño (Instituto de Astrofísica de Canarias), Sam Thompson (University of Cambridge), Maria Tsantaki (Arcetri Observatory), Chris Watson (Queen's University Belfast), Lily Zhao (Flatiron Institute).
 count: 2858
 fields:
   - name: ''
