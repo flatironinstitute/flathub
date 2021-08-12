@@ -45,10 +45,18 @@ spec:
         volumeMounts:
           - mountPath: /home/flathub/flathub/tls
             name: tls
+            readOnly: true
+          - mountPath: /data/gr8
+            name: gr8
+            readOnly: true
       volumes:
         - name: tls
           secret:
             secretName: astrosims-tls
+        - name: gr8
+          hostPath:
+            path: /mnt/sdceph/users/mbedell/gr8stars
+            type: Directory
       restartPolicy: Always
 ---
 apiVersion: v1
