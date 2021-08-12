@@ -33,7 +33,6 @@ fields:
     - name: 'gaiaedr3_source_id'
       title: 'gaiaedr3'
       type: long
-      flag: hidden
       descr: Gaia EDR3 ID
     - name: 'hip'
       title: 'hip'
@@ -49,7 +48,6 @@ fields:
     - name: 'tic'
       title: 'tic'
       type: int
-      flag: hidden
       descr: TESS Input Catalog ID
     - name: '2mass'
       title: '2mass'
@@ -156,7 +154,6 @@ fields:
       title: 'radial_velocity'
       type: float
       units: 'km/s'
-      flag: hidden
       descr: Gaia DR2 RV
     - name: 'radial_velocity_error'
       title: 'radial_velocity_error'
@@ -185,37 +182,37 @@ fields:
     - name: 'gaia_radius'
       title: 'radius'
       type: float
-      units: 'R_{\odot}'
+      units: '\(R_\odot\)'
       flag: hidden
       descr: Gaia DR2 stellar radius
     - name: 'gaia_radius_lower'
       title: 'radius_lower'
       type: float
-      units: 'R_{\odot}'
+      units: '\(R_\odot\)'
       flag: hidden
       descr: One-sigma lower limit on Gaia DR2 stellar radius
     - name: 'gaia_radius_upper'
       title: 'radius_upper'
       type: float
-      units: 'R_{\odot}'
+      units: '\(R_\odot\)'
       flag: hidden
       descr: One-sigma upper limit on Gaia stellar radius
     - name: 'gaia_lum'
       title: 'lum'
       type: float
-      units: 'L_{\odot}'
+      units: '\(L_\odot\)'
       flag: hidden
       descr: Gaia DR2 stellar luminosity
     - name: 'gaia_lum_lower'
       title: 'lum_lower'
       type: float
-      units: 'L_{\odot}'
+      units: '\(L_\odot\)'
       flag: hidden
       descr: One-sigma lower limit on Gaia DR2 stellar luminosity
     - name: 'gaia_lum_upper'
       title: 'lum_upper'
       type: float
-      units: 'L_{\odot}'
+      units: '\(L_\odot\)'
       flag: hidden
       descr: One-sigma upper limit on Gaia stellar luminosity
 # - name: 'teff'
@@ -270,35 +267,35 @@ fields:
 #   - name: 'mass'
 #     title: 'mass'
 #     type: float
-#     units: 'M_{\odot}'
+#     units: '\(M_{\odot}\)'
 #     descr: Stellar mass from isochrone fit
 #   - name: 'mass_lower'
 #     title: 'mass_lower'
 #     type: float
-#     units: 'M_{\odot}'
+#     units: '\(M_{\odot}\)'
 #     flag: hidden
 #     descr: One-sigma lower limit on stellar mass from isochrone fit
 #   - name: 'mass_upper'
 #     title: 'mass_upper'
 #     type: float
-#     units: 'M_{\odot}'
+#     units: '\(M_{\odot}\)'
 #     flag: hidden
 #     descr: One-sigma upper limit on stellar mass from isochrone fit
 #   - name: 'radius'
 #     title: 'radius'
 #     type: float
-#     units: 'R_{\odot}'
+#     units: '\(R_{\odot}\)'
 #     descr: Stellar radius from isochrone fit
 #   - name: 'radius_lower'
 #     title: 'radius_lower'
 #     type: float
-#     units: 'R_{\odot}'
+#     units: '\(R_{\odot}\)'
 #     flag: hidden
 #     descr: One-sigma lower limit on stellar radius from isochrone fit
 #   - name: 'radius_upper'
 #     title: 'radius_upper'
 #     type: float
-#     units: 'R_{\odot}'
+#     units: '\(R_{\odot}\)'
 #     flag: hidden
 #     descr: One-sigma upper limit on stellar radius from isochrone fit
 #   - name: 'age'
@@ -318,7 +315,7 @@ fields:
 #     units: 'Gyr'
 #     flag: hidden
 #     descr: One-sigma upper limit on stellar age from isochrone fit
-  - name: ''
+  - name: 'spectrum'
     title: spectrum
     sub:
 #   - name: 'spectrum_primary'
@@ -386,32 +383,40 @@ fields:
 #       type: int
 #       flag: hidden
 #       descr: Number of observations averaged to create the spectrum
-    - name: ''
+    - name: 'harps'
       title: harps
       sub:
-      - name: 'spectrum_harps'
-        title: 'download'
+      - name: '1d'
+        title: 'download 1D'
         type: boolean
         attachment:
-          path: gr8/spectra/HARPS/${primary_name/ /}.tgz
-          name: gr8_spectra_HARPS_${primary_name/ /}.tgz
-#     - name: 'spectrum_harps_resolution'
+          path: gr8/spectra/HARPS/${primary_name/ /}_HARPS_S1D.fits
+          name: gr8_spectra_${primary_name/ /}_HARPS_S1D.fits
+        ingest: spectrum_harps
+      - name: '2d'
+        title: 'download 2D'
+        type: boolean
+        attachment:
+          path: gr8/spectra/HARPS/${primary_name/ /}_HARPS_S2D.tgz
+          name: gr8_spectra_${primary_name/ /}_HARPS_S2D.tgz
+        ingest: spectrum_harps
+#     - name: 'resolution'
 #       title: 'resolution'
 #       type: float
 #       flag: hidden
 #       descr: Spectral resolution
-      - name: 'spectrum_harps_snr'
+      - name: 'snr'
         title: 'snr'
         type: float
         flag: hidden
         descr: Signal-to-noise per pixel at 600 nm
-#     - name: 'spectrum_harps_date'
+#     - name: 'date'
 #       title: 'date'
 #       type: float
 #       units: 'BJD'
 #       flag: hidden
 #       descr: Date of observation (or effective average date if nobs > 1)
-      - name: 'spectrum_harps_nobs'
+      - name: 'nobs'
         title: 'nobs'
         type: int
         flag: hidden
@@ -476,66 +481,83 @@ fields:
 #       type: int
 #       flag: hidden
 #       descr: Number of observations averaged to create the spectrum
-    - name: ''
+    - name: 'hires'
       title: hires
+      flag: hidden
       sub:
-      - name: 'spectrum_hires'
-        title: 'download'
+      - name: '1d'
+        title: 'download 1D'
         type: boolean
         attachment:
           path: gr8/spectra/${primary_name}_hires.fits
           name: gr8_spectra_${primary_name}_hires.fits
-      - name: 'spectrum_hires_resolution'
+        ingest: spectrum_hires
+      - name: '2d'
+        title: 'download 2D'
+        type: boolean
+        attachment:
+          path: gr8/spectra/${primary_name}_hires.fits
+          name: gr8_spectra_${primary_name}_hires.fits
+        ingest: spectrum_hires
+      - name: 'resolution'
         title: 'resolution'
         type: float
         flag: hidden
         descr: Spectral resolution
-      - name: 'spectrum_hires_snr'
+      - name: 'snr'
         title: 'snr'
         type: float
         flag: hidden
         descr: Signal-to-noise per pixel at 600 nm
-#     - name: 'spectrum_hires_date'
+#     - name: 'date'
 #       title: 'date'
 #       type: float
 #       units: 'BJD'
 #       flag: hidden
 #       descr: Date of observation (or effective average date if nobs > 1)
-      - name: 'spectrum_hires_nobs'
+      - name: 'nobs'
         title: 'nobs'
         type: int
         flag: hidden
         descr: Number of observations averaged to create the spectrum
-#   - name: ''
-#     title: sophie
-#     sub:
-#     - name: 'spectrum_sophie'
-#       title: 'download'
-#       type: boolean
-#       attachment:
-#         path: gr8/spectra/${primary_name}_sophie.fits
-#         name: gr8_spectra_${primary_name}_sophie.fits
-#     - name: 'spectrum_sophie_resolution'
+    - name: 'sophie'
+      title: sophie
+      sub:
+      - name: '1d'
+        title: 'download 1D'
+        type: boolean
+        attachment:
+          path: gr8/spectra/SOPHIE/${primary_name/ /}_SOPHIE_S1D.fits
+          name: gr8_spectra_${primary_name/ /}_SOPHIE_S1D.fits
+        ingest: spectrum_sophie
+      - name: '2d'
+        title: 'download 2D'
+        type: boolean
+        attachment:
+          path: gr8/spectra/SOPHIE/${primary_name/ /}_SOPHIE_S2D.tgz
+          name: gr8_spectra_${primary_name/ /}_SOPHIE_S2D.tgz
+        ingest: spectrum_sophie
+#     - name: 'resolution'
 #       title: 'resolution'
 #       type: float
 #       flag: hidden
 #       descr: Spectral resolution
-#     - name: 'spectrum_sophie_snr'
-#       title: 'snr'
-#       type: float
-#       flag: hidden
-#       descr: Signal-to-noise per pixel at 600 nm
-#     - name: 'spectrum_sophie_date'
+      - name: 'snr'
+        title: 'snr'
+        type: float
+        flag: hidden
+        descr: Signal-to-noise per pixel at 600 nm
+#     - name: 'date'
 #       title: 'date'
 #       type: float
 #       units: 'BJD'
 #       flag: hidden
 #       descr: Date of observation (or effective average date if nobs > 1)
-#     - name: 'spectrum_sophie_nobs'
-#       title: 'nobs'
-#       type: int
-#       flag: hidden
-#       descr: Number of observations averaged to create the spectrum
+      - name: 'nobs'
+        title: 'nobs'
+        type: int
+        flag: hidden
+        descr: Number of observations averaged to create the spectrum
 #   - name: ''
 #     title: uves
 #     sub:
