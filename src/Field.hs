@@ -27,7 +27,7 @@ module Field
   ) where
 
 import           Control.Applicative (Alternative, empty, (<|>))
-import           Control.Monad (guard, join, when)
+import           Control.Monad (guard, join, when, msum)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Types as J
 import qualified Data.ByteString as BS
@@ -73,6 +73,7 @@ instance J.FromJSON FieldFlag where
 data DynamicPathComponent
   = DynamicPathLiteral FilePath
   | DynamicPathField T.Text
+  | DynamicPathSubstitute T.Text T.Text T.Text
   deriving (Show, Eq)
 
 -- |a path that can be constructed from a data row by filling in field values
@@ -80,14 +81,21 @@ type DynamicPath = [DynamicPathComponent]
 
 instance J.FromJSON DynamicPathComponent where
   parseJSON (J.String s) = return $ DynamicPathLiteral $ T.unpack s
-  parseJSON o = J.withObject "dynamic path" 
-    (fmap DynamicPathField . (J..: "field")) o
+  parseJSON j = J.withObject "dynamic path" po j where
+    po o = msum
+      [ DynamicPathSubstitute <$> o J..: "field" <*> o J..: "find" <*> o J..: "replace"
+      , DynamicPathField <$> o J..: "field"
+      , DynamicPathLiteral <$> o J..: "text"
+      ]
   parseJSONList (J.String s) = return $ pl s where
     pl (T.break ('$'==) -> (a, v)) =
       DynamicPathLiteral (T.unpack a) : maybe [] (pv . snd) (T.uncons v)
     pv t = case T.uncons t of
       Nothing -> [DynamicPathLiteral "$"]
-      Just ('{',T.break ('}'==) -> (n,T.uncons -> Just ('}',l))) -> DynamicPathField n : pl l
+      Just ('{',T.break ('}'==) -> (n,T.uncons -> Just ('}',l))) ->
+        (case T.break ('/'==) n of
+          (n',T.uncons -> Just ('/', T.break ('/'==) -> (a, T.uncons -> Just ('/',b)))) -> DynamicPathSubstitute n' a b
+          _ -> DynamicPathField n) : pl l
       _ -> DynamicPathField n : pl l where (n, l) = T.span (\c -> isAlphaNum c || c == '_') t
   parseJSONList (J.Array a) = mapM J.parseJSON $ V.toList a
   parseJSONList j = J.typeMismatch "dynamic path" j

@@ -46,7 +46,7 @@ ingest cat consts fs = do
     Ingest
       { ingestCatalog = cat
       , ingestFile = f
-      , ingestPrefix = pfx <> "_"
+      , ingestPrefix = (if null pfx then id else (<> "_")) pfx
       , ingestConsts = consts
       , ingestBlockSize = 1000
       , ingestStart = start
