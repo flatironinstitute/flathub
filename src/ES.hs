@@ -203,7 +203,7 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreFiel
     (mwhen scroll $ [("scroll", Just scrollTime)])
     (JE.pairs $
        (mwhen (queryOffset > 0) $ "from" J..= queryOffset)
-    <> (mwhen (queryLimit  > 0 || not scroll) $ "size" J..= queryLimit)
+    <> ("size" J..= if scroll && queryLimit == 0 then 10000 else queryLimit)
     <> "sort" `JE.pair` JE.list (\(f, a) -> JE.pairs (fieldName f J..= if a then "asc" else "desc" :: String)) (querySort ++ [(def{ fieldName = "_doc" },True)])
     <> (case store of
       ESStoreSource -> "_source"
