@@ -9,7 +9,7 @@ module ES
   ( initServer
   , createIndex
   , checkIndices
-  , storedFields
+  , storedFields'
   , queryIndex
   , queryBulk
   , createBulk
@@ -36,7 +36,7 @@ import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
 import           Data.IORef (newIORef, readIORef, writeIORef)
 import           Data.List (find)
-import           Data.Maybe (mapMaybe)
+import           Data.Maybe (mapMaybe, fromMaybe)
 import           Data.Proxy (Proxy)
 import           Data.String (IsString)
 import qualified Data.Text as T
@@ -185,6 +185,9 @@ storedFields ESStoreSource o = case HM.lookup "_source" o of
 storedFields _ o = case HM.lookup "fields" o of
   Just (J.Object s) -> return $ HM.map unsingletonJSON s
   _ -> fail "missing fields object"
+
+storedFields' :: ESStoreField -> J.Object -> J.Object
+storedFields' s o = maybe id (HM.insert "_id") (HM.lookup "_id" o) $ fromMaybe HM.empty $ storedFields s o
 
 scrollTime :: IsString s => s
 scrollTime = "60s"
@@ -340,9 +343,11 @@ queryBulk cat@Catalog{ catalogStore = CatalogES{ catalogStoreField = store } } q
     <*> parseJSONField "hits" (J.withObject "hits" $ \hits -> (,)
       <$> (hits J..: "total" >>= (J..: "value"))
       <*> parseJSONField "hits" (J.withArray "hits" $
-        V.mapM $ J.withObject "hit" $ storedFields store)
-        hits)
-      q
+        (return . V.map row))
+      hits)
+    q
+  row (J.Object o) = storedFields' store o
+  row _ = HM.empty -- error?
 
 createBulk :: Catalog -> [(String, J.Series)] -> M ()
 createBulk cat@Catalog{ catalogStore = ~CatalogES{} } docs = do
