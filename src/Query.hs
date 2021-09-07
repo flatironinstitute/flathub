@@ -327,7 +327,7 @@ bulk (BulkAttachmentList z a) sim cat req query = bulkAttachmentUrls a z sim cat
 bulk (BulkAttachmentScript z a) sim cat req query = bulkAttachmentUrls a z sim cat req query
   "text/x-shellscript" ".sh" $ mempty
   { bbsHeader = "#!/bin/sh\n# " <> TE.encodeUtf8Builder (catalogTitle cat) <> " attachments " <> foldMap TE.encodeUtf8Builder a <> "\n"
-  , bbsRow = \u -> "curl -J " <> u <> "\n"
+  , bbsRow = \u -> "curl -JO " <> u <> "\n"
   }
 
 catalogBulk :: Route (Simulation, BulkFormat)
