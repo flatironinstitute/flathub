@@ -49,7 +49,6 @@ import Global
 import Compression
 import Query
 import Monoid
-import Attach
 import Static
 
 jsonEncodingVar :: T.Text -> J.Encoding -> H.Html
@@ -502,20 +501,14 @@ catalogPage = getPath R.parameter $ \sim req -> do
                 <option value="">Choose format...
                 <optgroup label="raw data">
                   $forall b <- [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkECSV Nothing, BulkECSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)]
-                    $with f <- asTypeOf (R.renderParameter b) T.empty
-                      <option #download.#{f} .download-option
-                        value="@{catalogBulk !:? (sim, b)}">
-                        #{f}
-                <optgroup label="attachment files">
-                  $with att <- HM.filter (isJust . fieldAttachment) $ catalogFieldMap cat
-                    $forall f <- att
-                      <option #download.attachment.#{fieldName f} .download-option
-                        value="@{attachmentBulk !:? (sim, fieldName f)}">
-                        #{fieldTitle f}.zip
-                    $if not $ HM.null att
-                      <option #download.attachments .download-option
-                        value="@{attachmentsBulk !:? sim}">
-                        all.zip
+                    #{bulklink sim b}
+                $forall (l, a) <- [("" ++ "files", BulkAttachments), ("download script", BulkAttachmentScript Nothing)]
+                  <optgroup label="attachment #{l}">
+                    $with att <- HM.filter (isJust . fieldAttachment) $ catalogFieldMap cat
+                      $forall f <- att
+                        #{bulklink sim (a (Just (fieldName f)))}
+                      $if not $ HM.null att
+                        #{bulklink sim (a Nothing)}
               <a .button .button-secondary #download-btn
                 v-bind:href="link">
                 Download
@@ -528,6 +521,13 @@ catalogPage = getPath R.parameter $ \sim req -> do
               #{toprow}
       |]
   where
+  bulklink :: Simulation -> BulkFormat -> H.Html
+  bulklink sim b = hamlet [Hamlet.hamlet|
+      <option #download.#{n} .download-option
+        value="@{catalogBulk !:? (sim, b)}">
+        #{n}
+    |]
+    where n = R.renderParameter b :: T.Text
   fielddesc :: FieldGroup -> FieldGroup -> Int -> H.Html
   fielddesc f g d = do
     hamlet [Hamlet.hamlet|

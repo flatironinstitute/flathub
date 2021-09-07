@@ -43,8 +43,6 @@ routes = R.routes
   , R.routeNormCase sqlSchema
   , R.routeNormCase csvSchema
   , R.routeNormCase attachment
-  , R.routeNormCase attachmentBulk
-  , R.routeNormCase attachmentsBulk
   ]
 
 data Opts = Opts

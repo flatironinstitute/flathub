@@ -2,16 +2,17 @@
 
 module Attach
   ( attachment
-  , attachmentBulk
-  , attachmentsBulk
+  , attachmentsFields
+  , attachmentsBulkStream
   ) where
 
 import qualified Codec.Archive.Zip.Conduit.Zip as Zip
-import           Control.Monad (void, guard, when, (<=<))
+import           Control.Monad (void, guard, (<=<))
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (asks)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Types as J (parseEither)
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Conduit as C
@@ -20,10 +21,9 @@ import           Data.Foldable (fold)
 import           Data.Functor (($>))
 import qualified Data.HashMap.Strict as HM
 import           Data.List (nub)
-import           Data.Maybe (catMaybes, mapMaybe, isJust)
+import           Data.Maybe (catMaybes, mapMaybe)
 import           Data.Proxy (Proxy(Proxy))
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
 import           Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import           Data.Time.LocalTime (utcToLocalTime, utc)
 import           Data.Scientific (formatScientific, FPFormat(Fixed))
@@ -43,7 +43,6 @@ import JSON
 import Type
 import Field
 import Catalog
-import Query
 import Global
 import qualified ES
 
@@ -102,22 +101,10 @@ attachment = getPath (R.parameter R.>* "attachment" R.>*<< R.parameter R.>*< R.p
   parse store = J.withObject "query"
     $ parseJSONField "hits" $ J.withObject "hits"
     $ parseJSONField "hits" $ J.withArray "hits"
-    $ \v -> if V.length v == 1 then J.withObject "hit" (ES.storedFields store) (V.head v) else fail ("found " <> show (V.length v) <> " documents")
+    $ \v -> if V.length v == 1 then J.withObject "hit" (return . ES.storedFields' store) (V.head v) else fail ("found " <> show (V.length v) <> " documents")
 
-attachmentsBulkAction :: Maybe [T.Text] -> Simulation -> Action
-attachmentsBulkAction atn sim req = do
-  cat <- askCatalog sim
-  let query = parseQuery cat req
-      ats = filter (isJust . fieldAttachment) $ maybe (queryFields query) (mapMaybe (`HM.lookup` catalogFieldMap cat)) atn
-      att = mapMaybe fieldAttachment ats
-  when (null ats) $ result $ response notFound404 [] ("No attachments selected" :: String)
-  nextes <- ES.queryBulk cat query
-    { queryFields = attachmentsFields cat att ++ ats
-    , queryFilter = (case ats of
-      [x@Field{ fieldType = Boolean _ }] -> (x{ fieldSub = Proxy, fieldType = Boolean (FilterEQ True) } :)
-      -- could do better with or filters:
-      _ -> id) $ queryFilter query
-    }
+attachmentsBulkStream :: BS.ByteString -> [Field] -> IO (Word, V.Vector J.Object) -> M ((B.Builder -> IO ()) -> IO ())
+attachmentsBulkStream info ats next = do
   dir <- asks globalDataDir
   let ents doc = catMaybes <$> mapM (ent doc) ats
       ent doc af@Field{ fieldAttachment = ~(Just a) } =
@@ -137,24 +124,12 @@ attachmentsBulkAction atn sim req = do
           , Zip.zipFileData path))
         <$> tryIOError (getFileStatus path)
         where path = dir </> pathStr (attachmentPath a) doc
-  return $ Wai.responseStream ok200
-    [ (hContentType, "application/zip")
-    , (hContentDisposition, "attachment; filename=" <> quoteHTTP (TE.encodeUtf8 $ sim <> (foldMap (T.cons '_') $ fold atn) <> ".zip"))
-    , (hCacheControl, "public, max-age=86400")
-    ] $ \send _ -> C.runConduitRes
-    $ C.repeatWhileM (snd <$> liftIO nextes) (not . V.null)
+  return $ \chunk -> C.runConduitRes
+    $ C.repeatWhileM (snd <$> liftIO next) (not . V.null)
     C..| C.concatMapM (liftIO . fmap fold . V.mapM ents)
     C..| void (Zip.zipStream Zip.ZipOptions
         { Zip.zipOpt64 = False
         , Zip.zipOptCompressLevel = 1
-        , Zip.zipOptInfo = Zip.ZipInfo
-          $ TE.encodeUtf8 (catalogTitle cat <> (foldMap (T.cons ' ') $ fold atn)) <> " downloaded from " <> Wai.rawPathInfo req
+        , Zip.zipOptInfo = Zip.ZipInfo info
         })
-    C..| C.mapM_ (liftIO . send . B.byteString)
-
-attachmentBulk :: Route (Simulation, T.Text)
-attachmentBulk = getPath (R.parameter R.>* "attachment" R.>*< R.parameter) $ \(sim, att) -> attachmentsBulkAction (Just [att]) sim
-
-attachmentsBulk :: Route Simulation
-attachmentsBulk = getPath (R.parameter R.>* "attachment") $ attachmentsBulkAction Nothing
-
+    C..| C.mapM_ (liftIO . chunk . B.byteString)
