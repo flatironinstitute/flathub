@@ -47,20 +47,22 @@ routes = R.routes
 
 data Opts = Opts
   { optConfig :: FilePath
-  , optCreate :: [Simulation]
-  , optClose :: [Simulation]
+  , optCreate
+  , optClose
+  , optOpen :: [Simulation]
   , optIngest :: Maybe Simulation
   , optConstFields :: [(T.Text, T.Text)]
   }
 
 instance Default Opts where
-  def = Opts "config" [] [] Nothing []
+  def = Opts "config" [] [] [] Nothing []
 
 optDescr :: [Opt.OptDescr (Opts -> Opts)]
 optDescr =
   [ Opt.Option "f" ["config"] (Opt.ReqArg (\c o -> o{ optConfig = c }) "FILE") "Configuration file [config]"
   , Opt.Option "s" ["create"] (Opt.ReqArg (\i o -> o{ optCreate = T.pack i : optCreate o }) "SIM") "Create storage schema for the simulation"
   , Opt.Option "e" ["close" ] (Opt.ReqArg (\i o -> o{ optClose  = T.pack i : optClose o  }) "SIM") "Finalize (flush and make read-only) simulation storage"
+  , Opt.Option "o" ["open"  ] (Opt.ReqArg (\i o -> o{ optOpen  = T.pack i : optClose o  }) "SIM") "Re-open simulation storage"
   , Opt.Option "i" ["ingest"] (Opt.ReqArg (\i o -> o{ optIngest = Just (T.pack i) }) "SIM") "Ingest file(s) into the simulation store"
   , Opt.Option "c" ["const"] (Opt.ReqArg (\f o -> o{ optConstFields = (second T.tail $ T.break ('=' ==) $ T.pack f) : optConstFields o }) "FIELD=VALUE") "Field value to add to every ingested record"
   ]
@@ -114,6 +116,10 @@ main = do
       n <- ingest cat consts args
       liftIO $ print n
       when (n > 0) $ void $ ES.flushIndex cat
+
+    forM_ (optOpen opts) $ \sim -> do
+      let cat = catalogMap catalogs HM.! sim
+      liftIO . print =<< ES.openIndex cat
 
     forM_ (optClose opts) $ \sim -> do
       let cat = catalogMap catalogs HM.! sim

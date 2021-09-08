@@ -16,6 +16,7 @@ module ES
   , flushIndex
   , countIndex
   , closeIndex
+  , openIndex
   ) where
 
 import           Control.Arrow ((&&&))
@@ -351,13 +352,15 @@ queryBulk cat@Catalog{ catalogStore = CatalogES{ catalogStoreField = store } } q
 
 createBulk :: Catalog -> [(String, J.Series)] -> M ()
 createBulk cat@Catalog{ catalogStore = ~CatalogES{} } docs = do
+  conf <- asks globalConfig
+  let act = fromMaybe "create" $ conf C.! "ingest_action"
+      body = foldMap doc docs
+      doc (i, d) = J.fromEncoding (J.pairs $ act .=* ("_id" J..= i))
+        <> nl <> J.fromEncoding (J.pairs d) <> nl
   r <- elasticSearch POST (catalogURL cat ++ ["_bulk"]) [] body
   -- TODO: ignore 409
   unless (HM.lookup "errors" (r :: J.Object) == Just (J.Bool False)) $ fail $ "createBulk: " ++ BSLC.unpack (J.encode r)
   where
-  body = foldMap doc docs
-  doc (i, d) = J.fromEncoding (J.pairs $ "create" .=* ("_id" J..= i))
-    <> nl <> J.fromEncoding (J.pairs d) <> nl
   nl = B.char7 '\n'
 
 flushIndex :: Catalog -> M (J.Value, J.Value)
@@ -375,7 +378,13 @@ countIndex :: Catalog -> M Word
 countIndex Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } =
   sum . map esCount <$> elasticSearch GET (["_cat", "count", T.unpack idxn]) [] EmptyJSON
 
-closeIndex :: Catalog -> M J.Value
-closeIndex Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } =
+blockIndex :: Bool -> Catalog -> M J.Value
+blockIndex ro Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } =
   elasticSearch PUT ([T.unpack idxn, "_settings"]) [] $ JE.pairs $
-    "index" .=* ("blocks" .=* ("read_only" J..= True))
+    "index" .=* ("blocks" .=* ("read_only" J..= ro))
+
+closeIndex :: Catalog -> M J.Value
+closeIndex = blockIndex True
+
+openIndex :: Catalog -> M J.Value
+openIndex = blockIndex False
