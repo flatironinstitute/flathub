@@ -397,20 +397,23 @@ fields:
     - name: 'harps'
       title: harps
       sub:
-      - name: '1d'
-        title: 'download 1D'
-        type: boolean
-        attachment:
-          path: gr8/spectra/HARPS/${primary_name/ /}_HARPS_S1D.fits
-          name: gr8_spectra_${primary_name/ /}_HARPS_S1D.fits
-        ingest: spectrum_harps
-      - name: '2d'
-        title: 'download 2D'
-        type: boolean
-        attachment:
-          path: gr8/spectra/HARPS/${primary_name/ /}_HARPS_S2D.tgz
-          name: gr8_spectra_${primary_name/ /}_HARPS_S2D.tgz
-        ingest: spectrum_harps
+      - name: ''
+        title: 'download'
+        sub:
+        - name: '1d'
+          title: '1D'
+          type: boolean
+          attachment:
+            path: gr8/spectra/HARPS/${primary_name/ /}_HARPS_S1D.fits
+            name: gr8_spectra_${primary_name/ /}_HARPS_S1D.fits
+          ingest: spectrum_harps
+        - name: '2d'
+          title: '2D'
+          type: boolean
+          attachment:
+            path: gr8/spectra/HARPS/${primary_name/ /}_HARPS_S2D.tgz
+            name: gr8_spectra_${primary_name/ /}_HARPS_S2D.tgz
+          ingest: spectrum_harps
 #     - name: 'resolution'
 #       title: 'resolution'
 #       type: float
@@ -496,20 +499,23 @@ fields:
       title: hires
       flag: hidden
       sub:
-      - name: '1d'
-        title: 'download 1D'
-        type: boolean
-        attachment:
-          path: gr8/spectra/${primary_name}_hires.fits
-          name: gr8_spectra_${primary_name}_hires.fits
-        ingest: spectrum_hires
-      - name: '2d'
-        title: 'download 2D'
-        type: boolean
-        attachment:
-          path: gr8/spectra/${primary_name}_hires.fits
-          name: gr8_spectra_${primary_name}_hires.fits
-        ingest: spectrum_hires
+      - name: ''
+        title: 'download'
+        sub:
+        - name: '1d'
+          title: '1D'
+          type: boolean
+          attachment:
+            path: gr8/spectra/${primary_name}_hires.fits
+            name: gr8_spectra_${primary_name}_hires.fits
+          ingest: spectrum_hires
+        - name: '2d'
+          title: '2D'
+          type: boolean
+          attachment:
+            path: gr8/spectra/${primary_name}_hires.fits
+            name: gr8_spectra_${primary_name}_hires.fits
+          ingest: spectrum_hires
       - name: 'resolution'
         title: 'resolution'
         type: float
@@ -534,20 +540,23 @@ fields:
     - name: 'sophie'
       title: sophie
       sub:
-      - name: '1d'
-        title: 'download 1D'
-        type: boolean
-        attachment:
-          path: gr8/spectra/SOPHIE/${primary_name/ /}_SOPHIE_S1D.fits
-          name: gr8_spectra_${primary_name/ /}_SOPHIE_S1D.fits
-        ingest: spectrum_sophie
-      - name: '2d'
-        title: 'download 2D'
-        type: boolean
-        attachment:
-          path: gr8/spectra/SOPHIE/${primary_name/ /}_SOPHIE_S2D.tgz
-          name: gr8_spectra_${primary_name/ /}_SOPHIE_S2D.tgz
-        ingest: spectrum_sophie
+      - name: ''
+        title: 'download'
+        sub:
+        - name: '1d'
+          title: '1D'
+          type: boolean
+          attachment:
+            path: gr8/spectra/SOPHIE/${primary_name/ /}_SOPHIE_S1D.fits
+            name: gr8_spectra_${primary_name/ /}_SOPHIE_S1D.fits
+          ingest: spectrum_sophie
+        - name: '2d'
+          title: '2D'
+          type: boolean
+          attachment:
+            path: gr8/spectra/SOPHIE/${primary_name/ /}_SOPHIE_S2D.tgz
+            name: gr8_spectra_${primary_name/ /}_SOPHIE_S2D.tgz
+          ingest: spectrum_sophie
 #     - name: 'resolution'
 #       title: 'resolution'
 #       type: float

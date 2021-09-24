@@ -9,13 +9,14 @@ module ES
   ( initServer
   , createIndex
   , checkIndices
-  , storedFields
+  , storedFields'
   , queryIndex
   , queryBulk
   , createBulk
   , flushIndex
   , countIndex
   , closeIndex
+  , openIndex
   ) where
 
 import           Control.Arrow ((&&&))
@@ -36,7 +37,7 @@ import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
 import           Data.IORef (newIORef, readIORef, writeIORef)
 import           Data.List (find)
-import           Data.Maybe (mapMaybe)
+import           Data.Maybe (mapMaybe, fromMaybe)
 import           Data.Proxy (Proxy)
 import           Data.String (IsString)
 import qualified Data.Text as T
@@ -186,6 +187,9 @@ storedFields _ o = case HM.lookup "fields" o of
   Just (J.Object s) -> return $ HM.map unsingletonJSON s
   _ -> fail "missing fields object"
 
+storedFields' :: ESStoreField -> J.Object -> J.Object
+storedFields' s o = maybe id (HM.insert "_id") (HM.lookup "_id" o) $ fromMaybe HM.empty $ storedFields s o
+
 scrollTime :: IsString s => s
 scrollTime = "60s"
 
@@ -203,7 +207,7 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreFiel
     (mwhen scroll $ [("scroll", Just scrollTime)])
     (JE.pairs $
        (mwhen (queryOffset > 0) $ "from" J..= queryOffset)
-    <> (mwhen (queryLimit  > 0 || not scroll) $ "size" J..= queryLimit)
+    <> ("size" J..= if scroll && queryLimit == 0 then 10000 else queryLimit)
     <> "sort" `JE.pair` JE.list (\(f, a) -> JE.pairs (fieldName f J..= if a then "asc" else "desc" :: String)) (querySort ++ [(def{ fieldName = "_doc" },True)])
     <> (case store of
       ESStoreSource -> "_source"
@@ -340,19 +344,23 @@ queryBulk cat@Catalog{ catalogStore = CatalogES{ catalogStoreField = store } } q
     <*> parseJSONField "hits" (J.withObject "hits" $ \hits -> (,)
       <$> (hits J..: "total" >>= (J..: "value"))
       <*> parseJSONField "hits" (J.withArray "hits" $
-        V.mapM $ J.withObject "hit" $ storedFields store)
-        hits)
-      q
+        (return . V.map row))
+      hits)
+    q
+  row (J.Object o) = storedFields' store o
+  row _ = HM.empty -- error?
 
 createBulk :: Catalog -> [(String, J.Series)] -> M ()
 createBulk cat@Catalog{ catalogStore = ~CatalogES{} } docs = do
+  conf <- asks globalConfig
+  let act = fromMaybe "create" $ conf C.! "ingest_action"
+      body = foldMap doc docs
+      doc (i, d) = J.fromEncoding (J.pairs $ act .=* ("_id" J..= i))
+        <> nl <> J.fromEncoding (J.pairs d) <> nl
   r <- elasticSearch POST (catalogURL cat ++ ["_bulk"]) [] body
   -- TODO: ignore 409
   unless (HM.lookup "errors" (r :: J.Object) == Just (J.Bool False)) $ fail $ "createBulk: " ++ BSLC.unpack (J.encode r)
   where
-  body = foldMap doc docs
-  doc (i, d) = J.fromEncoding (J.pairs $ "create" .=* ("_id" J..= i))
-    <> nl <> J.fromEncoding (J.pairs d) <> nl
   nl = B.char7 '\n'
 
 flushIndex :: Catalog -> M (J.Value, J.Value)
@@ -370,7 +378,13 @@ countIndex :: Catalog -> M Word
 countIndex Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } =
   sum . map esCount <$> elasticSearch GET (["_cat", "count", T.unpack idxn]) [] EmptyJSON
 
-closeIndex :: Catalog -> M J.Value
-closeIndex Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } =
+blockIndex :: Bool -> Catalog -> M J.Value
+blockIndex ro Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } =
   elasticSearch PUT ([T.unpack idxn, "_settings"]) [] $ JE.pairs $
-    "index" .=* ("blocks" .=* ("read_only" J..= True))
+    "index" .=* ("blocks" .=* ("read_only" J..= ro))
+
+closeIndex :: Catalog -> M J.Value
+closeIndex = blockIndex True
+
+openIndex :: Catalog -> M J.Value
+openIndex = blockIndex False
