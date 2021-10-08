@@ -86,6 +86,8 @@ const plotVue = new Vue({
       z: PlotZ
     },
     log: false, /* for histogram */
+    color: PlotC,
+    colorlog: false, /* for scatter */
   },
   methods: {
     // Count log toggle (aka replot)
@@ -376,8 +378,12 @@ function scatterplotDraw(
       let min: number, max: number;
       type Point = {x: number; y: number; z?: number; c:number};
       const data: Point[] = [];
+      /* colorAxis.type = logarithmic doesn't seem to work, fake it */
+      const log = plotVue.colorlog;
       for (let r of res) {
-        const c = r[cname];
+        let c = r[cname];
+        if (log)
+          c = c > 0 ? Math.log10(c) : undefined;
         if (min == null || c < min)
           min = c;
         if (max == null || c > max)
@@ -388,16 +394,25 @@ function scatterplotDraw(
           p.z = d[2];
         data.push(p);
       }
+      const rf = render_funct(PlotC, log, 2);
       opts.colorAxis = {
         min: min,
         max: max,
         minColor: '#ff0000',
         maxColor: '#0000ff',
+        labels: {
+          formatter: function () {
+            return rf(this.value);
+          },
+          allowOverlap: true
+        },
+        reversed: PlotC.reversed || false
       };
       opts.series = [{
         type: stype,
         colorKey: 'c',
         data: data,
+        color: '#000000',
       }];
       val = {key:'c', render: render};
     }
@@ -412,6 +427,7 @@ function scatterplotDraw(
   }
   opts.tooltip.formatter = tooltip_formatter(dims, val);
   Chart = Highcharts.chart("plot-chart", opts);
+  (<any>window).Chart = Chart;
   if (PlotZ) {
     Highcharts.addEvent(Chart.container, 'mousedown', chartDrag3D);
     Highcharts.addEvent(Chart.container, 'touchstart', chartDrag3D);
@@ -457,8 +473,9 @@ function plotShow() {
   plotVue.filter = {
     x: PlotX,
     y: PlotY || PlotCond,
-    z: PlotZ
+    z: PlotZ,
   };
+  plotVue.color = PlotC;
   for (let o of Object.values(old))
     if (o && !Object.values(plotVue.filter).includes(o))
       o.removeIfClear();
