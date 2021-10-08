@@ -44,6 +44,16 @@
   width: 100%;
 }
 
+.heading-content--horizontal {
+  flex-direction: row;
+
+  img {
+    margin-left: 2vw;
+    margin-bottom: 2rem;
+    max-height: 14rem;
+  }
+}
+
 /* Bigger than 550 */
 @media (min-width: 550px) {
   .pic {
