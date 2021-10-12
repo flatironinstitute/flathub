@@ -412,7 +412,7 @@ function scatterplotDraw(
         type: stype,
         colorKey: 'c',
         data: data,
-        color: '#000000',
+        color: '#e7e7e8',
       }];
       val = {key:'c', render: render};
     }
