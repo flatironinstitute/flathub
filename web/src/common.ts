@@ -195,11 +195,12 @@ export function field_title(
 
 export function render_funct(
   field: Field,
-  log: boolean = false
+  log: boolean = false,
+  prec: number = 8
 ): RenderFun {
   if (field.base === "f") {
     const p = log ? (x: any) => Math.exp(parseFloat(x)) : parseFloat;
-    return (data) => (data != undefined ? p(data).toPrecision(8) : data);
+    return (data) => (data != undefined ? p(data).toPrecision(prec) : data);
   }
   if (field.enum) {
     const e: string[] = field.enum;
@@ -264,29 +265,26 @@ export function axis_options(field: Field, log: LogScale, min: number|undefined=
     title: axis_title(field),
     gridLineWidth: 1,
     labels: {
-      formatter:
-        field.base === "f"
-          ? log == 'server'
-            ? function () {
-                const v = Math.exp(<number>this.value);
-                let d = (<any>this.axis).tickInterval;
-                return v.toPrecision(
-                  1 + Math.max(0, -Math.floor(Math.log10(Math.exp(d) - 1)))
-                );
-              }
-            : function () {
-                const v = <number>this.value;
-                const d = (<any>this.axis).tickInterval;
-                return v.toPrecision(
-                  1 +
-                    Math.max(
-                      0,
-                      Math.floor(Math.log10(Math.abs(v))) -
-                        Math.floor(Math.log10(d))
-                    )
-                );
-              }
-          : render_funct(field, log == 'server')
+      formatter: log == 'server'
+        ? function () {
+            const v = Math.exp(<number>this.value);
+            let d = (<any>this.axis).tickInterval;
+            return v.toPrecision(
+              1 + Math.max(0, -Math.floor(Math.log10(Math.exp(d) - 1)))
+            );
+          }
+        : function () {
+            const v = <number>this.value;
+            const d = (<any>this.axis).tickInterval;
+            return v.toPrecision(
+              1 +
+                Math.max(
+                  0,
+                  Math.floor(Math.log10(Math.abs(v))) -
+                    Math.floor(Math.log10(d))
+                )
+            );
+          }
     },
     min: log == 'server' ? Math.log(min) : min,
     max: log == 'server' ? Math.log(max) : max,

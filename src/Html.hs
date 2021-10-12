@@ -311,6 +311,17 @@ catalogPage = getPath R.parameter $ \sim req -> do
                                 :not (fieldDisp f):style="display:none"
                                 value="#{fieldName f}">
                                 #{fieldTitle f}
+                        <div .tooltip-container>
+                          <div .switch-row>
+                            <label>lin
+                            <label .switch>
+                              <input
+                                type="checkbox"
+                                name="logcolor"
+                                v-bind:disabled="!color || color.terms"
+                                v-model="colorlog">
+                              <span .slider v-bind:disabled="!color || color.terms">
+                            <label>log
                   <div .col-sm-12 .col-md-3 .plot-col v-if="type!='s'">
                     <div .tooltip-container>
                       <span .label-help>Count:
