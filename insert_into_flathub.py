@@ -29,9 +29,7 @@ SIMULATION_SET_ID_RANGES = {
 MAX_SNAPSHOT = 33
 SNAPSHOTS = range(MAX_SNAPSHOT + 1)
 
-SNAPSHOTS_TO_REDSHIFTS = 1 # TODO
-
-
+REDSHIFTS = [6.0, 5.0, 4.0, 3.5, 3.0, 2.81329, 2.63529, 2.46560, 2.30383, 2.14961, 2.00259, 1.86243, 1.72882, 1.60144, 1.48001, 1.36424, 1.25388, 1.14868, 1.04838, 0.95276, 0.86161, 0.77471, 0.69187, 0.61290, 0.53761, 0.46584, 0.39741, 0.33218, 0.27, 0.21071, 0.15420, 0.10033, 0.04896, 0.0]
 
 
 for simulation_suite in SIMULATION_SUITES:
@@ -40,7 +38,7 @@ for simulation_suite in SIMULATION_SUITES:
             basepath = f"./Simulations/{simulation_suite}/{simulation_set}_{simulation_set_id}/"
             
             for snapshot in SNAPSHOTS:
-                redshift = 1 # TODO determine from snapshot
+                redshift = REDSHIFTS[snapshot]
 
                 # Verify if file exists, before trying to read halo data
                 if not os.path.exists(f"{basepath}/fof_subhalo_tab_{snapshot:03}.hdf5"):
@@ -56,7 +54,6 @@ for simulation_suite in SIMULATION_SUITES:
                     """
                     for i in range(halos["count"]):
                         doc = {
-                            "id": i, # TODO decide if necessary. If so, how to make unique across snapshots and all?
                             "redshift": redshift,
                             "simulation_suite": simulation_suite_to_enum(simulation_suite),
                             "simulation_set": simulation_set_to_enum(simulation_set),
@@ -76,7 +73,7 @@ for simulation_suite in SIMULATION_SUITES:
                             "GroupGasMetalFractions_Ne": halos["GroupGasMetalFractions"][i][5],
                             "GroupGasMetalFractions_Mg": halos["GroupGasMetalFractions"][i][6],
                             "GroupGasMetalFractions_Si": halos["GroupGasMetalFractions"][i][7],
-                            "GroupGasMetalFractions_Fi": halos["GroupGasMetalFractions"][i][8], # TODO Fe, not Fi
+                            "GroupGasMetalFractions_Fe": halos["GroupGasMetalFractions"][i][8],
                             "GroupGasMetalFractions_total": halos["GroupGasMetalFractions"][i][9],
                             "GroupGasMetallicity": halos["GroupGasMetallicity"][i],
                             "GroupLen": halos["GroupLen"][i],
@@ -106,7 +103,7 @@ for simulation_suite in SIMULATION_SUITES:
                             "GroupStarMetalFractions_Ne": halos["GroupStarMetalFractions"][i][5],
                             "GroupStarMetalFractions_Mg": halos["GroupStarMetalFractions"][i][6],
                             "GroupStarMetalFractions_Si": halos["GroupStarMetalFractions"][i][7],
-                            "GroupStarMetalFractions_Fi": halos["GroupStarMetalFractions"][i][8], # TODO Fe, not Fi
+                            "GroupStarMetalFractions_Fe": halos["GroupStarMetalFractions"][i][8],
                             "GroupStarMetalFractions_total": halos["GroupStarMetalFractions"][i][9],
                             "GroupStarMetallicity": halos["GroupStarMetallicity"][i],
                             "GroupVel_x": halos["GroupVel"][i][0],

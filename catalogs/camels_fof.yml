@@ -7,7 +7,6 @@ sort:
 - simulation_set
 - simulation_set_id
 - snapshot
-- id
 fields:
   - name: simulation_suite
     type: byte
@@ -38,9 +37,6 @@ fields:
     type: float
     descr: 'Redshift of the snapshot corresponding to this group catalog.'
     dict: redshift
-  - name: id
-    type: int
-    descr: "Group index number"
   - name: GroupBHMass
     type: float
     units: '\(10^{10}M_\odot/h\)'
