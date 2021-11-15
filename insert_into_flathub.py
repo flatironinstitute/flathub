@@ -1,4 +1,15 @@
-# Step 1: read data using illustris_python
+### Script to ingest CAMELS data into FlatHub.
+### Usage:
+## 0. git clone https://github.com/illustristng/illustris_python
+# where this script will be executed.
+# 1. Modify illustris_python/groupcat.py, gcPath() function,
+# to return filePath1 = basePath + 'fof_subhalo_tab_%03d.hdf5' % (snapNum)
+# This will allow illustris_python to be used with CAMELS files.
+## 2. Modify the ELASTICSEARCH variable to point to the correct HTTP endpoint.
+## 3. Modify the `basepath` variable within the for loop below,
+# to refer to the appropriate path to the CAMELS files.
+
+
 import os
 
 import illustris_python as il
