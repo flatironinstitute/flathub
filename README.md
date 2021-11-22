@@ -17,8 +17,9 @@ There is also a [docker-compose](docker-compose.yml) definition for installing e
    - You can also setup your own elasticsearch cluster on multiple machines, in which case you only need the flathub service
    - Update [config](config) to point to your elasticsearch cluster if it's not the default
 - Run `docker-compose build` to build the application
+   - Anytime you change the `catalog` files, you must re-run `docker compose build` to pick up the latest `catalog` files.
 - Run `docker-compose up -d` to bring up everything (the flathub service will exit with an error -- this is expected). Wait for a couple of minutes, until only the container `flathub-es` is up, and the other containers have exited.
-   - Sometimes, `flathub-es` will have stopped. This can be due to the limited number of Elastic Search nodes available. One solution is to restart Docker, which can also refresh the nodes.
+   - Sometimes, `flathub-es` will have stopped. This can be due to the limited number of Elastic Search nodes available. One solution is to restart Docker, which can also refresh the nodes. Alternatively, restarting the desired containers can also help.
 - Afterwards, run `docker-compose run --rm flathub -s CATALOG` for each defined catalog to create the databases.
 - Run `docker-compose up -d` (once more) to bring up the flathub webserver.
    - After this, all three containers should be up for a small amount of time. After around a minute, `flathub_es_1` will have exited, and the other containers will be up.

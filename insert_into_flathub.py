@@ -55,14 +55,13 @@ for simulation_suite in SIMULATION_SUITES:
                 if not os.path.exists(f"{basepath}/fof_subhalo_tab_{snapshot:03}.hdf5"):
                     continue
 
-                print("Found file. About to load halos")
-                halos = il.groupcat.loadHalos(basepath, snapshot, fields=None)
+                print("Found file. About to load halos and subhalos.")
 
-                def generate_actions():
-                    """ For each row of data, yields a single document.
-                    This function is passed into the bulk()
-                    helper to create many documents in sequence.
-                    """
+                halos = il.groupcat.loadHalos(basepath, snapshot, fields=None)
+                subhalos = il.groupcat.loadSubhalos(basepath, snapshot, fields=None)
+
+                ### Generate FoF Halos for indexing
+                def generate_FoF_halos():
                     for i in range(halos["count"]):
                         doc = {
                             "redshift": redshift,
@@ -132,15 +131,205 @@ for simulation_suite in SIMULATION_SUITES:
                         }
                         yield doc
 
+                ### Generate Subhalos for indexing
+                def generate_subhalos():
+                    for i in range(subhalos["count"]):
+                        doc = {
+                            "redshift": redshift,
+                            "simulation_suite": simulation_suite_to_enum(simulation_suite),
+                            "simulation_set": simulation_set_to_enum(simulation_set),
+                            "simulation_set_id": simulation_set_id,
+                            "snapshot": snapshot,
+                            "SubhaloBHMass": subhalos["SubhaloBHMass"][i],
+                            "SubhaloBHMdot": subhalos["SubhaloBHMdot"][i],
+                            "SubhaloBfldDisk": subhalos["SubhaloBfldDisk"][i],
+                            "SubhaloBfldHalo": subhalos["SubhaloBfldHalo"][i],
+                            "SubhaloCM_x": subhalos["SubhaloCM"][i][0],
+                            "SubhaloCM_y": subhalos["SubhaloCM"][i][1],
+                            "SubhaloCM_z": subhalos["SubhaloCM"][i][2],
+                            "SubhaloGasMetalFractions_H": subhalos["SubhaloGasMetalFractions"][i][0],
+                            "SubhaloGasMetalFractions_He": subhalos["SubhaloGasMetalFractions"][i][1],
+                            "SubhaloGasMetalFractions_C": subhalos["SubhaloGasMetalFractions"][i][2],
+                            "SubhaloGasMetalFractions_N": subhalos["SubhaloGasMetalFractions"][i][3],
+                            "SubhaloGasMetalFractions_O": subhalos["SubhaloGasMetalFractions"][i][4],
+                            "SubhaloGasMetalFractions_Ne": subhalos["SubhaloGasMetalFractions"][i][5],
+                            "SubhaloGasMetalFractions_Mg": subhalos["SubhaloGasMetalFractions"][i][6],
+                            "SubhaloGasMetalFractions_Si": subhalos["SubhaloGasMetalFractions"][i][7],
+                            "SubhaloGasMetalFractions_Fe": subhalos["SubhaloGasMetalFractions"][i][8],
+                            "SubhaloGasMetalFractions_total": subhalos["SubhaloGasMetalFractions"][i][9],
+                            "SubhaloGasMetalFractionsHalfRad_H": subhalos["SubhaloGasMetalFractionsHalfRad"][i][0],
+                            "SubhaloGasMetalFractionsHalfRad_He": subhalos["SubhaloGasMetalFractionsHalfRad"][i][1],
+                            "SubhaloGasMetalFractionsHalfRad_C": subhalos["SubhaloGasMetalFractionsHalfRad"][i][2],
+                            "SubhaloGasMetalFractionsHalfRad_N": subhalos["SubhaloGasMetalFractionsHalfRad"][i][3],
+                            "SubhaloGasMetalFractionsHalfRad_O": subhalos["SubhaloGasMetalFractionsHalfRad"][i][4],
+                            "SubhaloGasMetalFractionsHalfRad_Ne": subhalos["SubhaloGasMetalFractionsHalfRad"][i][5],
+                            "SubhaloGasMetalFractionsHalfRad_Mg": subhalos["SubhaloGasMetalFractionsHalfRad"][i][6],
+                            "SubhaloGasMetalFractionsHalfRad_Si": subhalos["SubhaloGasMetalFractionsHalfRad"][i][7],
+                            "SubhaloGasMetalFractionsHalfRad_Fe": subhalos["SubhaloGasMetalFractionsHalfRad"][i][8],
+                            "SubhaloGasMetalFractionsHalfRad_total": subhalos["SubhaloGasMetalFractionsHalfRad"][i][9],
+                            "SubhaloGasMetalFractionsMaxRad_H": subhalos["SubhaloGasMetalFractionsMaxRad"][i][0],
+                            "SubhaloGasMetalFractionsMaxRad_He": subhalos["SubhaloGasMetalFractionsMaxRad"][i][1],
+                            "SubhaloGasMetalFractionsMaxRad_C": subhalos["SubhaloGasMetalFractionsMaxRad"][i][2],
+                            "SubhaloGasMetalFractionsMaxRad_N": subhalos["SubhaloGasMetalFractionsMaxRad"][i][3],
+                            "SubhaloGasMetalFractionsMaxRad_O": subhalos["SubhaloGasMetalFractionsMaxRad"][i][4],
+                            "SubhaloGasMetalFractionsMaxRad_Ne": subhalos["SubhaloGasMetalFractionsMaxRad"][i][5],
+                            "SubhaloGasMetalFractionsMaxRad_Mg": subhalos["SubhaloGasMetalFractionsMaxRad"][i][6],
+                            "SubhaloGasMetalFractionsMaxRad_Si": subhalos["SubhaloGasMetalFractionsMaxRad"][i][7],
+                            "SubhaloGasMetalFractionsMaxRad_Fe": subhalos["SubhaloGasMetalFractionsMaxRad"][i][8],
+                            "SubhaloGasMetalFractionsMaxRad_total": subhalos["SubhaloGasMetalFractionsMaxRad"][i][9],
+                            "SubhaloGasMetalFractionsSfr_H": subhalos["SubhaloGasMetalFractionsSfr"][i][0],
+                            "SubhaloGasMetalFractionsSfr_He": subhalos["SubhaloGasMetalFractionsSfr"][i][1],
+                            "SubhaloGasMetalFractionsSfr_C": subhalos["SubhaloGasMetalFractionsSfr"][i][2],
+                            "SubhaloGasMetalFractionsSfr_N": subhalos["SubhaloGasMetalFractionsSfr"][i][3],
+                            "SubhaloGasMetalFractionsSfr_O": subhalos["SubhaloGasMetalFractionsSfr"][i][4],
+                            "SubhaloGasMetalFractionsSfr_Ne": subhalos["SubhaloGasMetalFractionsSfr"][i][5],
+                            "SubhaloGasMetalFractionsSfr_Mg": subhalos["SubhaloGasMetalFractionsSfr"][i][6],
+                            "SubhaloGasMetalFractionsSfr_Si": subhalos["SubhaloGasMetalFractionsSfr"][i][7],
+                            "SubhaloGasMetalFractionsSfr_Fe": subhalos["SubhaloGasMetalFractionsSfr"][i][8],
+                            "SubhaloGasMetalFractionsSfr_total": subhalos["SubhaloGasMetalFractionsSfr"][i][9],
+                            "SubhaloGasMetalFractionsSfrWeighted_H": subhalos["SubhaloGasMetalFractionsSfrWeighted"][i][0],
+                            "SubhaloGasMetalFractionsSfrWeighted_He": subhalos["SubhaloGasMetalFractionsSfrWeighted"][i][1],
+                            "SubhaloGasMetalFractionsSfrWeighted_C": subhalos["SubhaloGasMetalFractionsSfrWeighted"][i][2],
+                            "SubhaloGasMetalFractionsSfrWeighted_N": subhalos["SubhaloGasMetalFractionsSfrWeighted"][i][3],
+                            "SubhaloGasMetalFractionsSfrWeighted_O": subhalos["SubhaloGasMetalFractionsSfrWeighted"][i][4],
+                            "SubhaloGasMetalFractionsSfrWeighted_Ne": subhalos["SubhaloGasMetalFractionsSfrWeighted"][i][5],
+                            "SubhaloGasMetalFractionsSfrWeighted_Mg": subhalos["SubhaloGasMetalFractionsSfrWeighted"][i][6],
+                            "SubhaloGasMetalFractionsSfrWeighted_Si": subhalos["SubhaloGasMetalFractionsSfrWeighted"][i][7],
+                            "SubhaloGasMetalFractionsSfrWeighted_Fe": subhalos["SubhaloGasMetalFractionsSfrWeighted"][i][8],
+                            "SubhaloGasMetalFractionsSfrWeighted_total": subhalos["SubhaloGasMetalFractionsSfrWeighted"][i][9],
+                            "SubhaloGasMetallicity": subhalos["SubhaloGasMetallicity"][i],
+                            "SubhaloGasMetallicityHalfRad": subhalos["SubhaloGasMetallicityHalfRad"][i],
+                            "SubhaloGasMetallicityMaxRad": subhalos["SubhaloGasMetallicityMaxRad"][i],
+                            "SubhaloGasMetallicitySfr": subhalos["SubhaloGasMetallicitySfr"][i],
+                            "SubhaloGasMetallicitySfrWeighted": subhalos["SubhaloGasMetallicitySfrWeighted"][i],
+                            "SubhaloGrNr": subhalos["SubhaloGrNr"][i],
+                            "SubhaloHalfmassRad": subhalos["SubhaloHalfmassRad"][i],
+                            "SubhaloHalfmassRadType_gas": subhalos["SubhaloHalfmassRadType"][i][0],
+                            "SubhaloHalfmassRadType_dm": subhalos["SubhaloHalfmassRadType"][i][1],
+                            "SubhaloHalfmassRadType_unused": subhalos["SubhaloHalfmassRadType"][i][2],
+                            "SubhaloHalfmassRadType_tracers": subhalos["SubhaloHalfmassRadType"][i][3],
+                            "SubhaloHalfmassRadType_stars": subhalos["SubhaloHalfmassRadType"][i][4],
+                            "SubhaloHalfmassRadType_bh": subhalos["SubhaloHalfmassRadType"][i][5],
+                            "SubhaloIDMostbound": subhalos["SubhaloIDMostbound"][i],
+                            "SubhaloLen": subhalos["SubhaloLen"][i],
+                            "SubhaloLenType_gas": subhalos["SubhaloLenType"][i][0],
+                            "SubhaloLenType_dm": subhalos["SubhaloLenType"][i][1],
+                            "SubhaloLenType_unused": subhalos["SubhaloLenType"][i][2],
+                            "SubhaloLenType_tracers": subhalos["SubhaloLenType"][i][3],
+                            "SubhaloLenType_stars": subhalos["SubhaloLenType"][i][4],
+                            "SubhaloLenType_bh": subhalos["SubhaloLenType"][i][5],
+                            "SubhaloMass": subhalos["SubhaloMass"][i],
+                            "SubhaloMassInHalfRad": subhalos["SubhaloMassInHalfRad"][i],
+                            "SubhaloMassInMaxRad": subhalos["SubhaloMassInMaxRad"][i],
+                            "SubhaloMassInRad": subhalos["SubhaloMassInRad"][i],
+                            "SubhaloMassInHalfRadType_gas": subhalos["SubhaloMassInHalfRadType"][i][0],
+                            "SubhaloMassInHalfRadType_dm": subhalos["SubhaloMassInHalfRadType"][i][1],
+                            "SubhaloMassInHalfRadType_unused": subhalos["SubhaloMassInHalfRadType"][i][2],
+                            "SubhaloMassInHalfRadType_tracers": subhalos["SubhaloMassInHalfRadType"][i][3],
+                            "SubhaloMassInHalfRadType_stars": subhalos["SubhaloMassInHalfRadType"][i][4],
+                            "SubhaloMassInHalfRadType_bh": subhalos["SubhaloMassInHalfRadType"][i][5],
+                            "SubhaloMassInMaxRadType_gas": subhalos["SubhaloMassInMaxRadType"][i][0],
+                            "SubhaloMassInMaxRadType_dm": subhalos["SubhaloMassInMaxRadType"][i][1],
+                            "SubhaloMassInMaxRadType_unused": subhalos["SubhaloMassInMaxRadType"][i][2],
+                            "SubhaloMassInMaxRadType_tracers": subhalos["SubhaloMassInMaxRadType"][i][3],
+                            "SubhaloMassInMaxRadType_stars": subhalos["SubhaloMassInMaxRadType"][i][4],
+                            "SubhaloMassInMaxRadType_bh": subhalos["SubhaloMassInMaxRadType"][i][5],
+                            "SubhaloMassInRadType_gas": subhalos["SubhaloMassInRadType"][i][0],
+                            "SubhaloMassInRadType_dm": subhalos["SubhaloMassInRadType"][i][1],
+                            "SubhaloMassInRadType_unused": subhalos["SubhaloMassInRadType"][i][2],
+                            "SubhaloMassInRadType_tracers": subhalos["SubhaloMassInRadType"][i][3],
+                            "SubhaloMassInRadType_stars": subhalos["SubhaloMassInRadType"][i][4],
+                            "SubhaloMassInRadType_bh": subhalos["SubhaloMassInRadType"][i][5],
+                            "SubhaloMassType_gas": subhalos["SubhaloMassType"][i][0],
+                            "SubhaloMassType_dm": subhalos["SubhaloMassType"][i][1],
+                            "SubhaloMassType_unused": subhalos["SubhaloMassType"][i][2],
+                            "SubhaloMassType_tracers": subhalos["SubhaloMassType"][i][3],
+                            "SubhaloMassType_stars": subhalos["SubhaloMassType"][i][4],
+                            "SubhaloMassType_bh": subhalos["SubhaloMassType"][i][5],
+                            "SubhaloParent": subhalos["SubhaloParent"][i],
+                            "SubhaloPos_x": subhalos["SubhaloPos"][i][0],
+                            "SubhaloPos_y": subhalos["SubhaloPos"][i][1],
+                            "SubhaloPos_z": subhalos["SubhaloPos"][i][2],
+                            "SubhaloSFR": subhalos["SubhaloSFR"][i],
+                            "SubhaloSFRinHalfRad": subhalos["SubhaloSFRinHalfRad"][i],
+                            "SubhaloSFRinMaxRad": subhalos["SubhaloSFRinMaxRad"][i],
+                            "SubhaloSFRinRad": subhalos["SubhaloSFRinRad"][i],
+                            "SubhaloSpin_x": subhalos["SubhaloSpin"][i][0],
+                            "SubhaloSpin_y": subhalos["SubhaloSpin"][i][1],
+                            "SubhaloSpin_z": subhalos["SubhaloSpin"][i][2],
+                            "SubhaloStarMetallicity": subhalos["SubhaloStarMetallicity"][i],
+                            "SubhaloStarMetallicityHalfRad": subhalos["SubhaloStarMetallicityHalfRad"][i],
+                            "SubhaloStarMetallicityMaxRad": subhalos["SubhaloStarMetallicityMaxRad"][i],
+                            "SubhaloStarMetalFractions_H": subhalos["SubhaloStarMetalFractions"][i][0],
+                            "SubhaloStarMetalFractions_He": subhalos["SubhaloStarMetalFractions"][i][1],
+                            "SubhaloStarMetalFractions_C": subhalos["SubhaloStarMetalFractions"][i][2],
+                            "SubhaloStarMetalFractions_N": subhalos["SubhaloStarMetalFractions"][i][3],
+                            "SubhaloStarMetalFractions_O": subhalos["SubhaloStarMetalFractions"][i][4],
+                            "SubhaloStarMetalFractions_Ne": subhalos["SubhaloStarMetalFractions"][i][5],
+                            "SubhaloStarMetalFractions_Mg": subhalos["SubhaloStarMetalFractions"][i][6],
+                            "SubhaloStarMetalFractions_Si": subhalos["SubhaloStarMetalFractions"][i][7],
+                            "SubhaloStarMetalFractions_Fe": subhalos["SubhaloStarMetalFractions"][i][8],
+                            "SubhaloStarMetalFractions_total": subhalos["SubhaloStarMetalFractions"][i][9],
+                            "SubhaloStarMetalFractionsHalfRad_H": subhalos["SubhaloStarMetalFractionsHalfRad"][i][0],
+                            "SubhaloStarMetalFractionsHalfRad_He": subhalos["SubhaloStarMetalFractionsHalfRad"][i][1],
+                            "SubhaloStarMetalFractionsHalfRad_C": subhalos["SubhaloStarMetalFractionsHalfRad"][i][2],
+                            "SubhaloStarMetalFractionsHalfRad_N": subhalos["SubhaloStarMetalFractionsHalfRad"][i][3],
+                            "SubhaloStarMetalFractionsHalfRad_O": subhalos["SubhaloStarMetalFractionsHalfRad"][i][4],
+                            "SubhaloStarMetalFractionsHalfRad_Ne": subhalos["SubhaloStarMetalFractionsHalfRad"][i][5],
+                            "SubhaloStarMetalFractionsHalfRad_Mg": subhalos["SubhaloStarMetalFractionsHalfRad"][i][6],
+                            "SubhaloStarMetalFractionsHalfRad_Si": subhalos["SubhaloStarMetalFractionsHalfRad"][i][7],
+                            "SubhaloStarMetalFractionsHalfRad_Fe": subhalos["SubhaloStarMetalFractionsHalfRad"][i][8],
+                            "SubhaloStarMetalFractionsHalfRad_total": subhalos["SubhaloStarMetalFractionsHalfRad"][i][9],
+                            "SubhaloStarMetalFractionsMaxRad_H": subhalos["SubhaloStarMetalFractionsMaxRad"][i][0],
+                            "SubhaloStarMetalFractionsMaxRad_He": subhalos["SubhaloStarMetalFractionsMaxRad"][i][1],
+                            "SubhaloStarMetalFractionsMaxRad_C": subhalos["SubhaloStarMetalFractionsMaxRad"][i][2],
+                            "SubhaloStarMetalFractionsMaxRad_N": subhalos["SubhaloStarMetalFractionsMaxRad"][i][3],
+                            "SubhaloStarMetalFractionsMaxRad_O": subhalos["SubhaloStarMetalFractionsMaxRad"][i][4],
+                            "SubhaloStarMetalFractionsMaxRad_Ne": subhalos["SubhaloStarMetalFractionsMaxRad"][i][5],
+                            "SubhaloStarMetalFractionsMaxRad_Mg": subhalos["SubhaloStarMetalFractionsMaxRad"][i][6],
+                            "SubhaloStarMetalFractionsMaxRad_Si": subhalos["SubhaloStarMetalFractionsMaxRad"][i][7],
+                            "SubhaloStarMetalFractionsMaxRad_Fe": subhalos["SubhaloStarMetalFractionsMaxRad"][i][8],
+                            "SubhaloStarMetalFractionsMaxRad_total": subhalos["SubhaloStarMetalFractionsMaxRad"][i][9],
+                            "SubhaloStellarPhotometrics_U": subhalos["SubhaloStellarPhotometrics"][i][0],
+                            "SubhaloStellarPhotometrics_B": subhalos["SubhaloStellarPhotometrics"][i][1],
+                            "SubhaloStellarPhotometrics_V": subhalos["SubhaloStellarPhotometrics"][i][2],
+                            "SubhaloStellarPhotometrics_K": subhalos["SubhaloStellarPhotometrics"][i][3],
+                            "SubhaloStellarPhotometrics_g": subhalos["SubhaloStellarPhotometrics"][i][4],
+                            "SubhaloStellarPhotometrics_r": subhalos["SubhaloStellarPhotometrics"][i][5],
+                            "SubhaloStellarPhotometrics_i": subhalos["SubhaloStellarPhotometrics"][i][6],
+                            "SubhaloStellarPhotometrics_z": subhalos["SubhaloStellarPhotometrics"][i][7],
+
+                            "SubhaloStellarPhotometricsMassInRad": subhalos["SubhaloStellarPhotometricsMassInRad"][i],
+                            "SubhaloStellarPhotometricsRad": subhalos["SubhaloStellarPhotometricsRad"][i],
+                            "SubhaloVel_x": subhalos["SubhaloVel"][i][0],
+                            "SubhaloVel_y": subhalos["SubhaloVel"][i][1],
+                            "SubhaloVel_z": subhalos["SubhaloVel"][i][2],
+                            "SubhaloVelDisp": subhalos["SubhaloVelDisp"][i],
+                            "SubhaloVmax": subhalos["SubhaloVmax"][i],
+                            "SubhaloVmaxRad": subhalos["SubhaloVmaxRad"][i],
+                            "SubhaloWindMass": subhalos["SubhaloWindMass"][i],
+                        }
+                        yield doc
+
                 print("Loading dataset...")
 
-                print("Indexing documents...")
+                print("Indexing FoF Halos...")
                 successes = 0
                 for ok, action in streaming_bulk(
-                    client=ELASTICSEARCH, index="camels", actions=generate_actions(),
+                    client=ELASTICSEARCH, index="camels", actions=generate_FoF_halos(),
                 ):
                     successes += ok
-                print("Indexed %d documents" % (successes))
+                print("Indexed %d FoF halo documents" % (successes))
 
                 ELASTICSEARCH.indices.refresh(index="camels")
+
+                print("Indexing Subhalos...")
+                successes = 0
+                for ok, action in streaming_bulk(
+                    client=ELASTICSEARCH, index="camels_sub", actions=generate_subhalos(),
+                ):
+                    successes += ok
+                print("Indexed %d Subfind Subhalo documents" % (successes))
+
+                ELASTICSEARCH.indices.refresh(index="camels_sub")
 
