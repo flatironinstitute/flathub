@@ -20,10 +20,10 @@ services:
       # backward compatibility for cluster name:
       - cluster.name=astrosums
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms16g -Xmx16g"
       - "discovery.seed_hosts=flathub-es"
       - "cluster.initial_master_nodes=flathub-es"
-      - "node.max_local_storage_nodes=1"
+      - "node.max_local_storage_nodes=8"
       - "node.name=flathub-es"
     expose:
       - "9200"
@@ -34,18 +34,18 @@ services:
     environment:
       - cluster.name=flathub
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms16g -Xmx16g"
       - "discovery.seed_hosts=flathub-es"
       - "cluster.initial_master_nodes=flathub-es"
-      - "node.max_local_storage_nodes=1"
-    scale: 1
+      - "node.max_local_storage_nodes=8"
+    scale: 4
   flathub:
     build: .
     image: flatironinstitute/flathub
     networks:
       - esnet
     ports:
-      - "8092:8092"
+      - "80:8092"
     depends_on:
       - flathub-es
 
