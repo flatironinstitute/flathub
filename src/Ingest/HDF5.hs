@@ -57,8 +57,8 @@ parseIngest Field{ fieldName = n, fieldIngest = Just (T.stripPrefix "_" -> Just 
     Just (~':', r) -> r)
 parseIngest Field{ fieldIngest = Just i } = (Nothing, i)
 
-hdf5ReadVector :: H5.NativeType a => H5.Dataset -> [H5.HSize] -> Word64 -> IO (V.Vector a)
-hdf5ReadVector d o l = do
+hdf5ReadVector :: H5.NativeType a => T.Text -> H5.Dataset -> [H5.HSize] -> Word64 -> IO (V.Vector a)
+hdf5ReadVector label d o l = do
   v <- bracket (H5.getDatasetSpace d) H5.closeDataspace $ \s -> do
     (b@(b1:_), _) <- H5.getSimpleDataspaceExtent s
     let o1:os = pad o b
@@ -76,7 +76,7 @@ hdf5ReadVector d o l = do
   let nt = H5.nativeTypeOf1 v
   ntc <- H5.getTypeClass nt
   nts <- H5.getTypeSize nt
-  unless (tc == ntc && ts >= nts) $ fail $ "HDF5 type mismatch: " ++ show ((tc, ts), (ntc, nts))
+  unless (tc == ntc && ts >= nts) $ fail $ "HDF5 type mismatch: " ++ T.unpack label ++ " " ++ show ((tc, ts), (ntc, nts))
   return v
   where
   pad s [] = s
@@ -113,7 +113,7 @@ loadBlock info@Ingest{ ingestCatalog = Catalog{ catalogFieldGroups = cat }, inge
       let
         loop _ [] = return []
         loop i (f':fs') = do
-          x <- hdf5ReadType (fieldType f') $ hdf5ReadVector hd (fromIntegral off : if i == 0 then [] else [i]) $ ingestBlockSize info
+          x <- hdf5ReadType (fieldType f') $ hdf5ReadVector (fieldName f') hd (fromIntegral off : if i == 0 then [] else [i]) $ ingestBlockSize info
           ((fieldName f', x) :) <$> loop (succ i) fs'
       loop 0 $ expandFields (V.singleton f)
 
@@ -170,7 +170,7 @@ ingestHFile info hf = do
       v <- readScalarAttribute hf n (fieldType f)
       return i{ ingestConsts = f{ fieldType = v, fieldSub = Proxy } : ingestConsts i }
     (Just IngestConst, n) -> do
-      v <- readScalarValue n <$> withDataset hf n (\hd -> hdf5ReadType (fieldType f) $ hdf5ReadVector hd [] 2)
+      v <- readScalarValue n <$> withDataset hf n (\hd -> hdf5ReadType (fieldType f) $ hdf5ReadVector n hd [] 2)
       return i{ ingestConsts = f{ fieldType = v, fieldSub = Proxy } : ingestConsts i }
     (Just IngestIllustris, ill) -> do
       Long sz <- readScalarAttribute hf ("Header/N" <> case ill of { "Subhalo" -> "subgroup" ; s -> T.toLower s } <> "s_ThisFile") (Long Proxy)
