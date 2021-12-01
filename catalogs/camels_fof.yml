@@ -38,6 +38,10 @@ fields:
     dict: redshift
     ingest: _attribute:Header/Redshift
 
+  - name: id
+    type: int
+    descr: "Group index number"
+    ingest: _camels:Group
   - name: BHMass
     ingest: Group/GroupBHMass
     type: float

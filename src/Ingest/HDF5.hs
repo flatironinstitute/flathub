@@ -43,6 +43,7 @@ data IngestFlag
   | IngestOptional
   | IngestConst
   | IngestIllustris
+  | IngestCamels
   deriving (Eq, Enum, Bounded, Show)
 
 ingestFlags :: [(T.Text, IngestFlag)]
@@ -107,8 +108,8 @@ loadBlock info@Ingest{ ingestCatalog = Catalog{ catalogFieldGroups = cat }, inge
         (\(H5E.errorStack -> (H5E.HDF5Error{ H5E.classId = cls, H5E.majorNum = Just H5E.Sym, H5E.minorNum = Just H5E.NotFound }:_)) -> guard (cls == H5E.hdfError))
         (\() -> return [])
       $ loadf f{ fieldIngest = Just n } -- not quite right name handling
-    (Just IngestIllustris, _) ->
-      return [(fieldName f, Long (V.generate (fromIntegral $ maybe id (min . subtract off) (ingestSize info) $ ingestBlockSize info) ((+) (fromIntegral $ ingestStart info + off) . fromIntegral)))]
+    (Just IngestIllustris, _) -> indexf f
+    (Just IngestCamels, _) -> indexf f
     (Nothing, n) -> withDataset hf n $ \hd -> do
       let
         loop _ [] = return []
@@ -116,6 +117,8 @@ loadBlock info@Ingest{ ingestCatalog = Catalog{ catalogFieldGroups = cat }, inge
           x <- hdf5ReadType (fieldType f') $ hdf5ReadVector (fieldName f') hd (fromIntegral off : if i == 0 then [] else [i]) $ ingestBlockSize info
           ((fieldName f', x) :) <$> loop (succ i) fs'
       loop 0 $ expandFields (V.singleton f)
+  indexf f = return
+    [(fieldName f, Long (V.generate (fromIntegral $ maybe id (min . subtract off) (ingestSize info) $ ingestBlockSize info) ((+) (fromIntegral $ ingestStart info + off) . fromIntegral)))]
 
 ingestBlock :: Ingest -> DataBlock -> M Int
 ingestBlock info@Ingest{ ingestCatalog = cat@Catalog{ catalogStore = ~CatalogES{} }, ingestOffset = off } dat = do
@@ -173,22 +176,34 @@ ingestHFile info hf = do
       v <- readScalarValue n <$> withDataset hf n (\hd -> hdf5ReadType (fieldType f) $ hdf5ReadVector n hd [] 2)
       return i{ ingestConsts = f{ fieldType = v, fieldSub = Proxy } : ingestConsts i }
     (Just IngestIllustris, ill) -> do
-      Long sz <- readScalarAttribute hf ("Header/N" <> case ill of { "Subhalo" -> "subgroup" ; s -> T.toLower s } <> "s_ThisFile") (Long Proxy)
-      handleJust
-        (\(H5E.errorStack -> (H5E.HDF5Error{ H5E.classId = cls, H5E.majorNum = Just H5E.Attr, H5E.minorNum = Just H5E.NotFound }:_)) -> guard (cls == H5E.hdfError)) return $ do
-          Long fi <- readScalarAttribute hf "Header/Num_ThisFile" (Long Proxy)
-          Long ids <- readAttribute hf ("Header/FileOffsets_" <> ill) (Long Proxy)
-          let si = fromIntegral (ids V.! fromIntegral fi)
-          unless (si == ingestStart i) $ fail "start offset mismatch"
+      sz <- getIllustrisSize ill
       si <- constv "simulation" i
       sn <- constv "snapshot" i
       return i
         { ingestPrefix = si ++ '_' : sn ++ "_"
         , ingestSize = Just (fromIntegral sz) }
+    (Just IngestCamels, ill) -> do
+      sz <- getIllustrisSize ill
+      ssuite <- constv "simulation_suite" i
+      Field{ fieldEnum = Just ssete, fieldType = Byte ssetv } <- constf "simulation_set" i
+      sid <- constv "simulation_set_id" i
+      sn <- constv "snapshot" i
+      return i
+        { ingestPrefix = ssuite ++ T.unpack (ssete V.! fromIntegral ssetv) ++ sid ++ '_' : sn ++ "_"
+        , ingestSize = Just (fromIntegral sz) }
     _ -> return i
-  constv f = maybe (fail $ "const field " ++ show f ++ " not fonud")
-    (return . show . fieldType)
-    . find ((f ==) . fieldName) . ingestConsts
+  getIllustrisSize ill = do
+    Long sz <- readScalarAttribute hf ("Header/N" <> case ill of { "Subhalo" -> "subgroup" ; s -> T.toLower s } <> "s_ThisFile") (Long Proxy)
+    handleJust
+      (\(H5E.errorStack -> (H5E.HDF5Error{ H5E.classId = cls, H5E.majorNum = Just H5E.Attr, H5E.minorNum = Just H5E.NotFound }:_)) -> guard (cls == H5E.hdfError)) return $ do
+        Long fi <- readScalarAttribute hf "Header/Num_ThisFile" (Long Proxy)
+        Long ids <- readAttribute hf ("Header/FileOffsets_" <> ill) (Long Proxy)
+        let si = fromIntegral (ids V.! fromIntegral fi)
+        unless (si == ingestStart info) $ fail "start offset mismatch"
+    return sz
+  constv f i = show . fieldType <$> constf f i
+  constf f = maybe (fail $ "const field " ++ show f ++ " not found")
+    return . find ((f ==) . fieldName) . ingestConsts
   loop i = do
     liftIO $ putStr (show (ingestOffset i) ++ "\r") >> hFlush stdout
     n <- ingestBlock i =<< liftIO (loadBlock i hf)
