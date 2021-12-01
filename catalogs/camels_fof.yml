@@ -1,6 +1,7 @@
 title: CAMELS FoF Halos
 index: camels_fof
 descr: FoF Halo Dataset for CAMELS Simulations.
+count: 1532020422
 sort:
 - simulation_suite
 - simulation_set
