@@ -140,8 +140,10 @@ blockDoc info e d i =
 
 ingestWith :: Ingest -> (Int -> (String, J.Series)) -> Int -> M Int
 ingestWith Ingest{ ingestCatalog = cat@Catalog{ catalogStore = ~CatalogES{} } } doc n = do
-  when (n /= 0) $ ES.createBulk cat $ map doc [0..pred n]
+  when (n /= 0) $ ES.createBulk cat docs
   return n
+  where
+  docs = map doc [0..pred n]
 
 ingestBlock :: Ingest -> DataBlock -> M Int
 ingestBlock info dat =
@@ -213,10 +215,10 @@ ingestHFile info hf = do
   infof i f = case parseIngest f of
     (Just IngestAttribute, n) -> do
       v <- liftIO $ readScalarAttribute hf n (fieldType f)
-      return i{ ingestConsts = f{ fieldType = v, fieldSub = Proxy } : ingestConsts i }
+      return $ addIngestConsts f{ fieldType = v, fieldSub = Proxy } i
     (Just IngestConst, n) -> do
       v <- liftIO $ readScalarValue n <$> withDataset hf n (\hd -> hdf5ReadType (fieldType f) $ hdf5ReadVector n hd [] 2)
-      return i{ ingestConsts = f{ fieldType = v, fieldSub = Proxy } : ingestConsts i }
+      return $ addIngestConsts f{ fieldType = v, fieldSub = Proxy } i
     (Just IngestIllustris, ill) -> do
       sz <- getIllustrisSize ill
       si <- constv "simulation" i
@@ -236,17 +238,15 @@ ingestHFile info hf = do
     (Just IngestSubhalo, T.words -> ft : fl@[ff, fc, fp]) -> do
       (tf, cat') <- maybe (fail "missing join type field") return $ takeCatalogField ft (ingestCatalog i)
       unless (all (`HM.member` catalogFieldMap (ingestCatalog i)) fl) $ fail "missing join fields"
-      let tfv x = tf{ fieldType = Boolean (Identity x), fieldSub = Proxy }
+      let tfv x = addIngestConsts tf{ fieldType = Boolean (Identity x), fieldSub = Proxy }
           fg = fold $ fieldSub f
-      si <- foldM infof i
+      si <- foldM infof (tfv True i)
         { ingestCatalog = cat'{ catalogFieldGroups = (f <>) <$> fg }
-        , ingestConsts = tfv True : ingestConsts i
         , ingestSize = Nothing
         , ingestStart = 0
         } fg
-      return i
+      return $ tfv False i
         { ingestCatalog = cat'
-        , ingestConsts = tfv False : ingestConsts i
         , ingestJoin = Just (IngestJoin si ff fc fp)
         }
     _ -> return i -- XXX only top-level ingest flags processed here
