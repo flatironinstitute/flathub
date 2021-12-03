@@ -1,0 +1,29 @@
+#!/bin/bash -eux
+base=${1:-/mnt/ceph/users/camels/PUBLIC_RELEASE/Sims}
+[[ -d $base ]]
+suites=($(yaml2json catalogs/camels_fof.yml | jq -r '.fields[0].enum[]'))
+#ssets=($(yaml2json catalogs/${s}_fof.yml | jq -r '.fields[1].enum[]'))
+declare -A ssets=([LH]=999 [1P]=65 [CV]=26 [EX]=3)
+snapshots=33
+for suitei in "${!suites[@]}" ; do
+  suite="${suites[$suitei]}"
+  for sset in "${!ssets[@]}" ; do
+    ssetrange="${ssets[$sset]}"
+    for id in `seq 0 $ssetrange` ; do
+      dir=$base/$suite/${sset}_$id
+      if [[ ! -d $dir ]] ; then
+	echo "$dir: missing"
+	continue
+      fi
+      for snapshot in `seq -f "%03g" 0 $snapshots` ; do
+	file=$dir/fof_subhalo_tab_$snapshot.hdf5
+	if [[ ! -f $file ]] ; then
+	  echo "$file: missing"
+	  continue
+	fi
+	#h5dump -a /Header/Nsubgroups_ThisFile $file | sed -n 's/^\s*(0): //p'
+	~/.local/bin/flathub -i camels -c "simulation_suite=$suite" -c "simulation_set=$sset" -c "simulation_set_id=$id" -c "snapshot=$snapshot" "$suitei$sset$id-$snapshot=$file"
+      done
+    done
+  done
+done

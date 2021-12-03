@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE ViewPatterns #-}
 
@@ -19,6 +20,8 @@ import qualified Data.Aeson as J
 import qualified Data.ByteString.Char8 as BSC
 import           Data.Char (toLower)
 import           Data.Foldable (fold)
+import           Data.Functor.Identity (Identity(Identity))
+import qualified Data.HashMap.Strict as HM
 import           Data.List (find, nub)
 import           Data.Proxy (Proxy(Proxy))
 import qualified Data.Text as T
@@ -44,6 +47,7 @@ data IngestFlag
   | IngestConst
   | IngestIllustris
   | IngestCamels
+  | IngestSubhalo
   deriving (Eq, Enum, Bounded, Show)
 
 ingestFlags :: [(T.Text, IngestFlag)]
@@ -97,6 +101,11 @@ hdf5ReadType (Float   _) f = Float   <$> f
 hdf5ReadType (Boolean _) f = Boolean . fmap toBool <$> f
 hdf5ReadType t           _ = fail $ "Unsupported HDF5 type: " ++ show t
 
+blockSize :: MonadFail m => DataBlock -> m Int
+blockSize dat = case nub $ map (unTypeValue V.length . snd) dat of
+  [n] -> return n
+  n -> fail $ "Inconsistent data lengths: " ++ show n
+
 loadBlock :: Ingest -> H5.File -> IO DataBlock
 loadBlock info@Ingest{ ingestCatalog = Catalog{ catalogFieldGroups = cat }, ingestOffset = off } hf = concat <$> mapM loadf cat where
   loadf f = case parseIngest f of
@@ -110,6 +119,7 @@ loadBlock info@Ingest{ ingestCatalog = Catalog{ catalogFieldGroups = cat }, inge
       $ loadf f{ fieldIngest = Just n } -- not quite right name handling
     (Just IngestIllustris, _) -> indexf f
     (Just IngestCamels, _) -> indexf f
+    (Just IngestSubhalo, _) -> return []
     (Nothing, n) -> withDataset hf n $ \hd -> do
       let
         loop _ [] = return []
@@ -120,17 +130,42 @@ loadBlock info@Ingest{ ingestCatalog = Catalog{ catalogFieldGroups = cat }, inge
   indexf f = return
     [(fieldName f, Long (V.generate (fromIntegral $ maybe id (min . subtract off) (ingestSize info) $ ingestBlockSize info) ((+) (fromIntegral $ ingestStart info + off) . fromIntegral)))]
 
-ingestBlock :: Ingest -> DataBlock -> M Int
-ingestBlock info@Ingest{ ingestCatalog = cat@Catalog{ catalogStore = ~CatalogES{} }, ingestOffset = off } dat = do
-  n <- case nub $ map (unTypeValue V.length . snd) dat of
-    [n] -> return n
-    n -> fail $ "Inconsistent data lengths: " ++ show n
+blockJson :: DataBlock -> Int -> J.Series
+blockJson d i = foldMap (\(k, v) -> k J..= fmapTypeValue1 (V.! i) v) d
+
+blockDoc :: Ingest -> J.Series -> DataBlock -> Int -> (String, J.Series)
+blockDoc info e d i =
+  ( ingestPrefix info ++ show (ingestStart info + ingestOffset info + fromIntegral i)
+  , ingestJConsts info <> e <> blockJson d i)
+
+ingestWith :: Ingest -> (Int -> (String, J.Series)) -> Int -> M Int
+ingestWith Ingest{ ingestCatalog = cat@Catalog{ catalogStore = ~CatalogES{} } } doc n = do
   when (n /= 0) $ ES.createBulk cat $ map doc [0..pred n]
   return n
+
+ingestBlock :: Ingest -> DataBlock -> M Int
+ingestBlock info dat =
+  ingestWith info (blockDoc info mempty dat) =<< blockSize dat
+
+ingestSubBlocks :: Ingest -> H5.File -> DataBlock -> IngestJoin -> M Int
+ingestSubBlocks info hf pb IngestJoin{..} = do
+  fcl <- V.zip <$> getcol joinFirst pb <*> getcol joinCount pb
+  let fcl' = V.filter ((-1 /=) . fst) fcl
+  if V.null fcl' then return 0 else do
+    let (off, _) = V.head fcl'
+        (lo, lc) = V.last fcl'
+        n = lo + lc - off
+    unless (fromIntegral off == ingestOffset joinIngest) $ fail $ "suboffset missmatch: " ++ show off ++ " /= " ++ show (ingestOffset joinIngest)
+    sb <- liftIO $ loadBlock joinIngest{ ingestBlockSize = fromIntegral n } hf
+    sn <- blockSize sb
+    unless (sn == fromIntegral n) $ fail $ "Incorrect subblock length: " ++ show sn ++ "/" ++ show n
+    pbi <- getcol joinParent sb
+    let doc i = blockDoc joinIngest (blockJson pb (fromIntegral (fromIntegral (pbi V.! i) - ingestOffset info))) sb i
+    ingestWith info doc sn
   where
-  doc i =
-    ( ingestPrefix info ++ show (ingestStart info + off + fromIntegral i)
-    , ingestJConsts info <> foldMap (\(k, v) -> k J..= fmapTypeValue1 (V.! i) v) dat)
+  getcol f b = case lookup f b of
+    Just (Integer v) -> return v
+    _ -> fail $ "ingest join data not found for " ++ show f
 
 withHDF5 :: FilePath -> (H5.File -> IO a) -> IO a
 withHDF5 fn = bracket (H5.openFile (BSC.pack fn) [H5.ReadOnly] Nothing) H5.closeFile
@@ -161,6 +196,13 @@ readScalarAttribute :: H5.File -> T.Text -> Type -> IO Value
 readScalarAttribute hf p t =
   readScalarValue p <$> readAttribute hf p t
 
+ingestIncr :: Int -> Ingest -> Ingest
+ingestIncr n i = i{ ingestOffset = ingestOffset i + fromIntegral n }
+
+ingestDone :: MonadFail m => Ingest -> m ()
+ingestDone i =
+  unless (all (ingestOffset i ==) $ ingestSize i) $ fail $ "size mismatch: expected " ++ show (ingestSize i) ++ " rows, got " ++ show (ingestOffset i)
+
 ingestHFile :: Ingest -> H5.File -> M Word64
 ingestHFile info hf = do
   info' <- foldM infof info (catalogFieldGroups $ ingestCatalog info)
@@ -168,12 +210,12 @@ ingestHFile info hf = do
     then return 0
     else loop info'
   where
-  infof i f = liftIO $ case parseIngest f of
+  infof i f = case parseIngest f of
     (Just IngestAttribute, n) -> do
-      v <- readScalarAttribute hf n (fieldType f)
+      v <- liftIO $ readScalarAttribute hf n (fieldType f)
       return i{ ingestConsts = f{ fieldType = v, fieldSub = Proxy } : ingestConsts i }
     (Just IngestConst, n) -> do
-      v <- readScalarValue n <$> withDataset hf n (\hd -> hdf5ReadType (fieldType f) $ hdf5ReadVector n hd [] 2)
+      v <- liftIO $ readScalarValue n <$> withDataset hf n (\hd -> hdf5ReadType (fieldType f) $ hdf5ReadVector n hd [] 2)
       return i{ ingestConsts = f{ fieldType = v, fieldSub = Proxy } : ingestConsts i }
     (Just IngestIllustris, ill) -> do
       sz <- getIllustrisSize ill
@@ -189,10 +231,26 @@ ingestHFile info hf = do
       sid <- constv "simulation_set_id" i
       sn <- constv "snapshot" i
       return i
-        { ingestPrefix = ssuite ++ T.unpack (ssete V.! fromIntegral ssetv) ++ sid ++ '_' : sn ++ "_"
+        { ingestPrefix = ssuite ++ T.unpack (ssete V.! fromIntegral ssetv) ++ sid ++ '_' : sn ++ [T.head ill]
         , ingestSize = Just (fromIntegral sz) }
-    _ -> return i
-  getIllustrisSize ill = do
+    (Just IngestSubhalo, T.words -> ft : fl@[ff, fc, fp]) -> do
+      (tf, cat') <- maybe (fail "missing join type field") return $ takeCatalogField ft (ingestCatalog i)
+      unless (all (`HM.member` catalogFieldMap (ingestCatalog i)) fl) $ fail "missing join fields"
+      let tfv x = tf{ fieldType = Boolean (Identity x), fieldSub = Proxy }
+          fg = fold $ fieldSub f
+      si <- foldM infof i
+        { ingestCatalog = cat'{ catalogFieldGroups = (f <>) <$> fg }
+        , ingestConsts = tfv True : ingestConsts i
+        , ingestSize = Nothing
+        , ingestStart = 0
+        } fg
+      return i
+        { ingestCatalog = cat'
+        , ingestConsts = tfv False : ingestConsts i
+        , ingestJoin = Just (IngestJoin si ff fc fp)
+        }
+    _ -> return i -- XXX only top-level ingest flags processed here
+  getIllustrisSize ill = liftIO $ do
     Long sz <- readScalarAttribute hf ("Header/N" <> case ill of { "Subhalo" -> "subgroup" ; s -> T.toLower s } <> "s_ThisFile") (Long Proxy)
     handleJust
       (\(H5E.errorStack -> (H5E.HDF5Error{ H5E.classId = cls, H5E.majorNum = Just H5E.Attr, H5E.minorNum = Just H5E.NotFound }:_)) -> guard (cls == H5E.hdfError)) return $ do
@@ -205,12 +263,18 @@ ingestHFile info hf = do
   constf f = maybe (fail $ "const field " ++ show f ++ " not found")
     return . find ((f ==) . fieldName) . ingestConsts
   loop i = do
-    liftIO $ putStr (show (ingestOffset i) ++ "\r") >> hFlush stdout
-    n <- ingestBlock i =<< liftIO (loadBlock i hf)
-    let i' = i{ ingestOffset = ingestOffset i + fromIntegral n }
+    liftIO $ putStr (show (ingestOffset i) ++ ' ' : foldMap (show . ingestOffset . joinIngest) (ingestJoin i) ++ "\r") >> hFlush stdout
+    b <- liftIO (loadBlock i hf)
+    n <- ingestBlock i b
+    ij <- mapM (\ij -> do
+      nj <- if n == 0 then return 0 else ingestSubBlocks i hf b ij
+      return $ ij{ joinIngest = ingestIncr nj (joinIngest ij) })
+      $ ingestJoin i
+    let i' = ingestIncr n i{ ingestJoin = ij }
     if n < fromIntegral (ingestBlockSize i)
       then do
-        unless (all (ingestOffset i' ==) $ ingestSize i') $ fail $ "size mismatch: expected " ++ show (ingestSize i') ++ " rows, got " ++ show (ingestOffset i')
+        ingestDone i'
+        mapM_ (ingestDone . joinIngest) ij
         return $ ingestOffset i'
       else loop i'
 
