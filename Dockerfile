@@ -1,4 +1,4 @@
-FROM fpco/stack-build-small:lts-17.15
+FROM fpco/stack-build-small:lts-18.18
 ADD https://deb.nodesource.com/gpgkey/nodesource.gpg.key /tmp/
 RUN apt-key add /tmp/nodesource.gpg.key && \
     echo deb https://deb.nodesource.com/node_12.x bionic main > /etc/apt/sources.list.d/nodesource.list && \
@@ -14,7 +14,7 @@ USER flathub
 EXPOSE 8092
 ENTRYPOINT ["/home/flathub/.local/bin/flathub"]
 CMD []
-ENV LD_LIBRARY_PATH=/home/stackage/.stack/programs/x86_64-linux/ghc-8.8.4/lib/ghc-8.8.4/rts
+ENV LD_LIBRARY_PATH=/home/stackage/.stack/programs/x86_64-linux/ghc-8.10.6/lib/ghc-8.10.6/rts
 
 COPY --chown=flathub stack.yaml *.cabal Setup.hs COPYING /home/flathub/flathub/
 WORKDIR /home/flathub/flathub
