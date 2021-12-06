@@ -1,4 +1,9 @@
-#!/bin/bash -eux
+#!/bin/bash -eu
+run() {
+	echo "$*"
+	"$@"
+}
+sim=`basename $0`
 base=${1:-/mnt/ceph/users/camels/PUBLIC_RELEASE/Sims}
 [[ -d $base ]]
 suites=($(yaml2json catalogs/camels_fof.yml | jq -r '.fields[0].enum[]'))
@@ -7,6 +12,9 @@ declare -A ssets=([LH]=999 [1P]=65 [CV]=26 [EX]=3)
 snapshots=33
 for suitei in "${!suites[@]}" ; do
   suite="${suites[$suitei]}"
+  paramf=CosmoAstroSeed_$suite.txt
+  wget -N https://raw.githubusercontent.com/lmachadopolettivalle/camels-database-schemas/main/CAMELS_parameters/$paramf
+  paramn=($(head -1 $paramf))
   for sset in "${!ssets[@]}" ; do
     ssetrange="${ssets[$sset]}"
     for id in `seq 0 $ssetrange` ; do
@@ -15,6 +23,11 @@ for suitei in "${!suites[@]}" ; do
 	echo "$dir: missing"
 	continue
       fi
+      paramv=($(awk '$1 == "'${sset}_$id'" { print }' $paramf))
+      params="-c simulation_suite=$suite -c simulation_set=$sset -c simulation_set_id=$id"
+      for i in "${!paramn[@]}" ; do
+        [[ $i -eq 0 ]] || params="$params -c params_${paramn[$i]}=${paramv[$i]}"
+      done
       for snapshot in `seq -f "%03g" 0 $snapshots` ; do
 	file=$dir/fof_subhalo_tab_$snapshot.hdf5
 	if [[ ! -f $file ]] ; then
@@ -22,7 +35,7 @@ for suitei in "${!suites[@]}" ; do
 	  continue
 	fi
 	#h5dump -a /Header/Nsubgroups_ThisFile $file | sed -n 's/^\s*(0): //p'
-	~/.local/bin/flathub -i camels -c "simulation_suite=$suite" -c "simulation_set=$sset" -c "simulation_set_id=$id" -c "snapshot=$snapshot" "$suitei$sset$id-$snapshot=$file"
+	run ~/.local/bin/flathub -i $sim $params -c "snapshot=$snapshot" "$suitei$sset$id-$snapshot=$file"
       done
     done
   done

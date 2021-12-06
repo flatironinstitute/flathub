@@ -33,6 +33,19 @@ fields:
   title: 'snap'
   flag: top
   descr: 'Snapshot number, which can be connected to the redshift of the snapshot.'
+- name: params
+  descr: simulation parameters
+  type: float
+  ingest: ""
+  sub:
+  - name: Omega_m
+  - name: sigma_8
+  - name: A_SN1
+  - name: A_AGN1
+  - name: A_SN2
+  - name: A_AGN2
+  - name: seed
+    type: short
 - name: redshift
   type: float
   descr: 'Redshift of the snapshot corresponding to this group catalog.'
