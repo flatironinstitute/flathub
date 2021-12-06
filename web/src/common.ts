@@ -193,6 +193,13 @@ export function field_title(
   return h;
 }
 
+function bool_enum(e: Array<string>): Array<string> {
+  let a = e.slice();
+  a[<number><any>false] = e[0];
+  a[<number><any>true] = e[1];
+  return a;
+}
+
 export function render_funct(
   field: Field,
   log: boolean = false,
@@ -203,7 +210,7 @@ export function render_funct(
     return (data) => (data != undefined ? p(data).toPrecision(prec) : data);
   }
   if (field.enum) {
-    const e: string[] = field.enum;
+    const e = field.base === 'b' ? bool_enum(field.enum) : field.enum;
     return (data) => (data in e ? e[data] : data);
   }
   return (data) => data;

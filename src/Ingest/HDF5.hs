@@ -263,7 +263,6 @@ ingestHFile info hf = do
   constf f = maybe (fail $ "const field " ++ show f ++ " not found")
     return . find ((f ==) . fieldName) . ingestConsts
   loop i = do
-    liftIO $ putStr (show (ingestOffset i) ++ ' ' : foldMap (show . ingestOffset . joinIngest) (ingestJoin i) ++ "\r") >> hFlush stdout
     b <- liftIO (loadBlock i hf)
     n <- ingestBlock i b
     ij <- mapM (\ij -> do
@@ -271,6 +270,7 @@ ingestHFile info hf = do
       return $ ij{ joinIngest = ingestIncr nj (joinIngest ij) })
       $ ingestJoin i
     let i' = ingestIncr n i{ ingestJoin = ij }
+    liftIO $ putStr (show (ingestOffset i') ++ ' ' : foldMap (show . ingestOffset . joinIngest) ij ++ "\r") >> hFlush stdout
     if n < fromIntegral (ingestBlockSize i)
       then do
         ingestDone i'
