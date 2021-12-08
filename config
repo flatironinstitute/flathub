@@ -6,3 +6,5 @@ elasticsearch {
 }
 dev = true
 datadir = "."
+# to allow overwriting documents on ingest (not for production):
+#ingest_action = "index"
