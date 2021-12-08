@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: flathub-es
-        image: docker.elastic.co/elasticsearch/elasticsearch:7.13.1-amd64
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.15.2-amd64
         env:
           - name: cluster.name
             value: "astrosims" # XXX backwards compatibility
@@ -32,6 +32,8 @@ spec:
                 resource: requests.cpu
           - name: TAKE_FILE_OWNERSHIP
             value: "true"
+          - name: xpack.security.enabled
+            value: "false"
         resources:
           requests:
             cpu: 4

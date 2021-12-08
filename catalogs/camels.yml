@@ -1,0 +1,687 @@
+title: CAMELS
+index: camels
+descr: CAMELS Simulations
+count: 2927443277
+sort:
+- simulation_suite
+- simulation_set
+- simulation_set_id
+- snapshot
+fields:
+- name: simulation_suite
+  type: byte
+  descr: "e.g. 'IllustrisTNG' or 'SIMBA'."
+  flag: required
+  enum:
+    - IllustrisTNG
+    - SIMBA
+- name: simulation_set
+  type: byte
+  descr: "e.g. 'LH', '1P', 'CV' or 'EX'."
+  flag: required
+  enum:
+    - LH
+    - 1P
+    - CV
+    - EX
+- name: simulation_set_id
+  type: short
+  descr: "Integer ID of the simulation set. E.g. for IllustrisTNG LH 12, this value is '12'."
+- name: params
+  descr: simulation parameters
+  type: float
+  flag: top
+  ingest: ""
+  sub:
+  - name: Omega_m
+  - name: sigma_8
+  - name: A_SN1
+  - name: A_AGN1
+  - name: A_SN2
+  - name: A_AGN2
+- name: snapshot
+  type: short
+  title: 'snap'
+  flag: top
+  descr: 'Snapshot number, which can be connected to the redshift of the snapshot.'
+- name: redshift
+  type: float
+  descr: 'Redshift of the snapshot corresponding to this group catalog.'
+  dict: redshift
+  ingest: _attribute:Header/Redshift
+- name: type
+  type: boolean
+  enum:
+    - FoF halo
+    - Subhalo
+  flag: required
+- name: id
+  type: int
+  descr: "Group index number"
+  ingest: _camels:Group
+- name: Group
+  descr: 'FoF Halos'
+  ingest: ""
+  sub:
+  - name: BHMass
+    ingest: Group/GroupBHMass
+    type: float
+    units: '\(10^{10}M_\odot/h\)'
+    descr: 'Sum of the BH_Mass field of all blackholes (type 5) in this group.'
+  - name: BHMdot
+    ingest: Group/GroupBHMdot
+    type: float
+    title: '\(\dot{M}_{\rm BH}\)'
+    units: '\((10^{10}M_\odot/h)/(0.978Gyr/h)\)'
+    descr: 'Sum of the BH_Mdot field of all blackholes (type 5) in this group.'
+  - name: CM
+    ingest: Group/GroupCM
+    type: float
+    units: 'ckpc/h'
+    descr: 'Center of mass of the group, computed as the sum of the mass weighted relative coordinates of all particles/cells in the group, of all types. Comoving coordinate. (Available only for the Illustris-3 run)'
+    sub:
+    - name: "x"
+      title: '\({\rm CM}_x\)'
+    - name: "y"
+      title: '\({\rm CM}_y\)'
+    - name: "z"
+      title: '\({\rm CM}_z\)'
+  - name: FirstSub
+    ingest: Group/GroupFirstSub
+    type: integer
+    descr: 'Index into the Subhalo table of the first/primary/most massive Subfind group within this FoF group. Note: This value is signed (or should be interpreted as signed)! In this case, a value of -1 indicates that this FoF group has no subhalos.'
+    flag: hidden
+  - name: GasMetalFractions
+    ingest: Group/GroupGasMetalFractions
+    type: float
+    descr: "Individual abundances: dimensionless ratio of the total mass in that species divided by the total gas mass, for all gas cells in the group."
+    flag: hidden
+    sub:
+    - name: "H"
+    - name: "He"
+    - name: "C"
+    - name: "N"
+    - name: "O"
+    - name: "Ne"
+    - name: "Mg"
+    - name: "Si"
+    - name: "Fe"
+    - name: "total"
+      descr: "The 'total' of all other (i.e. untracked) metals."
+  - name: GasMetallicity
+    ingest: Group/GroupGasMetallicity
+    type: float
+    descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of all gas cells in this FOF group.'
+  - name: Len
+    ingest: Group/GroupLen
+    type: integer
+    title: '\(N_{\rm part}\)'
+    descr: 'Integer counter of the total number of particles/cells of all types in this group.'
+  - name: LenType
+    ingest: Group/GroupLenType
+    type: integer
+    descr: 'Integer counter of the total number of particles/cells, split into the six different types, in this group. Note: Wind phase cells are counted as stars (type 4) for GroupLenType.'
+    sub:
+    - name: gas
+      title: '\(N_{\rm gas}\)'
+    - name: dm
+      title: '\(N_{\rm DM}\)'
+    - name: unused
+      flag: hidden
+    - name: tracers
+    - name: stars
+      title: '\(N_{\rm stars}\)'
+    - name: bh
+      title: '\(N_{\rm BH}\)'
+  - name: Mass
+    ingest: Group/GroupMass
+    type: float
+    title: '\(M_{\rm tot}\)'
+    units: '\(10^{10}M_\odot/h\)'
+    descr: 'Sum of the individual masses of every particle/cell, of all types, in this group.'
+  - name: MassType
+    ingest: Group/GroupMassType
+    type: float
+    units: '\(10^{10}M_\odot/h\)'
+    descr: 'Sum of the individual masses of every particle/cell, split into the six different types, in this group. Note: Wind phase cells are counted as gas (type 0) for GroupMassType.'
+    sub:
+    - name: gas
+      title: '\(M_{\rm gas}\)'
+    - name: dm
+      title: '\(M_{\rm DM}\)'
+    - name: unused
+      flag: hidden
+    - name: tracers
+    - name: stars
+      title: '\(M_{\star}\)'
+    - name: bh
+      title: '\(M_{\rm BH}\)'
+  - name: Nsubs
+    ingest: Group/GroupNsubs
+    type: integer
+    descr: 'Count of the total number of Subfind groups within this FoF group.'
+  - name: Pos
+    ingest: Group/GroupPos
+    type: float
+    units: 'ckpc/h'
+    descr: 'Spatial position within the periodic box of the maximum bound particle. Comoving coordinate.'
+    sub:
+    - name: "x"
+      title: 'x'
+    - name: "y"
+      title: 'y'
+    - name: "z"
+      title: 'z'
+  - name: SFR
+    ingest: Group/GroupSFR
+    type: float
+    units: '\(M_\odot/yr\)'
+    descr: 'Sum of the individual star formation rates of all gas cells in this group.'
+    dict: SFR
+  - name: StarMetalFractions
+    ingest: Group/GroupStarMetalFractions
+    type: float
+    descr: "Individual abundances: dimensionless ratio of the total mass in that species divided by the total stellar mass, for all stars in the group."
+    flag: hidden
+    sub:
+    - name: "H"
+    - name: "He"
+    - name: "C"
+    - name: "N"
+    - name: "O"
+    - name: "Ne"
+    - name: "Mg"
+    - name: "Si"
+    - name: "Fe"
+    - name: "total"
+      descr: "The 'total' of all other (i.e. untracked) metals."
+  - name: StarMetallicity
+    ingest: Group/GroupStarMetallicity
+    type: float
+    descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of all star particles in this FOF group.'
+  - name: Vel
+    ingest: Group/GroupVel
+    type: float
+    dict: vel
+    units: 'km/s/a'
+    descr: 'Velocity of the group, computed as the sum of the mass weighted velocities of all particles/cells in this group, of all types. The peculiar velocity is obtained by multiplying this value by \(1/a.\)'
+    sub:
+    - name: "x"
+      title: '\(v_x\)'
+      dict: vel_x
+    - name: "y"
+      title: '\(v_y\)'
+      dict: vel_y
+    - name: "z"
+      title: '\(v_z\)'
+      dict: vel_z
+  - name: WindMass
+    ingest: _optional:Group/GroupWindMass
+    type: float
+    units: '\(10^{10}M_\odot/h\)'
+    descr: 'Sum of the individual masses of all wind phase gas cells (type 4, BirthTime <= 0) in this group.'
+  - name: M_Crit200
+    ingest: Group/Group_M_Crit200
+    type: float
+    units: '\(10^{10}M_\odot/h\)'
+    descr: 'Total Mass of this group enclosed in a sphere whose mean density is 200 times the critical density of the Universe, at the time the halo is considered.'
+    flag: hidden
+  - name: M_Crit500
+    ingest: Group/Group_M_Crit500
+    type: float
+    units: '\(10^{10}M_\odot/h\)'
+    descr: 'Total Mass of this group enclosed in a sphere whose mean density is 500 times the critical density of the Universe, at the time the halo is considered.'
+    flag: hidden
+  - name: M_Mean200
+    ingest: Group/Group_M_Mean200
+    type: float
+    units: '\(10^{10}M_\odot/h\)'
+    descr: 'Total Mass of this group enclosed in a sphere whose mean density is 200 times the mean density of the Universe, at the time the halo is considered.'
+    flag: hidden
+  - name: M_TopHat200
+    ingest: Group/Group_M_TopHat200
+    type: float
+    units: '\(10^{10}M_\odot/h\)'
+    descr: 'Total Mass of this group enclosed in a sphere whose mean density is \(\Delta_c\) times the critical density of the Universe, at the time the halo is considered. \(\Delta_c\) derives from the solution of the collapse of a spherical top-hat perturbation (fitting formula from Bryan+ 1998, http://adsabs.harvard.edu/abs/1998ApJ...495...80B). The subscript 200 can be ignored.'
+    flag: hidden
+  - name: R_Crit200
+    ingest: Group/Group_R_Crit200
+    type: float
+    units: 'ckpc/h'
+    descr: 'Comoving Radius of a sphere centered at the GroupPos of this Group whose mean density is 200 times the critical density of the Universe, at the time the halo is considered.'
+    flag: hidden
+  - name: R_Crit500
+    ingest: Group/Group_R_Crit500
+    type: float
+    units: 'ckpc/h'
+    descr: 'Comoving Radius of a sphere centered at the GroupPos of this Group whose mean density is 500 times the critical density of the Universe, at the time the halo is considered.'
+    flag: hidden
+  - name: R_Mean200
+    ingest: Group/Group_R_Mean200
+    type: float
+    units: 'ckpc/h'
+    descr: 'Comoving Radius of a sphere centered at the GroupPos of this Group whose mean density is 200 times the mean density of the Universe, at the time the halo is considered.'
+    flag: hidden
+  - name: R_TopHat200
+    ingest: Group/Group_R_TopHat200
+    type: float
+    units: 'ckpc/h'
+    descr: 'Comoving Radius of a sphere centered at the GroupPos of this Group whose mean density is \(\Delta_c\) times the critical density of the Universe, at the time the halo is considered.'
+    flag: hidden
+- name: Subhalo
+  descr: 'Subfind Subhalos'
+  ingest: _subhalo:type Group_FirstSub Group_Nsubs Subhalo_GrNr
+  sub:
+  - name: id
+    type: int
+    descr: "Subhalo index number"
+    ingest: _camels:Subhalo
+  - name: BHMass
+    ingest: Subhalo/SubhaloBHMass
+    type: float
+    units: '\(10^{10}M_\odot/h\)'
+    descr: 'Sum of the masses of all blackholes in this subhalo.'
+  - name: BHMdot
+    ingest: Subhalo/SubhaloBHMdot
+    type: float
+    units: '\((10^{10}M_\odot/h)/(0.978Gyr/h)\)'
+    descr: 'Sum of the instantaneous accretion rates \(\dot{M}\) of all blackholes in this subhalo.'
+  - name: BfldDisk
+    ingest: Subhalo/SubhaloBfldDisk
+    type: float
+    units: '\((h/a^2)(\rm{UnitPressure})^{1/2}\)'
+    descr: "The square root of the volume weighted value of $B^{2}$ for all gas cells within the canonical two times the stellar half mass radius. This value gives a magnetic field strength which would have the same amount of mean magnetic energy as the galaxy cells."
+  - name: BfldHalo
+    ingest: Subhalo/SubhaloBfldHalo
+    type: float
+    units: '\((h/a^2)(\rm{UnitPressure})^{1/2}\)'
+    descr: "The square root of the volume weighted value of $B^{2}$ for all gas cells in the subhalo. This value gives a magnetic field strength which would have the same amount of mean magnetic energy as the subhalo cells."
+  - name: CM
+    ingest: Subhalo/SubhaloCM
+    type: float
+    units: 'ckpc/h'
+    descr: 'Comoving center of mass of the Subhalo, computed as the sum of the mass weighted relative coordinates of all particles/cells in the Subhalo, of all types.'
+    sub:
+    - name: "x"
+    - name: "y"
+    - name: "z"
+  - name: GasMetalFractions
+    ingest: Subhalo/SubhaloGasMetalFractions
+    type: float
+    descr: "Individual abundances: dimensionless ratio of the total mass in that species divided by the total gas mass, both restricted to gas cells within twice the stellar half mass radius."
+    flag: hidden
+    sub:
+    - name: "H"
+    - name: "He"
+    - name: "C"
+    - name: "N"
+    - name: "O"
+    - name: "Ne"
+    - name: "Mg"
+    - name: "Si"
+    - name: "Fe"
+    - name: "total"
+      descr: "The 'total' of all other (i.e. untracked) metals."
+  - name: GasMetalFractionsHalfRad
+    ingest: Subhalo/SubhaloGasMetalFractionsHalfRad
+    type: float
+    descr: "Same as SubhaloGasMetalFractions, but restricted to cells within the stellar half mass radius."
+    flag: hidden
+    sub:
+    - name: "H"
+    - name: "He"
+    - name: "C"
+    - name: "N"
+    - name: "O"
+    - name: "Ne"
+    - name: "Mg"
+    - name: "Si"
+    - name: "Fe"
+    - name: "total"
+      descr: "The 'total' of all other (i.e. untracked) metals."
+  - name: GasMetalFractionsMaxRad
+    ingest: Subhalo/SubhaloGasMetalFractionsMaxRad
+    type: float
+    descr: "Same as SubhaloGasMetalFractions, but restricted to cells within the radius of $V_{\rm max}"
+    flag: hidden
+    sub:
+    - name: "H"
+    - name: "He"
+    - name: "C"
+    - name: "N"
+    - name: "O"
+    - name: "Ne"
+    - name: "Mg"
+    - name: "Si"
+    - name: "Fe"
+    - name: "total"
+      descr: "The 'total' of all other (i.e. untracked) metals."
+  - name: GasMetalFractionsSfr
+    ingest: Subhalo/SubhaloGasMetalFractionsSfr
+    type: float
+    descr: "Same as SubhaloGasMetalFractions, but restricted to cells which are star-forming."
+    flag: hidden
+    sub:
+    - name: "H"
+    - name: "He"
+    - name: "C"
+    - name: "N"
+    - name: "O"
+    - name: "Ne"
+    - name: "Mg"
+    - name: "Si"
+    - name: "Fe"
+    - name: "total"
+      descr: "The 'total' of all other (i.e. untracked) metals."
+  - name: GasMetalFractionsSfrWeighted
+    ingest: Subhalo/SubhaloGasMetalFractionsSfrWeighted
+    type: float
+    descr: "Same as SubhaloGasMetalFractions, but weighted by the cell star-formation rate rather than the cell mass."
+    flag: hidden
+    sub:
+    - name: "H"
+    - name: "He"
+    - name: "C"
+    - name: "N"
+    - name: "O"
+    - name: "Ne"
+    - name: "Mg"
+    - name: "Si"
+    - name: "Fe"
+    - name: "total"
+      descr: "The 'total' of all other (i.e. untracked) metals."
+  - name: GasMetallicity
+    ingest: Subhalo/SubhaloGasMetallicity
+    type: float
+    descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of the gas cells bound to this Subhalo, but restricted to cells within twice the stellar half mass radius.'
+  - name: GasMetallicityHalfRad
+    ingest: Subhalo/SubhaloGasMetallicityHalfRad
+    type: float
+    descr: 'Same as SubhaloGasMetallicity, but restricted to cells within the stellar half mass radius.'
+  - name: GasMetallicityMaxRad
+    ingest: Subhalo/SubhaloGasMetallicityMaxRad
+    type: float
+    descr: 'Same as SubhaloGasMetallicity, but restricted to cells within the radius of \(V_{max}\).'
+  - name: GasMetallicitySfr
+    ingest: Subhalo/SubhaloGasMetallicitySfr
+    type: float
+    descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of the gas cells bound to this Subhalo, but restricted to cells which are star forming.'
+  - name: GasMetallicitySfrWeighted
+    ingest: Subhalo/SubhaloGasMetallicitySfrWeighted
+    type: float
+    descr: 'Same as SubhaloGasMetallicitySfr, but weighted by the cell star-formation rate rather than the cell mass.'
+  - name: GrNr
+    ingest: Subhalo/SubhaloGrNr
+    type: integer
+    descr: 'Index into the Group table of the FOF host/parent of this Subhalo.'
+    flag: hidden
+  - name: HalfmassRad
+    ingest: Subhalo/SubhaloHalfmassRad
+    type: float
+    units: 'ckpc/h'
+    descr: 'Comoving radius containing half of the total mass (SubhaloMass) of this Subhalo.'
+  - name: HalfmassRadType
+    ingest: Subhalo/SubhaloHalfmassRadType
+    type: float
+    units: 'ckpc/h'
+    descr: 'Comoving radius containing half of the mass of this Subhalo split by Type (SubhaloMassType).'
+    sub:
+    - name: gas
+    - name: dm
+    - name: unused
+      flag: hidden
+    - name: tracers
+    - name: stars
+    - name: bh
+  - name: IDMostbound
+    ingest: Subhalo/SubhaloIDMostbound
+    type: integer
+    descr: 'The ID of the particle with the smallest binding energy (could be any type).'
+  - name: Len
+    ingest: Subhalo/SubhaloLen
+    type: integer
+    descr: 'Total number of member particle/cells in this Subhalo, of all types.'
+  - name: LenType
+    ingest: Subhalo/SubhaloLenType
+    type: integer
+    descr: 'Total number of member particle/cells in this Subhalo, separated by type.'
+    sub:
+    - name: gas
+    - name: dm
+    - name: unused
+      flag: hidden
+    - name: tracers
+    - name: stars
+    - name: bh
+  - name: Mass
+    ingest: Subhalo/SubhaloMass
+    type: float
+    units: '\(10^{10}M_\odot/h\)'
+    descr: 'Total mass of all member particle/cells which are bound to this Subhalo, of all types. Particle/cells bound to subhaloes of this Subhalo are NOT accounted for.'
+  - name: MassInHalfRad
+    ingest: Subhalo/SubhaloMassInHalfRad
+    type: float
+    units: '\(10^{10}M_\odot/h\)'
+    descr: 'Sum of masses of all particles/cells within the stellar half mass radius.'
+  - name: MassInHalfRadType
+    ingest: Subhalo/SubhaloMassInHalfRadType
+    type: float
+    units: '\(10^{10}M_\odot/h\)'
+    descr: 'Sum of masses of all particles/cells (split by type) within the stellar half mass radius.'
+    sub:
+    - name: gas
+    - name: dm
+    - name: unused
+      flag: hidden
+    - name: tracers
+    - name: stars
+    - name: bh
+  - name: MassInMaxRad
+    ingest: Subhalo/SubhaloMassInMaxRad
+    type: float
+    units: '\(10^{10}M_\odot/h\)'
+    descr: 'Sum of masses of all particles/cells within the radius of \(V_{max}\).'
+  - name: MassInMaxRadType
+    ingest: Subhalo/SubhaloMassInMaxRadType
+    type: float
+    units: '\(10^{10}M_\odot/h\)'
+    descr: 'Sum of masses of all particles/cells (split by type) within the radius of \(V_{max}\).'
+    sub:
+    - name: gas
+    - name: dm
+    - name: unused
+      flag: hidden
+    - name: tracers
+    - name: stars
+    - name: bh
+  - name: MassInRad
+    ingest: Subhalo/SubhaloMassInRad
+    type: float
+    units: '\(10^{10}M_\odot/h\)'
+    descr: 'Sum of masses of all particles/cells within twice the stellar half mass radius.'
+  - name: MassInRadType
+    ingest: Subhalo/SubhaloMassInRadType
+    type: float
+    units: '\(10^{10}M_\odot/h\)'
+    descr: 'Sum of masses of all particles/cells (split by type) within twice the stellar half mass radius.'
+    sub:
+    - name: gas
+    - name: dm
+    - name: unused
+      flag: hidden
+    - name: tracers
+    - name: stars
+    - name: bh
+  - name: MassType
+    ingest: Subhalo/SubhaloMassType
+    type: float
+    units: '\(10^{10}M_\odot/h\)'
+    descr: 'Total mass of all member particle/cells which are bound to this Subhalo, separated by type. Particle/cells bound to subhaloes of this Subhalo are NOT accounted for. Note: Wind phase cells are counted as gas (type 0) for SubhaloMassType.'
+    sub:
+    - name: gas
+    - name: dm
+    - name: unused
+      flag: hidden
+    - name: tracers
+    - name: stars
+    - name: bh
+  - name: Parent
+    ingest: Subhalo/SubhaloParent
+    type: integer
+    descr: 'Index back into this same Subhalo table of the unique Subfind host/parent of this Subhalo. This index is local to the group (i.e. 2 indicates the third most massive subhalo of the parent halo of this subhalo, not the third most massive of the whole snapshot). The values are often zero for all subhalos of a group, indicating that there is no resolved hierarchical structure in that group, beyond the primary subhalo having as direct children all of the secondary subhalos.'
+  - name: Pos
+    ingest: Subhalo/SubhaloPos
+    type: float
+    units: 'ckpc/h'
+    descr: 'Spatial position within the periodic box of the maximum bound particle. Comoving coordinate.'
+    sub:
+    - name: "x"
+    - name: "y"
+    - name: "z"
+  - name: SFR
+    ingest: Subhalo/SubhaloSFR
+    type: float
+    units: '\(M_\odot/yr\)'
+    descr: 'Sum of the individual star formation rates of all gas cells in this subhalo.'
+  - name: SFRinHalfRad
+    ingest: Subhalo/SubhaloSFRinHalfRad
+    type: float
+    units: '\(M_\odot/yr\)'
+    descr: 'Same as SubhaloSFR, but restricted to cells within the stellar half mass radius.'
+  - name: SFRinMaxRad
+    ingest: Subhalo/SubhaloSFRinMaxRad
+    type: float
+    units: '\(M_\odot/yr\)'
+    descr: 'Same as SubhaloSFR, but restricted to cells within the radius of \(V_{max}\).'
+  - name: SFRinRad
+    ingest: Subhalo/SubhaloSFRinRad
+    type: float
+    units: '\(M_\odot/yr\)'
+    descr: 'Same as SubhaloSFR, but restricted to cells within twice the stellar half mass radius.'
+  - name: Spin
+    ingest: Subhalo/SubhaloSpin
+    type: float
+    units: '\((kpc/h)(km/s)\)'
+    descr: 'Total spin per axis, computed for each as the mass weighted sum of the relative coordinate times relative velocity of all member particles/cells.'
+    sub:
+    - name: "x"
+    - name: "y"
+    - name: "z"
+  - name: StarMetalFractions
+    ingest: Subhalo/SubhaloStarMetalFractions
+    type: float
+    descr: "Individual abundances: dimensionless ratio of the total mass in that species divided by the total stellar mass, both restricted to stars within twice the stellar half mass radius."
+    flag: hidden
+    sub:
+    - name: "H"
+    - name: "He"
+    - name: "C"
+    - name: "N"
+    - name: "O"
+    - name: "Ne"
+    - name: "Mg"
+    - name: "Si"
+    - name: "Fe"
+    - name: "total"
+      descr: "The 'total' of all other (i.e. untracked) metals."
+  - name: StarMetalFractionsHalfRad
+    ingest: Subhalo/SubhaloStarMetalFractionsHalfRad
+    type: float
+    descr: "Same as StarMetalFractions, but restricted to cells within the stellar half mass radius."
+    flag: hidden
+    sub:
+    - name: "H"
+    - name: "He"
+    - name: "C"
+    - name: "N"
+    - name: "O"
+    - name: "Ne"
+    - name: "Mg"
+    - name: "Si"
+    - name: "Fe"
+    - name: "total"
+      descr: "The 'total' of all other (i.e. untracked) metals."
+  - name: StarMetalFractionsMaxRad
+    ingest: Subhalo/SubhaloStarMetalFractionsMaxRad
+    type: float
+    descr: "Same as StarMetalFractions, but restricted to stars within the radius of $V_{\rm max}$."
+    flag: hidden
+    sub:
+    - name: "H"
+    - name: "He"
+    - name: "C"
+    - name: "N"
+    - name: "O"
+    - name: "Ne"
+    - name: "Mg"
+    - name: "Si"
+    - name: "Fe"
+    - name: "total"
+      descr: "The 'total' of all other (i.e. untracked) metals."
+  - name: StarMetallicity
+    ingest: Subhalo/SubhaloStarMetallicity
+    type: float
+    units: '-'
+    descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of the star particles bound to this Subhalo, but restricted to stars within twice the stellar half mass radius.'
+  - name: StarMetallicityHalfRad
+    ingest: Subhalo/SubhaloStarMetallicityHalfRad
+    type: float
+    descr: 'Same as SubhaloStarMetallicity, but restricted to stars within the stellar half mass radius.'
+  - name: StarMetallicityMaxRad
+    ingest: Subhalo/SubhaloStarMetallicityMaxRad
+    type: float
+    units: '-'
+    descr: 'Same as SubhaloStarMetallicity, but restricted to stars within the radius of \(V_{max}\).'
+  - name: StellarPhotometrics
+    ingest: Subhalo/SubhaloStellarPhotometrics
+    type: float
+    units: 'mag'
+    descr: 'Eight bands: U, B, V, K, g, r, i, z. Magnitudes based on the summed-up luminosities of all the stellar particles of the group. For details on the bands, see snapshot table for stars.'
+    sub:
+    - name: U
+    - name: B
+    - name: V
+    - name: K
+    - name: g
+    - name: r
+    - name: i
+    - name: z
+  - name: StellarPhotometricsMassInRad
+    ingest: Subhalo/SubhaloStellarPhotometricsMassInRad
+    type: float
+    units: '\(10^{10}M_\odot/h\)'
+    descr: 'Sum of the mass of the member stellar particles, but restricted to stars within the radius SubhaloStellarPhotometricsRad.'
+  - name: StellarPhotometricsRad
+    ingest: Subhalo/SubhaloStellarPhotometricsRad
+    type: float
+    units: 'ckpc/h'
+    descr: 'Radius at which the surface brightness profile (computed from all member stellar particles) drops below the limit of 20.7 mag arcsec\(^{-2}\) in the K band (in comoving units).'
+  - name: Vel
+    ingest: Subhalo/SubhaloVel
+    type: float
+    units: 'km/s'
+    descr: 'Peculiar velocity of the group, computed as the sum of the mass weighted velocities of all particles/cells in this group, of all types. No unit conversion is needed.'
+    sub:
+    - name: "x"
+    - name: "y"
+    - name: "z"
+  - name: VelDisp
+    ingest: Subhalo/SubhaloVelDisp
+    type: float
+    units: 'km/s'
+    descr: 'One-dimensional velocity dispersion of all the member particles/cells (the 3D dispersion divided by \(\sqrt{3}\)).'
+  - name: Vmax
+    ingest: Subhalo/SubhaloVmax
+    type: float
+    units: 'km/s'
+    descr: 'Maximum value of the spherically-averaged rotation curve.'
+  - name: VmaxRad
+    ingest: Subhalo/SubhaloVmaxRad
+    type: float
+    units: 'kpc/h'
+    descr: 'Comoving radius of rotation curve maximum (where \(V_{max}\) is achieved).'
+  - name: WindMass
+    ingest: _optional:Subhalo/SubhaloWindMass
+    type: float
+    units: '\(10^{10}M_\odot/h\)'
+    descr: 'Sum of masses of all wind-phase cells in this subhalo (with Type==4 and BirthTime&#60;=0).'

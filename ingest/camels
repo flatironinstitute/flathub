@@ -1,0 +1,50 @@
+#!/bin/bash -eu
+run() {
+	echo "$*"
+	"$@"
+}
+
+sim=`basename $0`
+suites=($(yaml2json catalogs/camels_fof.yml | jq -r '.fields[0].enum[]'))
+#ssets=($(yaml2json catalogs/${s}_fof.yml | jq -r '.fields[1].enum[]'))
+declare -A ssets=([LH]=999 [1P]=65 [CV]=26 [EX]=3)
+snapshots=$(seq -f "%03g" 0 33)
+
+if [[ "$*" == "-r" ]] ; then
+  # random file for testing
+  sset=$(choose ${!ssets[@]})
+  set -- "" $(choose ${!suites[@]}) $sset $(choose `seq 0 ${ssets[$sset]}`) $(choose $snapshots)
+fi
+
+base=${1:-/mnt/ceph/users/camels/PUBLIC_RELEASE/Sims}
+[[ -d $base ]]
+for suitei in ${2:-${!suites[@]}} ; do
+  suite="${suites[$suitei]}"
+  paramf=CosmoAstroSeed_$suite.txt
+  [[ -f $paramf ]] || wget -N https://raw.githubusercontent.com/lmachadopolettivalle/camels-database-schemas/main/CAMELS_parameters/$paramf
+  paramn=($(head -1 $paramf))
+  for sset in ${3:-${!ssets[@]}} ; do
+    ssetrange="${ssets[$sset]}"
+    for id in ${4:-`seq 0 $ssetrange`} ; do
+      dir=$base/$suite/${sset}_$id
+      if [[ ! -d $dir ]] ; then
+	echo "$dir: missing"
+	continue
+      fi
+      paramv=($(awk '$1 == "'${sset}_$id'" { print }' $paramf))
+      params="-c simulation_suite=$suite -c simulation_set=$sset -c simulation_set_id=$id"
+      for i in "${!paramn[@]}" ; do
+        [[ $i -eq 0 || ${paramn[$i]} == seed ]] || params="$params -c params_${paramn[$i]}=${paramv[$i]}"
+      done
+      for snapshot in ${5:-$snapshots} ; do
+	file=$dir/fof_subhalo_tab_$snapshot.hdf5
+	if [[ ! -f $file ]] ; then
+	  echo "$file: missing"
+	  continue
+	fi
+	#h5dump -a /Header/Nsubgroups_ThisFile $file | sed -n 's/^\s*(0): //p'
+	run ~/.local/bin/flathub -i $sim $params -c "snapshot=$snapshot" "$suitei$sset$id-$snapshot=$file"
+      done
+    done
+  done
+done

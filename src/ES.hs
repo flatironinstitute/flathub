@@ -350,7 +350,7 @@ queryBulk cat@Catalog{ catalogStore = CatalogES{ catalogStoreField = store } } q
   row (J.Object o) = storedFields' store o
   row _ = HM.empty -- error?
 
-createBulk :: Catalog -> [(String, J.Series)] -> M ()
+createBulk :: Foldable f => Catalog -> f (String, J.Series) -> M ()
 createBulk cat@Catalog{ catalogStore = ~CatalogES{} } docs = do
   conf <- asks globalConfig
   let act = fromMaybe "create" $ conf C.! "ingest_action"

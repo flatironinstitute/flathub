@@ -48,10 +48,12 @@ ingest cat consts fs = do
       , ingestFile = f
       , ingestPrefix = (if null pfx then id else (<> "_")) pfx
       , ingestConsts = consts
+      , ingestJConsts = fieldJValues consts
       , ingestBlockSize = 1000
       , ingestStart = start
       , ingestOffset = off
       , ingestSize = Nothing
+      , ingestJoin = Nothing
       }
   proc f = case takeExtension $ fst $ decompressExtension f of
     ".hdf5" -> Just ingestHDF5

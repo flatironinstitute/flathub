@@ -20,6 +20,7 @@ module Field
   , fieldsDepth
   , FieldValue
   , parseFieldValue
+  , fieldJValue, fieldJValues
   , idField
   , fieldsCSV
   , numpyFieldSize
@@ -294,6 +295,12 @@ parseFieldValue f = fmap sv . pv f where
     { fieldType = v
     , fieldSub = Proxy
     }
+
+fieldJValue :: FieldValue -> J.Series
+fieldJValue f = fieldName f J..= fieldType f
+
+fieldJValues :: [FieldValue] -> J.Series
+fieldJValues = foldMap fieldJValue
 
 -- |pseudo field representing ES _id
 idField :: Field
