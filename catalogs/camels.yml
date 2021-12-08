@@ -56,7 +56,7 @@ fields:
   enum:
     - FoF halo
     - Subhalo
-  flag: top
+  flag: required
 - name: id
   type: int
   descr: "Group index number"
@@ -218,7 +218,7 @@ fields:
       title: '\(v_z\)'
       dict: vel_z
   - name: WindMass
-    ingest: Group/GroupWindMass
+    ingest: _optional:Group/GroupWindMass
     type: float
     units: '\(10^{10}M_\odot/h\)'
     descr: 'Sum of the individual masses of all wind phase gas cells (type 4, BirthTime <= 0) in this group.'
@@ -682,7 +682,7 @@ fields:
     units: 'kpc/h'
     descr: 'Comoving radius of rotation curve maximum (where \(V_{max}\) is achieved).'
   - name: WindMass
-    ingest: Subhalo/SubhaloWindMass
+    ingest: _optional:Subhalo/SubhaloWindMass
     type: float
     units: '\(10^{10}M_\odot/h\)'
     descr: 'Sum of masses of all wind-phase cells in this subhalo (with Type==4 and BirthTime&#60;=0).'
