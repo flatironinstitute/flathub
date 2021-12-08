@@ -27,15 +27,10 @@ fields:
 - name: simulation_set_id
   type: short
   descr: "Integer ID of the simulation set. E.g. for IllustrisTNG LH 12, this value is '12'."
-  flag: required
-- name: snapshot
-  type: short
-  title: 'snap'
-  flag: top
-  descr: 'Snapshot number, which can be connected to the redshift of the snapshot.'
 - name: params
   descr: simulation parameters
   type: float
+  flag: top
   ingest: ""
   sub:
   - name: Omega_m
@@ -44,8 +39,11 @@ fields:
   - name: A_AGN1
   - name: A_SN2
   - name: A_AGN2
-  - name: seed
-    type: short
+- name: snapshot
+  type: short
+  title: 'snap'
+  flag: top
+  descr: 'Snapshot number, which can be connected to the redshift of the snapshot.'
 - name: redshift
   type: float
   descr: 'Redshift of the snapshot corresponding to this group catalog.'
@@ -416,6 +414,7 @@ fields:
     ingest: Subhalo/SubhaloGrNr
     type: integer
     descr: 'Index into the Group table of the FOF host/parent of this Subhalo.'
+    flag: hidden
   - name: HalfmassRad
     ingest: Subhalo/SubhaloHalfmassRad
     type: float

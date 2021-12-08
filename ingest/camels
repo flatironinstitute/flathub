@@ -34,7 +34,7 @@ for suitei in ${2:-${!suites[@]}} ; do
       paramv=($(awk '$1 == "'${sset}_$id'" { print }' $paramf))
       params="-c simulation_suite=$suite -c simulation_set=$sset -c simulation_set_id=$id"
       for i in "${!paramn[@]}" ; do
-        [[ $i -eq 0 ]] || params="$params -c params_${paramn[$i]}=${paramv[$i]}"
+        [[ $i -eq 0 || ${paramn[$i]} == seed ]] || params="$params -c params_${paramn[$i]}=${paramv[$i]}"
       done
       for snapshot in ${5:-$snapshots} ; do
 	file=$dir/fof_subhalo_tab_$snapshot.hdf5
