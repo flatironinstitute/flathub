@@ -27,7 +27,24 @@ fields:
 - name: simulation_set_id
   type: short
   descr: "Integer ID of the simulation set. E.g. for IllustrisTNG LH 12, this value is '12'."
-  flag: required
+- name: params
+  descr: simulation parameters
+  type: float
+  flag: top
+  ingest: ""
+  sub:
+  - name: Omega_m
+    descr: The cosmic density of matter relative to the critical density.
+  - name: sigma_8
+    descr: The normalization of the primordial density fluctuations.
+  - name: A_SN1
+    descr: A normalization factor for the flux of galactic winds.
+  - name: A_AGN1
+    descr: A normalization factor for the overall energy output of AGN feedback.
+  - name: A_SN2
+    descr: A normalization factor for the speed of galactic winds.
+  - name: A_AGN2
+    descr: A normalization factor for the specific energy of AGN feedback.
 - name: snapshot
   type: short
   title: 'snap'
@@ -43,7 +60,7 @@ fields:
   enum:
     - FoF halo
     - Subhalo
-  flag: top
+  flag: required
 - name: id
   type: int
   descr: "Group index number"
@@ -205,7 +222,7 @@ fields:
       title: '\(v_z\)'
       dict: vel_z
   - name: WindMass
-    ingest: Group/GroupWindMass
+    ingest: _optional:Group/GroupWindMass
     type: float
     units: '\(10^{10}M_\odot/h\)'
     descr: 'Sum of the individual masses of all wind phase gas cells (type 4, BirthTime <= 0) in this group.'
@@ -403,6 +420,7 @@ fields:
     ingest: Subhalo/SubhaloGrNr
     type: integer
     descr: 'Index into the Group table of the FOF host/parent of this Subhalo.'
+    flag: hidden
   - name: HalfmassRad
     ingest: Subhalo/SubhaloHalfmassRad
     type: float
@@ -669,7 +687,7 @@ fields:
     units: 'kpc/h'
     descr: 'Comoving radius of rotation curve maximum (where \(V_{max}\) is achieved).'
   - name: WindMass
-    ingest: Subhalo/SubhaloWindMass
+    ingest: _optional:Subhalo/SubhaloWindMass
     type: float
     units: '\(10^{10}M_\odot/h\)'
     descr: 'Sum of masses of all wind-phase cells in this subhalo (with Type==4 and BirthTime&#60;=0).'

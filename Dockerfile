@@ -6,8 +6,6 @@ RUN apt-key add /tmp/nodesource.gpg.key && \
     apt-get upgrade -y && \
     apt-get install -y libhdf5-dev libbz2-dev pkg-config nodejs && \
     rm -rf /var/lib/apt/lists/*
-RUN echo /opt/ghc/*/lib/ghc-*/rts > /etc/ld.so.conf.d/ghc.conf && \
-    ldconfig
 RUN useradd -u 999 -m flathub
 USER flathub
 
