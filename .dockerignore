@@ -1,11 +1,12 @@
 .git
+.github
 .stack-work
 es
 pg
 py
 Dockerfile
 docker-compose.yml
-k8s-*.yml
+k8s*.yml
 README.md
 web/node_modules
 web/jspm_packages

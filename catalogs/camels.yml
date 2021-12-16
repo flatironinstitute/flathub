@@ -34,11 +34,17 @@ fields:
   ingest: ""
   sub:
   - name: Omega_m
+    descr: The cosmic density of matter relative to the critical density.
   - name: sigma_8
+    descr: The normalization of the primordial density fluctuations.
   - name: A_SN1
+    descr: A normalization factor for the flux of galactic winds.
   - name: A_AGN1
+    descr: A normalization factor for the overall energy output of AGN feedback.
   - name: A_SN2
+    descr: A normalization factor for the speed of galactic winds.
   - name: A_AGN2
+    descr: A normalization factor for the specific energy of AGN feedback.
 - name: snapshot
   type: short
   title: 'snap'
