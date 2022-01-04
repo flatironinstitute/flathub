@@ -15,6 +15,7 @@
         - tng_fof
         - tng_sub
     #- simba
+    - camels
     - gaea
 - name: cosmo-dm
   title: Cosmological Dark Matter-Only Simulations

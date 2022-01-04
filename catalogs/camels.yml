@@ -28,7 +28,7 @@ fields:
   type: short
   descr: "Integer ID of the simulation set. E.g. for IllustrisTNG LH 12, this value is '12'."
 - name: params
-  descr: simulation parameters
+  descr: "Simulation parameter:"
   type: float
   flag: top
   ingest: ""
