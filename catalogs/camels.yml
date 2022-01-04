@@ -4,9 +4,9 @@ descr: >
   <p>CAMELS stands for Cosmology and Astrophysics with MachinE Learning Simulations, and is a suite 4,233 cosmological simulations: 2,049 N-body and 2,184 state-of-the-art (magneto-)hydrodynamic suites.</p>
   <p>The CAMELS simulations can be organized in three different suites:
   <ul>
-    <li>IllustrisTNG. This suite contains 1,092 hydrodynamic simulations that have been run with the AREPO code employing the same subgrid physics as the original IllustrisTNG simulations.</li>
-    <li>SIMBA. This suite contains 1,092 hydrodynamic simulations that have been run with the GIZMO code employing the same subgrid physics as the original SIMBA simulation.</li>
-    <li>N-body. This suite contains 2,049 N-body simulation. For each CAMELS hydrodynamic simulation there is an N-body simulation with the same cosmology and value of the initial random seed as its hydrodynamic counterpart.</li>
+    <li><b>IllustrisTNG.</b> This suite contains 1,092 hydrodynamic simulations that have been run with the AREPO code employing the same subgrid physics as the original IllustrisTNG simulations.</li>
+    <li><b>SIMBA.</b> This suite contains 1,092 hydrodynamic simulations that have been run with the GIZMO code employing the same subgrid physics as the original SIMBA simulation.</li>
+    <li><b>N-body.</b> This suite contains 2,049 N-body simulation. For each CAMELS hydrodynamic simulation there is an N-body simulation with the same cosmology and value of the initial random seed as its hydrodynamic counterpart.</li>
   </ul></p>
   <p>Each simulation suite contains four different simulation sets:
   <ul>
