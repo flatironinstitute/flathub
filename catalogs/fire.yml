@@ -1,0 +1,4 @@
+title: "FIRE: Feedback In Realistic Environments "
+index: fire
+descr: The FIRE project seeks to develop and explore cosmological simulations of galaxy formation that directly resolve the interstellar medium of individual galaxies while capturing their cosmological environment. FIRE aims to improve the predictive power of galaxy formation simulations by directly informing the implementation of sub-resolution processes with explicit small-scale models, thus reducing the reliance on adjustable model parameters.
+html: |
