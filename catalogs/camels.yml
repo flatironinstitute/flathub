@@ -1,6 +1,22 @@
 title: CAMELS
 index: camels
-descr: CAMELS Simulations
+descr: >
+  <p>CAMELS stands for Cosmology and Astrophysics with MachinE Learning Simulations, and is a suite 4,233 cosmological simulations: 2,049 N-body and 2,184 state-of-the-art (magneto-)hydrodynamic suites.</p>
+  <p>The CAMELS simulations can be organized in three different suites:
+  <ul>
+    <li><b>IllustrisTNG.</b> This suite contains 1,092 hydrodynamic simulations that have been run with the AREPO code employing the same subgrid physics as the original IllustrisTNG simulations.</li>
+    <li><b>SIMBA.</b> This suite contains 1,092 hydrodynamic simulations that have been run with the GIZMO code employing the same subgrid physics as the original SIMBA simulation.</li>
+    <li><b>N-body.</b> This suite contains 2,049 N-body simulation. For each CAMELS hydrodynamic simulation there is an N-body simulation with the same cosmology and value of the initial random seed as its hydrodynamic counterpart.</li>
+  </ul></p>
+  <p>Each simulation suite contains four different simulation sets:
+  <ul>
+    <li><b>LH.</b> This set contains 1,000 simulations. Each simulation has a different value of the cosmological and astrophysical parameters, that are arranged in a latin-hypercube. Each simulation has a different value of the initial random seed. This set represents the main CAMELS dataset. LH stands for Latin-Hypercube.</li>
+    <li><b>1P.</b> This set contains 61 simulations. In this set, the value of the cosmological and astrophysical parameters in the simulations is varied only one at a time. The value of the random seed is the same in all simulations. This set is typically used to study the change induced by cosmology and astrophysics in a given quantity. 1P stands for 1-parameter at a time.</li>
+    <li><b>CV.</b> This set contains 27 simulations. All the simulations share the value of the cosmological and astrophysical parameters, and they only differ in the value of their initial random seed. This set is typically used to study the effect of cosmic variance. CV stands for Cosmic Variance.</li>
+    <li><b>EX.</b> This set contains 4 simulations. All simulations share the value of the cosmological parameters, but differ in the value of the astrophysical parameters. One simulation has fiducial values; the other three represent extreme cases with 1) very efficient supernova feedback, 2) very efficient AGN feedback, and 3) no feedback. All simulations share the value of the initial random seed. This set can be used to study the maximum effect astrophysics can have on a given quantity. EX stands for Extreme.</li>
+  </ul>
+  </p>
+  <p>For more information on CAMELS, please consult the <a class='underline' target='_blank' rel='noopener' href='https://camels.readthedocs.io/'>documentation</a> and the <a class='underline' target='_blank' rel='noopener' href='https://www.camel-simulations.org/'>project website</a>.</p>
 count: 2927443277
 sort:
 - simulation_suite
