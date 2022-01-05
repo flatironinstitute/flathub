@@ -12,6 +12,7 @@ module Html
   , groupPage
   , comparePage
   , staticHtml
+  , firePage
   ) where
 
 import           Control.Monad (forM_, when)
@@ -766,3 +767,5 @@ staticHtml = getPath ("html" R.*< R.manyI R.parameter) $ \paths q -> do
         , cacheControl glob q
         ] (H.unsafeLazyByteString bod)
 
+firePage :: Route ()
+firePage = getPath "fire" $ \() -> R.routeAction staticHtml ["fire"]
