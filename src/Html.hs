@@ -116,7 +116,7 @@ htmlResponse _req hdrs body = do
             <li .header__link--dropdown>
               <a href="@{topPage !:? mempty}">Catalogs
               <div .dropdown-content .dropdown-second>
-                <a href="/fire"><text>FIRE
+                <a href="@{firePage !:? mempty}"><text>FIRE
                 $forall (key, cat) <- catalogsSorted cats
                   <a href="@{catalogPage !:? key}">
                     <text>#{catalogTitle cat}
@@ -189,8 +189,8 @@ topPage = getPath R.unit $ \() req -> do
                     <div .box-copy>
                       <div .box-head>Catalogs
                     <ul .link-list>
-                        <li>
-                          <a .underline href="/fire">FIRE
+                      <li>
+                        <a .underline href="@{firePage !:? mempty}">FIRE
                       $forall (sim, cat) <- catalogsSorted cats
                         <li>
                           <a .underline href="@{catalogPage !:? sim}">#{catalogTitle cat}
