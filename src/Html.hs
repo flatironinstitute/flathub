@@ -12,6 +12,7 @@ module Html
   , groupPage
   , comparePage
   , staticHtml
+  , firePage
   ) where
 
 import           Control.Monad (forM_, when)
@@ -115,6 +116,7 @@ htmlResponse _req hdrs body = do
             <li .header__link--dropdown>
               <a href="@{topPage !:? mempty}">Catalogs
               <div .dropdown-content .dropdown-second>
+                <a href="@{firePage !:? mempty}"><text>FIRE
                 $forall (key, cat) <- catalogsSorted cats
                   <a href="@{catalogPage !:? key}">
                     <text>#{catalogTitle cat}
@@ -187,6 +189,8 @@ topPage = getPath R.unit $ \() req -> do
                     <div .box-copy>
                       <div .box-head>Catalogs
                     <ul .link-list>
+                      <li>
+                        <a .underline href="@{firePage !:? mempty}">FIRE
                       $forall (sim, cat) <- catalogsSorted cats
                         <li>
                           <a .underline href="@{catalogPage !:? sim}">#{catalogTitle cat}
@@ -766,3 +770,5 @@ staticHtml = getPath ("html" R.*< R.manyI R.parameter) $ \paths q -> do
         , cacheControl glob q
         ] (H.unsafeLazyByteString bod)
 
+firePage :: Route ()
+firePage = getPath "fire" $ \() -> R.routeAction staticHtml ["fire"]
