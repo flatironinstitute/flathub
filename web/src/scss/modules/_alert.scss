@@ -89,10 +89,10 @@
   flex-direction: row;
   align-items: baseline;
   justify-content: space-between;
-  width: calc(100% + 2.5rem);
+  width: 100%;
   background-color: #e2e3e5;
-  margin: -0.75rem -1.25rem !important;
-  padding: 0.75rem 1.25rem;
+  margin: 0 !important;
+  padding: 0;
   border-radius: 0;
 }
 .filter-min-max {

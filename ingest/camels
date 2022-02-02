@@ -5,7 +5,7 @@ run() {
 }
 
 sim=`basename $0`
-suites=($(yaml2json catalogs/camels_fof.yml | jq -r '.fields[0].enum[]'))
+suites=($(yaml2json catalogs/camels.yml | jq -r '.fields[0].enum[]'))
 #ssets=($(yaml2json catalogs/${s}_fof.yml | jq -r '.fields[1].enum[]'))
 declare -A ssets=([LH]=999 [1P]=65 [CV]=26 [EX]=3)
 snapshots=$(seq -f "%03g" 0 33)
