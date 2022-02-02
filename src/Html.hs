@@ -77,6 +77,10 @@ htmlResponse _req hdrs body = do
   let cats = globalCatalogs glob
   return $ okResponse hdrs $ H.docTypeHtml $ hamlet [Hamlet.hamlet|
     <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="description" content="Flatiron Institute Data Exploration and Comparison Hub">
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <title>FlatHUB
       $forall src <- [["style.css"],["datatables.min.css"]]
         <link rel="stylesheet" type="text/css" href="@{static !:? src}">
       <!-- TODO: Move mathjax and fonts to bundle.js -->
