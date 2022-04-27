@@ -10,6 +10,7 @@ module Field
   ( DynamicPathComponent(..)
   , DynamicPath
   , Attachment(..)
+  , FieldFlag(..)
   , FieldSub(..)
   , fieldDisp
   , Field, FieldGroup

@@ -23,15 +23,14 @@ export type Field = {
   sub?: Field[]; /* sub-fields */
 };
 
-export type Catalog = {
+export type CatalogMeta = {
   name: string; /* globally unique catalog key used in urls */
   order: string; /* sort key for display order */
   title: string; /* display name for catalog */
   synopsis: string; /* short description */
 };
 
-export type CatalogMeta = Catalog & {
-  descr: null | string; /* long description (html) */
+export type Catalog = CatalogMeta & {
   fields: Field[]; /* field groups */
   fieldMap?: Dict<Field>; /* expanded (ungrouped) fields keyed by name (populated by populateCatalogFieldMap on client) */
   count?: number; /* total number of rows (if known) */

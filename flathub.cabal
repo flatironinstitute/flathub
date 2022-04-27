@@ -32,6 +32,7 @@ executable flathub
     Ingest.Delim
     JSON
     Monoid
+    OpenApi
     Output.CSV
     Output.ECSV
     Output.Numpy
