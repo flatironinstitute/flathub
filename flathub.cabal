@@ -16,6 +16,8 @@ source-repository head
 executable flathub
   main-is: Main.hs
   other-modules:
+    Paths_flathub
+    Api
     Attach
     Catalog
     Compression
@@ -58,10 +60,13 @@ executable flathub
     , hdf5
     , http-client
     , http-types
+    , insert-ordered-containers
+    , lens
     , mime-types
     , monad-control
     , mtl
     , network-uri
+    , openapi3
     , scientific
     , shakespeare
     , streaming-commons

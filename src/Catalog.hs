@@ -7,6 +7,7 @@
 module Catalog
   ( ESStoreField(..)
   , CatalogStore(..)
+  , Simulation
   , Catalog(..)
   , takeCatalogField
   , Grouping(..)
@@ -69,8 +70,12 @@ data CatalogStore
     , catalogStoreField :: !ESStoreField
     }
 
+-- |Just a catalog identifier (name)
+type Simulation = T.Text
+
 data Catalog = Catalog
-  { catalogEnabled :: !Bool
+  { catalogName :: !Simulation
+  , catalogEnabled :: !Bool
   , catalogVisible :: !Bool
   , catalogOrder :: !T.Text -- ^display order in catalog list
   , catalogTitle :: !T.Text
@@ -86,8 +91,8 @@ data Catalog = Catalog
   , catalogCount :: Maybe Word
   }
 
-parseCatalog :: HM.HashMap T.Text FieldGroup -> J.Value -> J.Parser Catalog
-parseCatalog dict = J.withObject "catalog" $ \c -> do
+parseCatalog :: HM.HashMap T.Text FieldGroup -> T.Text -> J.Value -> J.Parser Catalog
+parseCatalog dict catalogName = J.withObject "catalog" $ \c -> do
   catalogEnabled <- c J..:! "enabled" J..!= True
   catalogVisible <- c J..:! "visible" J..!= True
   catalogFieldGroups <- parseJSONField "fields" (J.withArray "fields" $ mapM (parseFieldGroup dict)) c
@@ -103,18 +108,15 @@ parseCatalog dict = J.withObject "catalog" $ \c -> do
     Just s -> J.parseJSON s
   catalogCount <- c J..:? "count"
   catalogStore <- CatalogES
-      <$> (c J..: "index")
+      <$> (c J..:? "index" J..!= catalogName)
       <*> (c J..:? "settings" J..!= HM.empty)
       <*> (c J..:? "store" J..!= ESStoreValues)
-  catalogOrder <- c J..:? "order" J..!= catalogIndex catalogStore
+  catalogOrder <- c J..:? "order" J..!= catalogName
   let catalogFields = expandFields catalogFieldGroups
       catalogFieldMap = HM.fromList $ map (fieldName &&& id) catalogFields
   mapM_ (\k -> unless (HM.member k catalogFieldMap) $ fail "key field not found in catalog") catalogKey
   mapM_ (\k -> unless (HM.member k catalogFieldMap) $ fail "sort field not found in catalog") catalogSort
   return Catalog{..}
-
-instance J.FromJSON Catalog where
-  parseJSON = parseCatalog mempty
 
 instance J.ToJSON Catalog where
   toJSON Catalog{..} = J.object $
@@ -251,7 +253,7 @@ instance J.FromJSON Catalogs where
   parseJSON = J.withObject "top" $ \o -> do
     dict <- o J..:? "_dict" J..!= mempty
     groups <- o J..:? "_group" J..!= mempty
-    cats <- mapM (parseCatalog $ expandAllFields dict) (HM.delete "_dict" $ HM.delete "_group" o)
+    cats <- HM.traverseWithKey (parseCatalog $ expandAllFields dict) (HM.delete "_dict" $ HM.delete "_group" o)
     mapM_ (\c -> unless (HM.member c cats) $ fail $ "Group catalog " ++ show c ++ " not found") $ groupingsCatalogs groups
     return $ Catalogs (expandFields dict) cats groups
 

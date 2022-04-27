@@ -16,7 +16,6 @@ module Global
 
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.HashMap.Strict as HM
-import qualified Data.Text as T
 import           Control.Monad.Reader (ReaderT, runReaderT, asks)
 import qualified Network.HTTP.Client as HTTP
 import           Network.HTTP.Types.Status (notFound404)
@@ -44,8 +43,6 @@ runGlobal = flip runReaderT
 
 type Action = Wai.Request -> M Wai.Response
 type Route a = R.RouteAction a Action
-
-type Simulation = T.Text
 
 getPath :: R.Path p -> (p -> Action) -> R.RouteAction p Action
 getPath p = R.RouteAction $ R.routeMethod R.GET R.*< R.routePath p

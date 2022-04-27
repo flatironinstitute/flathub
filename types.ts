@@ -28,6 +28,9 @@ export type Catalog = {
   order: string; /* sort key for display order */
   title: string; /* display name for catalog */
   synopsis: string; /* short description */
+};
+
+export type CatalogMeta = Catalog & {
   descr: null | string; /* long description (html) */
   fields: Field[]; /* field groups */
   fieldMap?: Dict<Field>; /* expanded (ungrouped) fields keyed by name (populated by populateCatalogFieldMap on client) */
