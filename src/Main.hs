@@ -29,6 +29,7 @@ import Ingest
 import Html
 import Attach
 import JSON
+import Api
 
 routes :: R.RouteMap Action
 routes = R.routes
@@ -44,6 +45,10 @@ routes = R.routes
   , R.routeNormCase sqlSchema
   , R.routeNormCase csvSchema
   , R.routeNormCase attachment
+  , R.routeNormCase apiTop
+  , R.routeNormCase apiCatalog
+  , R.routeNormCase apiStats
+  , R.routeNormCase openApi
   ]
 
 data Opts = Opts

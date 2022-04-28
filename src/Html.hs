@@ -62,8 +62,8 @@ jsonEncodingVar var enc = do
 jsonVar :: J.ToJSON a => T.Text -> a -> H.Html
 jsonVar var = jsonEncodingVar var . J.toEncoding
 
-catalogsSorted :: Catalogs -> [(T.Text, Catalog)]
-catalogsSorted = sortOn (catalogOrder . snd) . filter (catalogVisible . snd) . HM.toList . catalogMap
+catalogsSorted :: Catalogs -> [Catalog]
+catalogsSorted = sortOn catalogOrder . filter catalogVisible . HM.elems . catalogMap
 
 groupingTitle :: Grouping -> Maybe Catalog -> T.Text
 groupingTitle g = maybe (groupTitle g) catalogTitle
@@ -77,6 +77,10 @@ htmlResponse _req hdrs body = do
   let cats = globalCatalogs glob
   return $ okResponse hdrs $ H.docTypeHtml $ hamlet [Hamlet.hamlet|
     <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="description" content="Flatiron Institute Data Exploration and Comparison Hub">
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <title>FlatHUB
       $forall src <- [["style.css"],["datatables.min.css"]]
         <link rel="stylesheet" type="text/css" href="@{static !:? src}">
       <!-- TODO: Move mathjax and fonts to bundle.js -->
@@ -117,8 +121,8 @@ htmlResponse _req hdrs body = do
               <a href="@{topPage !:? mempty}">Catalogs
               <div .dropdown-content .dropdown-second>
                 <a href="@{firePage !:? mempty}"><text>FIRE
-                $forall (key, cat) <- catalogsSorted cats
-                  <a href="@{catalogPage !:? key}">
+                $forall cat <- catalogsSorted cats
+                  <a href="@{catalogPage !:? catalogName cat}">
                     <text>#{catalogTitle cat}
             <li .header__link>
               <a href="@{staticHtml !:? ["about"]}">About
@@ -191,9 +195,9 @@ topPage = getPath R.unit $ \() req -> do
                     <ul .link-list>
                       <li>
                         <a .underline href="@{firePage !:? mempty}">FIRE
-                      $forall (sim, cat) <- catalogsSorted cats
+                      $forall cat <- catalogsSorted cats
                         <li>
-                          <a .underline href="@{catalogPage !:? sim}">#{catalogTitle cat}
+                          <a .underline href="@{catalogPage !:? catalogName cat}">#{catalogTitle cat}
                 <div .box>
                   <div .box-content>
                     <div .box-copy>
@@ -736,8 +740,8 @@ comparePage = getPath ("compare" R.*< R.manyI R.parameter) $ \path req -> do
             <td>
               <select name="selcat" onchange="selectCat(event.target)">
                 <option value="" selected="selected">Choose catalog...
-                $forall (sim, cat) <- catalogsSorted cats
-                  <option value="#{sim}">
+                $forall cat <- catalogsSorted cats
+                  <option value="#{catalogName cat}">
                     <text>#{catalogTitle cat}
         <tbody>
         <tfoot>
