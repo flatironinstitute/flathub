@@ -11,11 +11,12 @@ module Api
   , openApi
   ) where
 
+import           Control.Lens ((&), (.~), (?~), over)
 import           Control.Monad.Reader (asks)
+import           Control.Monad.Trans.State (modify)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.HashMap.Strict as HM
-import qualified Data.HashMap.Strict.InsOrd as HMI
 import           Data.Maybe (fromJust, isJust)
 import qualified Data.OpenApi as OA
 import qualified Data.OpenApi.Declare as OAD
@@ -94,10 +95,9 @@ fieldsJSON b = JE.list fieldJSON . V.toList where
 instance OA.ToSchema Type where
   declareNamedSchema _ = do
     return $ OA.NamedSchema (Just "Type") $ mempty
-      { OA._schemaDescription = Just "storage type"
-      , OA._schemaType = Just OA.OpenApiString
-      , OA._schemaEnum = Just $ map J.toJSON [Keyword Proxy, Long Proxy, Integer Proxy, Short Proxy, Byte Proxy, Double Proxy, Float Proxy, HalfFloat Proxy, Boolean Proxy, Void Proxy]
-      }
+      & OA.description ?~ "storage type"
+      & OA.type_ ?~ OA.OpenApiString
+      & OA.enum_ ?~ map J.toJSON [Keyword Proxy, Long Proxy, Integer Proxy, Short Proxy, Byte Proxy, Double Proxy, Float Proxy, HalfFloat Proxy, Boolean Proxy, Void Proxy]
 
 instance OA.ToSchema FieldGroup where
   declareNamedSchema t = do
@@ -109,11 +109,11 @@ instance OA.ToSchema FieldGroup where
       , ("title", schemaDescOf fieldTitle "display name of the field within the group", True)
       , ("descr", schemaDescOf (fromJust . fieldDescr) "description of field within the group", False)
       , ("type", schemaDescOf typeOfValue "raw storage type", True)
-      , ("base", OA.Inline mempty
-          { OA._schemaDescription = Just "base storage type (floating, integral, boolean, string, void)"
-          , OA._schemaType = Just OA.OpenApiString
-          , OA._schemaEnum = Just $ map J.toJSON "fibsv"
-          }, True)
+      , ("base", OA.Inline $ mempty
+          & OA.description ?~ "base storage type (floating, integral, boolean, string, void)"
+          & OA.type_ ?~ OA.OpenApiString
+          & OA.enum_ ?~ map J.toJSON "fibsv"
+          , True)
       , ("enum", schemaDescOf (fromJust . fieldEnum) "if present, display values as these keywords instead (integral or boolean: enum[<int>value])", False)
       , ("disp", schemaDescOf fieldDisp "include field in data display by default", False)
       , ("units", schemaDescOf (fromJust . fieldUnits) "display units", False)
@@ -124,9 +124,9 @@ instance OA.ToSchema FieldGroup where
       , ("reversed", schemaDescOf fieldReversed "display axes and ranges in reverse (high-low)", False)
       , ("attachment", schemaDescOf isJust "this is a meta field for a downloadable attachment (type boolean, indicating presence)", False)
       , ("wildcard", schemaDescOf fieldWildcard "allow wildcard prefix searching on keyword field (\"xy*\")", False)
-      , ("sub", OA.Inline (arraySchema ref)
-          { OA._schemaDescription = Just "child fields: if this is present, this is a pseudo grouping field which does not exist itself, but its properties apply to its children"
-          }, False)
+      , ("sub", OA.Inline $ arraySchema ref
+          & OA.description ?~ "child fields: if this is present, this is a pseudo grouping field which does not exist itself, but its properties apply to its children"
+          , False)
       ]
 
 catalogSchema :: OAD.Declare (OA.Definitions OA.Schema) OA.Schema
@@ -134,9 +134,9 @@ catalogSchema = do
   fdef <- OA.declareSchemaRef (Proxy :: Proxy FieldGroup)
   return $ objectSchema
     "Full catalog metadata"
-    [ ("fields", OA.Inline (arraySchema fdef)
-      { OA._schemaDescription = Just "field groups"
-      }, True)
+    [ ("fields", OA.Inline $ arraySchema fdef
+      & OA.description ?~ "field groups"
+      , True)
     , ("count", schemaDescOf (fromJust . catalogCount) "total number of rows (if known)", False)
     , ("sort", schemaDescOf catalogSort "default sort fields", False)
     ]
@@ -160,63 +160,52 @@ apiStats :: Route Simulation
 apiStats = getPath (catalogBase R.>* "stats") $ \sim req -> do
   return $ okResponse [] $ J.pairs mempty
 
+  -- gte[field]=3&lte[field]=5&eq[field]=2&wildcard[field]=
+
 -------- /openapi.json
 
 openApi :: Route ()
-openApi = getPath "openapi.json" $ \() req -> let
-  (defs, spec) = OAD.runDeclare decl mempty
-  decl = do
-    catmeta <- OA.declareSchemaRef (Proxy :: Proxy Catalog)
-    catschema <- catalogSchema
-    return mempty
-      { OA._openApiInfo = mempty
-        { OA._infoTitle = "FlatHUB API"
-        , OA._infoVersion = T.pack (showVersion Paths.version)
-        }
-      , OA._openApiServers =
+openApi = getPath "openapi.json" $ \() req ->
+  return $ okResponse [] $ J.encode $ populate $ do
+    modify
+      $ (over OA.info
+        $ (OA.title .~ "FlatHUB API")
+        . (OA.version .~ T.pack (showVersion Paths.version)))
+      . (OA.servers .~
         [ OA.Server (urltext $ baseapi $ R.waiRequest req) Nothing mempty
         , OA.Server (urltext $ baseapi produrl) (Just "production") mempty
+        ])
+    catmeta <- stateDeclareSchema $ OA.declareSchemaRef (Proxy :: Proxy Catalog)
+    catschema <- stateDeclareSchema catalogSchema
+    path apiTop () [] $ jsonOp "top"
+      "Get the list of available dataset catalogs"
+      "list of catalogs"
+      (mempty
+        & OA.type_ ?~ OA.OpenApiArray
+        & OA.items ?~ OA.OpenApiItemsObject catmeta)
+    path apiCatalog "sim" [simparam] $ jsonOp "catalog"
+      "Get full metadata about a specific catalog"
+      "catalog metadata"
+      (mempty
+        & OA.allOf ?~
+          [ catmeta
+          , OA.Inline catschema
+          ])
+    path apiStats "sim" [simparam] $ (jsonOp "stats"
+      "Get statistics about fields (given some filters)"
+      "field statistics"
+      mempty)
+      & OA.parameters .~ [OA.Inline $ mempty
+        & OA.name .~ "filter"
+        & OA.in_ .~ OA.ParamQuery
+        & OA.style ?~ OA.StyleDeepObject
+        & OA.schema ?~ (OA.Inline $ objectSchema "filter" [("field", schemaDescOf T.pack "stuff", True)])
         ]
-      , OA._openApiComponents = mempty
-        { OA._componentsSchemas = defs
-        }
-      , OA._openApiPaths = HMI.fromList
-        [ path apiTop () [] $ jsonOp "top"
-          "Get the list of available dataset catalogs"
-          "list of catalogs"
-          mempty
-          { OA._schemaType = Just OA.OpenApiArray
-          , OA._schemaItems = Just $ OA.OpenApiItemsObject catmeta
-          }
-        , path apiCatalog "sim" [simparam] $ jsonOp "catalog"
-          "Get full metadata about a specific catalog"
-          "catalog metadata"
-          mempty
-          { OA._schemaAllOf = Just
-            [ catmeta
-            , OA.Inline catschema
-            ]
-          }
-        , path apiStats "sim" [simparam] $ (jsonOp "stats"
-          "Get statistics about fields (given some filters)"
-          "field statistics"
-          mempty)
-          { OA._operationParameters = [OA.Inline $ mempty
-            { OA._paramName = "filter"
-            , OA._paramIn = OA.ParamQuery
-            , OA._paramStyle = Just OA.StyleDeepObject
-            , OA._paramSchema = Just $ OA.Inline $ objectSchema "filter" [("field", schemaDescOf T.pack "stuff", True)]
-            }]
-          }
-        ]
-      }
-  in return $ okResponse [] $ J.encode $ spec
   where
   baseapi = RI.requestRoute' (R.routePath apiBase) ()
   produrl = mempty{ R.requestSecure = True, R.requestHost = RI.splitHost "flathub.flatironinstitute.org" }
   urltext = requestUrl
   path = routeOperation (baseapi RI.blankRequest)
   simparam = mempty
-    { OA._paramName = "sim"
-    , OA._paramSchema = Just $ schemaDescOf T.pack "catalog id"
-    }
+    & OA.name .~ "sim"
+    & OA.schema ?~ schemaDescOf T.pack "catalog id"

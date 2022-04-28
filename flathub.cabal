@@ -73,6 +73,7 @@ executable flathub
     , streaming-commons
     , text
     , time
+    , transformers
     , unix
     , unordered-containers
     , vector
