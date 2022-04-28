@@ -7,6 +7,7 @@
 
 module ES
   ( initServer
+  , searchCatalog
   , createIndex
   , checkIndices
   , storedFields'
@@ -119,6 +120,9 @@ catalogURL :: Catalog -> [String]
 catalogURL Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } =
   [T.unpack idxn]
 
+searchCatalog :: (Body b, J.FromJSON r, Show r) => Catalog -> HTTP.Query -> b -> M r
+searchCatalog cat = elasticSearch GET (catalogURL cat ++ ["_search"])
+
 defaultSettings :: Catalog -> J.Object
 defaultSettings cat = HM.fromList
   [ "index" J..= J.object (
@@ -202,8 +206,7 @@ data HistogramInterval a
 queryIndexScroll :: Bool -> Catalog -> Query -> M J.Value
 queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreField = store } } Query{..} = do
   hists <- gethists
-  amend hists <$> elasticSearch GET
-    (catalogURL cat ++ ["_search"])
+  amend hists <$> searchCatalog cat
     (mwhen scroll $ [("scroll", Just scrollTime)])
     (JE.pairs $
        (mwhen (queryOffset > 0) $ "from" J..= queryOffset)
@@ -236,8 +239,8 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreFiel
 
   -- pre-query ranges of histogram fields without bounds if necesary
   gethists = HM.fromList . mapMaybe histsize . (histbnds ++) <$> if null histunks then return [] else
-    fold . J.parseMaybe fillhistbnd <$> elasticSearch GET
-      (catalogURL cat ++ ["_search"]) []
+    fold . J.parseMaybe fillhistbnd <$> searchCatalog cat
+      []
       (JE.pairs $
         "size" J..= J.Number 0
       <> "query" .=* filts

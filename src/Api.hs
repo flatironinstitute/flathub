@@ -11,20 +11,26 @@ module Api
   , openApi
   ) where
 
-import           Control.Lens ((&), (.~), (?~), over)
+import           Control.Lens ((&), (&~), (.~), (?~), over)
 import           Control.Monad.Reader (asks)
 import           Control.Monad.Trans.State (modify)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as BSC
 import qualified Data.HashMap.Strict as HM
 import           Data.Maybe (fromJust, isJust)
 import qualified Data.OpenApi as OA
 import qualified Data.OpenApi.Declare as OAD
 import           Data.Proxy (Proxy(Proxy))
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V
 import           Data.Version (showVersion)
-import           Waimwork.Response (okResponse)
+import           Network.HTTP.Types.Status (badRequest400)
+import qualified Network.Wai as Wai
+import           Waimwork.Response (okResponse, response)
+import           Waimwork.Result (result)
 import qualified Web.Route.Invertible as R
 import qualified Web.Route.Invertible.Internal as RI
 import qualified Web.Route.Invertible.Wai as R
@@ -156,9 +162,30 @@ apiCatalog = getPath catalogBase $ \sim _ -> do
 
 -------- /api/{catalog}/stats
 
+listParam :: Wai.Request -> BS.ByteString -> [BS.ByteString]
+listParam req param = foldMap sel $ Wai.queryString req where
+  sel (p, v)
+    | p == param = foldMap (filter (not . BSC.null) . BSC.splitWith delim) v
+    | otherwise = []
+  delim ',' = True
+  delim ' ' = True
+  delim _ = False
+
+lookupField :: Catalog -> BS.ByteString -> M Field
+lookupField cat n =
+  maybe (result $ response badRequest400 [] $ "Field not found: " <> n) return
+  $ do
+  n' <- either (const Nothing) Just $ TE.decodeUtf8' n
+  HM.lookup n' $ catalogFieldMap cat
+
+fieldsParam :: Catalog -> Wai.Request -> BS.ByteString -> M [Field]
+fieldsParam cat req param = mapM (lookupField cat) $ listParam req param
+
 apiStats :: Route Simulation
 apiStats = getPath (catalogBase R.>* "stats") $ \sim req -> do
-  return $ okResponse [] $ J.pairs mempty
+  cat <- askCatalog sim
+  fields <- fieldsParam cat req "fields"
+  return $ okResponse [] $ J.foldable $ map fieldName fields
 
   -- gte[field]=3&lte[field]=5&eq[field]=2&wildcard[field]=
 
@@ -166,7 +193,7 @@ apiStats = getPath (catalogBase R.>* "stats") $ \sim req -> do
 
 openApi :: Route ()
 openApi = getPath "openapi.json" $ \() req ->
-  return $ okResponse [] $ J.encode $ populate $ do
+  return $ okResponse [] $ J.encode $ mempty &~ do
     modify
       $ (over OA.info
         $ (OA.title .~ "FlatHUB API")
@@ -175,14 +202,29 @@ openApi = getPath "openapi.json" $ \() req ->
         [ OA.Server (urltext $ baseapi $ R.waiRequest req) Nothing mempty
         , OA.Server (urltext $ baseapi produrl) (Just "production") mempty
         ])
+
     catmeta <- stateDeclareSchema $ OA.declareSchemaRef (Proxy :: Proxy Catalog)
     catschema <- stateDeclareSchema catalogSchema
+    filterp <- define "filter" $ mempty
+      & OA.name .~ "filter"
+      & OA.in_ .~ OA.ParamQuery
+      & OA.style ?~ OA.StyleDeepObject
+      & OA.schema ?~ (OA.Inline $ objectSchema "filter" [("field", schemaDescOf T.pack "TBD", True)])
+    fieldsp <- define "fields" $ mempty
+      & OA.name .~ "fields"
+      & OA.description ?~ "list of fields to return"
+      & OA.in_ .~ OA.ParamQuery
+      & OA.style ?~ OA.StyleForm
+      & OA.explode ?~ False
+      & OA.schema ?~ OA.Inline (arraySchema $ schemaDescOf T.pack "field name in catalog")
+
     path apiTop () [] $ jsonOp "top"
       "Get the list of available dataset catalogs"
       "list of catalogs"
       (mempty
         & OA.type_ ?~ OA.OpenApiArray
         & OA.items ?~ OA.OpenApiItemsObject catmeta)
+
     path apiCatalog "sim" [simparam] $ jsonOp "catalog"
       "Get full metadata about a specific catalog"
       "catalog metadata"
@@ -191,16 +233,12 @@ openApi = getPath "openapi.json" $ \() req ->
           [ catmeta
           , OA.Inline catschema
           ])
-    path apiStats "sim" [simparam] $ (jsonOp "stats"
+
+    path apiStats "sim" [simparam] $ jsonOp "stats"
       "Get statistics about fields (given some filters)"
       "field statistics"
-      mempty)
-      & OA.parameters .~ [OA.Inline $ mempty
-        & OA.name .~ "filter"
-        & OA.in_ .~ OA.ParamQuery
-        & OA.style ?~ OA.StyleDeepObject
-        & OA.schema ?~ (OA.Inline $ objectSchema "filter" [("field", schemaDescOf T.pack "stuff", True)])
-        ]
+      mempty
+      & OA.parameters .~ [filterp, fieldsp]
   where
   baseapi = RI.requestRoute' (R.routePath apiBase) ()
   produrl = mempty{ R.requestSecure = True, R.requestHost = RI.splitHost "flathub.flatironinstitute.org" }

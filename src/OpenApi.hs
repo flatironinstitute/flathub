@@ -48,10 +48,10 @@ zoomDeclare :: Functor m => Lens' d e -> OAD.DeclareT e m a -> OAD.DeclareT d m 
 zoomDeclare l f = OAD.DeclareT $ unfocusing <$> l (Focusing <$> OAD.runDeclareT f)
 
 -- |Lift 'OAD.DeclareT' into 'StateT'
-stateDeclare :: Functor m => OAD.DeclareT s m a -> StateT s m a
-stateDeclare f = StateT $ \s -> swap <$> OAD.runDeclareT f s
+stateDeclare :: (Functor m, Semigroup s) => OAD.DeclareT s m a -> StateT s m a
+stateDeclare f = StateT $ \s -> swap . first (s <>) <$> OAD.runDeclareT f s
 
-stateDeclareSchema :: Monad m => OAD.DeclareT (OA.Definitions OA.Schema) m a -> StateT OA.OpenApi m a
+stateDeclareSchema :: (Monad m, Show a) => OAD.DeclareT (OA.Definitions OA.Schema) m a -> StateT OA.OpenApi m a
 stateDeclareSchema = zoom (OA.components . OA.schemas) . stateDeclare
 
 populate :: Monoid s => State s () -> s
