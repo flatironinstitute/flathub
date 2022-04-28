@@ -35,6 +35,7 @@ import           Data.Maybe (fromMaybe)
 import           Data.Proxy (Proxy(Proxy))
 import qualified Data.Text as T
 import           Data.Typeable (Typeable)
+import           Data.Word (Word64)
 import           Numeric.Half (Half)
 import           Text.Read (readMaybe, readPrec, Lexeme(Ident), lexP, readEither)
 
@@ -72,6 +73,7 @@ data TypeValue f
   | Float     !(f Float)
   | HalfFloat !(f Half)
   | Long      !(f Int64)
+  | ULong     !(f Word64)
   | Integer   !(f Int32)
   | Short     !(f Int16)
   | Byte      !(f Int8)
@@ -88,6 +90,7 @@ class (Eq a, Ord a, Show a, Read a, J.ToJSON a, J.FromJSON a, Typeable a) => Typ
 typeValue1 :: Typed a => a -> Value
 typeValue1 = typeValue . Identity
 
+instance Typed Word64 where typeValue = ULong
 instance Typed Int64  where typeValue = Long
 instance Typed Int32  where typeValue = Integer
 instance Typed Int16  where typeValue = Short
@@ -104,6 +107,7 @@ unTypeValue f (Double    x) = f $! x
 unTypeValue f (Float     x) = f $! x
 unTypeValue f (HalfFloat x) = f $! x
 unTypeValue f (Long      x) = f $! x
+unTypeValue f (ULong     x) = f $! x
 unTypeValue f (Integer   x) = f $! x
 unTypeValue f (Short     x) = f $! x
 unTypeValue f (Byte      x) = f $! x
@@ -116,6 +120,7 @@ transformTypeValue f (Double    x) = Double    <$> f x
 transformTypeValue f (Float     x) = Float     <$> f x
 transformTypeValue f (HalfFloat x) = HalfFloat <$> f x
 transformTypeValue f (Long      x) = Long      <$> f x
+transformTypeValue f (ULong     x) = ULong     <$> f x
 transformTypeValue f (Integer   x) = Integer   <$> f x
 transformTypeValue f (Short     x) = Short     <$> f x
 transformTypeValue f (Byte      x) = Byte      <$> f x
@@ -128,6 +133,7 @@ transformTypeValue2 f (Double    x) (Double    y) = Double    <$> f x y
 transformTypeValue2 f (Float     x) (Float     y) = Float     <$> f x y
 transformTypeValue2 f (HalfFloat x) (HalfFloat y) = HalfFloat <$> f x y
 transformTypeValue2 f (Long      x) (Long      y) = Long      <$> f x y
+transformTypeValue2 f (ULong     x) (ULong     y) = ULong     <$> f x y
 transformTypeValue2 f (Integer   x) (Integer   y) = Integer   <$> f x y
 transformTypeValue2 f (Short     x) (Short     y) = Short     <$> f x y
 transformTypeValue2 f (Byte      x) (Byte      y) = Byte      <$> f x y
@@ -189,6 +195,7 @@ instance Default Type where
 instance {-# OVERLAPPING #-} Show Type where
   show (Keyword _)   = "keyword"
   show (Long _)      = "long"
+  show (ULong _)     = "unsigned_long"
   show (Integer _)   = "integer"
   show (Short _)     = "short"
   show (Byte _)      = "byte"
@@ -204,6 +211,10 @@ instance Read Type where
     case s of
       "keyword"     -> return (Keyword Proxy)
       "long"        -> return (Long Proxy)
+      "int64"       -> return (Long Proxy)
+      "unsigned_long" -> return (ULong Proxy)
+      "ulong"       -> return (ULong Proxy)
+      "uint64"      -> return (ULong Proxy)
       "int"         -> return (Integer Proxy)
       "integer"     -> return (Integer Proxy)
       "int32"       -> return (Integer Proxy)
@@ -237,6 +248,7 @@ typeIsFloating _ = False
 
 typeIsIntegral :: Type -> Bool
 typeIsIntegral (Long      _) = True
+typeIsIntegral (ULong     _) = True
 typeIsIntegral (Integer   _) = True
 typeIsIntegral (Short     _) = True
 typeIsIntegral (Byte      _) = True
@@ -266,6 +278,7 @@ numpyTypeSize (Double    _) = 8
 numpyTypeSize (Float     _) = 4
 numpyTypeSize (HalfFloat _) = 2
 numpyTypeSize (Long      _) = 8
+numpyTypeSize (ULong     _) = 8
 numpyTypeSize (Integer   _) = 4
 numpyTypeSize (Short     _) = 2
 numpyTypeSize (Byte      _) = 1
@@ -276,6 +289,7 @@ numpyTypeSize (Void      _) = 0
 sqlType :: Type -> T.Text
 sqlType (Keyword _)   = "text"
 sqlType (Long _)      = "bigint"
+sqlType (ULong _)     = "bigint"
 sqlType (Integer _)   = "integer"
 sqlType (Short _)     = "smallint"
 sqlType (Byte _)      = "smallint"

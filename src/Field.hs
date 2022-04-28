@@ -174,6 +174,7 @@ numpyFieldSize Field{ fieldType = t } = numpyTypeSize t
 
 numpyDtype :: Field -> String
 numpyDtype Field{ fieldType = Boolean _ } = "?"
+numpyDtype Field{ fieldType = ULong _ } = "<u8"
 numpyDtype f = '<' : baseType ('f','i','?','S','V') (fieldType f) : show (numpyFieldSize f)
 
 instance J.ToJSON Field where

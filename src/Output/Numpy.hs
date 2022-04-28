@@ -35,6 +35,7 @@ numpyBuild _ (Double    x) = B.doubleLE $ fromMaybe (unsafeCoerce (0x7ff80000fff
 numpyBuild _ (Float     x) = B.floatLE  $ fromMaybe (unsafeCoerce (0x7fc0ffff::Word32)) x
 numpyBuild _ (HalfFloat x) = B.word16LE $ maybe 0x7cff getHalf' x
 numpyBuild _ (Long      x) = B.int64LE  $ fromMaybe (-1) x
+numpyBuild _ (ULong     x) = B.word64LE $ fromMaybe maxBound x
 numpyBuild _ (Integer   x) = B.int32LE  $ fromMaybe (-1) x
 numpyBuild _ (Short     x) = B.int16LE  $ fromMaybe (-1) x
 numpyBuild _ (Byte      x) = B.int8     $ fromMaybe (-1) x
