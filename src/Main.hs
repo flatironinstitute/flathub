@@ -47,6 +47,7 @@ routes = R.routes
   , R.routeNormCase attachment
   , R.routeNormCase apiTop
   , R.routeNormCase apiCatalog
+  , R.routeNormCase apiStats
   , R.routeNormCase openApi
   ]
 

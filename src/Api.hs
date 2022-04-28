@@ -2,14 +2,15 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeSynonymInstances #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Api
   ( apiTop
   , apiCatalog
+  , apiStats
   , openApi
   ) where
 
-import qualified Control.Lens as Lens
 import           Control.Monad.Reader (asks)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
@@ -18,12 +19,11 @@ import qualified Data.HashMap.Strict.InsOrd as HMI
 import           Data.Maybe (fromJust, isJust)
 import qualified Data.OpenApi as OA
 import qualified Data.OpenApi.Declare as OAD
-import qualified Data.OpenApi.Lens as OAL
 import           Data.Proxy (Proxy(Proxy))
 import qualified Data.Text as T
 import qualified Data.Vector as V
 import           Data.Version (showVersion)
-import           Waimwork.Response (response, okResponse)
+import           Waimwork.Response (okResponse)
 import qualified Web.Route.Invertible as R
 import qualified Web.Route.Invertible.Internal as RI
 import qualified Web.Route.Invertible.Wai as R
@@ -35,6 +35,11 @@ import Field
 import Catalog
 import Global
 import OpenApi
+
+apiBase :: R.Path ()
+apiBase = "api"
+
+-------- /api
 
 catalogJSON :: Catalog -> J.Series
 catalogJSON Catalog{..} =
@@ -54,9 +59,11 @@ instance OA.ToSchema Catalog where
       ]
 
 apiTop :: Route ()
-apiTop = getPath "api" $ \() _ -> do
+apiTop = getPath apiBase $ \() _ -> do
   cats <- asks globalCatalogs
   return $ okResponse [] $ JE.list (J.pairs . catalogJSON) $ filter catalogVisible $ HM.elems $ catalogMap cats
+
+-------- /api/{catalog}
 
 fieldsJSON :: FieldGroup -> FieldGroups -> J.Encoding
 fieldsJSON b = JE.list fieldJSON . V.toList where
@@ -68,7 +75,7 @@ fieldsJSON b = JE.list fieldJSON . V.toList where
     <> "type" J..= fieldType
     <> "base" J..= baseType ('f','i','b','s','v') fieldType
     <> foldMap ("enum" J..=) fieldEnum
-    <> "disp" J..= fieldDisp f
+    <> mwhen (fieldDisp f) ("disp" J..= True)
     <> foldMap ("units" J..=) fieldUnits
     <> foldMap ("required" J..=) (case fieldFlag of
         FieldTop -> Just False
@@ -108,7 +115,7 @@ instance OA.ToSchema FieldGroup where
           , OA._schemaEnum = Just $ map J.toJSON "fibsv"
           }, True)
       , ("enum", schemaDescOf (fromJust . fieldEnum) "if present, display values as these keywords instead (integral or boolean: enum[<int>value])", False)
-      , ("disp", schemaDescOf fieldDisp "include field in data display by default", True)
+      , ("disp", schemaDescOf fieldDisp "include field in data display by default", False)
       , ("units", schemaDescOf (fromJust . fieldUnits) "display units", False)
       , ("required", schemaDescOf (True ==) "true = required filter; false = top-level (default) optional filter; missing = normal", False)
       , ("terms", schemaDescOf fieldTerms "display dynamically as a dropdown of values", False)
@@ -134,8 +141,11 @@ catalogSchema = do
     , ("sort", schemaDescOf catalogSort "default sort fields", False)
     ]
 
+catalogBase :: R.Path Simulation
+catalogBase = apiBase R.*< R.parameter
+
 apiCatalog :: Route Simulation
-apiCatalog = getPath ("api" R.*< R.parameter) $ \sim _ -> do
+apiCatalog = getPath catalogBase $ \sim _ -> do
   cat <- askCatalog sim
   return $ okResponse [] $ J.pairs
     $ catalogJSON cat
@@ -144,52 +154,69 @@ apiCatalog = getPath ("api" R.*< R.parameter) $ \sim _ -> do
     <> mwhen (not $ null $ catalogSort cat)
       ("sort" J..= catalogSort cat)
 
+-------- /api/{catalog}/stats
+
+apiStats :: Route Simulation
+apiStats = getPath (catalogBase R.>* "stats") $ \sim req -> do
+  return $ okResponse [] $ J.pairs mempty
+
+-------- /openapi.json
+
 openApi :: Route ()
-openApi = getPath "openapi.json" $ \() req -> do
-  let
-    (defs, spec) = OAD.runDeclare decl mempty
-    decl = do
-      catmeta <- OA.declareSchemaRef (Proxy :: Proxy Catalog)
-      catschema <- catalogSchema
-      return mempty
-        { OA._openApiInfo = mempty
-          { OA._infoTitle = "FlatHUB API"
-          , OA._infoVersion = T.pack (showVersion Paths.version)
-          }
-        , OA._openApiServers = 
-          [ OA.Server (urltext $ baseapi $ R.waiRequest req) Nothing mempty
-          , OA.Server (urltext $ baseapi produrl) (Just "production") mempty
-          ]
-        , OA._openApiComponents = mempty
-          { OA._componentsSchemas = defs
-          }
-        , OA._openApiPaths = HMI.fromList
-          [ path apiTop () [] $ jsonOp
-            "Get the list of available dataset catalogs"
-            "list of catalogs"
-            mempty
-            { OA._schemaType = Just OA.OpenApiArray
-            , OA._schemaItems = Just $ OA.OpenApiItemsObject catmeta
-            }
-          , path apiCatalog "sim" 
-            [ mempty
-              { OA._paramName = "sim"
-              , OA._paramSchema = Just $ schemaDescOf T.pack "catalog id"
-              }
-            ] $ jsonOp
-            "Get full metadata about a specific catalog"
-            "catalog metadata"
-            mempty
-            { OA._schemaAllOf = Just
-              [ catmeta
-              , OA.Inline catschema
-              ]
-            }
-          ]
+openApi = getPath "openapi.json" $ \() req -> let
+  (defs, spec) = OAD.runDeclare decl mempty
+  decl = do
+    catmeta <- OA.declareSchemaRef (Proxy :: Proxy Catalog)
+    catschema <- catalogSchema
+    return mempty
+      { OA._openApiInfo = mempty
+        { OA._infoTitle = "FlatHUB API"
+        , OA._infoVersion = T.pack (showVersion Paths.version)
         }
-  return $ okResponse [] $ J.encode $ spec
+      , OA._openApiServers =
+        [ OA.Server (urltext $ baseapi $ R.waiRequest req) Nothing mempty
+        , OA.Server (urltext $ baseapi produrl) (Just "production") mempty
+        ]
+      , OA._openApiComponents = mempty
+        { OA._componentsSchemas = defs
+        }
+      , OA._openApiPaths = HMI.fromList
+        [ path apiTop () [] $ jsonOp "top"
+          "Get the list of available dataset catalogs"
+          "list of catalogs"
+          mempty
+          { OA._schemaType = Just OA.OpenApiArray
+          , OA._schemaItems = Just $ OA.OpenApiItemsObject catmeta
+          }
+        , path apiCatalog "sim" [simparam] $ jsonOp "catalog"
+          "Get full metadata about a specific catalog"
+          "catalog metadata"
+          mempty
+          { OA._schemaAllOf = Just
+            [ catmeta
+            , OA.Inline catschema
+            ]
+          }
+        , path apiStats "sim" [simparam] $ (jsonOp "stats"
+          "Get statistics about fields (given some filters)"
+          "field statistics"
+          mempty)
+          { OA._operationParameters = [OA.Inline $ mempty
+            { OA._paramName = "filter"
+            , OA._paramIn = OA.ParamQuery
+            , OA._paramStyle = Just OA.StyleDeepObject
+            , OA._paramSchema = Just $ OA.Inline $ objectSchema "filter" [("field", schemaDescOf T.pack "stuff", True)]
+            }]
+          }
+        ]
+      }
+  in return $ okResponse [] $ J.encode $ spec
   where
-  baseapi = RI.requestRoute' (R.actionRoute apiTop) ()
+  baseapi = RI.requestRoute' (R.routePath apiBase) ()
   produrl = mempty{ R.requestSecure = True, R.requestHost = RI.splitHost "flathub.flatironinstitute.org" }
   urltext = requestUrl
   path = routeOperation (baseapi RI.blankRequest)
+  simparam = mempty
+    { OA._paramName = "sim"
+    , OA._paramSchema = Just $ schemaDescOf T.pack "catalog id"
+    }

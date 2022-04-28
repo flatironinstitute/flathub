@@ -76,9 +76,10 @@ arraySchema e = mempty
   , OA._schemaItems = Just $ OA.OpenApiItemsObject e
   }
 
-jsonOp :: T.Text -> T.Text -> OA.Schema -> OA.Operation
-jsonOp summ desc schema = mempty
-  { OA._operationSummary = Just summ
+jsonOp :: T.Text -> T.Text -> T.Text -> OA.Schema -> OA.Operation
+jsonOp oid summ desc schema = mempty
+  { OA._operationOperationId = Just oid
+  , OA._operationSummary = Just summ
   , OA._operationResponses = mempty
     { OA._responsesResponses = HMI.singleton 200 $ OA.Inline mempty
       { OA._responseDescription = desc
