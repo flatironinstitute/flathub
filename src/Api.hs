@@ -42,6 +42,7 @@ import Field
 import Catalog
 import Global
 import OpenApi
+import Backend
 
 apiBase :: R.Path ()
 apiBase = "api"
@@ -103,7 +104,7 @@ instance OA.ToSchema Type where
     return $ OA.NamedSchema (Just "Type") $ mempty
       & OA.description ?~ "storage type"
       & OA.type_ ?~ OA.OpenApiString
-      & OA.enum_ ?~ map J.toJSON [Keyword Proxy, Long Proxy, Integer Proxy, Short Proxy, Byte Proxy, Double Proxy, Float Proxy, HalfFloat Proxy, Boolean Proxy, Void Proxy]
+      & OA.enum_ ?~ map J.toJSON allTypes
 
 instance OA.ToSchema FieldGroup where
   declareNamedSchema t = do
@@ -162,6 +163,52 @@ apiCatalog = getPath catalogBase $ \sim _ -> do
 
 -------- /api/{catalog}/stats
 
+instance OA.ToSchema FieldValue where
+  declareNamedSchema _ = do
+    return $ OA.NamedSchema (Just "FieldValue") $ mempty
+      & OA.description ?~ "a value for a field, which must match the type of the field"
+      & OA.anyOf ?~ map (\t -> unTypeValue (\p -> OA.Inline $ OA.toSchema p & OA.title ?~ T.pack (show t)) t) allTypes
+
+instance Typed a => J.FromJSON (FieldFilter a) where
+  parseJSON j@(J.Array _) = FieldEQ <$> J.parseJSON j
+  parseJSON (J.Object o) = FieldRange
+    <$> o J..:? "gte"
+    <*> o J..:? "lte"
+  parseJSON j = FieldEQ . return <$> J.parseJSON j
+
+instance Typed a => OA.ToSchema (FieldFilter a) where
+  declareNamedSchema _ = do
+    fv <- OA.declareSchemaRef (Proxy :: Proxy FieldValue)
+    return $ OA.NamedSchema Nothing $ mempty
+      & OA.description ?~ "filter for a named field to be equal to a specific value or match other contraints"
+      & OA.anyOf ?~
+        [ fv
+        , OA.Inline $ arraySchema fv & OA.description ?~ "equal to any of these values"
+        , OA.Inline $ objectSchema "in a bounded range: >= gte and <= lte, either of which may be omitted"
+          [ ("gte", fv, False)
+          , ("lte", fv, False)
+          ]
+        ]
+
+instance OA.ToSchema Filters where
+  declareNamedSchema _ = do
+    ff <- OA.declareSchemaRef (Proxy :: Proxy (FieldFilter ()))
+    return $ OA.NamedSchema (Just "Filters") $ objectSchema
+      "filters to apply to a query"
+      [ ("sample", OA.Inline $ OA.toSchema (proxyOf $ filterSample undefined)
+        & OA.description ?~ "randomly select a fractional sample"
+        & OA.default_ ?~ J.Number 1
+        & OA.minimum_ ?~ 0
+        & OA.exclusiveMinimum ?~ True
+        & OA.maximum_ ?~ 1
+        & OA.exclusiveMaximum ?~ False
+        , False)
+      , ("seed", OA.Inline $ OA.toSchema (proxyOf $ fromJust $ filterSeed undefined)
+        & OA.description ?~ "seed for random sample selection (defaults to new random seed)"
+        , False)
+      ]
+      & OA.additionalProperties ?~ OA.AdditionalPropertiesSchema ff
+
 listParam :: Wai.Request -> BS.ByteString -> [BS.ByteString]
 listParam req param = foldMap sel $ Wai.queryString req where
   sel (p, v)
@@ -205,11 +252,13 @@ openApi = getPath "openapi.json" $ \() req ->
 
     catmeta <- stateDeclareSchema $ OA.declareSchemaRef (Proxy :: Proxy Catalog)
     catschema <- stateDeclareSchema catalogSchema
+    filters <- stateDeclareSchema $ OA.declareSchemaRef (Proxy :: Proxy Filters)
     filterp <- define "filter" $ mempty
       & OA.name .~ "filter"
       & OA.in_ .~ OA.ParamQuery
       & OA.style ?~ OA.StyleDeepObject
-      & OA.schema ?~ (OA.Inline $ objectSchema "filter" [("field", schemaDescOf T.pack "TBD", True)])
+      & OA.schema ?~ filters
+
     fieldsp <- define "fields" $ mempty
       & OA.name .~ "fields"
       & OA.description ?~ "list of fields to return"

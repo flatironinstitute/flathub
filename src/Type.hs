@@ -3,11 +3,11 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeSynonymInstances #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Type
   ( TypeValue(..)
   , Type, Value
+  , allTypes
   , Typed
   , typeValue, typeValue1
   , traverseTypeValue
@@ -32,41 +32,14 @@ import           Data.Functor.Const (Const(Const, getConst))
 import           Data.Functor.Identity (Identity(Identity, runIdentity))
 import           Data.Int (Int64, Int32, Int16, Int8)
 import           Data.Maybe (fromMaybe)
+import qualified Data.OpenApi as OA
 import           Data.Proxy (Proxy(Proxy))
 import qualified Data.Text as T
 import           Data.Typeable (Typeable)
 import           Data.Word (Word64)
-import           Numeric.Half (Half)
 import           Text.Read (readMaybe, readPrec, Lexeme(Ident), lexP, readEither)
 
-instance J.ToJSON Half where
-  toJSON = J.toJSON . (realToFrac :: Half -> Float)
-  toEncoding = J.toEncoding . (realToFrac :: Half -> Float)
-
-instance J.FromJSON Half where
-  parseJSON = fmap (realToFrac :: Float -> Half) . J.parseJSON
-
-instance Enum Half where
-  succ = (+) 1
-  pred = (-) 1
-  toEnum = realToFrac
-  fromEnum = truncate
-  enumFrom x = x : enumFrom (succ x)
-  enumFromThen x y = x : f y where
-    d = y - x
-    f a = a : f (a + d)
-  enumFromTo x z
-    | z >= x = x : enumFromTo (succ x) z
-    | otherwise = []
-  enumFromThenTo x y z
-    | c x = x : f y
-    | otherwise = [] where
-    f a
-      | c a = a : f (a + d)
-      | otherwise = []
-    d = y - x
-    c | d > 0 = (z >=)
-      | otherwise = (z <=)
+import Half
 
 data TypeValue f
   = Double    !(f Double)
@@ -84,7 +57,22 @@ data TypeValue f
 type Type = TypeValue Proxy
 type Value = TypeValue Identity
 
-class (Eq a, Ord a, Show a, Read a, J.ToJSON a, J.FromJSON a, Typeable a) => Typed a where
+allTypes :: [Type]
+allTypes =
+  [ Double    Proxy
+  , Float     Proxy
+  , HalfFloat Proxy
+  , Long      Proxy
+  , ULong     Proxy
+  , Integer   Proxy
+  , Short     Proxy
+  , Byte      Proxy
+  , Boolean   Proxy
+  , Void      Proxy
+  , Keyword   Proxy
+  ]
+
+class (Eq a, Ord a, Show a, Read a, J.ToJSON a, J.FromJSON a, OA.ToParamSchema a, OA.ToSchema a, Typeable a) => Typed a where
   typeValue :: f a -> TypeValue f
 
 typeValue1 :: Typed a => a -> Value

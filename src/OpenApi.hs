@@ -11,13 +11,13 @@ module OpenApi
   , jsonOp
   , zoomDeclare
   , stateDeclareSchema
-  , populate
   , define
+  , proxyOf
   ) where
 
 import           Control.Arrow (first)
 import           Control.Lens as Lens ((&), Lens', (.~), (?~), over, zoom, At, Index, IxValue, at)
-import           Control.Monad.Trans.State (StateT(StateT), State, execState, modify)
+import           Control.Monad.Trans.State (StateT(StateT), State, modify)
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Lazy as BSL
 import           Data.Foldable (fold)
@@ -53,9 +53,6 @@ stateDeclare f = StateT $ \s -> swap . first (s <>) <$> OAD.runDeclareT f s
 
 stateDeclareSchema :: (Monad m, Show a) => OAD.DeclareT (OA.Definitions OA.Schema) m a -> StateT OA.OpenApi m a
 stateDeclareSchema = zoom (OA.components . OA.schemas) . stateDeclare
-
-populate :: Monoid s => State s () -> s
-populate f = execState f mempty
 
 just :: Monoid a => Lens' s (Maybe a) -> Lens' s a
 just l f = l (\a -> Just <$> f (fold a))

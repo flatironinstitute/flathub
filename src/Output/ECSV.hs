@@ -20,6 +20,7 @@ import Output.CSV
 ecsvType :: Type -> T.Text
 ecsvType (Keyword _)   = "string"
 ecsvType (Long _)      = "int64"
+ecsvType (ULong _)     = "uint64"
 ecsvType (Integer _)   = "int32"
 ecsvType (Short _)     = "int16"
 ecsvType (Byte _)      = "int8"

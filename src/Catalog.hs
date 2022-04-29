@@ -279,7 +279,7 @@ instance Ord a => Semigroup (Filter a) where
     | all (a >) u = FilterRange (Just a) u
     | otherwise = FilterEQ a
   FilterRange la ua <> FilterRange lb ub =
-    FilterRange (max la lb) (min ua ub)
+    FilterRange (max la lb) (joinMaybeWith min ua ub)
   r <> e = e <> r
 
 -- |'mempty' is unbounded

@@ -19,11 +19,13 @@ executable flathub
     Paths_flathub
     Api
     Attach
+    Backend
     Catalog
     Compression
     ES
     Field
     Global
+    Half
     Html
     Ingest
     Ingest.Types
