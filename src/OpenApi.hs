@@ -9,8 +9,11 @@ module OpenApi
   , objectSchema
   , arraySchema
   , jsonOp
+  , jsonBody
   , zoomDeclare
+  , OpenApiM
   , stateDeclareSchema
+  , declareSchemaRef
   , define
   , proxyOf
   ) where
@@ -53,6 +56,9 @@ stateDeclare f = StateT $ \s -> swap . first (s <>) <$> OAD.runDeclareT f s
 
 stateDeclareSchema :: (Monad m, Show a) => OAD.DeclareT (OA.Definitions OA.Schema) m a -> StateT OA.OpenApi m a
 stateDeclareSchema = zoom (OA.components . OA.schemas) . stateDeclare
+
+declareSchemaRef :: OA.ToSchema a => Proxy a -> OpenApiM (OA.Referenced OA.Schema)
+declareSchemaRef = stateDeclareSchema . OA.declareSchemaRef
 
 just :: Monoid a => Lens' s (Maybe a) -> Lens' s a
 just l f = l (\a -> Just <$> f (fold a))
@@ -133,3 +139,7 @@ jsonOp oid summ desc schema = mempty
   & OA.responses . OA.responses . at 200 ?~ OA.Inline (mempty
       & OA.description .~ desc
       & OA.content . at' "application/json" . OA.schema ?~ OA.Inline schema)
+
+jsonBody :: OA.Schema -> OA.RequestBody
+jsonBody schema = mempty
+  & OA.content . at' "application/json" . OA.schema ?~ OA.Inline schema

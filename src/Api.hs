@@ -14,7 +14,8 @@ module Api
   ) where
 
 import           Control.Lens ((&), (&~), (.~), (?~), over)
-import           Control.Monad (mfilter)
+import           Control.Monad (mfilter, unless)
+import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (asks)
 import           Control.Monad.Trans.State (modify)
 import qualified Data.Aeson as J
@@ -23,18 +24,19 @@ import qualified Data.Aeson.Types as J
 import           Data.Bits (xor)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
+import qualified Data.ByteString.Lazy as BSL
 import qualified Data.HashMap.Strict as HM
+import           Data.Int (Int64)
 import           Data.List (foldl')
 import           Data.Maybe (fromJust, isJust, mapMaybe)
 import qualified Data.OpenApi as OA
-import qualified Data.OpenApi.Declare as OAD
 import           Data.Proxy (Proxy(Proxy))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Encoding.Error as TE
 import qualified Data.Vector as V
 import           Data.Version (showVersion)
-import           Network.HTTP.Types.Status (badRequest400)
+import           Network.HTTP.Types.Status (badRequest400, requestEntityTooLarge413, unsupportedMediaType415)
 import qualified Network.Wai as Wai
 import           Text.Read (readMaybe)
 import           Waimwork.Response (okResponse, response)
@@ -67,6 +69,42 @@ lookupField :: MonadFail m => Catalog -> T.Text -> m Field
 lookupField cat n =
   maybe (fail $ "Field not found: " <> show n) return
     $ HM.lookup n $ catalogFieldMap cat
+
+fieldNameSchema :: OpenApiM (OA.Referenced OA.Schema)
+fieldNameSchema = define "FieldName" $ mempty 
+  & OA.type_ ?~ OA.OpenApiString
+  & OA.description ?~ "field name in selected catalog"
+
+fieldListSchema :: OpenApiM (OA.Referenced OA.Schema)
+fieldListSchema = do
+  fn <- fieldNameSchema
+  define "FieldList" $ arraySchema fn
+    & OA.uniqueItems ?~ True
+
+parseListQuery :: Wai.Request -> BS.ByteString -> [BS.ByteString]
+parseListQuery req param = foldMap sel $ Wai.queryString req where
+  sel (p, v)
+    | p == param = foldMap (filter (not . BSC.null) . BSC.splitWith isDelim) v
+    | otherwise = []
+
+readBody :: Wai.Request -> Maybe Int64 -> M BSL.ByteString
+readBody req maxlen = do
+  b <- liftIO $ Wai.lazyRequestBody req
+  maybe (return b) (\l -> do
+    let (a, r) = BSL.splitAt l b
+    unless (BSL.null r) $ result $ response requestEntityTooLarge413 [] ("maximum length " ++ show l)
+    return a) maxlen
+
+eitherBadRequest :: Either String a -> M a
+eitherBadRequest = either (result . response badRequest400 []) return
+
+parseJSONBody :: J.FromJSON a => Wai.Request -> M (Maybe a)
+parseJSONBody req = traverse (\c -> do
+  unless (c == ct) $ result $ response unsupportedMediaType415 [] $ "expecting " <> ct
+  b <- readBody req (Just 131072)
+  eitherBadRequest $ J.eitherDecode b)
+  $ lookup "content-type" $ Wai.requestHeaders req
+  where ct = "application/json"
 
 -------- /api
 
@@ -157,16 +195,20 @@ instance OA.ToSchema FieldGroup where
           , False)
       ]
 
-catalogSchema :: OAD.Declare (OA.Definitions OA.Schema) OA.Schema
+catalogSchema :: OpenApiM OA.Schema
 catalogSchema = do
-  fdef <- OA.declareSchemaRef (Proxy :: Proxy FieldGroup)
-  return $ objectSchema
-    "Full catalog metadata"
-    [ ("fields", OA.Inline $ arraySchema fdef
-      & OA.description ?~ "field groups"
-      , True)
-    , ("count", schemaDescOf (fromJust . catalogCount) "total number of rows (if known)", False)
-    , ("sort", schemaDescOf catalogSort "default sort fields", False)
+  fdef <- declareSchemaRef (Proxy :: Proxy FieldGroup)
+  meta <- declareSchemaRef (Proxy :: Proxy Catalog)
+  return $ mempty & OA.allOf ?~
+    [ meta
+    , OA.Inline $ objectSchema
+      "full catalog metadata"
+      [ ("fields", OA.Inline $ arraySchema fdef
+        & OA.description ?~ "field groups"
+        , True)
+      , ("count", schemaDescOf (fromJust . catalogCount) "total number of rows (if known)", False)
+      , ("sort", schemaDescOf catalogSort "default sort fields", False)
+      ]
     ]
 
 catalogBase :: R.Path Simulation
@@ -265,23 +307,38 @@ parseFiltersQuery cat req = foldl' parseQueryItem mempty $ Wai.queryString req w
   spl c s = (,) p . snd <$> BSC.uncons r
     where (p, r) = BSC.break c s
 
-parseListQuery :: Wai.Request -> BS.ByteString -> [BS.ByteString]
-parseListQuery req param = foldMap sel $ Wai.queryString req where
-  sel (p, v)
-    | p == param = foldMap (filter (not . BSC.null) . BSC.splitWith isDelim) v
-    | otherwise = []
-
 parseFieldsQuery :: Catalog -> Wai.Request -> BS.ByteString -> [Field]
 parseFieldsQuery cat req param = mapMaybe (lookupField cat . decodeUtf8') $ parseListQuery req param
+
+parseFieldsJSON :: Catalog -> Maybe J.Value -> J.Parser [Field]
+parseFieldsJSON _ Nothing = return [] -- hrm
+parseFieldsJSON cat (Just j) = mapM (lookupField cat) =<< J.parseJSON j
+
+parseStatsJSON :: Catalog -> J.Value -> J.Parser (Filters, [Field])
+parseStatsJSON cat (J.Object o) = (,)
+  <$> parseFiltersJSON cat (J.Object $ HM.delete "fields" o)
+  <*> (parseFieldsJSON cat =<< o J..:? "fields")
+parseStatsJSON _ j = J.typeMismatch "stats request" j
+
+statsRequestSchema :: OpenApiM OA.Schema
+statsRequestSchema = do
+  filt <- declareSchemaRef (Proxy :: Proxy Filters)
+  list <- fieldListSchema
+  return $ mempty & OA.allOf ?~
+    [ filt
+    , OA.Inline $ objectSchema
+      "stats to request"
+      [ ("fields", list, False)
+      ]
+    ]
 
 apiStats :: Route Simulation
 apiStats = getPath (catalogBase R.>* "stats") $ \sim req -> do
   cat <- askCatalog sim
-  let qfields = parseFieldsQuery cat req "fields"
-      qfilt = parseFiltersQuery cat req
-  return $ okResponse [] $ J.foldable $ map fieldName qfields
-
-  -- gte[field]=3&lte[field]=5&eq[field]=2&wildcard[field]=
+  body <- traverse (eitherBadRequest . J.parseEither (parseStatsJSON cat)) =<< parseJSONBody req
+  let fields = parseFieldsQuery cat req "fields" <> foldMap snd body
+      filt = parseFiltersQuery cat req <> foldMap fst body
+  return $ okResponse [] $ J.foldable $ map fieldName fields
 
 -------- /openapi.json
 
@@ -297,9 +354,8 @@ openApi = getPath "openapi.json" $ \() req ->
         , OA.Server (urltext $ baseapi produrl) (Just "production") mempty
         ])
 
-    catmeta <- stateDeclareSchema $ OA.declareSchemaRef (Proxy :: Proxy Catalog)
-    catschema <- stateDeclareSchema catalogSchema
-    filters <- stateDeclareSchema $ OA.declareSchemaRef (Proxy :: Proxy Filters)
+    catmeta <- declareSchemaRef (Proxy :: Proxy Catalog)
+    filters <- declareSchemaRef (Proxy :: Proxy Filters)
     filterq <- define "filter" $ mempty
       & OA.name .~ "filter"
       & OA.in_ .~ OA.ParamQuery
@@ -323,20 +379,19 @@ openApi = getPath "openapi.json" $ \() req ->
         & OA.type_ ?~ OA.OpenApiArray
         & OA.items ?~ OA.OpenApiItemsObject catmeta)
 
+    catalogs <- catalogSchema
     path apiCatalog "sim" [simparam] $ jsonOp "catalog"
       "Get full metadata about a specific catalog"
       "catalog metadata"
-      (mempty
-        & OA.allOf ?~
-          [ catmeta
-          , OA.Inline catschema
-          ])
+      catalogs
 
+    statsr <- statsRequestSchema
     path apiStats "sim" [simparam] $ jsonOp "stats"
       "Get statistics about fields (given some filters)"
       "field statistics"
       mempty
       & OA.parameters .~ [filterq, fieldsp]
+      & OA.requestBody ?~ OA.Inline (jsonBody statsr)
   where
   baseapi = RI.requestRoute' (R.routePath apiBase) ()
   produrl = mempty{ R.requestSecure = True, R.requestHost = RI.splitHost "flathub.flatironinstitute.org" }
