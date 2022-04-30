@@ -15,6 +15,7 @@ module Field
   , fieldDisp
   , Field, FieldGroup
   , Fields, FieldGroups
+  , updateFieldValue
   , parseFieldGroup
   , expandField, expandFields, expandAllFields
   , deleteField
@@ -168,6 +169,9 @@ instance Alternative m => Default (FieldSub Proxy m) where
     , fieldSize = 8
     }
 
+updateFieldValue :: (Functor t, Functor f) => FieldSub t Proxy -> TypeValue f -> FieldSub f Proxy
+updateFieldValue f t = f{ fieldType = coerceTypeValue (fieldType f) t, fieldSub = Proxy }
+
 numpyFieldSize :: Field -> Word
 numpyFieldSize Field{ fieldType = Keyword _, fieldSize = n } = n
 numpyFieldSize Field{ fieldType = t } = numpyTypeSize t
@@ -292,7 +296,7 @@ fieldsDepth = getMax . depth where
 parseFieldValue :: Field -> T.Text -> Maybe FieldValue
 parseFieldValue f = fmap sv . pv f where
   pv Field{ fieldType = (Byte _), fieldEnum = Just l } s | Just i <- V.elemIndex s l = Just $ Byte $ fromIntegral i
-  pv Field{ fieldType = t } s = sequenceTypeValue $ parseTypeValue t s
+  pv Field{ fieldType = t } s = sequenceValue $ parseTypeValue t s
   sv v = f
     { fieldType = v
     , fieldSub = Proxy

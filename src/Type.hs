@@ -3,16 +3,22 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeSynonymInstances #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Type
   ( TypeValue(..)
   , Type, Value
+  , Void
   , allTypes
   , Typed
   , typeValue, typeValue1
-  , traverseTypeValue
-  , sequenceTypeValue
+  , traverseValue
+  , sequenceValue
+  , fmapValue
+  , traverseTypeValue, traverseTypeValue2
   , fmapTypeValue, fmapTypeValue1, fmapTypeValue2
+  , coerceTypeValue
+  , TypeTraversable(..)
   , typeOfValue
   , unTypeValue
   , parseTypeValue
@@ -36,10 +42,20 @@ import qualified Data.OpenApi as OA
 import           Data.Proxy (Proxy(Proxy))
 import qualified Data.Text as T
 import           Data.Typeable (Typeable)
+import           Data.Void (Void, vacuous)
 import           Data.Word (Word64)
 import           Text.Read (readMaybe, readPrec, Lexeme(Ident), lexP, readEither)
 
 import Half
+
+instance OA.ToParamSchema Void where
+  toParamSchema _ = mempty
+    { OA._schemaTitle = Just "void"
+    , OA._schemaNot = Just (OA.Inline mempty)
+    }
+
+instance OA.ToSchema Void where
+  declareNamedSchema = return . OA.NamedSchema Nothing . OA.paramSchemaToSchema
 
 data TypeValue f
   = Double    !(f Double)
@@ -51,8 +67,8 @@ data TypeValue f
   | Short     !(f Int16)
   | Byte      !(f Int8)
   | Boolean   !(f Bool)
-  | Void      !(f ())
   | Keyword   !(f T.Text)
+  | Void      !(f Void)
 
 type Type = TypeValue Proxy
 type Value = TypeValue Identity
@@ -68,7 +84,6 @@ allTypes =
   , Short     Proxy
   , Byte      Proxy
   , Boolean   Proxy
-  , Void      Proxy
   , Keyword   Proxy
   ]
 
@@ -88,7 +103,7 @@ instance Typed Float  where typeValue = Float
 instance Typed Half   where typeValue = HalfFloat
 instance Typed Bool   where typeValue = Boolean
 instance Typed T.Text where typeValue = Keyword
-instance Typed ()     where typeValue = Void
+instance Typed Void   where typeValue = Void
 
 unTypeValue :: (forall a . Typed a => f a -> b) -> TypeValue f -> b
 unTypeValue f (Double    x) = f $! x
@@ -101,56 +116,75 @@ unTypeValue f (Short     x) = f $! x
 unTypeValue f (Byte      x) = f $! x
 unTypeValue f (Boolean   x) = f $! x
 unTypeValue f (Keyword   x) = f $! x
-unTypeValue f (Void      x) = f $! x
+unTypeValue f (Void      x) = f $ x
 
-transformTypeValue :: Functor g => (forall a . Typed a => f a -> g (h a)) -> TypeValue f -> g (TypeValue h)
-transformTypeValue f (Double    x) = Double    <$> f x
-transformTypeValue f (Float     x) = Float     <$> f x
-transformTypeValue f (HalfFloat x) = HalfFloat <$> f x
-transformTypeValue f (Long      x) = Long      <$> f x
-transformTypeValue f (ULong     x) = ULong     <$> f x
-transformTypeValue f (Integer   x) = Integer   <$> f x
-transformTypeValue f (Short     x) = Short     <$> f x
-transformTypeValue f (Byte      x) = Byte      <$> f x
-transformTypeValue f (Boolean   x) = Boolean   <$> f x
-transformTypeValue f (Keyword   x) = Keyword   <$> f x
-transformTypeValue f (Void      x) = Void      <$> f x
+traverseTypeValue :: Functor m => (forall a . Typed a => f a -> m (h a)) -> TypeValue f -> m (TypeValue h)
+traverseTypeValue f (Double    x) = Double    <$> f x
+traverseTypeValue f (Float     x) = Float     <$> f x
+traverseTypeValue f (HalfFloat x) = HalfFloat <$> f x
+traverseTypeValue f (Long      x) = Long      <$> f x
+traverseTypeValue f (ULong     x) = ULong     <$> f x
+traverseTypeValue f (Integer   x) = Integer   <$> f x
+traverseTypeValue f (Short     x) = Short     <$> f x
+traverseTypeValue f (Byte      x) = Byte      <$> f x
+traverseTypeValue f (Boolean   x) = Boolean   <$> f x
+traverseTypeValue f (Keyword   x) = Keyword   <$> f x
+traverseTypeValue f (Void      x) = Void      <$> f x
 
-transformTypeValue2 :: MonadFail g => (forall a . Typed a => f a -> f a -> g (h a)) -> TypeValue f -> TypeValue f -> g (TypeValue h)
-transformTypeValue2 f (Double    x) (Double    y) = Double    <$> f x y
-transformTypeValue2 f (Float     x) (Float     y) = Float     <$> f x y
-transformTypeValue2 f (HalfFloat x) (HalfFloat y) = HalfFloat <$> f x y
-transformTypeValue2 f (Long      x) (Long      y) = Long      <$> f x y
-transformTypeValue2 f (ULong     x) (ULong     y) = ULong     <$> f x y
-transformTypeValue2 f (Integer   x) (Integer   y) = Integer   <$> f x y
-transformTypeValue2 f (Short     x) (Short     y) = Short     <$> f x y
-transformTypeValue2 f (Byte      x) (Byte      y) = Byte      <$> f x y
-transformTypeValue2 f (Boolean   x) (Boolean   y) = Boolean   <$> f x y
-transformTypeValue2 f (Keyword   x) (Keyword   y) = Keyword   <$> f x y
-transformTypeValue2 f (Void      x) (Void      y) = Void      <$> f x y
-transformTypeValue2 _ _             _             = fail "transformTypeValue2: type mismatch"
-
-traverseTypeValue :: Functor g => (forall a . Typed a => f a -> g a) -> TypeValue f -> g Value
-traverseTypeValue f = transformTypeValue (fmap Identity . f)
-
-sequenceTypeValue :: Functor f => TypeValue f -> f Value
-sequenceTypeValue = transformTypeValue (fmap Identity)
+traverseTypeValue2 :: (Functor f, Functor g, MonadFail m) => (forall a . Typed a => f a -> g a -> m (h a)) -> TypeValue f -> TypeValue g -> m (TypeValue h)
+traverseTypeValue2 f (Double    x) (Double    y) = Double    <$> f x y
+traverseTypeValue2 f (Float     x) (Float     y) = Float     <$> f x y
+traverseTypeValue2 f (HalfFloat x) (HalfFloat y) = HalfFloat <$> f x y
+traverseTypeValue2 f (Long      x) (Long      y) = Long      <$> f x y
+traverseTypeValue2 f (ULong     x) (ULong     y) = ULong     <$> f x y
+traverseTypeValue2 f (Integer   x) (Integer   y) = Integer   <$> f x y
+traverseTypeValue2 f (Short     x) (Short     y) = Short     <$> f x y
+traverseTypeValue2 f (Byte      x) (Byte      y) = Byte      <$> f x y
+traverseTypeValue2 f (Boolean   x) (Boolean   y) = Boolean   <$> f x y
+traverseTypeValue2 f (Keyword   x) (Keyword   y) = Keyword   <$> f x y
+traverseTypeValue2 f (Void      x) v             = traverseTypeValue (f (vacuous x)) v
+traverseTypeValue2 f v             (Void      y) = traverseTypeValue (\x -> f x (vacuous y)) v
+traverseTypeValue2 _ _             _             = fail "traverseTypeValue2: type mismatch"
 
 -- isn't there a Functor1 class for this or something?
 fmapTypeValue :: (forall a . Typed a => f a -> g a) -> TypeValue f -> TypeValue g
-fmapTypeValue f = runIdentity . transformTypeValue (Identity . f)
+fmapTypeValue f = runIdentity . traverseTypeValue (Identity . f)
 
 fmapTypeValue1 :: (forall a . Typed a => f a -> a) -> TypeValue f -> Value
 fmapTypeValue1 f = fmapTypeValue (Identity . f)
 
-fmapTypeValue2 :: (forall a . Typed a => f a -> f a -> g a) -> TypeValue f -> TypeValue f -> TypeValue g
-fmapTypeValue2 f = (fromMaybe (error "fmapTypeValue2: type mismatch") .) . transformTypeValue2 ((Just .) . f)
+fmapTypeValue2 :: (Functor f, Functor g) => (forall a . Typed a => f a -> g a -> h a) -> TypeValue f -> TypeValue g -> TypeValue h
+fmapTypeValue2 f = (fromMaybe (error "fmapTypeValue2: type mismatch") .) . traverseTypeValue2 ((Just .) . f)
+
+coerceTypeValue :: (Functor f, Functor g) => TypeValue f -> TypeValue g -> TypeValue g
+coerceTypeValue = fmapTypeValue2 (\_ -> id)
+
+class Traversable f => TypeTraversable f where
+  sequenceTypeValue :: f Value -> TypeValue f
+
+instance TypeTraversable [] where
+  sequenceTypeValue [] = Void [] -- hrm
+  sequenceTypeValue [v] = fmapTypeValue ((:[]) . runIdentity) v
+  sequenceTypeValue (v:l) = fmapTypeValue2 ((:) . runIdentity) v (sequenceTypeValue l)
+
+instance TypeTraversable Maybe where
+  sequenceTypeValue Nothing = Void Nothing -- hrm
+  sequenceTypeValue (Just v) = fmapTypeValue (Just . runIdentity) v
+
+traverseValue :: Functor g => (forall a . Typed a => f a -> g a) -> TypeValue f -> g Value
+traverseValue f = traverseTypeValue (fmap Identity . f)
+
+sequenceValue :: Functor f => TypeValue f -> f Value
+sequenceValue = traverseTypeValue (fmap Identity)
+
+fmapValue :: (forall a . Typed a => a -> a) -> Value -> Value
+fmapValue f = fmapTypeValue1 (f . runIdentity)
 
 typeOfValue :: TypeValue f -> Type
 typeOfValue = fmapTypeValue (const Proxy)
 
-instance Eq1 f => Eq (TypeValue f) where
-  a == b = maybe False (unTypeValue getConst) $ transformTypeValue2 (\x y -> Just $ Const $ eq1 x y) a b
+instance (Functor f, Eq1 f) => Eq (TypeValue f) where
+  a == b = maybe False (unTypeValue getConst) $ traverseTypeValue2 (\x y -> Just $ Const $ eq1 x y) a b
 
 instance {-# OVERLAPPABLE #-} Show1 f => Show (TypeValue f) where
   showsPrec i = unTypeValue (showsPrec1 i)

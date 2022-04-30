@@ -252,7 +252,7 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreFiel
   fillhistbnd j = do
     jaggs <- j J..: "aggregations"
     forM histunks $ \(f, t, n) -> do
-      let val a = traverseTypeValue (maybe (fail "bnd value") return) . parseTypeJSONValue (fieldType f)
+      let val a = traverseValue (maybe (fail "bnd value") return) . parseTypeJSONValue (fieldType f)
             =<< (J..: "value") =<< jaggs J..: a
       lb <- val ("0" <> fieldName f)
       ub <- val ("1" <> fieldName f)

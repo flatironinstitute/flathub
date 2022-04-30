@@ -1,7 +1,9 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Api
@@ -12,23 +14,29 @@ module Api
   ) where
 
 import           Control.Lens ((&), (&~), (.~), (?~), over)
+import           Control.Monad (mfilter)
 import           Control.Monad.Reader (asks)
 import           Control.Monad.Trans.State (modify)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
+import qualified Data.Aeson.Types as J
+import           Data.Bits (xor)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.HashMap.Strict as HM
-import           Data.Maybe (fromJust, isJust)
+import           Data.List (foldl')
+import           Data.Maybe (fromJust, isJust, mapMaybe)
 import qualified Data.OpenApi as OA
 import qualified Data.OpenApi.Declare as OAD
 import           Data.Proxy (Proxy(Proxy))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
+import qualified Data.Text.Encoding.Error as TE
 import qualified Data.Vector as V
 import           Data.Version (showVersion)
 import           Network.HTTP.Types.Status (badRequest400)
 import qualified Network.Wai as Wai
+import           Text.Read (readMaybe)
 import           Waimwork.Response (okResponse, response)
 import           Waimwork.Result (result)
 import qualified Web.Route.Invertible as R
@@ -46,6 +54,19 @@ import Backend
 
 apiBase :: R.Path ()
 apiBase = "api"
+
+isDelim :: Char -> Bool
+isDelim ',' = True
+isDelim ' ' = True
+isDelim _ = False
+
+decodeUtf8' :: BS.ByteString -> T.Text
+decodeUtf8' = TE.decodeUtf8With TE.lenientDecode
+
+lookupField :: MonadFail m => Catalog -> T.Text -> m Field
+lookupField cat n =
+  maybe (fail $ "Field not found: " <> show n) return
+    $ HM.lookup n $ catalogFieldMap cat
 
 -------- /api
 
@@ -183,16 +204,31 @@ instance Typed a => OA.ToSchema (FieldFilter a) where
       & OA.description ?~ "filter for a named field to be equal to a specific value or match other contraints"
       & OA.anyOf ?~
         [ fv
-        , OA.Inline $ arraySchema fv & OA.description ?~ "equal to any of these values"
-        , OA.Inline $ objectSchema "in a bounded range: >= gte and <= lte, either of which may be omitted"
+        , OA.Inline $ arraySchema fv & OA.description ?~ "equal to any of these values (not supported when used as a query parameter)"
+          & OA.minItems ?~ 1
+          & OA.uniqueItems ?~ True
+        , OA.Inline $ objectSchema "in a bounded range for numeric fields: >= gte and <= lte, either of which may be omitted (when used as a query parameter, may be a string containing two FieldValues (one of which may be blank) separated by a single comma or space)"
           [ ("gte", fv, False)
           , ("lte", fv, False)
           ]
+          & OA.minProperties ?~ 1
         ]
+
+parseFiltersJSON :: Catalog -> J.Value -> J.Parser Filters
+parseFiltersJSON cat = J.withObject "filters" $ \o -> Filters
+  <$> mfilter (\x -> x > 0 && x <= 1) (o J..:? "sample" J..!= 1)
+  <*> o J..:? "seed"
+  <*> mapM parsef (HM.toList $ HM.delete "sample" $ HM.delete "seed" o)
+  where
+  parsef (n, j) = do
+    f <- lookupField cat n 
+    updateFieldValue f <$> traverseTypeValue (parseff j) (fieldType f)
+  parseff :: Typed a => J.Value -> Proxy a -> J.Parser (FieldFilter a)
+  parseff j _ = J.parseJSON j
 
 instance OA.ToSchema Filters where
   declareNamedSchema _ = do
-    ff <- OA.declareSchemaRef (Proxy :: Proxy (FieldFilter ()))
+    ff <- OA.declareSchemaRef (Proxy :: Proxy (FieldFilter Void))
     return $ OA.NamedSchema (Just "Filters") $ objectSchema
       "filters to apply to a query"
       [ ("sample", OA.Inline $ OA.toSchema (proxyOf $ filterSample undefined)
@@ -209,30 +245,41 @@ instance OA.ToSchema Filters where
       ]
       & OA.additionalProperties ?~ OA.AdditionalPropertiesSchema ff
 
-listParam :: Wai.Request -> BS.ByteString -> [BS.ByteString]
-listParam req param = foldMap sel $ Wai.queryString req where
+parseFiltersQuery :: Catalog -> Wai.Request -> Filters
+parseFiltersQuery cat req = foldl' parseQueryItem mempty $ Wai.queryString req where
+  parseQueryItem q ("sample", Just (rmbs -> Just p)) =
+    q{ filterSample = filterSample q * p }
+  parseQueryItem q ("sample", Just (spl ('@' ==) -> Just (rmbs -> Just p, rmbs -> Just s))) =
+    q{ filterSample = filterSample q * p, filterSeed = Just $ maybe id xor (filterSeed q) s }
+  parseQueryItem q (lookupField cat . decodeUtf8' -> Just f, Just (parseFilt f -> Just v)) =
+    q{ filterFields = filterFields q <> [updateFieldValue f $ sequenceTypeValue v] }
+  parseQueryItem q _ = q -- just ignore anything we can't parse
+  parseFilt f (spl isDelim -> Just (a, b))
+    | typeIsNumeric (fieldType f) = FieldRange <$> parseVal f a <*> parseVal f b
+  parseFilt f a = FieldEQ . return <$> parseVal' f a
+  parseVal _ "" = return Nothing
+  parseVal f v = Just <$> parseVal' f v
+  parseVal' f = fmap fieldType . parseFieldValue f . decodeUtf8'
+  rmbs :: Read a => BSC.ByteString -> Maybe a
+  rmbs = readMaybe . BSC.unpack
+  spl c s = (,) p . snd <$> BSC.uncons r
+    where (p, r) = BSC.break c s
+
+parseListQuery :: Wai.Request -> BS.ByteString -> [BS.ByteString]
+parseListQuery req param = foldMap sel $ Wai.queryString req where
   sel (p, v)
-    | p == param = foldMap (filter (not . BSC.null) . BSC.splitWith delim) v
+    | p == param = foldMap (filter (not . BSC.null) . BSC.splitWith isDelim) v
     | otherwise = []
-  delim ',' = True
-  delim ' ' = True
-  delim _ = False
 
-lookupField :: Catalog -> BS.ByteString -> M Field
-lookupField cat n =
-  maybe (result $ response badRequest400 [] $ "Field not found: " <> n) return
-  $ do
-  n' <- either (const Nothing) Just $ TE.decodeUtf8' n
-  HM.lookup n' $ catalogFieldMap cat
-
-fieldsParam :: Catalog -> Wai.Request -> BS.ByteString -> M [Field]
-fieldsParam cat req param = mapM (lookupField cat) $ listParam req param
+parseFieldsQuery :: Catalog -> Wai.Request -> BS.ByteString -> [Field]
+parseFieldsQuery cat req param = mapMaybe (lookupField cat . decodeUtf8') $ parseListQuery req param
 
 apiStats :: Route Simulation
 apiStats = getPath (catalogBase R.>* "stats") $ \sim req -> do
   cat <- askCatalog sim
-  fields <- fieldsParam cat req "fields"
-  return $ okResponse [] $ J.foldable $ map fieldName fields
+  let qfields = parseFieldsQuery cat req "fields"
+      qfilt = parseFiltersQuery cat req
+  return $ okResponse [] $ J.foldable $ map fieldName qfields
 
   -- gte[field]=3&lte[field]=5&eq[field]=2&wildcard[field]=
 
@@ -253,11 +300,13 @@ openApi = getPath "openapi.json" $ \() req ->
     catmeta <- stateDeclareSchema $ OA.declareSchemaRef (Proxy :: Proxy Catalog)
     catschema <- stateDeclareSchema catalogSchema
     filters <- stateDeclareSchema $ OA.declareSchemaRef (Proxy :: Proxy Filters)
-    filterp <- define "filter" $ mempty
+    filterq <- define "filter" $ mempty
       & OA.name .~ "filter"
       & OA.in_ .~ OA.ParamQuery
-      & OA.style ?~ OA.StyleDeepObject
+      & OA.style ?~ OA.StyleForm
+      & OA.explode ?~ True
       & OA.schema ?~ filters
+      & OA.description ?~ "filter in query string (see descriptions for non-standard representations of range queries)"
 
     fieldsp <- define "fields" $ mempty
       & OA.name .~ "fields"
@@ -287,7 +336,7 @@ openApi = getPath "openapi.json" $ \() req ->
       "Get statistics about fields (given some filters)"
       "field statistics"
       mempty
-      & OA.parameters .~ [filterp, fieldsp]
+      & OA.parameters .~ [filterq, fieldsp]
   where
   baseapi = RI.requestRoute' (R.routePath apiBase) ()
   produrl = mempty{ R.requestSecure = True, R.requestHost = RI.splitHost "flathub.flatironinstitute.org" }
