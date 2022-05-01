@@ -52,6 +52,7 @@ executable flathub
     , blaze-markup
     , bytestring
     , bzlib
+    , case-insensitive
     , cassava
     , conduit
     , containers

@@ -88,7 +88,7 @@ requestUrl r = TE.decodeUtf8 $ BSL.toStrict $ B.toLazyByteString $ R.renderUrlRe
 
 routeOperation :: R.Request -> Route a -> a -> [OA.Param] -> OA.Operation -> OpenApi
 routeOperation basereq route arg params op =
-  modify $ OA.paths . at' ('/':rp) . mop (R.requestMethod req) ?~ opp
+  modify $ OA.paths . at' (if null rp then rp else '/':rp) . mop (R.requestMethod req) ?~ opp
   where
   req = appEndo (RI.foldRoute (\p -> Endo . rrp p) (R.actionRoute route) arg) basereq
   rrp :: RI.RoutePredicate a -> a -> R.Request -> R.Request
@@ -132,13 +132,15 @@ arraySchema e = mempty
   & OA.type_ ?~ OA.OpenApiArray
   & OA.items ?~ OA.OpenApiItemsObject e
 
-jsonOp :: T.Text -> T.Text -> T.Text -> OA.Schema -> OA.Operation
-jsonOp oid summ desc schema = mempty
-  & OA.operationId ?~ oid
-  & OA.summary ?~ summ
-  & OA.responses . OA.responses . at 200 ?~ OA.Inline (mempty
-      & OA.description .~ desc
-      & OA.content . at' "application/json" . OA.schema ?~ OA.Inline schema)
+jsonOp :: T.Text -> T.Text -> T.Text -> OA.Schema -> OpenApiM OA.Operation
+jsonOp oid summ desc schema = do
+  resp <- define oid $ mempty
+    & OA.description .~ desc
+    & OA.content . at' "application/json" . OA.schema ?~ OA.Inline schema
+  return $ mempty
+    & OA.operationId ?~ oid
+    & OA.summary ?~ summ
+    & OA.responses . OA.responses . at 200 ?~ resp
 
 jsonBody :: OA.Schema -> OA.RequestBody
 jsonBody schema = mempty

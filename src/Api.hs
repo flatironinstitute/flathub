@@ -13,7 +13,7 @@ module Api
   , openApi
   ) where
 
-import           Control.Lens ((&), (&~), (.~), (?~), over)
+import           Control.Lens ((&), (&~), (.~), (?~), (%~), (^.), over)
 import           Control.Monad (mfilter, unless, when)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (asks)
@@ -25,6 +25,7 @@ import qualified Data.Attoparsec.ByteString as AP
 import           Data.Bits (xor)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
+import qualified Data.CaseInsensitive as CI
 import qualified Data.HashMap.Strict as HM
 import           Data.IORef (newIORef, readIORef, writeIORef)
 import           Data.List (foldl')
@@ -36,7 +37,8 @@ import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Encoding.Error as TE
 import qualified Data.Vector as V
 import           Data.Version (showVersion)
-import           Network.HTTP.Types.Status (badRequest400, requestEntityTooLarge413, unsupportedMediaType415, unprocessableEntity422)
+import           Network.HTTP.Types.Header (ResponseHeaders, hOrigin, hContentType)
+import           Network.HTTP.Types.Status (noContent204, badRequest400, requestEntityTooLarge413, unsupportedMediaType415, unprocessableEntity422)
 import qualified Network.Wai as Wai
 import           Text.Read (readMaybe)
 import           Waimwork.Response (okResponse, response)
@@ -57,6 +59,21 @@ import Backend
 
 apiBase :: R.Path ()
 apiBase = "api"
+
+apiHeaders :: Wai.Request -> ResponseHeaders
+apiHeaders req
+  | Just origin <- lookup hOrigin (Wai.requestHeaders req) =
+    [ ("access-control-allow-origin", origin) -- effectively "*" but allows us to blacklist
+    , ("access-control-allow-methods", "OPTIONS, GET, POST")
+    , ("access-control-allow-headers", CI.original hContentType)
+    , ("access-control-max-age", "86400")
+    ]
+  | otherwise = []
+
+apiAction :: R.Path p -> (p -> Action) -> R.RouteAction (R.Method, p) Action
+apiAction p f = R.RouteAction (R.routeMethods [R.GET, R.POST, R.OPTIONS] R.>*< R.routePath (apiBase R.*< p)) act where
+  act (R.OPTIONS, _) req = return $ response noContent204 (apiHeaders req) ()
+  act (_, x) req = f x req
 
 isDelim :: Char -> Bool
 isDelim ',' = True
@@ -103,7 +120,7 @@ parseJSONBody req parse = traverse (\c -> do
   r <- liftIO $ AP.parseWith grb (J.json <* AP.endOfInput) BS.empty
   j <- eitherBadRequest $ AP.eitherResult r
   either (result . response unprocessableEntity422 []) return $ J.parseEither parse j)
-  $ lookup "content-type" $ Wai.requestHeaders req
+  $ lookup hContentType $ Wai.requestHeaders req
   where ct = "application/json"
 
 -------- /api
@@ -125,10 +142,11 @@ instance OA.ToSchema Catalog where
       , ("synopsis", OA.Inline $ schemaDescOf catalogSynopsis "short description", True)
       ]
 
-apiTop :: Route ()
-apiTop = getPath apiBase $ \() _ -> do
+apiTop :: Route (R.Method, ())
+apiTop = apiAction R.unit $ \() req -> do
   cats <- asks globalCatalogs
-  return $ okResponse [] $ JE.list (J.pairs . catalogJSON) $ filter catalogVisible $ HM.elems $ catalogMap cats
+  return $ okResponse (apiHeaders req)
+    $ JE.list (J.pairs . catalogJSON) $ filter catalogVisible $ HM.elems $ catalogMap cats
 
 -------- /api/{catalog}
 
@@ -212,12 +230,12 @@ catalogSchema = do
     ]
 
 catalogBase :: R.Path Simulation
-catalogBase = apiBase R.*< R.parameter
+catalogBase = R.parameter
 
-apiCatalog :: Route Simulation
-apiCatalog = getPath catalogBase $ \sim _ -> do
+apiCatalog :: Route (R.Method, Simulation)
+apiCatalog = apiAction catalogBase $ \sim req -> do
   cat <- askCatalog sim
-  return $ okResponse [] $ J.pairs
+  return $ okResponse (apiHeaders req) $ J.pairs
     $ catalogJSON cat
     <> JE.pair "fields" (fieldsJSON mempty $ catalogFieldGroups cat)
     <> foldMap ("count" J..=) (catalogCount cat)
@@ -240,7 +258,7 @@ instance Typed a => J.FromJSON (FieldFilter a) where
   parseJSON (J.Object o) = do
     g <- o J..:? "gte"
     l <- o J..:? "lte"
-    unless (all (\g' -> all (g' <) l) g) $ fail "invalid range"
+    unless (all (\g' -> all (g' <=) l) g) $ fail "invalid range"
     return $ FieldRange g l
   parseJSON j = FieldEQ . return <$> J.parseJSON j
 
@@ -369,14 +387,14 @@ statsResponseSchema = do
         ]
       & OA.description ?~ "stats for the field named by the property, depending on its type")
 
-apiStats :: Route Simulation
-apiStats = getPath (catalogBase R.>* "stats") $ \sim req -> do
+apiStats :: Route (R.Method, Simulation)
+apiStats = apiAction (catalogBase R.>* "stats") $ \sim req -> do
   cat <- askCatalog sim
   body <- parseJSONBody req (parseStatsJSON cat)
   let fields = parseFieldsQuery cat req "fields" <> foldMap snd body
       filt = parseFiltersQuery cat req <> foldMap fst body
   (count, stats) <- queryStats cat filt fields
-  return $ okResponse [] $ J.pairs
+  return $ okResponse (apiHeaders req) $ J.pairs
     $  "count" J..= count
     <> foldMap (\(f, s) -> fieldName f `JE.pair` fieldStatsJSON s) stats
 
@@ -384,7 +402,7 @@ apiStats = getPath (catalogBase R.>* "stats") $ \sim req -> do
 
 openApi :: Route ()
 openApi = getPath "openapi.json" $ \() req ->
-  return $ okResponse [] $ J.encode $ mempty &~ do
+  return $ okResponse (apiHeaders req) $ J.encode $ mempty &~ do
     modify
       $ (over OA.info
         $ (OA.title .~ "FlatHUB API")
@@ -412,7 +430,7 @@ openApi = getPath "openapi.json" $ \() req ->
       & OA.explode ?~ False
       & OA.schema ?~ OA.Inline (arraySchema $ OA.Inline $ schemaDescOf T.pack "field name in catalog")
 
-    path apiTop () [] $ jsonOp "top"
+    path apiTop () [] =<< jsonOp "top"
       "Get the list of available dataset catalogs"
       "list of catalogs"
       (mempty
@@ -420,24 +438,34 @@ openApi = getPath "openapi.json" $ \() req ->
         & OA.items ?~ OA.OpenApiItemsObject catmeta)
 
     catalogs <- catalogSchema
-    path apiCatalog "sim" [simparam] $ jsonOp "catalog"
+    path apiCatalog "sim" [simparam] =<< jsonOp "catalog"
       "Get full metadata about a specific catalog"
       "catalog metadata"
       catalogs
 
     statsr <- statsRequestSchema
     statss <- statsResponseSchema
-    path apiStats "sim" [simparam] $ jsonOp "stats"
-      "Get statistics about fields (given some filters)"
-      "field statistics"
-      statss
-      & OA.parameters .~ [filterq, fieldsp]
-      & OA.requestBody ?~ OA.Inline (jsonBody statsr)
+    path apiStats "sim" [simparam] 
+      . (OA.parameters .~ [filterq, fieldsp])
+      . (OA.requestBody ?~ OA.Inline (jsonBody statsr))
+      =<< jsonOp "stats"
+        "Get statistics about fields (given some filters)"
+        "field statistics"
+        statss
   where
   baseapi = RI.requestRoute' (R.routePath apiBase) ()
   produrl = mempty{ R.requestSecure = True, R.requestHost = RI.splitHost "flathub.flatironinstitute.org" }
   urltext = requestUrl
-  path = routeOperation (baseapi RI.blankRequest)
+  path a x p o = do
+    pathop a (R.GET, x) p (o
+      & OA.requestBody .~ Nothing)
+    when (isJust $ o ^. OA.requestBody) $
+      pathop a (R.POST, x) p (o
+        & OA.operationId %~ fmap (<>"POST")
+        & OA.parameters %~ filter (not . isqp))
+  pathop = routeOperation (baseapi RI.blankRequest)
+  isqp (OA.Inline (OA.Param{ OA._paramIn = OA.ParamQuery })) = True
+  isqp _ = False
   simparam = mempty
     & OA.name .~ "sim"
     & OA.schema ?~ OA.Inline (schemaDescOf T.pack "catalog id")
