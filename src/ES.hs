@@ -21,7 +21,7 @@ module ES
   ) where
 
 import           Control.Arrow ((&&&))
-import           Control.Monad ((<=<), forM, forM_, when, unless)
+import           Control.Monad (forM, forM_, when, unless)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (ask, asks)
 import qualified Data.Aeson as J
@@ -89,8 +89,8 @@ instance Body EmptyJSON where
   bodyRequest EmptyJSON = HTTP.RequestBodyBS "{}"
   bodyContentType _ = Just "application/json"
 
-elasticSearch :: (Body b, J.FromJSON r, Show r) => StdMethod -> [String] -> HTTP.Query -> b -> M r
-elasticSearch meth url query body = do
+elasticSearch :: Body b => StdMethod -> [String] -> HTTP.Query -> (J.Value -> J.Parser r) -> b -> M r
+elasticSearch meth url query pares body = do
   glob <- ask
   let req = globalES glob
       req' = HTTP.setQueryString query req
@@ -108,10 +108,10 @@ elasticSearch meth url query body = do
         HTTP.RequestBodyBS b -> BSC.putStrLn b
         HTTP.RequestBodyLBS b -> BSLC.putStrLn b
         _ -> BSC.putStrLn "???"
-    r <- either fail return . (J.parseEither J.parseJSON <=< AP.eitherResult)
+    j <- either fail return . AP.eitherResult
       =<< HTTP.withResponse req' (globalHTTP glob) parse
-    when debug $ print r
-    return r
+    when debug $ BSLC.putStrLn (J.encode j)
+    either fail return $ J.parseEither pares j
   where
   parse r = AP.parseWith (HTTP.responseBody r) (J.json <* AP.endOfInput) BS.empty
   debug = False
@@ -120,7 +120,7 @@ catalogURL :: Catalog -> [String]
 catalogURL Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } =
   [T.unpack idxn]
 
-searchCatalog :: (Body b, J.FromJSON r, Show r) => Catalog -> HTTP.Query -> b -> M r
+searchCatalog :: Body b => Catalog -> HTTP.Query -> (J.Value -> J.Parser r) -> b -> M r
 searchCatalog cat = elasticSearch GET (catalogURL cat ++ ["_search"])
 
 defaultSettings :: Catalog -> J.Object
@@ -143,7 +143,7 @@ defaultSettings cat = HM.fromList
   docsPerShard = 100000000
 
 createIndex :: Catalog -> M J.Value
-createIndex cat@Catalog{ catalogStore = ~CatalogES{..} } = elasticSearch PUT [T.unpack catalogIndex] [] $ JE.pairs $
+createIndex cat@Catalog{ catalogStore = ~CatalogES{..} } = elasticSearch PUT [T.unpack catalogIndex] [] J.parseJSON $ JE.pairs $
      "settings" J..= mergeJSONObject catalogSettings (defaultSettings cat)
   <> "mappings" .=*
     (  "dynamic" J..= J.String "strict"
@@ -158,7 +158,7 @@ createIndex cat@Catalog{ catalogStore = ~CatalogES{..} } = elasticSearch PUT [T.
 checkIndices :: M (HM.HashMap Simulation String)
 checkIndices = do
   isdev <- asks globalDevMode
-  indices <- elasticSearch GET ["*"] [] ()
+  indices <- elasticSearch GET ["*"] [] J.parseJSON ()
   HM.mapMaybe (\cat -> either Just (const Nothing) $ J.parseEither (catalog isdev cat) indices)
     <$> asks (catalogMap . globalCatalogs)
   where
@@ -208,6 +208,7 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreFiel
   hists <- gethists
   amend hists <$> searchCatalog cat
     (mwhen scroll $ [("scroll", Just scrollTime)])
+    J.parseJSON
     (JE.pairs $
        (mwhen (queryOffset > 0) $ "from" J..= queryOffset)
     <> ("size" J..= if scroll && queryLimit == 0 then 10000 else queryLimit)
@@ -240,7 +241,7 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreFiel
   -- pre-query ranges of histogram fields without bounds if necesary
   gethists = HM.fromList . mapMaybe histsize . (histbnds ++) <$> if null histunks then return [] else
     fold . J.parseMaybe fillhistbnd <$> searchCatalog cat
-      []
+      [] J.parseJSON
       (JE.pairs $
         "size" J..= J.Number 0
       <> "query" .=* filts
@@ -322,7 +323,7 @@ queryIndex :: Catalog -> Query -> M J.Value
 queryIndex = queryIndexScroll False
 
 scrollSearch :: T.Text -> M J.Value
-scrollSearch sid = elasticSearch GET ["_search", "scroll"] [] $ JE.pairs $
+scrollSearch sid = elasticSearch GET ["_search", "scroll"] [] J.parseJSON $ JE.pairs $
      "scroll" J..= J.String scrollTime
   <> "scroll_id" J..= sid
 
@@ -360,7 +361,7 @@ createBulk cat@Catalog{ catalogStore = ~CatalogES{} } docs = do
       body = foldMap doc docs
       doc (i, d) = J.fromEncoding (J.pairs $ act .=* ("_id" J..= i))
         <> nl <> J.fromEncoding (J.pairs d) <> nl
-  r <- elasticSearch POST (catalogURL cat ++ ["_bulk"]) [] body
+  r <- elasticSearch POST (catalogURL cat ++ ["_bulk"]) [] J.parseJSON body
   -- TODO: ignore 409
   unless (HM.lookup "errors" (r :: J.Object) == Just (J.Bool False)) $ fail $ "createBulk: " ++ BSLC.unpack (J.encode r)
   where
@@ -368,8 +369,8 @@ createBulk cat@Catalog{ catalogStore = ~CatalogES{} } docs = do
 
 flushIndex :: Catalog -> M (J.Value, J.Value)
 flushIndex Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } = (,)
-  <$> elasticSearch POST ([T.unpack idxn, "_refresh"]) [] ()
-  <*> elasticSearch POST ([T.unpack idxn, "_flush"]) [] ()
+  <$> elasticSearch POST ([T.unpack idxn, "_refresh"]) [] J.parseJSON ()
+  <*> elasticSearch POST ([T.unpack idxn, "_flush"]) [] J.parseJSON ()
 
 newtype ESCount = ESCount{ esCount :: Word } deriving (Show)
 instance J.FromJSON ESCount where
@@ -379,11 +380,11 @@ instance J.FromJSON ESCount where
 
 countIndex :: Catalog -> M Word
 countIndex Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } =
-  sum . map esCount <$> elasticSearch GET (["_cat", "count", T.unpack idxn]) [] EmptyJSON
+  sum . map esCount <$> elasticSearch GET (["_cat", "count", T.unpack idxn]) [] J.parseJSON EmptyJSON
 
 blockIndex :: Bool -> Catalog -> M J.Value
 blockIndex ro Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } =
-  elasticSearch PUT ([T.unpack idxn, "_settings"]) [] $ JE.pairs $
+  elasticSearch PUT ([T.unpack idxn, "_settings"]) [] J.parseJSON $ JE.pairs $
     "index" .=* ("blocks" .=* ("read_only" J..= ro))
 
 closeIndex :: Catalog -> M J.Value

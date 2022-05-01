@@ -117,8 +117,8 @@ routeOperation basereq route arg params op =
 proxyOf :: a -> Proxy a
 proxyOf _ = Proxy
 
-schemaDescOf :: OA.ToSchema a => (o -> a) -> T.Text -> OA.Referenced OA.Schema
-schemaDescOf f d = OA.Inline $ (OA.toSchema $ proxyOf $ f undefined) & OA.description ?~ d
+schemaDescOf :: OA.ToSchema a => (o -> a) -> T.Text -> OA.Schema
+schemaDescOf f d = (OA.toSchema $ proxyOf $ f undefined) & OA.description ?~ d
 
 objectSchema :: T.Text -> [(T.Text, OA.Referenced OA.Schema, Bool)] -> OA.Schema
 objectSchema desc props = mempty

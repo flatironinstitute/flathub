@@ -1,14 +1,22 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Backend
   ( FieldFilter(..)
   , Filters(..)
+  , FieldStats(..)
+  , queryStats
   ) where
 
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
+import qualified Data.Aeson.Types as J
 import           Data.Bits (xor)
+import qualified Data.HashMap.Strict as HM
 import           Data.Proxy (Proxy)
+import           Data.Scientific (Scientific)
+import qualified Data.Text as T
+import           Data.Typeable (cast)
 
 import Monoid
 import Type
@@ -56,17 +64,57 @@ instance Semigroup Filters where
 instance Monoid Filters where
   mempty = Filters 1 Nothing []
 
-data FieldStats a
-  = FieldStats{ statsMin, statsMax, statsAvg :: a, statsCount :: Count }
-  | FieldBuckets{ buckets :: [(a, Count)], bucketsOther :: Count }
+filterQuery :: Filters -> J.Series
+filterQuery Filters{..} = "query" .=*
+  (if filterSample < 1
+    then \q -> ("function_score" .=* ("query" .=* q
+      <> "random_score" .=* foldMap (\s -> "seed" J..= s <> "field" J..= ("_seq_no" :: String)) filterSeed
+      <> "boost_mode" J..= ("replace" :: String)
+      <> "min_score" J..= (1 - filterSample)))
+    else id)
+  ("bool" .=* ("filter" `JE.pair` JE.list (\f -> JE.pairs $ unTypeValue (term f) $ fieldType f) filterFields))
+  where
+  term f (FieldEQ [v])
+    | fieldWildcard f && any (T.any ('*' ==)) (cast v) = "wildcard" .=* (fieldName f J..= v)
+    | otherwise = "term" .=* (fieldName f J..= v)
+  term f (FieldEQ v) = "terms" .=* (fieldName f J..= v)
+  term f (FieldRange g l) = "range" .=* (fieldName f .=* (bound "gte" g <> bound "lte" l))
+    where bound t = foldMap (t J..=)
 
-queryStats :: Catalog -> Filters -> [Field] -> M (Count, [FieldSub FieldStats Proxy])
-queryStats cat filt fields = do
-  () <- searchCatalog cat [] $ JE.pairs
+data FieldStats
+  = FieldStats{ statsMin, statsMax, statsAvg :: Maybe Scientific, statsCount :: Count }
+  | FieldTerms{ termsBuckets :: [(J.Value, Count)], termsCount :: Count }
+
+fieldUseTerms :: Field -> Bool
+fieldUseTerms f = fieldTerms f || not (typeIsNumeric (fieldType f))
+
+parseStats :: Catalog -> J.Value -> J.Parser (Count, [(Field, FieldStats)])
+parseStats cat = J.withObject "stats res" $ \o -> (,)
+  <$> (o J..: "hits" >>= (J..: "total") >>= (J..: "value"))
+  <*> (mapM pf . HM.toList =<< o J..: "aggregations") where
+  pf (n, a) = do
+    f <- lookupField cat n
+    (,) f <$> (if fieldUseTerms f then pt else ps) a
+  ps = J.withObject "stats" $ \o -> FieldStats
+    <$> o J..: "min"
+    <*> o J..: "max"
+    <*> o J..: "avg"
+    <*> o J..: "count"
+  pt = J.withObject "terms" $ \o -> FieldTerms
+    <$> (mapM pb =<< o J..: "buckets")
+    <*> o J..: "sum_other_doc_count"
+  pb = J.withObject "bucket" $ \o -> (,)
+    <$> o J..: "key"
+    <*> o J..: "doc_count"
+
+queryStats :: Catalog -> Filters -> [Field] -> M (Count, [(Field, FieldStats)])
+queryStats cat filt fields =
+  searchCatalog cat [] (parseStats cat) $ JE.pairs
     $  "track_total_hits" J..= True
-    <> "aggs" .=* foldMap (\f -> fieldName f .=* (if fieldTerms f || not (typeIsNumeric (fieldType f))
+    <> "size" J..= (0 :: Count)
+    <> "aggs" .=* foldMap (\f -> fieldName f .=* (if fieldUseTerms f
       then "terms" .=* (field f <> "size" J..= (if fieldTerms f then 32 else 4 :: Int))
       else "stats" .=* field f)) fields
-  fail "TODO"
+    <> filterQuery filt
   where
   field = ("field" J..=) . fieldName

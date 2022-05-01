@@ -14,21 +14,21 @@ module Api
   ) where
 
 import           Control.Lens ((&), (&~), (.~), (?~), over)
-import           Control.Monad (mfilter, unless)
+import           Control.Monad (mfilter, unless, when)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (asks)
 import           Control.Monad.Trans.State (modify)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
+import qualified Data.Attoparsec.ByteString as AP
 import           Data.Bits (xor)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
-import qualified Data.ByteString.Lazy as BSL
 import qualified Data.HashMap.Strict as HM
-import           Data.Int (Int64)
+import           Data.IORef (newIORef, readIORef, writeIORef)
 import           Data.List (foldl')
-import           Data.Maybe (fromJust, isJust, mapMaybe)
+import           Data.Maybe (isJust, mapMaybe)
 import qualified Data.OpenApi as OA
 import           Data.Proxy (Proxy(Proxy))
 import qualified Data.Text as T
@@ -36,7 +36,7 @@ import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Encoding.Error as TE
 import qualified Data.Vector as V
 import           Data.Version (showVersion)
-import           Network.HTTP.Types.Status (badRequest400, requestEntityTooLarge413, unsupportedMediaType415)
+import           Network.HTTP.Types.Status (badRequest400, requestEntityTooLarge413, unsupportedMediaType415, unprocessableEntity422)
 import qualified Network.Wai as Wai
 import           Text.Read (readMaybe)
 import           Waimwork.Response (okResponse, response)
@@ -47,6 +47,7 @@ import qualified Web.Route.Invertible.Wai as R
 
 import qualified Paths_flathub as Paths
 import Monoid
+import JSON
 import Type
 import Field
 import Catalog
@@ -65,13 +66,11 @@ isDelim _ = False
 decodeUtf8' :: BS.ByteString -> T.Text
 decodeUtf8' = TE.decodeUtf8With TE.lenientDecode
 
-lookupField :: MonadFail m => Catalog -> T.Text -> m Field
-lookupField cat n =
-  maybe (fail $ "Field not found: " <> show n) return
-    $ HM.lookup n $ catalogFieldMap cat
+eitherBadRequest :: Either String a -> M a
+eitherBadRequest = either (result . response badRequest400 []) return
 
 fieldNameSchema :: OpenApiM (OA.Referenced OA.Schema)
-fieldNameSchema = define "FieldName" $ mempty 
+fieldNameSchema = define "FieldName" $ mempty
   & OA.type_ ?~ OA.OpenApiString
   & OA.description ?~ "field name in selected catalog"
 
@@ -87,22 +86,23 @@ parseListQuery req param = foldMap sel $ Wai.queryString req where
     | p == param = foldMap (filter (not . BSC.null) . BSC.splitWith isDelim) v
     | otherwise = []
 
-readBody :: Wai.Request -> Maybe Int64 -> M BSL.ByteString
-readBody req maxlen = do
-  b <- liftIO $ Wai.lazyRequestBody req
-  maybe (return b) (\l -> do
-    let (a, r) = BSL.splitAt l b
-    unless (BSL.null r) $ result $ response requestEntityTooLarge413 [] ("maximum length " ++ show l)
-    return a) maxlen
+getRequestBodyChunkLimit :: Word -> Wai.Request -> IO (IO BS.ByteString)
+getRequestBodyChunkLimit n r = do
+  l <- newIORef 0
+  return $ do
+    x <- readIORef l
+    when (x > n) $ result $ response requestEntityTooLarge413 [] ("maximum length " ++ show n)
+    b <- Wai.getRequestBodyChunk r
+    writeIORef l (x + fromIntegral (BS.length b))
+    return b
 
-eitherBadRequest :: Either String a -> M a
-eitherBadRequest = either (result . response badRequest400 []) return
-
-parseJSONBody :: J.FromJSON a => Wai.Request -> M (Maybe a)
-parseJSONBody req = traverse (\c -> do
+parseJSONBody :: Wai.Request -> (J.Value -> J.Parser a) -> M (Maybe a)
+parseJSONBody req parse = traverse (\c -> do
   unless (c == ct) $ result $ response unsupportedMediaType415 [] $ "expecting " <> ct
-  b <- readBody req (Just 131072)
-  eitherBadRequest $ J.eitherDecode b)
+  grb <- liftIO $ getRequestBodyChunkLimit 131072 req
+  r <- liftIO $ AP.parseWith grb (J.json <* AP.endOfInput) BS.empty
+  j <- eitherBadRequest $ AP.eitherResult r
+  either (result . response unprocessableEntity422 []) return $ J.parseEither parse j)
   $ lookup "content-type" $ Wai.requestHeaders req
   where ct = "application/json"
 
@@ -119,10 +119,10 @@ instance OA.ToSchema Catalog where
   declareNamedSchema _ = do
     return $ OA.NamedSchema (Just "CatalogMeta") $ objectSchema
       "High-level metadata for a dataset catalog"
-      [ ("name", schemaDescOf catalogName "globally unique catalog id used in urls", True)
-      , ("order", schemaDescOf catalogOrder "sort key for display order", True)
-      , ("title", schemaDescOf catalogTitle "display name", True)
-      , ("synopsis", schemaDescOf catalogSynopsis "short description", True)
+      [ ("name", OA.Inline $ schemaDescOf catalogName "globally unique catalog id used in urls", True)
+      , ("order", OA.Inline $ schemaDescOf catalogOrder "sort key for display order", True)
+      , ("title", OA.Inline $ schemaDescOf catalogTitle "display name", True)
+      , ("synopsis", OA.Inline $ schemaDescOf catalogSynopsis "short description", True)
       ]
 
 apiTop :: Route ()
@@ -170,26 +170,26 @@ instance OA.ToSchema FieldGroup where
     ref <- OA.declareSchemaRef t
     return $ OA.NamedSchema (Just "FieldGroup") $ objectSchema
       "A single field within a catalog, or a hiearchical group of fields"
-      [ ("key", schemaDescOf fieldName "local name of field within this group", True)
-      , ("name", schemaDescOf fieldName "global unique (\"variable\") name of field within the catalog", True)
-      , ("title", schemaDescOf fieldTitle "display name of the field within the group", True)
-      , ("descr", schemaDescOf (fromJust . fieldDescr) "description of field within the group", False)
-      , ("type", schemaDescOf typeOfValue "raw storage type", True)
+      [ ("key", OA.Inline $ schemaDescOf fieldName "local name of field within this group", True)
+      , ("name", OA.Inline $ schemaDescOf fieldName "global unique (\"variable\") name of field within the catalog", True)
+      , ("title", OA.Inline $ schemaDescOf fieldTitle "display name of the field within the group", True)
+      , ("descr", OA.Inline $ schemaDescOf fieldDescr "description of field within the group", False)
+      , ("type", OA.Inline $ schemaDescOf typeOfValue "raw storage type", True)
       , ("base", OA.Inline $ mempty
           & OA.description ?~ "base storage type (floating, integral, boolean, string, void)"
           & OA.type_ ?~ OA.OpenApiString
           & OA.enum_ ?~ map J.toJSON "fibsv"
           , True)
-      , ("enum", schemaDescOf (fromJust . fieldEnum) "if present, display values as these keywords instead (integral or boolean: enum[<int>value])", False)
-      , ("disp", schemaDescOf fieldDisp "include field in data display by default", False)
-      , ("units", schemaDescOf (fromJust . fieldUnits) "display units", False)
-      , ("required", schemaDescOf (True ==) "true = required filter; false = top-level (default) optional filter; missing = normal", False)
-      , ("terms", schemaDescOf fieldTerms "display dynamically as a dropdown of values", False)
-      , ("dict", schemaDescOf (fromJust . fieldDict) "unique key index to global field dictionary (for compare)", False)
-      , ("scale", schemaDescOf (fromJust . fieldScale) "scale factor to dict-comparable units, display  value*scale (for compare)", False)
-      , ("reversed", schemaDescOf fieldReversed "display axes and ranges in reverse (high-low)", False)
-      , ("attachment", schemaDescOf isJust "this is a meta field for a downloadable attachment (type boolean, indicating presence)", False)
-      , ("wildcard", schemaDescOf fieldWildcard "allow wildcard prefix searching on keyword field (\"xy*\")", False)
+      , ("enum", OA.Inline $ schemaDescOf fieldEnum "if present, display values as these keywords instead (integral or boolean: enum[<int>value])", False)
+      , ("disp", OA.Inline $ schemaDescOf fieldDisp "include field in data display by default", False)
+      , ("units", OA.Inline $ schemaDescOf fieldUnits "display units", False)
+      , ("required", OA.Inline $ schemaDescOf (True ==) "true = required filter; false = top-level (default) optional filter; missing = normal", False)
+      , ("terms", OA.Inline $ schemaDescOf fieldTerms "display dynamically as a dropdown of values", False)
+      , ("dict", OA.Inline $ schemaDescOf fieldDict "unique key index to global field dictionary (for compare)", False)
+      , ("scale", OA.Inline $ schemaDescOf fieldScale "scale factor to dict-comparable units, display  value*scale (for compare)", False)
+      , ("reversed", OA.Inline $ schemaDescOf fieldReversed "display axes and ranges in reverse (high-low)", False)
+      , ("attachment", OA.Inline $ schemaDescOf isJust "this is a meta field for a downloadable attachment (type boolean, indicating presence)", False)
+      , ("wildcard", OA.Inline $ schemaDescOf fieldWildcard "allow wildcard prefix searching on keyword field (\"xy*\")", False)
       , ("sub", OA.Inline $ arraySchema ref
           & OA.description ?~ "child fields: if this is present, this is a pseudo grouping field which does not exist itself, but its properties apply to its children"
           , False)
@@ -206,8 +206,8 @@ catalogSchema = do
       [ ("fields", OA.Inline $ arraySchema fdef
         & OA.description ?~ "field groups"
         , True)
-      , ("count", schemaDescOf (fromJust . catalogCount) "total number of rows (if known)", False)
-      , ("sort", schemaDescOf catalogSort "default sort fields", False)
+      , ("count", OA.Inline $ schemaDescOf catalogCount "total number of rows (if known)", False)
+      , ("sort", OA.Inline $ schemaDescOf catalogSort "default sort fields", False)
       ]
     ]
 
@@ -233,10 +233,15 @@ instance OA.ToSchema FieldValue where
       & OA.anyOf ?~ map (\t -> unTypeValue (\p -> OA.Inline $ OA.toSchema p & OA.title ?~ T.pack (show t)) t) allTypes
 
 instance Typed a => J.FromJSON (FieldFilter a) where
-  parseJSON j@(J.Array _) = FieldEQ <$> J.parseJSON j
-  parseJSON (J.Object o) = FieldRange
-    <$> o J..:? "gte"
-    <*> o J..:? "lte"
+  parseJSON j@(J.Array _) = do
+    l <- J.parseJSON j
+    when (null l) $ fail "empty values"
+    return $ FieldEQ l
+  parseJSON (J.Object o) = do
+    g <- o J..:? "gte"
+    l <- o J..:? "lte"
+    unless (all (\g' -> all (g' <) l) g) $ fail "invalid range"
+    return $ FieldRange g l
   parseJSON j = FieldEQ . return <$> J.parseJSON j
 
 instance Typed a => OA.ToSchema (FieldFilter a) where
@@ -263,7 +268,7 @@ parseFiltersJSON cat = J.withObject "filters" $ \o -> Filters
   <*> mapM parsef (HM.toList $ HM.delete "sample" $ HM.delete "seed" o)
   where
   parsef (n, j) = do
-    f <- lookupField cat n 
+    f <- lookupField cat n
     updateFieldValue f <$> traverseTypeValue (parseff j) (fieldType f)
   parseff :: Typed a => J.Value -> Proxy a -> J.Parser (FieldFilter a)
   parseff j _ = J.parseJSON j
@@ -273,17 +278,14 @@ instance OA.ToSchema Filters where
     ff <- OA.declareSchemaRef (Proxy :: Proxy (FieldFilter Void))
     return $ OA.NamedSchema (Just "Filters") $ objectSchema
       "filters to apply to a query"
-      [ ("sample", OA.Inline $ OA.toSchema (proxyOf $ filterSample undefined)
-        & OA.description ?~ "randomly select a fractional sample"
+      [ ("sample", OA.Inline $ schemaDescOf filterSample "randomly select a fractional sample"
         & OA.default_ ?~ J.Number 1
         & OA.minimum_ ?~ 0
         & OA.exclusiveMinimum ?~ True
         & OA.maximum_ ?~ 1
         & OA.exclusiveMaximum ?~ False
         , False)
-      , ("seed", OA.Inline $ OA.toSchema (proxyOf $ fromJust $ filterSeed undefined)
-        & OA.description ?~ "seed for random sample selection (defaults to new random seed)"
-        , False)
+      , ("seed", OA.Inline $ schemaDescOf filterSeed "seed for random sample selection (defaults to new random seed)", False)
       ]
       & OA.additionalProperties ?~ OA.AdditionalPropertiesSchema ff
 
@@ -332,13 +334,51 @@ statsRequestSchema = do
       ]
     ]
 
+fieldStatsJSON :: FieldStats -> J.Encoding
+fieldStatsJSON FieldStats{..} = J.pairs
+  $  "count" J..= statsCount
+  <> "min" J..= statsMin
+  <> "max" J..= statsMax
+  <> "avg" J..= statsAvg
+fieldStatsJSON FieldTerms{..} = J.pairs
+  $  "terms" `JE.pair` JE.list (\(v,c) -> J.pairs $ "value" J..= v <> "count" J..= c) termsBuckets
+  <> "others" J..= termsCount
+
+statsResponseSchema :: OpenApiM OA.Schema
+statsResponseSchema = do
+  fv <- declareSchemaRef (Proxy :: Proxy FieldValue)
+  return $ objectSchema "stats"
+    [ ("count", OA.Inline $ schemaDescOf statsCount "number of matching rows", True) ]
+    & OA.additionalProperties ?~ OA.AdditionalPropertiesSchema (OA.Inline $ mempty
+      & OA.oneOf ?~
+        [ OA.Inline $ objectSchema "for numeric fields"
+          [ ("count", OA.Inline $ schemaDescOf statsCount "number of rows with values for this field", True)
+          , ("min", OA.Inline $ schemaDescOf statsMin "minimum value" & OA.nullable ?~ True, True)
+          , ("max", OA.Inline $ schemaDescOf statsMax "maximum value" & OA.nullable ?~ True, True)
+          , ("avg", OA.Inline $ schemaDescOf statsAvg "mean value" & OA.nullable ?~ True, True)
+          ]
+        , OA.Inline $ objectSchema "for non-numeric fields or those with terms=true"
+          [ ("terms", OA.Inline $ arraySchema (OA.Inline $ objectSchema "unique field value"
+            [ ("value", fv, True)
+            , ("count", OA.Inline $ schemaDescOf termsCount "number of rows with this value", True)
+            ])
+            & OA.description ?~ "top terms in descending order of count"
+            & OA.uniqueItems ?~ True, True)
+          , ("others", OA.Inline $ schemaDescOf termsCount "number of rows with values not included in the top terms", True)
+          ]
+        ]
+      & OA.description ?~ "stats for the field named by the property, depending on its type")
+
 apiStats :: Route Simulation
 apiStats = getPath (catalogBase R.>* "stats") $ \sim req -> do
   cat <- askCatalog sim
-  body <- traverse (eitherBadRequest . J.parseEither (parseStatsJSON cat)) =<< parseJSONBody req
+  body <- parseJSONBody req (parseStatsJSON cat)
   let fields = parseFieldsQuery cat req "fields" <> foldMap snd body
       filt = parseFiltersQuery cat req <> foldMap fst body
-  return $ okResponse [] $ J.foldable $ map fieldName fields
+  (count, stats) <- queryStats cat filt fields
+  return $ okResponse [] $ J.pairs
+    $  "count" J..= count
+    <> foldMap (\(f, s) -> fieldName f `JE.pair` fieldStatsJSON s) stats
 
 -------- /openapi.json
 
@@ -370,7 +410,7 @@ openApi = getPath "openapi.json" $ \() req ->
       & OA.in_ .~ OA.ParamQuery
       & OA.style ?~ OA.StyleForm
       & OA.explode ?~ False
-      & OA.schema ?~ OA.Inline (arraySchema $ schemaDescOf T.pack "field name in catalog")
+      & OA.schema ?~ OA.Inline (arraySchema $ OA.Inline $ schemaDescOf T.pack "field name in catalog")
 
     path apiTop () [] $ jsonOp "top"
       "Get the list of available dataset catalogs"
@@ -386,10 +426,11 @@ openApi = getPath "openapi.json" $ \() req ->
       catalogs
 
     statsr <- statsRequestSchema
+    statss <- statsResponseSchema
     path apiStats "sim" [simparam] $ jsonOp "stats"
       "Get statistics about fields (given some filters)"
       "field statistics"
-      mempty
+      statss
       & OA.parameters .~ [filterq, fieldsp]
       & OA.requestBody ?~ OA.Inline (jsonBody statsr)
   where
@@ -399,4 +440,4 @@ openApi = getPath "openapi.json" $ \() req ->
   path = routeOperation (baseapi RI.blankRequest)
   simparam = mempty
     & OA.name .~ "sim"
-    & OA.schema ?~ schemaDescOf T.pack "catalog id"
+    & OA.schema ?~ OA.Inline (schemaDescOf T.pack "catalog id")

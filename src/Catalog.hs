@@ -10,6 +10,7 @@ module Catalog
   , Simulation
   , Catalog(..)
   , takeCatalogField
+  , lookupField
   , Grouping(..)
   , groupingName
   , groupingCatalog
@@ -137,6 +138,11 @@ takeCatalogField n c = (, c
   , catalogFields      = filter ((n /=) . fieldName) $ catalogFields c
   , catalogFieldGroups = deleteField n               $ catalogFieldGroups c
   }) <$> HM.lookup n (catalogFieldMap c) where
+
+lookupField :: MonadFail m => Catalog -> T.Text -> m Field
+lookupField cat n =
+  maybe (fail $ "Field not found: " <> show n) return
+    $ HM.lookup n $ catalogFieldMap cat
 
 data Grouping
   = GroupCatalog !T.Text
