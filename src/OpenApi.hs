@@ -4,6 +4,7 @@
 
 module OpenApi
   ( requestUrl
+  , pathPlaceholders
   , routeOperation
   , schemaDescOf
   , objectSchema
@@ -17,6 +18,7 @@ module OpenApi
   , define
   , resolve
   , proxyOf
+  , at'
   ) where
 
 import           Control.Arrow (first)
@@ -92,18 +94,23 @@ instance Define OA.Callback where componentsDefinitions = OA.callbacks
 requestUrl :: R.Request -> T.Text
 requestUrl r = TE.decodeUtf8 $ BSL.toStrict $ B.toLazyByteString $ R.renderUrlRequestBuilder r mempty
 
+pathPlaceholders :: R.Path a -> a -> [OA.Param] -> [T.Text]
+pathPlaceholders path arg params =
+  pvs (map OA._paramName params) (RI.pathValues path arg)
+  where
+  pvs [] [] = []
+  pvs nl (RI.PlaceholderValueFixed s:l) = s:pvs nl l
+  pvs (n1:nl) (RI.PlaceholderValueParameter _:l) = ('{' `T.cons` n1 `T.snoc` '}'):pvs nl l
+  pvs _ _ = error "openApi: parameter name placeholder mismatch"
+
 routeOperation :: R.Request -> Route a -> a -> [OA.Param] -> OA.Operation -> OpenApi
 routeOperation basereq route arg params op =
   OA.paths . at' (if null rp then rp else '/':rp) . mop (R.requestMethod req) .= Just opp
   where
   req = appEndo (RI.foldRoute (\p -> Endo . rrp p) (R.actionRoute route) arg) basereq
   rrp :: RI.RoutePredicate a -> a -> R.Request -> R.Request
-  rrp (RI.RoutePath p) v q = q{ R.requestPath = pvs (map OA._paramName params) (RI.pathValues p v) }
+  rrp (RI.RoutePath p) v q = q{ R.requestPath = pathPlaceholders p v params }
   rrp p v q = RI.requestRoutePredicate p v q
-  pvs [] [] = []
-  pvs nl (RI.PlaceholderValueFixed s:l) = s:pvs nl l
-  pvs (n1:nl) (RI.PlaceholderValueParameter _:l) = ('{' `T.cons` n1 `T.snoc` '}'):pvs nl l
-  pvs _ _ = error "openApi: parameter name placeholder mismatch"
   rp = intercalate "/" $ map T.unpack $ fromJust $ stripPrefix (R.requestPath basereq) $ R.requestPath req
   mop :: R.Method -> Lens' OA.PathItem (Maybe OA.Operation)
   mop R.GET = OA.get

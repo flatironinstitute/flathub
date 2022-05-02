@@ -12,11 +12,10 @@ module Api
   , openApi
   ) where
 
-import           Control.Lens ((&), (&~), (.~), (?~), (%~), (^.), over)
+import           Control.Lens ((&), (&~), (.~), (?~), (%~), (.=))
 import           Control.Monad (mfilter, unless, when, join)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (asks)
-import           Control.Monad.Trans.State (modify)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
@@ -133,7 +132,7 @@ data APIOperation = forall a . APIOperation
   , apiExampleArg :: a
   , apiPathParams :: [OA.Param]
   , apiAction :: a -> Action
-  , apiParams :: [OpenApiM (OA.Referenced OA.Param)]
+  , apiQueryParams :: [OpenApiM (OA.Referenced OA.Param)]
   , apiRequestSchema :: Maybe (OpenApiM OA.Schema)
   , apiResponseSchema :: OpenApiM OA.Schema
   }
@@ -156,26 +155,6 @@ instance OA.ToSchema Catalog where
       , ("title", OA.Inline $ schemaDescOf catalogTitle "display name", True)
       , ("synopsis", OA.Inline $ schemaDescOf catalogSynopsis "short description", True)
       ]
-
-apiTop :: APIOperation
-apiTop = APIOperation
-  { apiName = "top"
-  , apiSummary = "Get the list of available dataset catalogs"
-  , apiPath = R.unit
-  , apiExampleArg = ()
-  , apiPathParams = []
-  , apiAction = \() req -> do
-    cats <- asks globalCatalogs
-    return $ okResponse (apiHeaders req)
-      $ JE.list (J.pairs . catalogJSON) $ filter catalogVisible $ HM.elems $ catalogMap cats
-  , apiParams = []
-  , apiRequestSchema = Nothing
-  , apiResponseSchema = do
-    catmeta <- declareSchemaRef (Proxy :: Proxy Catalog)
-    return $ mempty
-      & OA.type_ ?~ OA.OpenApiArray
-      & OA.items ?~ OA.OpenApiItemsObject catmeta
-  }
 
 -------- /api/{catalog}
 
@@ -250,39 +229,6 @@ catalogParam :: OA.Param
 catalogParam = mempty
   & OA.name .~ "sim"
   & OA.schema ?~ OA.Inline (schemaDescOf T.pack "catalog id")
-
-apiCatalog :: APIOperation
-apiCatalog = APIOperation
-  { apiName = "catalog"
-  , apiSummary = "Get full metadata about a specific catalog"
-  , apiPath = catalogBase
-  , apiExampleArg = "sim"
-  , apiPathParams = [catalogParam]
-  , apiAction = \sim req -> do
-    cat <- askCatalog sim
-    return $ okResponse (apiHeaders req) $ J.pairs
-      $ catalogJSON cat
-      <> JE.pair "fields" (fieldsJSON mempty $ catalogFieldGroups cat)
-      <> foldMap ("count" J..=) (catalogCount cat)
-      <> mwhen (not $ null $ catalogSort cat)
-        ("sort" J..= catalogSort cat)
-  , apiParams = []
-  , apiRequestSchema = Nothing
-  , apiResponseSchema = do
-    fdef <- declareSchemaRef (Proxy :: Proxy FieldGroup)
-    meta <- declareSchemaRef (Proxy :: Proxy Catalog)
-    return $ mempty & OA.allOf ?~
-      [ meta
-      , OA.Inline $ objectSchema
-        "full catalog metadata"
-        [ ("fields", OA.Inline $ arraySchema fdef
-          & OA.description ?~ "field groups"
-          , True)
-        , ("count", OA.Inline $ schemaDescOf catalogCount "total number of rows (if known)", False)
-        , ("sort", OA.Inline $ schemaDescOf catalogSort "default sort fields", False)
-        ]
-      ]
-  }
 
 -------- common query parameters
 
@@ -428,56 +374,6 @@ fieldStatsJSON FieldTerms{..} = J.pairs
   $  "terms" `JE.pair` JE.list (\(v,c) -> J.pairs $ "value" J..= v <> "count" J..= c) termsBuckets
   <> "others" J..= termsCount
 
-apiStats :: APIOperation
-apiStats = APIOperation
-  { apiName = "stats"
-  , apiSummary = "Get statistics about fields (given some filters)"
-  , apiPath = catalogBase R.>* "stats"
-  , apiExampleArg = "sim"
-  , apiPathParams = [catalogParam]
-  , apiAction = \sim req -> do
-    cat <- askCatalog sim
-    body <- parseJSONBody req (parseStatsJSON cat)
-    (count, stats) <- queryStats cat $ fromMaybe (parseStatsQuery cat req) body
-    return $ okResponse (apiHeaders req) $ J.pairs
-      $  "count" J..= count
-      <> foldMap (\(f, s) -> fieldName f `JE.pair` fieldStatsJSON s) stats
-  , apiParams = [filtersQueryParam, fieldsQueryParam]
-  , apiRequestSchema = Just $ do
-    filt <- declareSchemaRef (Proxy :: Proxy Filters)
-    list <- fieldListSchema
-    return $ mempty & OA.allOf ?~
-      [ filt
-      , OA.Inline $ objectSchema
-        "stats to request"
-        [ ("fields", list, False)
-        ]
-      ]
-  , apiResponseSchema = do
-    fv <- declareSchemaRef (Proxy :: Proxy FieldValue)
-    return $ objectSchema "stats"
-      [ ("count", OA.Inline $ schemaDescOf statsCount "number of matching rows", True) ]
-      & OA.additionalProperties ?~ OA.AdditionalPropertiesSchema (OA.Inline $ mempty
-        & OA.oneOf ?~
-          [ OA.Inline $ objectSchema "for numeric fields"
-            [ ("count", OA.Inline $ schemaDescOf statsCount "number of rows with values for this field", True)
-            , ("min", OA.Inline $ schemaDescOf statsMin "minimum value" & OA.nullable ?~ True, True)
-            , ("max", OA.Inline $ schemaDescOf statsMax "maximum value" & OA.nullable ?~ True, True)
-            , ("avg", OA.Inline $ schemaDescOf statsAvg "mean value" & OA.nullable ?~ True, True)
-            ]
-          , OA.Inline $ objectSchema "for non-numeric fields or those with terms=true"
-            [ ("terms", OA.Inline $ arraySchema (OA.Inline $ objectSchema "unique field value"
-              [ ("value", fv, True)
-              , ("count", OA.Inline $ schemaDescOf termsCount "number of rows with this value", True)
-              ])
-              & OA.description ?~ "top terms in descending order of count"
-              & OA.uniqueItems ?~ True, True)
-            , ("others", OA.Inline $ schemaDescOf termsCount "number of rows with values not included in the top terms", True)
-            ]
-          ]
-        & OA.description ?~ "stats for the field named by the property, depending on its type")
-  }
-
 -------- /api/{catalog}/data
 
 parseSortQuery :: Catalog -> Wai.Request -> BS.ByteString -> [(Field, Bool)]
@@ -513,62 +409,174 @@ parseDataJSON cat (J.Object o) = DataArgs
   <*> o J..: "count"
   <*> o J..:? "offset" J..!= 0
 
-apiData :: Route (R.Method, Simulation)
-apiData = apiRouteAction (catalogBase R.>* "data") $ \sim req -> do
-  cat <- askCatalog sim
-  body <- parseJSONBody req (parseDataJSON cat)
-  dat <- queryData cat $ fromMaybe (parseDataQuery cat req) body
-  return $ okResponse (apiHeaders req) $ J.pairs
-    mempty
---        "Get a sample of raw data rows"
-
--------- /openapi.json
+-------- global
 
 apiOperations :: [APIOperation]
 apiOperations =
-  [ apiTop
-  , apiCatalog
-  , apiStats
-  -- , apiData
+  [ APIOperation -- /api
+    { apiName = "top"
+    , apiSummary = "Get the list of available dataset catalogs"
+    , apiPath = R.unit
+    , apiExampleArg = ()
+    , apiPathParams = []
+    , apiAction = \() req -> do
+      cats <- asks globalCatalogs
+      return $ okResponse (apiHeaders req)
+        $ JE.list (J.pairs . catalogJSON) $ filter catalogVisible $ HM.elems $ catalogMap cats
+    , apiQueryParams = []
+    , apiRequestSchema = Nothing
+    , apiResponseSchema = do
+      catmeta <- declareSchemaRef (Proxy :: Proxy Catalog)
+      return $ mempty
+        & OA.type_ ?~ OA.OpenApiArray
+        & OA.items ?~ OA.OpenApiItemsObject catmeta
+    }
+
+  , APIOperation -- /api/{cat}
+    { apiName = "catalog"
+    , apiSummary = "Get full metadata about a specific catalog"
+    , apiPath = catalogBase
+    , apiExampleArg = "sim"
+    , apiPathParams = [catalogParam]
+    , apiQueryParams = []
+    , apiRequestSchema = Nothing
+    , apiAction = \sim req -> do
+      cat <- askCatalog sim
+      return $ okResponse (apiHeaders req) $ J.pairs
+        $ catalogJSON cat
+        <> JE.pair "fields" (fieldsJSON mempty $ catalogFieldGroups cat)
+        <> foldMap ("count" J..=) (catalogCount cat)
+        <> mwhen (not $ null $ catalogSort cat)
+          ("sort" J..= catalogSort cat)
+    , apiResponseSchema = do
+      fdef <- declareSchemaRef (Proxy :: Proxy FieldGroup)
+      meta <- declareSchemaRef (Proxy :: Proxy Catalog)
+      return $ mempty & OA.allOf ?~
+        [ meta
+        , OA.Inline $ objectSchema
+          "full catalog metadata"
+          [ ("fields", OA.Inline $ arraySchema fdef
+            & OA.description ?~ "field groups"
+            , True)
+          , ("count", OA.Inline $ schemaDescOf catalogCount "total number of rows (if known)", False)
+          , ("sort", OA.Inline $ schemaDescOf catalogSort "default sort fields", False)
+          ]
+        ]
+    }
+
+  , APIOperation -- /api/{cat}/stats
+    { apiName = "stats"
+    , apiSummary = "Get statistics about fields (given some filters)"
+    , apiPath = catalogBase R.>* "stats"
+    , apiExampleArg = "sim"
+    , apiPathParams = [catalogParam]
+    , apiQueryParams = [filtersQueryParam, fieldsQueryParam]
+    , apiRequestSchema = Just $ do
+      filt <- declareSchemaRef (Proxy :: Proxy Filters)
+      list <- fieldListSchema
+      return $ mempty & OA.allOf ?~
+        [ filt
+        , OA.Inline $ objectSchema
+          "stats to request"
+          [ ("fields", list, False)
+          ]
+        ]
+    , apiAction = \sim req -> do
+      cat <- askCatalog sim
+      body <- parseJSONBody req (parseStatsJSON cat)
+      (count, stats) <- queryStats cat $ fromMaybe (parseStatsQuery cat req) body
+      return $ okResponse (apiHeaders req) $ J.pairs
+        $  "count" J..= count
+        <> foldMap (\(f, s) -> fieldName f `JE.pair` fieldStatsJSON s) stats
+    , apiResponseSchema = do
+      fv <- declareSchemaRef (Proxy :: Proxy FieldValue)
+      return $ objectSchema "stats"
+        [ ("count", OA.Inline $ schemaDescOf statsCount "number of matching rows", True) ]
+        & OA.additionalProperties ?~ OA.AdditionalPropertiesSchema (OA.Inline $ mempty
+          & OA.oneOf ?~
+            [ OA.Inline $ objectSchema "for numeric fields"
+              [ ("count", OA.Inline $ schemaDescOf statsCount "number of rows with values for this field", True)
+              , ("min", OA.Inline $ schemaDescOf statsMin "minimum value" & OA.nullable ?~ True, True)
+              , ("max", OA.Inline $ schemaDescOf statsMax "maximum value" & OA.nullable ?~ True, True)
+              , ("avg", OA.Inline $ schemaDescOf statsAvg "mean value" & OA.nullable ?~ True, True)
+              ]
+            , OA.Inline $ objectSchema "for non-numeric fields or those with terms=true"
+              [ ("terms", OA.Inline $ arraySchema (OA.Inline $ objectSchema "unique field value"
+                [ ("value", fv, True)
+                , ("count", OA.Inline $ schemaDescOf termsCount "number of rows with this value", True)
+                ])
+                & OA.description ?~ "top terms in descending order of count"
+                & OA.uniqueItems ?~ True, True)
+              , ("others", OA.Inline $ schemaDescOf termsCount "number of rows with values not included in the top terms", True)
+              ]
+            ]
+          & OA.description ?~ "stats for the field named by the property, depending on its type")
+    }
+
+  , APIOperation -- /api/{cat}/data
+    { apiName = "data"
+    , apiSummary = "Get a sample of raw data rows"
+    , apiPath = catalogBase R.>* "data"
+    , apiExampleArg = "sim"
+    , apiPathParams = [catalogParam]
+    , apiQueryParams = [filtersQueryParam, fieldsQueryParam]
+    , apiRequestSchema = Just $ do
+      filt <- declareSchemaRef (Proxy :: Proxy Filters)
+      list <- fieldListSchema
+      return $ mempty & OA.allOf ?~
+        [ filt
+        , OA.Inline $ objectSchema
+          "data to include"
+          [ ("fields", list, False)
+          -- , (
+          ]
+        ]
+    , apiAction = \sim req -> do
+      cat <- askCatalog sim
+      body <- parseJSONBody req (parseDataJSON cat)
+      dat <- queryData cat $ fromMaybe (parseDataQuery cat req) body
+      return $ okResponse (apiHeaders req) $ J.pairs
+        mempty
+    , apiResponseSchema = return mempty
+    }
   ]
 
 apiRoutes :: [R.RouteCase Action]
 apiRoutes = map (\APIOperation{ apiPath = p, apiAction = a } ->
   R.routeNormCase (apiRouteAction p a)) apiOperations
 
+openApiBase :: OA.OpenApi
+openApiBase = mempty &~ do
+  OA.info .= (mempty
+    & OA.title .~ "FlatHUB API"
+    & OA.version .~ T.pack (showVersion Paths.version)
+    & OA.description ?~ "Most operations support GET and POST, either of which accepts JSON request bodies or query parameters.  In most cases, query parameters are ignored when there is a request body.")
+  OA.servers .= 
+    [ OA.Server (requestUrl $ baseApiRequest mempty{ R.requestSecure = True, R.requestHost = RI.splitHost "flathub.flatironinstitute.org" }) (Just "production") mempty
+    ]
+
+  mapM_ (\APIOperation{..} -> do
+    qparam <- sequence apiQueryParams
+    reqs <- sequence apiRequestSchema
+    ress <- apiResponseSchema
+    let path = foldMap (('/':) . T.unpack) $ pathPlaceholders apiPath apiExampleArg apiPathParams
+        pparam = map (\p -> OA.Inline $ p
+          & OA.in_ .~ OA.ParamPath
+          & OA.required ?~ True) apiPathParams
+    op <- (OA.parameters .~ pparam) <$>
+      jsonOp apiName apiSummary "" ress
+    OA.paths . at' path .= (mempty
+      & OA.get ?~ (op
+        & OA.parameters %~ (++ qparam))
+      & OA.post .~ fmap (\r -> op
+        & OA.operationId %~ (fmap (<>"POST"))
+        & OA.requestBody ?~ OA.Inline (jsonBody r)) reqs))
+    apiOperations
+
 openApi :: Route ()
 openApi = getPath "openapi.json" $ \() req ->
-  return $ okResponse (apiHeaders req) $ J.encode $ mempty &~ do
-    modify
-      $ (over OA.info
-        $ (OA.title .~ "FlatHUB API")
-        . (OA.version .~ T.pack (showVersion Paths.version))
-        . (OA.description ?~ "Most operations support GET and POST, either of which accepts JSON request bodies or query parameters.  In most cases, query parameters are ignored when there is a request body."))
-      . (OA.servers .~
-        [ OA.Server (urltext $ baseapi $ R.waiRequest req) Nothing mempty
-        , OA.Server (urltext $ baseapi produrl) (Just "production") mempty
-        ])
+  return $ okResponse (apiHeaders req) $ J.encode $ openApiBase
+    & OA.servers %~ (OA.Server (requestUrl $ baseApiRequest $ R.waiRequest req) Nothing mempty :)
 
-    mapM_ (\APIOperation{..} -> do
-      qparam <- sequence apiParams
-      reqs <- sequence apiRequestSchema
-      ress <- apiResponseSchema
-      path (apiRouteAction apiPath apiAction) apiExampleArg apiPathParams
-        . (OA.parameters .~ qparam)
-        . (OA.requestBody .~ fmap (OA.Inline . jsonBody) reqs)
-        =<< jsonOp apiName apiSummary "" ress)
-      apiOperations
-  where
-  baseapi = RI.requestRoute' (R.routePath apiBase) ()
-  produrl = mempty{ R.requestSecure = True, R.requestHost = RI.splitHost "flathub.flatironinstitute.org" }
-  urltext = requestUrl
-  path a x p o = do
-    pathop a (R.GET, x) p (o
-      & OA.requestBody .~ Nothing)
-    when (isJust $ o ^. OA.requestBody) $
-      pathop a (R.POST, x) p (o
-        & OA.operationId %~ fmap (<>"POST")
-        & OA.parameters %~ filter (not . isqp))
-  pathop = routeOperation (baseapi RI.blankRequest)
-  isqp (OA.Inline (OA.Param{ OA._paramIn = OA.ParamQuery })) = True
-  isqp _ = False
+baseApiRequest :: R.Request -> R.Request
+baseApiRequest = RI.requestRoute' (R.routePath apiBase) ()
