@@ -5,6 +5,7 @@ module Backend
   ( FieldFilter(..)
   , Filters(..)
   , FieldStats(..)
+  , StatsArgs(..)
   , queryStats
   ) where
 
@@ -25,6 +26,7 @@ import Catalog
 import Global
 import JSON
 import ES
+import qualified KeyedMap as KM
 
 type Count = Word
 
@@ -51,7 +53,7 @@ instance TypeTraversable FieldFilter where
 data Filters = Filters
   { filterSample :: Double
   , filterSeed :: Maybe Word
-  , filterFields :: [FieldSub FieldFilter Proxy]
+  , filterFields :: FieldMap FieldFilter Proxy
   }
 
 instance Semigroup Filters where
@@ -62,7 +64,7 @@ instance Semigroup Filters where
     }
 
 instance Monoid Filters where
-  mempty = Filters 1 Nothing []
+  mempty = Filters 1 Nothing mempty
 
 filterQuery :: Filters -> J.Series
 filterQuery Filters{..} = "query" .=*
@@ -72,7 +74,9 @@ filterQuery Filters{..} = "query" .=*
       <> "boost_mode" J..= ("replace" :: String)
       <> "min_score" J..= (1 - filterSample)))
     else id)
-  ("bool" .=* ("filter" `JE.pair` JE.list (\f -> JE.pairs $ unTypeValue (term f) $ fieldType f) filterFields))
+  ("bool" .=* ("filter" `JE.pair` JE.list
+    (\f -> JE.pairs $ unTypeValue (term f) $ fieldType f)
+    (KM.toList filterFields)))
   where
   term f (FieldEQ [v])
     | fieldWildcard f && any (T.any ('*' ==)) (cast v) = "wildcard" .=* (fieldName f J..= v)
@@ -107,14 +111,25 @@ parseStats cat = J.withObject "stats res" $ \o -> (,)
     <$> o J..: "key"
     <*> o J..: "doc_count"
 
-queryStats :: Catalog -> Filters -> [Field] -> M (Count, [(Field, FieldStats)])
-queryStats cat filt fields =
+data StatsArgs = StatsArgs
+  { statsFilters :: Filters
+  , statsFields :: FieldMap Proxy Proxy
+  }
+
+instance Semigroup StatsArgs where
+  a <> b = StatsArgs
+    { statsFilters = statsFilters a <> statsFilters b
+    , statsFields = statsFields a <> statsFields b
+    }
+
+queryStats :: Catalog -> StatsArgs -> M (Count, [(Field, FieldStats)])
+queryStats cat StatsArgs{..} =
   searchCatalog cat [] (parseStats cat) $ JE.pairs
     $  "track_total_hits" J..= True
     <> "size" J..= (0 :: Count)
     <> "aggs" .=* foldMap (\f -> fieldName f .=* (if fieldUseTerms f
       then "terms" .=* (field f <> "size" J..= (if fieldTerms f then 32 else 4 :: Int))
-      else "stats" .=* field f)) fields
-    <> filterQuery filt
+      else "stats" .=* field f)) statsFields
+    <> filterQuery statsFilters
   where
   field = ("field" J..=) . fieldName

@@ -33,6 +33,7 @@ executable flathub
     Ingest.HDF5
     Ingest.Delim
     JSON
+    KeyedMap
     Monoid
     OpenApi
     Output.CSV

@@ -50,6 +50,7 @@ import qualified Web.Route.Invertible.Wai as R
 import qualified Paths_flathub as Paths
 import Monoid
 import JSON
+import qualified KeyedMap as KM
 import Type
 import Field
 import Catalog
@@ -242,7 +243,7 @@ apiCatalog = apiAction catalogBase $ \sim req -> do
     <> mwhen (not $ null $ catalogSort cat)
       ("sort" J..= catalogSort cat)
 
--------- /api/{catalog}/stats
+-------- common query parameters
 
 instance OA.ToSchema FieldValue where
   declareNamedSchema _ = do
@@ -283,9 +284,9 @@ parseFiltersJSON :: Catalog -> J.Value -> J.Parser Filters
 parseFiltersJSON cat = J.withObject "filters" $ \o -> Filters
   <$> mfilter (\x -> x > 0 && x <= 1) (o J..:? "sample" J..!= 1)
   <*> o J..:? "seed"
-  <*> mapM parsef (HM.toList $ HM.delete "sample" $ HM.delete "seed" o)
+  <*> HM.traverseWithKey parsef (HM.delete "sample" $ HM.delete "seed" o)
   where
-  parsef (n, j) = do
+  parsef n j = do
     f <- lookupField cat n
     updateFieldValue f <$> traverseTypeValue (parseff j) (fieldType f)
   parseff :: Typed a => J.Value -> Proxy a -> J.Parser (FieldFilter a)
@@ -314,7 +315,7 @@ parseFiltersQuery cat req = foldl' parseQueryItem mempty $ Wai.queryString req w
   parseQueryItem q ("sample", Just (spl ('@' ==) -> Just (rmbs -> Just p, rmbs -> Just s))) =
     q{ filterSample = filterSample q * p, filterSeed = Just $ maybe id xor (filterSeed q) s }
   parseQueryItem q (lookupField cat . decodeUtf8' -> Just f, Just (parseFilt f -> Just v)) =
-    q{ filterFields = filterFields q <> [updateFieldValue f $ sequenceTypeValue v] }
+    q{ filterFields = filterFields q <> KM.fromList [updateFieldValue f $ sequenceTypeValue v] }
   parseQueryItem q _ = q -- just ignore anything we can't parse
   parseFilt f (spl isDelim -> Just (a, b))
     | typeIsNumeric (fieldType f) = FieldRange <$> parseVal f a <*> parseVal f b
@@ -327,15 +328,24 @@ parseFiltersQuery cat req = foldl' parseQueryItem mempty $ Wai.queryString req w
   spl c s = (,) p . snd <$> BSC.uncons r
     where (p, r) = BSC.break c s
 
-parseFieldsQuery :: Catalog -> Wai.Request -> BS.ByteString -> [Field]
-parseFieldsQuery cat req param = mapMaybe (lookupField cat . decodeUtf8') $ parseListQuery req param
+parseFieldsQuery :: Catalog -> Wai.Request -> BS.ByteString -> KM.KeyedMap Field
+parseFieldsQuery cat req param =
+  KM.fromList $ mapMaybe (lookupField cat . decodeUtf8') $ parseListQuery req param
 
-parseFieldsJSON :: Catalog -> Maybe J.Value -> J.Parser [Field]
-parseFieldsJSON _ Nothing = return [] -- hrm
-parseFieldsJSON cat (Just j) = mapM (lookupField cat) =<< J.parseJSON j
+parseFieldsJSON :: Catalog -> Maybe J.Value -> J.Parser (KM.KeyedMap Field)
+parseFieldsJSON _ Nothing = return KM.empty -- hrm
+parseFieldsJSON cat (Just j) = KM.fromList <$> (mapM (lookupField cat) =<< J.parseJSON j)
 
-parseStatsJSON :: Catalog -> J.Value -> J.Parser (Filters, [Field])
-parseStatsJSON cat (J.Object o) = (,)
+-------- /api/{catalog}/stats
+
+parseStatsQuery :: Catalog -> Wai.Request -> StatsArgs
+parseStatsQuery cat req = StatsArgs
+  { statsFilters = parseFiltersQuery cat req
+  , statsFields = parseFieldsQuery cat req "fields"
+  }
+
+parseStatsJSON :: Catalog -> J.Value -> J.Parser StatsArgs
+parseStatsJSON cat (J.Object o) = StatsArgs
   <$> parseFiltersJSON cat (J.Object $ HM.delete "fields" o)
   <*> (parseFieldsJSON cat =<< o J..:? "fields")
 parseStatsJSON _ j = J.typeMismatch "stats request" j
@@ -391,12 +401,23 @@ apiStats :: Route (R.Method, Simulation)
 apiStats = apiAction (catalogBase R.>* "stats") $ \sim req -> do
   cat <- askCatalog sim
   body <- parseJSONBody req (parseStatsJSON cat)
-  let fields = parseFieldsQuery cat req "fields" <> foldMap snd body
-      filt = parseFiltersQuery cat req <> foldMap fst body
-  (count, stats) <- queryStats cat filt fields
+  let args = foldl (<>) (parseStatsQuery cat req) body
+  (count, stats) <- queryStats cat args
   return $ okResponse (apiHeaders req) $ J.pairs
     $  "count" J..= count
     <> foldMap (\(f, s) -> fieldName f `JE.pair` fieldStatsJSON s) stats
+
+-------- /api/{catalog}/table
+
+{-
+apiTable :: Route (R.Method, Simulation)
+apiTable = apiAction (catalogBase R.>* "table") $ \sim req -> do
+  cat <- askCatalog sim
+  body <- parseJSONBody req (parseTableJSON cat)
+  -- offset limit sort
+  let fields = parseFieldsQuery cat req "fields" <> foldMap snd body
+      filt = parseFiltersQuery cat req <> foldMap fst body
+      -}
 
 -------- /openapi.json
 

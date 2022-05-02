@@ -2,6 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
@@ -15,6 +16,7 @@ module Field
   , fieldDisp
   , Field, FieldGroup
   , Fields, FieldGroups
+  , FieldMap
   , updateFieldValue
   , parseFieldGroup
   , expandField, expandFields, expandAllFields
@@ -51,6 +53,7 @@ import qualified Data.Vector as V
 import Monoid
 import Output.CSV (csvTextRow)
 import Type
+import qualified KeyedMap as KM
 
 data FieldFlag
   = FieldHidden
@@ -168,6 +171,12 @@ instance Alternative m => Default (FieldSub Proxy m) where
     , fieldWildcard = False
     , fieldSize = 8
     }
+
+instance KM.Keyed (FieldSub t m) where
+  type Key (FieldSub t m) = T.Text
+  key = fieldName
+
+type FieldMap t m = KM.KeyedMap (FieldSub t m)
 
 updateFieldValue :: (Functor t, Functor f) => FieldSub t Proxy -> TypeValue f -> FieldSub f Proxy
 updateFieldValue f t = f{ fieldType = coerceTypeValue (fieldType f) t, fieldSub = Proxy }

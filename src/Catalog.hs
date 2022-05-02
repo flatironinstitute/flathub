@@ -3,6 +3,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module Catalog
   ( ESStoreField(..)
@@ -46,6 +47,7 @@ import Monoid
 import Type
 import Field
 import JSON
+import qualified KeyedMap as KM
 
 data ESStoreField
   = ESStoreSource
@@ -86,11 +88,15 @@ data Catalog = Catalog
   , catalogStore :: !CatalogStore
   , catalogFieldGroups :: FieldGroups
   , catalogFields :: Fields
-  , catalogFieldMap :: HM.HashMap T.Text Field
+  , catalogFieldMap :: KM.KeyedMap Field
   , catalogKey :: Maybe T.Text -- ^primary key (not really used)
   , catalogSort :: [T.Text] -- ^sort field(s) for index
   , catalogCount :: Maybe Word
   }
+
+instance KM.Keyed Catalog where
+  type Key Catalog = Simulation
+  key = catalogName
 
 parseCatalog :: HM.HashMap T.Text FieldGroup -> T.Text -> J.Value -> J.Parser Catalog
 parseCatalog dict catalogName = J.withObject "catalog" $ \c -> do
@@ -155,6 +161,11 @@ data Grouping
     }
   deriving (Show)
 
+instance KM.Keyed Grouping where
+  type Key Grouping = T.Text
+  key (GroupCatalog n) = n
+  key Grouping{ groupName = n } = n
+
 groupingName :: Grouping -> T.Text
 groupingName (GroupCatalog n) = n
 groupingName Grouping{ groupName = n } = n
@@ -165,7 +176,7 @@ groupingCatalog _ _ = Nothing
 
 data Groupings = Groupings
   { groupList :: V.Vector Grouping
-  , groupMap :: HM.HashMap T.Text Grouping
+  , groupMap :: KM.KeyedMap Grouping
   } deriving (Show)
 
 instance J.FromJSON Grouping where
@@ -218,7 +229,7 @@ findGroupsCatalog t = foldMap (findGroupCatalog t) . groupList
 
 data Catalogs = Catalogs
   { catalogDict :: [Field]
-  , catalogMap :: !(HM.HashMap T.Text Catalog)
+  , catalogMap :: !(KM.KeyedMap Catalog)
   , catalogGroupings :: Groupings
   }
 
