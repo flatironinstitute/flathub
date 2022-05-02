@@ -15,18 +15,19 @@ module OpenApi
   , stateDeclareSchema
   , declareSchemaRef
   , define
+  , resolve
   , proxyOf
   ) where
 
 import           Control.Arrow (first)
-import           Control.Lens as Lens ((&), Lens', (.~), (?~), over, zoom, At, Index, IxValue, at)
-import           Control.Monad.Trans.State (StateT(StateT), State, modify)
+import           Control.Lens as Lens ((&), Lens', (.~), (?~), over, zoom, At, Index, IxValue, at, (.=), use)
+import           Control.Monad.Trans.State (StateT(StateT), State)
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Lazy as BSL
 import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict.InsOrd as HMI
 import           Data.List (intercalate, stripPrefix)
-import           Data.Maybe (fromJust)
+import           Data.Maybe (fromJust, fromMaybe)
 import           Data.Monoid (Endo(..))
 import qualified Data.OpenApi as OA
 import qualified Data.OpenApi.Declare as OAD
@@ -71,8 +72,13 @@ class Define a where
 
 define :: Define a => T.Text -> a -> OpenApiM (OA.Referenced a)
 define n x = do
-  modify $ OA.components . componentsDefinitions . at n ?~ x
+  OA.components . componentsDefinitions . at n .= Just x
   return $ OA.Ref $ OA.Reference n
+
+resolve :: Define a => OA.Referenced a -> OpenApiM a
+resolve (OA.Inline x) = return x
+resolve (OA.Ref (OA.Reference n)) = fromMaybe (error $ "OpenApi.resolve undefined: " ++ show n)
+  <$> use (OA.components . componentsDefinitions . at n)
 
 instance Define OA.Schema where componentsDefinitions = OA.schemas
 instance Define OA.Response where componentsDefinitions = OA.responses
@@ -88,7 +94,7 @@ requestUrl r = TE.decodeUtf8 $ BSL.toStrict $ B.toLazyByteString $ R.renderUrlRe
 
 routeOperation :: R.Request -> Route a -> a -> [OA.Param] -> OA.Operation -> OpenApi
 routeOperation basereq route arg params op =
-  modify $ OA.paths . at' (if null rp then rp else '/':rp) . mop (R.requestMethod req) ?~ opp
+  OA.paths . at' (if null rp then rp else '/':rp) . mop (R.requestMethod req) .= Just opp
   where
   req = appEndo (RI.foldRoute (\p -> Endo . rrp p) (R.actionRoute route) arg) basereq
   rrp :: RI.RoutePredicate a -> a -> R.Request -> R.Request

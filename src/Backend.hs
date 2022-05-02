@@ -7,12 +7,15 @@ module Backend
   , FieldStats(..)
   , StatsArgs(..)
   , queryStats
+  , DataArgs(..)
+  , queryData
   ) where
 
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
 import           Data.Bits (xor)
+import           Data.Default (def)
 import qualified Data.HashMap.Strict as HM
 import           Data.Proxy (Proxy)
 import           Data.Scientific (Scientific)
@@ -85,7 +88,7 @@ filterQuery Filters{..} = "query" .=*
   where
   term f (FieldEQ [v]) = "term" .=* (fieldName f J..= v)
   term f (FieldEQ v@(_:_)) = "terms" .=* (fieldName f J..= v)
-  term f (FieldRange g l) | typeIsNumeric (fieldType f) && g <= l = "range" .=* (fieldName f .=* (bound "gte" g <> bound "lte" l))
+  term f (FieldRange g l) | typeIsNumeric (fieldType f) && all (\g' -> all (g' <=) l) g = "range" .=* (fieldName f .=* (bound "gte" g <> bound "lte" l))
     where bound t = foldMap (t J..=)
   term f (FieldWildcard w) | fieldWildcard f = "wildcard" .=* (fieldName f J..= w)
   term _ _ = error "invalid FieldFilder"
@@ -132,3 +135,23 @@ queryStats cat StatsArgs{..} =
     <> filterQuery statsFilters
   where
   field = ("field" J..=) . fieldName
+
+parseData :: Catalog -> J.Value -> J.Parser [KM.KeyedMap FieldValue]
+parseData cat = J.withObject "data res" $ \o ->
+  return []
+
+data DataArgs = DataArgs
+  { dataFilters :: Filters
+  , dataFields :: KM.KeyedMap Field
+  , dataSort :: [(Field, Bool)]
+  , dataCount, dataOffset :: Word16
+  }
+
+queryData :: Catalog -> DataArgs -> M [KM.KeyedMap FieldValue]
+queryData cat DataArgs{..} =
+  searchCatalog cat [] (parseData cat) $ JE.pairs
+    $  "size" J..= dataCount
+    <> mwhen (dataOffset > 0) ("from" J..= dataOffset)
+    <> "sort" `JE.pair` JE.list (\(f, a) -> JE.pairs (fieldName f J..= if a then "asc" else "desc" :: String)) (dataSort ++ [(def{ fieldName = "_doc" },True)])
+    <> storedFieldSource (catalogStoreField (catalogStore cat)) J..= HM.keys dataFields
+    <> filterQuery dataFilters

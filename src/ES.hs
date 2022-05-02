@@ -10,6 +10,7 @@ module ES
   , searchCatalog
   , createIndex
   , checkIndices
+  , storedFieldSource
   , storedFields'
   , queryIndex
   , queryBulk
@@ -183,6 +184,11 @@ checkIndices = do
   boolish (J.String "false") = return False
   boolish v = J.typeMismatch "bool" v
 
+storedFieldSource :: IsString s => ESStoreField -> s
+storedFieldSource ESStoreSource = "_source"
+storedFieldSource ESStoreValues = "docvalue_fields"
+storedFieldSource ESStoreStore = "stored_fields"
+
 storedFields :: MonadFail m => ESStoreField -> J.Object -> m J.Object
 storedFields ESStoreSource o = case HM.lookup "_source" o of
   Just (J.Object s) -> return s
@@ -213,10 +219,7 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreFiel
        (mwhen (queryOffset > 0) $ "from" J..= queryOffset)
     <> ("size" J..= if scroll && queryLimit == 0 then 10000 else queryLimit)
     <> "sort" `JE.pair` JE.list (\(f, a) -> JE.pairs (fieldName f J..= if a then "asc" else "desc" :: String)) (querySort ++ [(def{ fieldName = "_doc" },True)])
-    <> (case store of
-      ESStoreSource -> "_source"
-      ESStoreValues -> "docvalue_fields"
-      ESStoreStore -> "stored_fields") J..= map fieldName queryFields
+    <> storedFieldSource store J..= map fieldName queryFields
     <> "query" .=* (if querySample < 1
       then \q -> ("function_score" .=* ("query" .=* q
         <> "random_score" .=* foldMap (\s -> "seed" J..= s <> "field" J..= ("_seq_no" :: String)) querySeed

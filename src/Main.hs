@@ -32,7 +32,7 @@ import JSON
 import Api
 
 routes :: R.RouteMap Action
-routes = R.routes
+routes = R.routes (
   [ R.routeNormCase topPage
   , R.routeNormCase static
   , R.routeNormCase staticHtml
@@ -45,11 +45,8 @@ routes = R.routes
   , R.routeNormCase sqlSchema
   , R.routeNormCase csvSchema
   , R.routeNormCase attachment
-  , R.routeNormCase apiTop
-  , R.routeNormCase apiCatalog
-  , R.routeNormCase apiStats
   , R.routeNormCase openApi
-  ]
+  ] ++ apiRoutes)
 
 data Opts = Opts
   { optConfig :: FilePath
