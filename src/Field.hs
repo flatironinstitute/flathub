@@ -16,7 +16,6 @@ module Field
   , fieldDisp
   , Field, FieldGroup
   , Fields, FieldGroups
-  , FieldMap
   , updateFieldValue
   , parseFieldGroup
   , expandField, expandFields, expandAllFields
@@ -175,8 +174,6 @@ instance Alternative m => Default (FieldSub Proxy m) where
 instance KM.Keyed (FieldSub t m) where
   type Key (FieldSub t m) = T.Text
   key = fieldName
-
-type FieldMap t m = KM.KeyedMap (FieldSub t m)
 
 updateFieldValue :: (Functor t, Functor f) => FieldSub t Proxy -> TypeValue f -> FieldSub f Proxy
 updateFieldValue f t = f{ fieldType = coerceTypeValue (fieldType f) t, fieldSub = Proxy }

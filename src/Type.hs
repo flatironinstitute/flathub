@@ -262,13 +262,13 @@ instance {-# OVERLAPPING #-} J.ToJSON Type where
 instance J.FromJSON Type where
   parseJSON = J.withText "type" $ either fail return . readEither . T.unpack
 
-typeIsFloating :: Type -> Bool
+typeIsFloating :: TypeValue f -> Bool
 typeIsFloating (Double    _) = True
 typeIsFloating (Float     _) = True
 typeIsFloating (HalfFloat _) = True
 typeIsFloating _ = False
 
-typeIsIntegral :: Type -> Bool
+typeIsIntegral :: TypeValue f -> Bool
 typeIsIntegral (Long      _) = True
 typeIsIntegral (ULong     _) = True
 typeIsIntegral (Integer   _) = True
@@ -276,18 +276,18 @@ typeIsIntegral (Short     _) = True
 typeIsIntegral (Byte      _) = True
 typeIsIntegral _ = False
 
-typeIsNumeric :: Type -> Bool
+typeIsNumeric :: TypeValue f -> Bool
 typeIsNumeric t = typeIsFloating t || typeIsIntegral t
 
-typeIsString :: Type -> Bool
+typeIsString :: TypeValue f -> Bool
 typeIsString (Keyword   _) = True
 typeIsString _ = False
 
-typeIsBoolean :: Type -> Bool
+typeIsBoolean :: TypeValue f -> Bool
 typeIsBoolean (Boolean _) = True
 typeIsBoolean _ = False
 
-baseType :: (a,a,a,a,a) -> Type -> a
+baseType :: (a,a,a,a,a) -> TypeValue f -> a
 baseType (f,i,b,s,_) t
   | typeIsFloating t = f
   | typeIsIntegral t = i
@@ -295,7 +295,7 @@ baseType (f,i,b,s,_) t
   | typeIsBoolean  t = b
 baseType (_,_,_,_,v) ~(Void _) = v
 
-numpyTypeSize :: Type -> Word
+numpyTypeSize :: TypeValue f -> Word
 numpyTypeSize (Double    _) = 8
 numpyTypeSize (Float     _) = 4
 numpyTypeSize (HalfFloat _) = 2
@@ -308,7 +308,7 @@ numpyTypeSize (Boolean   _) = 1
 numpyTypeSize (Keyword   _) = 8 -- XXX overridden in numpyFieldSize
 numpyTypeSize (Void      _) = 0
 
-sqlType :: Type -> T.Text
+sqlType :: TypeValue f -> T.Text
 sqlType (Keyword _)   = "text"
 sqlType (Long _)      = "bigint"
 sqlType (ULong _)     = "bigint"

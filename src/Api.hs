@@ -29,7 +29,7 @@ import qualified Data.CaseInsensitive as CI
 import qualified Data.HashMap.Strict as HM
 import           Data.IORef (newIORef, readIORef, writeIORef)
 import           Data.List (foldl')
-import           Data.Maybe (isJust, mapMaybe)
+import           Data.Maybe (isJust, mapMaybe, fromMaybe)
 import qualified Data.OpenApi as OA
 import           Data.Proxy (Proxy(Proxy))
 import qualified Data.Text as T
@@ -251,17 +251,19 @@ instance OA.ToSchema FieldValue where
       & OA.description ?~ "a value for a field, which must match the type of the field"
       & OA.anyOf ?~ map (\t -> unTypeValue (\p -> OA.Inline $ OA.toSchema p & OA.title ?~ T.pack (show t)) t) allTypes
 
-instance Typed a => J.FromJSON (FieldFilter a) where
-  parseJSON j@(J.Array _) = do
-    l <- J.parseJSON j
-    when (null l) $ fail "empty values"
-    return $ FieldEQ l
-  parseJSON (J.Object o) = do
-    g <- o J..:? "gte"
-    l <- o J..:? "lte"
-    unless (all (\g' -> all (g' <=) l) g) $ fail "invalid range"
-    return $ FieldRange g l
-  parseJSON j = FieldEQ . return <$> J.parseJSON j
+parseFilterJSON :: Typed a => Field -> J.Value -> J.Parser (FieldFilter a)
+parseFilterJSON _ j@(J.Array _) = do
+  l <- J.parseJSON j
+  when (null l) $ fail "empty values"
+  return $ FieldEQ l
+parseFilterJSON f (J.Object o) | typeIsNumeric (fieldType f) = do
+  g <- o J..:? "gte"
+  l <- o J..:? "lte"
+  unless (all (\g' -> all (g' <=) l) g) $ fail "invalid range"
+  return $ FieldRange g l
+parseFilterJSON f (J.Object o) | fieldWildcard f =
+  FieldWildcard <$> o J..: "wildcard"
+parseFilterJSON _ j = FieldEQ . return <$> J.parseJSON j
 
 instance Typed a => OA.ToSchema (FieldFilter a) where
   declareNamedSchema _ = do
@@ -278,6 +280,9 @@ instance Typed a => OA.ToSchema (FieldFilter a) where
           , ("lte", fv, False)
           ]
           & OA.minProperties ?~ 1
+        , OA.Inline $ objectSchema "matching a pattern for wildcard fields"
+          [ ("wildcard", OA.Inline $ schemaDescOf filterWildcard "a pattern containing '*' and/or '?'", True)
+          ]
         ]
 
 parseFiltersJSON :: Catalog -> J.Value -> J.Parser Filters
@@ -288,9 +293,9 @@ parseFiltersJSON cat = J.withObject "filters" $ \o -> Filters
   where
   parsef n j = do
     f <- lookupField cat n
-    updateFieldValue f <$> traverseTypeValue (parseff j) (fieldType f)
-  parseff :: Typed a => J.Value -> Proxy a -> J.Parser (FieldFilter a)
-  parseff j _ = J.parseJSON j
+    updateFieldValue f <$> traverseTypeValue (parseff f j) (fieldType f)
+  parseff :: Typed a => Field -> J.Value -> Proxy a -> J.Parser (FieldFilter a)
+  parseff f j _ = parseFilterJSON f j
 
 instance OA.ToSchema Filters where
   declareNamedSchema _ = do
@@ -319,6 +324,8 @@ parseFiltersQuery cat req = foldl' parseQueryItem mempty $ Wai.queryString req w
   parseQueryItem q _ = q -- just ignore anything we can't parse
   parseFilt f (spl isDelim -> Just (a, b))
     | typeIsNumeric (fieldType f) = FieldRange <$> parseVal f a <*> parseVal f b
+  parseFilt f a
+    | fieldWildcard f && BSC.elem '*' a = return $ FieldWildcard (decodeUtf8' a)
   parseFilt f a = FieldEQ . return <$> parseVal' f a
   parseVal _ "" = return Nothing
   parseVal f v = Just <$> parseVal' f v
@@ -401,7 +408,7 @@ apiStats :: Route (R.Method, Simulation)
 apiStats = apiAction (catalogBase R.>* "stats") $ \sim req -> do
   cat <- askCatalog sim
   body <- parseJSONBody req (parseStatsJSON cat)
-  let args = foldl (<>) (parseStatsQuery cat req) body
+  let args = fromMaybe (parseStatsQuery cat req) body
   (count, stats) <- queryStats cat args
   return $ okResponse (apiHeaders req) $ J.pairs
     $  "count" J..= count
