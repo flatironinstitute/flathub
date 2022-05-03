@@ -35,6 +35,7 @@ import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Encoding.Error as TE
 import qualified Data.Vector as V
 import           Data.Version (showVersion)
+import           Data.Word (Word16)
 import           Network.HTTP.Types.Header (ResponseHeaders, hOrigin, hContentType)
 import           Network.HTTP.Types.Status (noContent204, badRequest400, requestEntityTooLarge413, unsupportedMediaType415, unprocessableEntity422)
 import qualified Network.Wai as Wai
@@ -257,7 +258,7 @@ instance Typed a => OA.ToSchema (FieldFilter a) where
     fv <- OA.declareSchemaRef (Proxy :: Proxy FieldValue)
     return $ OA.NamedSchema Nothing $ mempty
       & OA.description ?~ "filter for a named field to be equal to a specific value or match other contraints"
-      & OA.anyOf ?~
+      & OA.oneOf ?~
         [ fv
         , OA.Inline $ arraySchema fv & OA.description ?~ "equal to any of these values (not supported when used as a query parameter)"
           & OA.minItems ?~ 1
@@ -330,16 +331,18 @@ filtersQueryParam = do
     & OA.style ?~ OA.StyleForm
     & OA.explode ?~ True
     & OA.schema ?~ filters
-    & OA.description ?~ "filter in query string (see descriptions for non-standard representations of range queries)"
+    & OA.description ?~ "filter in query string (see descriptions for non-standard formatting of range queries)"
 
 fieldsQueryParam :: OpenApiM (OA.Referenced OA.Param)
-fieldsQueryParam = define "fields" $ mempty
-  & OA.name .~ "fields"
-  & OA.in_ .~ OA.ParamQuery
-  & OA.description ?~ "list of fields to return"
-  & OA.style ?~ OA.StyleForm
-  & OA.explode ?~ False
-  & OA.schema ?~ OA.Inline (arraySchema $ OA.Inline $ schemaDescOf T.pack "field name in catalog")
+fieldsQueryParam = do
+  fl <- fieldListSchema
+  define "fields" $ mempty
+    & OA.name .~ "fields"
+    & OA.in_ .~ OA.ParamQuery
+    & OA.description ?~ "list of fields to return"
+    & OA.style ?~ OA.StyleForm
+    & OA.explode ?~ False
+    & OA.schema ?~ fl
 
 parseFieldsQuery :: Catalog -> Wai.Request -> BS.ByteString -> KM.KeyedMap Field
 parseFieldsQuery cat req param =
@@ -433,6 +436,50 @@ parseDataJSON cat = J.withObject "data request" $ \o -> DataArgs
   <*> (parseSortJSON cat =<< o J..:? "sort")
   <*> o J..: "count"
   <*> o J..:? "offset" J..!= 0
+
+-------- /api/{catalog}/histogram
+
+defaultHistogramSize, maxHistogramDepth :: Word16
+defaultHistogramSize = 16
+maxHistogramDepth = 3
+
+histogramSchema :: OpenApiM (OA.Referenced OA.Schema)
+histogramSchema = do
+  fn <- fieldNameSchema
+  define "Histogram" $ mempty & OA.anyOf ?~
+    [ fn
+    , OA.Inline $ objectSchema "parameters for a single-field histogram (when used as a query parameter, may be specified as \"FIELD:[log]SIZE\"); performance will improve if all histogram fields also have fully-bounded range filters"
+      [ ("field", fn, True)
+      , ("size", OA.Inline $ schemaDescOf histogramSize "number of buckets to include in the histogram"
+        & OA.maximum_ ?~ fromIntegral maxHistogramSize
+        & OA.default_ ?~ J.Number (fromIntegral defaultHistogramSize), False)
+      , ("log", OA.Inline $ schemaDescOf histogramLog "whether to calculate the histogram using log-spaced buckets (rather than linear spacing)"
+        & OA.default_ ?~ J.Bool False, False)
+      ]
+    ]
+
+histogramListSchema :: OpenApiM (OA.Referenced OA.Schema)
+histogramListSchema = do
+  hist <- histogramSchema
+  define "HistogramList" $ mempty & OA.anyOf ?~
+    [ hist
+    , OA.Inline $ arraySchema hist
+      & OA.uniqueItems ?~ True
+      & OA.minItems ?~ 1
+      & OA.maxItems ?~ fromIntegral maxHistogramDepth
+      & OA.description ?~ "fields (dimensions or axes) along which to calculate a histogram, where each bucket in outer (earlier) histograms will contain the nested conditional histograms of inner (later) fields"
+    ]
+
+parseHistogramQuery :: Catalog -> Wai.Request -> HistogramArgs
+parseHistogramQuery cat req = HistogramArgs
+  { histogramFilters = parseFiltersQuery cat req
+  }
+
+parseHistogramJSON :: Catalog -> J.Value -> J.Parser HistogramArgs
+parseHistogramJSON cat = J.withObject "histogram request" $ \o -> HistogramArgs
+  <$> parseFiltersJSON cat (HM.delete "fields" $ HM.delete "quartiles" o)
+  <*> return []
+  <*> return Nothing
 
 -------- global
 
@@ -548,7 +595,7 @@ apiOperations =
       , sortSchema >>= \sort -> return $ OA.Inline $ mempty
         & OA.name .~ "sort"
         & OA.in_ .~ OA.ParamQuery
-        & OA.description ?~ "how to order rows (see notes on use in query string)"
+        & OA.description ?~ "how to order rows (see descriptions for non-standard formatting of sort order)"
         & OA.style ?~ OA.StyleForm
         & OA.explode ?~ False
         & OA.schema ?~ sort
@@ -581,7 +628,10 @@ apiOperations =
     , apiAction = \sim req -> do
       cat <- askCatalog sim
       body <- parseJSONBody req (parseDataJSON cat)
-      dat <- queryData cat $ fromMaybe (parseDataQuery cat req) body
+      let args = fromMaybe (parseDataQuery cat req) body
+      unless (dataCount args <= maxDataCount && fromIntegral (dataCount args) + fromIntegral (dataOffset args) <= maxResultWindow)
+        $ result $ response badRequest400 [] ("count too large" :: String)
+      dat <- queryData cat args
       return $ okResponse (apiHeaders req) $ JE.list (J.pairs . foldMap (\f ->
         fieldName f J..= fieldType f)) (V.toList dat)
     , apiResponseSchema = do
@@ -591,13 +641,57 @@ apiOperations =
         & OA.description ?~ "a single data row mapping fields to values (missing values are absent)"
         & OA.additionalProperties ?~ OA.AdditionalPropertiesSchema fv
     }
+
+  , APIOperation -- /api/{cat}/histogram
+    { apiName = "histogram"
+    , apiSummary = "Get a histogram of data across one or more fields"
+    , apiPath = catalogBase R.>* "histogram"
+    , apiExampleArg = "sim"
+    , apiPathParams = [catalogParam]
+    , apiQueryParams = [filtersQueryParam
+      , histogramListSchema >>= \hist -> return $ OA.Inline $ mempty
+        & OA.name .~ "fields"
+        & OA.in_ .~ OA.ParamQuery
+        & OA.description ?~ "field(s) along which to calculate histograms (see descriptions for non-standard formatting of size/log)"
+        & OA.style ?~ OA.StyleForm
+        & OA.explode ?~ False
+        & OA.required ?~ True
+        & OA.schema ?~ hist
+      , fieldNameSchema >>= \fn -> return $ OA.Inline $ mempty
+        & OA.name .~ "quartiles"
+        & OA.in_ .~ OA.ParamQuery
+        & OA.description ?~ "optional field within which to calculate quartiles"
+        & OA.schema ?~ fn
+      ]
+    , apiRequestSchema = Just $ do
+      filt <- declareSchemaRef (Proxy :: Proxy Filters)
+      fn <- fieldNameSchema
+      hist <- histogramListSchema
+      return $ mempty & OA.allOf ?~
+        [ filt
+        , OA.Inline $ objectSchema
+          "histogram parameters: histogram axes and an optional quartiles axis for which quartiles are calculated in the inner-most histogram buckets"
+          [ ("fields", hist, True)
+          , ("quartiles", fn, False)
+          ]
+        ]
+    , apiAction = \sim req -> do
+      cat <- askCatalog sim
+      body <- parseJSONBody req (parseHistogramJSON cat)
+      let args = fromMaybe (parseHistogramQuery cat req) body
+      unless (length (histogramFields args) <= fromIntegral maxHistogramDepth && product (map (fromIntegral . histogramSize) (histogramFields args)) <= maxHistogramSize)
+        $ result $ response badRequest400 [] ("histograms too large" :: String)
+      dat <- queryHistogram cat args
+      return $ okResponse (apiHeaders req) $ J.toEncoding dat
+    , apiResponseSchema = do
+      return mempty
+    }
   ]
   where
-  maxResults = 5000
   countSchema = OA.Inline $ schemaDescOf dataCount "number of rows to return"
-    & OA.maximum_ ?~ maxResults
+    & OA.maximum_ ?~ fromIntegral maxDataCount
   offsetSchema = OA.Inline $ schemaDescOf dataOffset "start at this row offset (0 means first)"
-    & OA.maximum_ ?~ fromIntegral maxResultWindow - maxResults
+    & OA.maximum_ ?~ fromIntegral maxResultWindow - fromIntegral maxDataCount
     & OA.default_ ?~ J.Number 0
 
 apiRoutes :: [R.RouteCase Action]

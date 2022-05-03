@@ -9,7 +9,11 @@ module Backend
   , queryStats
   , DataArgs(..)
   , queryData
-  , maxResultWindow
+  , maxDataCount, maxResultWindow
+  , Histogram(..)
+  , HistogramArgs(..)
+  , maxHistogramSize
+  , queryHistogram
   ) where
 
 import qualified Data.Aeson as J
@@ -154,6 +158,9 @@ data DataArgs = DataArgs
   , dataCount, dataOffset :: Word16
   }
 
+maxDataCount :: Word16
+maxDataCount = 5000
+
 queryData :: Catalog -> DataArgs -> M (V.Vector (KM.KeyedMap FieldValue))
 queryData cat DataArgs{..} =
   searchCatalog cat [] (parseData cat) $ JE.pairs
@@ -162,3 +169,28 @@ queryData cat DataArgs{..} =
     <> "sort" `JE.pair` JE.list (\(f, a) -> JE.pairs (fieldName f J..= if a then "asc" else "desc" :: String)) (dataSort ++ [(def{ fieldName = "_doc" },True)])
     <> storedFieldSource (catalogStoreField (catalogStore cat)) J..= HM.keys dataFields
     <> filterQuery dataFilters
+
+data Histogram = Histogram
+  { histogramField :: Field
+  , histogramSize :: Word16
+  , histogramLog :: Bool
+  }
+
+data HistogramArgs = HistogramArgs
+  { histogramFilters :: Filters
+  , histogramFields :: [Histogram]
+  , histogramQuartiles :: Maybe Field
+  }
+
+maxHistogramSize :: Word16
+maxHistogramSize = 1024
+
+parseHistogram :: Catalog -> J.Value -> J.Parser ()
+parseHistogram cat = J.withObject "histogram res" $ \o ->
+  return ()
+
+queryHistogram :: Catalog -> HistogramArgs -> M ()
+queryHistogram cat HistogramArgs{..} = do
+  searchCatalog cat [] (parseHistogram cat) $ JE.pairs
+    $  "size" J..= (0 :: Count)
+    <> filterQuery histogramFilters
