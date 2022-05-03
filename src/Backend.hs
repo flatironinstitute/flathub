@@ -16,6 +16,7 @@ module Backend
   , queryHistogram
   ) where
 
+import           Control.Arrow (first)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
@@ -100,29 +101,36 @@ filterQuery Filters{..} = "query" .=*
   term f (FieldWildcard w) | fieldWildcard f = "wildcard" .=* (fieldName f J..= w)
   term _ _ = error "invalid FieldFilder"
 
-data FieldStats
+data FieldStats a
   = FieldStats{ statsMin, statsMax, statsAvg :: Maybe Scientific, statsCount :: Count }
-  | FieldTerms{ termsBuckets :: [(J.Value, Count)], termsCount :: Count }
+  | FieldTerms{ termsBuckets :: [(a, Count)], termsCount :: Count }
+
+instance Functor FieldStats where
+  fmap _ (FieldStats n x a c) = FieldStats n x a c
+  fmap f (FieldTerms b c) = FieldTerms (map (first f) b) c
 
 fieldUseTerms :: Field -> Bool
 fieldUseTerms f = fieldTerms f || not (typeIsNumeric (fieldType f))
 
-parseStats :: Catalog -> J.Value -> J.Parser (Count, [(Field, FieldStats)])
+parseStats :: Catalog -> J.Value -> J.Parser (Count, KM.KeyedMap (FieldSub FieldStats Proxy))
 parseStats cat = J.withObject "stats res" $ \o -> (,)
   <$> (o J..: "hits" >>= (J..: "total") >>= (J..: "value"))
-  <*> (mapM pf . HM.toList =<< o J..: "aggregations") where
-  pf (n, a) = do
+  <*> (HM.traverseWithKey pf =<< o J..: "aggregations") where
+  pf n a = do
     f <- lookupField cat n
-    (,) f <$> (if fieldUseTerms f then pt else ps) a
-  ps = J.withObject "stats" $ \o -> FieldStats
+    updateFieldValueM f (flip (if fieldUseTerms f then pt else ps) a)
+  ps :: Proxy a -> J.Value -> J.Parser (FieldStats a)
+  ps _ = J.withObject "stats" $ \o -> FieldStats
     <$> o J..: "min"
     <*> o J..: "max"
     <*> o J..: "avg"
     <*> o J..: "count"
-  pt = J.withObject "terms" $ \o -> FieldTerms
-    <$> (mapM pb =<< o J..: "buckets")
+  pt :: J.FromJSON a => Proxy a -> J.Value -> J.Parser (FieldStats a)
+  pt p = J.withObject "terms" $ \o -> FieldTerms
+    <$> (mapM (pb p) =<< o J..: "buckets")
     <*> o J..: "sum_other_doc_count"
-  pb = J.withObject "bucket" $ \o -> (,)
+  pb :: J.FromJSON a => Proxy a -> J.Value -> J.Parser (a, Count)
+  pb _ = J.withObject "bucket" $ \o -> (,)
     <$> o J..: "key"
     <*> o J..: "doc_count"
 
@@ -131,7 +139,7 @@ data StatsArgs = StatsArgs
   , statsFields :: KM.KeyedMap Field
   }
 
-queryStats :: Catalog -> StatsArgs -> M (Count, [(Field, FieldStats)])
+queryStats :: Catalog -> StatsArgs -> M (Count, KM.KeyedMap (FieldSub FieldStats Proxy))
 queryStats cat StatsArgs{..} =
   searchCatalog cat [] (parseStats cat) $ JE.pairs
     $  "track_total_hits" J..= True
@@ -149,7 +157,7 @@ parseData cat = J.withObject "data res" $ \o ->
   row = HM.traverseWithKey parsef . storedFields' (catalogStoreField (catalogStore cat))
   parsef n j = do
     f <- lookupField cat n
-    updateFieldValue f <$> traverseTypeValue (\Proxy -> Identity <$> J.parseJSON j) (fieldType f)
+    updateFieldValueM f (\Proxy -> Identity <$> J.parseJSON j)
 
 data DataArgs = DataArgs
   { dataFilters :: Filters
@@ -183,7 +191,7 @@ data HistogramArgs = HistogramArgs
   }
 
 maxHistogramSize :: Word16
-maxHistogramSize = 1024
+maxHistogramSize = 4096
 
 parseHistogram :: Catalog -> J.Value -> J.Parser ()
 parseHistogram cat = J.withObject "histogram res" $ \o ->

@@ -16,7 +16,8 @@ module Field
   , fieldDisp
   , Field, FieldGroup
   , Fields, FieldGroups
-  , updateFieldValue
+  , setFieldValue
+  , updateFieldValueM
   , parseFieldGroup
   , expandField, expandFields, expandAllFields
   , deleteField
@@ -175,8 +176,14 @@ instance KM.Keyed (FieldSub t m) where
   type Key (FieldSub t m) = T.Text
   key = fieldName
 
-updateFieldValue :: (Functor t, Functor f) => FieldSub t Proxy -> TypeValue f -> FieldSub f Proxy
-updateFieldValue f t = f{ fieldType = coerceTypeValue (fieldType f) t, fieldSub = Proxy }
+setFieldValueUnsafe :: (Functor t, Functor f) => FieldSub t Proxy -> TypeValue f -> FieldSub f Proxy
+setFieldValueUnsafe f t = f{ fieldType = t, fieldSub = Proxy }
+
+setFieldValue :: (Functor t, Functor f) => FieldSub t Proxy -> TypeValue f -> FieldSub f Proxy
+setFieldValue f = setFieldValueUnsafe f . coerceTypeValue (fieldType f)
+
+updateFieldValueM :: (Functor t, Functor f, Monad m) => FieldSub t Proxy -> (forall a . Typed a => t a -> m (f a)) -> m (FieldSub f Proxy)
+updateFieldValueM f t = setFieldValueUnsafe f <$> traverseTypeValue t (fieldType f)
 
 numpyFieldSize :: Field -> Word
 numpyFieldSize Field{ fieldType = Keyword _, fieldSize = n } = n
@@ -300,13 +307,9 @@ fieldsDepth = getMax . depth where
   depth = succ . foldMap (foldMap depth . fieldSub)
 
 parseFieldValue :: Field -> T.Text -> Maybe FieldValue
-parseFieldValue f = fmap sv . pv f where
+parseFieldValue f = fmap (setFieldValueUnsafe f) . pv f where
   pv Field{ fieldType = (Byte _), fieldEnum = Just l } s | Just i <- V.elemIndex s l = Just $ Byte $ fromIntegral i
   pv Field{ fieldType = t } s = sequenceValue $ parseTypeValue t s
-  sv v = f
-    { fieldType = v
-    , fieldSub = Proxy
-    }
 
 fieldJValue :: FieldValue -> J.Series
 fieldJValue f = fieldName f J..= fieldType f

@@ -80,6 +80,13 @@ isDelim ',' = True
 isDelim ' ' = True
 isDelim _ = False
 
+splitBS :: (Char -> Bool) -> BS.ByteString -> Maybe (BS.ByteString, BS.ByteString)
+splitBS c s = (,) p . snd <$> BSC.uncons r
+  where (p, r) = BSC.break c s
+
+readBS :: Read a => BSC.ByteString -> Maybe a
+readBS = readMaybe . BSC.unpack
+
 decodeUtf8' :: BS.ByteString -> T.Text
 decodeUtf8' = TE.decodeUtf8With TE.lenientDecode
 
@@ -280,7 +287,7 @@ parseFiltersJSON cat o = Filters
   where
   parsef n j = do
     f <- lookupField cat n
-    updateFieldValue f <$> traverseTypeValue (parseff f j) (fieldType f)
+    updateFieldValueM f (parseff f j)
   parseff :: Typed a => Field -> J.Value -> Proxy a -> J.Parser (FieldFilter a)
   parseff f j _ = parseFilterJSON f j
 
@@ -302,14 +309,14 @@ instance OA.ToSchema Filters where
 
 parseFiltersQuery :: Catalog -> Wai.Request -> Filters
 parseFiltersQuery cat req = foldl' parseQueryItem mempty $ Wai.queryString req where
-  parseQueryItem q ("sample", Just (rmbs -> Just p)) =
+  parseQueryItem q ("sample", Just (readBS -> Just p)) =
     q{ filterSample = filterSample q * p }
-  parseQueryItem q ("sample", Just (spl ('@' ==) -> Just (rmbs -> Just p, rmbs -> Just s))) =
+  parseQueryItem q ("sample", Just (splitBS ('@' ==) -> Just (readBS -> Just p, readBS -> Just s))) =
     q{ filterSample = filterSample q * p, filterSeed = Just $ maybe id xor (filterSeed q) s }
   parseQueryItem q (lookupField cat . decodeUtf8' -> Just f, Just (parseFilt f -> Just v)) =
-    q{ filterFields = filterFields q <> KM.fromList [updateFieldValue f $ sequenceTypeValue v] }
+    q{ filterFields = filterFields q <> KM.fromList [setFieldValue f $ sequenceTypeValue v] }
   parseQueryItem q _ = q -- just ignore anything we can't parse
-  parseFilt f (spl isDelim -> Just (a, b))
+  parseFilt f (splitBS isDelim -> Just (a, b))
     | typeIsNumeric (fieldType f) = FieldRange <$> parseVal f a <*> parseVal f b
   parseFilt f a
     | fieldWildcard f && BSC.elem '*' a = return $ FieldWildcard (decodeUtf8' a)
@@ -317,10 +324,6 @@ parseFiltersQuery cat req = foldl' parseQueryItem mempty $ Wai.queryString req w
   parseVal _ "" = return Nothing
   parseVal f v = Just <$> parseVal' f v
   parseVal' f = fmap fieldType . parseFieldValue f . decodeUtf8'
-  rmbs :: Read a => BSC.ByteString -> Maybe a
-  rmbs = readMaybe . BSC.unpack
-  spl c s = (,) p . snd <$> BSC.uncons r
-    where (p, r) = BSC.break c s
 
 filtersQueryParam :: OpenApiM (OA.Referenced OA.Param)
 filtersQueryParam = do
@@ -364,7 +367,7 @@ parseStatsJSON cat = J.withObject "stats request" $ \o -> StatsArgs
   <$> parseFiltersJSON cat (HM.delete "fields" o)
   <*> (mapM (parseFieldsJSON cat) =<< o J..:? "fields") J..!= KM.empty
 
-fieldStatsJSON :: FieldStats -> J.Encoding
+fieldStatsJSON :: J.ToJSON a => FieldStats a -> J.Encoding
 fieldStatsJSON FieldStats{..} = J.pairs
   $  "count" J..= statsCount
   <> "min" J..= statsMin
@@ -446,7 +449,7 @@ maxHistogramDepth = 3
 histogramSchema :: OpenApiM (OA.Referenced OA.Schema)
 histogramSchema = do
   fn <- fieldNameSchema
-  define "Histogram" $ mempty & OA.anyOf ?~
+  define "Histogram" $ mempty & OA.oneOf ?~
     [ fn
     , OA.Inline $ objectSchema "parameters for a single-field histogram (when used as a query parameter, may be specified as \"FIELD:[log]SIZE\"); performance will improve if all histogram fields also have fully-bounded range filters"
       [ ("field", fn, True)
@@ -461,7 +464,7 @@ histogramSchema = do
 histogramListSchema :: OpenApiM (OA.Referenced OA.Schema)
 histogramListSchema = do
   hist <- histogramSchema
-  define "HistogramList" $ mempty & OA.anyOf ?~
+  define "HistogramList" $ mempty & OA.oneOf ?~
     [ hist
     , OA.Inline $ arraySchema hist
       & OA.uniqueItems ?~ True
@@ -470,16 +473,42 @@ histogramListSchema = do
       & OA.description ?~ "fields (dimensions or axes) along which to calculate a histogram, where each bucket in outer (earlier) histograms will contain the nested conditional histograms of inner (later) fields"
     ]
 
+parseHistogramsQuery :: Catalog -> Wai.Request -> BS.ByteString -> [Histogram]
+parseHistogramsQuery cat req param =
+  mapMaybe parseHist $ parseListQuery req param
+  where
+  parseHist (splitBS (':' ==) -> Just (lookf -> Just f, histn -> Just n)) = mkHist f n
+  parseHist (                          lookf -> Just f                  ) = mkHist f (False, defaultHistogramSize)
+  parseHist _ = fail "invalid hist"
+  histn s = (t, ) <$> readBS r where
+    (t, r) = maybe (False, s) (True ,) $ BS.stripPrefix "log" s
+  mkHist f (t, n)
+    | typeIsNumeric (fieldType f) = return $ Histogram f n t
+    | otherwise = fail "non-numeric hist"
+  lookf = lookupField cat . decodeUtf8'
+
+parseHistogramsJSON :: Catalog -> J.Value -> J.Parser Histogram
+parseHistogramsJSON cat (J.String s) = do
+  f <- lookupField cat s
+  return $ Histogram f defaultHistogramSize False
+parseHistogramsJSON cat (J.Object o) = Histogram
+  <$> (lookupField cat =<< o J..: "field")
+  <*> o J..:? "size" J..!= defaultHistogramSize
+  <*> o J..:? "log" J..!= False
+parseHistogramsJSON _ j = J.typeMismatch "histogram field" j
+
 parseHistogramQuery :: Catalog -> Wai.Request -> HistogramArgs
 parseHistogramQuery cat req = HistogramArgs
   { histogramFilters = parseFiltersQuery cat req
+  , histogramFields = parseHistogramsQuery cat req "fields"
+  , histogramQuartiles = lookupField cat . decodeUtf8' =<< join (lookup "quartiles" $ Wai.queryString req)
   }
 
 parseHistogramJSON :: Catalog -> J.Value -> J.Parser HistogramArgs
 parseHistogramJSON cat = J.withObject "histogram request" $ \o -> HistogramArgs
   <$> parseFiltersJSON cat (HM.delete "fields" $ HM.delete "quartiles" o)
-  <*> return []
-  <*> return Nothing
+  <*> (mapM (parseHistogramsJSON cat) =<< o J..: "fields")
+  <*> (mapM (lookupField cat) =<< o J..:? "quartiles")
 
 -------- global
 
@@ -559,7 +588,7 @@ apiOperations =
       (count, stats) <- queryStats cat $ fromMaybe (parseStatsQuery cat req) body
       return $ okResponse (apiHeaders req) $ J.pairs
         $  "count" J..= count
-        <> foldMap (\(f, s) -> fieldName f `JE.pair` fieldStatsJSON s) stats
+        <> foldMap (\f -> fieldName f `JE.pair` unTypeValue fieldStatsJSON (fieldType f)) stats
     , apiResponseSchema = do
       fv <- declareSchemaRef (Proxy :: Proxy FieldValue)
       return $ objectSchema "stats"
@@ -679,7 +708,8 @@ apiOperations =
       cat <- askCatalog sim
       body <- parseJSONBody req (parseHistogramJSON cat)
       let args = fromMaybe (parseHistogramQuery cat req) body
-      unless (length (histogramFields args) <= fromIntegral maxHistogramDepth && product (map (fromIntegral . histogramSize) (histogramFields args)) <= maxHistogramSize)
+      unless (length (histogramFields args) + fromEnum (isJust (histogramQuartiles args)) <= fromIntegral maxHistogramDepth
+          && product (map (fromIntegral . histogramSize) (histogramFields args)) <= maxHistogramSize)
         $ result $ response badRequest400 [] ("histograms too large" :: String)
       dat <- queryHistogram cat args
       return $ okResponse (apiHeaders req) $ J.toEncoding dat
