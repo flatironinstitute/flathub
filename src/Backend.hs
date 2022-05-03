@@ -17,10 +17,12 @@ import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
 import           Data.Bits (xor)
 import           Data.Default (def)
+import           Data.Functor.Identity (Identity(Identity))
 import qualified Data.HashMap.Strict as HM
-import           Data.Proxy (Proxy)
+import           Data.Proxy (Proxy(Proxy))
 import           Data.Scientific (Scientific)
 import qualified Data.Text as T
+import qualified Data.Vector as V
 import           Data.Word (Word16)
 
 import Monoid
@@ -137,9 +139,13 @@ queryStats cat StatsArgs{..} =
   where
   field = ("field" J..=) . fieldName
 
-parseData :: Catalog -> J.Value -> J.Parser [KM.KeyedMap FieldValue]
+parseData :: Catalog -> J.Value -> J.Parser (V.Vector (KM.KeyedMap FieldValue))
 parseData cat = J.withObject "data res" $ \o ->
-  return []
+  o J..: "hits" >>= (J..: "hits") >>= mapM row where
+  row = HM.traverseWithKey parsef . storedFields' (catalogStoreField (catalogStore cat))
+  parsef n j = do
+    f <- lookupField cat n
+    updateFieldValue f <$> traverseTypeValue (\Proxy -> Identity <$> J.parseJSON j) (fieldType f)
 
 data DataArgs = DataArgs
   { dataFilters :: Filters
@@ -148,7 +154,7 @@ data DataArgs = DataArgs
   , dataCount, dataOffset :: Word16
   }
 
-queryData :: Catalog -> DataArgs -> M [KM.KeyedMap FieldValue]
+queryData :: Catalog -> DataArgs -> M (V.Vector (KM.KeyedMap FieldValue))
 queryData cat DataArgs{..} =
   searchCatalog cat [] (parseData cat) $ JE.pairs
     $  "size" J..= dataCount

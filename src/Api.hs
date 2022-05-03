@@ -262,11 +262,10 @@ instance Typed a => OA.ToSchema (FieldFilter a) where
         , OA.Inline $ arraySchema fv & OA.description ?~ "equal to any of these values (not supported when used as a query parameter)"
           & OA.minItems ?~ 1
           & OA.uniqueItems ?~ True
-        , OA.Inline $ objectSchema "in a bounded range for numeric fields: >= gte and <= lte, either of which may be omitted (when used as a query parameter, may be a string containing two FieldValues (one of which may be blank) separated by a single comma or space)"
+        , OA.Inline $ objectSchema "in a bounded range for numeric fields: >= gte and <= lte, either of which may be omitted (when used as a query parameter, may be a string containing two FieldValues (either of which may be blank) separated by a single comma or space); omitting both is useful for filtering out missing values"
           [ ("gte", fv, False)
           , ("lte", fv, False)
           ]
-          & OA.minProperties ?~ 1
         , OA.Inline $ objectSchema "matching a pattern for wildcard fields"
           [ ("wildcard", OA.Inline $ schemaDescOf filterWildcard "a pattern containing '*' and/or '?'", True)
           ]
@@ -346,9 +345,8 @@ parseFieldsQuery :: Catalog -> Wai.Request -> BS.ByteString -> KM.KeyedMap Field
 parseFieldsQuery cat req param =
   KM.fromList $ mapMaybe (lookupField cat . decodeUtf8') $ parseListQuery req param
 
-parseFieldsJSON :: Catalog -> Maybe J.Value -> J.Parser (KM.KeyedMap Field)
-parseFieldsJSON _ Nothing = return KM.empty -- hrm
-parseFieldsJSON cat (Just j) = KM.fromList <$> (mapM (lookupField cat) =<< J.parseJSON j)
+parseFieldsJSON :: Catalog -> J.Value -> J.Parser (KM.KeyedMap Field)
+parseFieldsJSON cat = J.withArray "field list" $ \l -> KM.fromList <$> mapM (J.withText "field name" $ lookupField cat) (V.toList l)
 
 -------- /api/{catalog}/stats
 
@@ -361,7 +359,7 @@ parseStatsQuery cat req = StatsArgs
 parseStatsJSON :: Catalog -> J.Value -> J.Parser StatsArgs
 parseStatsJSON cat = J.withObject "stats request" $ \o -> StatsArgs
   <$> parseFiltersJSON cat (HM.delete "fields" o)
-  <*> (parseFieldsJSON cat =<< o J..:? "fields")
+  <*> (mapM (parseFieldsJSON cat) =<< o J..:? "fields") J..!= KM.empty
 
 fieldStatsJSON :: FieldStats -> J.Encoding
 fieldStatsJSON FieldStats{..} = J.pairs
@@ -431,7 +429,7 @@ parseDataQuery cat req = DataArgs
 parseDataJSON :: Catalog -> J.Value -> J.Parser DataArgs
 parseDataJSON cat = J.withObject "data request" $ \o -> DataArgs
   <$> parseFiltersJSON cat (HM.delete "fields" $ HM.delete "sort" $ HM.delete "count" $ HM.delete "offset" o)
-  <*> (parseFieldsJSON cat =<< o J..:? "fields")
+  <*> (parseFieldsJSON cat =<< o J..: "fields")
   <*> (parseSortJSON cat =<< o J..:? "sort")
   <*> o J..: "count"
   <*> o J..:? "offset" J..!= 0
@@ -585,8 +583,13 @@ apiOperations =
       body <- parseJSONBody req (parseDataJSON cat)
       dat <- queryData cat $ fromMaybe (parseDataQuery cat req) body
       return $ okResponse (apiHeaders req) $ JE.list (J.pairs . foldMap (\f ->
-        fieldName f J..= fieldType f)) dat
-    , apiResponseSchema = return mempty
+        fieldName f J..= fieldType f)) (V.toList dat)
+    , apiResponseSchema = do
+      fv <- declareSchemaRef (Proxy :: Proxy FieldValue)
+      return $ arraySchema $ OA.Inline $ mempty
+        & OA.type_ ?~ OA.OpenApiObject
+        & OA.description ?~ "a single data row mapping fields to values (missing values are absent)"
+        & OA.additionalProperties ?~ OA.AdditionalPropertiesSchema fv
     }
   ]
   where

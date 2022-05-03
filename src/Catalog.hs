@@ -146,6 +146,7 @@ takeCatalogField n c = (, c
   }) <$> HM.lookup n (catalogFieldMap c) where
 
 lookupField :: MonadFail m => Catalog -> T.Text -> m Field
+lookupField _ "_id" = return idField
 lookupField cat n =
   maybe (fail $ "Field not found: " <> show n) return
     $ HM.lookup n $ catalogFieldMap cat
