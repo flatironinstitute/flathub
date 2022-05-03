@@ -5,7 +5,6 @@
 module OpenApi
   ( requestUrl
   , pathPlaceholders
-  , routeOperation
   , schemaDescOf
   , objectSchema
   , arraySchema
@@ -22,15 +21,13 @@ module OpenApi
   ) where
 
 import           Control.Arrow (first)
-import           Control.Lens as Lens ((&), Lens', (.~), (?~), over, zoom, At, Index, IxValue, at, (.=), use)
+import           Control.Lens as Lens ((&), Lens', (.~), (?~), zoom, At, Index, IxValue, at, (.=), use)
 import           Control.Monad.Trans.State (StateT(StateT), State)
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Lazy as BSL
 import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict.InsOrd as HMI
-import           Data.List (intercalate, stripPrefix)
-import           Data.Maybe (fromJust, fromMaybe)
-import           Data.Monoid (Endo(..))
+import           Data.Maybe (fromMaybe)
 import qualified Data.OpenApi as OA
 import qualified Data.OpenApi.Declare as OAD
 import           Data.Proxy (Proxy(Proxy))
@@ -41,10 +38,7 @@ import qualified Web.Route.Invertible as R
 import qualified Web.Route.Invertible.Internal as RI
 import qualified Web.Route.Invertible.Render as R
 
-import Global
-
 type OpenApiM = State OA.OpenApi
-type OpenApi = OpenApiM ()
 
 newtype Focusing m a d = Focusing{ unfocusing :: m (d, a) }
 instance Functor m => Functor (Focusing m a) where
@@ -102,30 +96,6 @@ pathPlaceholders path arg params =
   pvs nl (RI.PlaceholderValueFixed s:l) = s:pvs nl l
   pvs (n1:nl) (RI.PlaceholderValueParameter _:l) = ('{' `T.cons` n1 `T.snoc` '}'):pvs nl l
   pvs _ _ = error "openApi: parameter name placeholder mismatch"
-
-routeOperation :: R.Request -> Route a -> a -> [OA.Param] -> OA.Operation -> OpenApi
-routeOperation basereq route arg params op =
-  OA.paths . at' (if null rp then rp else '/':rp) . mop (R.requestMethod req) .= Just opp
-  where
-  req = appEndo (RI.foldRoute (\p -> Endo . rrp p) (R.actionRoute route) arg) basereq
-  rrp :: RI.RoutePredicate a -> a -> R.Request -> R.Request
-  rrp (RI.RoutePath p) v q = q{ R.requestPath = pathPlaceholders p v params }
-  rrp p v q = RI.requestRoutePredicate p v q
-  rp = intercalate "/" $ map T.unpack $ fromJust $ stripPrefix (R.requestPath basereq) $ R.requestPath req
-  mop :: R.Method -> Lens' OA.PathItem (Maybe OA.Operation)
-  mop R.GET = OA.get
-  mop R.PUT = OA.put
-  mop R.POST = OA.post
-  mop R.DELETE = OA.delete
-  mop R.OPTIONS = OA.options
-  mop R.HEAD = OA.head_
-  mop R.PATCH = OA.patch
-  mop R.TRACE = OA.trace
-  mop m = error $ "openApi: unsupported method: " ++ show m
-  opp = over OA.parameters (map (\p -> OA.Inline $ p
-    & OA.in_ .~ OA.ParamPath
-    & OA.required ?~ True
-    ) params ++) op
 
 proxyOf :: a -> Proxy a
 proxyOf _ = Proxy

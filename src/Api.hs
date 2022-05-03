@@ -359,10 +359,9 @@ parseStatsQuery cat req = StatsArgs
   }
 
 parseStatsJSON :: Catalog -> J.Value -> J.Parser StatsArgs
-parseStatsJSON cat (J.Object o) = StatsArgs
+parseStatsJSON cat = J.withObject "stats request" $ \o -> StatsArgs
   <$> parseFiltersJSON cat (HM.delete "fields" o)
   <*> (parseFieldsJSON cat =<< o J..:? "fields")
-parseStatsJSON _ j = J.typeMismatch "stats request" j
 
 fieldStatsJSON :: FieldStats -> J.Encoding
 fieldStatsJSON FieldStats{..} = J.pairs
@@ -388,9 +387,37 @@ parseSortQuery cat req param =
 
 parseSortJSON :: Catalog -> Maybe J.Value -> J.Parser [(Field, Bool)]
 parseSortJSON _ Nothing = return []
-parseSortJSON cat (Just j) = J.withArray "sort" (mapM pars . V.toList) j where
+parseSortJSON cat (Just sj) = J.withArray "sort" (mapM pars . V.toList) sj where
   pars :: J.Value -> J.Parser (Field, Bool)
   pars (J.String n) = (, True) <$> lookupField cat n
+  pars (J.Object o) = (,)
+    <$> (lookupField cat =<< o J..: "field")
+    <*> (mapM po =<< o J..:? "order") J..!= True
+  pars j = J.typeMismatch "sort field" j
+  po (J.String a)
+    | T.isPrefixOf "a" a = return True
+    | T.isPrefixOf "d" a = return False
+  po (J.Bool b) = return b
+  po j = J.typeMismatch "sort order" j
+
+sortSchema :: OpenApiM (OA.Referenced OA.Schema)
+sortSchema = do
+  fn <- fieldNameSchema
+  define "sort" $ arraySchema (OA.Inline $ mempty
+    & OA.oneOf ?~
+      [ fn
+      , OA.Inline $ objectSchema "a field and an order to sort in (as a query parameter, field names may be prefixed by '+' (asc) or '-' (desc) instead)"
+        [ ("field", fn, True)
+        , ("order", OA.Inline $ mempty
+          & OA.type_ ?~ OA.OpenApiString
+          & OA.description ?~ "sort order: ascending smallest to largest, or descending largest to smallest"
+          & OA.enum_ ?~ ["asc", "desc"]
+          & OA.default_ ?~ "asc"
+          & OA.pattern ?~ "^[ad]*", False)
+        ]
+      ]
+    & OA.description ?~ "fields by which to sort row data"
+    & OA.uniqueItems ?~ True)
 
 parseDataQuery :: Catalog -> Wai.Request -> DataArgs
 parseDataQuery cat req = DataArgs
@@ -402,7 +429,7 @@ parseDataQuery cat req = DataArgs
   }
 
 parseDataJSON :: Catalog -> J.Value -> J.Parser DataArgs
-parseDataJSON cat (J.Object o) = DataArgs
+parseDataJSON cat = J.withObject "data request" $ \o -> DataArgs
   <$> parseFiltersJSON cat (HM.delete "fields" $ HM.delete "sort" $ HM.delete "count" $ HM.delete "offset" o)
   <*> (parseFieldsJSON cat =<< o J..:? "fields")
   <*> (parseSortJSON cat =<< o J..:? "sort")
@@ -519,27 +546,56 @@ apiOperations =
     , apiPath = catalogBase R.>* "data"
     , apiExampleArg = "sim"
     , apiPathParams = [catalogParam]
-    , apiQueryParams = [filtersQueryParam, fieldsQueryParam]
+    , apiQueryParams = [filtersQueryParam, fieldsQueryParam
+      , sortSchema >>= \sort -> return $ OA.Inline $ mempty
+        & OA.name .~ "sort"
+        & OA.in_ .~ OA.ParamQuery
+        & OA.description ?~ "how to order rows (see notes on use in query string)"
+        & OA.style ?~ OA.StyleForm
+        & OA.explode ?~ False
+        & OA.schema ?~ sort
+      , return $ OA.Inline $ mempty
+        & OA.name .~ "count"
+        & OA.in_ .~ OA.ParamQuery
+        & OA.style ?~ OA.StyleForm
+        & OA.required ?~ True
+        & OA.schema ?~ countSchema
+      , return $ OA.Inline $ mempty
+        & OA.name .~ "offset"
+        & OA.in_ .~ OA.ParamQuery
+        & OA.style ?~ OA.StyleForm
+        & OA.schema ?~ offsetSchema
+      ]
     , apiRequestSchema = Just $ do
       filt <- declareSchemaRef (Proxy :: Proxy Filters)
       list <- fieldListSchema
+      sort <- sortSchema
       return $ mempty & OA.allOf ?~
         [ filt
         , OA.Inline $ objectSchema
-          "data to include"
-          [ ("fields", list, False)
-          -- , (
+          "data to return"
+          [ ("fields", list, True)
+          , ("sort", sort, False)
+          , ("count", countSchema, True)
+          , ("offset", offsetSchema, False)
           ]
         ]
     , apiAction = \sim req -> do
       cat <- askCatalog sim
       body <- parseJSONBody req (parseDataJSON cat)
       dat <- queryData cat $ fromMaybe (parseDataQuery cat req) body
-      return $ okResponse (apiHeaders req) $ J.pairs
-        mempty
+      return $ okResponse (apiHeaders req) $ JE.list (J.pairs . foldMap (\f ->
+        fieldName f J..= fieldType f)) dat
     , apiResponseSchema = return mempty
     }
   ]
+  where
+  maxResults = 5000
+  countSchema = OA.Inline $ schemaDescOf dataCount "number of rows to return"
+    & OA.maximum_ ?~ maxResults
+  offsetSchema = OA.Inline $ schemaDescOf dataOffset "start at this row offset (0 means first)"
+    & OA.maximum_ ?~ fromIntegral maxResultWindow - maxResults
+    & OA.default_ ?~ J.Number 0
 
 apiRoutes :: [R.RouteCase Action]
 apiRoutes = map (\APIOperation{ apiPath = p, apiAction = a } ->

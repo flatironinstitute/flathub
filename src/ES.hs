@@ -12,6 +12,7 @@ module ES
   , checkIndices
   , storedFieldSource
   , storedFields'
+  , maxResultWindow
   , queryIndex
   , queryBulk
   , createBulk
@@ -203,6 +204,9 @@ storedFields' s o = maybe id (HM.insert "_id") (HM.lookup "_id" o) $ fromMaybe H
 scrollTime :: IsString s => s
 scrollTime = "60s"
 
+maxResultWindow :: Word
+maxResultWindow = 10000
+
 data HistogramInterval a
   = HistogramInterval
     { histogramInterval :: a
@@ -217,7 +221,7 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreFiel
     J.parseJSON
     (JE.pairs $
        (mwhen (queryOffset > 0) $ "from" J..= queryOffset)
-    <> ("size" J..= if scroll && queryLimit == 0 then 10000 else queryLimit)
+    <> ("size" J..= if scroll && queryLimit == 0 then maxResultWindow else queryLimit)
     <> "sort" `JE.pair` JE.list (\(f, a) -> JE.pairs (fieldName f J..= if a then "asc" else "desc" :: String)) (querySort ++ [(def{ fieldName = "_doc" },True)])
     <> storedFieldSource store J..= map fieldName queryFields
     <> "query" .=* (if querySample < 1

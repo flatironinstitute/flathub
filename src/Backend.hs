@@ -9,6 +9,7 @@ module Backend
   , queryStats
   , DataArgs(..)
   , queryData
+  , maxResultWindow
   ) where
 
 import qualified Data.Aeson as J
