@@ -189,20 +189,24 @@ parseHistogram :: Catalog -> J.Value -> J.Parser ()
 parseHistogram cat = J.withObject "histogram res" $ \o ->
   return ()
 
-data HistogramInterval = HistogramInterval
-  { histogramInterval :: Scientific
-  , histogramRanges :: [(Double, Double)] -- (log x, x)
-  }
+data HistogramInterval
+  = HistogramInterval
+    { histogramInterval :: Scientific
+    }
+  | HistogramRanges -- for log-scaled histograms
+    { histogramInterval :: Scientific
+    , histogramRanges :: [(Double, Double)] -- (log x, x)
+    }
 
 queryHistogram :: Catalog -> HistogramArgs -> M ()
 queryHistogram cat HistogramArgs{..} = do
   (_, stats) <- liftIO $ catalogStats cat
-  let size h@Histogram{..} = (,) h $ histint where
+  let size h@Histogram{..} = (h{ histogramLog = uselog }, histint) where
         histint
-          | typeIsIntegral (fieldType histogramField) = HistogramInterval (fromInteger $ ceiling int) []
-          | uselog = HistogramInterval (toScientific int) $ map (id &&& expt)
+          | typeIsIntegral (fieldType histogramField) = HistogramInterval (fromInteger $ ceiling int)
+          | uselog = HistogramRanges (toScientific int) $ map (id &&& expt)
             $ genericTake (succ histogramSize) $ enumFromThenTo lmin (lmin + int) lmax
-          | otherwise = HistogramInterval (toScientific int) []
+          | otherwise = HistogramInterval (toScientific int)
         int = if intd > 0 then intd else 1
         intd = (lmax - lmin) / fromIntegral histogramSize
         (lmin, lmax) = (logt fmin, logt fmax)
@@ -214,7 +218,6 @@ queryHistogram cat HistogramArgs{..} = do
         stat@(smin, smax) = fromMaybe (0, 1) $ unTypeValue srng =<< look stats
         look = fmap fieldType . HM.lookup (fieldName histogramField)
       sizes = map size histogramFields
-  -- liftIO $ print $ map snd sizes
   searchCatalog cat [] (parseHistogram cat) $ JE.pairs
     $  "size" J..= (0 :: Count)
     <> filterQuery histogramFilters
