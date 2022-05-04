@@ -29,9 +29,12 @@ module Field
   , fieldsCSV
   , numpyFieldSize
   , numpyDtype
+  , Count
+  , FieldStats(..)
   ) where
 
 import           Control.Applicative (Alternative, empty, (<|>))
+import           Control.Arrow (first)
 import           Control.Monad (guard, join, when, msum)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Types as J
@@ -320,6 +323,16 @@ fieldJValues = foldMap fieldJValue
 -- |pseudo field representing ES _id
 idField :: Field
 idField = def{ fieldName = "_id", fieldType = Keyword Proxy, fieldTitle = "_id", fieldFlag = FieldHidden }
+
+type Count = Word
+
+data FieldStats a
+  = FieldStats{ statsMin, statsMax, statsAvg :: Maybe Scientific, statsCount :: Count }
+  | FieldTerms{ termsBuckets :: [(a, Count)], termsCount :: Count }
+
+instance Functor FieldStats where
+  fmap _ (FieldStats n x a c) = FieldStats n x a c
+  fmap f (FieldTerms b c) = FieldTerms (map (first f) b) c
 
 fieldsCSV :: Fields -> B.Builder
 fieldsCSV l = csvTextRow ["variable", "name", "type", "units", "description", "values","dict","scale"] <> foldMap fieldCSV l where

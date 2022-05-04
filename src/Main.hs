@@ -29,6 +29,7 @@ import Ingest
 import Html
 import Attach
 import JSON
+import Backend
 import Api
 
 routes :: R.RouteMap Action
@@ -72,6 +73,11 @@ optDescr =
 
 createCatalog :: Catalog -> M String
 createCatalog cat@Catalog{ catalogStore = CatalogES{} } = show <$> ES.createIndex cat
+
+populateStats :: Catalog -> M Catalog
+populateStats cat = do
+  stats <- once $ queryStats cat (StatsArgs mempty $ catalogFieldMap cat)
+  return cat{ catalogStats = stats }
 
 main :: IO ()
 main = do
@@ -132,7 +138,9 @@ main = do
       unless (all (n ==) $ catalogCount cat) $ fail $ T.unpack sim ++ ": incorrect document count"
       liftIO . print =<< ES.closeIndex cat
 
-    return $ pruneCatalogs errs catalogs
+    let catalogs' = pruneCatalogs errs catalogs
+    cats <- mapM populateStats (catalogMap catalogs')
+    return $ catalogs'{ catalogMap = cats }
 
   when (null (optCreate opts ++ optClose opts) && isNothing (optIngest opts)) $
     runWaimwork conf $ runGlobal global{ globalCatalogs = catalogs' }

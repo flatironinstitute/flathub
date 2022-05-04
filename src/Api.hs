@@ -543,6 +543,7 @@ apiOperations =
     , apiRequestSchema = Nothing
     , apiAction = \sim req -> do
       cat <- askCatalog sim
+      -- (count, stats) <- liftIO $ catalogStats cat
       return $ okResponse (apiHeaders req) $ J.pairs
         $ catalogJSON cat
         <> JE.pair "fields" (fieldsJSON mempty $ catalogFieldGroups cat)

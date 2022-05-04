@@ -89,9 +89,10 @@ data Catalog = Catalog
   , catalogFieldGroups :: FieldGroups
   , catalogFields :: Fields
   , catalogFieldMap :: KM.KeyedMap Field
+  , catalogStats :: IO (Count, KM.KeyedMap (FieldSub FieldStats Proxy)) -- ^deferred cached calculation of global stats
   , catalogKey :: Maybe T.Text -- ^primary key (not really used)
   , catalogSort :: [T.Text] -- ^sort field(s) for index
-  , catalogCount :: Maybe Word
+  , catalogCount :: Maybe Count
   }
 
 instance KM.Keyed Catalog where
@@ -121,6 +122,7 @@ parseCatalog dict catalogName = J.withObject "catalog" $ \c -> do
   catalogOrder <- c J..:? "order" J..!= catalogName
   let catalogFields = expandFields catalogFieldGroups
       catalogFieldMap = HM.fromList $ map (fieldName &&& id) catalogFields
+      catalogStats = fail "catalogStats" -- filled in later
   mapM_ (\k -> unless (HM.member k catalogFieldMap) $ fail "key field not found in catalog") catalogKey
   mapM_ (\k -> unless (HM.member k catalogFieldMap) $ fail "sort field not found in catalog") catalogSort
   return Catalog{..}

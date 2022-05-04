@@ -12,11 +12,13 @@ module Global
   , Simulation
   , getPath
   , askCatalog
+  , once
   ) where
 
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.HashMap.Strict as HM
-import           Control.Monad.Reader (ReaderT, runReaderT, asks)
+import           Control.Concurrent.MVar (newMVar, modifyMVar)
+import           Control.Monad.Reader (ReaderT(..), runReaderT, asks)
 import qualified Network.HTTP.Client as HTTP
 import           Network.HTTP.Types.Status (notFound404)
 import qualified Network.Wai as Wai
@@ -51,3 +53,10 @@ askCatalog :: Simulation -> M Catalog
 askCatalog sim = maybe
   (result $ response notFound404 [] ("No such simulation" :: BSC.ByteString))
   return =<< asks (HM.lookup sim . catalogMap . globalCatalogs)
+
+once :: M a -> M (IO a)
+once act = ReaderT $ \g -> do
+  mv <- newMVar Nothing
+  return $ modifyMVar mv $
+    fmap (\v -> (Just v, v))
+      . maybe (runGlobal g act) return

@@ -4,7 +4,6 @@
 module Backend
   ( FieldFilter(..)
   , Filters(..)
-  , FieldStats(..)
   , StatsArgs(..)
   , queryStats
   , DataArgs(..)
@@ -16,7 +15,6 @@ module Backend
   , queryHistogram
   ) where
 
-import           Control.Arrow (first)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
@@ -25,7 +23,6 @@ import           Data.Default (def)
 import           Data.Functor.Identity (Identity(Identity))
 import qualified Data.HashMap.Strict as HM
 import           Data.Proxy (Proxy(Proxy))
-import           Data.Scientific (Scientific)
 import qualified Data.Text as T
 import qualified Data.Vector as V
 import           Data.Word (Word16)
@@ -38,8 +35,6 @@ import Global
 import JSON
 import ES
 import qualified KeyedMap as KM
-
-type Count = Word
 
 data FieldFilter a
   = FieldEQ [a]
@@ -100,14 +95,6 @@ filterQuery Filters{..} = "query" .=*
     where bound t = foldMap (t J..=)
   term f (FieldWildcard w) | fieldWildcard f = "wildcard" .=* (fieldName f J..= w)
   term _ _ = error "invalid FieldFilder"
-
-data FieldStats a
-  = FieldStats{ statsMin, statsMax, statsAvg :: Maybe Scientific, statsCount :: Count }
-  | FieldTerms{ termsBuckets :: [(a, Count)], termsCount :: Count }
-
-instance Functor FieldStats where
-  fmap _ (FieldStats n x a c) = FieldStats n x a c
-  fmap f (FieldTerms b c) = FieldTerms (map (first f) b) c
 
 fieldUseTerms :: Field -> Bool
 fieldUseTerms f = fieldTerms f || not (typeIsNumeric (fieldType f))
