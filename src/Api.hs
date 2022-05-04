@@ -188,8 +188,8 @@ fieldsJSON stats b = JE.list fieldJSON . V.toList where
     <> foldMap ("scale" J..=) fieldScale
     <> mwhen fieldReversed ("reversed" J..= fieldReversed)
     <> mwhen (isJust fieldAttachment) ("attachment" J..= True)
-    <> foldMap (JE.pair "sub" . fieldsJSON stats bf) fieldSub
     <> foldMap (JE.pair "stats" . fieldStatsJSON) (HM.lookup (fieldName bf) stats)
+    <> foldMap (JE.pair "sub" . fieldsJSON stats bf) fieldSub
     where
     bf = b <> f
 
@@ -203,6 +203,7 @@ instance OA.ToSchema Type where
 instance OA.ToSchema FieldGroup where
   declareNamedSchema t = do
     ref <- OA.declareSchemaRef t
+    fs <- OA.declareSchemaRef (Proxy :: Proxy (FieldStats Void))
     return $ OA.NamedSchema (Just "FieldGroup") $ objectSchema
       "A single field within a catalog, or a hiearchical group of fields"
       [ ("key", OA.Inline $ schemaDescOf fieldName "local name of field within this group", True)
@@ -225,11 +226,11 @@ instance OA.ToSchema FieldGroup where
       , ("reversed", OA.Inline $ schemaDescOf fieldReversed "display axes and ranges in reverse (high-low)", False)
       , ("attachment", OA.Inline $ schemaDescOf isJust "this is a meta field for a downloadable attachment (type boolean, indicating presence)", False)
       , ("wildcard", OA.Inline $ schemaDescOf fieldWildcard "allow wildcard prefix searching on keyword field (\"xy*\")", False)
+      , ("stats", fs, False)
       , ("sub", OA.Inline $ arraySchema ref
           & OA.description ?~ "child fields: if this is present, this is a pseudo grouping field which does not exist itself, but its properties apply to its children"
           , False)
       ]
-
 
 catalogBase :: R.Path Simulation
 catalogBase = R.parameter
@@ -380,6 +381,29 @@ fieldStatsJSON = unTypeValue fsj . fieldType
   fsj FieldTerms{..} = J.pairs
     $  "terms" `JE.pair` JE.list (\(v,c) -> J.pairs $ "value" J..= v <> "count" J..= c) termsBuckets
     <> "others" J..= termsCount
+
+instance Typed a => OA.ToSchema (FieldStats a) where
+  declareNamedSchema _ = do
+    fv <- OA.declareSchemaRef (Proxy :: Proxy FieldValue)
+    return $ OA.NamedSchema (Just "FieldStats") $ mempty
+      & OA.oneOf ?~
+        [ OA.Inline $ objectSchema "for numeric fields"
+          [ ("count", OA.Inline $ schemaDescOf statsCount "number of rows with values for this field", True)
+          , ("min", OA.Inline $ schemaDescOf statsMin "minimum value" & OA.nullable ?~ True, True)
+          , ("max", OA.Inline $ schemaDescOf statsMax "maximum value" & OA.nullable ?~ True, True)
+          , ("avg", OA.Inline $ schemaDescOf statsAvg "mean value" & OA.nullable ?~ True, True)
+          ]
+        , OA.Inline $ objectSchema "for non-numeric fields or those with terms=true"
+          [ ("terms", OA.Inline $ arraySchema (OA.Inline $ objectSchema "unique field value"
+            [ ("value", fv, True)
+            , ("count", OA.Inline $ schemaDescOf termsCount "number of rows with this value", True)
+            ])
+            & OA.description ?~ "top terms in descending order of count"
+            & OA.uniqueItems ?~ True, True)
+          , ("others", OA.Inline $ schemaDescOf termsCount "number of rows with values not included in the top terms", True)
+          ]
+        ]
+      & OA.description ?~ "stats for the field named by the property, depending on its type"
 
 -------- /api/{catalog}/data
 
@@ -564,7 +588,7 @@ apiOperations =
           [ ("fields", OA.Inline $ arraySchema fdef
             & OA.description ?~ "field groups"
             , True)
-          , ("count", OA.Inline $ schemaDescOf catalogCount "total number of rows (if known)", False)
+          , ("count", OA.Inline $ schemaDescOf catalogCount "total number of rows", True)
           , ("sort", OA.Inline $ schemaDescOf catalogSort "default sort fields", False)
           ]
         ]
@@ -595,28 +619,10 @@ apiOperations =
         $  "count" J..= count
         <> foldMap (\f -> fieldName f `JE.pair` fieldStatsJSON f) stats
     , apiResponseSchema = do
-      fv <- declareSchemaRef (Proxy :: Proxy FieldValue)
+      fs <- declareSchemaRef (Proxy :: Proxy (FieldStats Void))
       return $ objectSchema "stats"
         [ ("count", OA.Inline $ schemaDescOf statsCount "number of matching rows", True) ]
-        & OA.additionalProperties ?~ OA.AdditionalPropertiesSchema (OA.Inline $ mempty
-          & OA.oneOf ?~
-            [ OA.Inline $ objectSchema "for numeric fields"
-              [ ("count", OA.Inline $ schemaDescOf statsCount "number of rows with values for this field", True)
-              , ("min", OA.Inline $ schemaDescOf statsMin "minimum value" & OA.nullable ?~ True, True)
-              , ("max", OA.Inline $ schemaDescOf statsMax "maximum value" & OA.nullable ?~ True, True)
-              , ("avg", OA.Inline $ schemaDescOf statsAvg "mean value" & OA.nullable ?~ True, True)
-              ]
-            , OA.Inline $ objectSchema "for non-numeric fields or those with terms=true"
-              [ ("terms", OA.Inline $ arraySchema (OA.Inline $ objectSchema "unique field value"
-                [ ("value", fv, True)
-                , ("count", OA.Inline $ schemaDescOf termsCount "number of rows with this value", True)
-                ])
-                & OA.description ?~ "top terms in descending order of count"
-                & OA.uniqueItems ?~ True, True)
-              , ("others", OA.Inline $ schemaDescOf termsCount "number of rows with values not included in the top terms", True)
-              ]
-            ]
-          & OA.description ?~ "stats for the field named by the property, depending on its type")
+        & OA.additionalProperties ?~ OA.AdditionalPropertiesSchema fs
     }
 
   , APIOperation -- /api/{cat}/data
