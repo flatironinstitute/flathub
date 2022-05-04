@@ -166,8 +166,8 @@ instance OA.ToSchema Catalog where
 
 -------- /api/{catalog}
 
-fieldsJSON :: FieldGroup -> FieldGroups -> J.Encoding
-fieldsJSON b = JE.list fieldJSON . V.toList where
+fieldsJSON :: KM.KeyedMap (FieldSub FieldStats Proxy) -> FieldGroup -> FieldGroups -> J.Encoding
+fieldsJSON stats b = JE.list fieldJSON . V.toList where
   fieldJSON f@Field{ fieldName = name, ..} = J.pairs
     $  "key" J..= name
     <> "name" J..= fieldName bf
@@ -188,7 +188,8 @@ fieldsJSON b = JE.list fieldJSON . V.toList where
     <> foldMap ("scale" J..=) fieldScale
     <> mwhen fieldReversed ("reversed" J..= fieldReversed)
     <> mwhen (isJust fieldAttachment) ("attachment" J..= True)
-    <> foldMap (JE.pair "sub" . fieldsJSON bf) fieldSub
+    <> foldMap (JE.pair "sub" . fieldsJSON stats bf) fieldSub
+    <> foldMap (JE.pair "stats" . fieldStatsJSON) (HM.lookup (fieldName bf) stats)
     where
     bf = b <> f
 
@@ -367,15 +368,18 @@ parseStatsJSON cat = J.withObject "stats request" $ \o -> StatsArgs
   <$> parseFiltersJSON cat (HM.delete "fields" o)
   <*> (mapM (parseFieldsJSON cat) =<< o J..:? "fields") J..!= KM.empty
 
-fieldStatsJSON :: J.ToJSON a => FieldStats a -> J.Encoding
-fieldStatsJSON FieldStats{..} = J.pairs
-  $  "count" J..= statsCount
-  <> "min" J..= statsMin
-  <> "max" J..= statsMax
-  <> "avg" J..= statsAvg
-fieldStatsJSON FieldTerms{..} = J.pairs
-  $  "terms" `JE.pair` JE.list (\(v,c) -> J.pairs $ "value" J..= v <> "count" J..= c) termsBuckets
-  <> "others" J..= termsCount
+fieldStatsJSON :: FieldSub FieldStats m -> J.Encoding
+fieldStatsJSON = unTypeValue fsj . fieldType
+  where
+  fsj :: J.ToJSON a => FieldStats a -> J.Encoding
+  fsj FieldStats{..} = J.pairs
+    $  "count" J..= statsCount
+    <> "min" J..= statsMin
+    <> "max" J..= statsMax
+    <> "avg" J..= statsAvg
+  fsj FieldTerms{..} = J.pairs
+    $  "terms" `JE.pair` JE.list (\(v,c) -> J.pairs $ "value" J..= v <> "count" J..= c) termsBuckets
+    <> "others" J..= termsCount
 
 -------- /api/{catalog}/data
 
@@ -543,11 +547,11 @@ apiOperations =
     , apiRequestSchema = Nothing
     , apiAction = \sim req -> do
       cat <- askCatalog sim
-      -- (count, stats) <- liftIO $ catalogStats cat
+      (count, stats) <- liftIO $ catalogStats cat
       return $ okResponse (apiHeaders req) $ J.pairs
         $ catalogJSON cat
-        <> JE.pair "fields" (fieldsJSON mempty $ catalogFieldGroups cat)
-        <> foldMap ("count" J..=) (catalogCount cat)
+        <> JE.pair "fields" (fieldsJSON stats mempty $ catalogFieldGroups cat)
+        <> "count" J..= fromMaybe count (catalogCount cat)
         <> mwhen (not $ null $ catalogSort cat)
           ("sort" J..= catalogSort cat)
     , apiResponseSchema = do
@@ -589,7 +593,7 @@ apiOperations =
       (count, stats) <- queryStats cat $ fromMaybe (parseStatsQuery cat req) body
       return $ okResponse (apiHeaders req) $ J.pairs
         $  "count" J..= count
-        <> foldMap (\f -> fieldName f `JE.pair` unTypeValue fieldStatsJSON (fieldType f)) stats
+        <> foldMap (\f -> fieldName f `JE.pair` fieldStatsJSON f) stats
     , apiResponseSchema = do
       fv <- declareSchemaRef (Proxy :: Proxy FieldValue)
       return $ objectSchema "stats"

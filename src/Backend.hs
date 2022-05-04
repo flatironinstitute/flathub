@@ -112,13 +112,13 @@ parseStats cat = J.withObject "stats res" $ \o -> (,)
     <*> o J..: "max"
     <*> o J..: "avg"
     <*> o J..: "count"
-  pt :: J.FromJSON a => Proxy a -> J.Value -> J.Parser (FieldStats a)
+  pt :: Typed a => Proxy a -> J.Value -> J.Parser (FieldStats a)
   pt p = J.withObject "terms" $ \o -> FieldTerms
     <$> (mapM (pb p) =<< o J..: "buckets")
     <*> o J..: "sum_other_doc_count"
-  pb :: J.FromJSON a => Proxy a -> J.Value -> J.Parser (a, Count)
+  pb :: Typed a => Proxy a -> J.Value -> J.Parser (a, Count)
   pb _ = J.withObject "bucket" $ \o -> (,)
-    <$> o J..: "key"
+    <$> (parseJSONTyped =<< o J..: "key")
     <*> o J..: "doc_count"
 
 data StatsArgs = StatsArgs

@@ -22,6 +22,7 @@ module Type
   , typeOfValue
   , unTypeValue
   , parseTypeValue
+  , parseJSONTyped
   , parseJSONTypeValue
   , parseTypeJSONValue
   , baseType
@@ -89,6 +90,9 @@ allTypes =
 
 class (Eq a, Ord a, Show a, Read a, J.ToJSON a, J.FromJSON a, OA.ToParamSchema a, OA.ToSchema a, Typeable a) => Typed a where
   typeValue :: f a -> TypeValue f
+  -- |Certain representations ES uses do not always match what you expect, see we need a more permissive parser in some cases
+  parseJSONTyped :: J.Value -> J.Parser a
+  parseJSONTyped = J.parseJSON
 
 typeValue1 :: Typed a => a -> Value
 typeValue1 = typeValue . Identity
@@ -102,6 +106,10 @@ instance Typed Double where typeValue = Double
 instance Typed Float  where typeValue = Float
 instance Typed Half   where typeValue = HalfFloat
 instance Typed Bool   where typeValue = Boolean
+                            parseJSONTyped (J.Bool b) = return b
+                            parseJSONTyped (J.Number 0) = return False
+                            parseJSONTyped (J.Number 1) = return True
+                            parseJSONTyped j = J.typeMismatch "Bool" j
 instance Typed T.Text where typeValue = Keyword
 instance Typed Void   where typeValue = Void
 
