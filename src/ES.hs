@@ -116,7 +116,7 @@ elasticSearch meth url query pares body = do
     either fail return $ J.parseEither pares j
   where
   parse r = AP.parseWith (HTTP.responseBody r) (J.json <* AP.endOfInput) BS.empty
-  debug = True
+  debug = False
 
 catalogURL :: Catalog -> [String]
 catalogURL Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } =

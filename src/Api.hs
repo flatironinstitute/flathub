@@ -455,7 +455,7 @@ histogramSchema = do
   fn <- fieldNameSchema
   define "Histogram" $ mempty & OA.oneOf ?~
     [ fn
-    , OA.Inline $ objectSchema "parameters for a single-field histogram (when used as a query parameter, may be specified as \"FIELD:[log]SIZE\"); performance will improve if all histogram fields also have fully-bounded range filters"
+    , OA.Inline $ objectSchema "parameters for a single-field histogram (when used as a query parameter, may be specified as \"FIELD:[log]SIZE\"); it's recommended to include fully-bounded range filters for any histogram fields"
       [ ("field", fn, True)
       , ("size", OA.Inline $ schemaDescOf histogramSize "number of buckets to include in the histogram"
         & OA.maximum_ ?~ fromIntegral maxHistogramSize

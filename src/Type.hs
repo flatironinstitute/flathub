@@ -21,6 +21,8 @@ module Type
   , TypeTraversable(..)
   , typeOfValue
   , unTypeValue
+  , toScientific
+  , toDouble
   , parseTypeValue
   , parseJSONTyped
   , parseJSONTypeValue
@@ -41,9 +43,10 @@ import           Data.Int (Int64, Int32, Int16, Int8)
 import           Data.Maybe (fromMaybe)
 import qualified Data.OpenApi as OA
 import           Data.Proxy (Proxy(Proxy))
+import           Data.Scientific (Scientific, fromFloatDigits)
 import qualified Data.Text as T
 import           Data.Typeable (Typeable)
-import           Data.Void (Void, vacuous)
+import           Data.Void (Void, absurd, vacuous)
 import           Data.Word (Word64)
 import           Text.Read (readMaybe, readPrec, Lexeme(Ident), lexP, readEither)
 
@@ -90,6 +93,8 @@ allTypes =
 
 class (Eq a, Ord a, Show a, Read a, J.ToJSON a, J.FromJSON a, OA.ToParamSchema a, OA.ToSchema a, Typeable a) => Typed a where
   typeValue :: f a -> TypeValue f
+  toScientific :: a -> Scientific
+  toDouble :: a -> Double
   -- |Certain representations ES uses do not always match what you expect, see we need a more permissive parser in some cases
   parseJSONTyped :: J.Value -> J.Parser a
   parseJSONTyped = J.parseJSON
@@ -98,20 +103,44 @@ typeValue1 :: Typed a => a -> Value
 typeValue1 = typeValue . Identity
 
 instance Typed Word64 where typeValue = ULong
+                            toScientific = fromIntegral
+                            toDouble = fromIntegral
 instance Typed Int64  where typeValue = Long
+                            toScientific = fromIntegral
+                            toDouble = fromIntegral
 instance Typed Int32  where typeValue = Integer
+                            toScientific = fromIntegral
+                            toDouble = fromIntegral
 instance Typed Int16  where typeValue = Short
+                            toScientific = fromIntegral
+                            toDouble = fromIntegral
 instance Typed Int8   where typeValue = Byte
+                            toScientific = fromIntegral
+                            toDouble = fromIntegral
 instance Typed Double where typeValue = Double
+                            toScientific = fromFloatDigits
+                            toDouble = id
 instance Typed Float  where typeValue = Float
+                            toScientific = fromFloatDigits
+                            toDouble = realToFrac
 instance Typed Half   where typeValue = HalfFloat
+                            toScientific = fromFloatDigits
+                            toDouble = realToFrac
 instance Typed Bool   where typeValue = Boolean
+                            toScientific False = 0
+                            toScientific True = 1
+                            toDouble False = 0
+                            toDouble True = 0
                             parseJSONTyped (J.Bool b) = return b
                             parseJSONTyped (J.Number 0) = return False
                             parseJSONTyped (J.Number 1) = return True
                             parseJSONTyped j = J.typeMismatch "Bool" j
 instance Typed T.Text where typeValue = Keyword
+                            toScientific = read . T.unpack
+                            toDouble = read . T.unpack
 instance Typed Void   where typeValue = Void
+                            toScientific = absurd
+                            toDouble = absurd
 
 unTypeValue :: (forall a . Typed a => f a -> b) -> TypeValue f -> b
 unTypeValue f (Double    x) = f $! x

@@ -15,6 +15,8 @@ module Backend
   , queryHistogram
   ) where
 
+import           Control.Arrow ((&&&))
+import           Control.Monad.IO.Class (liftIO)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
@@ -22,7 +24,10 @@ import           Data.Bits (xor)
 import           Data.Default (def)
 import           Data.Functor.Identity (Identity(Identity))
 import qualified Data.HashMap.Strict as HM
+import           Data.List (genericTake)
+import           Data.Maybe (fromMaybe)
 import           Data.Proxy (Proxy(Proxy))
+import           Data.Scientific (Scientific, toRealFloat)
 import qualified Data.Text as T
 import qualified Data.Vector as V
 import           Data.Word (Word16)
@@ -184,8 +189,35 @@ parseHistogram :: Catalog -> J.Value -> J.Parser ()
 parseHistogram cat = J.withObject "histogram res" $ \o ->
   return ()
 
+data HistogramInterval = HistogramInterval
+  { histogramInterval :: Scientific
+  , histogramRanges :: [(Double, Double)] -- (log x, x)
+  }
+
 queryHistogram :: Catalog -> HistogramArgs -> M ()
 queryHistogram cat HistogramArgs{..} = do
+  (_, stats) <- liftIO $ catalogStats cat
+  let size h@Histogram{..} = (,) h $ histint where
+        histint
+          | typeIsIntegral (fieldType histogramField) = HistogramInterval (fromInteger $ ceiling int) []
+          | uselog = HistogramInterval (toScientific int) $ map (id &&& expt)
+            $ genericTake (succ histogramSize) $ enumFromThenTo lmin (lmin + int) lmax
+          | otherwise = HistogramInterval (toScientific int) []
+        int = if intd > 0 then intd else 1
+        intd = (lmax - lmin) / fromIntegral histogramSize
+        (lmin, lmax) = (logt fmin, logt fmax)
+        (logt, expt) = if uselog then (log, exp) else (id, id)
+        uselog = histogramLog && typeIsFloating (fieldType histogramField) && fmin > 0 && fmax > fmin
+        (fmin, fmax) = maybe stat (unTypeValue frng) $ look (filterFields histogramFilters)
+        frng (FieldRange a b) = (maybe smin toDouble a, maybe smax toDouble b)
+        frng _ = stat
+        stat@(smin, smax) = fromMaybe (0, 1) $ unTypeValue srng =<< look stats
+        look = fmap fieldType . HM.lookup (fieldName histogramField)
+      sizes = map size histogramFields
+  -- liftIO $ print $ map snd sizes
   searchCatalog cat [] (parseHistogram cat) $ JE.pairs
     $  "size" J..= (0 :: Count)
     <> filterQuery histogramFilters
+  where
+  srng FieldStats{ statsMin = Just x, statsMax = Just y } = Just (toRealFloat x, toRealFloat y)
+  srng _ = Nothing

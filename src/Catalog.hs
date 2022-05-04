@@ -89,10 +89,10 @@ data Catalog = Catalog
   , catalogFieldGroups :: FieldGroups
   , catalogFields :: Fields
   , catalogFieldMap :: KM.KeyedMap Field
-  , catalogStats :: IO (Count, KM.KeyedMap (FieldSub FieldStats Proxy)) -- ^deferred cached calculation of global stats
+  , catalogStats :: IO (Count, KM.KeyedMap (FieldSub FieldStats Proxy)) -- ^deferred cached calculation of global stats (which we assume never change)
   , catalogKey :: Maybe T.Text -- ^primary key (not really used)
   , catalogSort :: [T.Text] -- ^sort field(s) for index
-  , catalogCount :: Maybe Count
+  , catalogCount :: Maybe Count -- ^intended number of rows
   }
 
 instance KM.Keyed Catalog where
