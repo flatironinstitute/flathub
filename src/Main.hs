@@ -143,5 +143,6 @@ main = do
     return $ catalogs'{ catalogMap = cats }
 
   when (null (optCreate opts ++ optClose opts) && isNothing (optIngest opts)) $
-    runWaimwork conf $ runGlobal global{ globalCatalogs = catalogs' }
+    runWaimwork conf $
+      runGlobal global{ globalCatalogs = catalogs' }
       . routeWaiError (\s h _ -> return $ response s h ()) routes

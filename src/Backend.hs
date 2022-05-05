@@ -15,13 +15,13 @@ module Backend
   , queryHistogram
   ) where
 
-import           Control.Arrow ((&&&))
 import           Control.Monad.IO.Class (liftIO)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
 import           Data.Bits (xor)
 import           Data.Default (def)
+import           Data.Function (on)
 import           Data.Functor.Identity (Identity(Identity))
 import qualified Data.HashMap.Strict as HM
 import           Data.List (genericTake)
@@ -185,42 +185,71 @@ data HistogramArgs = HistogramArgs
 maxHistogramSize :: Word16
 maxHistogramSize = 4096
 
-parseHistogram :: Catalog -> J.Value -> J.Parser ()
-parseHistogram cat = J.withObject "histogram res" $ \o ->
-  return ()
-
 data HistogramInterval
   = HistogramInterval
-    { histogramInterval :: Scientific
+    { histogramIntervalField :: Field
+    , histogramInterval :: Scientific
+    , histogramOffset :: Scientific
     }
   | HistogramRanges -- for log-scaled histograms
-    { histogramInterval :: Scientific
-    , histogramRanges :: [(Double, Double)] -- (log x, x)
+    { histogramIntervalField :: Field
+    , histogramInterval :: Scientific -- ^really the ratio
+    , histogramRanges :: [Double]
     }
 
-queryHistogram :: Catalog -> HistogramArgs -> M ()
-queryHistogram cat HistogramArgs{..} = do
+parseHistogram :: Catalog -> HistogramArgs -> [HistogramInterval] -> J.Value -> J.Parser J.Value
+parseHistogram cat hist sizes = J.withObject "histogram res" $ \o ->
+  o J..: "aggregations"
+
+scaleFromByTo :: Real a => a -> a -> a -> [a]
+scaleFromByTo x r y
+  | x < y = x : scaleFromByTo (x*r) r y
+  | otherwise = [x]
+
+queryHistogram :: Catalog -> HistogramArgs -> M J.Value
+queryHistogram cat hist@HistogramArgs{..} = do
   (_, stats) <- liftIO $ catalogStats cat
-  let size h@Histogram{..} = (h{ histogramLog = uselog }, histint) where
+  -- calculate the bucket sizes (or explicit ranges for log)
+  let size Histogram{..} = histint where
         histint
-          | typeIsIntegral (fieldType histogramField) = HistogramInterval (fromInteger $ ceiling int)
-          | uselog = HistogramRanges (toScientific int) $ map (id &&& expt)
-            $ genericTake (succ histogramSize) $ enumFromThenTo lmin (lmin + int) lmax
-          | otherwise = HistogramInterval (toScientific int)
+          | histogramLog = if typeIsFloating (fieldType histogramField) && fmin > 0 && fmax > fmin
+            then let r = exp int in return $ HistogramRanges histogramField (toScientific r)
+              $ genericTake (succ histogramSize) $ scaleFromByTo fmin r fmax
+            else fail "invalid log histogram"
+          | typeIsIntegral (fieldType histogramField) = return $
+            let i = ceiling int in
+            (HistogramInterval histogramField `on` fromInteger) i (floor fmin `mod` i)
+          | otherwise = return $ (HistogramInterval histogramField `on` toScientific) int (int * snd (properFraction (fmin / int)))
         int = if intd > 0 then intd else 1
         intd = (lmax - lmin) / fromIntegral histogramSize
         (lmin, lmax) = (logt fmin, logt fmax)
-        (logt, expt) = if uselog then (log, exp) else (id, id)
-        uselog = histogramLog && typeIsFloating (fieldType histogramField) && fmin > 0 && fmax > fmin
+        logt = if histogramLog then log else id
         (fmin, fmax) = maybe stat (unTypeValue frng) $ look (filterFields histogramFilters)
         frng (FieldRange a b) = (maybe smin toDouble a, maybe smax toDouble b)
         frng _ = stat
         stat@(smin, smax) = fromMaybe (0, 1) $ unTypeValue srng =<< look stats
         look = fmap fieldType . HM.lookup (fieldName histogramField)
-      sizes = map size histogramFields
-  searchCatalog cat [] (parseHistogram cat) $ JE.pairs
+  sizes <- maybe (fail "invalid histogram") return $ mapM size histogramFields
+  searchCatalog cat [] (parseHistogram cat hist sizes) $ JE.pairs
     $  "size" J..= (0 :: Count)
     <> filterQuery histogramFilters
+    <> haggs sizes
   where
   srng FieldStats{ statsMin = Just x, statsMax = Just y } = Just (toRealFloat x, toRealFloat y)
   srng _ = Nothing
+  haggs (hi:l) =
+    "aggs" .=* n .=* hagg hi <> haggs l
+    where
+    n = fieldName $ histogramIntervalField hi
+    hagg HistogramInterval{ histogramInterval = i, histogramOffset = o } = "histogram" .=*
+      (  "field" J..= n
+      <> "interval" J..= i
+      <> "offset" J..= o
+      <> "min_doc_count" J..= J.Number 1)
+    hagg HistogramRanges{ histogramRanges = r } = "range" .=*
+      (  "field" J..= n
+      <> "ranges" `JE.pair` JE.list id (range (0 :: Int) r))
+  haggs [] = foldMap (\f -> "aggs" .=* fieldName f .=*
+    "percentiles" .=* ("field" J..= fieldName f <> "percents" J..= [0::Int,25..100])) histogramQuartiles
+  range i (x:r@(y:_)) = JE.pairs ("from" J..= x <> "to" J..= y <> "key" J..= i) : range (succ i) r
+  range _ _ = []
