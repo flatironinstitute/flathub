@@ -588,7 +588,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
         <span class="tooltiptext">#{d}
     |]
   field :: Word -> FieldGroup -> FieldGroup -> H.Html
-  field d f' f@Field{ fieldSub = Nothing } = hamlet [Hamlet.hamlet|
+  field d f' f@Field{ fieldDesc = FieldDesc{ fieldDescSub = Nothing } } = hamlet [Hamlet.hamlet|
     <th .tooltip-dt
       rowspan=#{d}
       data-data=#{fieldName f'}
@@ -599,7 +599,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
       data-default-content="">
       #{fieldBody d f}
     |]
-  field _ _ f@Field{ fieldSub = Just s } = hamlet [Hamlet.hamlet|
+  field _ _ f@Field{ fieldDesc = FieldDesc{ fieldDescSub = Just s } } = hamlet [Hamlet.hamlet|
     <th .tooltip-dt
       colspan=#{length $ expandFields s}>
       #{fieldBody 1 f}
@@ -634,7 +634,7 @@ csvSchema = getPath (R.parameter R.>* "schema.csv") $ \sim _ -> do
     $ fieldsCSV fields
   where
   populateDict cats = map pf $ catalogDict cats where
-    pf f = f{ fieldDict = Just $ T.intercalate ";" $ md (fieldName f) }
+    pf f = f{ fieldDesc = (fieldDesc f){ fieldDescDict = Just $ T.intercalate ";" $ md (fieldName f) } }
     md d =
       [ c <> "." <> fieldName f <> foldMap (T.cons '[' . (`T.snoc` ']')) (fieldUnits f) <> foldMap (T.cons '*' . T.pack . show) (fieldScale f)
       | (c, cf) <- HM.toList (catalogMap cats)

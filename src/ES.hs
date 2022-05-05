@@ -34,7 +34,6 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy.Char8 as BSLC
-import           Data.Default (def)
 import           Data.Either (partitionEithers)
 import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
@@ -222,7 +221,7 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreFiel
     (JE.pairs $
        (mwhen (queryOffset > 0) $ "from" J..= queryOffset)
     <> ("size" J..= if scroll && queryLimit == 0 then maxResultWindow else queryLimit)
-    <> "sort" `JE.pair` JE.list (\(f, a) -> JE.pairs (fieldName f J..= if a then "asc" else "desc" :: String)) (querySort ++ [(def{ fieldName = "_doc" },True)])
+    <> "sort" `JE.pair` JE.list (\(f, a) -> JE.pairs (fieldName f J..= if a then "asc" else "desc" :: String)) (querySort ++ [(docField,True)])
     <> storedFieldSource store J..= map fieldName queryFields
     <> "query" .=* (if querySample < 1
       then \q -> ("function_score" .=* ("query" .=* q

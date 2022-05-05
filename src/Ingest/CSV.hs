@@ -47,7 +47,7 @@ ingestCSV :: Ingest -> M Word64
 ingestCSV info@Ingest{ ingestCatalog = cat, ingestOffset = off } = do
   csv <- liftIO $ CSV.decode CSV.NoHeader <$> decompressFile (ingestFile info)
   (fromMaybe V.empty -> header, rows) <- unconsCSV csv
-  cols <- mapM (\f@Field{ fieldName = n, fieldIngest = i } ->
+  cols <- mapM (\f@Field{ fieldDesc = FieldDesc{ fieldDescName = n, fieldDescIngest = i } } ->
       maybe (fail $ "csv header field missing: " ++ T.unpack n) (return . (,) n . (,) f) $ V.elemIndex (fromMaybe n i) header)
     $ catalogFields cat
   let

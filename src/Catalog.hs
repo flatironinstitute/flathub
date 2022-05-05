@@ -317,15 +317,15 @@ instance J.ToJSON1 Filter where
 
 liftFilterValue :: Field -> Filter Value -> FieldSub Filter Proxy
 liftFilterValue f (FilterEQ v) =
-  f{ fieldSub = Proxy, fieldType = fmapTypeValue (FilterEQ . runIdentity) v }
+  f{ fieldType = fmapTypeValue (FilterEQ . runIdentity) v }
 liftFilterValue f (FilterRange (Just l) (Just u)) =
-  f{ fieldSub = Proxy, fieldType = fmapTypeValue2 (\x y -> FilterRange (Just $ runIdentity x) (Just $ runIdentity y)) l u }
+  f{ fieldType = fmapTypeValue2 (\x y -> FilterRange (Just $ runIdentity x) (Just $ runIdentity y)) l u }
 liftFilterValue f (FilterRange (Just l) Nothing) =
-  f{ fieldSub = Proxy, fieldType = fmapTypeValue (\x -> FilterRange (Just $ runIdentity x) Nothing) l }
+  f{ fieldType = fmapTypeValue (\x -> FilterRange (Just $ runIdentity x) Nothing) l }
 liftFilterValue f (FilterRange Nothing (Just u)) =
-  f{ fieldSub = Proxy, fieldType = fmapTypeValue (\x -> FilterRange Nothing (Just $ runIdentity x)) u }
+  f{ fieldType = fmapTypeValue (\x -> FilterRange Nothing (Just $ runIdentity x)) u }
 liftFilterValue f (FilterRange Nothing Nothing) =
-  f{ fieldSub = Proxy, fieldType = fmapTypeValue (\Proxy -> FilterRange Nothing Nothing) (fieldType f) }
+  f{ fieldType = fmapTypeValue (\Proxy -> FilterRange Nothing Nothing) (fieldType f) }
 
 data QueryAgg
   = QueryStats

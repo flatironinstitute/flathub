@@ -22,7 +22,6 @@ import           Data.Functor (($>))
 import qualified Data.HashMap.Strict as HM
 import           Data.List (nub)
 import           Data.Maybe (catMaybes, mapMaybe)
-import           Data.Proxy (Proxy(Proxy))
 import qualified Data.Text as T
 import           Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import           Data.Time.LocalTime (utcToLocalTime, utc)
@@ -86,7 +85,7 @@ attachment = getPath (R.parameter R.>* "attachment" R.>*<< R.parameter R.>*< R.p
   att <- askAttachment cat atn
   res <- ES.queryIndex cat mempty
     { queryLimit = 1
-    , queryFilter = [idField{ fieldSub = Proxy, fieldType = Keyword (FilterEQ rid) }]
+    , queryFilter = [idField{ fieldType = Keyword (FilterEQ rid) }]
     , queryFields = attachmentsFields cat [att]
     }
   doc <- either (result . response notFound404 [] . ("Could not get item: " <>)) return
@@ -107,7 +106,7 @@ attachmentsBulkStream :: BS.ByteString -> [Field] -> IO (Word, V.Vector J.Object
 attachmentsBulkStream info ats next = do
   dir <- asks globalDataDir
   let ents doc = catMaybes <$> mapM (ent doc) ats
-      ent doc af@Field{ fieldAttachment = ~(Just a) } =
+      ent doc af@Field{ fieldDesc = FieldDesc{ fieldDescAttachment = ~(Just a) } } =
         case HM.lookup (fieldName af) doc of
           Just (J.Bool True) -> enta a doc
           Just (J.Number n) | n > 0 -> enta a doc

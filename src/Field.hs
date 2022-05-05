@@ -12,7 +12,24 @@ module Field
   , DynamicPath
   , Attachment(..)
   , FieldFlag(..)
+  , FieldDesc(..)
   , FieldSub(..)
+  , fieldName
+  , fieldEnum
+  , fieldTitle
+  , fieldDescr
+  , fieldUnits
+  , fieldFlag
+  , fieldTerms
+  , fieldDict
+  , fieldScale
+  , fieldReversed
+  , fieldWildcard
+  , fieldSize
+  , fieldIngest
+  , fieldMissing
+  , fieldAttachment
+  , fieldSub
   , fieldDisp
   , Field, FieldGroup
   , Fields, FieldGroups
@@ -26,6 +43,7 @@ module Field
   , parseFieldValue
   , fieldJValue, fieldJValues
   , idField
+  , docField
   , fieldsCSV
   , numpyFieldSize
   , numpyDtype
@@ -123,25 +141,62 @@ instance J.FromJSON Attachment where
   -- parseJSON j@(J.Array a) = TODO
   parseJSON j = J.typeMismatch "attachment" j
 
-data FieldSub t m = Field
-  { fieldName :: T.Text
-  , fieldType :: TypeValue t
-  , fieldEnum :: Maybe (V.Vector T.Text)
-  , fieldTitle :: T.Text
-  , fieldDescr :: Maybe T.Text
-  , fieldUnits :: Maybe T.Text
-  , fieldFlag :: FieldFlag
-  , fieldTerms :: Bool
-  , fieldSub :: m (FieldsSub t m)
-  , fieldDict :: Maybe T.Text
-  , fieldScale :: Maybe Scientific -- ^scale factor, to display scale*x instead
-  , fieldReversed :: Bool -- ^reverse axis on plotting
-  , fieldWildcard :: Bool -- ^allow wildcard text filter
-  , fieldSize :: Word -- ^string length
-  , fieldIngest :: Maybe T.Text
-  , fieldMissing :: [BS.ByteString]
-  , fieldAttachment :: Maybe Attachment
+data FieldDesc s = FieldDesc
+  { fieldDescName :: T.Text
+  , fieldDescEnum :: Maybe (V.Vector T.Text)
+  , fieldDescTitle :: T.Text
+  , fieldDescDescr :: Maybe T.Text
+  , fieldDescUnits :: Maybe T.Text
+  , fieldDescFlag :: FieldFlag
+  , fieldDescTerms :: Bool
+  , fieldDescDict :: Maybe T.Text -- ^link to field dictionary
+  , fieldDescScale :: Maybe Scientific -- ^scale factor, to display scale*x instead
+  , fieldDescReversed :: Bool -- ^reverse axis on plotting
+  , fieldDescWildcard :: Bool -- ^allow wildcard text filter
+  , fieldDescSize :: Word -- ^string length
+  , fieldDescIngest :: Maybe T.Text
+  , fieldDescMissing :: [BS.ByteString]
+  , fieldDescAttachment :: Maybe Attachment
+  , fieldDescSub :: s (FieldsSub Proxy s)
   }
+
+data FieldSub t s = Field
+  { fieldDesc :: !(FieldDesc s)
+  , fieldType :: TypeValue t
+  }
+
+fieldName :: FieldSub t s -> T.Text
+fieldName = fieldDescName . fieldDesc
+fieldEnum :: FieldSub t s -> Maybe (V.Vector T.Text)
+fieldEnum = fieldDescEnum . fieldDesc
+fieldTitle :: FieldSub t s -> T.Text
+fieldTitle = fieldDescTitle . fieldDesc
+fieldDescr :: FieldSub t s -> Maybe T.Text
+fieldDescr = fieldDescDescr . fieldDesc
+fieldUnits :: FieldSub t s -> Maybe T.Text
+fieldUnits = fieldDescUnits . fieldDesc
+fieldFlag :: FieldSub t s -> FieldFlag
+fieldFlag = fieldDescFlag . fieldDesc
+fieldTerms :: FieldSub t s -> Bool
+fieldTerms = fieldDescTerms . fieldDesc
+fieldDict :: FieldSub t s -> Maybe T.Text
+fieldDict = fieldDescDict . fieldDesc
+fieldScale :: FieldSub t s -> Maybe Scientific
+fieldScale = fieldDescScale . fieldDesc
+fieldReversed :: FieldSub t s -> Bool
+fieldReversed = fieldDescReversed . fieldDesc
+fieldWildcard :: FieldSub t s -> Bool
+fieldWildcard = fieldDescWildcard . fieldDesc
+fieldSize :: FieldSub t s -> Word
+fieldSize = fieldDescSize . fieldDesc
+fieldIngest :: FieldSub t s -> Maybe T.Text
+fieldIngest = fieldDescIngest . fieldDesc
+fieldMissing :: FieldSub t s -> [BS.ByteString]
+fieldMissing = fieldDescMissing . fieldDesc
+fieldAttachment :: FieldSub t s -> Maybe Attachment
+fieldAttachment = fieldDescAttachment . fieldDesc
+fieldSub :: FieldSub t s -> s (FieldsSub Proxy s)
+fieldSub = fieldDescSub . fieldDesc
 
 fieldDisp :: FieldSub t m -> Bool
 fieldDisp = (FieldHidden <) . fieldFlag
@@ -154,25 +209,30 @@ type FieldsSub t m = V.Vector (FieldSub t m)
 type FieldGroups = FieldsSub Proxy Maybe
 type Fields = [Field]
 
-instance Alternative m => Default (FieldSub Proxy m) where
+instance Alternative s => Default (FieldDesc s) where
+  def = FieldDesc
+    { fieldDescName = T.empty
+    , fieldDescEnum = Nothing
+    , fieldDescTitle = T.empty
+    , fieldDescDescr = Nothing
+    , fieldDescUnits = Nothing
+    , fieldDescFlag = FieldNormal
+    , fieldDescTerms = False
+    , fieldDescSub = empty
+    , fieldDescDict = Nothing
+    , fieldDescScale = Nothing
+    , fieldDescReversed = False
+    , fieldDescIngest = Nothing
+    , fieldDescMissing = []
+    , fieldDescAttachment = Nothing
+    , fieldDescWildcard = False
+    , fieldDescSize = 8
+    }
+
+instance Alternative s => Default (FieldSub Proxy s) where
   def = Field
-    { fieldName = T.empty
+    { fieldDesc = def
     , fieldType = def
-    , fieldEnum = Nothing
-    , fieldTitle = T.empty
-    , fieldDescr = Nothing
-    , fieldUnits = Nothing
-    , fieldFlag = FieldNormal
-    , fieldTerms = False
-    , fieldSub = empty
-    , fieldDict = Nothing
-    , fieldScale = Nothing
-    , fieldReversed = False
-    , fieldIngest = Nothing
-    , fieldMissing = []
-    , fieldAttachment = Nothing
-    , fieldWildcard = False
-    , fieldSize = 8
     }
 
 instance KM.Keyed (FieldSub t m) where
@@ -180,7 +240,7 @@ instance KM.Keyed (FieldSub t m) where
   key = fieldName
 
 setFieldValueUnsafe :: (Functor t, Functor f) => FieldSub t Proxy -> TypeValue f -> FieldSub f Proxy
-setFieldValueUnsafe f t = f{ fieldType = t, fieldSub = Proxy }
+setFieldValueUnsafe f t = f{ fieldType = t }
 
 setFieldValue :: (Functor t, Functor f) => FieldSub t Proxy -> TypeValue f -> FieldSub f Proxy
 setFieldValue f = setFieldValueUnsafe f . coerceTypeValue (fieldType f)
@@ -189,7 +249,7 @@ updateFieldValueM :: (Functor t, Functor f, Monad m) => FieldSub t Proxy -> (for
 updateFieldValueM f t = setFieldValueUnsafe f <$> traverseTypeValue t (fieldType f)
 
 numpyFieldSize :: Field -> Word
-numpyFieldSize Field{ fieldType = Keyword _, fieldSize = n } = n
+numpyFieldSize Field{ fieldType = Keyword _, fieldDesc = d } = fieldDescSize d
 numpyFieldSize Field{ fieldType = t } = numpyTypeSize t
 
 numpyDtype :: Field -> String
@@ -198,68 +258,70 @@ numpyDtype Field{ fieldType = ULong _ } = "<u8"
 numpyDtype f = '<' : baseType ('f','i','?','S','V') (fieldType f) : show (numpyFieldSize f)
 
 instance J.ToJSON Field where
-  toJSON f@Field{..} = J.object $
-    [ "name" J..= fieldName
+  toJSON f@Field{ fieldDesc = FieldDesc{..}, ..} = J.object $
+    [ "name" J..= fieldDescName
     , "type" J..= fieldType
-    , "title" J..= fieldTitle
-    , "disp" J..= (fieldFlag > FieldHidden)
+    , "title" J..= fieldDescTitle
+    , "disp" J..= (fieldDescFlag > FieldHidden)
     , "base" J..= baseType ('f','i','b','s','v') fieldType
     , "dtype" J..= numpyDtype f
     ] ++ concatMap maybeToList
-    [ ("enum" J..=) <$> fieldEnum
-    , ("descr" J..=) <$> fieldDescr
-    , ("units" J..=) <$> fieldUnits
-    , ("flag" J..=) <$> case fieldFlag of
+    [ ("enum" J..=) <$> fieldDescEnum
+    , ("descr" J..=) <$> fieldDescDescr
+    , ("units" J..=) <$> fieldDescUnits
+    , ("flag" J..=) <$> case fieldDescFlag of
         FieldTop -> Just False
         FieldRequired -> Just True
         _ -> Nothing
-    , ("terms" J..= fieldTerms) <$ guard fieldTerms
-    , ("wildcard" J..= fieldWildcard) <$ guard fieldWildcard
-    , ("dict" J..=) <$> fieldDict
-    , ("scale" J..=) <$> fieldScale
-    , ("reversed" J..= fieldReversed) <$ guard fieldReversed
-    , ("attachment" J..= True) <$ fieldAttachment
+    , ("terms" J..= fieldDescTerms) <$ guard fieldDescTerms
+    , ("wildcard" J..= fieldDescWildcard) <$ guard fieldDescWildcard
+    , ("dict" J..=) <$> fieldDescDict
+    , ("scale" J..=) <$> fieldDescScale
+    , ("reversed" J..= fieldDescReversed) <$ guard fieldDescReversed
+    , ("attachment" J..= True) <$ fieldDescAttachment
     ]
 
 parseFieldGroup :: HM.HashMap T.Text FieldGroup -> J.Value -> J.Parser FieldGroup
 parseFieldGroup dict = parseFieldDefs def where
   parseFieldDefs :: FieldGroup -> J.Value -> J.Parser FieldGroup
   parseFieldDefs defd = J.withObject "field" $ \f -> do
-    fieldDict <- f J..:? "dict"
+    fieldDescDict <- f J..:? "dict"
     d <- maybe (return defd)
       (\n -> maybe (fail $ "Unknown dict key: " ++ show n) return $ HM.lookup n dict)
-      fieldDict
-    fieldName <- f J..:? "name" J..!= fieldName d
-    when (T.any ('.' ==) fieldName) $ fail $ "Invalid field name: " ++ show fieldName
+      fieldDescDict
+    fieldDescName <- f J..:? "name" J..!= fieldName d
+    when (T.any ('.' ==) fieldDescName) $ fail $ "Invalid field name: " ++ show fieldDescName
     fieldType <- f J..:! "type" J..!= fieldType d
-    fieldEnum <- maybe (fieldEnum d <|> V.fromList ["false","true"] <$ guard (typeIsBoolean fieldType)) join
+    fieldDescEnum <- maybe (fieldEnum d <|> V.fromList ["false","true"] <$ guard (typeIsBoolean fieldType)) join
       <$> f J..:! "enum"
-    fieldTitle <- f J..:! "title" J..!= if T.null (fieldTitle d) then fieldName else fieldTitle d
-    fieldDescr <- (<|> fieldDescr d) <$> f J..:? "descr"
-    fieldUnits <- (<|> fieldUnits d) <$> f J..:? "units"
-    fieldFlag <- f J..:? "flag" J..!= fieldFlag d
-    fieldScale <- f J..:! "scale"
-    fieldReversed <- f J..:? "reversed" J..!= fieldReversed d
-    fieldIngest <- f J..:! "ingest"
-    fieldMissing <- map TE.encodeUtf8 <$> case HM.lookup "missing" f of
+    fieldDescTitle <- f J..:! "title" J..!= if T.null (fieldTitle d) then fieldDescName else fieldTitle d
+    fieldDescDescr <- (<|> fieldDescr d) <$> f J..:? "descr"
+    fieldDescUnits <- (<|> fieldUnits d) <$> f J..:? "units"
+    fieldDescFlag <- f J..:? "flag" J..!= fieldFlag d
+    fieldDescScale <- f J..:! "scale"
+    fieldDescReversed <- f J..:? "reversed" J..!= fieldReversed d
+    fieldDescIngest <- f J..:! "ingest"
+    fieldDescMissing <- map TE.encodeUtf8 <$> case HM.lookup "missing" f of
       Nothing -> return []
       Just J.Null -> return []
       Just (J.String s) -> return [s]
       Just (J.Array l) -> mapM J.parseJSON $ V.toList l
       Just j -> J.typeMismatch "missing string" j
-    fieldAttachment <- f J..:! "attachment"
-    fieldTerms <- f J..:? "terms" J..!= (isJust fieldEnum || typeIsString fieldType)
-    fieldWildcard <- f J..:? "wildcard" J..!= fieldWildcard d
-    fieldSize <- f J..:? "size" J..!= fieldSize d
-    fieldSub <- (<|> fieldSub d) <$> J.explicitParseFieldMaybe' (J.withArray "subfields" $ V.mapM $
+    fieldDescAttachment <- f J..:! "attachment"
+    fieldDescTerms <- f J..:? "terms" J..!= (isJust fieldDescEnum || typeIsString fieldType)
+    fieldDescWildcard <- f J..:? "wildcard" J..!= fieldWildcard d
+    fieldDescSize <- f J..:? "size" J..!= fieldSize d
+    fieldDescSub <- (<|> fieldSub d) <$> J.explicitParseFieldMaybe' (J.withArray "subfields" $ V.mapM $
         parseFieldDefs defd
           { fieldType = fieldType
-          , fieldEnum = fieldEnum
-          , fieldFlag = fieldFlag
-          , fieldMissing = fieldMissing
+          , fieldDesc = (fieldDesc defd)
+            { fieldDescEnum = fieldDescEnum
+            , fieldDescFlag = fieldDescFlag
+            , fieldDescMissing = fieldDescMissing
+            }
           })
       f "sub"
-    return Field{..}
+    return Field{ fieldDesc = FieldDesc{..}, ..}
 
 instance J.FromJSON FieldGroup where
   parseJSON = parseFieldGroup mempty
@@ -273,10 +335,12 @@ instance Alternative m => Monoid (FieldSub Proxy m) where
 
 subField :: FieldSub s n -> FieldSub t m -> FieldSub t m
 subField f s = s
-  { fieldName = merge '_' (fieldName f) (fieldName s)
-  , fieldTitle = merge ' ' (fieldTitle f) (fieldTitle s)
-  , fieldDescr = joinMaybeWith (\x -> (x <>) . T.cons '\n') (fieldDescr f) (fieldDescr s)
-  , fieldUnits = fieldUnits s <|> fieldUnits f
+  { fieldDesc = (fieldDesc s)
+    { fieldDescName = merge '_' (fieldName f) (fieldName s)
+    , fieldDescTitle = merge ' ' (fieldTitle f) (fieldTitle s)
+    , fieldDescDescr = joinMaybeWith (\x -> (x <>) . T.cons '\n') (fieldDescr f) (fieldDescr s)
+    , fieldDescUnits = fieldUnits s <|> fieldUnits f
+    }
   } where
   merge c a b
     | T.null a = b
@@ -285,8 +349,8 @@ subField f s = s
     | otherwise = a <> T.cons c b
 
 expandField :: FieldGroup -> Fields
-expandField f@Field{ fieldSub = Nothing } = return f{ fieldSub = Proxy }
-expandField f@Field{ fieldSub = Just l } =
+expandField f@Field{ fieldDesc = FieldDesc{ fieldDescSub = Nothing } } = return f{ fieldDesc = (fieldDesc f){ fieldDescSub = Proxy } }
+expandField f@Field{ fieldDesc = FieldDesc{ fieldDescSub = Just l } } =
   foldMap (expandField . mappend f) l
 
 expandFields :: FieldGroups -> Fields
@@ -299,10 +363,11 @@ expandAllFields = foldMap expandAllField where
 
 deleteField :: T.Text -> FieldGroups -> FieldGroups
 deleteField n = dfs mempty where
-  df p f@Field{ fieldSub = Nothing }
+  df p f@Field{ fieldDesc = FieldDesc{ fieldDescSub = Nothing } }
     | n == fieldName (p <> f) = Nothing
     | otherwise = Just f
-  df p f@Field{ fieldSub = Just l } = Just f{ fieldSub = Just $ dfs (p <> f) l }
+  df p f@Field{ fieldDesc = FieldDesc{ fieldDescSub = Just l } } =
+    Just f{ fieldDesc = (fieldDesc f){ fieldDescSub = Just $ dfs (p <> f) l } }
   dfs = V.mapMaybe . df
 
 fieldsDepth :: FieldGroups -> Word
@@ -311,7 +376,8 @@ fieldsDepth = getMax . depth where
 
 parseFieldValue :: Field -> T.Text -> Maybe FieldValue
 parseFieldValue f = fmap (setFieldValueUnsafe f) . pv f where
-  pv Field{ fieldType = (Byte _), fieldEnum = Just l } s | Just i <- V.elemIndex s l = Just $ Byte $ fromIntegral i
+  pv Field{ fieldType = (Byte _), fieldDesc = FieldDesc{ fieldDescEnum = Just l } } s
+    | Just i <- V.elemIndex s l = Just $ Byte $ fromIntegral i
   pv Field{ fieldType = t } s = sequenceValue $ parseTypeValue t s
 
 fieldJValue :: FieldValue -> J.Series
@@ -320,9 +386,10 @@ fieldJValue f = fieldName f J..= fieldType f
 fieldJValues :: [FieldValue] -> J.Series
 fieldJValues = foldMap fieldJValue
 
--- |pseudo field representing ES _id
-idField :: Field
-idField = def{ fieldName = "_id", fieldType = Keyword Proxy, fieldTitle = "_id", fieldFlag = FieldHidden }
+-- |pseudo field representing ES _id, _doc
+idField, docField :: Field
+idField = Field{ fieldDesc = def{ fieldDescName = "_id", fieldDescTitle = "_id", fieldDescFlag = FieldHidden }, fieldType = Keyword Proxy }
+docField = Field{ fieldDesc = def{ fieldDescName = "_doc", fieldDescTitle = "_doc", fieldDescFlag = FieldHidden }, fieldType = Keyword Proxy }
 
 type Count = Word
 
@@ -337,4 +404,13 @@ instance Functor FieldStats where
 fieldsCSV :: Fields -> B.Builder
 fieldsCSV l = csvTextRow ["variable", "name", "type", "units", "description", "values","dict","scale"] <> foldMap fieldCSV l where
   fieldCSV :: Field -> B.Builder
-  fieldCSV Field{..} = csvTextRow [fieldName, fieldTitle, T.pack $ show fieldType, fold fieldUnits, fold fieldDescr, foldMap (T.intercalate "," . V.toList) fieldEnum, fold fieldDict, foldMap (T.pack . show) fieldScale]
+  fieldCSV f = csvTextRow
+    [ fieldName f
+    , fieldTitle f
+    , T.pack $ show $ fieldType f
+    , fold $ fieldUnits f
+    , fold $ fieldDescr f
+    , foldMap (T.intercalate "," . V.toList) $ fieldEnum f
+    , fold $ fieldDict f
+    , foldMap (T.pack . show) $ fieldScale f
+    ]

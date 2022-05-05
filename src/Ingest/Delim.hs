@@ -76,10 +76,10 @@ ingestDelim delim info@Ingest{ ingestCatalog = cat, ingestOffset = off } = do
       | BSC.null x = mempty
       | x `elem` fieldMissing f = mempty
       | otherwise = fieldName f J..= recode fx f x
-    recode fx Field{ fieldIngest = Just (T.stripPrefix "scale:" -> Just sf), fieldScale = s } =
+    recode fx Field{ fieldDesc = FieldDesc{ fieldDescIngest = Just (T.stripPrefix "scale:" -> Just sf), fieldDescScale = s } } =
       J.toJSON . maybe id ((*) . realToFrac) s . (* (read $ BSC.unpack scale :: Double)) . read . BSC.unpack
       where Just (_, scale) = find (any ((sf ==) . fieldName) . fst) fx
-    recode _ Field{ fieldScale = Just s } = J.toJSON . (*) s . read . BSC.unpack
+    recode _ Field{ fieldDesc = FieldDesc{ fieldDescScale = Just s } } = J.toJSON . (*) s . read . BSC.unpack
     recode _ Field{ fieldType = (Boolean _) } = bool
     recode _ _ = J.String . TE.decodeLatin1
     bool "0" = J.Bool False

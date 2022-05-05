@@ -168,28 +168,28 @@ instance OA.ToSchema Catalog where
 
 fieldsJSON :: KM.KeyedMap (FieldSub FieldStats Proxy) -> FieldGroup -> FieldGroups -> J.Encoding
 fieldsJSON stats b = JE.list fieldJSON . V.toList where
-  fieldJSON f@Field{ fieldName = name, ..} = J.pairs
-    $  "key" J..= name
+  fieldJSON f@Field{ fieldDesc = FieldDesc{..}, ..} = J.pairs
+    $  "key" J..= fieldDescName
     <> "name" J..= fieldName bf
-    <> "title" J..= fieldTitle
-    <> "descr" J..= fieldDescr
+    <> "title" J..= fieldDescTitle
+    <> "descr" J..= fieldDescDescr
     <> "type" J..= fieldType
     <> "base" J..= baseType ('f','i','b','s','v') fieldType
-    <> foldMap ("enum" J..=) fieldEnum
+    <> foldMap ("enum" J..=) fieldDescEnum
     <> mwhen (fieldDisp f) ("disp" J..= True)
-    <> foldMap ("units" J..=) fieldUnits
-    <> foldMap ("required" J..=) (case fieldFlag of
+    <> foldMap ("units" J..=) fieldDescUnits
+    <> foldMap ("required" J..=) (case fieldDescFlag of
         FieldTop -> Just False
         FieldRequired -> Just True
         _ -> Nothing)
-    <> mwhen fieldTerms ("terms" J..= fieldTerms)
-    <> mwhen fieldWildcard ("wildcard" J..= fieldWildcard)
-    <> foldMap ("dict" J..=) fieldDict
-    <> foldMap ("scale" J..=) fieldScale
-    <> mwhen fieldReversed ("reversed" J..= fieldReversed)
-    <> mwhen (isJust fieldAttachment) ("attachment" J..= True)
+    <> mwhen fieldDescTerms ("terms" J..= fieldDescTerms)
+    <> mwhen fieldDescWildcard ("wildcard" J..= fieldDescWildcard)
+    <> foldMap ("dict" J..=) fieldDescDict
+    <> foldMap ("scale" J..=) fieldDescScale
+    <> mwhen fieldDescReversed ("reversed" J..= fieldDescReversed)
+    <> mwhen (isJust fieldDescAttachment) ("attachment" J..= True)
     <> foldMap (JE.pair "stats" . fieldStatsJSON) (HM.lookup (fieldName bf) stats)
-    <> foldMap (JE.pair "sub" . fieldsJSON stats bf) fieldSub
+    <> foldMap (JE.pair "sub" . fieldsJSON stats bf) fieldDescSub
     where
     bf = b <> f
 

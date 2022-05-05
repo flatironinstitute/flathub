@@ -20,7 +20,6 @@ import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
 import           Data.Bits (xor)
-import           Data.Default (def)
 import           Data.Function (on)
 import           Data.Functor.Identity (Identity(Identity))
 import qualified Data.HashMap.Strict as HM
@@ -166,7 +165,7 @@ queryData cat DataArgs{..} =
   searchCatalog cat [] (parseData cat) $ JE.pairs
     $  "size" J..= dataCount
     <> mwhen (dataOffset > 0) ("from" J..= dataOffset)
-    <> "sort" `JE.pair` JE.list (\(f, a) -> JE.pairs (fieldName f J..= if a then "asc" else "desc" :: String)) (dataSort ++ [(def{ fieldName = "_doc" },True)])
+    <> "sort" `JE.pair` JE.list (\(f, a) -> JE.pairs (fieldName f J..= if a then "asc" else "desc" :: String)) (dataSort ++ [(docField,True)])
     <> storedFieldSource (catalogStoreField (catalogStore cat)) J..= HM.keys dataFields
     <> filterQuery dataFilters
 

@@ -26,7 +26,6 @@ import           Data.Function (on)
 import qualified Data.HashMap.Strict as HM
 import           Data.List (foldl', unionBy)
 import           Data.Maybe (listToMaybe, maybeToList, isJust, mapMaybe)
-import           Data.Proxy (Proxy(Proxy))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V
@@ -255,7 +254,7 @@ attachmentQuery :: Catalog -> Maybe [T.Text] -> Query -> Query
 attachmentQuery cat atn query = query
   { queryFields = ats
   , queryFilter = (case ats of
-    [x@Field{ fieldType = Boolean _ }] -> (x{ fieldSub = Proxy, fieldType = Boolean (FilterEQ True) } :)
+    [x@Field{ fieldType = Boolean _ }] -> (x{ fieldType = Boolean (FilterEQ True) } :)
     -- TODO could do better with OR filters
     _ -> id) $ queryFilter query
   } where
