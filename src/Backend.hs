@@ -12,6 +12,8 @@ module Backend
   , Histogram(..)
   , HistogramArgs(..)
   , maxHistogramSize
+  , HistogramBucket(..)
+  , HistogramResult(..)
   , queryHistogram
   ) where
 
@@ -21,6 +23,7 @@ import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
 import           Data.Bits (xor)
 import           Data.Function (on)
+import           Data.Functor.Const (Const(Const))
 import           Data.Functor.Identity (Identity(Identity))
 import qualified Data.HashMap.Strict as HM
 import           Data.List (genericTake)
@@ -184,6 +187,11 @@ data HistogramArgs = HistogramArgs
 maxHistogramSize :: Word16
 maxHistogramSize = 4096
 
+type FieldConst a = FieldSub (Const a) Proxy
+
+setFieldConst :: Field -> a -> FieldConst a
+setFieldConst f c = f{ fieldType = fmapTypeValue (\Proxy -> Const c) (fieldType f) }
+
 data HistogramInterval
   = HistogramInterval
     { histogramIntervalField :: Field
@@ -196,16 +204,43 @@ data HistogramInterval
     , histogramRanges :: [Double]
     }
 
-parseHistogram :: Catalog -> HistogramArgs -> [HistogramInterval] -> J.Value -> J.Parser J.Value
-parseHistogram cat hist sizes = J.withObject "histogram res" $ \o ->
-  o J..: "aggregations"
+data HistogramBucket = HistogramBucket
+  { bucketKey :: KM.KeyedMap FieldValue
+  , bucketCount :: Count
+  , bucketQuartiles :: Maybe (FieldSub V.Vector Proxy)
+  }
+
+data HistogramResult = HistogramResult
+  { histogramSizes :: KM.KeyedMap (FieldConst Scientific)
+  , histogramBuckets :: [HistogramBucket]
+  }
+
+concatMapM :: Monad m => (a -> m [b]) -> [a] -> m [b]
+concatMapM f l = concat <$> mapM f l
+
+parseHistogram :: HistogramArgs -> J.Value -> J.Parser [HistogramBucket]
+parseHistogram HistogramArgs{..} = J.withObject "histogram res" $ \o ->
+  o J..: "aggregations" >>= phist KM.empty histogramFields where
+  phist k (h:l) o =
+    o J..: fieldName (histogramField h) >>= (J..: "buckets") >>= concatMapM pbuc where
+    pbuc = J.withObject "hist bucket" $ \b -> do
+      j <- b J..: (if histogramLog h then "from" else "key")
+      v <- updateFieldValueM (histogramField h) (\Proxy -> Identity <$> J.parseJSON j)
+      phist (KM.insert v k) l b
+  phist k [] b = do
+    c <- b J..: "doc_count"
+    q <- mapM (pquart b) histogramQuartiles
+    return [HistogramBucket k c q]
+  pquart o f = do
+    q <- o J..: fieldName f >>= (J..: "values") >>= mapM (J..: "value")
+    updateFieldValueM f (\Proxy -> mapM J.parseJSON q)
 
 scaleFromByTo :: Real a => a -> a -> a -> [a]
 scaleFromByTo x r y
   | x < y = x : scaleFromByTo (x*r) r y
   | otherwise = [x]
 
-queryHistogram :: Catalog -> HistogramArgs -> M J.Value
+queryHistogram :: Catalog -> HistogramArgs -> M HistogramResult
 queryHistogram cat hist@HistogramArgs{..} = do
   (_, stats) <- liftIO $ catalogStats cat
   -- calculate the bucket sizes (or explicit ranges for log)
@@ -229,15 +264,18 @@ queryHistogram cat hist@HistogramArgs{..} = do
         stat@(smin, smax) = fromMaybe (0, 1) $ unTypeValue srng =<< look stats
         look = fmap fieldType . HM.lookup (fieldName histogramField)
   sizes <- maybe (fail "invalid histogram") return $ mapM size histogramFields
-  searchCatalog cat [] (parseHistogram cat hist sizes) $ JE.pairs
-    $  "size" J..= (0 :: Count)
-    <> filterQuery histogramFilters
-    <> haggs sizes
+  dat <- searchCatalog cat [] (parseHistogram hist) $ JE.pairs
+      $  "size" J..= (0 :: Count)
+      <> filterQuery histogramFilters
+      <> haggs sizes
+  return $ HistogramResult
+    (KM.fromList $ map (\hi -> setFieldConst (histogramIntervalField hi) (histogramInterval hi)) sizes)
+    dat
   where
   srng FieldStats{ statsMin = Just x, statsMax = Just y } = Just (toRealFloat x, toRealFloat y)
   srng _ = Nothing
   haggs (hi:l) =
-    "aggs" .=* n .=* hagg hi <> haggs l
+    "aggs" .=* n .=* (hagg hi <> haggs l)
     where
     n = fieldName $ histogramIntervalField hi
     hagg HistogramInterval{ histogramInterval = i, histogramOffset = o } = "histogram" .=*
@@ -249,6 +287,6 @@ queryHistogram cat hist@HistogramArgs{..} = do
       (  "field" J..= n
       <> "ranges" `JE.pair` JE.list id (range (0 :: Int) r))
   haggs [] = foldMap (\f -> "aggs" .=* fieldName f .=*
-    "percentiles" .=* ("field" J..= fieldName f <> "percents" J..= [0::Int,25..100])) histogramQuartiles
+    "percentiles" .=* ("field" J..= fieldName f <> "percents" J..= [0::Int,25..100] <> "keyed" J..= False)) histogramQuartiles
   range i (x:r@(y:_)) = JE.pairs ("from" J..= x <> "to" J..= y <> "key" J..= i) : range (succ i) r
   range _ _ = []

@@ -498,7 +498,7 @@ histogramListSchema = do
       & OA.uniqueItems ?~ True
       & OA.minItems ?~ 1
       & OA.maxItems ?~ fromIntegral maxHistogramDepth
-      & OA.description ?~ "fields (dimensions or axes) along which to calculate a histogram, where each bucket in outer (earlier) histograms will contain the nested conditional histograms of inner (later) fields"
+      & OA.description ?~ "fields (dimensions or axes) along which to calculate a histogram, where each bucket will represent an intersection of all the fields and count of rows in that box, as calculated by the nested conditional histograms of inner (later) fields within outer (earlier) histograms"
     ]
 
 parseHistogramsQuery :: Catalog -> Wai.Request -> BS.ByteString -> [Histogram]
@@ -710,7 +710,7 @@ apiOperations =
       return $ mempty & OA.allOf ?~
         [ filt
         , OA.Inline $ objectSchema
-          "histogram parameters: histogram axes and an optional quartiles axis for which quartiles are calculated in the inner-most histogram buckets"
+          "histogram parameters: histogram axes and an optional quartiles axis for which quartiles are calculated in each inner-most histogram bucket"
           [ ("fields", hist, True)
           , ("quartiles", fn, False)
           ]
@@ -723,7 +723,7 @@ apiOperations =
           && product (map (fromIntegral . histogramSize) (histogramFields args)) <= maxHistogramSize)
         $ result $ response badRequest400 [] ("histograms too large" :: String)
       dat <- queryHistogram cat args
-      return $ okResponse (apiHeaders req) $ J.toEncoding dat
+      return $ okResponse (apiHeaders req) $ J.toEncoding (length $ histogramBuckets dat)
     , apiResponseSchema = do
       return mempty
     }

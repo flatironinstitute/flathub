@@ -239,7 +239,7 @@ instance KM.Keyed (FieldSub t m) where
   type Key (FieldSub t m) = T.Text
   key = fieldName
 
-setFieldValueUnsafe :: (Functor t, Functor f) => FieldSub t Proxy -> TypeValue f -> FieldSub f Proxy
+setFieldValueUnsafe :: FieldSub t Proxy -> TypeValue f -> FieldSub f Proxy
 setFieldValueUnsafe f t = f{ fieldType = t }
 
 setFieldValue :: (Functor t, Functor f) => FieldSub t Proxy -> TypeValue f -> FieldSub f Proxy
