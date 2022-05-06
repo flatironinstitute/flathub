@@ -4,11 +4,11 @@
 module Backend
   ( FieldFilter(..)
   , Filters(..)
-  , StatsArgs(..)
-  , queryStats
   , DataArgs(..)
   , queryData
   , maxDataCount, maxResultWindow
+  , StatsArgs(..)
+  , queryStats
   , Histogram(..)
   , HistogramArgs(..)
   , maxHistogramSize
@@ -103,6 +103,32 @@ filterQuery Filters{..} = "query" .=*
   term f (FieldWildcard w) | fieldWildcard f = "wildcard" .=* (fieldName f J..= w)
   term _ _ = error "invalid FieldFilder"
 
+parseData :: Traversable f => Catalog -> f Field -> J.Value -> J.Parser (V.Vector (f (TypeValue Maybe)))
+parseData cat fields = J.withObject "data res" $ \o ->
+  o J..: "hits" >>= (J..: "hits") >>= mapM row where
+  row = getf . storedFields' (catalogStoreField (catalogStore cat))
+  getf o = mapM (parsef o) fields
+  parsef o f = traverseTypeValue (\Proxy -> mapM J.parseJSON $ HM.lookup (fieldName f) o) (fieldType f)
+
+data DataArgs = DataArgs
+  { dataFilters :: Filters
+  , dataFields :: [Field]
+  , dataSort :: [(Field, Bool)]
+  , dataCount, dataOffset :: Word16
+  }
+
+maxDataCount :: Word16
+maxDataCount = 5000
+
+queryData :: Catalog -> DataArgs -> M (V.Vector (V.Vector (TypeValue Maybe)))
+queryData cat DataArgs{..} =
+  searchCatalog cat [] (parseData cat (V.fromList dataFields)) $ JE.pairs
+    $  "size" J..= dataCount
+    <> mwhen (dataOffset > 0) ("from" J..= dataOffset)
+    <> "sort" `JE.pair` JE.list (\(f, a) -> JE.pairs (fieldName f J..= if a then "asc" else "desc" :: String)) (dataSort ++ [(docField,True)])
+    <> storedFieldSource (catalogStoreField (catalogStore cat)) J..= map fieldName dataFields
+    <> filterQuery dataFilters
+
 fieldUseTerms :: Field -> Bool
 fieldUseTerms f = fieldTerms f || not (typeIsNumeric (fieldType f))
 
@@ -144,32 +170,6 @@ queryStats cat StatsArgs{..} =
     <> filterQuery statsFilters
   where
   field = ("field" J..=) . fieldName
-
-parseData :: Traversable f => Catalog -> f Field -> J.Value -> J.Parser (V.Vector (f (TypeValue Maybe)))
-parseData cat fields = J.withObject "data res" $ \o ->
-  o J..: "hits" >>= (J..: "hits") >>= mapM row where
-  row = getf . storedFields' (catalogStoreField (catalogStore cat))
-  getf o = mapM (parsef o) fields
-  parsef o f = traverseTypeValue (\Proxy -> mapM J.parseJSON $ HM.lookup (fieldName f) o) (fieldType f)
-
-data DataArgs = DataArgs
-  { dataFilters :: Filters
-  , dataFields :: [Field]
-  , dataSort :: [(Field, Bool)]
-  , dataCount, dataOffset :: Word16
-  }
-
-maxDataCount :: Word16
-maxDataCount = 5000
-
-queryData :: Catalog -> DataArgs -> M (V.Vector (V.Vector (TypeValue Maybe)))
-queryData cat DataArgs{..} =
-  searchCatalog cat [] (parseData cat (V.fromList dataFields)) $ JE.pairs
-    $  "size" J..= dataCount
-    <> mwhen (dataOffset > 0) ("from" J..= dataOffset)
-    <> "sort" `JE.pair` JE.list (\(f, a) -> JE.pairs (fieldName f J..= if a then "asc" else "desc" :: String)) (dataSort ++ [(docField,True)])
-    <> storedFieldSource (catalogStoreField (catalogStore cat)) J..= map fieldName dataFields
-    <> filterQuery dataFilters
 
 data Histogram = Histogram
   { histogramField :: Field

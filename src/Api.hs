@@ -594,37 +594,6 @@ apiOperations =
         ]
     }
 
-  , APIOperation -- /api/{cat}/stats
-    { apiName = "stats"
-    , apiSummary = "Get statistics about fields (given some filters)"
-    , apiPath = catalogBase R.>* "stats"
-    , apiExampleArg = "sim"
-    , apiPathParams = [catalogParam]
-    , apiQueryParams = [filtersQueryParam, fieldsQueryParam]
-    , apiRequestSchema = Just $ do
-      filt <- declareSchemaRef (Proxy :: Proxy Filters)
-      list <- fieldListSchema
-      return $ mempty & OA.allOf ?~
-        [ filt
-        , OA.Inline $ objectSchema
-          "stats to request"
-          [ ("fields", list, False)
-          ]
-        ]
-    , apiAction = \sim req -> do
-      cat <- askCatalog sim
-      body <- parseJSONBody req (parseStatsJSON cat)
-      (count, stats) <- queryStats cat $ fromMaybe (parseStatsQuery cat req) body
-      return $ okResponse (apiHeaders req) $ J.pairs
-        $  "count" J..= count
-        <> foldMap (\f -> fieldName f `JE.pair` fieldStatsJSON f) stats
-    , apiResponseSchema = do
-      fs <- declareSchemaRef (Proxy :: Proxy (FieldStats Void))
-      return $ objectSchema "stats"
-        [ ("count", OA.Inline $ schemaDescOf statsCount "number of matching rows", True) ]
-        & OA.additionalProperties ?~ OA.AdditionalPropertiesSchema fs
-    }
-
   , APIOperation -- /api/{cat}/data
     { apiName = "data"
     , apiSummary = "Get a sample of raw data rows"
@@ -677,6 +646,37 @@ apiOperations =
       fv <- declareSchemaRef (Proxy :: Proxy FieldValue)
       return $ arraySchema $ OA.Inline $ arraySchema fv
         & OA.description ?~ "a single data row corresponding to the requested fields in order (missing values are null)"
+    }
+
+  , APIOperation -- /api/{cat}/stats
+    { apiName = "stats"
+    , apiSummary = "Get statistics about fields (given some filters)"
+    , apiPath = catalogBase R.>* "stats"
+    , apiExampleArg = "sim"
+    , apiPathParams = [catalogParam]
+    , apiQueryParams = [filtersQueryParam, fieldsQueryParam]
+    , apiRequestSchema = Just $ do
+      filt <- declareSchemaRef (Proxy :: Proxy Filters)
+      list <- fieldListSchema
+      return $ mempty & OA.allOf ?~
+        [ filt
+        , OA.Inline $ objectSchema
+          "stats to request"
+          [ ("fields", list, False)
+          ]
+        ]
+    , apiAction = \sim req -> do
+      cat <- askCatalog sim
+      body <- parseJSONBody req (parseStatsJSON cat)
+      (count, stats) <- queryStats cat $ fromMaybe (parseStatsQuery cat req) body
+      return $ okResponse (apiHeaders req) $ J.pairs
+        $  "count" J..= count
+        <> foldMap (\f -> fieldName f `JE.pair` fieldStatsJSON f) stats
+    , apiResponseSchema = do
+      fs <- declareSchemaRef (Proxy :: Proxy (FieldStats Void))
+      return $ objectSchema "stats"
+        [ ("count", OA.Inline $ schemaDescOf statsCount "number of matching rows", True) ]
+        & OA.additionalProperties ?~ OA.AdditionalPropertiesSchema fs
     }
 
   , APIOperation -- /api/{cat}/histogram
