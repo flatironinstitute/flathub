@@ -10,7 +10,7 @@ module ES
   , searchCatalog
   , createIndex
   , checkIndices
-  , storedFieldSource
+  , storedFieldsArgs
   , storedFields'
   , maxResultWindow
   , queryIndex
@@ -38,7 +38,7 @@ import           Data.Either (partitionEithers)
 import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
 import           Data.IORef (newIORef, readIORef, writeIORef)
-import           Data.List (find)
+import           Data.List (find, partition)
 import           Data.Maybe (mapMaybe, fromMaybe)
 import           Data.Proxy (Proxy)
 import           Data.String (IsString)
@@ -148,12 +148,13 @@ createIndex cat@Catalog{ catalogStore = ~CatalogES{..} } = elasticSearch PUT [T.
      "settings" J..= mergeJSONObject catalogSettings (defaultSettings cat)
   <> "mappings" .=*
     (  "dynamic" J..= J.String "strict"
-    <> "_source" .=* ("enabled" J..= (catalogStoreField == ESStoreSource))
+    <> "_source" .=* ("enabled" J..= False)
     <> "properties" J..= HM.map field (catalogFieldMap cat))
   where
   field f = J.object
     [ "type" J..= (fieldType f :: Type)
-    , "store" J..= (catalogStoreField == ESStoreStore)
+    , "store" J..= and (fieldStore f)
+    , "index" J..= not (or $ fieldStore f)
     ]
 
 checkIndices :: M (HM.HashMap Simulation String)
@@ -184,21 +185,22 @@ checkIndices = do
   boolish (J.String "false") = return False
   boolish v = J.typeMismatch "bool" v
 
-storedFieldSource :: IsString s => ESStoreField -> s
-storedFieldSource ESStoreSource = "_source"
-storedFieldSource ESStoreValues = "docvalue_fields"
-storedFieldSource ESStoreStore = "stored_fields"
+storedFieldsArgs :: [Field] -> J.Series
+storedFieldsArgs fields =
+  req "stored_fields" store <>
+  req "docvalue_fields" docvalue
+  where
+  req _ [] = mempty
+  req n l = n J..= map fieldName l
+  (store, docvalue) = partition (and . fieldStore) fields
 
-storedFields :: MonadFail m => ESStoreField -> J.Object -> m J.Object
-storedFields ESStoreSource o = case HM.lookup "_source" o of
-  Just (J.Object s) -> return s
-  _ -> fail "missing source object"
-storedFields _ o = case HM.lookup "fields" o of
-  Just (J.Object s) -> return $ HM.map unsingletonJSON s
+storedFields :: MonadFail m => J.Object -> m J.Object
+storedFields o = case HM.lookup "fields" o of
+  Just (J.Object s) -> return $ HM.map unsingletonJSON s -- it would be nice to use parseJSONTyped instead
   _ -> fail "missing fields object"
 
-storedFields' :: ESStoreField -> J.Object -> J.Object
-storedFields' s o = maybe id (HM.insert "_id") (HM.lookup "_id" o) $ fromMaybe HM.empty $ storedFields s o
+storedFields' :: J.Object -> J.Object
+storedFields' o = maybe id (HM.insert "_id") (HM.lookup "_id" o) $ fromMaybe HM.empty $ storedFields o
 
 scrollTime :: IsString s => s
 scrollTime = "60s"
@@ -213,7 +215,7 @@ data HistogramInterval a
     }
 
 queryIndexScroll :: Bool -> Catalog -> Query -> M J.Value
-queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreField = store } } Query{..} = do
+queryIndexScroll scroll cat Query{..} = do
   hists <- gethists
   amend hists <$> searchCatalog cat
     (mwhen scroll $ [("scroll", Just scrollTime)])
@@ -222,7 +224,7 @@ queryIndexScroll scroll cat@Catalog{ catalogStore = ~CatalogES{ catalogStoreFiel
        (mwhen (queryOffset > 0) $ "from" J..= queryOffset)
     <> ("size" J..= if scroll && queryLimit == 0 then maxResultWindow else queryLimit)
     <> "sort" `JE.pair` JE.list (\(f, a) -> JE.pairs (fieldName f J..= if a then "asc" else "desc" :: String)) (querySort ++ [(docField,True)])
-    <> storedFieldSource store J..= map fieldName queryFields
+    <> storedFieldsArgs queryFields
     <> "query" .=* (if querySample < 1
       then \q -> ("function_score" .=* ("query" .=* q
         <> "random_score" .=* foldMap (\s -> "seed" J..= s <> "field" J..= ("_seq_no" :: String)) querySeed
@@ -334,7 +336,7 @@ scrollSearch sid = elasticSearch GET ["_search", "scroll"] [] J.parseJSON $ JE.p
   <> "scroll_id" J..= sid
 
 queryBulk :: Catalog -> Query -> M (IO (Word, V.Vector J.Object))
-queryBulk cat@Catalog{ catalogStore = CatalogES{ catalogStoreField = store } } query@Query{..} = do
+queryBulk cat query@Query{..} = do
   unless (queryOffset == 0 && null queryAggs) $
     result $ response badRequest400 [] ("offset,aggs not supported for download" :: String)
   glob <- ask
@@ -357,7 +359,7 @@ queryBulk cat@Catalog{ catalogStore = CatalogES{ catalogStoreField = store } } q
         (return . V.map row))
       hits)
     q
-  row (J.Object o) = storedFields' store o
+  row (J.Object o) = storedFields' o
   row _ = HM.empty -- error?
 
 createBulk :: Foldable f => Catalog -> f (String, J.Series) -> M ()

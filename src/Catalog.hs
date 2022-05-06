@@ -6,8 +6,7 @@
 {-# LANGUAGE TypeFamilies #-}
 
 module Catalog
-  ( ESStoreField(..)
-  , CatalogStore(..)
+  ( CatalogStore(..)
   , Simulation
   , Catalog(..)
   , takeCatalogField
@@ -49,28 +48,10 @@ import Field
 import JSON
 import qualified KeyedMap as KM
 
-data ESStoreField
-  = ESStoreSource
-  | ESStoreValues
-  | ESStoreStore
-  deriving (Eq, Ord, Enum, Show)
-
-instance J.FromJSON ESStoreField where
-  parseJSON J.Null                  = return ESStoreSource
-  parseJSON (J.Bool False)          = return ESStoreValues
-  parseJSON (J.Bool True)           = return ESStoreStore
-  parseJSON (J.String "source")     = return ESStoreSource
-  parseJSON (J.String "doc_values") = return ESStoreValues
-  parseJSON (J.String "docvalue")   = return ESStoreValues
-  parseJSON (J.String "value")      = return ESStoreValues
-  parseJSON (J.String "store")      = return ESStoreStore
-  parseJSON x = J.typeMismatch "ESStoreField" x
-
 data CatalogStore
   = CatalogES
     { catalogIndex :: !T.Text
     , catalogSettings :: J.Object
-    , catalogStoreField :: !ESStoreField
     }
 
 -- |Just a catalog identifier (name)
@@ -118,7 +99,6 @@ parseCatalog dict catalogName = J.withObject "catalog" $ \c -> do
   catalogStore <- CatalogES
       <$> (c J..:? "index" J..!= catalogName)
       <*> (c J..:? "settings" J..!= HM.empty)
-      <*> (c J..:? "store" J..!= ESStoreValues)
   catalogOrder <- c J..:? "order" J..!= catalogName
   let catalogFields = expandFields catalogFieldGroups
       catalogFieldMap = HM.fromList $ map (fieldName &&& id) catalogFields

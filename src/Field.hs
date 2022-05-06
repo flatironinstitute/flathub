@@ -20,6 +20,7 @@ module Field
   , fieldDescr
   , fieldUnits
   , fieldFlag
+  , fieldStore
   , fieldTerms
   , fieldDict
   , fieldScale
@@ -143,19 +144,20 @@ instance J.FromJSON Attachment where
 
 data FieldDesc s = FieldDesc
   { fieldDescName :: T.Text
-  , fieldDescEnum :: Maybe (V.Vector T.Text)
   , fieldDescTitle :: T.Text
   , fieldDescDescr :: Maybe T.Text
   , fieldDescUnits :: Maybe T.Text
   , fieldDescFlag :: FieldFlag
-  , fieldDescTerms :: Bool
+  , fieldDescStore :: Maybe Bool -- ^true: store only, false: index only, Nothing: index+store (store = all, index = not any)
+  , fieldDescEnum :: Maybe (V.Vector T.Text) -- ^enumeration values (for integral fields)
+  , fieldDescTerms :: Bool -- ^treat as catagorical (implied if enum or string)
   , fieldDescDict :: Maybe T.Text -- ^link to field dictionary
   , fieldDescScale :: Maybe Scientific -- ^scale factor, to display scale*x instead
   , fieldDescReversed :: Bool -- ^reverse axis on plotting
   , fieldDescWildcard :: Bool -- ^allow wildcard text filter
   , fieldDescSize :: Word -- ^string length
-  , fieldDescIngest :: Maybe T.Text
-  , fieldDescMissing :: [BS.ByteString]
+  , fieldDescIngest :: Maybe T.Text -- ^special handling on ingest (interpretation depends on format)
+  , fieldDescMissing :: [BS.ByteString] -- ^values to treat as missing on ingest
   , fieldDescAttachment :: Maybe Attachment
   , fieldDescSub :: s (FieldsSub Proxy s)
   }
@@ -177,6 +179,8 @@ fieldUnits :: FieldSub t s -> Maybe T.Text
 fieldUnits = fieldDescUnits . fieldDesc
 fieldFlag :: FieldSub t s -> FieldFlag
 fieldFlag = fieldDescFlag . fieldDesc
+fieldStore :: FieldSub t s -> Maybe Bool
+fieldStore = fieldDescStore . fieldDesc
 fieldTerms :: FieldSub t s -> Bool
 fieldTerms = fieldDescTerms . fieldDesc
 fieldDict :: FieldSub t s -> Maybe T.Text
@@ -217,6 +221,7 @@ instance Alternative s => Default (FieldDesc s) where
     , fieldDescDescr = Nothing
     , fieldDescUnits = Nothing
     , fieldDescFlag = FieldNormal
+    , fieldDescStore = Just False
     , fieldDescTerms = False
     , fieldDescSub = empty
     , fieldDescDict = Nothing
@@ -289,7 +294,7 @@ parseFieldGroup dict = parseFieldDefs def where
     d <- maybe (return defd)
       (\n -> maybe (fail $ "Unknown dict key: " ++ show n) return $ HM.lookup n dict)
       fieldDescDict
-    fieldDescName <- f J..:? "name" J..!= fieldName d
+    fieldDescName <- f J..:! "name" J..!= fieldName d
     when (T.any ('.' ==) fieldDescName) $ fail $ "Invalid field name: " ++ show fieldDescName
     fieldType <- f J..:! "type" J..!= fieldType d
     fieldDescEnum <- maybe (fieldEnum d <|> V.fromList ["false","true"] <$ guard (typeIsBoolean fieldType)) join
@@ -297,19 +302,20 @@ parseFieldGroup dict = parseFieldDefs def where
     fieldDescTitle <- f J..:! "title" J..!= if T.null (fieldTitle d) then fieldDescName else fieldTitle d
     fieldDescDescr <- (<|> fieldDescr d) <$> f J..:? "descr"
     fieldDescUnits <- (<|> fieldUnits d) <$> f J..:? "units"
-    fieldDescFlag <- f J..:? "flag" J..!= fieldFlag d
-    fieldDescScale <- f J..:! "scale"
+    fieldDescStore <- f J..:! "store" J..!= fieldStore d
+    fieldDescFlag <- f J..:! "flag" J..!= fieldFlag d
+    fieldDescScale <- f J..:? "scale"
     fieldDescReversed <- f J..:? "reversed" J..!= fieldReversed d
-    fieldDescIngest <- f J..:! "ingest"
+    fieldDescIngest <- f J..:? "ingest"
     fieldDescMissing <- map TE.encodeUtf8 <$> case HM.lookup "missing" f of
       Nothing -> return []
       Just J.Null -> return []
       Just (J.String s) -> return [s]
       Just (J.Array l) -> mapM J.parseJSON $ V.toList l
       Just j -> J.typeMismatch "missing string" j
-    fieldDescAttachment <- f J..:! "attachment"
-    fieldDescTerms <- f J..:? "terms" J..!= (isJust fieldDescEnum || typeIsString fieldType)
-    fieldDescWildcard <- f J..:? "wildcard" J..!= fieldWildcard d
+    fieldDescAttachment <- f J..:? "attachment"
+    fieldDescTerms <- f J..:! "terms" J..!= (isJust fieldDescEnum || typeIsString fieldType)
+    fieldDescWildcard <- f J..:! "wildcard" J..!= fieldWildcard d
     fieldDescSize <- f J..:? "size" J..!= fieldSize d
     fieldDescSub <- (<|> fieldSub d) <$> J.explicitParseFieldMaybe' (J.withArray "subfields" $ V.mapM $
         parseFieldDefs defd

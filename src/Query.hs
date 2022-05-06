@@ -119,25 +119,23 @@ catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do
     result $ response badRequest400 [] ("limit too large" :: String)
   unless (hsize > 0 && hsize <= 1024) $
     result $ response badRequest400 [] ("hist too large" :: String)
-  case catalogStore cat of
-    CatalogES{ catalogStoreField = store } -> do
-      res <- ES.queryIndex cat query
-      return $ okResponse [] $ clean store res
+  res <- ES.queryIndex cat query
+  return $ okResponse [] $ clean res
   where
   histSize (QueryHist _ n _ l) = n * histsSize l
   histSize _ = 1
   histsSize = product . map histSize
-  clean store = mapObject $ HM.mapMaybeWithKey (cleanTop store)
-  cleanTop _ "aggregations" = Just
-  cleanTop _ "histsize" = Just
-  cleanTop store "hits" = Just . mapObject (HM.mapMaybeWithKey $ cleanHits store)
-  cleanTop _ _ = const Nothing
-  cleanHits _ "total" (J.Object o) = HM.lookup "value" o
-  cleanHits _ "total" v = Just v
-  cleanHits store "hits" a = Just $ mapArray (V.map $ cleanHit store) a
-  cleanHits _ _ _ = Nothing
-  cleanHit store (J.Object o) = J.Object $ ES.storedFields' store o
-  cleanHit _ v = v
+  clean = mapObject $ HM.mapMaybeWithKey cleanTop
+  cleanTop "aggregations" = Just
+  cleanTop "histsize" = Just
+  cleanTop "hits" = Just . mapObject (HM.mapMaybeWithKey cleanHits)
+  cleanTop _ = const Nothing
+  cleanHits "total" (J.Object o) = HM.lookup "value" o
+  cleanHits "total" v = Just v
+  cleanHits "hits" a = Just $ mapArray (V.map cleanHit) a
+  cleanHits _ _ = Nothing
+  cleanHit (J.Object o) = J.Object $ ES.storedFields' o
+  cleanHit v = v
   mapObject :: (J.Object -> J.Object) -> J.Value -> J.Value
   mapObject f (J.Object o) = J.Object (f o)
   mapObject _ v = v

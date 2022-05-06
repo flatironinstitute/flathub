@@ -89,7 +89,7 @@ attachment = getPath (R.parameter R.>* "attachment" R.>*<< R.parameter R.>*< R.p
     , queryFields = attachmentsFields cat [att]
     }
   doc <- either (result . response notFound404 [] . ("Could not get item: " <>)) return
-    $ J.parseEither (parse $ catalogStoreField $ catalogStore cat) res
+    $ J.parseEither parse res
   dir <- asks globalDataDir
   return $ Wai.responseFile ok200
     [ (hContentType, "application/octet-stream")
@@ -97,10 +97,10 @@ attachment = getPath (R.parameter R.>* "attachment" R.>*<< R.parameter R.>*< R.p
     , (hCacheControl, "public, max-age=86400")
     ] (dir </> pathStr (attachmentPath att) doc) Nothing
   where
-  parse store = J.withObject "query"
+  parse = J.withObject "query"
     $ parseJSONField "hits" $ J.withObject "hits"
     $ parseJSONField "hits" $ J.withArray "hits"
-    $ \v -> if V.length v == 1 then J.withObject "hit" (return . ES.storedFields' store) (V.head v) else fail ("found " <> show (V.length v) <> " documents")
+    $ \v -> if V.length v == 1 then J.withObject "hit" (return . ES.storedFields') (V.head v) else fail ("found " <> show (V.length v) <> " documents")
 
 attachmentsBulkStream :: BS.ByteString -> [Field] -> IO (Word, V.Vector J.Object) -> M ((B.Builder -> IO ()) -> IO ())
 attachmentsBulkStream info ats next = do

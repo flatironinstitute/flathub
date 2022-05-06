@@ -46,6 +46,7 @@ import           Data.Proxy (Proxy(Proxy))
 import           Data.Scientific (Scientific, fromFloatDigits)
 import qualified Data.Text as T
 import           Data.Typeable (Typeable)
+import qualified Data.Vector as V
 import           Data.Void (Void, absurd, vacuous)
 import           Data.Word (Word64)
 import           Text.Read (readMaybe, readPrec, Lexeme(Ident), lexP, readEither)
@@ -97,7 +98,8 @@ class (Eq a, Ord a, Show a, Read a, J.ToJSON a, J.FromJSON a, OA.ToParamSchema a
   toDouble :: a -> Double
   -- |Certain representations ES uses do not always match what you expect, see we need a more permissive parser in some cases
   parseJSONTyped :: J.Value -> J.Parser a
-  parseJSONTyped = J.parseJSON
+  parseJSONTyped (J.Array v) | V.length v == 1 = J.parseJSON (V.head v)
+  parseJSONTyped j = J.parseJSON j
 
 typeValue1 :: Typed a => a -> Value
 typeValue1 = typeValue . Identity
@@ -134,6 +136,7 @@ instance Typed Bool   where typeValue = Boolean
                             parseJSONTyped (J.Bool b) = return b
                             parseJSONTyped (J.Number 0) = return False
                             parseJSONTyped (J.Number 1) = return True
+                            parseJSONTyped (J.Array v) | V.length v == 1 = parseJSONTyped (V.head v)
                             parseJSONTyped j = J.typeMismatch "Bool" j
 instance Typed T.Text where typeValue = Keyword
                             toScientific = read . T.unpack

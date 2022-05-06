@@ -103,10 +103,10 @@ filterQuery Filters{..} = "query" .=*
   term f (FieldWildcard w) | fieldWildcard f = "wildcard" .=* (fieldName f J..= w)
   term _ _ = error "invalid FieldFilder"
 
-parseData :: Traversable f => Catalog -> f Field -> J.Value -> J.Parser (V.Vector (f (TypeValue Maybe)))
-parseData cat fields = J.withObject "data res" $ \o ->
+parseData :: Traversable f => f Field -> J.Value -> J.Parser (V.Vector (f (TypeValue Maybe)))
+parseData fields = J.withObject "data res" $ \o ->
   o J..: "hits" >>= (J..: "hits") >>= mapM row where
-  row = getf . storedFields' (catalogStoreField (catalogStore cat))
+  row = getf . storedFields'
   getf o = mapM (parsef o) fields
   parsef o f = traverseTypeValue (\Proxy -> mapM J.parseJSON $ HM.lookup (fieldName f) o) (fieldType f)
 
@@ -122,11 +122,11 @@ maxDataCount = 5000
 
 queryData :: Catalog -> DataArgs -> M (V.Vector (V.Vector (TypeValue Maybe)))
 queryData cat DataArgs{..} =
-  searchCatalog cat [] (parseData cat (V.fromList dataFields)) $ JE.pairs
+  searchCatalog cat [] (parseData (V.fromList dataFields)) $ JE.pairs
     $  "size" J..= dataCount
     <> mwhen (dataOffset > 0) ("from" J..= dataOffset)
     <> "sort" `JE.pair` JE.list (\(f, a) -> JE.pairs (fieldName f J..= if a then "asc" else "desc" :: String)) (dataSort ++ [(docField,True)])
-    <> storedFieldSource (catalogStoreField (catalogStore cat)) J..= map fieldName dataFields
+    <> storedFieldsArgs dataFields
     <> filterQuery dataFilters
 
 fieldUseTerms :: Field -> Bool
