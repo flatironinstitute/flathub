@@ -349,12 +349,12 @@ fieldsQueryParam = do
     & OA.explode ?~ False
     & OA.schema ?~ fl
 
-parseFieldsQuery :: Catalog -> Wai.Request -> BS.ByteString -> KM.KeyedMap Field
+parseFieldsQuery :: Catalog -> Wai.Request -> BS.ByteString -> [Field]
 parseFieldsQuery cat req param =
-  KM.fromList $ mapMaybe (lookupField cat . decodeUtf8') $ parseListQuery req param
+  mapMaybe (lookupField cat . decodeUtf8') $ parseListQuery req param
 
-parseFieldsJSON :: Catalog -> J.Value -> J.Parser (KM.KeyedMap Field)
-parseFieldsJSON cat = J.withArray "field list" $ \l -> KM.fromList <$> mapM (J.withText "field name" $ lookupField cat) (V.toList l)
+parseFieldsJSON :: Catalog -> J.Value -> J.Parser [Field]
+parseFieldsJSON cat = J.withArray "field list" $ \l -> mapM (J.withText "field name" $ lookupField cat) (V.toList l)
 
 -------- /api/{catalog}/stats
 
@@ -367,7 +367,7 @@ parseStatsQuery cat req = StatsArgs
 parseStatsJSON :: Catalog -> J.Value -> J.Parser StatsArgs
 parseStatsJSON cat = J.withObject "stats request" $ \o -> StatsArgs
   <$> parseFiltersJSON cat (HM.delete "fields" o)
-  <*> (mapM (parseFieldsJSON cat) =<< o J..:? "fields") J..!= KM.empty
+  <*> (maybe (return []) (parseFieldsJSON cat) =<< o J..:? "fields")
 
 fieldStatsJSON :: FieldSub FieldStats m -> J.Encoding
 fieldStatsJSON = unTypeValue fsj . fieldType
@@ -672,14 +672,11 @@ apiOperations =
       unless (dataCount args <= maxDataCount && fromIntegral (dataCount args) + fromIntegral (dataOffset args) <= maxResultWindow)
         $ result $ response badRequest400 [] ("count too large" :: String)
       dat <- queryData cat args
-      return $ okResponse (apiHeaders req) $ JE.list (J.pairs . foldMap (\f ->
-        fieldName f J..= fieldType f)) (V.toList dat)
+      return $ okResponse (apiHeaders req) $ JE.list J.foldable (V.toList dat)
     , apiResponseSchema = do
       fv <- declareSchemaRef (Proxy :: Proxy FieldValue)
-      return $ arraySchema $ OA.Inline $ mempty
-        & OA.type_ ?~ OA.OpenApiObject
-        & OA.description ?~ "a single data row mapping fields to values (missing values are absent)"
-        & OA.additionalProperties ?~ OA.AdditionalPropertiesSchema fv
+      return $ arraySchema $ OA.Inline $ arraySchema fv
+        & OA.description ?~ "a single data row corresponding to the requested fields in order (missing values are null)"
     }
 
   , APIOperation -- /api/{cat}/histogram
@@ -722,10 +719,29 @@ apiOperations =
       unless (length (histogramFields args) + fromEnum (isJust (histogramQuartiles args)) <= fromIntegral maxHistogramDepth
           && product (map (fromIntegral . histogramSize) (histogramFields args)) <= maxHistogramSize)
         $ result $ response badRequest400 [] ("histograms too large" :: String)
-      dat <- queryHistogram cat args
-      return $ okResponse (apiHeaders req) $ J.toEncoding (length $ histogramBuckets dat)
+      HistogramResult{..} <- queryHistogram cat args
+      return $ okResponse (apiHeaders req) $ J.pairs
+        $  "sizes" J..= histogramSizes
+        <> "buckets" `JE.pair` JE.list (\HistogramBucket{..} -> J.pairs
+          $  "key" `JE.pair` J.foldable bucketKey
+          <> "count" J..= bucketCount
+          <> foldMap ("quartiles" J..=) bucketQuartiles)
+          histogramBuckets
     , apiResponseSchema = do
-      return mempty
+      fv <- declareSchemaRef (Proxy :: Proxy FieldValue)
+      return $ objectSchema "histogram result"
+        [ ("sizes", OA.Inline $ arraySchema (OA.Inline $ schemaDescOf (head . histogramSizes) "size of each histogram buckets in this dimension, either as an absolute width in linear space, or as a ratio in log space"
+            & OA.minimum_ ?~ 0
+            & OA.exclusiveMinimum ?~ True)
+          & OA.description ?~ "field order corresponds to the requested histogram fields and bucket keys", True)
+        , ("buckets", OA.Inline $ arraySchema $ OA.Inline $ objectSchema "histogram bucket, representing a box in the dimension space specified by the requested fields"
+          [ ("key", OA.Inline $ arraySchema fv
+            & OA.description ?~ "the minimum (left) point of this bucket, such than the bucket includes the range [key,key+size) (or [key,key*size) for log scale)", True)
+          , ("count", OA.Inline $ schemaDescOf bucketCount "the number of rows with values that fall within this bucket", True)
+          , ("quartiles", OA.Inline $ arraySchema fv
+            & OA.description ?~ "if quartiles of a field were requested, includes the values of that field corresponding to the [0,25,50,75,100] percentiles ([min, first quartile, median, third quartile, max]) for rows within this bucket", False)
+          ], True)
+        ]
     }
   ]
   where

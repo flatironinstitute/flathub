@@ -23,8 +23,8 @@ import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
 import           Data.Bits (xor)
 import           Data.Function (on)
-import           Data.Functor.Const (Const(Const))
 import           Data.Functor.Identity (Identity(Identity))
+import           Data.Functor.Reverse (Reverse(Reverse))
 import qualified Data.HashMap.Strict as HM
 import           Data.List (genericTake)
 import           Data.Maybe (fromMaybe)
@@ -130,7 +130,7 @@ parseStats cat = J.withObject "stats res" $ \o -> (,)
 
 data StatsArgs = StatsArgs
   { statsFilters :: Filters
-  , statsFields :: KM.KeyedMap Field
+  , statsFields :: [Field]
   }
 
 queryStats :: Catalog -> StatsArgs -> M (Count, KM.KeyedMap (FieldSub FieldStats Proxy))
@@ -145,17 +145,16 @@ queryStats cat StatsArgs{..} =
   where
   field = ("field" J..=) . fieldName
 
-parseData :: Catalog -> J.Value -> J.Parser (V.Vector (KM.KeyedMap FieldValue))
-parseData cat = J.withObject "data res" $ \o ->
+parseData :: Traversable f => Catalog -> f Field -> J.Value -> J.Parser (V.Vector (f (TypeValue Maybe)))
+parseData cat fields = J.withObject "data res" $ \o ->
   o J..: "hits" >>= (J..: "hits") >>= mapM row where
-  row = HM.traverseWithKey parsef . storedFields' (catalogStoreField (catalogStore cat))
-  parsef n j = do
-    f <- lookupField cat n
-    updateFieldValueM f (\Proxy -> Identity <$> J.parseJSON j)
+  row = getf . storedFields' (catalogStoreField (catalogStore cat))
+  getf o = mapM (parsef o) fields
+  parsef o f = traverseTypeValue (\Proxy -> mapM J.parseJSON $ HM.lookup (fieldName f) o) (fieldType f)
 
 data DataArgs = DataArgs
   { dataFilters :: Filters
-  , dataFields :: KM.KeyedMap Field
+  , dataFields :: [Field]
   , dataSort :: [(Field, Bool)]
   , dataCount, dataOffset :: Word16
   }
@@ -163,13 +162,13 @@ data DataArgs = DataArgs
 maxDataCount :: Word16
 maxDataCount = 5000
 
-queryData :: Catalog -> DataArgs -> M (V.Vector (KM.KeyedMap FieldValue))
+queryData :: Catalog -> DataArgs -> M (V.Vector (V.Vector (TypeValue Maybe)))
 queryData cat DataArgs{..} =
-  searchCatalog cat [] (parseData cat) $ JE.pairs
+  searchCatalog cat [] (parseData cat (V.fromList dataFields)) $ JE.pairs
     $  "size" J..= dataCount
     <> mwhen (dataOffset > 0) ("from" J..= dataOffset)
     <> "sort" `JE.pair` JE.list (\(f, a) -> JE.pairs (fieldName f J..= if a then "asc" else "desc" :: String)) (dataSort ++ [(docField,True)])
-    <> storedFieldSource (catalogStoreField (catalogStore cat)) J..= HM.keys dataFields
+    <> storedFieldSource (catalogStoreField (catalogStore cat)) J..= map fieldName dataFields
     <> filterQuery dataFilters
 
 data Histogram = Histogram
@@ -187,11 +186,6 @@ data HistogramArgs = HistogramArgs
 maxHistogramSize :: Word16
 maxHistogramSize = 4096
 
-type FieldConst a = FieldSub (Const a) Proxy
-
-setFieldConst :: Field -> a -> FieldConst a
-setFieldConst f c = f{ fieldType = fmapTypeValue (\Proxy -> Const c) (fieldType f) }
-
 data HistogramInterval
   = HistogramInterval
     { histogramIntervalField :: Field
@@ -205,13 +199,13 @@ data HistogramInterval
     }
 
 data HistogramBucket = HistogramBucket
-  { bucketKey :: KM.KeyedMap FieldValue
+  { bucketKey :: Reverse [] Value
   , bucketCount :: Count
-  , bucketQuartiles :: Maybe (FieldSub V.Vector Proxy)
+  , bucketQuartiles :: Maybe (TypeValue V.Vector)
   }
 
 data HistogramResult = HistogramResult
-  { histogramSizes :: KM.KeyedMap (FieldConst Scientific)
+  { histogramSizes :: [Scientific]
   , histogramBuckets :: [HistogramBucket]
   }
 
@@ -220,20 +214,20 @@ concatMapM f l = concat <$> mapM f l
 
 parseHistogram :: HistogramArgs -> J.Value -> J.Parser [HistogramBucket]
 parseHistogram HistogramArgs{..} = J.withObject "histogram res" $ \o ->
-  o J..: "aggregations" >>= phist KM.empty histogramFields where
+  o J..: "aggregations" >>= phist [] histogramFields where
   phist k (h:l) o =
     o J..: fieldName (histogramField h) >>= (J..: "buckets") >>= concatMapM pbuc where
     pbuc = J.withObject "hist bucket" $ \b -> do
       j <- b J..: (if histogramLog h then "from" else "key")
-      v <- updateFieldValueM (histogramField h) (\Proxy -> Identity <$> J.parseJSON j)
-      phist (KM.insert v k) l b
+      v <- traverseTypeValue (\Proxy -> Identity <$> J.parseJSON j) (fieldType $ histogramField h)
+      phist (v : k) l b
   phist k [] b = do
     c <- b J..: "doc_count"
     q <- mapM (pquart b) histogramQuartiles
-    return [HistogramBucket k c q]
+    return [HistogramBucket (Reverse k) c q]
   pquart o f = do
     q <- o J..: fieldName f >>= (J..: "values") >>= mapM (J..: "value")
-    updateFieldValueM f (\Proxy -> mapM J.parseJSON q)
+    traverseTypeValue (\Proxy -> mapM J.parseJSON q) (fieldType f)
 
 scaleFromByTo :: Real a => a -> a -> a -> [a]
 scaleFromByTo x r y
@@ -268,9 +262,7 @@ queryHistogram cat hist@HistogramArgs{..} = do
       $  "size" J..= (0 :: Count)
       <> filterQuery histogramFilters
       <> haggs sizes
-  return $ HistogramResult
-    (KM.fromList $ map (\hi -> setFieldConst (histogramIntervalField hi) (histogramInterval hi)) sizes)
-    dat
+  return $ HistogramResult (map histogramInterval sizes) dat
   where
   srng FieldStats{ statsMin = Just x, statsMax = Just y } = Just (toRealFloat x, toRealFloat y)
   srng _ = Nothing
