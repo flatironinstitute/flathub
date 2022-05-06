@@ -11,7 +11,7 @@ module ES
   , createIndex
   , checkIndices
   , storedFieldsArgs
-  , storedFields'
+  , storedFields
   , maxResultWindow
   , queryIndex
   , queryBulk
@@ -194,13 +194,12 @@ storedFieldsArgs fields =
   req n l = n J..= map fieldName l
   (store, docvalue) = partition (and . fieldStore) fields
 
-storedFields :: MonadFail m => J.Object -> m J.Object
-storedFields o = case HM.lookup "fields" o of
-  Just (J.Object s) -> return $ HM.map unsingletonJSON s -- it would be nice to use parseJSONTyped instead
-  _ -> fail "missing fields object"
-
-storedFields' :: J.Object -> J.Object
-storedFields' o = maybe id (HM.insert "_id") (HM.lookup "_id" o) $ fromMaybe HM.empty $ storedFields o
+storedFields :: J.Object -> J.Object
+storedFields o = maybe id (HM.insert "_id") (HM.lookup "_id" o) $
+  foldMap obj (HM.lookup "fields" o)
+  where
+  obj (J.Object x) = x
+  obj _ = error "stored fields" -- HM.empty
 
 scrollTime :: IsString s => s
 scrollTime = "60s"
@@ -356,11 +355,10 @@ queryBulk cat query@Query{..} = do
     <*> parseJSONField "hits" (J.withObject "hits" $ \hits -> (,)
       <$> (hits J..: "total" >>= (J..: "value"))
       <*> parseJSONField "hits" (J.withArray "hits" $
-        (return . V.map row))
+        V.mapM (J.withObject "hit" (return . row)))
       hits)
     q
-  row (J.Object o) = storedFields' o
-  row _ = HM.empty -- error?
+  row = HM.map unsingletonJSON . storedFields
 
 createBulk :: Foldable f => Catalog -> f (String, J.Series) -> M ()
 createBulk cat@Catalog{ catalogStore = ~CatalogES{} } docs = do

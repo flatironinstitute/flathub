@@ -106,9 +106,9 @@ filterQuery Filters{..} = "query" .=*
 parseData :: Traversable f => f Field -> J.Value -> J.Parser (V.Vector (f (TypeValue Maybe)))
 parseData fields = J.withObject "data res" $ \o ->
   o J..: "hits" >>= (J..: "hits") >>= mapM row where
-  row = getf . storedFields'
+  row = getf . storedFields
   getf o = mapM (parsef o) fields
-  parsef o f = traverseTypeValue (\Proxy -> mapM J.parseJSON $ HM.lookup (fieldName f) o) (fieldType f)
+  parsef o f = traverseTypeValue (\Proxy -> mapM parseJSONTyped $ HM.lookup (fieldName f) o) (fieldType f)
 
 data DataArgs = DataArgs
   { dataFilters :: Filters

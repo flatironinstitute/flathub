@@ -100,7 +100,9 @@ attachment = getPath (R.parameter R.>* "attachment" R.>*<< R.parameter R.>*< R.p
   parse = J.withObject "query"
     $ parseJSONField "hits" $ J.withObject "hits"
     $ parseJSONField "hits" $ J.withArray "hits"
-    $ \v -> if V.length v == 1 then J.withObject "hit" (return . ES.storedFields') (V.head v) else fail ("found " <> show (V.length v) <> " documents")
+    $ \v -> if V.length v == 1
+      then J.withObject "hit" (return . HM.map unsingletonJSON . ES.storedFields) (V.head v)
+      else fail ("found " <> show (V.length v) <> " documents")
 
 attachmentsBulkStream :: BS.ByteString -> [Field] -> IO (Word, V.Vector J.Object) -> M ((B.Builder -> IO ()) -> IO ())
 attachmentsBulkStream info ats next = do

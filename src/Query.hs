@@ -42,6 +42,7 @@ import           Web.Route.Invertible.Render (renderUrlRequestBuilder)
 import           Web.Route.Invertible.Internal (requestRoute')
 import           Web.Route.Invertible.Wai (waiRequest)
 
+import JSON
 import Type
 import Field
 import Catalog
@@ -134,7 +135,7 @@ catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do
   cleanHits "total" v = Just v
   cleanHits "hits" a = Just $ mapArray (V.map cleanHit) a
   cleanHits _ _ = Nothing
-  cleanHit (J.Object o) = J.Object $ ES.storedFields' o
+  cleanHit (J.Object o) = J.Object $ HM.map unsingletonJSON $ ES.storedFields o
   cleanHit v = v
   mapObject :: (J.Object -> J.Object) -> J.Value -> J.Value
   mapObject f (J.Object o) = J.Object (f o)
