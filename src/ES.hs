@@ -143,19 +143,23 @@ defaultSettings cat = HM.fromList
   -- target number of docs per shard
   docsPerShard = 100000000
 
+esType :: Type -> (Bool, Type)
+esType t = maybe (False, t) (True ,) $ typeIsArray t
+
 createIndex :: Catalog -> M J.Value
 createIndex cat@Catalog{ catalogStore = ~CatalogES{..} } = elasticSearch PUT [T.unpack catalogIndex] [] J.parseJSON $ JE.pairs $
      "settings" J..= mergeJSONObject catalogSettings (defaultSettings cat)
   <> "mappings" .=*
     (  "dynamic" J..= J.String "strict"
     <> "_source" .=* ("enabled" J..= False)
-    <> "properties" J..= HM.map field (catalogFieldMap cat))
+    <> "properties" .=* HM.foldMapWithKey field (catalogFieldMap cat))
   where
-  field f = J.object
-    [ "type" J..= (fieldType f :: Type)
-    , "store" J..= and (fieldStore f)
-    , "index" J..= not (or $ fieldStore f)
-    ]
+  field n f = n .=*
+    (  "type" J..= t
+    <> "store" J..= and (fieldStore f)
+    <> "index" J..= not (or $ fieldStore f)
+    <> mwhen a ("meta" .=* ("array" J..= a)))
+    where (a, t) = esType (fieldType f)
 
 checkIndices :: M (HM.HashMap Simulation String)
 checkIndices = do
@@ -177,8 +181,11 @@ checkIndices = do
     forM_ fields $ \field -> parseJSONField (fieldName field) (prop field) ps
   prop :: Field -> J.Value -> J.Parser ()
   prop field = J.withObject "property" $ \p -> do
+    let (fa, ft) = esType (fieldType field)
     t <- p J..: "type"
-    unless (t == fieldType field) $ fail $ "incorrect field type; should be " ++ show (fieldType field)
+    m <- p J..:? "meta" J..!= HM.empty
+    a <- m J..:? "array" J..!= False
+    unless (t == ft && a == fa) $ fail $ "incorrect field type; should be " ++ show (fieldType field)
   boolish :: J.Value -> J.Parser Bool
   boolish (J.Bool b) = return b
   boolish (J.String "true") = return True

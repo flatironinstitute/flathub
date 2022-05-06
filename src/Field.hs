@@ -392,10 +392,10 @@ fieldJValue f = fieldName f J..= fieldType f
 fieldJValues :: [FieldValue] -> J.Series
 fieldJValues = foldMap fieldJValue
 
--- |pseudo field representing ES _id, _doc
+-- |pseudo fields representing ES _id, _doc
 idField, docField :: Field
 idField = Field{ fieldDesc = def{ fieldDescName = "_id", fieldDescTitle = "_id", fieldDescFlag = FieldHidden }, fieldType = Keyword Proxy }
-docField = Field{ fieldDesc = def{ fieldDescName = "_doc", fieldDescTitle = "_doc", fieldDescFlag = FieldHidden }, fieldType = Keyword Proxy }
+docField = Field{ fieldDesc = def{ fieldDescName = "_doc", fieldDescTitle = "_doc", fieldDescFlag = FieldHidden }, fieldType = Void Proxy }
 
 type Count = Word
 

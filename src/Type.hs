@@ -21,13 +21,13 @@ module Type
   , TypeTraversable(..)
   , typeOfValue
   , unTypeValue
-  , toScientific
   , toDouble
   , parseTypeValue
   , parseJSONTyped
   , parseJSONTypeValue
   , parseTypeJSONValue
   , baseType
+  , typeIsArray
   , typeIsFloating, typeIsIntegral, typeIsNumeric, typeIsString, typeIsBoolean
   , numpyTypeSize
   , sqlType
@@ -37,13 +37,13 @@ import qualified Data.Aeson as J
 import qualified Data.Aeson.Types as J
 import           Data.Default (Default(def))
 import           Data.Functor.Classes (Eq1, eq1, Show1, showsPrec1)
-import           Data.Functor.Const (Const(Const, getConst))
+import           Data.Functor.Const (Const(..))
+import           Data.Functor.Compose (Compose(..))
 import           Data.Functor.Identity (Identity(Identity, runIdentity))
 import           Data.Int (Int64, Int32, Int16, Int8)
 import           Data.Maybe (fromMaybe)
 import qualified Data.OpenApi as OA
 import           Data.Proxy (Proxy(Proxy))
-import           Data.Scientific (Scientific, fromFloatDigits)
 import qualified Data.Text as T
 import           Data.Typeable (Typeable)
 import qualified Data.Vector as V
@@ -73,6 +73,7 @@ data TypeValue f
   | Byte      !(f Int8)
   | Boolean   !(f Bool)
   | Keyword   !(f T.Text)
+  | Array (TypeValue (Compose f V.Vector))
   | Void      !(f Void)
 
 type Type = TypeValue Proxy
@@ -94,7 +95,6 @@ allTypes =
 
 class (Eq a, Ord a, Show a, Read a, J.ToJSON a, J.FromJSON a, OA.ToParamSchema a, OA.ToSchema a, Typeable a) => Typed a where
   typeValue :: f a -> TypeValue f
-  toScientific :: a -> Scientific
   toDouble :: a -> Double
   -- |Certain representations ES uses do not always match what you expect, see we need a more permissive parser in some cases
   parseJSONTyped :: J.Value -> J.Parser a
@@ -105,32 +105,22 @@ typeValue1 :: Typed a => a -> Value
 typeValue1 = typeValue . Identity
 
 instance Typed Word64 where typeValue = ULong
-                            toScientific = fromIntegral
                             toDouble = fromIntegral
 instance Typed Int64  where typeValue = Long
-                            toScientific = fromIntegral
                             toDouble = fromIntegral
 instance Typed Int32  where typeValue = Integer
-                            toScientific = fromIntegral
                             toDouble = fromIntegral
 instance Typed Int16  where typeValue = Short
-                            toScientific = fromIntegral
                             toDouble = fromIntegral
 instance Typed Int8   where typeValue = Byte
-                            toScientific = fromIntegral
                             toDouble = fromIntegral
 instance Typed Double where typeValue = Double
-                            toScientific = fromFloatDigits
                             toDouble = id
 instance Typed Float  where typeValue = Float
-                            toScientific = fromFloatDigits
                             toDouble = realToFrac
 instance Typed Half   where typeValue = HalfFloat
-                            toScientific = fromFloatDigits
                             toDouble = realToFrac
 instance Typed Bool   where typeValue = Boolean
-                            toScientific False = 0
-                            toScientific True = 1
                             toDouble False = 0
                             toDouble True = 0
                             parseJSONTyped (J.Bool b) = return b
@@ -139,11 +129,15 @@ instance Typed Bool   where typeValue = Boolean
                             parseJSONTyped (J.Array v) | V.length v == 1 = parseJSONTyped (V.head v)
                             parseJSONTyped j = J.typeMismatch "Bool" j
 instance Typed T.Text where typeValue = Keyword
-                            toScientific = read . T.unpack
                             toDouble = read . T.unpack
 instance Typed Void   where typeValue = Void
-                            toScientific = absurd
                             toDouble = absurd
+
+instance Typed a => Typed (V.Vector a) where
+  typeValue = Array . typeValue . Compose
+  toDouble = toDouble . V.head
+  parseJSONTyped (J.Array v) = V.mapM parseJSONTyped v
+  parseJSONTyped j = V.singleton <$> parseJSONTyped j
 
 unTypeValue :: (forall a . Typed a => f a -> b) -> TypeValue f -> b
 unTypeValue f (Double    x) = f $! x
@@ -156,7 +150,8 @@ unTypeValue f (Short     x) = f $! x
 unTypeValue f (Byte      x) = f $! x
 unTypeValue f (Boolean   x) = f $! x
 unTypeValue f (Keyword   x) = f $! x
-unTypeValue f (Void      x) = f $ x
+unTypeValue f (Array     x) = unTypeValue (f . getCompose) x
+unTypeValue f (Void      x) = f x
 
 traverseTypeValue :: Functor m => (forall a . Typed a => f a -> m (h a)) -> TypeValue f -> m (TypeValue h)
 traverseTypeValue f (Double    x) = Double    <$> f x
@@ -169,6 +164,7 @@ traverseTypeValue f (Short     x) = Short     <$> f x
 traverseTypeValue f (Byte      x) = Byte      <$> f x
 traverseTypeValue f (Boolean   x) = Boolean   <$> f x
 traverseTypeValue f (Keyword   x) = Keyword   <$> f x
+traverseTypeValue f (Array     x) = Array     <$> traverseTypeValue (fmap Compose . f . getCompose) x
 traverseTypeValue f (Void      x) = Void      <$> f x
 
 traverseTypeValue2 :: (Functor f, Functor g, MonadFail m) => (forall a . Typed a => f a -> g a -> m (h a)) -> TypeValue f -> TypeValue g -> m (TypeValue h)
@@ -182,6 +178,7 @@ traverseTypeValue2 f (Short     x) (Short     y) = Short     <$> f x y
 traverseTypeValue2 f (Byte      x) (Byte      y) = Byte      <$> f x y
 traverseTypeValue2 f (Boolean   x) (Boolean   y) = Boolean   <$> f x y
 traverseTypeValue2 f (Keyword   x) (Keyword   y) = Keyword   <$> f x y
+traverseTypeValue2 f (Array     x) (Array     y) = Array     <$> traverseTypeValue2 (\x' y' -> Compose <$> f (getCompose x') (getCompose y')) x y
 traverseTypeValue2 f (Void      x) v             = traverseTypeValue (f (vacuous x)) v
 traverseTypeValue2 f v             (Void      y) = traverseTypeValue (\x -> f x (vacuous y)) v
 traverseTypeValue2 _ _             _             = fail "traverseTypeValue2: type mismatch"
@@ -251,6 +248,19 @@ parseTypeJSONValue :: Type -> J.Value -> TypeValue Maybe
 parseTypeJSONValue t (J.String s) = parseTypeValue t s
 parseTypeJSONValue t j = fmapTypeValue (\Proxy -> J.parseMaybe J.parseJSON j) t
 
+uncomposeProxy :: Compose Proxy f a -> Proxy a
+uncomposeProxy (Compose Proxy) = Proxy
+
+recomposeProxy :: Proxy a -> Compose Proxy f a
+recomposeProxy Proxy = Compose Proxy
+
+uncomposeProxyType :: TypeValue (Compose Proxy f) -> Type
+uncomposeProxyType = fmapTypeValue uncomposeProxy
+
+typeIsArray :: Type -> Maybe Type
+typeIsArray (Array t) = Just $ uncomposeProxyType t
+typeIsArray _ = Nothing
+
 instance Default Type where
   def = Float Proxy
 
@@ -266,11 +276,13 @@ instance {-# OVERLAPPING #-} Show Type where
   show (HalfFloat _) = "half_float"
   show (Boolean _)   = "boolean"
   show (Void _)      = "void"
+  show (Array x)     = "array " <> show (uncomposeProxyType x)
 
 instance Read Type where
   readPrec = do
     Ident s <- lexP
     case s of
+      "array"       -> Array . fmapTypeValue recomposeProxy <$> readPrec
       "keyword"     -> return (Keyword Proxy)
       "long"        -> return (Long Proxy)
       "int64"       -> return (Long Proxy)
@@ -335,7 +347,7 @@ baseType (f,i,b,s,_) t
   | typeIsBoolean  t = b
 baseType (_,_,_,_,v) ~(Void _) = v
 
-numpyTypeSize :: TypeValue f -> Word
+numpyTypeSize :: Type -> Word
 numpyTypeSize (Double    _) = 8
 numpyTypeSize (Float     _) = 4
 numpyTypeSize (HalfFloat _) = 2
@@ -347,8 +359,9 @@ numpyTypeSize (Byte      _) = 1
 numpyTypeSize (Boolean   _) = 1
 numpyTypeSize (Keyword   _) = 8 -- XXX overridden in numpyFieldSize
 numpyTypeSize (Void      _) = 0
+numpyTypeSize (Array     t) = numpyTypeSize (uncomposeProxyType t) -- XXX not supported
 
-sqlType :: TypeValue f -> T.Text
+sqlType :: Type -> T.Text
 sqlType (Keyword _)   = "text"
 sqlType (Long _)      = "bigint"
 sqlType (ULong _)     = "bigint"
@@ -360,3 +373,4 @@ sqlType (Float _)     = "real"
 sqlType (HalfFloat _) = "real"
 sqlType (Boolean _)   = "boolean"
 sqlType (Void _)      = "void"
+sqlType (Array t)     = sqlType (uncomposeProxyType t) <> "[]"

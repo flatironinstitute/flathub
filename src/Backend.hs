@@ -29,7 +29,7 @@ import qualified Data.HashMap.Strict as HM
 import           Data.List (genericTake)
 import           Data.Maybe (fromMaybe)
 import           Data.Proxy (Proxy(Proxy))
-import           Data.Scientific (Scientific, toRealFloat)
+import           Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
 import qualified Data.Text as T
 import qualified Data.Vector as V
 import           Data.Word (Word16)
@@ -241,13 +241,13 @@ queryHistogram cat hist@HistogramArgs{..} = do
   let size Histogram{..} = histint where
         histint
           | histogramLog = if typeIsFloating (fieldType histogramField) && fmin > 0 && fmax > fmin
-            then let r = exp int in return $ HistogramRanges histogramField (toScientific r)
+            then let r = exp int in return $ HistogramRanges histogramField (fromFloatDigits r)
               $ genericTake (succ histogramSize) $ scaleFromByTo fmin r fmax
             else fail "invalid log histogram"
           | typeIsIntegral (fieldType histogramField) = return $
             let i = ceiling int in
             (HistogramInterval histogramField `on` fromInteger) i (floor fmin `mod` i)
-          | otherwise = return $ (HistogramInterval histogramField `on` toScientific) int (int * snd (properFraction (fmin / int)))
+          | otherwise = return $ (HistogramInterval histogramField `on` fromFloatDigits) int (int * snd (properFraction (fmin / int)))
         int = if intd > 0 then intd else 1
         intd = (lmax - lmin) / fromIntegral histogramSize
         (lmin, lmax) = (logt fmin, logt fmax)
