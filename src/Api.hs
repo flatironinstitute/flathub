@@ -175,6 +175,7 @@ fieldsJSON stats b = JE.list fieldJSON . V.toList where
     <> "descr" J..= fieldDescDescr
     <> "type" J..= fieldType
     <> "base" J..= baseType ('f','i','b','s','v') fieldType
+    <> mwhen (or fieldDescStore) ("store" J..= fieldDescStore)
     <> foldMap ("enum" J..=) fieldDescEnum
     <> mwhen (fieldDisp f) ("disp" J..= True)
     <> foldMap ("units" J..=) fieldDescUnits
@@ -216,6 +217,7 @@ instance OA.ToSchema FieldGroup where
           & OA.type_ ?~ OA.OpenApiString
           & OA.enum_ ?~ map J.toJSON "fibsv"
           , True)
+      , ("store", OA.Inline $ schemaDescOf fieldStore "true if this field is stored but not indexed, so not permitted for filtering or aggregations", False)
       , ("enum", OA.Inline $ schemaDescOf fieldEnum "if present, display values as these keywords instead (integral or boolean: enum[<int>value])", False)
       , ("disp", OA.Inline $ schemaDescOf fieldDisp "include field in data display by default", False)
       , ("units", OA.Inline $ schemaDescOf fieldUnits "display units", False)
