@@ -37,7 +37,7 @@ import qualified Data.Vector as V
 import           Data.Version (showVersion)
 import           Data.Word (Word16)
 import           Network.HTTP.Types.Header (ResponseHeaders, hOrigin, hContentType)
-import           Network.HTTP.Types.Status (noContent204, badRequest400, requestEntityTooLarge413, unsupportedMediaType415, unprocessableEntity422)
+import           Network.HTTP.Types.Status (noContent204, requestEntityTooLarge413, unsupportedMediaType415, unprocessableEntity422)
 import qualified Network.Wai as Wai
 import           Text.Read (readMaybe)
 import           Waimwork.Response (okResponse, response)
@@ -89,6 +89,9 @@ readBS = readMaybe . BSC.unpack
 
 decodeUtf8' :: BS.ByteString -> T.Text
 decodeUtf8' = TE.decodeUtf8With TE.lenientDecode
+
+lookupFieldQuery :: MonadFail m => Catalog -> Bool -> BS.ByteString -> m Field
+lookupFieldQuery cat idx = lookupField cat idx . decodeUtf8'
 
 fieldNameSchema :: OpenApiM (OA.Referenced OA.Schema)
 fieldNameSchema = define "FieldName" $ mempty
@@ -285,7 +288,7 @@ parseFiltersJSON cat o = Filters
   <*> HM.traverseWithKey parsef (HM.delete "sample" $ HM.delete "seed" o)
   where
   parsef n j = do
-    f <- lookupField cat n
+    f <- lookupField cat True n
     updateFieldValueM f (parseff f j)
   parseff :: Typed a => Field -> J.Value -> Proxy a -> J.Parser (FieldFilter a)
   parseff f j _ = parseFilterJSON f j
@@ -312,7 +315,7 @@ parseFiltersQuery cat req = foldl' parseQueryItem mempty $ Wai.queryString req w
     q{ filterSample = filterSample q * p }
   parseQueryItem q ("sample", Just (splitBS ('@' ==) -> Just (readBS -> Just p, readBS -> Just s))) =
     q{ filterSample = filterSample q * p, filterSeed = Just $ maybe id xor (filterSeed q) s }
-  parseQueryItem q (lookupField cat . decodeUtf8' -> Just f, Just (parseFilt f -> Just v)) =
+  parseQueryItem q (lookupFieldQuery cat True -> Just f, Just (parseFilt f -> Just v)) =
     q{ filterFields = filterFields q <> KM.fromList [setFieldValue f $ sequenceTypeValue v] }
   parseQueryItem q _ = q -- just ignore anything we can't parse
   parseFilt f (splitBS isDelim -> Just (a, b))
@@ -348,10 +351,11 @@ fieldsQueryParam = do
 
 parseFieldsQuery :: Catalog -> Wai.Request -> BS.ByteString -> [Field]
 parseFieldsQuery cat req param =
-  mapMaybe (lookupField cat . decodeUtf8') $ parseListQuery req param
+  mapMaybe (lookupFieldQuery cat False) $ parseListQuery req param
 
 parseFieldsJSON :: Catalog -> J.Value -> J.Parser [Field]
-parseFieldsJSON cat = J.withArray "field list" $ \l -> mapM (J.withText "field name" $ lookupField cat) (V.toList l)
+parseFieldsJSON cat = J.withArray "field list" $
+  mapM (J.withText "field name" $ lookupField cat False) . V.toList
 
 -------- /api/{catalog}/stats
 
@@ -412,15 +416,15 @@ parseSortQuery cat req param =
   parseSort (BSC.uncons -> Just ('-', lookf -> Just f)) = return (f, False)
   parseSort (lookf -> Just f) = return (f, True)
   parseSort _ = fail "invalid sort"
-  lookf = lookupField cat . decodeUtf8'
+  lookf = lookupFieldQuery cat True
 
 parseSortJSON :: Catalog -> Maybe J.Value -> J.Parser [(Field, Bool)]
 parseSortJSON _ Nothing = return []
 parseSortJSON cat (Just sj) = J.withArray "sort" (mapM pars . V.toList) sj where
   pars :: J.Value -> J.Parser (Field, Bool)
-  pars (J.String n) = (, True) <$> lookupField cat n
+  pars (J.String n) = (, True) <$> lookupField cat True n
   pars (J.Object o) = (,)
-    <$> (lookupField cat =<< o J..: "field")
+    <$> (lookupField cat True =<< o J..: "field")
     <*> (mapM po =<< o J..:? "order") J..!= True
   pars j = J.typeMismatch "sort field" j
   po (J.String a)
@@ -510,14 +514,14 @@ parseHistogramsQuery cat req param =
   mkHist f (t, n)
     | typeIsNumeric (fieldType f) = return $ Histogram f n t
     | otherwise = fail "non-numeric hist"
-  lookf = lookupField cat . decodeUtf8'
+  lookf = lookupFieldQuery cat True
 
 parseHistogramsJSON :: Catalog -> J.Value -> J.Parser Histogram
 parseHistogramsJSON cat (J.String s) = do
-  f <- lookupField cat s
+  f <- lookupField cat True s
   return $ Histogram f defaultHistogramSize False
 parseHistogramsJSON cat (J.Object o) = Histogram
-  <$> (lookupField cat =<< o J..: "field")
+  <$> (lookupField cat True =<< o J..: "field")
   <*> o J..:? "size" J..!= defaultHistogramSize
   <*> o J..:? "log" J..!= False
 parseHistogramsJSON _ j = J.typeMismatch "histogram field" j
@@ -526,14 +530,14 @@ parseHistogramQuery :: Catalog -> Wai.Request -> HistogramArgs
 parseHistogramQuery cat req = HistogramArgs
   { histogramFilters = parseFiltersQuery cat req
   , histogramFields = parseHistogramsQuery cat req "fields"
-  , histogramQuartiles = lookupField cat . decodeUtf8' =<< join (lookup "quartiles" $ Wai.queryString req)
+  , histogramQuartiles = lookupFieldQuery cat True =<< join (lookup "quartiles" $ Wai.queryString req)
   }
 
 parseHistogramJSON :: Catalog -> J.Value -> J.Parser HistogramArgs
 parseHistogramJSON cat = J.withObject "histogram request" $ \o -> HistogramArgs
   <$> parseFiltersJSON cat (HM.delete "fields" $ HM.delete "quartiles" o)
   <*> (mapM (parseHistogramsJSON cat) =<< o J..: "fields")
-  <*> (mapM (lookupField cat) =<< o J..:? "quartiles")
+  <*> (mapM (lookupField cat True) =<< o J..:? "quartiles")
 
 -------- global
 

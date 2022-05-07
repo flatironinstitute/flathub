@@ -139,7 +139,7 @@ parseStats cat = J.withObject "stats res" $ \o -> (,)
   <$> (o J..: "hits" >>= (J..: "total") >>= (J..: "value"))
   <*> (HM.traverseWithKey pf =<< o J..: "aggregations") where
   pf n a = do
-    f <- lookupField cat n
+    f <- lookupField cat False n
     updateFieldValueM f (flip (if fieldUseTerms f then pt else ps) a)
   ps :: Proxy a -> J.Value -> J.Parser (FieldStats a)
   ps _ = J.withObject "stats" $ \o -> FieldStats

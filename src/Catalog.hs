@@ -28,7 +28,7 @@ module Catalog
   ) where
 
 import           Control.Arrow ((&&&))
-import           Control.Monad (guard, unless)
+import           Control.Monad (guard, unless, mfilter)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
@@ -127,10 +127,11 @@ takeCatalogField n c = (, c
   , catalogFieldGroups = deleteField n               $ catalogFieldGroups c
   }) <$> HM.lookup n (catalogFieldMap c) where
 
-lookupField :: MonadFail m => Catalog -> T.Text -> m Field
-lookupField _ "_id" = return idField
-lookupField cat n =
+lookupField :: MonadFail m => Catalog -> Bool -> T.Text -> m Field
+lookupField _ _ "_id" = return idField
+lookupField cat idx n =
   maybe (fail $ "Field not found: " <> show n) return
+    $ mfilter (not . (&&) idx . or . fieldStore)
     $ HM.lookup n $ catalogFieldMap cat
 
 data Grouping
