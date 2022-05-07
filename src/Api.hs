@@ -90,9 +90,6 @@ readBS = readMaybe . BSC.unpack
 decodeUtf8' :: BS.ByteString -> T.Text
 decodeUtf8' = TE.decodeUtf8With TE.lenientDecode
 
-eitherBadRequest :: Either String a -> M a
-eitherBadRequest = either (result . response badRequest400 []) return
-
 fieldNameSchema :: OpenApiM (OA.Referenced OA.Schema)
 fieldNameSchema = define "FieldName" $ mempty
   & OA.type_ ?~ OA.OpenApiString
@@ -118,18 +115,18 @@ getRequestBodyChunkLimit n r = do
   l <- newIORef 0
   return $ do
     x <- readIORef l
-    when (x > n) $ result $ response requestEntityTooLarge413 [] ("maximum length " ++ show n)
+    when (x > n) $ result $ response requestEntityTooLarge413 [] $ "maximum length " ++ show n
     b <- Wai.getRequestBodyChunk r
     writeIORef l (x + fromIntegral (BS.length b))
     return b
 
 parseJSONBody :: Wai.Request -> (J.Value -> J.Parser a) -> M (Maybe a)
 parseJSONBody req parse = traverse (\c -> do
-  unless (c == ct) $ result $ response unsupportedMediaType415 [] $ "expecting " <> ct
+  unless (c == ct) $ raise unsupportedMediaType415 $ "expecting " ++ BSC.unpack ct
   grb <- liftIO $ getRequestBodyChunkLimit 131072 req
   r <- liftIO $ AP.parseWith grb (J.json <* AP.endOfInput) BS.empty
-  j <- eitherBadRequest $ AP.eitherResult r
-  either (result . response unprocessableEntity422 []) return $ J.parseEither parse j)
+  j <- either raise400 return $ AP.eitherResult r
+  either (raise unprocessableEntity422) return $ J.parseEither parse j)
   $ lookup hContentType $ Wai.requestHeaders req
   where ct = "application/json"
 
@@ -639,7 +636,7 @@ apiOperations =
       body <- parseJSONBody req (parseDataJSON cat)
       let args = fromMaybe (parseDataQuery cat req) body
       unless (dataCount args <= maxDataCount && fromIntegral (dataCount args) + fromIntegral (dataOffset args) <= maxResultWindow)
-        $ result $ response badRequest400 [] ("count too large" :: String)
+        $ raise400 "count too large"
       dat <- queryData cat args
       return $ okResponse (apiHeaders req) $ JE.list J.foldable (V.toList dat)
     , apiResponseSchema = do
@@ -718,7 +715,7 @@ apiOperations =
       let args = fromMaybe (parseHistogramQuery cat req) body
       unless (length (histogramFields args) + fromEnum (isJust (histogramQuartiles args)) <= fromIntegral maxHistogramDepth
           && product (map (fromIntegral . histogramSize) (histogramFields args)) <= maxHistogramSize)
-        $ result $ response badRequest400 [] ("histograms too large" :: String)
+        $ raise400 "histograms too large"
       HistogramResult{..} <- queryHistogram cat args
       return $ okResponse (apiHeaders req) $ J.pairs
         $  "sizes" J..= histogramSizes

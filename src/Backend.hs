@@ -1,5 +1,7 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Backend
   ( FieldFilter(..)
@@ -234,6 +236,9 @@ scaleFromByTo x r y
   | x < y = x : scaleFromByTo (x*r) r y
   | otherwise = [x]
 
+remainder :: forall a . RealFrac a => a -> a -> a
+remainder n d = d * snd (properFraction (n / d) :: (Integer, a))
+
 queryHistogram :: Catalog -> HistogramArgs -> M HistogramResult
 queryHistogram cat hist@HistogramArgs{..} = do
   (_, stats) <- liftIO $ catalogStats cat
@@ -243,11 +248,11 @@ queryHistogram cat hist@HistogramArgs{..} = do
           | histogramLog = if typeIsFloating (fieldType histogramField) && fmin > 0 && fmax > fmin
             then let r = exp int in return $ HistogramRanges histogramField (fromFloatDigits r)
               $ genericTake (succ histogramSize) $ scaleFromByTo fmin r fmax
-            else fail "invalid log histogram"
+            else raise400 "invalid log histogram"
           | typeIsIntegral (fieldType histogramField) = return $
             let i = ceiling int in
             (HistogramInterval histogramField `on` fromInteger) i (floor fmin `mod` i)
-          | otherwise = return $ (HistogramInterval histogramField `on` fromFloatDigits) int (int * snd (properFraction (fmin / int)))
+          | otherwise = return $ (HistogramInterval histogramField `on` fromFloatDigits) int (remainder fmin int)
         int = if intd > 0 then intd else 1
         intd = (lmax - lmin) / fromIntegral histogramSize
         (lmin, lmax) = (logt fmin, logt fmax)
@@ -257,7 +262,7 @@ queryHistogram cat hist@HistogramArgs{..} = do
         frng _ = stat
         stat@(smin, smax) = fromMaybe (0, 1) $ unTypeValue srng =<< look stats
         look = fmap fieldType . HM.lookup (fieldName histogramField)
-  sizes <- maybe (fail "invalid histogram") return $ mapM size histogramFields
+  sizes <- runE $ mapM size histogramFields
   dat <- searchCatalog cat [] (parseHistogram hist) $ JE.pairs
       $  "size" J..= (0 :: Count)
       <> filterQuery histogramFilters

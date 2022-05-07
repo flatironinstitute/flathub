@@ -28,14 +28,12 @@ import           Data.Time.LocalTime (utcToLocalTime, utc)
 import           Data.Scientific (formatScientific, FPFormat(Fixed))
 import qualified Data.Vector as V
 import           Network.HTTP.Types.Header (hContentType, hContentDisposition, hCacheControl)
-import           Network.HTTP.Types.Status (ok200, notFound404)
+import           Network.HTTP.Types.Status (ok200)
 import qualified Network.Wai as Wai
 import           System.FilePath ((</>))
 import           System.IO.Error (tryIOError)
 import           System.Posix.Files (getFileStatus, isRegularFile, modificationTimeHiRes, fileSize)
 import           Waimwork.HTTP (quoteHTTP)
-import           Waimwork.Response (response)
-import           Waimwork.Result (result)
 import qualified Web.Route.Invertible as R
 
 import JSON
@@ -47,7 +45,7 @@ import qualified ES
 
 askAttachment :: Catalog -> T.Text -> M Attachment
 askAttachment cat att = do
-  maybe (result $ response notFound404 [] ("No such attachment" :: String)) return
+  maybe (raise404 "No such attachment") return
     $ fieldAttachment <=< HM.lookup att $ catalogFieldMap cat
 
 pathFields :: DynamicPath -> [T.Text]
@@ -88,7 +86,7 @@ attachment = getPath (R.parameter R.>* "attachment" R.>*<< R.parameter R.>*< R.p
     , queryFilter = [idField{ fieldType = Keyword (FilterEQ rid) }]
     , queryFields = attachmentsFields cat [att]
     }
-  doc <- either (result . response notFound404 [] . ("Could not get item: " <>)) return
+  doc <- either (raise404 . ("Could not get item: " ++)) return
     $ J.parseEither parse res
   dir <- asks globalDataDir
   return $ Wai.responseFile ok200

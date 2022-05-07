@@ -30,12 +30,11 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V
 import           Network.HTTP.Types.Header (hContentType, hContentDisposition, hContentLength, hCacheControl)
-import           Network.HTTP.Types.Status (ok200, badRequest400)
+import           Network.HTTP.Types.Status (ok200)
 import qualified Network.Wai as Wai
 import           Text.Read (readMaybe)
 import           Waimwork.HTTP (quoteHTTP)
-import           Waimwork.Response (response, okResponse)
-import           Waimwork.Result (result)
+import           Waimwork.Response (okResponse)
 import           System.FilePath ((<.>), splitExtension)
 import qualified Web.Route.Invertible as R
 import           Web.Route.Invertible.Render (renderUrlRequestBuilder)
@@ -117,9 +116,9 @@ catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do
   let query = parseQuery cat req
       hsize = histsSize $ queryAggs query
   unless (queryLimit query <= 5000) $
-    result $ response badRequest400 [] ("limit too large" :: String)
+    raise400 "limit too large"
   unless (hsize > 0 && hsize <= 1024) $
-    result $ response badRequest400 [] ("hist too large" :: String)
+    raise400 "hist too large"
   res <- ES.queryIndex cat query
   return $ okResponse [] $ clean res
   where

@@ -48,13 +48,11 @@ import qualified Data.Vector as V
 import qualified Network.HTTP.Client as HTTP
 import           Network.HTTP.Types.Header (hAccept, hContentType)
 import           Network.HTTP.Types.Method (StdMethod(GET, PUT, POST), renderStdMethod)
-import           Network.HTTP.Types.Status (badRequest400)
+import           Network.HTTP.Types.Status (badRequest400, internalServerError500)
 import qualified Network.HTTP.Types.URI as HTTP (Query)
 import qualified Network.URI as URI
 import           Text.Read (readEither)
 import qualified Waimwork.Config as C
-import           Waimwork.Response (response)
-import           Waimwork.Result (result)
 
 import Monoid
 import JSON
@@ -102,17 +100,16 @@ elasticSearch meth url query pares body = do
             : HTTP.requestHeaders req
         , HTTP.requestBody = bodyRequest body
         }
-  liftIO $ do
-    when debug $ do
-      print $ HTTP.path req'
-      case bodyRequest body of
-        HTTP.RequestBodyBS b -> BSC.putStrLn b
-        HTTP.RequestBodyLBS b -> BSLC.putStrLn b
-        _ -> BSC.putStrLn "???"
-    j <- either fail return . AP.eitherResult
-      =<< HTTP.withResponse req' (globalHTTP glob) parse
-    when debug $ BSLC.putStrLn (J.encode j)
-    either fail return $ J.parseEither pares j
+  when debug $ liftIO $ do
+    print $ HTTP.path req'
+    case bodyRequest body of
+      HTTP.RequestBodyBS b -> BSC.putStrLn b
+      HTTP.RequestBodyLBS b -> BSLC.putStrLn b
+      _ -> BSC.putStrLn "???"
+  j <- either (raise internalServerError500) return . AP.eitherResult
+    =<< liftIO (HTTP.withResponse req' (globalHTTP glob) parse)
+  when debug $ liftIO $ BSLC.putStrLn (J.encode j)
+  either (raise internalServerError500) return $ J.parseEither pares j
   where
   parse r = AP.parseWith (HTTP.responseBody r) (J.json <* AP.endOfInput) BS.empty
   debug = False
@@ -344,7 +341,7 @@ scrollSearch sid = elasticSearch GET ["_search", "scroll"] [] J.parseJSON $ JE.p
 queryBulk :: Catalog -> Query -> M (IO (Word, V.Vector J.Object))
 queryBulk cat query@Query{..} = do
   unless (queryOffset == 0 && null queryAggs) $
-    result $ response badRequest400 [] ("offset,aggs not supported for download" :: String)
+    raise badRequest400 "offset,aggs not supported for download"
   glob <- ask
   sidv <- liftIO $ newIORef Nothing
   return $ do
@@ -376,7 +373,8 @@ createBulk cat@Catalog{ catalogStore = ~CatalogES{} } docs = do
         <> nl <> J.fromEncoding (J.pairs d) <> nl
   r <- elasticSearch POST (catalogURL cat ++ ["_bulk"]) [] J.parseJSON body
   -- TODO: ignore 409
-  unless (HM.lookup "errors" (r :: J.Object) == Just (J.Bool False)) $ fail $ "createBulk: " ++ BSLC.unpack (J.encode r)
+  unless (HM.lookup "errors" (r :: J.Object) == Just (J.Bool False))
+    $ raise internalServerError500 $ "createBulk: " ++ BSLC.unpack (J.encode r)
   where
   nl = B.char7 '\n'
 

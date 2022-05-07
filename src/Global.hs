@@ -1,12 +1,16 @@
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeSynonymInstances #-}
 
 module Global
   ( Global(..)
   , M
   , runGlobal
+  , runGlobalWai
+  , E
+  , runE
+  , raise
+  , raise400
+  , raise404
   , Action
   , Route
   , Simulation
@@ -15,16 +19,16 @@ module Global
   , once
   ) where
 
-import qualified Data.ByteString.Char8 as BSC
 import qualified Data.HashMap.Strict as HM
 import           Control.Concurrent.MVar (newMVar, modifyMVar)
-import           Control.Monad.Reader (ReaderT(..), runReaderT, asks)
+import           Control.Monad.Except (MonadError, ExceptT(..), throwError, liftEither, runExcept)
+import           Control.Monad.Reader (ReaderT(..), asks)
+import           Data.Functor.Identity (Identity)
 import qualified Network.HTTP.Client as HTTP
-import           Network.HTTP.Types.Status (notFound404)
+import           Network.HTTP.Types.Status (Status, badRequest400, notFound404)
 import qualified Network.Wai as Wai
 import qualified Waimwork.Config as C
 import           Waimwork.Response (response)
-import           Waimwork.Result (result)
 import qualified Web.Route.Invertible as R
 
 import Catalog
@@ -38,10 +42,25 @@ data Global = Global
   , globalDevMode :: Bool
   }
 
-type M = ReaderT Global IO
+type ErrT = ExceptT (Status, String)
+type E = ErrT Identity
+type M = ErrT (ReaderT Global IO)
 
 runGlobal :: Global -> M a -> IO a
-runGlobal = flip runReaderT
+runGlobal g (ExceptT (ReaderT f)) = either (fail . snd) return =<< f g
+
+runGlobalWai :: Global -> M Wai.Response -> IO Wai.Response
+runGlobalWai g (ExceptT (ReaderT f)) = either (\(s, m) -> response s [] m) id <$> f g
+
+runE :: E a -> M a
+runE = liftEither . runExcept
+
+raise :: MonadError (Status, String) m => Status -> String -> m a
+raise = curry throwError 
+
+raise400, raise404 :: MonadError (Status, String) m => String -> m a
+raise400 = raise badRequest400
+raise404 = raise notFound404
 
 type Action = Wai.Request -> M Wai.Response
 type Route a = R.RouteAction a Action
@@ -51,12 +70,12 @@ getPath p = R.RouteAction $ R.routeMethod R.GET R.*< R.routePath p
 
 askCatalog :: Simulation -> M Catalog
 askCatalog sim = maybe
-  (result $ response notFound404 [] ("No such simulation" :: BSC.ByteString))
+  (raise404 "No such simulation")
   return =<< asks (HM.lookup sim . catalogMap . globalCatalogs)
 
 once :: M a -> M (IO a)
-once act = ReaderT $ \g -> do
+once act = ExceptT $ ReaderT $ \g -> do
   mv <- newMVar Nothing
-  return $ modifyMVar mv $
+  return $ Right $ modifyMVar mv $
     fmap (\v -> (Just v, v))
       . maybe (runGlobal g act) return

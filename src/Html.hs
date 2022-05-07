@@ -24,12 +24,12 @@ import qualified Data.ByteString.Lazy as BSL
 import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
 import           Data.HashMap.Strict ((!)) -- hamlet doesn't like qualified operators
-import           Data.List (find, inits, sortOn)
+import           Data.List (find, inits, sortOn, intercalate)
 import           Data.Maybe (isNothing, isJust)
 import qualified Data.Text as T
 import qualified Data.Vector as V
 import           Network.HTTP.Types.Header (ResponseHeaders, hAccept, hIfModifiedSince, hLastModified, hContentType)
-import           Network.HTTP.Types.Status (ok200, notModified304, notFound404)
+import           Network.HTTP.Types.Status (ok200, notModified304)
 import qualified Network.Wai as Wai
 import           Network.Wai.Parse (parseHttpAccept)
 import qualified System.FilePath as FP
@@ -37,8 +37,7 @@ import qualified Text.Blaze.Html5 as H hiding (text, textValue)
 import qualified Text.Hamlet as Hamlet
 import qualified Waimwork.Blaze as H (text, preEscapedBuilder)
 import           Waimwork.HTTP (parseHTTPDate, formatHTTPDate)
-import           Waimwork.Response (response, okResponse)
-import           Waimwork.Result (result)
+import           Waimwork.Response (okResponse)
 import qualified Web.Route.Invertible as R
 import           Web.Route.Invertible ((!:?))
 import qualified Web.Route.Invertible.Render as R
@@ -645,7 +644,7 @@ csvSchema = getPath (R.parameter R.>* "schema.csv") $ \sim _ -> do
 groupPage :: Route [T.Text]
 groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
   cats <- asks globalCatalogs
-  grp <- maybe (result $ response notFound404 [] (T.intercalate "/" path <> " not found")) return $
+  grp <- maybe (raise404 (intercalate "/" (map T.unpack path) ++ " not found")) return $
     lookupGrouping path $ catalogGrouping cats
   htmlResponse req [] $ hamlet [Hamlet.hamlet|
     <nav .breadcrumb-container>
@@ -724,7 +723,7 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
 
 comparePage :: Route [T.Text]
 comparePage = getPath ("compare" R.*< R.manyI R.parameter) $ \path req -> do
-  cats <- maybe (result $ response notFound404 [] (T.intercalate "/" path <> " not found")) return .
+  cats <- maybe (raise404 $ intercalate "/" (map T.unpack path) ++ " not found") return .
     groupedCatalogs path =<< asks globalCatalogs
   htmlResponse req [] $ hamlet [Hamlet.hamlet|
     <script>
@@ -761,7 +760,7 @@ comparePage = getPath ("compare" R.*< R.manyI R.parameter) $ \path req -> do
 staticHtml :: Route [FilePathComponent]
 staticHtml = getPath ("html" R.*< R.manyI R.parameter) $ \paths q -> do
   let path = FP.joinPath ("html" : map componentFilePath paths) FP.<.> "html"
-  fmod <- maybe (result $ response notFound404 [] (path ++ " not found")) return =<<
+  fmod <- maybe (raise404 $ path ++ " not found") return =<<
     liftIO (getModificationTime' path)
   if any (fmod <=) $ parseHTTPDate =<< lookup hIfModifiedSince (Wai.requestHeaders q)
     then return $ Wai.responseBuilder notModified304 [] mempty
