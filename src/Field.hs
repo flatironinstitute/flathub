@@ -148,7 +148,7 @@ data FieldDesc s = FieldDesc
   , fieldDescDescr :: Maybe T.Text
   , fieldDescUnits :: Maybe T.Text
   , fieldDescFlag :: FieldFlag
-  , fieldDescStore :: Maybe Bool -- ^true: store only, false: index only, Nothing: index+store (store = all, index = not any)
+  , fieldDescStore :: Maybe Bool -- ^true: store only, false: index only, Nothing: index+store (store = and, index = not or)
   , fieldDescEnum :: Maybe (V.Vector T.Text) -- ^enumeration values (for integral fields)
   , fieldDescTerms :: Bool -- ^treat as catagorical (implied if enum or string)
   , fieldDescDict :: Maybe T.Text -- ^link to field dictionary

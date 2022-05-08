@@ -7,7 +7,7 @@ import qualified Data.Aeson.Encoding as JE
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Char8 as BSC
-import           Data.Char (isControl)
+import           Data.Char (isControl, toLower)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import           Data.Word (Word64)
@@ -44,13 +44,23 @@ ingestFieldBS :: Field -> BS.ByteString -> J.Series
 ingestFieldBS f v
   | BS.null v
   || v `elem` fieldMissing f
-  || typeIsFloating (fieldType f) && v `elem` ["nan","NaN","Inf","-Inf","+Inf","inf"]
+  || typeIsFloating ft && v `elem` ["nan","NaN","Inf","-Inf","+Inf","inf"]
     = mempty
-  | typeIsBoolean (fieldType f) = fieldName f J..= bool v
-  | typeIsString (fieldType f)
-  || BSC.any isControl v = fieldName f J..= str v
-  | otherwise = fieldName f `JE.pair` JE.unsafeToEncoding (B.byteString v)
+  | typeIsBoolean ft
+    = fieldName f J..= bool v
+  | typeIsString ft
+  || BSC.any isControl v
+    = fieldName f J..= str v
+  {-
+  | any typeIsBoolean (typeIsArray ft)
+    = fieldName f `JE.pair` JE.unsafeToEncoding (B.byteString (BSC.map toLower v)) -- fix "[True,False]"
+  | any typeIsFloating (typeIsArray ft)
+    = fieldName f `JE.pair` JE.unsafeToEncoding (substitute "NaN" "null" v) -- fix "[NaN]"
+  -}
+  | otherwise
+    = fieldName f `JE.pair` JE.unsafeToEncoding (B.byteString v)
   where
+  ft = fieldType f
   bool "0" = J.Bool False
   bool "0.0" = J.Bool False
   bool "false" = J.Bool False
@@ -61,3 +71,6 @@ ingestFieldBS f v
   bool "True" = J.Bool True
   bool _ = str v
   str = J.String . TE.decodeLatin1
+  substitute x y s = B.byteString p
+    <> (if BS.null r then mempty else y <> substitute x y (BS.drop (BS.length x) r))
+    where (p, r) = BS.breakSubstring x s

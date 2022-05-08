@@ -132,7 +132,7 @@ queryData cat DataArgs{..} =
     <> filterQuery dataFilters
 
 fieldUseTerms :: Field -> Bool
-fieldUseTerms f = fieldTerms f || not (typeIsNumeric (fieldType f))
+fieldUseTerms f = fieldTerms f || not (typeIsNumeric $ snd $ unArrayType $ fieldType f)
 
 parseStats :: Catalog -> J.Value -> J.Parser (Count, KM.KeyedMap (FieldSub FieldStats Proxy))
 parseStats cat = J.withObject "stats res" $ \o -> (,)
