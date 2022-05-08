@@ -126,7 +126,7 @@ loadBlock info@Ingest{ ingestCatalog = Catalog{ catalogFieldGroups = cat }, inge
         loop i (f':fs') = do
           x <- hdf5ReadType (fieldType f') $ hdf5ReadVector (fieldName f') hd (fromIntegral off : if i == 0 then [] else [i]) $ ingestBlockSize info
           ((fieldName f', x) :) <$> loop (succ i) fs'
-      loop 0 $ expandFields (V.singleton f)
+      loop 0 $ V.toList $ expandFields (V.singleton f)
   indexf f = return
     [(fieldName f, Long (V.generate (fromIntegral $ maybe id (min . subtract off) (ingestSize info) $ ingestBlockSize info) ((+) (fromIntegral $ ingestStart info + off) . fromIntegral)))]
 

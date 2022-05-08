@@ -6,8 +6,8 @@ module Global
   , M
   , runGlobal
   , runGlobalWai
-  , E
-  , runE
+  , Err
+  , runErr
   , raise
   , raise400
   , raise404
@@ -43,7 +43,7 @@ data Global = Global
   }
 
 type ErrT = ExceptT (Status, String)
-type E = ErrT Identity
+type Err = ErrT Identity
 type M = ErrT (ReaderT Global IO)
 
 runGlobal :: Global -> M a -> IO a
@@ -52,8 +52,8 @@ runGlobal g (ExceptT (ReaderT f)) = either (fail . snd) return =<< f g
 runGlobalWai :: Global -> M Wai.Response -> IO Wai.Response
 runGlobalWai g (ExceptT (ReaderT f)) = either (\(s, m) -> response s [] m) id <$> f g
 
-runE :: E a -> M a
-runE = liftEither . runExcept
+runErr :: Err a -> M a
+runErr = liftEither . runExcept
 
 raise :: MonadError (Status, String) m => Status -> String -> m a
 raise = curry throwError 

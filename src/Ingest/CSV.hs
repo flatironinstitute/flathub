@@ -3,22 +3,24 @@
 {-# LANGUAGE ViewPatterns #-}
 
 module Ingest.CSV
-  ( ingestCSV
+  ( unconsCSV
+  , ingestCSVFrom
+  , ingestCSV
   ) where
 
 import           Control.Arrow (first)
 import           Control.Monad.IO.Class (liftIO)
-import qualified Data.Aeson as J
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Csv.Streaming as CSV
 import           Data.List (mapAccumL)
 import           Data.Maybe (fromMaybe)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V
 import           Data.Word (Word64)
 import           System.IO (hFlush, stdout)
 
-import Monoid
-import Type
 import Field
 import Catalog
 import Global
@@ -30,11 +32,11 @@ dropCSV :: Word64 -> CSV.Records a -> (Word64, CSV.Records a)
 dropCSV n (CSV.Cons _ r) | n > 0 = dropCSV (pred n) r
 dropCSV n r = (n, r)
 
-unconsCSV :: MonadFail m => CSV.Records a -> m (Maybe a, CSV.Records a)
-unconsCSV (CSV.Cons h r) = (, r) . Just <$> either fail return h
-unconsCSV n@(CSV.Nil e _) = (, n) <$> mapM fail e
+unconsCSV :: CSV.Records a -> Err (Maybe a, CSV.Records a)
+unconsCSV (CSV.Cons h r) = (, r) . Just <$> either raise400 return h
+unconsCSV n@(CSV.Nil e _) = (, n) <$> mapM raise400 e
 
-takeCSV :: MonadFail m => Word64 -> CSV.Records a -> m ([a], CSV.Records a)
+takeCSV :: Word64 -> CSV.Records a -> Err ([a], CSV.Records a)
 takeCSV 0 r = return ([], r)
 takeCSV n r = do
   (a, r') <- unconsCSV r
@@ -43,26 +45,23 @@ takeCSV n r = do
     (\a' -> first (a':) <$> takeCSV (pred n) r')
     a
 
-ingestCSV :: Ingest -> M Word64
-ingestCSV info@Ingest{ ingestCatalog = cat, ingestOffset = off } = do
-  csv <- liftIO $ CSV.decode CSV.NoHeader <$> decompressFile (ingestFile info)
-  (fromMaybe V.empty -> header, rows) <- unconsCSV csv
+ingestCSVFrom :: Ingest -> CSV.Records (V.Vector BS.ByteString) -> M Word64
+ingestCSVFrom info@Ingest{ ingestCatalog = cat, ingestOffset = off } csv = do
+  (fromMaybe V.empty -> header, rows) <- runErr $ unconsCSV csv
   cols <- mapM (\f@Field{ fieldDesc = FieldDesc{ fieldDescName = n, fieldDescIngest = i } } ->
-      maybe (fail $ "csv header field missing: " ++ T.unpack n) (return . (,) n . (,) f) $ V.elemIndex (fromMaybe n i) header)
+      maybe (raise400 $ "csv header field missing: " ++ T.unpack n) (return . (,) f)
+        $ V.elemIndex (TE.encodeUtf8 $ fromMaybe n i) header)
     $ catalogFields cat
   let
     (del, rows') = dropCSV off rows
     off' = off - del
     key
-      | Just (_, k) <- (`lookup` cols) =<< catalogKey cat = const $ T.unpack . (V.! k)
+      | Just (_, k) <- (\n -> V.find ((n ==) . fieldName . fst) cols) =<< catalogKey cat = const $ BSC.unpack . (V.! k)
       | otherwise = const . (ingestPrefix info ++) . show
-    val r (n, (f, i)) = mwhen (not $ miss f v) (n J..= v)
-      where v = r V.! i
-    miss f v = T.null v
-      || typeIsFloating (fieldType f) && v == "nan"
+    val r (f, i) = ingestFieldBS f (r V.! i)
     loop o cs = do
       liftIO $ putStr (show o ++ "\r") >> hFlush stdout
-      (rs, cs') <- takeCSV (ingestBlockSize info) cs
+      (rs, cs') <- runErr $ takeCSV (ingestBlockSize info) cs
       if null rs
         then return o
         else do
@@ -70,3 +69,8 @@ ingestCSV info@Ingest{ ingestCatalog = cat, ingestOffset = off } = do
           ES.createBulk cat block
           loop o' cs'
   loop off' rows'
+
+ingestCSV :: Ingest -> M Word64
+ingestCSV info = do
+  dat <- liftIO $ decompressFile $ ingestFile info
+  ingestCSVFrom info $ CSV.decode CSV.NoHeader dat

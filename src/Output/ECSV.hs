@@ -9,6 +9,7 @@ module Output.ECSV
 import qualified Data.Aeson as J
 import qualified Data.ByteString.Builder as B
 import           Data.Maybe (maybeToList)
+import qualified Data.Vector as V
 
 import Catalog
 import Type
@@ -44,7 +45,7 @@ ecsvField f = ECSVColumn
 ecsvHeader :: Catalog -> Query -> B.Builder
 ecsvHeader cat query = renderECSVHeader $ ECSVHeader
   { ecsvDelimiter = ','
-  , ecsvDatatype = map ecsvField (queryFields query)
+  , ecsvDatatype = V.fromList $ map ecsvField $ queryFields query
   , ecsvMeta = Just $ J.object
     [ "name" J..= catalogTitle cat
     , "description" J..= catalogDescr cat

@@ -101,7 +101,7 @@ parseCatalog dict catalogName = J.withObject "catalog" $ \c -> do
       <*> (c J..:? "settings" J..!= HM.empty)
   catalogOrder <- c J..:? "order" J..!= catalogName
   let catalogFields = expandFields catalogFieldGroups
-      catalogFieldMap = HM.fromList $ map (fieldName &&& id) catalogFields
+      catalogFieldMap = KM.fromList $ V.toList catalogFields
       catalogStats = fail "catalogStats" -- filled in later
   mapM_ (\k -> unless (HM.member k catalogFieldMap) $ fail "key field not found in catalog") catalogKey
   mapM_ (\k -> unless (HM.member k catalogFieldMap) $ fail "sort field not found in catalog") catalogSort
@@ -123,7 +123,7 @@ instance J.ToJSON Catalog where
 takeCatalogField :: T.Text -> Catalog -> Maybe (Field, Catalog)
 takeCatalogField n c = (, c
   { catalogFieldMap    = HM.delete n                 $ catalogFieldMap c
-  , catalogFields      = filter ((n /=) . fieldName) $ catalogFields c
+  , catalogFields      = V.filter ((n /=) . fieldName) $ catalogFields c
   , catalogFieldGroups = deleteField n               $ catalogFieldGroups c
   }) <$> HM.lookup n (catalogFieldMap c) where
 
@@ -212,7 +212,7 @@ findGroupsCatalog :: T.Text -> Groupings -> [[T.Text]]
 findGroupsCatalog t = foldMap (findGroupCatalog t) . groupList
 
 data Catalogs = Catalogs
-  { catalogDict :: [Field]
+  { catalogDict :: Fields
   , catalogMap :: !(KM.KeyedMap Catalog)
   , catalogGroupings :: Groupings
   }

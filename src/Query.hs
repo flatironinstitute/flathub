@@ -98,7 +98,7 @@ parseQuery cat req = fill $ foldl' parseQueryItem mempty $ Wai.queryString req w
     | typeIsNumeric (fieldType f) = return $ [QueryHist f n t l]
     | otherwise = fail "non-numeric hist"
   fill q@Query{ queryFields = [] } | all (("fields" /=) . fst) (Wai.queryString req) =
-    q{ queryFields = filter fieldDisp $ catalogFields cat }
+    q{ queryFields = filter fieldDisp $ V.toList $ catalogFields cat }
   fill q = q
   spld = BSC.splitWith delim
   delim ',' = True

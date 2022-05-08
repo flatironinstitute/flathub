@@ -21,6 +21,7 @@ import Catalog
 import Global
 import Ingest.Types
 import Ingest.CSV
+import Ingest.ECSV
 import Ingest.Delim
 import Ingest.HDF5
 import Compression
@@ -59,6 +60,7 @@ ingest cat consts fs = do
     ".hdf5" -> Just ingestHDF5
     ".h5" -> Just ingestHDF5
     ".csv" -> Just ingestCSV
+    ".ecsv" -> Just ingestECSV
     ".dat" -> Just ingestDat
     ".txt" -> Just ingestTxt
     _ -> Nothing

@@ -9,19 +9,16 @@ module Ingest.Delim
 import           Control.Arrow (first)
 import           Control.Monad (unless)
 import           Control.Monad.IO.Class (liftIO)
-import qualified Data.Aeson as J
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy.Char8 as BSLC
 import qualified Data.HashMap.Strict as HM
-import           Data.List (mapAccumL, find, findIndex, genericDrop, genericSplitAt)
-import qualified Data.Text as T
+import           Data.List (mapAccumL, findIndex, genericDrop, genericSplitAt)
 import qualified Data.Text.Encoding as TE
 import           Data.Word (Word64)
 import           Text.Read (readMaybe)
 import           System.IO (hFlush, stdout)
 
 import Global
-import Type
 import Field
 import Catalog
 import Compression
@@ -30,7 +27,7 @@ import Ingest.Types
 
 data Delim = Delim
   { delimDelim :: !Char
-  , delimMulti :: !Bool
+  , delimMulti :: !Bool -- ^whether to allow multiple delimiters (True) or treat them as blank fields (False)
   } deriving (Show)
 
 splitDelim :: Delim -> BSC.ByteString -> [BSC.ByteString]
@@ -70,25 +67,8 @@ ingestDelim delim info@Ingest{ ingestCatalog = cat, ingestOffset = off } = do
           findIndex (any ((n ==) . fieldName)) fields
         = \_ x -> BSC.unpack $ x !! i
       | otherwise = \i _ -> ingestPrefix info ++ show i
-    val _ Nothing _ = mempty
-    val fx (Just f) x
-      | typeIsFloating (fieldType f) && x `elem` ["Inf", "-Inf", "+Inf", "inf"] = mempty
-      | BSC.null x = mempty
-      | x `elem` fieldMissing f = mempty
-      | otherwise = fieldName f J..= recode fx f x
-    recode fx Field{ fieldDesc = FieldDesc{ fieldDescIngest = Just (T.stripPrefix "scale:" -> Just sf), fieldDescScale = s } } =
-      J.toJSON . maybe id ((*) . realToFrac) s . (* (read $ BSC.unpack scale :: Double)) . read . BSC.unpack
-      where Just (_, scale) = find (any ((sf ==) . fieldName) . fst) fx
-    recode _ Field{ fieldDesc = FieldDesc{ fieldDescScale = Just s } } = J.toJSON . (*) s . read . BSC.unpack
-    recode _ Field{ fieldType = (Boolean _) } = bool
-    recode _ _ = J.String . TE.decodeLatin1
-    bool "0" = J.Bool False
-    bool "0.0" = J.Bool False
-    bool "false" = J.Bool False
-    bool "1" = J.Bool True
-    bool "1.0" = J.Bool True
-    bool "true" = J.Bool True
-    bool s = J.String $ TE.decodeLatin1 s
+    -- XXX NOTE: used to apply fieldScale and fieldIngest "scale:Field"!
+    val mf v = foldMap (`ingestFieldBS` v) mf
     loop o [] = return o
     loop o s = do
       liftIO $ putStr (show o ++ "\r") >> hFlush stdout
@@ -96,7 +76,7 @@ ingestDelim delim info@Ingest{ ingestCatalog = cat, ingestOffset = off } = do
           (o', block) = mapAccumL (\i l ->
               let x = splitDelim delim l
                   fx = zip fields x
-              in (succ i, (key i x, ingestJConsts info <> foldMap (uncurry $ val fx) fx)))
+              in (succ i, (key i x, ingestJConsts info <> foldMap (uncurry val) fx)))
             o d
       ES.createBulk cat block
       loop o' s'

@@ -211,7 +211,7 @@ type FieldValue = FieldSub Identity Proxy
 
 type FieldsSub t m = V.Vector (FieldSub t m)
 type FieldGroups = FieldsSub Proxy Maybe
-type Fields = [Field]
+type Fields = V.Vector Field
 
 instance Alternative s => Default (FieldDesc s) where
   def = FieldDesc

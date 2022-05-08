@@ -24,6 +24,7 @@ import           Data.Char (toLower)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Lazy as TL
+import qualified Data.Vector as V
 import qualified Data.Yaml as Y
 
 data ECSVDataType
@@ -44,6 +45,7 @@ data ECSVDataType
   | ECSVComplex128
   | ECSVComplex256
   | ECSVString
+  deriving (Eq, Ord, Enum, Bounded)
 
 $(J.deriveJSON J.defaultOptions{ J.constructorTagModifier = map toLower . drop 4 } ''ECSVDataType)
 
@@ -51,6 +53,7 @@ data ECSVSubType
   = ECSVSubTypeArray ECSVDataType [Maybe Word]
   | ECSVSubTypeJSON
   | ECSVSubTypeOther T.Text
+  deriving (Eq)
 
 instance J.ToJSON ECSVSubType where
   toJSON (ECSVSubTypeArray t d) =
@@ -84,7 +87,7 @@ $(J.deriveJSON J.defaultOptions{ J.fieldLabelModifier = map toLower . drop 7, J.
 
 data ECSVHeader = ECSVHeader
   { ecsvDelimiter :: Char -- optional, should only be ' ' or ','
-  , ecsvDatatype :: [ECSVColumn]
+  , ecsvDatatype :: V.Vector ECSVColumn
   , ecsvMeta :: Maybe J.Value
   , ecsvSchema :: Maybe T.Text
   }
@@ -124,54 +127,3 @@ renderECSVHeader h =
   $ [ "%ECSV 1.0"
     , "---"
     ] ++ BSC.lines (Y.encode h)
-
-{-
-type ECSVScalar = ECSVDataType' Identity
-type ECSVList = ECSVDataType' []
-data ECSVValue = ECSVScalar ECSVScalar
-               | ECSVList ECSVList
-               | ESCVNothing
-  deriving ( Show )
-
-deriving instance Show ECSVDataType
-deriving instance Show ECSVScalar
-deriving instance Show ECSVList
-
-
-processRow :: [ECSVColumn] -> [String] -> [ECSVValue]
-processRow =
-  zipWith fx
-  where
-    fx (ECSVColumn { ecsvColDatatype = ECSVBool Proxy }) "True" = ECSVScalar $ ECSVBool $ Identity True
-    fx (ECSVColumn { ecsvColDatatype = ECSVBool Proxy }) "False" = ECSVScalar $ ECSVBool $ Identity False
-    fx (ECSVColumn { ecsvColDatatype = ECSVInt16 Proxy }) s = ECSVScalar $ ECSVInt16 $ Identity (read s)
-    fx (ECSVColumn { ecsvColDatatype = ECSVInt64 Proxy }) s = ECSVScalar $ ECSVInt64 $ Identity (read s)
-    fx (ECSVColumn { ecsvColDatatype = ECSVString Proxy, ecsvColSubtype = ECSVSubTypeArray (ECSVBool Proxy) }) s = ECSVList $ ECSVBool $ read s
-    fx (ECSVColumn { ecsvColDatatype = ECSVString Proxy, ecsvColSubtype = ECSVSubTypeArray (ECSVFloat32 Proxy) }) s = ECSVList $ ECSVFloat32 $ read s
-    fx (ECSVColumn { ecsvColDatatype = ECSVString Proxy, ecsvColSubtype = ECSVSubTypeArray (ECSVFloat64 Proxy) }) s = ECSVList $ ECSVFloat64 $ read s
-    fx (ECSVColumn { ecsvColDatatype = ECSVString Proxy, ecsvColSubtype = ECSVSubTypeArray (ECSVInt8 Proxy) }) s = ECSVList $ ECSVInt8 $ read s
-    fx (ECSVColumn { ecsvColDatatype = ECSVString Proxy, ecsvColSubtype = ECSVSubTypeArray (ECSVInt64 Proxy) }) s = ECSVList $ ECSVInt64 $ read s
-
-
-main :: IO ()
-main = do
-  [filePath] <- getArgs
-  l <- BSLC.readFile filePath
-  let (headerOrErr, rest) = parseHeader l
-  -- header <- case headerOrErr of
-  --   Left pe -> (fail . show) pe
-  --   Right eh -> return eh
-  metaHeader <- either (fail . show) return headerOrErr
-  let records = CSV.decode CSV.NoHeader rest
-  (csvHeader, rows) :: ([String], CSV.Records [String]) <- case records of
-    CSV.Cons e re -> ( , re) <$> either fail return e
-    CSV.Nil m_s bs -> fail (maybe "No data" id m_s)
-
-  when ( (map ecsvColName $ ecsvDatatype metaHeader) /= csvHeader ) $ fail "Headers don't match"
-  print metaHeader
-  mapM_ print $ fmap (processRow (ecsvDatatype metaHeader)) rows
-
-
-  -- print $ map ecsvColName $ ecsvDatatype metaHeader
-  -- print csvHeader
--}

@@ -553,7 +553,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
         <td .depth-#{d}>
           <input type="checkbox"
               :isNothing (fieldSub g):id="#{key f}"
-              class="colvis #{T.unwords $ map key fs}"
+              class="colvis #{T.unwords $ map key $ V.toList fs}"
               :fieldDisp g:checked=checked
               onclick="colvisSet(event)">
           #{fieldTitle g}
@@ -600,7 +600,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
     |]
   field _ _ f@Field{ fieldDesc = FieldDesc{ fieldDescSub = Just s } } = hamlet [Hamlet.hamlet|
     <th .tooltip-dt
-      colspan=#{length $ expandFields s}>
+      colspan=#{V.length $ expandFields s}>
       #{fieldBody 1 f}
     |]
   row :: Word -> [(FieldGroup -> FieldGroup, FieldGroup)] -> H.Html
@@ -616,7 +616,7 @@ sqlSchema = getPath (R.parameter R.>* "schema.sql") $ \sim _ -> do
   return $ okResponse [] $
     foldMap (\f -> foldMap (\e -> "CREATE TYPE " <> tab <> "_" <> fieldName f <> " AS ENUM(" <> mintersperseMap ", " sqls (V.toList e) <> ");\n") (fieldEnum f)) (catalogFields cat)
     <> "CREATE TABLE " <> tab <> " ("
-    <> mintersperseMap "," (\f -> "\n  " <> fieldName f <> " " <> maybe (sqlType (fieldType f)) (\_ -> tab <> "_" <> fieldName f) (fieldEnum f)) (catalogFields cat)
+    <> mintersperseMap "," (\f -> "\n  " <> fieldName f <> " " <> maybe (sqlType (fieldType f)) (\_ -> tab <> "_" <> fieldName f) (fieldEnum f)) (V.toList $ catalogFields cat)
     <> foldMap (\k -> ",\n PRIMARY KEY (" <> k <> ")") (catalogKey cat)
     <> "\n);\n"
     <> "COMMENT ON TABLE " <> tab <> " IS " <> sqls (catalogTitle cat <> foldMap (": " <>) (catalogDescr cat)) <> ";\n"
@@ -632,12 +632,12 @@ csvSchema = getPath (R.parameter R.>* "schema.csv") $ \sim _ -> do
     ]
     $ fieldsCSV fields
   where
-  populateDict cats = map pf $ catalogDict cats where
+  populateDict cats = V.map pf $ catalogDict cats where
     pf f = f{ fieldDesc = (fieldDesc f){ fieldDescDict = Just $ T.intercalate ";" $ md (fieldName f) } }
     md d =
       [ c <> "." <> fieldName f <> foldMap (T.cons '[' . (`T.snoc` ']')) (fieldUnits f) <> foldMap (T.cons '*' . T.pack . show) (fieldScale f)
       | (c, cf) <- HM.toList (catalogMap cats)
-      , f <- catalogFields cf
+      , f <- V.toList $ catalogFields cf
       , Just d == fieldDict f
       ]
 

@@ -262,7 +262,7 @@ queryHistogram cat hist@HistogramArgs{..} = do
         frng _ = stat
         stat@(smin, smax) = fromMaybe (0, 1) $ unTypeValue srng =<< look stats
         look = fmap fieldType . HM.lookup (fieldName histogramField)
-  sizes <- runE $ mapM size histogramFields
+  sizes <- runErr $ mapM size histogramFields
   dat <- searchCatalog cat [] (parseHistogram hist) $ JE.pairs
       $  "size" J..= (0 :: Count)
       <> filterQuery histogramFilters

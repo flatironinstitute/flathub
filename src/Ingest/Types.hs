@@ -1,12 +1,20 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Ingest.Types
   where
 
 import qualified Data.Aeson as J
+import qualified Data.Aeson.Encoding as JE
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.Builder as B
+import qualified Data.ByteString.Char8 as BSC
+import           Data.Char (isControl)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import           Data.Word (Word64)
 
-import Catalog
+import Type
 import Field
+import Catalog
 
 -- Indicates a (left, 1:many) join of the main data to child data
 data IngestJoin = IngestJoin
@@ -31,3 +39,25 @@ data Ingest = Ingest
 
 addIngestConsts :: FieldValue -> Ingest -> Ingest
 addIngestConsts v i = i{ ingestConsts = v : ingestConsts i, ingestJConsts = fieldJValue v <> ingestJConsts i }
+
+ingestFieldBS :: Field -> BS.ByteString -> J.Series
+ingestFieldBS f v
+  | BS.null v
+  || v `elem` fieldMissing f
+  || typeIsFloating (fieldType f) && v `elem` ["nan","NaN","Inf","-Inf","+Inf","inf"]
+    = mempty
+  | typeIsBoolean (fieldType f) = fieldName f J..= bool v
+  | typeIsString (fieldType f)
+  || BSC.any isControl v = fieldName f J..= str v
+  | otherwise = fieldName f `JE.pair` JE.unsafeToEncoding (B.byteString v)
+  where
+  bool "0" = J.Bool False
+  bool "0.0" = J.Bool False
+  bool "false" = J.Bool False
+  bool "False" = J.Bool False
+  bool "1" = J.Bool True
+  bool "1.0" = J.Bool True
+  bool "true" = J.Bool True
+  bool "True" = J.Bool True
+  bool _ = str v
+  str = J.String . TE.decodeLatin1
