@@ -612,7 +612,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
 sqlSchema :: Route Simulation
 sqlSchema = getPath (R.parameter R.>* "schema.sql") $ \sim _ -> do
   cat <- askCatalog sim
-  let tab = catalogIndex (catalogStore cat)
+  let tab = catalogIndex cat
   return $ okResponse [] $
     foldMap (\f -> foldMap (\e -> "CREATE TYPE " <> tab <> "_" <> fieldName f <> " AS ENUM(" <> mintersperseMap ", " sqls (V.toList e) <> ");\n") (fieldEnum f)) (catalogFields cat)
     <> "CREATE TABLE " <> tab <> " ("

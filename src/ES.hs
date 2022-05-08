@@ -115,7 +115,7 @@ elasticSearch meth url query pares body = do
   debug = False
 
 catalogURL :: Catalog -> [String]
-catalogURL Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } =
+catalogURL Catalog{ catalogIndex = idxn } =
   [T.unpack idxn]
 
 searchCatalog :: Body b => Catalog -> HTTP.Query -> (J.Value -> J.Parser r) -> b -> M r
@@ -145,12 +145,12 @@ arrayMeta False = Nothing
 arrayMeta True = Just "1"
 
 createIndex :: Catalog -> M J.Value
-createIndex cat@Catalog{ catalogStore = ~CatalogES{..} } = elasticSearch PUT [T.unpack catalogIndex] [] J.parseJSON $ JE.pairs $
+createIndex cat@Catalog{..} = elasticSearch PUT [T.unpack catalogIndex] [] J.parseJSON $ JE.pairs $
      "settings" J..= mergeJSONObject catalogSettings (defaultSettings cat)
   <> "mappings" .=*
     (  "dynamic" J..= J.String "strict"
     <> "_source" .=* ("enabled" J..= False)
-    <> "properties" .=* HM.foldMapWithKey field (catalogFieldMap cat))
+    <> "properties" .=* HM.foldMapWithKey field catalogFieldMap)
   where
   field n f = n .=*
     (  "type" J..= t
@@ -166,7 +166,7 @@ checkIndices = do
   HM.mapMaybe (\cat -> either Just (const Nothing) $ J.parseEither (catalog isdev cat) indices)
     <$> asks (catalogMap . globalCatalogs)
   where
-  catalog isdev ~cat@Catalog{ catalogStore = CatalogES{ catalogIndex = idxn } } =
+  catalog isdev cat@Catalog{ catalogIndex = idxn } =
     parseJSONField idxn (idx isdev cat)
   idx :: Bool -> Catalog -> J.Value -> J.Parser ()
   idx isdev cat = J.withObject "index" $ \i -> do
@@ -367,7 +367,7 @@ queryBulk cat query@Query{..} = do
   row = HM.map unsingletonJSON . storedFields
 
 createBulk :: Foldable f => Catalog -> f (String, J.Series) -> M ()
-createBulk cat@Catalog{ catalogStore = ~CatalogES{} } docs = do
+createBulk cat docs = do
   conf <- asks globalConfig
   let act = fromMaybe "create" $ conf C.! "ingest_action"
       body = foldMap doc docs
@@ -381,7 +381,7 @@ createBulk cat@Catalog{ catalogStore = ~CatalogES{} } docs = do
   nl = B.char7 '\n'
 
 flushIndex :: Catalog -> M (J.Value, J.Value)
-flushIndex Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } = (,)
+flushIndex Catalog{ catalogIndex = idxn } = (,)
   <$> elasticSearch POST ([T.unpack idxn, "_refresh"]) [] J.parseJSON ()
   <*> elasticSearch POST ([T.unpack idxn, "_flush"]) [] J.parseJSON ()
 
@@ -392,11 +392,11 @@ instance J.FromJSON ESCount where
     v -> J.parseJSON v)
 
 countIndex :: Catalog -> M Word
-countIndex Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } =
+countIndex Catalog{ catalogIndex = idxn } =
   sum . map esCount <$> elasticSearch GET (["_cat", "count", T.unpack idxn]) [] J.parseJSON EmptyJSON
 
 blockIndex :: Bool -> Catalog -> M J.Value
-blockIndex ro Catalog{ catalogStore = ~CatalogES{ catalogIndex = idxn } } =
+blockIndex ro Catalog{ catalogIndex = idxn } =
   elasticSearch PUT ([T.unpack idxn, "_settings"]) [] J.parseJSON $ JE.pairs $
     "index" .=* ("blocks" .=* ("read_only" J..= ro))
 

@@ -139,7 +139,7 @@ blockDoc info e d i =
   , ingestJConsts info <> e <> blockJson d i)
 
 ingestWith :: Ingest -> (Int -> (String, J.Series)) -> Int -> M Int
-ingestWith Ingest{ ingestCatalog = cat@Catalog{ catalogStore = ~CatalogES{} } } doc n = do
+ingestWith Ingest{ ingestCatalog = cat } doc n = do
   when (n /= 0) $ ES.createBulk cat docs
   return n
   where

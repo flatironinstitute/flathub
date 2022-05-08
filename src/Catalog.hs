@@ -6,8 +6,7 @@
 {-# LANGUAGE TypeFamilies #-}
 
 module Catalog
-  ( CatalogStore(..)
-  , Simulation
+  ( Simulation
   , Catalog(..)
   , takeCatalogField
   , lookupField
@@ -48,25 +47,20 @@ import Field
 import JSON
 import qualified KeyedMap as KM
 
-data CatalogStore
-  = CatalogES
-    { catalogIndex :: !T.Text
-    , catalogSettings :: J.Object
-    }
-
 -- |Just a catalog identifier (name)
 type Simulation = T.Text
 
 data Catalog = Catalog
   { catalogName :: !Simulation
   , catalogEnabled :: !Bool
+  , catalogIndex :: !T.Text
+  , catalogSettings :: J.Object
   , catalogVisible :: !Bool
   , catalogOrder :: !T.Text -- ^display order in catalog list
   , catalogTitle :: !T.Text
   , catalogSynopsis :: Maybe T.Text
   , catalogDescr :: Maybe T.Text
   , catalogHtml :: Maybe T.Text
-  , catalogStore :: !CatalogStore
   , catalogFieldGroups :: FieldGroups
   , catalogFields :: Fields
   , catalogFieldMap :: KM.KeyedMap Field
@@ -96,9 +90,8 @@ parseCatalog dict catalogName = J.withObject "catalog" $ \c -> do
     Just (J.String s) -> return [s]
     Just s -> J.parseJSON s
   catalogCount <- c J..:? "count"
-  catalogStore <- CatalogES
-      <$> (c J..:? "index" J..!= catalogName)
-      <*> (c J..:? "settings" J..!= HM.empty)
+  catalogIndex <- c J..:? "index" J..!= catalogName
+  catalogSettings <- c J..:? "settings" J..!= HM.empty
   catalogOrder <- c J..:? "order" J..!= catalogName
   let catalogFields = expandFields catalogFieldGroups
       catalogFieldMap = KM.fromList $ V.toList catalogFields

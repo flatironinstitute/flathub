@@ -72,7 +72,7 @@ optDescr =
   ]
 
 createCatalog :: Catalog -> M String
-createCatalog cat@Catalog{ catalogStore = CatalogES{} } = show <$> ES.createIndex cat
+createCatalog cat = show <$> ES.createIndex cat
 
 populateStats :: Catalog -> M Catalog
 populateStats cat = do
