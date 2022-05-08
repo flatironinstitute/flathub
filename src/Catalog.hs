@@ -54,7 +54,8 @@ data Catalog = Catalog
   { catalogName :: !Simulation
   , catalogEnabled :: !Bool
   , catalogIndex :: !T.Text
-  , catalogSettings :: J.Object
+  , catalogIndexSettings :: J.Object
+  , catalogIngestPipeline :: Maybe T.Text
   , catalogVisible :: !Bool
   , catalogOrder :: !T.Text -- ^display order in catalog list
   , catalogTitle :: !T.Text
@@ -91,7 +92,8 @@ parseCatalog dict catalogName = J.withObject "catalog" $ \c -> do
     Just s -> J.parseJSON s
   catalogCount <- c J..:? "count"
   catalogIndex <- c J..:? "index" J..!= catalogName
-  catalogSettings <- c J..:? "settings" J..!= HM.empty
+  catalogIndexSettings <- c J..:? "settings" J..!= HM.empty
+  catalogIngestPipeline <- c J..:? "pipeline"
   catalogOrder <- c J..:? "order" J..!= catalogName
   let catalogFields = expandFields catalogFieldGroups
       catalogFieldMap = KM.fromList $ V.toList catalogFields

@@ -39,7 +39,7 @@ import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
 import           Data.IORef (newIORef, readIORef, writeIORef)
 import           Data.List (find, partition)
-import           Data.Maybe (mapMaybe, fromMaybe)
+import           Data.Maybe (mapMaybe, fromMaybe, maybeToList)
 import           Data.Proxy (Proxy)
 import           Data.String (IsString)
 import qualified Data.Text as T
@@ -133,7 +133,8 @@ defaultSettings cat = HM.fromList
       s ->
         [ "sort.field" J..= map J.String s
         , "sort.order" J..= map (const $ J.String "asc") s
-        ])
+        ]
+    ++ maybeToList (("default_pipeline" J..= catalogIndex cat) <$ catalogIngestPipeline cat))
   ] where
   -- elastic search cluster size to optimize for (should really be determined dynamicaly)
   clusterSize = 4
@@ -145,12 +146,20 @@ arrayMeta False = Nothing
 arrayMeta True = Just "1"
 
 createIndex :: Catalog -> M J.Value
-createIndex cat@Catalog{..} = elasticSearch PUT [T.unpack catalogIndex] [] J.parseJSON $ JE.pairs $
-     "settings" J..= mergeJSONObject catalogSettings (defaultSettings cat)
-  <> "mappings" .=*
-    (  "dynamic" J..= J.String "strict"
-    <> "_source" .=* ("enabled" J..= False)
-    <> "properties" .=* HM.foldMapWithKey field catalogFieldMap)
+createIndex cat@Catalog{..} = do
+  liftIO . print =<< mapM (\src ->
+    elasticSearch PUT ["_ingest","pipeline",T.unpack catalogIndex] [] return $ JE.pairs $
+      "processors" J..= [J.object
+        [ "script" J..= J.object
+          [ "source" J..= src ]
+        ]
+      ]) catalogIngestPipeline
+  elasticSearch PUT [T.unpack catalogIndex] [] return $ JE.pairs $
+       "settings" J..= mergeJSONObject catalogIndexSettings (defaultSettings cat)
+    <> "mappings" .=*
+      (  "dynamic" J..= J.String "strict"
+      <> "_source" .=* ("enabled" J..= False)
+      <> "properties" .=* HM.foldMapWithKey field catalogFieldMap)
   where
   field n f = n .=*
     (  "type" J..= t
@@ -336,7 +345,7 @@ queryIndex :: Catalog -> Query -> M J.Value
 queryIndex = queryIndexScroll False
 
 scrollSearch :: T.Text -> M J.Value
-scrollSearch sid = elasticSearch GET ["_search", "scroll"] [] J.parseJSON $ JE.pairs $
+scrollSearch sid = elasticSearch GET ["_search", "scroll"] [] return $ JE.pairs $
      "scroll" J..= J.String scrollTime
   <> "scroll_id" J..= sid
 
@@ -382,8 +391,8 @@ createBulk cat docs = do
 
 flushIndex :: Catalog -> M (J.Value, J.Value)
 flushIndex Catalog{ catalogIndex = idxn } = (,)
-  <$> elasticSearch POST ([T.unpack idxn, "_refresh"]) [] J.parseJSON ()
-  <*> elasticSearch POST ([T.unpack idxn, "_flush"]) [] J.parseJSON ()
+  <$> elasticSearch POST ([T.unpack idxn, "_refresh"]) [] return ()
+  <*> elasticSearch POST ([T.unpack idxn, "_flush"]) [] return ()
 
 newtype ESCount = ESCount{ esCount :: Word } deriving (Show)
 instance J.FromJSON ESCount where
@@ -397,7 +406,7 @@ countIndex Catalog{ catalogIndex = idxn } =
 
 blockIndex :: Bool -> Catalog -> M J.Value
 blockIndex ro Catalog{ catalogIndex = idxn } =
-  elasticSearch PUT ([T.unpack idxn, "_settings"]) [] J.parseJSON $ JE.pairs $
+  elasticSearch PUT ([T.unpack idxn, "_settings"]) [] return $ JE.pairs $
     "index" .=* ("blocks" .=* ("read_only" J..= ro))
 
 closeIndex :: Catalog -> M J.Value
