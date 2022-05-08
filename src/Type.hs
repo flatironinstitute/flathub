@@ -2,6 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
@@ -27,7 +28,9 @@ module Type
   , parseJSONTypeValue
   , parseTypeJSONValue
   , baseType
+  , arrayHead
   , typeIsArray
+  , unArrayType
   , typeIsFloating, typeIsIntegral, typeIsNumeric, typeIsString, typeIsBoolean
   , numpyTypeSize
   , sqlType
@@ -248,15 +251,18 @@ parseTypeJSONValue :: Type -> J.Value -> TypeValue Maybe
 parseTypeJSONValue t (J.String s) = parseTypeValue t s
 parseTypeJSONValue t j = fmapTypeValue (\Proxy -> J.parseMaybe J.parseJSON j) t
 
-headArray :: Functor f => TypeValue (Compose f V.Vector) -> TypeValue f
-headArray = fmapTypeValue (fmap V.head . getCompose)
+arrayHead :: Functor f => TypeValue (Compose f V.Vector) -> TypeValue f
+arrayHead = fmapTypeValue (fmap V.head . getCompose)
 
 singletonArray :: Functor f => TypeValue f -> TypeValue (Compose f V.Vector)
 singletonArray = fmapTypeValue (Compose . fmap V.singleton)
 
 typeIsArray :: Type -> Maybe Type
-typeIsArray (Array t) = Just $ headArray t
+typeIsArray (Array t) = Just $ arrayHead t
 typeIsArray _ = Nothing
+
+unArrayType :: Type -> (Bool, Type)
+unArrayType t = maybe (False, t) (True ,) $ typeIsArray t
 
 instance Default Type where
   def = Float Proxy
@@ -273,7 +279,7 @@ instance {-# OVERLAPPING #-} Show Type where
   show (HalfFloat _) = "half_float"
   show (Boolean _)   = "boolean"
   show (Void _)      = "void"
-  show (Array x)     = "array " <> show (headArray x)
+  show (Array x)     = "array " <> show (arrayHead x)
 
 instance Read Type where
   readPrec = do
@@ -356,7 +362,7 @@ numpyTypeSize (Byte      _) = 1
 numpyTypeSize (Boolean   _) = 1
 numpyTypeSize (Keyword   _) = 8 -- XXX overridden in numpyFieldSize
 numpyTypeSize (Void      _) = 0
-numpyTypeSize (Array     t) = numpyTypeSize (headArray t) -- XXX not supported
+numpyTypeSize (Array     t) = numpyTypeSize (arrayHead t) -- XXX not supported
 
 sqlType :: Type -> T.Text
 sqlType (Keyword _)   = "text"
@@ -370,4 +376,4 @@ sqlType (Float _)     = "real"
 sqlType (HalfFloat _) = "real"
 sqlType (Boolean _)   = "boolean"
 sqlType (Void _)      = "void"
-sqlType (Array t)     = sqlType (headArray t) <> "[]"
+sqlType (Array t)     = sqlType (arrayHead t) <> "[]"

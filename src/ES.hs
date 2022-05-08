@@ -140,9 +140,6 @@ defaultSettings cat = HM.fromList
   -- target number of docs per shard
   docsPerShard = 100000000
 
-esType :: Type -> (Bool, Type)
-esType t = maybe (False, t) (True ,) $ typeIsArray t
-
 createIndex :: Catalog -> M J.Value
 createIndex cat@Catalog{ catalogStore = ~CatalogES{..} } = elasticSearch PUT [T.unpack catalogIndex] [] J.parseJSON $ JE.pairs $
      "settings" J..= mergeJSONObject catalogSettings (defaultSettings cat)
@@ -156,7 +153,7 @@ createIndex cat@Catalog{ catalogStore = ~CatalogES{..} } = elasticSearch PUT [T.
     <> "store" J..= and (fieldStore f)
     <> "index" J..= not (or $ fieldStore f)
     <> mwhen a ("meta" .=* ("array" J..= a)))
-    where (a, t) = esType (fieldType f)
+    where (a, t) = unArrayType (fieldType f)
 
 checkIndices :: M (HM.HashMap Simulation String)
 checkIndices = do
@@ -178,7 +175,7 @@ checkIndices = do
     forM_ fields $ \field -> parseJSONField (fieldName field) (prop field) ps
   prop :: Field -> J.Value -> J.Parser ()
   prop field = J.withObject "property" $ \p -> do
-    let (fa, ft) = esType (fieldType field)
+    let (fa, ft) = unArrayType (fieldType field)
     t <- p J..: "type"
     m <- p J..:? "meta" J..!= HM.empty
     a <- m J..:? "array" J..!= False

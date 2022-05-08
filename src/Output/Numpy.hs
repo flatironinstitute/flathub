@@ -9,12 +9,10 @@ import qualified Data.Aeson.Types as J
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Lazy as BSL
-import           Data.Functor.Compose (Compose(..))
 import           Data.Maybe (fromMaybe)
 import           Data.Semigroup (stimesMonoid)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
-import qualified Data.Vector as V
 import           Data.Word (Word16, Word32, Word64)
 import           Foreign.C.Types (CUShort(CUShort))
 import           Numeric.Half (Half(Half))
@@ -46,7 +44,7 @@ numpyBuild _ (Boolean (Just False)) = B.int8 0
 numpyBuild _ (Boolean (Just True)) = B.int8 1
 numpyBuild f (Keyword   x) = numpyString (fieldSize f) x
 numpyBuild _ (Void      _) = mempty
-numpyBuild f (Array     x) = numpyBuild f (fmapTypeValue ((>>= (V.!? 0)) . getCompose) x)
+numpyBuild f (Array     x) = numpyBuild f $ arrayHead x
 
 numpyRowSize :: [Field] -> Word
 numpyRowSize = sum . map numpyFieldSize
