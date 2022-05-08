@@ -2,13 +2,11 @@ resolver: lts-18.28
 packages:
 - '.'
 extra-deps:
-  - git: https://github.com/dylex/web-inv-route
-    commit: ee2033f4fa30b6e90e5322f6f765b62063caef1c
+  - web-inv-route-0.1.3.2
   - git: https://github.com/dylex/waimwork
-    commit: 8bccf183d61790158c7382896d948417d73b2754
+    commit: 8ccaa63ac6b80a4ebc9ad7d61ca38cbb009e8f3c
   - git: https://github.com/dylex/hs-hdf5
     commit: 49c9a85136d14c551c9c533ff5f0410ef3feb498
-  - bzlib-0.5.1.0
 flags:
   web-inv-route:
     snap: false
