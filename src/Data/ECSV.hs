@@ -14,6 +14,7 @@ module Data.ECSV
 import           Control.Arrow (first)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.TH as J
+import qualified Data.Aeson.Text as JT
 import qualified Data.Aeson.Types as J
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Char8 as BSC
@@ -21,8 +22,9 @@ import qualified Data.ByteString.Lazy as BSL
 import qualified Data.ByteString.Lazy.Char8 as BSLC
 import           Data.Char (toLower)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
+import qualified Data.Text.Lazy as TL
 import qualified Data.Yaml as Y
-import           Text.Read (readEither)
 
 data ECSVDataType
   = ECSVBool
@@ -52,22 +54,19 @@ data ECSVSubType
 
 instance J.ToJSON ECSVSubType where
   toJSON (ECSVSubTypeArray t d) =
-    J.String $ s <> ('[' `T.cons` T.intercalate "," (map (maybe "null" (T.pack . show)) d) `T.snoc` ']')
+    J.String $ s <> TL.toStrict (JT.encodeToLazyText d)
     where J.String s = J.toJSON t
   toJSON ECSVSubTypeJSON = J.String "json"
   toJSON (ECSVSubTypeOther s) = J.String s
 
 instance J.FromJSON ECSVSubType where
   parseJSON (J.String "json") = return ECSVSubTypeJSON
-  parseJSON (J.String s) 
-    | Just d <- T.stripSuffix "]" =<< T.stripPrefix "[" ds = do
+  parseJSON (J.String s)
+    | Just d <- J.decodeStrict (TE.encodeUtf8 ds) = do
       t <- J.parseJSON (J.String ts)
-      dl <- mapM pd $ T.split (',' ==) d
-      return $ ECSVSubTypeArray t dl
+      return $ ECSVSubTypeArray t d
     | otherwise = return $ ECSVSubTypeOther s
     where
-    pd "null" = return Nothing
-    pd d = either fail return $ readEither $ T.unpack d
     (ts, ds) = T.break ('[' ==) s
   parseJSON j = J.typeMismatch "ECSVSubType" j
 
