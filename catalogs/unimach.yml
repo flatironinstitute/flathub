@@ -1,4 +1,3 @@
-# XXX ingest used to apply scale -- needs fixing for any new ingest
 title: UniverseMachine
 synopsis: Empirical model developed by P. Behroozi and collaborators
 descr: >
@@ -8,6 +7,16 @@ descr: >
 index: unimach
 count: 250614266
 order: 'candels-2'
+pipeline: |
+  ctx['X'] = 1.47059*ctx['X'];
+  ctx['Y'] = 1.47059*ctx['Y'];
+  ctx['Z'] = 1.47059*ctx['Z'];
+  ctx['M'] = 1.0e-10*ctx['M'];
+  ctx['MP'] = 1.0e-10*ctx['MP'];
+  ctx['R'] = 0.00147059*ctx['R']*ctx['Scale'];
+  ctx['SM'] = 1.0e-10*ctx['SM'];
+  ctx['ICL'] = 1.0e-10*ctx['ICL'];
+  ctx['obs_SM'] = 1.0e-10*ctx['obs_SM'];
 fields:
   - name: field
     dict: candels_field
@@ -48,7 +57,6 @@ fields:
   - name: ""
     title: Position
     units: 'Mpc'
-    scale: 1.47059
     sub:
     - name: 'X'
       title: 'X'
@@ -90,7 +98,6 @@ fields:
     type: float
     descr: Halo mass (Bryan & Norman (BN98) 1998 virial mass)
     units: '\(10^{10}M_\odot\)'
-    scale: 1e-10
   - name: V
     type: float
     descr: 'Halo \(v_{max}\) (physical)'
@@ -99,7 +106,6 @@ fields:
     type: float
     descr: Halo peak historical mass (BN98 virial mass)
     units: '\(10^{10}M_\odot\)'
-    scale: 1e-10
   - name: VMP
     type: float
     descr: Halo vmax at the time when peak mass was reached
@@ -109,8 +115,6 @@ fields:
     type: float
     descr: 'Halo raidus (BN98 vir, co-moving kpc/h)'
     units: 'Mpc'
-    scale: 0.00147059
-    ingest: 'scale:Scale'
   - name: Rank1
     type: float
     descr: 'Halo rank (see UniverseMachine paper)'
@@ -120,12 +124,10 @@ fields:
     type: float
     descr: True stellar mass
     units: '\(10^{10}M_\odot\)'
-    scale: 1e-10
   - name: ICL
     type: float
     descr: True intracluster stellar mass
     units: '\(10^{10}M_\odot\)'
-    scale: 1e-10
   - name: SFR
     dict: SFR
     type: float
@@ -135,7 +137,6 @@ fields:
     type: float
     descr: Observed stellar mass, including random & systematic errors
     units: '\(10^{10}M_\odot\)'
-    scale: 1e-10
   - name: obs_SFR
     type: float
     descr: Observed star formation rate (SFR), including random & systemic errors
