@@ -1,4 +1,4 @@
-FROM fpco/stack-build-small:lts-18.18
+FROM fpco/stack-build-small:lts-18.28
 ADD https://deb.nodesource.com/gpgkey/nodesource.gpg.key /tmp/
 RUN apt-key add /tmp/nodesource.gpg.key && \
     echo deb https://deb.nodesource.com/node_12.x bionic main > /etc/apt/sources.list.d/nodesource.list && \
