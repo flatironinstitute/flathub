@@ -1607,12 +1607,6 @@ fields:
   descr: |
     This table contains additional parameters from the Apsis processing chain, compared to the main table {\tt AstrophysicalParameters} (see Chapter~\ref{chap:cu8par}), from modules that produce more than one result for a parameter. It contains (1) the individual library results from GSP-Phot (see Section~\ref{ssec:cu8par_apsis_gspphot_method}), (2) FLAME results from processing GSP-Spec parameters given in the {\tt AstrophysicalParameters} table (see Section~\ref{ssec:cu8par_apsis_flame}), and (3) results from the GSP-Spec ANN algorithm (see Section~\ref{ssec:cu8par_apsis_gspspec}).
   sub:
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
-  - name: source_id
-    type: long
-    descr: Source Identifier
 # - name: libname_best_gspphot
 #   type: keyword
 #   descr: Name of library that achieves the highest mean log-posterior in MCMC samples
@@ -2428,12 +2422,6 @@ fields:
     This table contains the full cross-match information for the Gaia-CRF3 sources. The Gaia-CRF3 sources were selected from the cross-matches with 17 external QSO catalogues as detailed below (three of which are parts of ICRF3 described in the first paper). For each Gaia-CRF3 source  the information in which external catalogue this source was found and which name(s) this source has in those external catalogues is provided. The table allows the user to get all sources from an external catalogue that are in Gaia-CRF3.
     The external catalogues from which the Gaia-CRF3 sources were compiled are: \begin{itemize}  \item The third realization of the International Celestial Reference Frame by very long baseline interferometry \citep{2020A&A...644A.159C} \item A New Version of the OCARS Catalogue of Optical Characteristics of Astrometric Radio Sources \citep{2018ApJS..239...20M} (the catalogue downloaded from \url{http://www.gaoran.ru/english/as/ac_vlbi/#OCARS} on 17 June 2020) \item Identification of 1.4 Million Active Galactic Nuclei in the Mid-Infrared using WISE Data \citep{2015ApJS..221...12S} \item The WISE AGN Catalogue \citep{2018ApJS..234...23A} \item The Million Quasars (Milliquas) Catalogue, v6.4 \citep{2019arXiv191205614F} with the v6.5 (2020) update \item The Sloan Digital Sky Survey Quasar Catalogue: Fourteenth data release \citep{2018A&A...613A..51P} \item LQAC-5: The fifth release of the Large Quasar Astrometric Catalogue. A compilation of 592 809 objects with 398 697 Gaia counterparts \citep{2019A&A...624A.145S} \item The Large Sky Area Multi-object Fiber Spectroscopic Telescope (LAMOST) Quasar Survey: The Fourth and Fifth Data Releases \citep{2019ApJS..240....6Y} -- see also \url{https://nadc.china-vo.org/data/article/20190107155838} \item The large quasar reference frame (LQRF). An optical representation of the ICRS \citep{2009A&A...505..385A} \item The 2dF QSO Redshift Survey - XII. The spectroscopic catalogue and luminosity function \citep{2004MNRAS.349.1397C} \item The 5th edition of the Roma-BZCAT \citep{2015Ap&SS.357...75M} \item 2WHSP: A multi-frequency selected catalogue of high energy and very high energy {\ensuremath{\gamma}}-ray blazars and blazar candidates \citep{2017A&A...598A..17C} \item ALMA photometry of extragalactic radio sources \citep{2019MNRAS.485.1188B} \item Catalogues of active galactic nuclei from Gaia and unWISE data \citep{2019MNRAS.489.4741S} \item Quasar and galaxy classification in Gaia Data Release 2 \citep{2019MNRAS.490.5615B} \end{itemize}
   sub:
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
-  - name: source_id
-    type: long
-    descr: Gaia source identifier
   - name: icrf3sx
     type: boolean
     descr: The flag describing if the Gaia-CRF3 source was found in ICRF3 S/X
@@ -2556,12 +2544,6 @@ fields:
     this table was built, its content, and for recommendations regarding its exploitation.
     \n"
   sub:
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
-  - name: source_id
-    type: long
-    descr: Unique source identifier (unique within a particular Data Release)
 # - name: vari_best_class_name
 #   type: keyword
 #   descr: Name of best class, see table VariClassifierClassDefinition for details
@@ -2707,12 +2689,6 @@ fields:
     Further details on these catalogues are given in the chapter on extended object
     processing (Section~\\ref{sec:cu4eo_list}).\n"
   sub:
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
-  - name: source_id
-    type: long
-    descr: Unique source identifier (unique within a particular Data Release)
   - name: catalogue_id
     type: byte
     descr: The unique identifier for the catalogue(s) used to select the sources in
@@ -2722,12 +2698,6 @@ fields:
     This table contains non-single-star astrometric models for sources having a non-linear proper motion which is compatible with an acceleration solution. Several possible models are hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
     Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}.
   sub:
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
-  - name: source_id
-    type: long
-    descr: Source Identifier
 # - name: nss_solution_type
 #   type: keyword
 #   descr: NSS model adopted
@@ -2833,12 +2803,6 @@ fields:
     This table contains non-single-star orbital models for spectroscopic binaries compatible with a trend. Several possible models are hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
     Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}.
   sub:
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
-  - name: source_id
-    type: long
-    descr: Source Identifier
 # - name: nss_solution_type
 #   type: keyword
 #   descr: NSS model adopted
@@ -2893,12 +2857,6 @@ fields:
     This table contains non-single-star orbital models for sources compatible with an orbital two-body solution. This covers astrometric binaries, spectroscopic binaries, eclipsing binaries and certain combinations thereof. Several possible models are hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
     Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}. Warning: as a source may receive independent astrometric, spectroscopic or photometric orbits, a query using a given sourceId may return several solutions. This has to be accounted for when doing a crossmatch by sourceId.
   sub:
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
-  - name: source_id
-    type: long
-    descr: Source Identifier
 # - name: nss_solution_type
 #   type: keyword
 #   descr: NSS model adopted
@@ -3181,12 +3139,6 @@ fields:
     For DR3, only VIMF solutions are provided here.
     Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}.
   sub:
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
-  - name: source_id
-    type: long
-    descr: Source Identifier
 # - name: nss_solution_type
 #   type: keyword
 #   descr: NSS model adopted
@@ -3289,12 +3241,6 @@ fields:
     about how this table was built, its content, and for recommendations regarding
     its exploitation. \n"
   sub:
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
-  - name: source_id
-    type: long
-    descr: Unique source identifier (unique within a particular Data Release)
   - name: astrometric_selection_flag
     type: boolean
     descr: Flag indicating if the source is part of the astrometric selection
@@ -3443,12 +3389,6 @@ fields:
     Secrest+2015 \t \\item 7: Assef+2018\\_C75 \t \\end{itemize}\nFurther details
     on these catalogues are given in the chapter on extended object processing (Section~\\ref{sec:cu4eo_list}).\n"
   sub:
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
-  - name: source_id
-    type: long
-    descr: Unique source identifier (unique within a particular Data Release)
   - name: catalogue_id
     type: byte
     descr: The unique identifier for the catalogue(s) used to select the sources in
@@ -3460,12 +3400,6 @@ fields:
     a description on how the mean spectra are obtained, and \\citet{DR3-DPACP-154}
     for a description of the spectra validation.\n"
   sub:
-  - name: source_id
-    type: long
-    descr: Unique source identifier (unique within a particular Data Release)
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
   - name: ra
     units: deg
     type: double
@@ -3497,12 +3431,6 @@ fields:
     corresponding epoch is provided. Data not varying within the transit are repeated
     identically for all single observations of that transit. \n"
   sub:
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
-  - name: source_id
-    type: long
-    descr: Source identifier
 # - name: denomination
 #   type: keyword
 #   descr: standard MPC denomination of the asteroid
@@ -3632,12 +3560,6 @@ fields:
   descr: |
     This table contains the mean BP/RP reflectance spectra of asteroids computed as the ratio between the asteroid flux and an averaged solar analogue flux. In each row, the reflectance spectrum of a given asteroid is given at a given wavelength. Entries for all asteroids are concatenated into a single table.
   sub:
-  - name: source_id
-    type: long
-    descr: Source identifier
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
   - name: number_mp
     type: long
     descr: Minor Planet number
@@ -3668,12 +3590,6 @@ fields:
     The quantities in the table are derived from data reduction and are associated
     to single objects. \n"
   sub:
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
-  - name: source_id
-    type: long
-    descr: Source identifier
   - name: num_of_obs
     type: integer
     descr: number of observations
@@ -3690,12 +3606,6 @@ fields:
   descr: |
     This table provides information on AGN properties.
   sub:
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
-  - name: source_id
-    type: long
-    descr: Unique source identifier
   - name: fractional_variability_g
     type: float
     descr: Fractional variability in the G band
@@ -3715,12 +3625,6 @@ fields:
   descr: |
     This table describes the Cepheid stars.
   sub:
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
-  - name: source_id
-    type: long
-    descr: Unique source identifier
   - name: pf
     units: d
     type: double
@@ -4064,14 +3968,11 @@ fields:
     descr: 'Best multi mode DCEP classification out of: `F/1O'', `F/2O'', `1O/2O'',
       `1O/3O'', `2O/3O'', `F/1O/2O'', `1O/2O/3O'''
     enum: ['F/1O','F/2O','1O/2O','1O/3O','2O/3O','F/1O/2O','1O/2O/3O']
-- name: vari_classifier_class_definition
-  descr: |
-    Table with detailed descriptions of published classes for each classifier described in {\tt VariClassifierDefinition} and used in table {\tt VariClassifierResult}.
-    In DR3, this table contains the details of a classifier with {\tt classifierName}=`nTransits:5+'.
-  sub:
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
+#- name: vari_classifier_class_definition
+# descr: |
+#   Table with detailed descriptions of published classes for each classifier described in {\tt VariClassifierDefinition} and used in table {\tt VariClassifierResult}.
+#   In DR3, this table contains the details of a classifier with {\tt classifierName}=`nTransits:5+'.
+# sub:
 # - name: classifier_name
 #   type: keyword
 #   descr: Name of the classifier that is detailed in this entry
@@ -4081,14 +3982,11 @@ fields:
 # - name: class_description
 #   type: keyword
 #   descr: Description of the published class from this classifier
-- name: vari_classifier_definition
-  descr: |
-    Table with detailed descriptions of all classifiers used in table {\tt VariClassifierResult}. Details of the published classes for each classifier can be found in {\tt VariClassifierClassDefinition}.
-    In DR3, this table contains the details of a classifier with {\tt classifierName}=`nTransits:5+'.
-  sub:
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
+#- name: vari_classifier_definition
+# descr: |
+#   Table with detailed descriptions of all classifiers used in table {\tt VariClassifierResult}. Details of the published classes for each classifier can be found in {\tt VariClassifierClassDefinition}.
+#   In DR3, this table contains the details of a classifier with {\tt classifierName}=`nTransits:5+'.
+# sub:
 # - name: classifier_name
 #   type: keyword
 #   descr: Name of the classifier that is detailed in this entry
@@ -4102,12 +4000,6 @@ fields:
     which is described in {\\tt VariClassifierDefinition} and identifies the classes
     defined in {\\tt VariClassifierClassDefinition}. \n"
   sub:
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
-  - name: source_id
-    type: long
-    descr: Unique source identifier
 # - name: classifier_name
 #   type: keyword
 #   descr: Classifier name used to produce this result, use for lookup in \texttt{VariClassifierDefinition}
@@ -4123,12 +4015,6 @@ fields:
   descr: |
     This table describes the compact companion candidates.
   sub:
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
-  - name: source_id
-    type: long
-    descr: Unique source identifier
   - name: period
     units: d
     type: double
@@ -4231,12 +4117,6 @@ fields:
   descr: "This table describes the properties of the eclipsing binaries resulting
     from the variability analysis. \n"
   sub:
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
-  - name: source_id
-    type: long
-    descr: Unique source identifier
   - name: global_ranking
     type: float
     descr: Number between 0 (worst) and 1 (best)
@@ -4369,9 +4249,6 @@ fields:
   descr: |
     This table contains the epoch radial velocity data points for a sub-set of variable stars. Each entry is a radial velocity in the solar barycentric reference frame for a given object and observation time.
   sub:
-  - name: source_id
-    type: long
-    descr: Unique source identifier (unique within a particular Data Release)
   - name: transit_id
     type: long
     descr: Transit unique identifier
@@ -4398,12 +4275,6 @@ fields:
     This table describes the Long Period Variable stars.
     Some entries can be NaN when absent.
   sub:
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
-  - name: source_id
-    type: long
-    descr: Unique source identifier
   - name: frequency
     units: d**-1
     type: double
@@ -4427,12 +4298,6 @@ fields:
   descr: |
     This table describes the microlensing events.
   sub:
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
-  - name: source_id
-    type: long
-    descr: Unique source identifier
   - name: paczynski0_g0
     units: mag
     type: float
@@ -4559,12 +4424,6 @@ fields:
   descr: |
     This table describes the main-sequence oscillators.
   sub:
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
-  - name: source_id
-    type: long
-    descr: Unique source identifier
   - name: frequency1
     units: d**-1
     type: double
@@ -4607,12 +4466,6 @@ fields:
   descr: |
     This table describes the Planetary Transit candidate events.
   sub:
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
-  - name: source_id
-    type: long
-    descr: Unique source identifier
   - name: transit_reference_time
     units: d
     type: double
@@ -4637,12 +4490,6 @@ fields:
     Statistical parameters of radial velocity time series, using only transits not rejected, see {\tt rejectedByVariability} column in {\tt VariEpochRadialVelocity}.
     Note that NaN will be reported when the parameter value is missing or cannot be calculated.
   sub:
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
-  - name: source_id
-    type: long
-    descr: Unique source identifier
   - name: num_selected_rv
     type: short
     descr: Total number of radial velocity transits selected for variability analysis
@@ -4699,12 +4546,6 @@ fields:
   descr: |
     This table describes the solar-like stars with rotational modulation.
   sub:
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
-  - name: source_id
-    type: long
-    descr: Unique source identifier
   - name: num_segments
     type: byte
     descr: Number of segments
@@ -5001,12 +4842,6 @@ fields:
   descr: |
     This table describes the RR Lyrae stars.
   sub:
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
-  - name: source_id
-    type: long
-    descr: Unique source identifier
   - name: pf
     units: d
     type: double
@@ -5337,12 +5172,6 @@ fields:
 - name: vari_short_timescale
   descr: "This table describes the short-timescale sources. \n"
   sub:
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
-  - name: source_id
-    type: long
-    descr: Unique source identifier
   - name: amplitude_estimate
     units: mag
     type: float
@@ -5377,12 +5206,6 @@ fields:
     Summary table that provides the information on where a {\tt sourceId} can be found in the different {\tt Variability} tables and statistical parameters of time series, using only transits not rejected.
     Note that NULL is reported when the statistical parameter value is missing or cannot be calculated.
   sub:
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
-  - name: source_id
-    type: long
-    descr: Unique source identifier
   - name: num_selected_g_fov
     type: short
     descr: Total number of G FOV transits selected for variability analysis
@@ -5618,12 +5441,6 @@ fields:
   descr: |
     Table hosting the mean BP and RP spectra based on the continuous representation in basis functions (see~\secref{cu5pho_ssec:meanSpecGen}).
   sub:
-  - name: source_id
-    type: long
-    descr: Unique source identifier (unique within a particular Data Release)
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
   - name: bp_basis_function_id
     type: short
     descr: Identifier defining the set of basis functions for the BP spectrum representation
@@ -5710,12 +5527,6 @@ fields:
   descr: |
     This is the BP/RP externally calibrated sampled mean spectrum. All mean spectra are sampled to the same set of absolute wavelength positions, which can be found in the field \texttt{wavelength} of table \texttt{XpMerge}.
   sub:
-  - name: source_id
-    type: long
-    descr: Unique source identifier (unique within a particular Data Release)
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
   - name: ra
     units: deg
     type: double
@@ -5738,12 +5549,6 @@ fields:
   descr: |
     This tables contains auxiliary information about the mean BP/RP spectrum of a given source. It should be used in order to refine queries on spectra and build dedicated samples before interrogating the DataLink protocol to download the results of those queries.
   sub:
-  - name: source_id
-    type: long
-    descr: Unique source identifier (unique within a particular Data Release)
-  - name: solution_id
-    type: long
-    descr: Solution Identifier
   - name: bp_n_relevant_bases
     type: short
     descr: Number of bases that are relevant for the representation of this mean BP
