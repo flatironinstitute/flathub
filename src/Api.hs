@@ -24,6 +24,7 @@ import           Data.Bits (xor)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.CaseInsensitive as CI
+import           Data.Either (fromRight)
 import qualified Data.HashMap.Strict as HM
 import           Data.IORef (newIORef, readIORef, writeIORef)
 import           Data.List (foldl')
@@ -364,13 +365,13 @@ parseFieldsJSON cat = J.withArray "field list" $
 parseStatsQuery :: Catalog -> Wai.Request -> StatsArgs
 parseStatsQuery cat req = StatsArgs
   { statsFilters = parseFiltersQuery cat req
-  , statsFields = parseFieldsQuery cat req "fields"
+  , statsFields = KM.fromList $ parseFieldsQuery cat req "fields"
   }
 
 parseStatsJSON :: Catalog -> J.Value -> J.Parser StatsArgs
 parseStatsJSON cat = J.withObject "stats request" $ \o -> StatsArgs
   <$> parseFiltersJSON cat (HM.delete "fields" o)
-  <*> (maybe (return []) (parseFieldsJSON cat) =<< o J..:? "fields")
+  <*> (maybe (return KM.empty) (fmap KM.fromList . parseFieldsJSON cat) =<< o J..:? "fields")
 
 fieldStatsJSON :: FieldSub FieldStats m -> J.Encoding
 fieldStatsJSON = unTypeValue fsj . fieldType
@@ -460,7 +461,7 @@ parseDataQuery cat req = DataArgs
   , dataFields = parseFieldsQuery cat req "fields"
   , dataSort = parseSortQuery cat req "sort"
   , dataCount = fromMaybe 0 $ parseReadQuery req "count"
-  , dataOffset = fromMaybe 0 $ parseReadQuery req "offset"
+  , dataOffset = Right $ fromMaybe 0 $ parseReadQuery req "offset"
   }
 
 parseDataJSON :: Catalog -> J.Value -> J.Parser DataArgs
@@ -469,13 +470,12 @@ parseDataJSON cat = J.withObject "data request" $ \o -> DataArgs
   <*> (parseFieldsJSON cat =<< o J..: "fields")
   <*> (parseSortJSON cat =<< o J..:? "sort")
   <*> o J..: "count"
-  <*> o J..:? "offset" J..!= 0
+  <*> (Right <$> (o J..:? "offset" J..!= 0))
 
 -------- /api/{catalog}/histogram
 
-defaultHistogramSize, maxHistogramDepth :: Word16
+defaultHistogramSize :: Word16
 defaultHistogramSize = 16
-maxHistogramDepth = 3
 
 histogramSchema :: OpenApiM (OA.Referenced OA.Schema)
 histogramSchema = do
@@ -641,9 +641,7 @@ apiOperations =
       cat <- askCatalog sim
       body <- parseJSONBody req (parseDataJSON cat)
       let args = fromMaybe (parseDataQuery cat req) body
-      unless (dataCount args <= maxDataCount && fromIntegral (dataCount args) + fromIntegral (dataOffset args) <= maxResultWindow)
-        $ raise400 "count too large"
-      dat <- queryData cat args
+      (dat, _) <- queryData cat args
       return $ okResponse (apiHeaders req) $ JE.list J.foldable (V.toList dat)
     , apiResponseSchema = do
       fv <- declareSchemaRef (Proxy :: Proxy FieldValue)
@@ -719,9 +717,6 @@ apiOperations =
       cat <- askCatalog sim
       body <- parseJSONBody req (parseHistogramJSON cat)
       let args = fromMaybe (parseHistogramQuery cat req) body
-      unless (length (histogramFields args) + fromEnum (isJust (histogramQuartiles args)) <= fromIntegral maxHistogramDepth
-          && product (map (fromIntegral . histogramSize) (histogramFields args)) <= maxHistogramSize)
-        $ raise400 "histograms too large"
       HistogramResult{..} <- queryHistogram cat args
       return $ okResponse (apiHeaders req) $ J.pairs
         $  "sizes" J..= histogramSizes
@@ -750,7 +745,7 @@ apiOperations =
   where
   countSchema = OA.Inline $ schemaDescOf dataCount "number of rows to return"
     & OA.maximum_ ?~ fromIntegral maxDataCount
-  offsetSchema = OA.Inline $ schemaDescOf dataOffset "start at this row offset (0 means first)"
+  offsetSchema = OA.Inline $ schemaDescOf (fromRight 0 . dataOffset) "start at this row offset (0 means first)"
     & OA.maximum_ ?~ fromIntegral maxResultWindow - fromIntegral maxDataCount
     & OA.default_ ?~ J.Number 0
 

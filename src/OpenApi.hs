@@ -16,7 +16,6 @@ module OpenApi
   , declareSchemaRef
   , define
   , resolve
-  , proxyOf
   , at'
   ) where
 

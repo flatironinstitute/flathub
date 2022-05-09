@@ -76,7 +76,7 @@ createCatalog cat = show <$> ES.createIndex cat
 
 populateStats :: Catalog -> M Catalog
 populateStats cat = do
-  stats <- once $ queryStats cat (StatsArgs mempty $ filter (not . or . fieldStore) $ HM.elems $ catalogFieldMap cat)
+  stats <- once $ queryStats cat (StatsArgs mempty $ HM.filter (not . or . fieldStore) $ catalogFieldMap cat)
   return cat{ catalogStats = stats }
 
 main :: IO ()

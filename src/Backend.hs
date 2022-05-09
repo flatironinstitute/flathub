@@ -6,6 +6,7 @@
 module Backend
   ( FieldFilter(..)
   , Filters(..)
+  , DataOffset
   , DataArgs(..)
   , queryData
   , maxDataCount, maxResultWindow
@@ -13,12 +14,13 @@ module Backend
   , queryStats
   , Histogram(..)
   , HistogramArgs(..)
-  , maxHistogramSize
+  , maxHistogramSize, maxHistogramDepth
   , HistogramBucket(..)
   , HistogramResult(..)
   , queryHistogram
   ) where
 
+import           Control.Monad (unless)
 import           Control.Monad.IO.Class (liftIO)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
@@ -29,7 +31,7 @@ import           Data.Functor.Identity (Identity(Identity))
 import           Data.Functor.Reverse (Reverse(Reverse))
 import qualified Data.HashMap.Strict as HM
 import           Data.List (genericTake)
-import           Data.Maybe (fromMaybe)
+import           Data.Maybe (fromMaybe, isJust)
 import           Data.Proxy (Proxy(Proxy))
 import           Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
 import qualified Data.Text as T
@@ -105,9 +107,14 @@ filterQuery Filters{..} = "query" .=*
   term f (FieldWildcard w) | fieldWildcard f = "wildcard" .=* (fieldName f J..= w)
   term _ _ = error "invalid FieldFilder"
 
-parseData :: Traversable f => f Field -> J.Value -> J.Parser (V.Vector (f (TypeValue Maybe)))
+newtype DataOffset = DataAfter J.Array
+
+parseData :: Traversable f => f Field -> J.Value -> J.Parser (V.Vector (f (TypeValue Maybe)), DataOffset)
 parseData fields = J.withObject "data res" $ \o ->
-  o J..: "hits" >>= (J..: "hits") >>= mapM row where
+  o J..: "hits" >>= (J..: "hits") >>= \l -> (,)
+    <$> mapM row l
+    <*> (DataAfter <$> if V.null l then return V.empty else V.last l J..: "sort")
+  where
   row = getf . storedFields
   getf o = mapM (parsef o) fields
   parsef o f = traverseTypeValue (\Proxy -> mapM parseJSONTyped $ HM.lookup (fieldName f) o) (fieldType f)
@@ -116,20 +123,31 @@ data DataArgs = DataArgs
   { dataFilters :: Filters
   , dataFields :: [Field]
   , dataSort :: [(Field, Bool)]
-  , dataCount, dataOffset :: Word16
+  , dataCount :: Word16
+  , dataOffset :: Either DataOffset Word16
   }
 
 maxDataCount :: Word16
 maxDataCount = 5000
 
-queryData :: Catalog -> DataArgs -> M (V.Vector (V.Vector (TypeValue Maybe)))
-queryData cat DataArgs{..} =
+-- |Query raw data rows as specified, and return a vector of row data, matching dataFields order, and a DataOffset that can be used to return the next page of data
+queryData :: Catalog -> DataArgs -> M (V.Vector (V.Vector (TypeValue Maybe)), DataOffset)
+queryData cat DataArgs{..} = do
+  unless (dataCount <= maxDataCount && fromIntegral dataCount + either (const 0) fromIntegral dataOffset <= maxResultWindow)
+    $ raise400 "count too large"
   searchCatalog cat [] (parseData (V.fromList dataFields)) $ JE.pairs
     $  "size" J..= dataCount
-    <> mwhen (dataOffset > 0) ("from" J..= dataOffset)
-    <> "sort" `JE.pair` JE.list (\(f, a) -> JE.pairs (fieldName f J..= if a then "asc" else "desc" :: String)) (dataSort ++ [(docField,True)])
+    <> "sort" `JE.pair` JE.list (\(f, a) ->
+        JE.pairs (fieldName f J..= if a then "asc" else "desc" :: String))
+      (dataSort ++ [(docField,True),(key,True)])
+    <> offset dataOffset
     <> storedFieldsArgs dataFields
     <> filterQuery dataFilters
+  where
+  key = fromMaybe idField $ (`HM.lookup` catalogFieldMap cat) =<< catalogKey cat
+  offset (Right 0) = mempty
+  offset (Right o) = "from" J..= o
+  offset (Left (DataAfter a)) = "search_after" J..= a
 
 fieldUseTerms :: Field -> Bool
 fieldUseTerms f = fieldTerms f || not (typeIsNumeric $ snd $ unArrayType $ fieldType f)
@@ -158,7 +176,7 @@ parseStats cat = J.withObject "stats res" $ \o -> (,)
 
 data StatsArgs = StatsArgs
   { statsFilters :: Filters
-  , statsFields :: [Field]
+  , statsFields :: KM.KeyedMap Field
   }
 
 queryStats :: Catalog -> StatsArgs -> M (Count, KM.KeyedMap (FieldSub FieldStats Proxy))
@@ -185,8 +203,9 @@ data HistogramArgs = HistogramArgs
   , histogramQuartiles :: Maybe Field
   }
 
-maxHistogramSize :: Word16
+maxHistogramSize, maxHistogramDepth :: Word16
 maxHistogramSize = 4096
+maxHistogramDepth = 3
 
 data HistogramInterval
   = HistogramInterval
@@ -241,6 +260,9 @@ remainder n d = d * snd (properFraction (n / d) :: (Integer, a))
 
 queryHistogram :: Catalog -> HistogramArgs -> M HistogramResult
 queryHistogram cat hist@HistogramArgs{..} = do
+  unless (length histogramFields + fromEnum (isJust histogramQuartiles) <= fromIntegral maxHistogramDepth
+      && product (map (fromIntegral . histogramSize) histogramFields) <= maxHistogramSize)
+    $ raise400 "histograms too large"
   (_, stats) <- liftIO $ catalogStats cat
   -- calculate the bucket sizes (or explicit ranges for log)
   let size Histogram{..} = histint where
