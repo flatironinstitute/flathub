@@ -432,6 +432,7 @@ fields:
   type: byte
   descr: Photometric variability flag
   enum: ['CONSTANT', 'VARIABLE']
+  missing: ['NOT_AVAILABLE']
 - name: l
   units: deg
   type: double
@@ -609,6 +610,7 @@ fields:
 # type: keyword
 # descr: Name of library that achieves the highest mean log-posterior in MCMC samples
 #   and was used to derive GSP-Phot parameters in this table
+# enum: [PHOENIX,MARCS,A,OB,...]
 
 ######## SUB TABLES follow #######
 - name: astrophysical_parameters
@@ -835,6 +837,7 @@ fields:
 #   type: keyword
 #   descr: Name of library that achieves the highest mean log-posterior in MCMC samples
 #     and was used to derive GSP-Phot parameters in this table
+#   enum: [PHOENIX,MARCS,A,OB,...]
   - name: teff_gspspec
     units: K
     type: float
@@ -1263,6 +1266,7 @@ fields:
 # - name: flags_gspspec
 #   type: keyword
 #   descr: Catalogue flags for GSP-Spec MatisseGauguin
+#   big numbers?
   - name: logchisq_gspspec
     type: float
     descr: Logarithm of the goodness-of-fit for the GSP-Spec MatisseGauguin parameters
@@ -1275,7 +1279,7 @@ fields:
     type: float
     descr: Uncertainty of the Halpha pseudo-equivalent width from ESP-ELS
 # - name: ew_espels_halpha_flag
-#   type: keyword
+#   type: boolean
 #   descr: Quality flag of the Halpha pseudo-equivalent width from ESP-ELS
   - name: ew_espels_halpha_model
     units: nm
@@ -1284,8 +1288,9 @@ fields:
 # - name: classlabel_espels
 #   type: keyword
 #   descr: Adopted ELS class label from ESP-ELS
+#   enum: ['beStar', 'wN', ?]
 # - name: classlabel_espels_flag
-#   type: keyword
+#   type: int8
 #   descr: Quality flag of the adopted ELS class label from ESP-ELS
   - name: classprob_espels_wcstar
     type: float
@@ -1358,11 +1363,21 @@ fields:
     type: float
     descr: Uncertainty on the projected rotational velocity from ESP-HS
 # - name: flags_esphs
-#   type: keyword
+#   type: int16
 #   descr: Quality flag of the ESP-HS parametrisation
 # - name: spectraltype_esphs
 #   type: keyword
 #   descr: Spectral type from ESP-ELS
+#   enum:
+#   - A
+#   - B
+#   - CSTAR
+#   - F
+#   - G
+#   - K
+#   - M
+#   - O
+#   - unknown
   - name: activityindex_espcs
     units: nm
     type: float
@@ -1376,6 +1391,7 @@ fields:
 #   type: keyword
 #   descr: Source of input stellar parameters for the computation of the activity
 #     index by ESP-CS
+#   enum: ['M1', 'M2']
   - name: teff_espucd
     units: K
     type: float
@@ -1387,6 +1403,7 @@ fields:
 # - name: flags_espucd
 #   type: keyword
 #   descr: Quality flags of the ESP-UCD parameter estimates
+#   blank?
   - name: radius_flame
     units: solRad
     type: float
@@ -1439,7 +1456,7 @@ fields:
     type: float
     descr: Upper confidence level (84%) of {\tt ageFlame}
 # - name: flags_flame
-#   type: keyword
+#   type: int8
 #   descr: Flags indicating quality and processing information from FLAME
   - name: evolstage_flame
     type: integer
@@ -1587,7 +1604,7 @@ fields:
     type: float
     descr: Mean drift of the MSC MCMC chain in units of parameter standard deviation
 # - name: flags_msc
-#   type: keyword
+#   type: boolean
 #   descr: Flag indicating quality information from MSC
   - name: neuron_oa_id
     type: long
@@ -1601,7 +1618,7 @@ fields:
     descr: Percentile rank according to the distance distribution of the OA neuron
       that represents the source
 # - name: flags_oa
-#   type: keyword
+#   type: int16
 #   descr: Flags indicating quality and processing information from OA
 - name: astrophysical_parameters_supp
   descr: |
@@ -1611,6 +1628,7 @@ fields:
 #   type: keyword
 #   descr: Name of library that achieves the highest mean log-posterior in MCMC samples
 #     from GSP-Phot Aeneas
+#   enum: [PHOENIX,MARCS,A,OB,...]
   - name: teff_gspphot_marcs
     units: K
     type: float
@@ -2340,7 +2358,7 @@ fields:
     type: float
     descr: Logarithm of the goodness-of-fit for the GSP-Spec ANN parameters
 # - name: flags_gspspec_ann
-#   type: keyword
+#   type: long
 #   descr: Catalogue flags for GSP-Spec ANN
   - name: radius_flame_spec
     units: solRad
@@ -2394,7 +2412,7 @@ fields:
     type: float
     descr: Upper confidence level (84%) of {\tt ageFlameSpec}
 # - name: flags_flame_spec
-#   type: keyword
+#   type: int8
 #   descr: Flag indicating quality of parameters from FLAME using GSP-Spec parameters
   - name: evolstage_flame_spec
     type: integer
@@ -2548,6 +2566,14 @@ fields:
 #   type: keyword
 #   descr: Name of best class, see table VariClassifierClassDefinition for details
 #     of the class
+#   enum:
+#   - AGN
+#   - CV
+#   - ECL
+#   - GALAXY
+#   - LPV
+#   - RR
+#   - S
   - name: vari_best_class_score
     type: float
     descr: Score of the best class
@@ -2562,13 +2588,49 @@ fields:
 # - name: classlabel_dsc
 #   type: keyword
 #   descr: Class assigned by DSC based on the probability from its Combmod classifier
+#   enum:
+#   - galaxy
+#   - physicalbinary
+#   - quasar
+#   - star
+#   - unclassified
 # - name: classlabel_dsc_joint
 #   type: keyword
 #   descr: Class assigned by DSC based on the probability from its Specmod and Allosmod
 #     classifiers
+#   enum:
+#   - galaxy
+#   - physicalbinary
+#   - quasar
+#   - star
+#   - unclassified
 # - name: classlabel_oa
 #   type: keyword
 #   descr: Class assigned by OA the neuron that represents the source
+#   enum:
+#   - ELS
+#   - GAL_Z005_01
+#   - GAL_Z005_LT
+#   - GAL_Z01_015
+#   - GAL_Z01_02
+#   - GAL_Z01_LT
+#   - GAL_Z025_GT
+#   - GAL_Z02_GT
+#   - QSO_Z05_15
+#   - QSO_Z05_LT
+#   - QSO_Z15_25
+#   - QSO_Z15_LT
+#   - QSO_Z25_35
+#   - QSO_Z35_45
+#   - STAR_A
+#   - STAR_EARLY
+#   - STAR_F
+#   - STAR_G
+#   - STAR_INT
+#   - STAR_K
+#   - STAR_LATE
+#   - STAR_M
+#   - WD
   - name: redshift_ugc
     type: float
     descr: Redshift from UGC
@@ -2701,6 +2763,9 @@ fields:
 # - name: nss_solution_type
 #   type: keyword
 #   descr: NSS model adopted
+#   enum:
+#   - Acceleration7
+#   - Acceleration9
   - name: ra
     units: deg
     type: double
@@ -2806,6 +2871,9 @@ fields:
 # - name: nss_solution_type
 #   type: keyword
 #   descr: NSS model adopted
+#   enum:
+#   - FirstDegreeTrendSB1
+#   - SecondDegreeTrendSB1
   - name: mean_velocity
     units: km.s**-1
     type: double
@@ -2860,6 +2928,19 @@ fields:
 # - name: nss_solution_type
 #   type: keyword
 #   descr: NSS model adopted
+#   enum:
+#   - AstroSpectroSB1
+#   - EclipsingBinary
+#   - EclipsingSpectro
+#   - Orbital
+#   - OrbitalAlternative
+#   - OrbitalAlternativeValidated
+#   - OrbitalTargetedSearch
+#   - OrbitalTargetedSearchValidated
+#   - SB1
+#   - SB1C
+#   - SB2
+#   - SB2C
   - name: ra
     units: deg
     type: double
@@ -3142,6 +3223,7 @@ fields:
 # - name: nss_solution_type
 #   type: keyword
 #   descr: NSS model adopted
+#   enum: [VIMF]
   - name: ra
     units: deg
     type: double
@@ -3251,6 +3333,22 @@ fields:
 #   type: keyword
 #   descr: Name of best class, see table VariClassifierClassDefinition for details
 #     of the class
+#   enum:
+#   - AGN
+#   - BE|GCAS|SDOR|WR
+#   - CEP
+#   - CV
+#   - DSCT|GDOR|SXPHE
+#   - ECL
+#   - GALAXY
+#   - LPV
+#   - RCB
+#   - RR
+#   - RS
+#   - S
+#   - SYST
+#   - WD
+#   - YSO
   - name: vari_best_class_score
     type: float
     descr: Score of the best class
@@ -3283,13 +3381,51 @@ fields:
 # - name: classlabel_dsc
 #   type: keyword
 #   descr: Class assigned by DSC based on the probability from its Combmod classifier
+#   enum:
+#   - galaxy
+#   - physicalbinary
+#   - quasar
+#   - star
+#   - unclassified
+#   - whitedwarf
 # - name: classlabel_dsc_joint
 #   type: keyword
 #   descr: Class assigned by DSC based on the probability from its Specmod and Allosmod
 #     classifiers
+#   enum:
+#   - galaxy
+#   - physicalbinary
+#   - quasar
+#   - star
+#   - unclassified
+#   - whitedwarf
 # - name: classlabel_oa
 #   type: keyword
 #   descr: Class assigned by OA the neuron that represents the source
+#   enum:
+#   - ELS
+#   - GAL_Z005_01
+#   - GAL_Z005_LT
+#   - GAL_Z01_015
+#   - GAL_Z01_02
+#   - GAL_Z01_LT
+#   - GAL_Z025_GT
+#   - GAL_Z02_GT
+#   - QSO_Z05_15
+#   - QSO_Z05_LT
+#   - QSO_Z15_25
+#   - QSO_Z15_LT
+#   - QSO_Z25_35
+#   - QSO_Z35_45
+#   - STAR_A
+#   - STAR_EARLY
+#   - STAR_F
+#   - STAR_G
+#   - STAR_INT
+#   - STAR_K
+#   - STAR_LATE
+#   - STAR_M
+#   - WD
   - name: redshift_qsoc
     type: float
     descr: Redshift from QSOC
@@ -3434,6 +3570,7 @@ fields:
 # - name: denomination
 #   type: keyword
 #   descr: standard MPC denomination of the asteroid
+#   lots of names
   - name: transit_id
     type: long
     descr: Transit Identifier
@@ -3566,6 +3703,7 @@ fields:
 # - name: denomination
 #   type: keyword
 #   descr: standard MPC denomination of the asteroid
+#   lots of names
   - name: nb_samples
     type: short
     descr: Nb samples in spectrum
@@ -3599,6 +3737,7 @@ fields:
 # - name: denomination
 #   type: keyword
 #   descr: standard MPC denomination of the asteroid
+#   even more names
   - name: num_of_spectra
     type: integer
     descr: Number of epoch spectra used to compute the average
@@ -4004,6 +4143,7 @@ fields:
 #   type: keyword
 #   descr: Classifier name used to produce this result, use for lookup in \texttt{VariClassifierDefinition}
 #     table
+#   enum: ["nTransits:5+"]
 # - name: best_class_name
 #   type: keyword
 #   descr: Name of best class, see table \texttt{VariClassifierClassDefinition} for
@@ -4011,6 +4151,7 @@ fields:
   - name: best_class_score
     type: float
     descr: Score of the best class
+    # references vari_classifier_definition
 - name: vari_compact_companion
   descr: |
     This table describes the compact companion candidates.
@@ -4199,6 +4340,13 @@ fields:
 # - name: model_type
 #   type: keyword
 #   descr: Type of geometrical model of the light curve
+#   enum:
+#   - ELLIPSOIDAL
+#   - ONEGAUSSIAN
+#   - ONEGAUSSIAN_WITH_ELLIPSOIDAL
+#   - TWOGAUSSIANS
+#   - TWOGAUSSIANS_WITH_ELLIPSOIDAL_ON_ECLIPSE1
+#   - TWOGAUSSIANS_WITH_ELLIPSOIDAL_ON_ECLIPSE2
   - name: num_model_parameters
     type: byte
     descr: Number of free parameters of the geometric model
