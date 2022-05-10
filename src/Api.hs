@@ -1,4 +1,5 @@
 {-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -8,7 +9,15 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Api
-  ( apiRoutes
+  ( apiRoute
+  , apiTop
+  , apiCatalog
+  , apiSchemaSQL
+  , apiSchemaCSV
+  , apiData
+  , apiStats
+  , apiHistogram
+  , apiRoutes
   , openApi
   ) where
 
@@ -25,6 +34,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.CaseInsensitive as CI
 import           Data.Either (fromRight)
+import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
 import           Data.IORef (newIORef, readIORef, writeIORef)
 import           Data.List (foldl')
@@ -38,7 +48,7 @@ import qualified Data.Vector as V
 import           Data.Version (showVersion)
 import           Data.Word (Word16)
 import           Network.HTTP.Types.Header (ResponseHeaders, hOrigin, hContentType)
-import           Network.HTTP.Types.Status (noContent204, requestEntityTooLarge413, unsupportedMediaType415, unprocessableEntity422)
+import           Network.HTTP.Types.Status (ok200, noContent204, requestEntityTooLarge413, unsupportedMediaType415, unprocessableEntity422)
 import qualified Network.Wai as Wai
 import           Text.Read (readMaybe)
 import           Waimwork.Response (okResponse, response)
@@ -56,6 +66,7 @@ import Catalog
 import Global
 import OpenApi
 import Backend
+import Output.CSV (csvTextRow)
 
 apiBase :: R.Path ()
 apiBase = "api"
@@ -69,12 +80,6 @@ apiHeaders req
     , ("access-control-max-age", "86400")
     ]
   | otherwise = []
-
-apiRouteAction :: R.Path a -> (a -> Action) -> R.RouteAction (R.Method, a) Action
-apiRouteAction p f =
-  R.RouteAction (R.routeMethods [R.GET, R.POST, R.OPTIONS] R.>*< R.routePath (apiBase R.*< p)) act where
-  act (R.OPTIONS, _) req = return $ response noContent204 (apiHeaders req) ()
-  act (_, x) req = f x req
 
 isDelim :: Char -> Bool
 isDelim ',' = True
@@ -134,7 +139,7 @@ parseJSONBody req parse = traverse (\c -> do
   $ lookup hContentType $ Wai.requestHeaders req
   where ct = "application/json"
 
-data APIOperation = forall a . APIOperation
+data APIOp a = APIOp
   { apiName :: T.Text
   , apiSummary :: T.Text
   , apiPath :: R.Path a
@@ -143,7 +148,7 @@ data APIOperation = forall a . APIOperation
   , apiAction :: a -> Action
   , apiQueryParams :: [OpenApiM (OA.Referenced OA.Param)]
   , apiRequestSchema :: Maybe (OpenApiM OA.Schema)
-  , apiResponseSchema :: OpenApiM OA.Schema
+  , apiResponse :: OpenApiM OA.Response
   }
 
 -------- /api
@@ -164,6 +169,26 @@ instance OA.ToSchema Catalog where
       , ("title", OA.Inline $ schemaDescOf catalogTitle "display name", True)
       , ("synopsis", OA.Inline $ schemaDescOf catalogSynopsis "short description", True)
       ]
+
+apiTop :: APIOp ()
+apiTop = APIOp -- /api
+  { apiName = "top"
+  , apiSummary = "Get the list of available dataset catalogs"
+  , apiPath = R.unit
+  , apiExampleArg = ()
+  , apiPathParams = []
+  , apiAction = \() req -> do
+    cats <- asks globalCatalogs
+    return $ okResponse (apiHeaders req)
+      $ JE.list (J.pairs . catalogJSON) $ filter catalogVisible $ HM.elems $ catalogMap cats
+  , apiQueryParams = []
+  , apiRequestSchema = Nothing
+  , apiResponse = do
+    catmeta <- declareSchemaRef (Proxy :: Proxy Catalog)
+    return $ jsonContent $ mempty
+      & OA.type_ ?~ OA.OpenApiArray
+      & OA.items ?~ OA.OpenApiItemsObject catmeta
+  }
 
 -------- /api/{catalog}
 
@@ -242,6 +267,119 @@ catalogParam :: OA.Param
 catalogParam = mempty
   & OA.name .~ "sim"
   & OA.schema ?~ OA.Inline (schemaDescOf T.pack "catalog id")
+
+apiCatalog :: APIOp Simulation
+apiCatalog = APIOp -- /api/{cat}
+  { apiName = "catalog"
+  , apiSummary = "Get full metadata about a specific catalog"
+  , apiPath = catalogBase
+  , apiExampleArg = "sim"
+  , apiPathParams = [catalogParam]
+  , apiQueryParams = []
+  , apiRequestSchema = Nothing
+  , apiAction = \sim req -> do
+    cat <- askCatalog sim
+    (count, stats) <- liftIO $ catalogStats cat
+    return $ okResponse (apiHeaders req) $ J.pairs
+      $ catalogJSON cat
+      <> JE.pair "fields" (fieldsJSON stats mempty $ catalogFieldGroups cat)
+      <> "count" J..= fromMaybe count (catalogCount cat)
+      <> mwhen (not $ null $ catalogSort cat)
+        ("sort" J..= catalogSort cat)
+  , apiResponse = do
+    fdef <- declareSchemaRef (Proxy :: Proxy FieldGroup)
+    meta <- declareSchemaRef (Proxy :: Proxy Catalog)
+    return $ jsonContent $ mempty & OA.allOf ?~
+      [ meta
+      , OA.Inline $ objectSchema
+        "full catalog metadata"
+        [ ("fields", OA.Inline $ arraySchema fdef
+          & OA.description ?~ "field groups"
+          , True)
+        , ("count", OA.Inline $ schemaDescOf catalogCount "total number of rows", True)
+        , ("sort", OA.Inline $ schemaDescOf catalogSort "default sort fields", False)
+        ]
+      ]
+  }
+
+apiSchemaSQL :: APIOp Simulation
+apiSchemaSQL = APIOp -- /api/{cat}/schema.sql
+  { apiName = "schema.sql"
+  , apiSummary = "Get a SQL representation of the catalog schema (no data)"
+  , apiPath = catalogBase R.>* "schema.sql"
+  , apiExampleArg = "sim"
+  , apiPathParams = [catalogParam]
+  , apiQueryParams = []
+  , apiRequestSchema = Nothing
+  , apiAction = \sim _ -> do
+    cat <- askCatalog sim
+    let tab = text $ catalogIndex cat
+        sqls s = "$SqL$" <> s <> "$SqL$" -- hacky dangerous
+    return $ Wai.responseBuilder ok200 [(hContentType, "application/sql")] $
+      foldMap (\f -> foldMap (\e -> "CREATE TYPE " <> tab <> "_" <> text (fieldName f) <> " AS ENUM(" <> mintersperseMap ", " (sqls . text) (V.toList e) <> ");\n") (fieldEnum f)) (catalogFields cat)
+      <> "CREATE TABLE " <> tab <> " ("
+      <> mintersperseMap "," (\f -> "\n  " <> text (fieldName f) <> " " <> maybe (sqlType (fieldType f)) (\_ -> tab <> "_" <> text (fieldName f)) (fieldEnum f)) (V.toList $ catalogFields cat)
+      <> foldMap (\k -> ",\n PRIMARY KEY (" <> text k <> ")") (catalogKey cat)
+      <> "\n);\n"
+      <> "COMMENT ON TABLE " <> tab <> " IS " <> sqls (text (catalogTitle cat) <> foldMap ((": " <>) . text) (catalogDescr cat)) <> ";\n"
+      <> foldMap (\f -> "COMMENT ON COLUMN " <> tab <> "." <> text (fieldName f) <> " IS " <> sqls (text (fieldTitle f) <> foldMap ((" [" <>) . (<> "]") . text) (fieldUnits f) <> foldMap ((": " <>) . text) (fieldDescr f)) <> ";\n") (catalogFields cat)
+  , apiResponse = return $ mempty
+    & OA.content . at' "application/sql" . OA.schema ?~ OA.Inline (mempty
+      & OA.description ?~ "CREATE TABLE SQL schema")
+  }
+  where
+  text = TE.encodeUtf8Builder
+  sqlType (Keyword _)   = "text"
+  sqlType (Long _)      = "bigint"
+  sqlType (ULong _)     = "bigint"
+  sqlType (Integer _)   = "integer"
+  sqlType (Short _)     = "smallint"
+  sqlType (Byte _)      = "smallint"
+  sqlType (Double _)    = "double precision"
+  sqlType (Float _)     = "real"
+  sqlType (HalfFloat _) = "real"
+  sqlType (Boolean _)   = "boolean"
+  sqlType (Void _)      = "void"
+  sqlType (Array t)     = sqlType (arrayHead t) <> "[]"
+
+apiSchemaCSV :: APIOp Simulation
+apiSchemaCSV = APIOp -- /api/{cat}/schema.csv
+  { apiName = "schema.csv"
+  , apiSummary = "Get a CSV representation of the catalog schema (no data)"
+  , apiPath = catalogBase R.>* "schema.csv"
+  , apiExampleArg = "sim"
+  , apiPathParams = [catalogParam]
+  , apiQueryParams = []
+  , apiRequestSchema = Nothing
+  , apiAction = \sim _ -> do
+    let
+      populateDict cats = V.map pf $ catalogDict cats where
+        pf f = f{ fieldDesc = (fieldDesc f){ fieldDescDict = Just $ T.intercalate ";" $ md (fieldName f) } }
+        md d =
+          [ c <> "." <> fieldName f <> foldMap (T.cons '[' . (`T.snoc` ']')) (fieldUnits f) <> foldMap (T.cons '*' . T.pack . show) (fieldScale f)
+          | (c, cf) <- HM.toList (catalogMap cats)
+          , f <- V.toList $ catalogFields cf
+          , Just d == fieldDict f
+          ]
+    fields <- if sim == "dict" then asks $ populateDict . globalCatalogs else catalogFields <$> askCatalog sim
+    return $ Wai.responseBuilder ok200 [(hContentType, "text/csv")]
+      $ fieldsCSV fields
+  , apiResponse = return $ mempty
+    & OA.content . at' "text/csv" . OA.schema ?~ OA.Inline (mempty
+      & OA.description ?~ "CSV representation of catalog fields")
+  }
+  where
+  fieldsCSV l = csvTextRow ["variable", "name", "type", "units", "description", "values","dict","scale"] <> foldMap fieldCSV l
+  fieldCSV f = csvTextRow
+    [ fieldName f
+    , fieldTitle f
+    , T.pack $ show $ fieldType f
+    , fold $ fieldUnits f
+    , fold $ fieldDescr f
+    , foldMap (T.intercalate "," . V.toList) $ fieldEnum f
+    , fold $ fieldDict f
+    , foldMap (T.pack . show) $ fieldScale f
+    ]
 
 -------- common query parameters
 
@@ -360,55 +498,6 @@ parseFieldsJSON :: Catalog -> J.Value -> J.Parser [Field]
 parseFieldsJSON cat = J.withArray "field list" $
   mapM (J.withText "field name" $ lookupField cat False) . V.toList
 
--------- /api/{catalog}/stats
-
-parseStatsQuery :: Catalog -> Wai.Request -> StatsArgs
-parseStatsQuery cat req = StatsArgs
-  { statsFilters = parseFiltersQuery cat req
-  , statsFields = KM.fromList $ parseFieldsQuery cat req "fields"
-  }
-
-parseStatsJSON :: Catalog -> J.Value -> J.Parser StatsArgs
-parseStatsJSON cat = J.withObject "stats request" $ \o -> StatsArgs
-  <$> parseFiltersJSON cat (HM.delete "fields" o)
-  <*> (maybe (return KM.empty) (fmap KM.fromList . parseFieldsJSON cat) =<< o J..:? "fields")
-
-fieldStatsJSON :: FieldSub FieldStats m -> J.Encoding
-fieldStatsJSON = unTypeValue fsj . fieldType
-  where
-  fsj :: J.ToJSON a => FieldStats a -> J.Encoding
-  fsj FieldStats{..} = J.pairs
-    $  "count" J..= statsCount
-    <> "min" J..= statsMin
-    <> "max" J..= statsMax
-    <> "avg" J..= statsAvg
-  fsj FieldTerms{..} = J.pairs
-    $  "terms" `JE.pair` JE.list (\(v,c) -> J.pairs $ "value" J..= v <> "count" J..= c) termsBuckets
-    <> "others" J..= termsCount
-
-instance Typed a => OA.ToSchema (FieldStats a) where
-  declareNamedSchema _ = do
-    fv <- OA.declareSchemaRef (Proxy :: Proxy FieldValue)
-    return $ OA.NamedSchema (Just "FieldStats") $ mempty
-      & OA.oneOf ?~
-        [ OA.Inline $ objectSchema "for numeric fields"
-          [ ("count", OA.Inline $ schemaDescOf statsCount "number of rows with values for this field", True)
-          , ("min", OA.Inline $ schemaDescOf statsMin "minimum value" & OA.nullable ?~ True, True)
-          , ("max", OA.Inline $ schemaDescOf statsMax "maximum value" & OA.nullable ?~ True, True)
-          , ("avg", OA.Inline $ schemaDescOf statsAvg "mean value" & OA.nullable ?~ True, True)
-          ]
-        , OA.Inline $ objectSchema "for non-numeric fields or those with terms=true"
-          [ ("terms", OA.Inline $ arraySchema (OA.Inline $ objectSchema "unique field value"
-            [ ("value", fv, True)
-            , ("count", OA.Inline $ schemaDescOf termsCount "number of rows with this value", True)
-            ])
-            & OA.description ?~ "top terms in descending order of count"
-            & OA.uniqueItems ?~ True, True)
-          , ("others", OA.Inline $ schemaDescOf termsCount "number of rows with values not included in the top terms", True)
-          ]
-        ]
-      & OA.description ?~ "stats for the field named by the property, depending on its type"
-
 -------- /api/{catalog}/data
 
 parseSortQuery :: Catalog -> Wai.Request -> BS.ByteString -> [(Field, Bool)]
@@ -471,6 +560,146 @@ parseDataJSON cat = J.withObject "data request" $ \o -> DataArgs
   <*> (parseSortJSON cat =<< o J..:? "sort")
   <*> o J..: "count"
   <*> (Right <$> (o J..:? "offset" J..!= 0))
+
+apiData :: APIOp Simulation
+apiData = APIOp -- /api/{cat}/data
+  { apiName = "data"
+  , apiSummary = "Get a sample of raw data rows"
+  , apiPath = catalogBase R.>* "data"
+  , apiExampleArg = "sim"
+  , apiPathParams = [catalogParam]
+  , apiQueryParams = [filtersQueryParam, fieldsQueryParam
+    , sortSchema >>= \sort -> return $ OA.Inline $ mempty
+      & OA.name .~ "sort"
+      & OA.in_ .~ OA.ParamQuery
+      & OA.description ?~ "how to order rows (see descriptions for non-standard formatting of sort order)"
+      & OA.style ?~ OA.StyleForm
+      & OA.explode ?~ False
+      & OA.schema ?~ sort
+    , return $ OA.Inline $ mempty
+      & OA.name .~ "count"
+      & OA.in_ .~ OA.ParamQuery
+      & OA.style ?~ OA.StyleForm
+      & OA.required ?~ True
+      & OA.schema ?~ countSchema
+    , return $ OA.Inline $ mempty
+      & OA.name .~ "offset"
+      & OA.in_ .~ OA.ParamQuery
+      & OA.style ?~ OA.StyleForm
+      & OA.schema ?~ offsetSchema
+    ]
+  , apiRequestSchema = Just $ do
+    filt <- declareSchemaRef (Proxy :: Proxy Filters)
+    list <- fieldListSchema
+    sort <- sortSchema
+    return $ mempty & OA.allOf ?~
+      [ filt
+      , OA.Inline $ objectSchema
+        "data to return"
+        [ ("fields", list, True)
+        , ("sort", sort, False)
+        , ("count", countSchema, True)
+        , ("offset", offsetSchema, False)
+        ]
+      ]
+  , apiAction = \sim req -> do
+    cat <- askCatalog sim
+    body <- parseJSONBody req (parseDataJSON cat)
+    let args = fromMaybe (parseDataQuery cat req) body
+    (dat, _) <- queryData cat args
+    return $ okResponse (apiHeaders req) $ JE.list J.foldable (V.toList dat)
+  , apiResponse = do
+    fv <- declareSchemaRef (Proxy :: Proxy FieldValue)
+    return $ jsonContent $ arraySchema $ OA.Inline $ arraySchema fv
+      & OA.description ?~ "a single data row corresponding to the requested fields in order (missing values are null)"
+  }
+  where
+  countSchema = OA.Inline $ schemaDescOf dataCount "number of rows to return"
+    & OA.maximum_ ?~ fromIntegral maxDataCount
+  offsetSchema = OA.Inline $ schemaDescOf (fromRight 0 . dataOffset) "start at this row offset (0 means first)"
+    & OA.maximum_ ?~ fromIntegral maxResultWindow - fromIntegral maxDataCount
+    & OA.default_ ?~ J.Number 0
+
+-------- /api/{catalog}/stats
+
+parseStatsQuery :: Catalog -> Wai.Request -> StatsArgs
+parseStatsQuery cat req = StatsArgs
+  { statsFilters = parseFiltersQuery cat req
+  , statsFields = KM.fromList $ parseFieldsQuery cat req "fields"
+  }
+
+parseStatsJSON :: Catalog -> J.Value -> J.Parser StatsArgs
+parseStatsJSON cat = J.withObject "stats request" $ \o -> StatsArgs
+  <$> parseFiltersJSON cat (HM.delete "fields" o)
+  <*> (maybe (return KM.empty) (fmap KM.fromList . parseFieldsJSON cat) =<< o J..:? "fields")
+
+fieldStatsJSON :: FieldSub FieldStats m -> J.Encoding
+fieldStatsJSON = unTypeValue fsj . fieldType
+  where
+  fsj :: J.ToJSON a => FieldStats a -> J.Encoding
+  fsj FieldStats{..} = J.pairs
+    $  "count" J..= statsCount
+    <> "min" J..= statsMin
+    <> "max" J..= statsMax
+    <> "avg" J..= statsAvg
+  fsj FieldTerms{..} = J.pairs
+    $  "terms" `JE.pair` JE.list (\(v,c) -> J.pairs $ "value" J..= v <> "count" J..= c) termsBuckets
+    <> "others" J..= termsCount
+
+instance Typed a => OA.ToSchema (FieldStats a) where
+  declareNamedSchema _ = do
+    fv <- OA.declareSchemaRef (Proxy :: Proxy FieldValue)
+    return $ OA.NamedSchema (Just "FieldStats") $ mempty
+      & OA.oneOf ?~
+        [ OA.Inline $ objectSchema "for numeric fields"
+          [ ("count", OA.Inline $ schemaDescOf statsCount "number of rows with values for this field", True)
+          , ("min", OA.Inline $ schemaDescOf statsMin "minimum value" & OA.nullable ?~ True, True)
+          , ("max", OA.Inline $ schemaDescOf statsMax "maximum value" & OA.nullable ?~ True, True)
+          , ("avg", OA.Inline $ schemaDescOf statsAvg "mean value" & OA.nullable ?~ True, True)
+          ]
+        , OA.Inline $ objectSchema "for non-numeric fields or those with terms=true"
+          [ ("terms", OA.Inline $ arraySchema (OA.Inline $ objectSchema "unique field value"
+            [ ("value", fv, True)
+            , ("count", OA.Inline $ schemaDescOf termsCount "number of rows with this value", True)
+            ])
+            & OA.description ?~ "top terms in descending order of count"
+            & OA.uniqueItems ?~ True, True)
+          , ("others", OA.Inline $ schemaDescOf termsCount "number of rows with values not included in the top terms", True)
+          ]
+        ]
+      & OA.description ?~ "stats for the field named by the property, depending on its type"
+
+apiStats :: APIOp Simulation
+apiStats = APIOp -- /api/{cat}/stats
+  { apiName = "stats"
+  , apiSummary = "Get statistics about fields (given some filters)"
+  , apiPath = catalogBase R.>* "stats"
+  , apiExampleArg = "sim"
+  , apiPathParams = [catalogParam]
+  , apiQueryParams = [filtersQueryParam, fieldsQueryParam]
+  , apiRequestSchema = Just $ do
+    filt <- declareSchemaRef (Proxy :: Proxy Filters)
+    list <- fieldListSchema
+    return $ mempty & OA.allOf ?~
+      [ filt
+      , OA.Inline $ objectSchema
+        "stats to request"
+        [ ("fields", list, False)
+        ]
+      ]
+  , apiAction = \sim req -> do
+    cat <- askCatalog sim
+    body <- parseJSONBody req (parseStatsJSON cat)
+    (count, stats) <- queryStats cat $ fromMaybe (parseStatsQuery cat req) body
+    return $ okResponse (apiHeaders req) $ J.pairs
+      $  "count" J..= count
+      <> foldMap (\f -> fieldName f `JE.pair` fieldStatsJSON f) stats
+  , apiResponse = do
+    fs <- declareSchemaRef (Proxy :: Proxy (FieldStats Void))
+    return $ jsonContent $ objectSchema "stats"
+      [ ("count", OA.Inline $ schemaDescOf statsCount "number of matching rows", True) ]
+      & OA.additionalProperties ?~ OA.AdditionalPropertiesSchema fs
+  }
 
 -------- /api/{catalog}/histogram
 
@@ -541,217 +770,95 @@ parseHistogramJSON cat = J.withObject "histogram request" $ \o -> HistogramArgs
   <*> (mapM (parseHistogramsJSON cat) =<< o J..: "fields")
   <*> (mapM (lookupField cat True) =<< o J..:? "quartiles")
 
+apiHistogram :: APIOp Simulation
+apiHistogram = APIOp -- /api/{cat}/histogram
+  { apiName = "histogram"
+  , apiSummary = "Get a histogram of data across one or more fields"
+  , apiPath = catalogBase R.>* "histogram"
+  , apiExampleArg = "sim"
+  , apiPathParams = [catalogParam]
+  , apiQueryParams = [filtersQueryParam
+    , histogramListSchema >>= \hist -> return $ OA.Inline $ mempty
+      & OA.name .~ "fields"
+      & OA.in_ .~ OA.ParamQuery
+      & OA.description ?~ "field(s) along which to calculate histograms (see descriptions for non-standard formatting of size/log)"
+      & OA.style ?~ OA.StyleForm
+      & OA.explode ?~ False
+      & OA.required ?~ True
+      & OA.schema ?~ hist
+    , fieldNameSchema >>= \fn -> return $ OA.Inline $ mempty
+      & OA.name .~ "quartiles"
+      & OA.in_ .~ OA.ParamQuery
+      & OA.description ?~ "optional field within which to calculate quartiles"
+      & OA.schema ?~ fn
+    ]
+  , apiRequestSchema = Just $ do
+    filt <- declareSchemaRef (Proxy :: Proxy Filters)
+    fn <- fieldNameSchema
+    hist <- histogramListSchema
+    return $ mempty & OA.allOf ?~
+      [ filt
+      , OA.Inline $ objectSchema
+        "histogram parameters: histogram axes and an optional quartiles axis for which quartiles are calculated in each inner-most histogram bucket"
+        [ ("fields", hist, True)
+        , ("quartiles", fn, False)
+        ]
+      ]
+  , apiAction = \sim req -> do
+    cat <- askCatalog sim
+    body <- parseJSONBody req (parseHistogramJSON cat)
+    let args = fromMaybe (parseHistogramQuery cat req) body
+    HistogramResult{..} <- queryHistogram cat args
+    return $ okResponse (apiHeaders req) $ J.pairs
+      $  "sizes" J..= histogramSizes
+      <> "buckets" `JE.pair` JE.list (\HistogramBucket{..} -> J.pairs
+        $  "key" `JE.pair` J.foldable bucketKey
+        <> "count" J..= bucketCount
+        <> foldMap ("quartiles" J..=) bucketQuartiles)
+        histogramBuckets
+  , apiResponse = do
+    fv <- declareSchemaRef (Proxy :: Proxy FieldValue)
+    return $ jsonContent $ objectSchema "histogram result"
+      [ ("sizes", OA.Inline $ arraySchema (OA.Inline $ schemaDescOf (head . histogramSizes) "size of each histogram buckets in this dimension, either as an absolute width in linear space, or as a ratio in log space"
+          & OA.minimum_ ?~ 0
+          & OA.exclusiveMinimum ?~ True)
+        & OA.description ?~ "field order corresponds to the requested histogram fields and bucket keys", True)
+      , ("buckets", OA.Inline $ arraySchema $ OA.Inline $ objectSchema "histogram bucket, representing a box in the dimension space specified by the requested fields"
+        [ ("key", OA.Inline $ arraySchema fv
+          & OA.description ?~ "the minimum (left) point of this bucket, such than the bucket includes the range [key,key+size) (or [key,key*size) for log scale)", True)
+        , ("count", OA.Inline $ schemaDescOf bucketCount "the number of rows with values that fall within this bucket", True)
+        , ("quartiles", OA.Inline $ arraySchema fv
+          & OA.description ?~ "if quartiles of a field were requested, includes the values of that field corresponding to the [0,25,50,75,100] percentiles ([min, first quartile, median, third quartile, max]) for rows within this bucket", False)
+        ], True)
+      ]
+  }
+
 -------- global
 
-apiOperations :: [APIOperation]
-apiOperations =
-  [ APIOperation -- /api
-    { apiName = "top"
-    , apiSummary = "Get the list of available dataset catalogs"
-    , apiPath = R.unit
-    , apiExampleArg = ()
-    , apiPathParams = []
-    , apiAction = \() req -> do
-      cats <- asks globalCatalogs
-      return $ okResponse (apiHeaders req)
-        $ JE.list (J.pairs . catalogJSON) $ filter catalogVisible $ HM.elems $ catalogMap cats
-    , apiQueryParams = []
-    , apiRequestSchema = Nothing
-    , apiResponseSchema = do
-      catmeta <- declareSchemaRef (Proxy :: Proxy Catalog)
-      return $ mempty
-        & OA.type_ ?~ OA.OpenApiArray
-        & OA.items ?~ OA.OpenApiItemsObject catmeta
-    }
+apiRoute :: APIOp a -> R.Route a
+apiRoute op = R.routePath (apiBase R.*< apiPath op)
 
-  , APIOperation -- /api/{cat}
-    { apiName = "catalog"
-    , apiSummary = "Get full metadata about a specific catalog"
-    , apiPath = catalogBase
-    , apiExampleArg = "sim"
-    , apiPathParams = [catalogParam]
-    , apiQueryParams = []
-    , apiRequestSchema = Nothing
-    , apiAction = \sim req -> do
-      cat <- askCatalog sim
-      (count, stats) <- liftIO $ catalogStats cat
-      return $ okResponse (apiHeaders req) $ J.pairs
-        $ catalogJSON cat
-        <> JE.pair "fields" (fieldsJSON stats mempty $ catalogFieldGroups cat)
-        <> "count" J..= fromMaybe count (catalogCount cat)
-        <> mwhen (not $ null $ catalogSort cat)
-          ("sort" J..= catalogSort cat)
-    , apiResponseSchema = do
-      fdef <- declareSchemaRef (Proxy :: Proxy FieldGroup)
-      meta <- declareSchemaRef (Proxy :: Proxy Catalog)
-      return $ mempty & OA.allOf ?~
-        [ meta
-        , OA.Inline $ objectSchema
-          "full catalog metadata"
-          [ ("fields", OA.Inline $ arraySchema fdef
-            & OA.description ?~ "field groups"
-            , True)
-          , ("count", OA.Inline $ schemaDescOf catalogCount "total number of rows", True)
-          , ("sort", OA.Inline $ schemaDescOf catalogSort "default sort fields", False)
-          ]
-        ]
-    }
+apiRouteAction :: APIOp a -> R.RouteAction (R.Method, a) Action
+apiRouteAction op =
+  R.RouteAction (R.routeMethods [R.GET, R.POST, R.OPTIONS] R.>*< apiRoute op) act where
+  act (R.OPTIONS, _) req = return $ response noContent204 (apiHeaders req) ()
+  act (_, x) req = apiAction op x req
 
-  , APIOperation -- /api/{cat}/data
-    { apiName = "data"
-    , apiSummary = "Get a sample of raw data rows"
-    , apiPath = catalogBase R.>* "data"
-    , apiExampleArg = "sim"
-    , apiPathParams = [catalogParam]
-    , apiQueryParams = [filtersQueryParam, fieldsQueryParam
-      , sortSchema >>= \sort -> return $ OA.Inline $ mempty
-        & OA.name .~ "sort"
-        & OA.in_ .~ OA.ParamQuery
-        & OA.description ?~ "how to order rows (see descriptions for non-standard formatting of sort order)"
-        & OA.style ?~ OA.StyleForm
-        & OA.explode ?~ False
-        & OA.schema ?~ sort
-      , return $ OA.Inline $ mempty
-        & OA.name .~ "count"
-        & OA.in_ .~ OA.ParamQuery
-        & OA.style ?~ OA.StyleForm
-        & OA.required ?~ True
-        & OA.schema ?~ countSchema
-      , return $ OA.Inline $ mempty
-        & OA.name .~ "offset"
-        & OA.in_ .~ OA.ParamQuery
-        & OA.style ?~ OA.StyleForm
-        & OA.schema ?~ offsetSchema
-      ]
-    , apiRequestSchema = Just $ do
-      filt <- declareSchemaRef (Proxy :: Proxy Filters)
-      list <- fieldListSchema
-      sort <- sortSchema
-      return $ mempty & OA.allOf ?~
-        [ filt
-        , OA.Inline $ objectSchema
-          "data to return"
-          [ ("fields", list, True)
-          , ("sort", sort, False)
-          , ("count", countSchema, True)
-          , ("offset", offsetSchema, False)
-          ]
-        ]
-    , apiAction = \sim req -> do
-      cat <- askCatalog sim
-      body <- parseJSONBody req (parseDataJSON cat)
-      let args = fromMaybe (parseDataQuery cat req) body
-      (dat, _) <- queryData cat args
-      return $ okResponse (apiHeaders req) $ JE.list J.foldable (V.toList dat)
-    , apiResponseSchema = do
-      fv <- declareSchemaRef (Proxy :: Proxy FieldValue)
-      return $ arraySchema $ OA.Inline $ arraySchema fv
-        & OA.description ?~ "a single data row corresponding to the requested fields in order (missing values are null)"
-    }
+data AnyAPIOp = forall a . AnyAPIOp (APIOp a)
 
-  , APIOperation -- /api/{cat}/stats
-    { apiName = "stats"
-    , apiSummary = "Get statistics about fields (given some filters)"
-    , apiPath = catalogBase R.>* "stats"
-    , apiExampleArg = "sim"
-    , apiPathParams = [catalogParam]
-    , apiQueryParams = [filtersQueryParam, fieldsQueryParam]
-    , apiRequestSchema = Just $ do
-      filt <- declareSchemaRef (Proxy :: Proxy Filters)
-      list <- fieldListSchema
-      return $ mempty & OA.allOf ?~
-        [ filt
-        , OA.Inline $ objectSchema
-          "stats to request"
-          [ ("fields", list, False)
-          ]
-        ]
-    , apiAction = \sim req -> do
-      cat <- askCatalog sim
-      body <- parseJSONBody req (parseStatsJSON cat)
-      (count, stats) <- queryStats cat $ fromMaybe (parseStatsQuery cat req) body
-      return $ okResponse (apiHeaders req) $ J.pairs
-        $  "count" J..= count
-        <> foldMap (\f -> fieldName f `JE.pair` fieldStatsJSON f) stats
-    , apiResponseSchema = do
-      fs <- declareSchemaRef (Proxy :: Proxy (FieldStats Void))
-      return $ objectSchema "stats"
-        [ ("count", OA.Inline $ schemaDescOf statsCount "number of matching rows", True) ]
-        & OA.additionalProperties ?~ OA.AdditionalPropertiesSchema fs
-    }
-
-  , APIOperation -- /api/{cat}/histogram
-    { apiName = "histogram"
-    , apiSummary = "Get a histogram of data across one or more fields"
-    , apiPath = catalogBase R.>* "histogram"
-    , apiExampleArg = "sim"
-    , apiPathParams = [catalogParam]
-    , apiQueryParams = [filtersQueryParam
-      , histogramListSchema >>= \hist -> return $ OA.Inline $ mempty
-        & OA.name .~ "fields"
-        & OA.in_ .~ OA.ParamQuery
-        & OA.description ?~ "field(s) along which to calculate histograms (see descriptions for non-standard formatting of size/log)"
-        & OA.style ?~ OA.StyleForm
-        & OA.explode ?~ False
-        & OA.required ?~ True
-        & OA.schema ?~ hist
-      , fieldNameSchema >>= \fn -> return $ OA.Inline $ mempty
-        & OA.name .~ "quartiles"
-        & OA.in_ .~ OA.ParamQuery
-        & OA.description ?~ "optional field within which to calculate quartiles"
-        & OA.schema ?~ fn
-      ]
-    , apiRequestSchema = Just $ do
-      filt <- declareSchemaRef (Proxy :: Proxy Filters)
-      fn <- fieldNameSchema
-      hist <- histogramListSchema
-      return $ mempty & OA.allOf ?~
-        [ filt
-        , OA.Inline $ objectSchema
-          "histogram parameters: histogram axes and an optional quartiles axis for which quartiles are calculated in each inner-most histogram bucket"
-          [ ("fields", hist, True)
-          , ("quartiles", fn, False)
-          ]
-        ]
-    , apiAction = \sim req -> do
-      cat <- askCatalog sim
-      body <- parseJSONBody req (parseHistogramJSON cat)
-      let args = fromMaybe (parseHistogramQuery cat req) body
-      HistogramResult{..} <- queryHistogram cat args
-      return $ okResponse (apiHeaders req) $ J.pairs
-        $  "sizes" J..= histogramSizes
-        <> "buckets" `JE.pair` JE.list (\HistogramBucket{..} -> J.pairs
-          $  "key" `JE.pair` J.foldable bucketKey
-          <> "count" J..= bucketCount
-          <> foldMap ("quartiles" J..=) bucketQuartiles)
-          histogramBuckets
-    , apiResponseSchema = do
-      fv <- declareSchemaRef (Proxy :: Proxy FieldValue)
-      return $ objectSchema "histogram result"
-        [ ("sizes", OA.Inline $ arraySchema (OA.Inline $ schemaDescOf (head . histogramSizes) "size of each histogram buckets in this dimension, either as an absolute width in linear space, or as a ratio in log space"
-            & OA.minimum_ ?~ 0
-            & OA.exclusiveMinimum ?~ True)
-          & OA.description ?~ "field order corresponds to the requested histogram fields and bucket keys", True)
-        , ("buckets", OA.Inline $ arraySchema $ OA.Inline $ objectSchema "histogram bucket, representing a box in the dimension space specified by the requested fields"
-          [ ("key", OA.Inline $ arraySchema fv
-            & OA.description ?~ "the minimum (left) point of this bucket, such than the bucket includes the range [key,key+size) (or [key,key*size) for log scale)", True)
-          , ("count", OA.Inline $ schemaDescOf bucketCount "the number of rows with values that fall within this bucket", True)
-          , ("quartiles", OA.Inline $ arraySchema fv
-            & OA.description ?~ "if quartiles of a field were requested, includes the values of that field corresponding to the [0,25,50,75,100] percentiles ([min, first quartile, median, third quartile, max]) for rows within this bucket", False)
-          ], True)
-        ]
-    }
+apiOps :: [AnyAPIOp]
+apiOps =
+  [ AnyAPIOp apiTop
+  , AnyAPIOp apiCatalog
+  , AnyAPIOp apiSchemaSQL
+  , AnyAPIOp apiSchemaCSV
+  , AnyAPIOp apiData
+  , AnyAPIOp apiStats
+  , AnyAPIOp apiHistogram
   ]
-  where
-  countSchema = OA.Inline $ schemaDescOf dataCount "number of rows to return"
-    & OA.maximum_ ?~ fromIntegral maxDataCount
-  offsetSchema = OA.Inline $ schemaDescOf (fromRight 0 . dataOffset) "start at this row offset (0 means first)"
-    & OA.maximum_ ?~ fromIntegral maxResultWindow - fromIntegral maxDataCount
-    & OA.default_ ?~ J.Number 0
 
 apiRoutes :: [R.RouteCase Action]
-apiRoutes = map (\APIOperation{ apiPath = p, apiAction = a } ->
-  R.routeNormCase (apiRouteAction p a)) apiOperations
+apiRoutes = map (\(AnyAPIOp op) -> R.routeNormCase $ apiRouteAction op) apiOps
 
 openApiBase :: OA.OpenApi
 openApiBase = mempty &~ do
@@ -763,23 +870,23 @@ openApiBase = mempty &~ do
     [ OA.Server (requestUrl $ baseApiRequest mempty{ R.requestSecure = True, R.requestHost = RI.splitHost "flathub.flatironinstitute.org" }) (Just "production") mempty
     ]
 
-  mapM_ (\APIOperation{..} -> do
+  mapM_ (\(AnyAPIOp APIOp{..}) -> do
     qparam <- sequence apiQueryParams
     reqs <- sequence apiRequestSchema
-    ress <- apiResponseSchema
+    res <- apiResponse
     let path = foldMap (('/':) . T.unpack) $ pathPlaceholders apiPath apiExampleArg apiPathParams
         pparam = map (\p -> OA.Inline $ p
           & OA.in_ .~ OA.ParamPath
           & OA.required ?~ True) apiPathParams
     op <- (OA.parameters .~ pparam) <$>
-      jsonOp apiName apiSummary "" ress
+      makeOp apiName apiSummary res
     OA.paths . at' path .= (mempty
       & OA.get ?~ (op
         & OA.parameters %~ (++ qparam))
       & OA.post .~ fmap (\r -> op
         & OA.operationId %~ (fmap (<>"POST"))
-        & OA.requestBody ?~ OA.Inline (jsonBody r)) reqs))
-    apiOperations
+        & OA.requestBody ?~ OA.Inline (jsonContent r)) reqs))
+    apiOps
 
 openApi :: Route ()
 openApi = getPath "openapi.json" $ \() req ->

@@ -20,6 +20,7 @@ import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (ask, asks)
 import qualified Data.Aeson as J
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Lazy as BSL
 import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
@@ -28,8 +29,9 @@ import           Data.List (find, inits, sortOn, intercalate)
 import           Data.Maybe (isNothing, isJust)
 import qualified Data.Text as T
 import qualified Data.Vector as V
-import           Network.HTTP.Types.Header (ResponseHeaders, hAccept, hIfModifiedSince, hLastModified, hContentType)
-import           Network.HTTP.Types.Status (ok200, notModified304)
+import           Network.HTTP.Types.Header (Header, ResponseHeaders, hAccept, hIfModifiedSince, hLastModified, hContentType, hLocation)
+import qualified Network.HTTP.Types.URI as U
+import           Network.HTTP.Types.Status (notModified304, permanentRedirect308)
 import qualified Network.Wai as Wai
 import           Network.Wai.Parse (parseHttpAccept)
 import qualified System.FilePath as FP
@@ -37,10 +39,12 @@ import qualified Text.Blaze.Html5 as H hiding (text, textValue)
 import qualified Text.Hamlet as Hamlet
 import qualified Waimwork.Blaze as H (text, preEscapedBuilder)
 import           Waimwork.HTTP (parseHTTPDate, formatHTTPDate)
-import           Waimwork.Response (okResponse)
+import           Waimwork.Response (okResponse, response)
 import qualified Web.Route.Invertible as R
 import           Web.Route.Invertible ((!:?))
+import qualified Web.Route.Invertible.Internal as R (requestRoute')
 import qualified Web.Route.Invertible.Render as R
+import qualified Web.Route.Invertible.Wai as R
 
 import Type
 import Field
@@ -50,6 +54,11 @@ import Compression
 import Query
 import Monoid
 import Static
+import Api
+
+locationHeader :: Wai.Request -> R.Route a -> a -> U.Query -> Header
+locationHeader req r a q = (hLocation, BSL.toStrict $ B.toLazyByteString $
+  R.renderRequestBuilder (R.requestRoute' r a (R.waiRequest req)) q)
 
 jsonEncodingVar :: T.Text -> J.Encoding -> H.Html
 jsonEncodingVar var enc = do
@@ -608,38 +617,13 @@ catalogPage = getPath R.parameter $ \sim req -> do
     H.tr $ mapM_ (\(p, f) -> field d (p f) f) l
     when (d > 1) $ row (pred d) $ foldMap (\(p, f) -> foldMap (fmap (p . mappend f, ) . V.toList) $ fieldSub f) l
 
-
 sqlSchema :: Route Simulation
-sqlSchema = getPath (R.parameter R.>* "schema.sql") $ \sim _ -> do
-  cat <- askCatalog sim
-  let tab = catalogIndex cat
-  return $ okResponse [] $
-    foldMap (\f -> foldMap (\e -> "CREATE TYPE " <> tab <> "_" <> fieldName f <> " AS ENUM(" <> mintersperseMap ", " sqls (V.toList e) <> ");\n") (fieldEnum f)) (catalogFields cat)
-    <> "CREATE TABLE " <> tab <> " ("
-    <> mintersperseMap "," (\f -> "\n  " <> fieldName f <> " " <> maybe (sqlType (fieldType f)) (\_ -> tab <> "_" <> fieldName f) (fieldEnum f)) (V.toList $ catalogFields cat)
-    <> foldMap (\k -> ",\n PRIMARY KEY (" <> k <> ")") (catalogKey cat)
-    <> "\n);\n"
-    <> "COMMENT ON TABLE " <> tab <> " IS " <> sqls (catalogTitle cat <> foldMap (": " <>) (catalogDescr cat)) <> ";\n"
-    <> foldMap (\f -> "COMMENT ON COLUMN " <> tab <> "." <> fieldName f <> " IS " <> sqls (fieldTitle f <> foldMap ((" [" <>) . (<> "]")) (fieldUnits f) <> foldMap (": " <>) (fieldDescr f)) <> ";\n") (catalogFields cat)
-  where
-  sqls s = "$SqL$" <> s <> "$SqL$" -- hacky dangerous
+sqlSchema = getPath (R.parameter R.>* "schema.sql") $ \sim req ->
+  return $ response permanentRedirect308 [ locationHeader req (apiRoute apiSchemaSQL) sim [] ] ()
 
 csvSchema :: Route Simulation
-csvSchema = getPath (R.parameter R.>* "schema.csv") $ \sim _ -> do
-  fields <- if sim == "dict" then asks $ populateDict . globalCatalogs else catalogFields <$> askCatalog sim
-  return $ Wai.responseBuilder ok200
-    [ (hContentType, "text/csv")
-    ]
-    $ fieldsCSV fields
-  where
-  populateDict cats = V.map pf $ catalogDict cats where
-    pf f = f{ fieldDesc = (fieldDesc f){ fieldDescDict = Just $ T.intercalate ";" $ md (fieldName f) } }
-    md d =
-      [ c <> "." <> fieldName f <> foldMap (T.cons '[' . (`T.snoc` ']')) (fieldUnits f) <> foldMap (T.cons '*' . T.pack . show) (fieldScale f)
-      | (c, cf) <- HM.toList (catalogMap cats)
-      , f <- V.toList $ catalogFields cf
-      , Just d == fieldDict f
-      ]
+csvSchema = getPath (R.parameter R.>* "schema.csv") $ \sim req ->
+  return $ response permanentRedirect308 [ locationHeader req (apiRoute apiSchemaCSV) sim [] ] ()
 
 groupPage :: Route [T.Text]
 groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do

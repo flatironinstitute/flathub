@@ -45,7 +45,7 @@ data ECSVDataType
   | ECSVComplex128
   | ECSVComplex256
   | ECSVString
-  deriving (Eq, Ord, Enum, Bounded)
+  deriving (Eq, Ord, Enum, Bounded, Show)
 
 $(J.deriveJSON J.defaultOptions{ J.constructorTagModifier = map toLower . drop 4 } ''ECSVDataType)
 
@@ -53,7 +53,7 @@ data ECSVSubType
   = ECSVSubTypeArray ECSVDataType [Maybe Word]
   | ECSVSubTypeJSON
   | ECSVSubTypeOther T.Text
-  deriving (Eq)
+  deriving (Eq, Show)
 
 instance J.ToJSON ECSVSubType where
   toJSON (ECSVSubTypeArray t d) =
@@ -81,7 +81,7 @@ data ECSVColumn = ECSVColumn
   , ecsvColFormat :: Maybe T.Text
   , ecsvColDescription :: Maybe T.Text
   , ecsvColMeta :: Maybe J.Value
-  }
+  } deriving (Show)
 
 $(J.deriveJSON J.defaultOptions{ J.fieldLabelModifier = map toLower . drop 7, J.omitNothingFields = True } ''ECSVColumn)
 
@@ -90,7 +90,7 @@ data ECSVHeader = ECSVHeader
   , ecsvDatatype :: V.Vector ECSVColumn
   , ecsvMeta :: Maybe J.Value
   , ecsvSchema :: Maybe T.Text
-  }
+  } deriving (Show)
 
 $(J.deriveToJSON J.defaultOptions{ J.fieldLabelModifier = map toLower . drop 4, J.omitNothingFields = True } ''ECSVHeader)
 

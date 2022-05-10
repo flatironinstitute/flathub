@@ -45,7 +45,6 @@ module Field
   , fieldJValue, fieldJValues
   , idField
   , docField
-  , fieldsCSV
   , numpyFieldSize
   , numpyDtype
   , Count
@@ -58,10 +57,8 @@ import           Control.Monad (guard, join, when, msum)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Types as J
 import qualified Data.ByteString as BS
-import qualified Data.ByteString.Builder as B
 import           Data.Char (isAlphaNum)
 import           Data.Default (Default(def))
-import           Data.Foldable (fold)
 import           Data.Functor.Identity (Identity)
 import qualified Data.HashMap.Strict as HM
 import           Data.Maybe (isJust, maybeToList)
@@ -73,7 +70,6 @@ import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V
 
 import Monoid
-import Output.CSV (csvTextRow)
 import Type
 import qualified KeyedMap as KM
 
@@ -406,17 +402,3 @@ data FieldStats a
 instance Functor FieldStats where
   fmap _ (FieldStats n x a c) = FieldStats n x a c
   fmap f (FieldTerms b c) = FieldTerms (map (first f) b) c
-
-fieldsCSV :: Fields -> B.Builder
-fieldsCSV l = csvTextRow ["variable", "name", "type", "units", "description", "values","dict","scale"] <> foldMap fieldCSV l where
-  fieldCSV :: Field -> B.Builder
-  fieldCSV f = csvTextRow
-    [ fieldName f
-    , fieldTitle f
-    , T.pack $ show $ fieldType f
-    , fold $ fieldUnits f
-    , fold $ fieldDescr f
-    , foldMap (T.intercalate "," . V.toList) $ fieldEnum f
-    , fold $ fieldDict f
-    , foldMap (T.pack . show) $ fieldScale f
-    ]

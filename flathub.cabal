@@ -66,6 +66,7 @@ executable flathub
     , hashable
     , hdf5
     , http-client
+    , http-media
     , http-types
     , insert-ordered-containers
     , lens

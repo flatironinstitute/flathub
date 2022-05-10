@@ -5,17 +5,17 @@
 module OpenApi
   ( requestUrl
   , pathPlaceholders
-  , schemaDescOf
-  , objectSchema
-  , arraySchema
-  , jsonOp
-  , jsonBody
-  , zoomDeclare
   , OpenApiM
   , stateDeclareSchema
   , declareSchemaRef
   , define
   , resolve
+  , schemaDescOf
+  , objectSchema
+  , arraySchema
+  , jsonContent
+  , makeOp
+  , zoomDeclare
   , at'
   ) where
 
@@ -33,6 +33,7 @@ import           Data.Proxy (Proxy(Proxy))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import           Data.Tuple (swap)
+import           Network.HTTP.Media.MediaType (MediaType)
 import qualified Web.Route.Invertible as R
 import qualified Web.Route.Invertible.Internal as RI
 import qualified Web.Route.Invertible.Render as R
@@ -114,16 +115,16 @@ arraySchema e = mempty
   & OA.type_ ?~ OA.OpenApiArray
   & OA.items ?~ OA.OpenApiItemsObject e
 
-jsonOp :: T.Text -> T.Text -> T.Text -> OA.Schema -> OpenApiM OA.Operation
-jsonOp oid summ desc schema = do
-  resp <- define oid $ mempty
-    & OA.description .~ desc
-    & OA.content . at' "application/json" . OA.schema ?~ OA.Inline schema
+type ContentMap = HMI.InsOrdHashMap MediaType OA.MediaTypeObject
+
+jsonContent :: (Monoid a, OA.HasContent a ContentMap) => OA.Schema -> a
+jsonContent schema = mempty
+  & OA.content . at' "application/json" . OA.schema ?~ OA.Inline schema
+
+makeOp :: T.Text -> T.Text -> OA.Response -> OpenApiM OA.Operation
+makeOp oid summ res = do
+  resp <- define oid res
   return $ mempty
     & OA.operationId ?~ oid
     & OA.summary ?~ summ
     & OA.responses . OA.responses . at 200 ?~ resp
-
-jsonBody :: OA.Schema -> OA.RequestBody
-jsonBody schema = mempty
-  & OA.content . at' "application/json" . OA.schema ?~ OA.Inline schema

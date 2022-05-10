@@ -29,11 +29,11 @@ module Type
   , parseTypeJSONValue
   , baseType
   , arrayHead
+  , singletonArray
   , typeIsArray
   , unArrayType
   , typeIsFloating, typeIsIntegral, typeIsNumeric, typeIsString, typeIsBoolean
   , numpyTypeSize
-  , sqlType
   ) where
 
 import qualified Data.Aeson as J
@@ -366,17 +366,3 @@ numpyTypeSize (Boolean   _) = 1
 numpyTypeSize (Keyword   _) = 8 -- XXX overridden in numpyFieldSize
 numpyTypeSize (Void      _) = 0
 numpyTypeSize (Array     t) = numpyTypeSize (arrayHead t) -- XXX not supported
-
-sqlType :: Type -> T.Text
-sqlType (Keyword _)   = "text"
-sqlType (Long _)      = "bigint"
-sqlType (ULong _)     = "bigint"
-sqlType (Integer _)   = "integer"
-sqlType (Short _)     = "smallint"
-sqlType (Byte _)      = "smallint"
-sqlType (Double _)    = "double precision"
-sqlType (Float _)     = "real"
-sqlType (HalfFloat _) = "real"
-sqlType (Boolean _)   = "boolean"
-sqlType (Void _)      = "void"
-sqlType (Array t)     = sqlType (arrayHead t) <> "[]"
