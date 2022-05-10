@@ -10,7 +10,7 @@ module Type
   ( TypeValue(..)
   , Type, Value
   , Void
-  , allTypes
+  , scalarTypes
   , Typed
   , typeValue, typeValue1
   , traverseValue
@@ -82,8 +82,8 @@ data TypeValue f
 type Type = TypeValue Proxy
 type Value = TypeValue Identity
 
-allTypes :: [Type]
-allTypes =
+scalarTypes :: [Type]
+scalarTypes =
   [ Double    Proxy
   , Float     Proxy
   , HalfFloat Proxy

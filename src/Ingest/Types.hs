@@ -7,7 +7,7 @@ import qualified Data.Aeson.Encoding as JE
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Char8 as BSC
-import           Data.Char (isControl, toLower)
+import           Data.Char (isControl)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import           Data.Word (Word64)

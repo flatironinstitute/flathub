@@ -121,10 +121,10 @@ parseData fields = J.withObject "data res" $ \o ->
 
 data DataArgs = DataArgs
   { dataFilters :: Filters
-  , dataFields :: [Field]
-  , dataSort :: [(Field, Bool)]
-  , dataCount :: Word16
-  , dataOffset :: Either DataOffset Word16
+  , dataFields :: [Field] -- ^Which fields to return (in order)
+  , dataSort :: [(Field, Bool)] -- ^Sort order: (field, true=asc/false=desc)
+  , dataCount :: Word16 -- ^Number of rows to return
+  , dataOffset :: Either DataOffset Word16 -- ^Either continuation from a previous query, in which case all other arguments must be exactly the same, or starting offset
   }
 
 maxDataCount :: Word16

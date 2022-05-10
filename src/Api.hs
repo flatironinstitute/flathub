@@ -225,7 +225,7 @@ instance OA.ToSchema Type where
     return $ OA.NamedSchema (Just "Type") $ mempty
       & OA.description ?~ "storage type"
       & OA.type_ ?~ OA.OpenApiString
-      & OA.enum_ ?~ map J.toJSON allTypes
+      & OA.enum_ ?~ map J.toJSON (scalarTypes ++ map (Array . singletonArray) scalarTypes)
 
 instance OA.ToSchema FieldGroup where
   declareNamedSchema t = do
@@ -384,10 +384,13 @@ apiSchemaCSV = APIOp -- /api/{cat}/schema.csv
 -------- common query parameters
 
 instance OA.ToSchema FieldValue where
-  declareNamedSchema _ = do
+  declareNamedSchema t = do
+    ts <- OA.declareSchemaRef t
     return $ OA.NamedSchema (Just "FieldValue") $ mempty
       & OA.description ?~ "a value for a field, which must match the type of the field"
-      & OA.anyOf ?~ map (\t -> unTypeValue (\p -> OA.Inline $ OA.toSchema p & OA.title ?~ T.pack (show t)) t) allTypes
+      & OA.anyOf ?~
+        (map (\x -> unTypeValue (\p -> OA.Inline $ OA.toSchema p & OA.title ?~ T.pack (show x)) x) scalarTypes
+        ++ [OA.Inline $ arraySchema ts & OA.title ?~ "array"])
 
 parseFilterJSON :: Typed a => Field -> J.Value -> J.Parser (FieldFilter a)
 parseFilterJSON _ j@(J.Array _) = do
@@ -610,7 +613,8 @@ apiData = APIOp -- /api/{cat}/data
     return $ okResponse (apiHeaders req) $ JE.list J.foldable (V.toList dat)
   , apiResponse = do
     fv <- declareSchemaRef (Proxy :: Proxy FieldValue)
-    return $ jsonContent $ arraySchema $ OA.Inline $ arraySchema fv
+    return $ jsonContent $ arraySchema $ OA.Inline $ arraySchema (OA.Inline $ mempty
+        & OA.oneOf ?~ [fv, OA.Inline $ mempty & OA.type_ ?~ OA.OpenApiNull])
       & OA.description ?~ "a single data row corresponding to the requested fields in order (missing values are null)"
   }
   where
