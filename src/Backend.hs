@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -20,14 +21,12 @@ module Backend
   , queryHistogram
   ) where
 
-import           Control.Applicative (Alternative, empty)
 import           Control.Monad (unless)
 import           Control.Monad.IO.Class (liftIO)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
 import           Data.Bits (xor)
-import           Data.Default (Default(def))
 import           Data.Foldable (toList)
 import           Data.Function (on)
 import           Data.Functor.Identity (Identity(Identity))
@@ -41,6 +40,7 @@ import qualified Data.Text as T
 import qualified Data.Vector as V
 import           Data.Word (Word16)
 
+import Error
 import Monoid
 import Type
 import Field
@@ -130,9 +130,6 @@ data DataArgs f = DataArgs
   , dataOffset :: Either DataOffset Word16 -- ^Either continuation from a previous query, in which case all other arguments must be exactly the same, or starting offset
   }
 
-instance Alternative f => Default (DataArgs f) where
-  def = DataArgs mempty empty [] 0 (Right 0)
-
 maxDataCount :: Word16
 maxDataCount = 5000
 
@@ -163,7 +160,7 @@ parseStats cat = J.withObject "stats res" $ \o -> (,)
   <$> (o J..: "hits" >>= (J..: "total") >>= (J..: "value"))
   <*> (HM.traverseWithKey pf =<< o J..: "aggregations") where
   pf n a = do
-    f <- lookupField cat False n
+    f <- failErr $ lookupField cat False n
     updateFieldValueM f (flip (if fieldUseTerms f then pt else ps) a)
   ps :: Proxy a -> J.Value -> J.Parser (FieldStats a)
   ps _ = J.withObject "stats" $ \o -> FieldStats

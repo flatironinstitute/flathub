@@ -7,12 +7,13 @@
 module Html
   ( topPage
   , catalogPage
-  , sqlSchema
-  , csvSchema
   , groupPage
   , comparePage
   , staticHtml
   , firePage
+  , sqlSchema
+  , csvSchema
+  , attachment
   ) where
 
 import           Control.Monad (forM_, when)
@@ -617,13 +618,6 @@ catalogPage = getPath R.parameter $ \sim req -> do
     H.tr $ mapM_ (\(p, f) -> field d (p f) f) l
     when (d > 1) $ row (pred d) $ foldMap (\(p, f) -> foldMap (fmap (p . mappend f, ) . V.toList) $ fieldSub f) l
 
-sqlSchema :: Route Simulation
-sqlSchema = getPath (R.parameter R.>* "schema.sql") $ \sim req ->
-  return $ response permanentRedirect308 [ locationHeader req (apiRoute apiSchemaSQL) sim [] ] ()
-
-csvSchema :: Route Simulation
-csvSchema = getPath (R.parameter R.>* "schema.csv") $ \sim req ->
-  return $ response permanentRedirect308 [ locationHeader req (apiRoute apiSchemaCSV) sim [] ] ()
 
 groupPage :: Route [T.Text]
 groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
@@ -759,3 +753,17 @@ staticHtml = getPath ("html" R.*< R.manyI R.parameter) $ \paths q -> do
 
 firePage :: Route ()
 firePage = getPath "fire" $ \() -> R.routeAction staticHtml ["fire"]
+
+-- backwards compatibility
+
+sqlSchema :: Route Simulation
+sqlSchema = getPath (R.parameter R.>* "schema.sql") $ \sim req ->
+  return $ response permanentRedirect308 [ locationHeader req (apiRoute apiSchemaSQL) sim [] ] ()
+
+csvSchema :: Route Simulation
+csvSchema = getPath (R.parameter R.>* "schema.csv") $ \sim req ->
+  return $ response permanentRedirect308 [ locationHeader req (apiRoute apiSchemaCSV) sim [] ] ()
+
+attachment :: Route (Simulation, T.Text, T.Text)
+attachment = getPath (R.parameter R.>* "attachment" R.>*<< R.parameter R.>*< R.parameter) $ \arg req ->
+  return $ response permanentRedirect308 [ locationHeader req (apiRoute apiAttachment) arg [] ] ()

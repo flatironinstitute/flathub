@@ -21,16 +21,15 @@ module Global
 
 import qualified Data.HashMap.Strict as HM
 import           Control.Concurrent.MVar (newMVar, modifyMVar)
-import           Control.Monad.Except (MonadError, ExceptT(..), throwError, liftEither, runExcept)
+import           Control.Monad.Except (ExceptT(..), liftEither, runExcept)
 import           Control.Monad.Reader (ReaderT(..), asks)
-import           Data.Functor.Identity (Identity)
 import qualified Network.HTTP.Client as HTTP
-import           Network.HTTP.Types.Status (Status, badRequest400, notFound404)
 import qualified Network.Wai as Wai
 import qualified Waimwork.Config as C
 import           Waimwork.Response (response)
 import qualified Web.Route.Invertible as R
 
+import Error
 import Catalog
 
 data Global = Global
@@ -42,8 +41,6 @@ data Global = Global
   , globalDevMode :: Bool
   }
 
-type ErrT = ExceptT (Status, String)
-type Err = ErrT Identity
 type M = ErrT (ReaderT Global IO)
 
 runGlobal :: Global -> M a -> IO a
@@ -54,13 +51,6 @@ runGlobalWai g (ExceptT (ReaderT f)) = either (\(s, m) -> response s [] m) id <$
 
 runErr :: Err a -> M a
 runErr = liftEither . runExcept
-
-raise :: MonadError (Status, String) m => Status -> String -> m a
-raise = curry throwError 
-
-raise400, raise404 :: MonadError (Status, String) m => String -> m a
-raise400 = raise badRequest400
-raise404 = raise notFound404
 
 type Action = Wai.Request -> M Wai.Response
 type Route a = R.RouteAction a Action

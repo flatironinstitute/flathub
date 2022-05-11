@@ -53,6 +53,7 @@ import Compression
 import Output.Numpy
 import Monoid
 import Attach
+import Api
 
 parseQuery :: Catalog -> Wai.Request -> Query
 parseQuery cat req = fill $ foldl' parseQueryItem mempty $ Wai.queryString req where
@@ -273,7 +274,7 @@ bulkAttachmentUrls a z sim cat req query mt ext bbs = compressBulk z Bulk
     { bbsRow = \(J.String i:j) -> fold $ zipWith
       (\f v -> mwhen (attachmentExists v) $
         bbsRow bbs $ renderUrlRequestBuilder
-          (requestRoute' (R.actionRoute attachment) (sim, fieldName f, i) (waiRequest req) { R.requestQuery = mempty })
+          (requestRoute' (apiRoute apiAttachment) (sim, fieldName f, i) (waiRequest req) { R.requestQuery = mempty })
           mempty)
       (queryFields query) j
     }

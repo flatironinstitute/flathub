@@ -71,6 +71,6 @@ ingestFieldBS f v
   bool "True" = J.Bool True
   bool _ = str v
   str = J.String . TE.decodeLatin1
-  substitute x y s = B.byteString p
-    <> (if BS.null r then mempty else y <> substitute x y (BS.drop (BS.length x) r))
+  _substitute x y s = B.byteString p
+    <> (if BS.null r then mempty else y <> _substitute x y (BS.drop (BS.length x) r))
     where (p, r) = BS.breakSubstring x s

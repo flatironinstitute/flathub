@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -41,6 +42,7 @@ import           Data.Proxy (Proxy(Proxy))
 import qualified Data.Text as T
 import qualified Data.Vector as V
 
+import Error
 import Monoid
 import Type
 import Field
@@ -122,10 +124,10 @@ takeCatalogField n c = (, c
   , catalogFieldGroups = deleteField n               $ catalogFieldGroups c
   }) <$> HM.lookup n (catalogFieldMap c) where
 
-lookupField :: MonadFail m => Catalog -> Bool -> T.Text -> m Field
+lookupField :: ErrorM m => Catalog -> Bool -> T.Text -> m Field
 lookupField _ _ "_id" = return idField
 lookupField cat idx n =
-  maybe (fail $ "Field not found: " <> show n) return
+  maybe (raise404 $ "Field not found: " <> show n) return
     $ mfilter (not . (&&) idx . or . fieldStore)
     $ HM.lookup n $ catalogFieldMap cat
 

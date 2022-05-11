@@ -17,6 +17,7 @@ module Api
   , apiData
   , apiStats
   , apiHistogram
+  , apiAttachment
   , apiRoutes
   , openApi
   ) where
@@ -58,6 +59,7 @@ import qualified Web.Route.Invertible.Internal as RI
 import qualified Web.Route.Invertible.Wai as R
 
 import qualified Paths_flathub as Paths
+import Error
 import Monoid
 import qualified KeyedMap as KM
 import Type
@@ -67,6 +69,7 @@ import Global
 import OpenApi
 import Backend
 import Output.CSV (csvTextRow)
+import Attach
 
 apiBase :: R.Path ()
 apiBase = "api"
@@ -96,8 +99,8 @@ readBS = readMaybe . BSC.unpack
 decodeUtf8' :: BS.ByteString -> T.Text
 decodeUtf8' = TE.decodeUtf8With TE.lenientDecode
 
-lookupFieldQuery :: MonadFail m => Catalog -> Bool -> BS.ByteString -> m Field
-lookupFieldQuery cat idx = lookupField cat idx . decodeUtf8'
+lookupFieldQuery :: Catalog -> Bool -> BS.ByteString -> Maybe Field
+lookupFieldQuery cat idx = failErr . lookupField cat idx . decodeUtf8'
 
 fieldNameSchema :: OpenApiM (OA.Referenced OA.Schema)
 fieldNameSchema = define "FieldName" $ mempty
@@ -144,7 +147,7 @@ data APIOp a = APIOp
   , apiSummary :: T.Text
   , apiPath :: R.Path a
   , apiExampleArg :: a
-  , apiPathParams :: [OA.Param]
+  , apiPathParams :: OpenApiM [OA.Param]
   , apiAction :: a -> Action
   , apiQueryParams :: [OpenApiM (OA.Referenced OA.Param)]
   , apiRequestSchema :: Maybe (OpenApiM OA.Schema)
@@ -176,7 +179,7 @@ apiTop = APIOp -- /api
   , apiSummary = "Get the list of available dataset catalogs"
   , apiPath = R.unit
   , apiExampleArg = ()
-  , apiPathParams = []
+  , apiPathParams = return []
   , apiAction = \() req -> do
     cats <- asks globalCatalogs
     return $ okResponse (apiHeaders req)
@@ -274,7 +277,7 @@ apiCatalog = APIOp -- /api/{cat}
   , apiSummary = "Get full metadata about a specific catalog"
   , apiPath = catalogBase
   , apiExampleArg = "sim"
-  , apiPathParams = [catalogParam]
+  , apiPathParams = return [catalogParam]
   , apiQueryParams = []
   , apiRequestSchema = Nothing
   , apiAction = \sim req -> do
@@ -282,7 +285,7 @@ apiCatalog = APIOp -- /api/{cat}
     (count, stats) <- liftIO $ catalogStats cat
     return $ okResponse (apiHeaders req) $ J.pairs
       $ catalogJSON cat
-      <> JE.pair "fields" (fieldsJSON stats mempty $ catalogFieldGroups cat)
+      <> JE.pair "fields" (fieldsJSON stats mempty $ V.cons idField $ catalogFieldGroups cat)
       <> "count" J..= fromMaybe count (catalogCount cat)
       <> mwhen (not $ null $ catalogSort cat)
         ("sort" J..= catalogSort cat)
@@ -308,7 +311,7 @@ apiSchemaSQL = APIOp -- /api/{cat}/schema.sql
   , apiSummary = "Get a SQL representation of the catalog schema (no data)"
   , apiPath = catalogBase R.>* "schema.sql"
   , apiExampleArg = "sim"
-  , apiPathParams = [catalogParam]
+  , apiPathParams = return [catalogParam]
   , apiQueryParams = []
   , apiRequestSchema = Nothing
   , apiAction = \sim _ -> do
@@ -348,7 +351,7 @@ apiSchemaCSV = APIOp -- /api/{cat}/schema.csv
   , apiSummary = "Get a CSV representation of the catalog schema (no data)"
   , apiPath = catalogBase R.>* "schema.csv"
   , apiExampleArg = "sim"
-  , apiPathParams = [catalogParam]
+  , apiPathParams = return [catalogParam]
   , apiQueryParams = []
   , apiRequestSchema = Nothing
   , apiAction = \sim _ -> do
@@ -432,7 +435,7 @@ parseFiltersJSON cat o = Filters
   <*> HM.traverseWithKey parsef (HM.delete "sample" $ HM.delete "seed" o)
   where
   parsef n j = do
-    f <- lookupField cat True n
+    f <- failErr $ lookupField cat True n
     updateFieldValueM f (parseff f j)
   parseff :: Typed a => Field -> J.Value -> Proxy a -> J.Parser (FieldFilter a)
   parseff f j _ = parseFilterJSON f j
@@ -499,7 +502,7 @@ parseFieldsQuery cat req param =
 
 parseFieldsJSON :: Catalog -> J.Value -> J.Parser [Field]
 parseFieldsJSON cat = J.withArray "field list" $
-  mapM (J.withText "field name" $ lookupField cat False) . V.toList
+  mapM (J.withText "field name" $ failErr . lookupField cat False) . V.toList
 
 -------- /api/{catalog}/data
 
@@ -517,9 +520,9 @@ parseSortJSON :: Catalog -> Maybe J.Value -> J.Parser [(Field, Bool)]
 parseSortJSON _ Nothing = return []
 parseSortJSON cat (Just sj) = J.withArray "sort" (mapM pars . V.toList) sj where
   pars :: J.Value -> J.Parser (Field, Bool)
-  pars (J.String n) = (, True) <$> lookupField cat True n
+  pars (J.String n) = (, True) <$> failErr (lookupField cat True n)
   pars (J.Object o) = (,)
-    <$> (lookupField cat True =<< o J..: "field")
+    <$> (failErr . lookupField cat True =<< o J..: "field")
     <*> (mapM po =<< o J..:? "order") J..!= True
   pars j = J.typeMismatch "sort field" j
   po (J.String a)
@@ -570,7 +573,7 @@ apiData = APIOp -- /api/{cat}/data
   , apiSummary = "Get a sample of raw data rows"
   , apiPath = catalogBase R.>* "data"
   , apiExampleArg = "sim"
-  , apiPathParams = [catalogParam]
+  , apiPathParams = return [catalogParam]
   , apiQueryParams = [filtersQueryParam, fieldsQueryParam
     , sortSchema >>= \sort -> return $ OA.Inline $ mempty
       & OA.name .~ "sort"
@@ -679,7 +682,7 @@ apiStats = APIOp -- /api/{cat}/stats
   , apiSummary = "Get statistics about fields (given some filters)"
   , apiPath = catalogBase R.>* "stats"
   , apiExampleArg = "sim"
-  , apiPathParams = [catalogParam]
+  , apiPathParams = return [catalogParam]
   , apiQueryParams = [filtersQueryParam, fieldsQueryParam]
   , apiRequestSchema = Just $ do
     filt <- declareSchemaRef (Proxy :: Proxy Filters)
@@ -753,10 +756,10 @@ parseHistogramsQuery cat req param =
 
 parseHistogramsJSON :: Catalog -> J.Value -> J.Parser Histogram
 parseHistogramsJSON cat (J.String s) = do
-  f <- lookupField cat True s
+  f <- failErr $ lookupField cat True s
   return $ Histogram f defaultHistogramSize False
 parseHistogramsJSON cat (J.Object o) = Histogram
-  <$> (lookupField cat True =<< o J..: "field")
+  <$> (failErr . lookupField cat True =<< o J..: "field")
   <*> o J..:? "size" J..!= defaultHistogramSize
   <*> o J..:? "log" J..!= False
 parseHistogramsJSON _ j = J.typeMismatch "histogram field" j
@@ -772,7 +775,7 @@ parseHistogramJSON :: Catalog -> J.Value -> J.Parser HistogramArgs
 parseHistogramJSON cat = J.withObject "histogram request" $ \o -> HistogramArgs
   <$> parseFiltersJSON cat (HM.delete "fields" $ HM.delete "quartiles" o)
   <*> (mapM (parseHistogramsJSON cat) =<< o J..: "fields")
-  <*> (mapM (lookupField cat True) =<< o J..:? "quartiles")
+  <*> (mapM (failErr . lookupField cat True) =<< o J..:? "quartiles")
 
 apiHistogram :: APIOp Simulation
 apiHistogram = APIOp -- /api/{cat}/histogram
@@ -780,7 +783,7 @@ apiHistogram = APIOp -- /api/{cat}/histogram
   , apiSummary = "Get a histogram of data across one or more fields"
   , apiPath = catalogBase R.>* "histogram"
   , apiExampleArg = "sim"
-  , apiPathParams = [catalogParam]
+  , apiPathParams = return [catalogParam]
   , apiQueryParams = [filtersQueryParam
     , histogramListSchema >>= \hist -> return $ OA.Inline $ mempty
       & OA.name .~ "fields"
@@ -837,6 +840,48 @@ apiHistogram = APIOp -- /api/{cat}/histogram
       ]
   }
 
+-------- /api/{cat}/attachment/{field}/{id}
+
+apiAttachment :: APIOp (Simulation, T.Text, T.Text)
+apiAttachment = APIOp
+  { apiName = "attachment"
+  , apiSummary = "Download a row attachment"
+  , apiPath = catalogBase R.>* "attachment" R.>*<< R.parameter R.>*< R.parameter 
+  , apiExampleArg = ("sim", "field", "rid")
+  , apiPathParams = do
+    fn <- fieldNameSchema
+    return [catalogParam
+      , mempty
+        & OA.name .~ "field"
+        & OA.schema ?~ fn
+        & OA.description ?~ "field name of attachment"
+      , mempty
+        & OA.name .~ "id"
+        & OA.schema ?~ OA.Inline (schemaDescOf T.pack "field value")
+        & OA.description ?~ "_id for row of interest"
+      ]
+  , apiQueryParams = []
+  , apiRequestSchema = Nothing
+  , apiAction = \(sim, atn, rid) _ -> do
+    cat <- askCatalog sim
+    atf <- lookupField cat False atn
+    att <- maybe (raise404 "Not attachment field") return $ fieldAttachment atf
+    (dat, _) <- queryData cat DataArgs
+      { dataFilters = mempty{ filterFields = KM.singleton $
+        idField{ fieldType = Keyword (FieldEQ [rid]) } }
+      , dataCount = 1
+      , dataFields = KM.fromList $ atf : mapMaybe (failErr . lookupField cat False) (attachmentFields att)
+      , dataSort = []
+      , dataOffset = Right 0
+      }
+    doc <- maybe (raise404 "Attachment row not found") return $ 
+      mfilter (any attachmentPresent . HM.lookup atn) (dat V.!? 0)
+    uncurry attachmentResponse $ resolveAttachment doc att
+  , apiResponse = return $ mempty
+    & OA.content . at' "application/octet-stream" . OA.schema ?~ OA.Inline (mempty
+      & OA.description ?~ "attachment file (type depends on field)")
+  }
+
 -------- global
 
 apiRoute :: APIOp a -> R.Route a
@@ -859,6 +904,7 @@ apiOps =
   , AnyAPIOp apiData
   , AnyAPIOp apiStats
   , AnyAPIOp apiHistogram
+  , AnyAPIOp apiAttachment
   ]
 
 apiRoutes :: [R.RouteCase Action]
@@ -875,14 +921,15 @@ openApiBase = mempty &~ do
     ]
 
   mapM_ (\(AnyAPIOp APIOp{..}) -> do
+    pparam <- apiPathParams
     qparam <- sequence apiQueryParams
     reqs <- sequence apiRequestSchema
     res <- apiResponse
-    let path = foldMap (('/':) . T.unpack) $ pathPlaceholders apiPath apiExampleArg apiPathParams
-        pparam = map (\p -> OA.Inline $ p
+    let path = foldMap (('/':) . T.unpack) $ pathPlaceholders apiPath apiExampleArg pparam
+        pparam' = map (\p -> OA.Inline $ p
           & OA.in_ .~ OA.ParamPath
-          & OA.required ?~ True) apiPathParams
-    op <- (OA.parameters .~ pparam) <$>
+          & OA.required ?~ True) pparam
+    op <- (OA.parameters .~ pparam') <$>
       makeOp apiName apiSummary res
     OA.paths . at' path .= (mempty
       & OA.get ?~ (op

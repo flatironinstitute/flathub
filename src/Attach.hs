@@ -1,20 +1,25 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Attach
-  ( attachment
+  ( attachmentPresent
+  , resolveAttachment
+  , attachmentResponse
+  , attachmentFields
   , attachmentsFields
   , attachmentsBulkStream
   ) where
 
 import qualified Codec.Archive.Zip.Conduit.Zip as Zip
-import           Control.Monad (void, guard, (<=<))
+import           Control.Monad (void, guard)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (asks)
 import qualified Data.Aeson as J
-import qualified Data.Aeson.Types as J (parseEither)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
-import qualified Data.ByteString.Char8 as BSC
+import qualified Data.ByteString.Lazy as BSL
+import qualified Data.ByteString.Lazy.Char8 as BSLC
 import qualified Data.Conduit as C
 import qualified Data.Conduit.Combinators as C
 import           Data.Foldable (fold)
@@ -23,6 +28,7 @@ import qualified Data.HashMap.Strict as HM
 import           Data.List (nub)
 import           Data.Maybe (catMaybes, mapMaybe)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import           Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import           Data.Time.LocalTime (utcToLocalTime, utc)
 import           Data.Scientific (formatScientific, FPFormat(Fixed))
@@ -34,19 +40,16 @@ import           System.FilePath ((</>))
 import           System.IO.Error (tryIOError)
 import           System.Posix.Files (getFileStatus, isRegularFile, modificationTimeHiRes, fileSize)
 import           Waimwork.HTTP (quoteHTTP)
-import qualified Web.Route.Invertible as R
 
-import JSON
 import Type
 import Field
 import Catalog
 import Global
-import qualified ES
 
-askAttachment :: Catalog -> T.Text -> M Attachment
-askAttachment cat att = do
-  maybe (raise404 "No such attachment") return
-    $ fieldAttachment <=< HM.lookup att $ catalogFieldMap cat
+attachmentPresent :: TypeValue Maybe -> Bool
+attachmentPresent (Boolean (Just True)) = True
+attachmentPresent (Void _) = True
+attachmentPresent _ = False
 
 pathFields :: DynamicPath -> [T.Text]
 pathFields = mapMaybe pathField where
@@ -77,30 +80,27 @@ pathStr path doc = foldMap ps path where
   rf (Just J.Null) = ""
   rf Nothing = "?"
 
-attachment :: Route (Simulation, T.Text, T.Text)
-attachment = getPath (R.parameter R.>* "attachment" R.>*<< R.parameter R.>*< R.parameter) $ \(sim, atn, rid) _ -> do
-  cat <- askCatalog sim
-  att <- askAttachment cat atn
-  res <- ES.queryIndex cat mempty
-    { queryLimit = 1
-    , queryFilter = [idField{ fieldType = Keyword (FilterEQ rid) }]
-    , queryFields = attachmentsFields cat [att]
-    }
-  doc <- either (raise404 . ("Could not get item: " ++)) return
-    $ J.parseEither parse res
+resolveDynamicPath :: HM.HashMap T.Text (TypeValue Maybe) -> DynamicPath -> BSL.ByteString
+resolveDynamicPath doc path = B.toLazyByteString $ foldMap ps path where
+  ps (DynamicPathLiteral s) = B.string8 s
+  ps (DynamicPathField f) = rf $ HM.lookup f doc
+  ps (DynamicPathSubstitute f a b) = case HM.lookup f doc of
+    Just (Keyword (Just s)) -> TE.encodeUtf8Builder $ T.replace a b s
+    x -> rf x
+  rf = maybe "?" $ unTypeValue (foldMap renderValue)
+
+resolveAttachment :: HM.HashMap T.Text (TypeValue Maybe) -> Attachment -> (FilePath, BS.ByteString)
+resolveAttachment doc Attachment{..} = (BSLC.unpack $ rp attachmentPath, BSL.toStrict $ rp attachmentName) where
+  rp = resolveDynamicPath doc
+
+attachmentResponse :: FilePath -> BS.ByteString -> M Wai.Response
+attachmentResponse path name = do
   dir <- asks globalDataDir
   return $ Wai.responseFile ok200
     [ (hContentType, "application/octet-stream")
-    , (hContentDisposition, "attachment; filename=" <> quoteHTTP (BSC.pack $ pathStr (attachmentName att) doc))
+    , (hContentDisposition, "attachment; filename=" <> quoteHTTP name)
     , (hCacheControl, "public, max-age=86400")
-    ] (dir </> pathStr (attachmentPath att) doc) Nothing
-  where
-  parse = J.withObject "query"
-    $ parseJSONField "hits" $ J.withObject "hits"
-    $ parseJSONField "hits" $ J.withArray "hits"
-    $ \v -> if V.length v == 1
-      then J.withObject "hit" (return . HM.map unsingletonJSON . ES.storedFields) (V.head v)
-      else fail ("found " <> show (V.length v) <> " documents")
+    ] (dir </> path) Nothing
 
 attachmentsBulkStream :: BS.ByteString -> [Field] -> IO (Word, V.Vector J.Object) -> M ((B.Builder -> IO ()) -> IO ())
 attachmentsBulkStream info ats next = do

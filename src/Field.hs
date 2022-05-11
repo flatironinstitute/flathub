@@ -389,9 +389,19 @@ fieldJValues :: [FieldValue] -> J.Series
 fieldJValues = foldMap fieldJValue
 
 -- |pseudo fields representing ES _id, _doc
-idField, docField :: Field
-idField = Field{ fieldDesc = def{ fieldDescName = "_id", fieldDescTitle = "_id", fieldDescFlag = FieldHidden }, fieldType = Keyword Proxy }
-docField = Field{ fieldDesc = def{ fieldDescName = "_doc", fieldDescTitle = "_doc", fieldDescFlag = FieldHidden }, fieldType = Void Proxy }
+idField, docField :: Alternative s => FieldSub Proxy s
+idField = Field{ fieldDesc = def
+  { fieldDescName = "_id"
+  , fieldDescTitle = "_id"
+  , fieldDescDescr = Just "Implicit unique internal document id for row"
+  , fieldDescFlag = FieldHidden }
+  , fieldType = Keyword Proxy }
+docField = Field{ fieldDesc = def
+  { fieldDescName = "_doc"
+  , fieldDescTitle = "_doc"
+  , fieldDescDescr = Just "Implicit pseudo-field used only for sorting documents by internal order"
+  , fieldDescFlag = FieldHidden }
+  , fieldType = Void Proxy }
 
 type Count = Word
 
