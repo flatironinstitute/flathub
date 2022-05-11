@@ -23,6 +23,7 @@ module Type
   , typeOfValue
   , unTypeValue
   , toDouble
+  , renderValue
   , parseTypeValue
   , parseJSONTyped
   , parseJSONTypeValue
@@ -38,6 +39,7 @@ module Type
 
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Types as J
+import qualified Data.ByteString.Builder as B
 import           Data.Default (Default(def))
 import           Data.Functor.Classes (Eq1, eq1, Show1, showsPrec1)
 import           Data.Functor.Const (Const(..))
@@ -48,6 +50,7 @@ import           Data.Maybe (fromMaybe)
 import qualified Data.OpenApi as OA
 import           Data.Proxy (Proxy(Proxy))
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import           Data.Typeable (Typeable)
 import qualified Data.Vector as V
 import           Data.Void (Void, absurd, vacuous)
@@ -103,39 +106,63 @@ class (Eq a, Ord a, Show a, Read a, J.ToJSON a, J.FromJSON a, OA.ToParamSchema a
   parseJSONTyped :: J.Value -> J.Parser a
   parseJSONTyped (J.Array v) | V.length v == 1 = J.parseJSON (V.head v)
   parseJSONTyped j = J.parseJSON j
+  renderValue :: a -> B.Builder
+  renderValue = J.fromEncoding . J.toEncoding
 
 typeValue1 :: Typed a => a -> Value
 typeValue1 = typeValue . Identity
 
-instance Typed Word64 where typeValue = ULong
-                            toDouble = fromIntegral
-instance Typed Int64  where typeValue = Long
-                            toDouble = fromIntegral
-instance Typed Int32  where typeValue = Integer
-                            toDouble = fromIntegral
-instance Typed Int16  where typeValue = Short
-                            toDouble = fromIntegral
-instance Typed Int8   where typeValue = Byte
-                            toDouble = fromIntegral
-instance Typed Double where typeValue = Double
-                            toDouble = id
-instance Typed Float  where typeValue = Float
-                            toDouble = realToFrac
-instance Typed Half   where typeValue = HalfFloat
-                            toDouble = realToFrac
-instance Typed Bool   where typeValue = Boolean
-                            toDouble False = 0
-                            toDouble True = 0
-                            parseJSONTyped (J.Bool b) = return b
-                            parseJSONTyped (J.Number 0) = return False
-                            parseJSONTyped (J.Number 1) = return True
-                            parseJSONTyped (J.Array v) | V.length v == 1 = parseJSONTyped (V.head v)
-                            parseJSONTyped j = J.typeMismatch "Bool" j
-instance Typed T.Text where typeValue = Keyword
-                            toDouble = read . T.unpack
-instance Typed Void   where typeValue = Void
-                            toDouble = absurd
-
+instance Typed Word64 where
+  typeValue = ULong
+  toDouble = fromIntegral
+  renderValue = B.word64Dec
+instance Typed Int64  where
+  typeValue = Long
+  toDouble = fromIntegral
+  renderValue = B.int64Dec
+instance Typed Int32  where
+  typeValue = Integer
+  toDouble = fromIntegral
+  renderValue = B.int32Dec
+instance Typed Int16  where
+  typeValue = Short
+  toDouble = fromIntegral
+  renderValue = B.int16Dec
+instance Typed Int8   where
+  typeValue = Byte
+  toDouble = fromIntegral
+  renderValue = B.int8Dec
+instance Typed Double where
+  typeValue = Double
+  toDouble = id
+  renderValue = B.doubleDec
+instance Typed Float  where
+  typeValue = Float
+  toDouble = realToFrac
+  renderValue = B.floatDec
+instance Typed Half   where
+  typeValue = HalfFloat
+  toDouble = realToFrac
+  renderValue = B.floatDec . realToFrac
+instance Typed Bool   where
+  typeValue = Boolean
+  toDouble False = 0
+  toDouble True = 0
+  parseJSONTyped (J.Bool b) = return b
+  parseJSONTyped (J.Number 0) = return False
+  parseJSONTyped (J.Number 1) = return True
+  parseJSONTyped (J.Array v) | V.length v == 1 = parseJSONTyped (V.head v)
+  parseJSONTyped j = J.typeMismatch "Bool" j
+  renderValue False = "false"
+  renderValue True = "true"
+instance Typed T.Text where
+  typeValue = Keyword
+  toDouble = read . T.unpack
+  renderValue = TE.encodeUtf8Builder
+instance Typed Void   where
+  typeValue = Void
+  toDouble = absurd
+  renderValue = absurd
 instance Typed a => Typed (V.Vector a) where
   typeValue = Array . typeValue . Compose
   toDouble = toDouble . V.head

@@ -20,12 +20,15 @@ module Backend
   , queryHistogram
   ) where
 
+import           Control.Applicative (Alternative, empty)
 import           Control.Monad (unless)
 import           Control.Monad.IO.Class (liftIO)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
 import           Data.Bits (xor)
+import           Data.Default (Default(def))
+import           Data.Foldable (toList)
 import           Data.Function (on)
 import           Data.Functor.Identity (Identity(Identity))
 import           Data.Functor.Reverse (Reverse(Reverse))
@@ -119,29 +122,32 @@ parseData fields = J.withObject "data res" $ \o ->
   getf o = mapM (parsef o) fields
   parsef o f = traverseTypeValue (\Proxy -> mapM parseJSONTyped $ HM.lookup (fieldName f) o) (fieldType f)
 
-data DataArgs = DataArgs
+data DataArgs f = DataArgs
   { dataFilters :: Filters
-  , dataFields :: [Field] -- ^Which fields to return (in order)
+  , dataFields :: f Field -- ^Which fields to return (in order)
   , dataSort :: [(Field, Bool)] -- ^Sort order: (field, true=asc/false=desc)
   , dataCount :: Word16 -- ^Number of rows to return
   , dataOffset :: Either DataOffset Word16 -- ^Either continuation from a previous query, in which case all other arguments must be exactly the same, or starting offset
   }
 
+instance Alternative f => Default (DataArgs f) where
+  def = DataArgs mempty empty [] 0 (Right 0)
+
 maxDataCount :: Word16
 maxDataCount = 5000
 
 -- |Query raw data rows as specified, and return a vector of row data, matching dataFields order, and a DataOffset that can be used to return the next page of data
-queryData :: Catalog -> DataArgs -> M (V.Vector (V.Vector (TypeValue Maybe)), DataOffset)
+queryData :: Traversable f => Catalog -> DataArgs f -> M (V.Vector (f (TypeValue Maybe)), DataOffset)
 queryData cat DataArgs{..} = do
   unless (dataCount <= maxDataCount && fromIntegral dataCount + either (const 0) fromIntegral dataOffset <= maxResultWindow)
     $ raise400 "count too large"
-  searchCatalog cat [] (parseData (V.fromList dataFields)) $ JE.pairs
+  searchCatalog cat [] (parseData dataFields) $ JE.pairs
     $  "size" J..= dataCount
     <> "sort" `JE.pair` JE.list (\(f, a) ->
         JE.pairs (fieldName f J..= if a then "asc" else "desc" :: String))
       (dataSort ++ [(docField,True),(key,True)])
     <> offset dataOffset
-    <> storedFieldsArgs dataFields
+    <> storedFieldsArgs (toList dataFields)
     <> filterQuery dataFilters
   where
   key = fromMaybe idField $ (`HM.lookup` catalogFieldMap cat) =<< catalogKey cat

@@ -547,7 +547,7 @@ sortSchema = do
     & OA.description ?~ "fields by which to sort row data"
     & OA.uniqueItems ?~ True)
 
-parseDataQuery :: Catalog -> Wai.Request -> DataArgs
+parseDataQuery :: Catalog -> Wai.Request -> DataArgs []
 parseDataQuery cat req = DataArgs
   { dataFilters = parseFiltersQuery cat req
   , dataFields = parseFieldsQuery cat req "fields"
@@ -556,7 +556,7 @@ parseDataQuery cat req = DataArgs
   , dataOffset = Right $ fromMaybe 0 $ parseReadQuery req "offset"
   }
 
-parseDataJSON :: Catalog -> J.Value -> J.Parser DataArgs
+parseDataJSON :: Catalog -> J.Value -> J.Parser (DataArgs [])
 parseDataJSON cat = J.withObject "data request" $ \o -> DataArgs
   <$> parseFiltersJSON cat (HM.delete "fields" $ HM.delete "sort" $ HM.delete "count" $ HM.delete "offset" o)
   <*> (parseFieldsJSON cat =<< o J..: "fields")
