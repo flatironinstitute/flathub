@@ -617,7 +617,8 @@ apiData = APIOp -- /api/{cat}/data
   , apiResponse = do
     fv <- declareSchemaRef (Proxy :: Proxy FieldValue)
     return $ jsonContent $ arraySchema $ OA.Inline $ arraySchema (OA.Inline $ mempty
-        & OA.oneOf ?~ [fv, OA.Inline $ mempty & OA.type_ ?~ OA.OpenApiNull])
+        & OA.oneOf ?~ [fv]
+        & OA.nullable ?~ True)
       & OA.description ?~ "a single data row corresponding to the requested fields in order (missing values are null)"
   }
   where
