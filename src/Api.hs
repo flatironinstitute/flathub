@@ -278,7 +278,8 @@ apiCatalog = APIOp -- /api/{cat}
   , apiPathParams = return [catalogParam]
   , apiQueryParams = []
   , apiRequestSchema = Nothing
-  , apiAction = \sim req -> do
+  , apiAction = \sim req ->
+    if T.null sim then apiAction apiTop () req else do -- allow trailing slash
     cat <- askCatalog sim
     (count, stats) <- liftIO $ catalogStats cat
     return $ okResponse (apiHeaders req) $ J.pairs
@@ -924,7 +925,7 @@ openApiBase = mempty &~ do
     qparam <- sequence apiQueryParams
     reqs <- sequence apiRequestSchema
     res <- apiResponse
-    let path = foldMap (('/':) . T.unpack) $ pathPlaceholders apiPath apiExampleArg pparam
+    let path = '/' : mintersperseMap "/" T.unpack (pathPlaceholders apiPath apiExampleArg pparam)
         pparam' = map (\p -> OA.Inline $ p
           & OA.in_ .~ OA.ParamPath
           & OA.required ?~ True) pparam
