@@ -9,6 +9,7 @@ module OpenApi
   , stateDeclareSchema
   , declareSchemaRef
   , define
+  , defineRec
   , resolve
   , schemaDescOf
   , objectSchema
@@ -70,6 +71,9 @@ define :: Define a => T.Text -> a -> OpenApiM (OA.Referenced a)
 define n x = do
   OA.components . componentsDefinitions . at n .= Just x
   return $ OA.Ref $ OA.Reference n
+
+defineRec :: Define a => T.Text -> (OA.Referenced a -> a) -> OpenApiM (OA.Referenced a)
+defineRec n f = define n $ f $ OA.Ref $ OA.Reference n
 
 resolve :: Define a => OA.Referenced a -> OpenApiM a
 resolve (OA.Inline x) = return x

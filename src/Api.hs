@@ -41,7 +41,7 @@ import           Data.IORef (newIORef, readIORef, writeIORef)
 import           Data.List (foldl')
 import           Data.Maybe (isJust, mapMaybe, fromMaybe)
 import qualified Data.OpenApi as OA
-import           Data.Proxy (Proxy(Proxy))
+import           Data.Proxy (Proxy)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Encoding.Error as TE
@@ -163,15 +163,14 @@ catalogJSON Catalog{..} =
   <> "title" J..= catalogTitle
   <> "synopsis" J..= catalogSynopsis
 
-instance OA.ToSchema Catalog where
-  declareNamedSchema _ = do
-    return $ OA.NamedSchema (Just "CatalogMeta") $ objectSchema
-      "High-level metadata for a dataset catalog"
-      [ ("name", OA.Inline $ schemaDescOf catalogName "globally unique catalog id used in urls", True)
-      , ("order", OA.Inline $ schemaDescOf catalogOrder "sort key for display order", True)
-      , ("title", OA.Inline $ schemaDescOf catalogTitle "display name", True)
-      , ("synopsis", OA.Inline $ schemaDescOf catalogSynopsis "short description", True)
-      ]
+catalogSchema :: OpenApiM (OA.Referenced OA.Schema)
+catalogSchema = define "CatalogMeta" $ objectSchema
+  "High-level metadata for a dataset catalog"
+  [ ("name", OA.Inline $ schemaDescOf catalogName "globally unique catalog id used in urls", True)
+  , ("order", OA.Inline $ schemaDescOf catalogOrder "sort key for display order", True)
+  , ("title", OA.Inline $ schemaDescOf catalogTitle "display name", True)
+  , ("synopsis", OA.Inline $ schemaDescOf catalogSynopsis "short description", True)
+  ]
 
 apiTop :: APIOp ()
 apiTop = APIOp -- /api
@@ -187,7 +186,7 @@ apiTop = APIOp -- /api
   , apiQueryParams = []
   , apiRequestSchema = Nothing
   , apiResponse = do
-    catmeta <- declareSchemaRef (Proxy :: Proxy Catalog)
+    catmeta <- catalogSchema
     return $ jsonContent $ mempty
       & OA.type_ ?~ OA.OpenApiArray
       & OA.items ?~ OA.OpenApiItemsObject catmeta
@@ -223,45 +222,44 @@ fieldsJSON stats b = JE.list fieldJSON . V.toList where
     where
     bf = b <> f
 
-instance OA.ToSchema Type where
-  declareNamedSchema _ = do
-    return $ OA.NamedSchema (Just "Type") $ mempty
-      & OA.description ?~ "storage type"
-      & OA.type_ ?~ OA.OpenApiString
-      & OA.enum_ ?~ map J.toJSON (scalarTypes ++ map (Array . singletonArray) scalarTypes)
+typeSchema :: OpenApiM (OA.Referenced OA.Schema)
+typeSchema = define "Type" $ mempty
+  & OA.description ?~ "storage type"
+  & OA.type_ ?~ OA.OpenApiString
+  & OA.enum_ ?~ map J.toJSON (scalarTypes ++ map (Array . singletonArray) scalarTypes)
 
-instance OA.ToSchema FieldGroup where
-  declareNamedSchema t = do
-    ref <- OA.declareSchemaRef t
-    fs <- OA.declareSchemaRef (Proxy :: Proxy (FieldStats Void))
-    return $ OA.NamedSchema (Just "FieldGroup") $ objectSchema
-      "A single field within a catalog, or a hiearchical group of fields"
-      [ ("key", OA.Inline $ schemaDescOf fieldName "local name of field within this group", True)
-      , ("name", OA.Inline $ schemaDescOf fieldName "global unique (\"variable\") name of field within the catalog", True)
-      , ("title", OA.Inline $ schemaDescOf fieldTitle "display name of the field within the group", True)
-      , ("descr", OA.Inline $ schemaDescOf fieldDescr "description of field within the group", False)
-      , ("type", OA.Inline $ schemaDescOf typeOfValue "raw storage type", True)
-      , ("base", OA.Inline $ mempty
-          & OA.description ?~ "base storage type (floating, integral, boolean, string, void)"
-          & OA.type_ ?~ OA.OpenApiString
-          & OA.enum_ ?~ map J.toJSON "fibsv"
-          , True)
-      , ("store", OA.Inline $ schemaDescOf fieldStore "true if this field is stored but not indexed, so not permitted for filtering or aggregations", False)
-      , ("enum", OA.Inline $ schemaDescOf fieldEnum "if present, display values as these keywords instead (integral or boolean: enum[<int>value])", False)
-      , ("disp", OA.Inline $ schemaDescOf fieldDisp "include field in data display by default", False)
-      , ("units", OA.Inline $ schemaDescOf fieldUnits "display units", False)
-      , ("required", OA.Inline $ schemaDescOf (True ==) "true = required filter; false = top-level (default) optional filter; missing = normal", False)
-      , ("terms", OA.Inline $ schemaDescOf fieldTerms "display dynamically as a dropdown of values", False)
-      , ("dict", OA.Inline $ schemaDescOf fieldDict "unique key index to global field dictionary (for compare)", False)
-      , ("scale", OA.Inline $ schemaDescOf fieldScale "scale factor to dict-comparable units, display  value*scale (for compare)", False)
-      , ("reversed", OA.Inline $ schemaDescOf fieldReversed "display axes and ranges in reverse (high-low)", False)
-      , ("attachment", OA.Inline $ schemaDescOf isJust "this is a meta field for a downloadable attachment (type boolean, indicating presence)", False)
-      , ("wildcard", OA.Inline $ schemaDescOf fieldWildcard "allow wildcard prefix searching on keyword field (\"xy*\")", False)
-      , ("stats", fs, False)
-      , ("sub", OA.Inline $ arraySchema ref
-          & OA.description ?~ "child fields: if this is present, this is a pseudo grouping field which does not exist itself, but its properties apply to its children"
-          , False)
-      ]
+fieldGroupSchema :: OpenApiM (OA.Referenced OA.Schema)
+fieldGroupSchema = do
+  fs <- fieldStatsSchema
+  ft <- typeSchema
+  defineRec "FieldGroup" $ \ref -> objectSchema
+    "A single field within a catalog, or a hiearchical group of fields"
+    [ ("key", OA.Inline $ schemaDescOf fieldName "local name of field within this group", True)
+    , ("name", OA.Inline $ schemaDescOf fieldName "global unique (\"variable\") name of field within the catalog", True)
+    , ("title", OA.Inline $ schemaDescOf fieldTitle "display name of the field within the group", True)
+    , ("descr", OA.Inline $ schemaDescOf fieldDescr "description of field within the group", False)
+    , ("type", ft, True)
+    , ("base", OA.Inline $ mempty
+        & OA.description ?~ "base storage type (floating, integral, boolean, string, void)"
+        & OA.type_ ?~ OA.OpenApiString
+        & OA.enum_ ?~ map J.toJSON "fibsv"
+        , True)
+    , ("store", OA.Inline $ schemaDescOf fieldStore "true if this field is stored but not indexed, so not permitted for filtering or aggregations", False)
+    , ("enum", OA.Inline $ schemaDescOf fieldEnum "if present, display values as these keywords instead (integral or boolean: enum[<int>value])", False)
+    , ("disp", OA.Inline $ schemaDescOf fieldDisp "include field in data display by default", False)
+    , ("units", OA.Inline $ schemaDescOf fieldUnits "display units", False)
+    , ("required", OA.Inline $ schemaDescOf (True ==) "true = required filter; false = top-level (default) optional filter; missing = normal", False)
+    , ("terms", OA.Inline $ schemaDescOf fieldTerms "display dynamically as a dropdown of values", False)
+    , ("dict", OA.Inline $ schemaDescOf fieldDict "unique key index to global field dictionary (for compare)", False)
+    , ("scale", OA.Inline $ schemaDescOf fieldScale "scale factor to dict-comparable units, display  value*scale (for compare)", False)
+    , ("reversed", OA.Inline $ schemaDescOf fieldReversed "display axes and ranges in reverse (high-low)", False)
+    , ("attachment", OA.Inline $ schemaDescOf isJust "this is a meta field for a downloadable attachment (type boolean, indicating presence)", False)
+    , ("wildcard", OA.Inline $ schemaDescOf fieldWildcard "allow wildcard prefix searching on keyword field (\"xy*\")", False)
+    , ("stats", fs, False)
+    , ("sub", OA.Inline $ arraySchema ref
+        & OA.description ?~ "child fields: if this is present, this is a pseudo grouping field which does not exist itself, but its properties apply to its children"
+        , False)
+    ]
 
 catalogBase :: R.Path Simulation
 catalogBase = R.parameter
@@ -290,8 +288,8 @@ apiCatalog = APIOp -- /api/{cat}
       <> mwhen (not $ null $ catalogSort cat)
         ("sort" J..= catalogSort cat)
   , apiResponse = do
-    fdef <- declareSchemaRef (Proxy :: Proxy FieldGroup)
-    meta <- declareSchemaRef (Proxy :: Proxy Catalog)
+    fdef <- fieldGroupSchema
+    meta <- catalogSchema
     return $ jsonContent $ mempty & OA.allOf ?~
       [ meta
       , OA.Inline $ objectSchema
@@ -386,14 +384,14 @@ apiSchemaCSV = APIOp -- /api/{cat}/schema.csv
 
 -------- common query parameters
 
-instance OA.ToSchema FieldValue where
-  declareNamedSchema t = do
-    ts <- OA.declareSchemaRef t
-    return $ OA.NamedSchema (Just "FieldValue") $ mempty
-      & OA.description ?~ "a value for a field, which must match the type of the field"
-      & OA.anyOf ?~
-        (map (\x -> unTypeValue (\p -> OA.Inline $ OA.toSchema p & OA.title ?~ T.pack (show x)) x) scalarTypes
-        ++ [OA.Inline $ arraySchema ts & OA.title ?~ "array"])
+fieldValueSchema :: OpenApiM (OA.Referenced OA.Schema)
+fieldValueSchema = do
+  s <- define "FieldValueScalar" $ mempty
+    & OA.description ?~ "a scalar value for a field"
+    & OA.anyOf ?~ map (\x -> unTypeValue (\p -> OA.Inline $ OA.toSchema p & OA.title ?~ T.pack (show x)) x) scalarTypes
+  define "FieldValue" $ mempty
+    & OA.description ?~ "a value for a field, which must match the type of the field"
+    & OA.anyOf ?~ [s, OA.Inline $ arraySchema s & OA.title ?~ "array"]
 
 parseFilterJSON :: Typed a => Field -> J.Value -> J.Parser (FieldFilter a)
 parseFilterJSON _ j@(J.Array _) = do
@@ -409,24 +407,24 @@ parseFilterJSON f (J.Object o) | fieldWildcard f =
   FieldWildcard <$> o J..: "wildcard"
 parseFilterJSON _ j = FieldEQ . return <$> J.parseJSON j
 
-instance Typed a => OA.ToSchema (FieldFilter a) where
-  declareNamedSchema _ = do
-    fv <- OA.declareSchemaRef (Proxy :: Proxy FieldValue)
-    return $ OA.NamedSchema Nothing $ mempty
-      & OA.description ?~ "filter for a named field to be equal to a specific value or match other contraints"
-      & OA.oneOf ?~
-        [ fv
-        , OA.Inline $ arraySchema fv & OA.description ?~ "equal to any of these values (not supported when used as a query parameter)"
-          & OA.minItems ?~ 1
-          & OA.uniqueItems ?~ True
-        , OA.Inline $ objectSchema "in a bounded range for numeric fields: >= gte and <= lte, either of which may be omitted (when used as a query parameter, may be a string containing two FieldValues (either of which may be blank) separated by a single comma or space); omitting both is useful for filtering out missing values"
-          [ ("gte", fv, False)
-          , ("lte", fv, False)
-          ]
-        , OA.Inline $ objectSchema "matching a pattern for wildcard fields"
-          [ ("wildcard", OA.Inline $ schemaDescOf filterWildcard "a pattern containing '*' and/or '?'", True)
-          ]
+fieldFilterSchema :: OpenApiM (OA.Referenced OA.Schema)
+fieldFilterSchema = do
+  fv <- fieldValueSchema
+  return $ OA.Inline $ mempty
+    & OA.description ?~ "filter for a named field to be equal to a specific value or match other contraints"
+    & OA.oneOf ?~
+      [ fv
+      , OA.Inline $ arraySchema fv & OA.description ?~ "equal to any of these values (not supported when used as a query parameter)"
+        & OA.minItems ?~ 1
+        & OA.uniqueItems ?~ True
+      , OA.Inline $ objectSchema "in a bounded range for numeric fields: >= gte and <= lte, either of which may be omitted (when used as a query parameter, may be a string containing two FieldValues (either of which may be blank) separated by a single comma or space); omitting both is useful for filtering out missing values"
+        [ ("gte", fv, False)
+        , ("lte", fv, False)
         ]
+      , OA.Inline $ objectSchema "matching a pattern for wildcard fields"
+        [ ("wildcard", OA.Inline $ schemaDescOf filterWildcard "a pattern containing '*' and/or '?'", True)
+        ]
+      ]
 
 parseFiltersJSON :: Catalog -> J.Object -> J.Parser Filters
 parseFiltersJSON cat o = Filters
@@ -440,21 +438,21 @@ parseFiltersJSON cat o = Filters
   parseff :: Typed a => Field -> J.Value -> Proxy a -> J.Parser (FieldFilter a)
   parseff f j _ = parseFilterJSON f j
 
-instance OA.ToSchema Filters where
-  declareNamedSchema _ = do
-    ff <- OA.declareSchemaRef (Proxy :: Proxy (FieldFilter Void))
-    return $ OA.NamedSchema (Just "Filters") $ objectSchema
-      "filters to apply to a query"
-      [ ("sample", OA.Inline $ schemaDescOf filterSample "randomly select a fractional sample"
-        & OA.default_ ?~ J.Number 1
-        & OA.minimum_ ?~ 0
-        & OA.exclusiveMinimum ?~ True
-        & OA.maximum_ ?~ 1
-        & OA.exclusiveMaximum ?~ False
-        , False)
-      , ("seed", OA.Inline $ schemaDescOf filterSeed "seed for random sample selection (defaults to new random seed)", False)
-      ]
-      & OA.additionalProperties ?~ OA.AdditionalPropertiesSchema ff
+filtersSchema :: OpenApiM (OA.Referenced OA.Schema)
+filtersSchema = do
+  ff <- fieldFilterSchema
+  define "Filters" $ objectSchema
+    "filters to apply to a query"
+    [ ("sample", OA.Inline $ schemaDescOf filterSample "randomly select a fractional sample"
+      & OA.default_ ?~ J.Number 1
+      & OA.minimum_ ?~ 0
+      & OA.exclusiveMinimum ?~ True
+      & OA.maximum_ ?~ 1
+      & OA.exclusiveMaximum ?~ False
+      , False)
+    , ("seed", OA.Inline $ schemaDescOf filterSeed "seed for random sample selection (defaults to new random seed)", False)
+    ]
+    & OA.additionalProperties ?~ OA.AdditionalPropertiesSchema ff
 
 parseFiltersQuery :: Catalog -> Wai.Request -> Filters
 parseFiltersQuery cat req = foldl' parseQueryItem mempty $ Wai.queryString req where
@@ -476,7 +474,7 @@ parseFiltersQuery cat req = foldl' parseQueryItem mempty $ Wai.queryString req w
 
 filtersQueryParam :: OpenApiM (OA.Referenced OA.Param)
 filtersQueryParam = do
-  filters <- declareSchemaRef (Proxy :: Proxy Filters)
+  filters <- filtersSchema
   define "filters" $ mempty
     & OA.name .~ "filters"
     & OA.in_ .~ OA.ParamQuery
@@ -595,7 +593,7 @@ apiData = APIOp -- /api/{cat}/data
       & OA.schema ?~ offsetSchema
     ]
   , apiRequestSchema = Just $ do
-    filt <- declareSchemaRef (Proxy :: Proxy Filters)
+    filt <- filtersSchema
     list <- fieldListSchema
     sort <- sortSchema
     return $ mempty & OA.allOf ?~
@@ -615,7 +613,7 @@ apiData = APIOp -- /api/{cat}/data
     (dat, _) <- queryData cat args
     return $ okResponse (apiHeaders req) $ JE.list J.foldable (V.toList dat)
   , apiResponse = do
-    fv <- declareSchemaRef (Proxy :: Proxy FieldValue)
+    fv <- fieldValueSchema
     return $ jsonContent $ arraySchema $ OA.Inline $ arraySchema (OA.Inline $ mempty
         & OA.oneOf ?~ [fv]
         & OA.nullable ?~ True)
@@ -654,28 +652,28 @@ fieldStatsJSON = unTypeValue fsj . fieldType
     $  "terms" `JE.pair` JE.list (\(v,c) -> J.pairs $ "value" J..= v <> "count" J..= c) termsBuckets
     <> "others" J..= termsCount
 
-instance Typed a => OA.ToSchema (FieldStats a) where
-  declareNamedSchema _ = do
-    fv <- OA.declareSchemaRef (Proxy :: Proxy FieldValue)
-    return $ OA.NamedSchema (Just "FieldStats") $ mempty
-      & OA.oneOf ?~
-        [ OA.Inline $ objectSchema "for numeric fields"
-          [ ("count", OA.Inline $ schemaDescOf statsCount "number of rows with values for this field", True)
-          , ("min", OA.Inline $ schemaDescOf statsMin "minimum value" & OA.nullable ?~ True, True)
-          , ("max", OA.Inline $ schemaDescOf statsMax "maximum value" & OA.nullable ?~ True, True)
-          , ("avg", OA.Inline $ schemaDescOf statsAvg "mean value" & OA.nullable ?~ True, True)
-          ]
-        , OA.Inline $ objectSchema "for non-numeric fields or those with terms=true"
-          [ ("terms", OA.Inline $ arraySchema (OA.Inline $ objectSchema "unique field value"
-            [ ("value", fv, True)
-            , ("count", OA.Inline $ schemaDescOf termsCount "number of rows with this value", True)
-            ])
-            & OA.description ?~ "top terms in descending order of count"
-            & OA.uniqueItems ?~ True, True)
-          , ("others", OA.Inline $ schemaDescOf termsCount "number of rows with values not included in the top terms", True)
-          ]
+fieldStatsSchema :: OpenApiM (OA.Referenced OA.Schema)
+fieldStatsSchema = do
+  fv <- fieldValueSchema
+  define "FieldStats" $ mempty
+    & OA.oneOf ?~
+      [ OA.Inline $ objectSchema "for numeric fields"
+        [ ("count", OA.Inline $ schemaDescOf statsCount "number of rows with values for this field", True)
+        , ("min", OA.Inline $ schemaDescOf statsMin "minimum value" & OA.nullable ?~ True, True)
+        , ("max", OA.Inline $ schemaDescOf statsMax "maximum value" & OA.nullable ?~ True, True)
+        , ("avg", OA.Inline $ schemaDescOf statsAvg "mean value" & OA.nullable ?~ True, True)
         ]
-      & OA.description ?~ "stats for the field named by the property, depending on its type"
+      , OA.Inline $ objectSchema "for non-numeric fields or those with terms=true"
+        [ ("terms", OA.Inline $ arraySchema (OA.Inline $ objectSchema "unique field value"
+          [ ("value", fv, True)
+          , ("count", OA.Inline $ schemaDescOf termsCount "number of rows with this value", True)
+          ])
+          & OA.description ?~ "top terms in descending order of count"
+          & OA.uniqueItems ?~ True, True)
+        , ("others", OA.Inline $ schemaDescOf termsCount "number of rows with values not included in the top terms", True)
+        ]
+      ]
+    & OA.description ?~ "stats for the field named by the property, depending on its type"
 
 apiStats :: APIOp Simulation
 apiStats = APIOp -- /api/{cat}/stats
@@ -686,7 +684,7 @@ apiStats = APIOp -- /api/{cat}/stats
   , apiPathParams = return [catalogParam]
   , apiQueryParams = [filtersQueryParam, fieldsQueryParam]
   , apiRequestSchema = Just $ do
-    filt <- declareSchemaRef (Proxy :: Proxy Filters)
+    filt <- filtersSchema
     list <- fieldListSchema
     return $ mempty & OA.allOf ?~
       [ filt
@@ -703,7 +701,7 @@ apiStats = APIOp -- /api/{cat}/stats
       $  "count" J..= count
       <> foldMap (\f -> fieldName f `JE.pair` fieldStatsJSON f) stats
   , apiResponse = do
-    fs <- declareSchemaRef (Proxy :: Proxy (FieldStats Void))
+    fs <- fieldStatsSchema
     return $ jsonContent $ objectSchema "stats"
       [ ("count", OA.Inline $ schemaDescOf statsCount "number of matching rows", True) ]
       & OA.additionalProperties ?~ OA.AdditionalPropertiesSchema fs
@@ -801,7 +799,7 @@ apiHistogram = APIOp -- /api/{cat}/histogram
       & OA.schema ?~ fn
     ]
   , apiRequestSchema = Just $ do
-    filt <- declareSchemaRef (Proxy :: Proxy Filters)
+    filt <- filtersSchema
     fn <- fieldNameSchema
     hist <- histogramListSchema
     return $ mempty & OA.allOf ?~
@@ -825,7 +823,7 @@ apiHistogram = APIOp -- /api/{cat}/histogram
         <> foldMap ("quartiles" J..=) bucketQuartiles)
         histogramBuckets
   , apiResponse = do
-    fv <- declareSchemaRef (Proxy :: Proxy FieldValue)
+    fv <- fieldValueSchema
     return $ jsonContent $ objectSchema "histogram result"
       [ ("sizes", OA.Inline $ arraySchema (OA.Inline $ schemaDescOf (head . histogramSizes) "size of each histogram buckets in this dimension, either as an absolute width in linear space, or as a ratio in log space"
           & OA.minimum_ ?~ 0
