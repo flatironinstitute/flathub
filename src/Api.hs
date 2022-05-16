@@ -105,12 +105,14 @@ lookupFieldQuery cat idx = failErr . lookupField cat idx . decodeUtf8'
 fieldNameSchema :: OpenApiM (OA.Referenced OA.Schema)
 fieldNameSchema = define "FieldName" $ mempty
   & OA.type_ ?~ OA.OpenApiString
+  & OA.title ?~ "field name"
   & OA.description ?~ "field name in selected catalog"
 
 fieldListSchema :: OpenApiM (OA.Referenced OA.Schema)
 fieldListSchema = do
   fn <- fieldNameSchema
   define "FieldList" $ arraySchema fn
+    & OA.title ?~ "field list"
     & OA.uniqueItems ?~ True
 
 parseReadQuery :: Read a => Wai.Request -> BS.ByteString -> Maybe a
@@ -171,6 +173,7 @@ catalogSchema = define "CatalogMeta" $ objectSchema
   , ("title", OA.Inline $ schemaDescOf catalogTitle "display name", True)
   , ("synopsis", OA.Inline $ schemaDescOf catalogSynopsis "short description", True)
   ]
+  & OA.title ?~ "catalog metadata"
 
 apiTop :: APIOp ()
 apiTop = APIOp -- /api
@@ -190,6 +193,7 @@ apiTop = APIOp -- /api
     return $ jsonContent $ mempty
       & OA.type_ ?~ OA.OpenApiArray
       & OA.items ?~ OA.OpenApiItemsObject catmeta
+      & OA.title ?~ "top result"
   }
 
 -------- /api/{catalog}
@@ -224,6 +228,7 @@ fieldsJSON stats b = JE.list fieldJSON . V.toList where
 
 typeSchema :: OpenApiM (OA.Referenced OA.Schema)
 typeSchema = define "Type" $ mempty
+  & OA.title ?~ "field type"
   & OA.description ?~ "storage type"
   & OA.type_ ?~ OA.OpenApiString
   & OA.enum_ ?~ map J.toJSON (scalarTypes ++ map (Array . singletonArray) scalarTypes)
@@ -257,9 +262,11 @@ fieldGroupSchema = do
     , ("wildcard", OA.Inline $ schemaDescOf fieldWildcard "allow wildcard prefix searching on keyword field (\"xy*\")", False)
     , ("stats", fs, False)
     , ("sub", OA.Inline $ arraySchema ref
-        & OA.description ?~ "child fields: if this is present, this is a pseudo grouping field which does not exist itself, but its properties apply to its children"
+        & OA.title ?~ "child fields"
+        & OA.description ?~ "if this is present, this is a pseudo grouping field which does not exist itself, but its properties apply to its children"
         , False)
     ]
+    & OA.title ?~ "field"
 
 catalogBase :: R.Path Simulation
 catalogBase = R.parameter
@@ -296,12 +303,14 @@ apiCatalog = APIOp -- /api/{cat}
       , OA.Inline $ objectSchema
         "full catalog metadata"
         [ ("fields", OA.Inline $ arraySchema fdef
-          & OA.description ?~ "field groups"
+          & OA.title ?~ "field groups"
           , True)
         , ("count", OA.Inline $ schemaDescOf catalogCount "total number of rows", True)
         , ("sort", OA.Inline $ schemaDescOf catalogSort "default sort fields", False)
         ]
+        & OA.title ?~ "catalog info"
       ]
+      & OA.title ?~ "catalog result"
   }
 
 apiSchemaSQL :: APIOp Simulation
@@ -388,9 +397,11 @@ apiSchemaCSV = APIOp -- /api/{cat}/schema.csv
 fieldValueSchema :: OpenApiM (OA.Referenced OA.Schema)
 fieldValueSchema = do
   s <- define "FieldValueScalar" $ mempty
+    & OA.title ?~ "scalar value"
     & OA.description ?~ "a scalar value for a field"
     & OA.anyOf ?~ map (\x -> unTypeValue (\p -> OA.Inline $ OA.toSchema p & OA.title ?~ T.pack (show x)) x) scalarTypes
   define "FieldValue" $ mempty
+    & OA.title ?~ "field value"
     & OA.description ?~ "a value for a field, which must match the type of the field"
     & OA.anyOf ?~ [s, OA.Inline $ arraySchema s & OA.title ?~ "array"]
 
@@ -412,19 +423,24 @@ fieldFilterSchema :: OpenApiM (OA.Referenced OA.Schema)
 fieldFilterSchema = do
   fv <- fieldValueSchema
   return $ OA.Inline $ mempty
+    & OA.title ?~ "field filter"
     & OA.description ?~ "filter for a named field to be equal to a specific value or match other contraints"
     & OA.oneOf ?~
       [ fv
-      , OA.Inline $ arraySchema fv & OA.description ?~ "equal to any of these values (not supported when used as a query parameter)"
+      , OA.Inline $ arraySchema fv
+        & OA.title ?~ "filter equal"
+        & OA.description ?~ "equal to any of these values (not supported when used as a query parameter)"
         & OA.minItems ?~ 1
         & OA.uniqueItems ?~ True
       , OA.Inline $ objectSchema "in a bounded range for numeric fields: >= gte and <= lte, either of which may be omitted (when used as a query parameter, may be a string containing two FieldValues (either of which may be blank) separated by a single comma or space); omitting both is useful for filtering out missing values"
         [ ("gte", fv, False)
         , ("lte", fv, False)
         ]
+        & OA.title ?~ "filter range"
       , OA.Inline $ objectSchema "matching a pattern for wildcard fields"
         [ ("wildcard", OA.Inline $ schemaDescOf filterWildcard "a pattern containing '*' and/or '?'", True)
         ]
+        & OA.title ?~ "filter wildcard"
       ]
 
 parseFiltersJSON :: Catalog -> J.Object -> J.Parser Filters
@@ -540,14 +556,18 @@ sortSchema = do
         [ ("field", fn, True)
         , ("order", OA.Inline $ mempty
           & OA.type_ ?~ OA.OpenApiString
-          & OA.description ?~ "sort order: ascending smallest to largest, or descending largest to smallest"
+          & OA.title ?~ "sort ordering"
+          & OA.description ?~ "ascending smallest to largest, or descending largest to smallest"
           & OA.enum_ ?~ ["asc", "desc"]
           & OA.default_ ?~ "asc"
           & OA.pattern ?~ "^[ad]*", False)
         ]
+        & OA.title ?~ "sort descriptor"
       ]
+    & OA.title ?~ "sort field"
     & OA.description ?~ "fields by which to sort row data"
     & OA.uniqueItems ?~ True)
+    & OA.title ?~ "sort"
 
 parseDataQuery :: Catalog -> Wai.Request -> DataArgs []
 parseDataQuery cat req = DataArgs
@@ -618,6 +638,7 @@ apiData = APIOp -- /api/{cat}/data
     return $ jsonContent $ arraySchema $ OA.Inline $ arraySchema (OA.Inline $ mempty
         & OA.oneOf ?~ [fv]
         & OA.nullable ?~ True)
+      & OA.title ?~ "data result"
       & OA.description ?~ "a single data row corresponding to the requested fields in order (missing values are null)"
   }
   where
@@ -657,6 +678,8 @@ fieldStatsSchema :: OpenApiM (OA.Referenced OA.Schema)
 fieldStatsSchema = do
   fv <- fieldValueSchema
   define "FieldStats" $ mempty
+    & OA.title ?~ "field stats"
+    & OA.description ?~ "stats for the field named by the property, depending on its type"
     & OA.oneOf ?~
       [ OA.Inline $ objectSchema "for numeric fields"
         [ ("count", OA.Inline $ schemaDescOf statsCount "number of rows with values for this field", True)
@@ -664,17 +687,18 @@ fieldStatsSchema = do
         , ("max", OA.Inline $ schemaDescOf statsMax "maximum value" & OA.nullable ?~ True, True)
         , ("avg", OA.Inline $ schemaDescOf statsAvg "mean value" & OA.nullable ?~ True, True)
         ]
+        & OA.title ?~ "numeric stats"
       , OA.Inline $ objectSchema "for non-numeric fields or those with terms=true"
         [ ("terms", OA.Inline $ arraySchema (OA.Inline $ objectSchema "unique field value"
           [ ("value", fv, True)
           , ("count", OA.Inline $ schemaDescOf termsCount "number of rows with this value", True)
-          ])
+          ] & OA.title ?~ "top term")
+          & OA.title ?~ "top terms"
           & OA.description ?~ "top terms in descending order of count"
           & OA.uniqueItems ?~ True, True)
         , ("others", OA.Inline $ schemaDescOf termsCount "number of rows with values not included in the top terms", True)
         ]
       ]
-    & OA.description ?~ "stats for the field named by the property, depending on its type"
 
 apiStats :: APIOp Simulation
 apiStats = APIOp -- /api/{cat}/stats
@@ -693,6 +717,7 @@ apiStats = APIOp -- /api/{cat}/stats
         "stats to request"
         [ ("fields", list, False)
         ]
+        & OA.title ?~ "stats fields"
       ]
   , apiAction = \sim req -> do
     cat <- askCatalog sim
@@ -706,6 +731,7 @@ apiStats = APIOp -- /api/{cat}/stats
     return $ jsonContent $ objectSchema "stats"
       [ ("count", OA.Inline $ schemaDescOf statsCount "number of matching rows", True) ]
       & OA.additionalProperties ?~ OA.AdditionalPropertiesSchema fs
+      & OA.title ?~ "stats result"
   }
 
 -------- /api/{catalog}/histogram
@@ -721,12 +747,16 @@ histogramSchema = do
     , OA.Inline $ objectSchema "parameters for a single-field histogram (when used as a query parameter, may be specified as \"FIELD:[log]SIZE\"); it's recommended to include fully-bounded range filters for any histogram fields"
       [ ("field", fn, True)
       , ("size", OA.Inline $ schemaDescOf histogramSize "number of buckets to include in the histogram"
+        & OA.title ?~ "histogram size"
         & OA.maximum_ ?~ fromIntegral maxHistogramSize
         & OA.default_ ?~ J.Number (fromIntegral defaultHistogramSize), False)
       , ("log", OA.Inline $ schemaDescOf histogramLog "whether to calculate the histogram using log-spaced buckets (rather than linear spacing)"
+        & OA.title ?~ "histogram scale"
         & OA.default_ ?~ J.Bool False, False)
       ]
+      & OA.title ?~ "histogram desc"
     ]
+    & OA.title ?~ "histogram field"
 
 histogramListSchema :: OpenApiM (OA.Referenced OA.Schema)
 histogramListSchema = do
@@ -739,6 +769,7 @@ histogramListSchema = do
       & OA.maxItems ?~ fromIntegral maxHistogramDepth
       & OA.description ?~ "fields (dimensions or axes) along which to calculate a histogram, where each bucket will represent an intersection of all the fields and count of rows in that box, as calculated by the nested conditional histograms of inner (later) fields within outer (earlier) histograms"
     ]
+    & OA.title ?~ "histogram fields"
 
 parseHistogramsQuery :: Catalog -> Wai.Request -> BS.ByteString -> [Histogram]
 parseHistogramsQuery cat req param =
@@ -806,10 +837,11 @@ apiHistogram = APIOp -- /api/{cat}/histogram
     return $ mempty & OA.allOf ?~
       [ filt
       , OA.Inline $ objectSchema
-        "histogram parameters: histogram axes and an optional quartiles axis for which quartiles are calculated in each inner-most histogram bucket"
+        "histogram axes and an optional quartiles axis for which quartiles are calculated in each inner-most histogram bucket"
         [ ("fields", hist, True)
         , ("quartiles", fn, False)
         ]
+        & OA.title ?~ "histogram parameters"
       ]
   , apiAction = \sim req -> do
     cat <- askCatalog sim
@@ -827,8 +859,10 @@ apiHistogram = APIOp -- /api/{cat}/histogram
     fv <- fieldValueSchema
     return $ jsonContent $ objectSchema "histogram result"
       [ ("sizes", OA.Inline $ arraySchema (OA.Inline $ schemaDescOf (head . histogramSizes) "size of each histogram buckets in this dimension, either as an absolute width in linear space, or as a ratio in log space"
+          & OA.title ?~ "bucket size"
           & OA.minimum_ ?~ 0
           & OA.exclusiveMinimum ?~ True)
+        & OA.title ?~ "bucket dimensions"
         & OA.description ?~ "field order corresponds to the requested histogram fields and bucket keys", True)
       , ("buckets", OA.Inline $ arraySchema $ OA.Inline $ objectSchema "histogram bucket, representing a box in the dimension space specified by the requested fields"
         [ ("key", OA.Inline $ arraySchema fv
@@ -836,8 +870,9 @@ apiHistogram = APIOp -- /api/{cat}/histogram
         , ("count", OA.Inline $ schemaDescOf bucketCount "the number of rows with values that fall within this bucket", True)
         , ("quartiles", OA.Inline $ arraySchema fv
           & OA.description ?~ "if quartiles of a field were requested, includes the values of that field corresponding to the [0,25,50,75,100] percentiles ([min, first quartile, median, third quartile, max]) for rows within this bucket", False)
-        ], True)
+        ] & OA.title ?~ "bucket", True)
       ]
+      & OA.title ?~ "histogram result"
   }
 
 -------- /api/{cat}/attachment/{field}/{id}
@@ -936,7 +971,7 @@ openApiBase = mempty &~ do
         & OA.parameters %~ (++ qparam))
       & OA.post .~ fmap (\r -> op
         & OA.operationId %~ (fmap (<>"POST"))
-        & OA.requestBody ?~ OA.Inline (jsonContent r)) reqs))
+        & OA.requestBody ?~ OA.Inline (jsonContent (r & OA.title ?~ (apiName <> " request")))) reqs))
     apiOps
 
 openApi :: Route ()
