@@ -42,6 +42,7 @@ executable flathub
     Output.CSV
     Output.ECSV
     Output.Numpy
+    Output.Types
     Query
     Static
     Type

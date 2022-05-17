@@ -1,6 +1,7 @@
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TupleSections #-}
@@ -25,7 +26,7 @@ module Api
 import           Control.Lens ((&), (&~), (.~), (?~), (%~), (.=))
 import           Control.Monad (mfilter, unless, when, join)
 import           Control.Monad.IO.Class (liftIO)
-import           Control.Monad.Reader (asks)
+import           Control.Monad.Reader (ask, asks)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
@@ -37,9 +38,10 @@ import qualified Data.CaseInsensitive as CI
 import           Data.Either (fromRight)
 import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
+import qualified Data.HashMap.Strict.InsOrd as HMI
 import           Data.IORef (newIORef, readIORef, writeIORef)
-import           Data.List (foldl')
-import           Data.Maybe (isJust, mapMaybe, fromMaybe)
+import           Data.List (foldl', find)
+import           Data.Maybe (isJust, mapMaybe, fromMaybe, maybeToList)
 import qualified Data.OpenApi as OA
 import           Data.Proxy (Proxy)
 import qualified Data.Text as T
@@ -48,10 +50,12 @@ import qualified Data.Text.Encoding.Error as TE
 import qualified Data.Vector as V
 import           Data.Version (showVersion)
 import           Data.Word (Word16)
-import           Network.HTTP.Types.Header (ResponseHeaders, hOrigin, hContentType)
+import qualified Network.HTTP.Media as MT
+import           Network.HTTP.Types.Header (ResponseHeaders, hOrigin, hContentType, hContentDisposition, hContentLength, hCacheControl)
 import           Network.HTTP.Types.Status (ok200, noContent204, requestEntityTooLarge413, unsupportedMediaType415, unprocessableEntity422)
 import qualified Network.Wai as Wai
 import           Text.Read (readMaybe)
+import           Waimwork.HTTP (quoteHTTP)
 import           Waimwork.Response (okResponse, response)
 import           Waimwork.Result (result)
 import qualified Web.Route.Invertible as R
@@ -68,7 +72,9 @@ import Catalog
 import Global
 import OpenApi
 import Backend
-import Output.CSV (csvTextRow)
+import Output.Types
+import Output.CSV
+import Output.ECSV
 import Attach
 
 apiBase :: R.Path ()
@@ -81,6 +87,7 @@ apiHeaders req
     , ("access-control-allow-methods", "OPTIONS, GET, POST")
     , ("access-control-allow-headers", CI.original hContentType)
     , ("access-control-max-age", "86400")
+    , (hCacheControl, "public, max-age=86400")
     ]
   | otherwise = []
 
@@ -274,7 +281,8 @@ catalogBase = R.parameter
 catalogParam :: OA.Param
 catalogParam = mempty
   & OA.name .~ "sim"
-  & OA.schema ?~ OA.Inline (schemaDescOf T.pack "catalog id")
+  & OA.description ?~ "catalog name from list of catalogs"
+  & OA.schema ?~ OA.Inline (schemaDescOf T.pack "catalog name")
 
 apiCatalog :: APIOp Simulation
 apiCatalog = APIOp -- /api/{cat}
@@ -569,19 +577,30 @@ sortSchema = do
     & OA.uniqueItems ?~ True)
     & OA.title ?~ "sort"
 
-parseDataQuery :: Catalog -> Wai.Request -> DataArgs []
+sortParam :: OpenApiM (OA.Referenced OA.Param)
+sortParam = do
+  sort <- sortSchema
+  define "sort" $ mempty
+    & OA.name .~ "sort"
+    & OA.in_ .~ OA.ParamQuery
+    & OA.description ?~ "how to order rows (see descriptions for non-standard formatting of sort order)"
+    & OA.style ?~ OA.StyleForm
+    & OA.explode ?~ False
+    & OA.schema ?~ sort
+
+parseDataQuery :: Catalog -> Wai.Request -> DataArgs V.Vector
 parseDataQuery cat req = DataArgs
   { dataFilters = parseFiltersQuery cat req
-  , dataFields = parseFieldsQuery cat req "fields"
+  , dataFields = V.fromList $ parseFieldsQuery cat req "fields"
   , dataSort = parseSortQuery cat req "sort"
   , dataCount = fromMaybe 0 $ parseReadQuery req "count"
   , dataOffset = Right $ fromMaybe 0 $ parseReadQuery req "offset"
   }
 
-parseDataJSON :: Catalog -> J.Value -> J.Parser (DataArgs [])
+parseDataJSON :: Catalog -> J.Value -> J.Parser (DataArgs V.Vector)
 parseDataJSON cat = J.withObject "data request" $ \o -> DataArgs
   <$> parseFiltersJSON cat (HM.delete "fields" $ HM.delete "sort" $ HM.delete "count" $ HM.delete "offset" o)
-  <*> (parseFieldsJSON cat =<< o J..: "fields")
+  <*> (fmap V.fromList . parseFieldsJSON cat =<< o J..: "fields")
   <*> (parseSortJSON cat =<< o J..:? "sort")
   <*> o J..: "count"
   <*> (Right <$> (o J..:? "offset" J..!= 0))
@@ -594,13 +613,7 @@ apiData = APIOp -- /api/{cat}/data
   , apiExampleArg = "sim"
   , apiPathParams = return [catalogParam]
   , apiQueryParams = [filtersQueryParam, fieldsQueryParam
-    , sortSchema >>= \sort -> return $ OA.Inline $ mempty
-      & OA.name .~ "sort"
-      & OA.in_ .~ OA.ParamQuery
-      & OA.description ?~ "how to order rows (see descriptions for non-standard formatting of sort order)"
-      & OA.style ?~ OA.StyleForm
-      & OA.explode ?~ False
-      & OA.schema ?~ sort
+    , sortParam 
     , return $ OA.Inline $ mempty
       & OA.name .~ "count"
       & OA.in_ .~ OA.ParamQuery
@@ -647,6 +660,71 @@ apiData = APIOp -- /api/{cat}/data
   offsetSchema = OA.Inline $ schemaDescOf (fromRight 0 . dataOffset) "start at this row offset (0 means first)"
     & OA.maximum_ ?~ fromIntegral maxResultWindow - fromIntegral maxDataCount
     & OA.default_ ?~ J.Number 0
+
+-------- /api/{catalog}/data/{format}
+
+outputFormats :: [OutputFormat]
+outputFormats = 
+  [ csvOutput
+  , ecsvOutput
+  ]
+
+instance R.Parameter R.PathString OutputFormat where
+  renderParameter = T.pack . outputExtension
+  parseParameter s = find ((s ==) . R.renderParameter) outputFormats
+
+apiDownload :: APIOp (Simulation, OutputFormat)
+apiDownload = APIOp
+  { apiName = "download"
+  , apiSummary = "Download raw data"
+  , apiPath = catalogBase R.>* "data" R.>*< R.parameter
+  , apiExampleArg = ("sim", csvOutput)
+  , apiPathParams = return [catalogParam
+    , mempty
+      & OA.name .~ "format"
+      & OA.schema ?~ OA.Inline (mempty
+        & OA.type_ ?~ OA.OpenApiString
+        & OA.enum_ ?~ map (J.toJSON . outputExtension) outputFormats)
+    ]
+  , apiQueryParams = [filtersQueryParam, fieldsQueryParam
+    , sortParam
+    ]
+  , apiRequestSchema = Just $ do
+    filt <- filtersSchema
+    list <- fieldListSchema
+    sort <- sortSchema
+    return $ mempty & OA.allOf ?~
+      [ filt
+      , OA.Inline $ objectSchema
+        "data to return"
+        [ ("fields", list, True)
+        , ("sort", sort, False)
+        ]
+      ]
+  , apiAction = \(sim, fmt) req -> do
+    cat <- askCatalog sim
+    body <- parseJSONBody req (parseDataJSON cat)
+    let args = (fromMaybe (parseDataQuery cat req) body){ dataCount = maxDataCount }
+        out = outputGenerator fmt req cat args
+    g <- ask
+    return $ Wai.responseStream ok200 (apiHeaders req ++
+      [ (hContentType, MT.renderHeader $ outputMimeType fmt)
+      , (hContentDisposition, "attachment; filename=" <> quoteHTTP (TE.encodeUtf8 sim <> BSC.pack ('.' : outputExtension fmt)))
+      ]
+      ++ maybeToList ((,) hContentLength . BSC.pack . show <$> outputSize out))
+      $ \chunk _ -> do
+        chunk $ outputHeader out
+        let loop arg = do
+              (dat, off) <- runGlobal g $ queryData cat arg
+              chunk $ foldMap (outputRow out) dat
+              when (V.length dat >= fromIntegral (dataCount arg)) $
+                loop arg{ dataOffset = Left off }
+        loop args
+        chunk $ outputFooter out
+  , apiResponse = return $ mempty
+    & OA.content .~ HMI.fromList (map (\f -> (outputMimeType f, mempty
+      & OA.schema ?~ OA.Inline mempty)) outputFormats)
+  }
 
 -------- /api/{catalog}/stats
 
@@ -937,6 +1015,7 @@ apiOps =
   , AnyAPIOp apiSchemaSQL
   , AnyAPIOp apiSchemaCSV
   , AnyAPIOp apiData
+  , AnyAPIOp apiDownload
   , AnyAPIOp apiStats
   , AnyAPIOp apiHistogram
   , AnyAPIOp apiAttachment

@@ -22,7 +22,8 @@ module Global
 import qualified Data.HashMap.Strict as HM
 import           Control.Concurrent.MVar (newMVar, modifyMVar)
 import           Control.Monad.Except (ExceptT(..), liftEither, runExcept)
-import           Control.Monad.Reader (ReaderT(..), asks)
+import           Control.Monad.IO.Class (liftIO)
+import           Control.Monad.Reader (ReaderT(..), ask, asks)
 import qualified Network.HTTP.Client as HTTP
 import qualified Network.Wai as Wai
 import qualified Waimwork.Config as C
@@ -64,8 +65,10 @@ askCatalog sim = maybe
   return =<< asks (HM.lookup sim . catalogMap . globalCatalogs)
 
 once :: M a -> M (IO a)
-once act = ExceptT $ ReaderT $ \g -> do
-  mv <- newMVar Nothing
-  return $ Right $ modifyMVar mv $
-    fmap (\v -> (Just v, v))
-      . maybe (runGlobal g act) return
+once act = do
+  g <- ask
+  liftIO $ do
+    mv <- newMVar Nothing
+    return $ modifyMVar mv $
+      fmap (\v -> (Just v, v))
+        . maybe (runGlobal g act) return

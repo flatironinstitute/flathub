@@ -33,7 +33,7 @@ import           Data.Functor.Identity (Identity(Identity))
 import           Data.Functor.Reverse (Reverse(Reverse))
 import qualified Data.HashMap.Strict as HM
 import           Data.List (genericTake)
-import           Data.Maybe (fromMaybe, isJust)
+import           Data.Maybe (fromMaybe, isJust, maybeToList, catMaybes)
 import           Data.Proxy (Proxy(Proxy))
 import           Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
 import qualified Data.Text as T
@@ -75,6 +75,21 @@ instance TypeTraversable FieldFilter where
   sequenceTypeValue (FieldRange g l) = fmapTypeValue2 FieldRange (sequenceTypeValue g) (sequenceTypeValue l)
   sequenceTypeValue (FieldWildcard w) = Void $ FieldWildcard w
 
+instance J.ToJSON1 FieldFilter where
+  liftToJSON tj _ (FieldEQ [x]) = tj x
+  liftToJSON _ tjl (FieldEQ l) = tjl l
+  liftToJSON tj _ (FieldRange g l) = J.object $ catMaybes
+    [ (("gte" J..=) . tj) <$> g
+    , (("lte" J..=) . tj) <$> l
+    ]
+  liftToJSON _ _ (FieldWildcard t) = J.object ["wildcard" J..= t]
+  liftToEncoding tj _ (FieldEQ [x]) = tj x
+  liftToEncoding _ tjl (FieldEQ l) = tjl l
+  liftToEncoding tj _ (FieldRange g l) = J.pairs
+    $  foldMap (JE.pair "gte" . tj) g
+    <> foldMap (JE.pair "lte" . tj) l
+  liftToEncoding _ _ (FieldWildcard t) = J.pairs $ "wildcard" J..= t
+
 data Filters = Filters
   { filterSample :: Double
   , filterSeed :: Maybe Word
@@ -90,6 +105,20 @@ instance Semigroup Filters where
 
 instance Monoid Filters where
   mempty = Filters 1 Nothing mempty
+
+instance J.ToJSON Filters where
+  toJSON Filters{..} = J.object $
+    mwhen (filterSample < 1)
+      ("sample" J..= filterSample
+      : maybeToList (("seed" J..=) <$> filterSeed))
+    ++
+    map (\f -> fieldName f J..= fieldType f) (HM.elems filterFields)
+  toEncoding Filters{..} = J.pairs $
+    mwhen (filterSample < 1)
+      ("sample" J..= filterSample
+      <> foldMap ("seed" J..=) filterSeed)
+    <>
+    foldMap (\f -> fieldName f J..= fieldType f) filterFields
 
 filterQuery :: Filters -> J.Series
 filterQuery Filters{..} = "query" .=*
@@ -131,7 +160,7 @@ data DataArgs f = DataArgs
   }
 
 maxDataCount :: Word16
-maxDataCount = 5000
+maxDataCount = fromIntegral maxResultWindow
 
 -- |Query raw data rows as specified, and return a vector of row data, matching dataFields order, and a DataOffset that can be used to return the next page of data
 queryData :: Traversable f => Catalog -> DataArgs f -> M (V.Vector (f (TypeValue Maybe)), DataOffset)
