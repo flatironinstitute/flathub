@@ -75,6 +75,7 @@ import Backend
 import Output.Types
 import Output.CSV
 import Output.ECSV
+import Output.Numpy
 import Attach
 
 apiBase :: R.Path ()
@@ -663,10 +664,26 @@ apiData = APIOp -- /api/{cat}/data
 
 -------- /api/{catalog}/data/{format}
 
+jsonGenerator :: Wai.Request -> Catalog -> DataArgs V.Vector -> M OutputBuilder
+jsonGenerator _ _ args = return mempty
+  { outputHeader = "[" <> J.fromEncoding (J.toEncoding (V.map fieldName (dataFields args)))
+  , outputRow = \j -> "," <> J.fromEncoding (J.toEncoding j)
+  , outputFooter = "]"
+  }
+
+jsonOutput :: OutputFormat
+jsonOutput = OutputFormat
+  { outputMimeType = "application/json"
+  , outputExtension = "json"
+  , outputGenerator = jsonGenerator
+  }
+
 outputFormats :: [OutputFormat]
 outputFormats = 
   [ csvOutput
   , ecsvOutput
+  , numpyOutput
+  , jsonOutput
   ]
 
 instance R.Parameter R.PathString OutputFormat where
@@ -705,7 +722,7 @@ apiDownload = APIOp
     cat <- askCatalog sim
     body <- parseJSONBody req (parseDataJSON cat)
     let args = (fromMaybe (parseDataQuery cat req) body){ dataCount = maxDataCount }
-        out = outputGenerator fmt req cat args
+    out <- outputGenerator fmt req cat args
     g <- ask
     return $ Wai.responseStream ok200 (apiHeaders req ++
       [ (hContentType, MT.renderHeader $ outputMimeType fmt)

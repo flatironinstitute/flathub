@@ -18,6 +18,7 @@ import Catalog
 import Type
 import Field
 import Backend
+import Global
 import Data.ECSV
 import Output.Types
 import Output.CSV
@@ -59,14 +60,15 @@ ecsvHeader cat fields meta = renderECSVHeader $ ECSVHeader
   , ecsvSchema = Nothing
   }
 
-ecsvGenerator :: Wai.Request -> Catalog -> DataArgs V.Vector -> OutputBuilder
-ecsvGenerator req cat args = csv
-  { outputHeader = ecsvHeader cat (dataFields args)
-    [ "filters" J..= dataFilters args
-    , "sort" J..= map (\(f, a) -> J.object ["field" J..= fieldName f, "order" J..= if a then "asc" :: String else "desc"]) (dataSort args)
-    ] <> outputHeader csv
-  } where
-  csv = outputGenerator csvOutput req cat args
+ecsvGenerator :: Wai.Request -> Catalog -> DataArgs V.Vector -> M OutputBuilder
+ecsvGenerator req cat args = do
+  csv <- outputGenerator csvOutput req cat args
+  return csv
+    { outputHeader = ecsvHeader cat (dataFields args)
+      [ "filters" J..= dataFilters args
+      , "sort" J..= map (\(f, a) -> J.object ["field" J..= fieldName f, "order" J..= if a then "asc" :: String else "desc"]) (dataSort args)
+      ] <> outputHeader csv
+    }
 
 ecsvOutput :: OutputFormat
 ecsvOutput = OutputFormat

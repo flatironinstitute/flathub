@@ -9,6 +9,7 @@ import qualified Data.Vector as V
 import Type
 import Catalog
 import Backend
+import Global
 
 data OutputBuilder = OutputBuilder
   { outputSize :: Maybe Word
@@ -33,7 +34,7 @@ instance Monoid OutputBuilder where
     , outputFooter = mempty
     }
 
-type OutputGenerator = Wai.Request -> Catalog -> DataArgs V.Vector -> OutputBuilder
+type OutputGenerator = Wai.Request -> Catalog -> DataArgs V.Vector -> M OutputBuilder
 
 data OutputFormat = OutputFormat
   { outputMimeType :: MT.MediaType

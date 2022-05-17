@@ -11,3 +11,6 @@ flags:
   web-inv-route:
     snap: false
     happstack: false
+  aeson:
+    cffi: true
+    fast: false

@@ -23,6 +23,7 @@ import Monoid
 import Type
 import Field
 import Backend
+import Global
 import Output.Types
 
 dQuote :: Word8
@@ -81,8 +82,8 @@ _csvValueRow = csvBuilderMap csvValue
 csvMaybeValueRow :: [TypeValue Maybe] -> B.Builder
 csvMaybeValueRow = csvBuilderMap csvMaybeValue
 
-csvGenerator :: DataArgs V.Vector -> OutputBuilder
-csvGenerator args = mempty
+csvGenerator :: DataArgs V.Vector -> M OutputBuilder
+csvGenerator args = return $ mempty
   { outputHeader = csvTextRow $ map fieldName $ V.toList $ dataFields args
   , outputRow = csvMaybeValueRow . V.toList
   }
