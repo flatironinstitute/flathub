@@ -33,7 +33,7 @@ import           Data.Functor.Identity (Identity(Identity))
 import           Data.Functor.Reverse (Reverse(Reverse))
 import qualified Data.HashMap.Strict as HM
 import           Data.List (genericTake)
-import           Data.Maybe (fromMaybe, isJust, maybeToList, catMaybes)
+import           Data.Maybe (fromMaybe, isJust, catMaybes)
 import           Data.Proxy (Proxy(Proxy))
 import           Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
 import qualified Data.Text as T
@@ -92,31 +92,32 @@ instance J.ToJSON1 FieldFilter where
 
 data Filters = Filters
   { filterSample :: Double
-  , filterSeed :: Maybe Word
+  , filterSeed :: Word
   , filterFields :: KM.KeyedMap (FieldSub FieldFilter Proxy)
   }
 
 instance Semigroup Filters where
   a <> b = Filters
     { filterSample = filterSample a *     filterSample b
-    , filterSeed   = joinMaybeWith xor (filterSeed a) (filterSeed a)
+    , filterSeed   = filterSeed   a `xor` filterSeed b
     , filterFields = filterFields a <>    filterFields b
     }
 
 instance Monoid Filters where
-  mempty = Filters 1 Nothing mempty
+  mempty = Filters 1 0 mempty
 
 instance J.ToJSON Filters where
   toJSON Filters{..} = J.object $
     mwhen (filterSample < 1)
-      ("sample" J..= filterSample
-      : maybeToList (("seed" J..=) <$> filterSeed))
+      [ "sample" J..= filterSample
+      , "seed" J..= filterSeed
+      ]
     ++
     map (\f -> fieldName f J..= fieldType f) (HM.elems filterFields)
   toEncoding Filters{..} = J.pairs $
     mwhen (filterSample < 1)
       ("sample" J..= filterSample
-      <> foldMap ("seed" J..=) filterSeed)
+      <> "seed" J..= filterSeed)
     <>
     foldMap (\f -> fieldName f J..= fieldType f) filterFields
 
@@ -124,7 +125,7 @@ filterQuery :: Filters -> J.Series
 filterQuery Filters{..} = "query" .=*
   (if filterSample < 1
     then \q -> ("function_score" .=* ("query" .=* q
-      <> "random_score" .=* foldMap (\s -> "seed" J..= s <> "field" J..= ("_seq_no" :: String)) filterSeed
+      <> "random_score" .=* ("seed" J..= filterSeed <> "field" J..= J.String "_seq_no")
       <> "boost_mode" J..= ("replace" :: String)
       <> "min_score" J..= (1 - filterSample)))
     else id)
@@ -187,7 +188,7 @@ fieldUseTerms f = fieldTerms f || not (typeIsNumeric $ snd $ unArrayType $ field
 parseStats :: Catalog -> J.Value -> J.Parser (Count, KM.KeyedMap (FieldSub FieldStats Proxy))
 parseStats cat = J.withObject "stats res" $ \o -> (,)
   <$> (o J..: "hits" >>= (J..: "total") >>= (J..: "value"))
-  <*> (HM.traverseWithKey pf =<< o J..: "aggregations") where
+  <*> (HM.traverseWithKey pf =<< o J..:! "aggregations" J..!= mempty) where
   pf n a = do
     f <- failErr $ lookupField cat False n
     updateFieldValueM f (flip (if fieldUseTerms f then pt else ps) a)

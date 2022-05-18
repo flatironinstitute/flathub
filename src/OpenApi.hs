@@ -121,9 +121,9 @@ arraySchema e = mempty
 
 type ContentMap = HMI.InsOrdHashMap MediaType OA.MediaTypeObject
 
-jsonContent :: (Monoid a, OA.HasContent a ContentMap) => OA.Schema -> a
+jsonContent :: (Monoid a, OA.HasContent a ContentMap) => OA.Referenced OA.Schema -> a
 jsonContent schema = mempty
-  & OA.content . at' "application/json" . OA.schema ?~ OA.Inline schema
+  & OA.content . at' "application/json" . OA.schema ?~ schema
 
 makeOp :: T.Text -> T.Text -> OA.Response -> OpenApiM OA.Operation
 makeOp oid summ res = do

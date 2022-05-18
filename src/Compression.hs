@@ -2,6 +2,8 @@
 
 module Compression
   ( CompressionFormat(..)
+  , encodingCompressions
+  , compressionEncoding
   , compressionEncodingHeader
   , acceptCompressionEncoding
   , compressionExtension
@@ -12,7 +14,6 @@ module Compression
   , compressStream
   ) where
 
-import           Control.Applicative (empty)
 import           Control.Exception (throwIO)
 import           Control.Monad (unless)
 import qualified Codec.Compression.BZip as BZ
@@ -24,7 +25,8 @@ import qualified Data.ByteString.Lazy.Char8 as BSLC
 import           Data.Function (fix)
 import qualified Data.Streaming.ByteString.Builder as SB
 import qualified Data.Streaming.Zlib as SZ
-import           Network.HTTP.Types.Header (RequestHeaders, hAcceptEncoding, hContentEncoding)
+import           Data.String (IsString)
+import           Network.HTTP.Types.Header (Header, hAcceptEncoding, hContentEncoding)
 import qualified Network.Wai as Wai
 import           System.FilePath (splitExtension, (<.>))
 import           Waimwork.HTTP (splitHTTP)
@@ -34,15 +36,18 @@ data CompressionFormat
   | CompressionBZip2
   deriving (Show, Eq, Enum, Bounded)
 
+encodingCompressions :: [CompressionFormat]
+encodingCompressions = [CompressionGZip]
+
 compressionEncoding :: CompressionFormat -> BS.ByteString
 compressionEncoding CompressionGZip = "gzip"
 compressionEncoding CompressionBZip2 = "bzip2"
 
-compressionEncodingHeader :: Maybe CompressionFormat -> RequestHeaders
-compressionEncodingHeader = maybe empty (return . (,) hContentEncoding . compressionEncoding)
+compressionEncodingHeader :: CompressionFormat -> Header
+compressionEncodingHeader = (,) hContentEncoding . compressionEncoding
 
 acceptCompressionEncoding :: Wai.Request -> [CompressionFormat]
-acceptCompressionEncoding req = filter (\c -> compressionEncoding c `elem` enc) [CompressionGZip] where
+acceptCompressionEncoding req = filter (\c -> compressionEncoding c `elem` enc) encodingCompressions where
   enc = maybe [] splitHTTP $ lookup hAcceptEncoding $ Wai.requestHeaders req
 
 compressionExtension :: CompressionFormat -> String
@@ -52,7 +57,7 @@ compressionExtension CompressionBZip2 = "bz2"
 compressionFilename :: Maybe CompressionFormat -> FilePath -> FilePath
 compressionFilename = maybe id (flip (<.>) . compressionExtension)
 
-compressionMimeType :: CompressionFormat -> BS.ByteString
+compressionMimeType :: IsString s => CompressionFormat -> s
 compressionMimeType CompressionGZip = "application/gzip"
 compressionMimeType CompressionBZip2 = "application/x-bzip2"
 

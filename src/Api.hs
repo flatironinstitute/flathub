@@ -23,8 +23,10 @@ module Api
   , openApi
   ) where
 
+import           Control.Applicative ((<|>))
+import           Control.Arrow (first, Kleisli(..))
 import           Control.Lens ((&), (&~), (.~), (?~), (%~), (.=))
-import           Control.Monad (mfilter, unless, when, join)
+import           Control.Monad (mfilter, unless, when, join, guard)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (ask, asks)
 import qualified Data.Aeson as J
@@ -41,7 +43,7 @@ import qualified Data.HashMap.Strict as HM
 import qualified Data.HashMap.Strict.InsOrd as HMI
 import           Data.IORef (newIORef, readIORef, writeIORef)
 import           Data.List (foldl', find)
-import           Data.Maybe (isJust, mapMaybe, fromMaybe, maybeToList)
+import           Data.Maybe (isJust, isNothing, mapMaybe, fromMaybe, listToMaybe, catMaybes)
 import qualified Data.OpenApi as OA
 import           Data.Proxy (Proxy)
 import qualified Data.Text as T
@@ -77,6 +79,7 @@ import Output.CSV
 import Output.ECSV
 import Output.Numpy
 import Attach
+import Compression
 
 apiBase :: R.Path ()
 apiBase = "api"
@@ -198,7 +201,7 @@ apiTop = APIOp -- /api
   , apiRequestSchema = Nothing
   , apiResponse = do
     catmeta <- catalogSchema
-    return $ jsonContent $ mempty
+    return $ jsonContent $ OA.Inline $ mempty
       & OA.type_ ?~ OA.OpenApiArray
       & OA.items ?~ OA.OpenApiItemsObject catmeta
       & OA.title ?~ "top result"
@@ -307,7 +310,7 @@ apiCatalog = APIOp -- /api/{cat}
   , apiResponse = do
     fdef <- fieldGroupSchema
     meta <- catalogSchema
-    return $ jsonContent $ mempty & OA.allOf ?~
+    return $ jsonContent $ OA.Inline $ mempty & OA.allOf ?~
       [ meta
       , OA.Inline $ objectSchema
         "full catalog metadata"
@@ -455,7 +458,7 @@ fieldFilterSchema = do
 parseFiltersJSON :: Catalog -> J.Object -> J.Parser Filters
 parseFiltersJSON cat o = Filters
   <$> mfilter (\x -> x > 0 && x <= 1) (o J..:? "sample" J..!= 1)
-  <*> o J..:? "seed"
+  <*> o J..:? "seed" J..!= 0
   <*> HM.traverseWithKey parsef (HM.delete "sample" $ HM.delete "seed" o)
   where
   parsef n j = do
@@ -476,7 +479,8 @@ filtersSchema = do
       & OA.maximum_ ?~ 1
       & OA.exclusiveMaximum ?~ False
       , False)
-    , ("seed", OA.Inline $ schemaDescOf filterSeed "seed for random sample selection (defaults to new random seed)", False)
+    , ("seed", OA.Inline $ schemaDescOf filterSeed "seed for random sample selection"
+      & OA.default_ ?~ J.Number 0, False)
     ]
     & OA.additionalProperties ?~ OA.AdditionalPropertiesSchema ff
 
@@ -485,7 +489,7 @@ parseFiltersQuery cat req = foldl' parseQueryItem mempty $ Wai.queryString req w
   parseQueryItem q ("sample", Just (readBS -> Just p)) =
     q{ filterSample = filterSample q * p }
   parseQueryItem q ("sample", Just (splitBS ('@' ==) -> Just (readBS -> Just p, readBS -> Just s))) =
-    q{ filterSample = filterSample q * p, filterSeed = Just $ maybe id xor (filterSeed q) s }
+    q{ filterSample = filterSample q * p, filterSeed = filterSeed q `xor` s }
   parseQueryItem q (lookupFieldQuery cat True -> Just f, Just (parseFilt f -> Just v)) =
     q{ filterFields = filterFields q <> KM.fromList [setFieldValue f $ sequenceTypeValue v] }
   parseQueryItem q _ = q -- just ignore anything we can't parse
@@ -606,6 +610,17 @@ parseDataJSON cat = J.withObject "data request" $ \o -> DataArgs
   <*> o J..: "count"
   <*> (Right <$> (o J..:? "offset" J..!= 0))
 
+dataSchema :: OpenApiM (OA.Referenced OA.Schema)
+dataSchema = do
+  fv <- fieldValueSchema
+  define "data" $ arraySchema (OA.Inline $ arraySchema (OA.Inline $ mempty
+      & OA.oneOf ?~ [fv]
+      & OA.nullable ?~ True)
+    & OA.title ?~ "data row"
+    & OA.description ?~ "a single data row corresponding to the requested fields in order (missing values are null)")
+    & OA.title ?~ "data result"
+    & OA.description ?~ "result data in the format requested, representing an array (over rows) of arrays (over values); in some formats the first row may be a list of field names"
+
 apiData :: APIOp Simulation
 apiData = APIOp -- /api/{cat}/data
   { apiName = "data"
@@ -648,12 +663,9 @@ apiData = APIOp -- /api/{cat}/data
     (dat, _) <- queryData cat args
     return $ okResponse (apiHeaders req) $ JE.list J.foldable (V.toList dat)
   , apiResponse = do
-    fv <- fieldValueSchema
-    return $ jsonContent $ arraySchema $ OA.Inline $ arraySchema (OA.Inline $ mempty
-        & OA.oneOf ?~ [fv]
-        & OA.nullable ?~ True)
-      & OA.title ?~ "data result"
-      & OA.description ?~ "a single data row corresponding to the requested fields in order (missing values are null)"
+    ds <- dataSchema
+    return $ jsonContent ds
+      & OA.description .~ "selected data"
   }
   where
   countSchema = OA.Inline $ schemaDescOf dataCount "number of rows to return"
@@ -678,30 +690,38 @@ jsonOutput = OutputFormat
   , outputGenerator = jsonGenerator
   }
 
-outputFormats :: [OutputFormat]
+outputFormats :: [(OutputFormat, T.Text)]
 outputFormats = 
-  [ csvOutput
-  , ecsvOutput
-  , numpyOutput
-  , jsonOutput
+  [ (csvOutput, "Standard CSV file with a header of field names; missing values are represented by empty fields, arrays are encoded as JSON")
+  , (ecsvOutput, "Enhanced CSV file as per https://github.com/astropy/astropy-APEs/blob/main/APE6.rst, with a YAML header followed by a standard CSV file")
+  , (numpyOutput, "Numpy binary array file containing a 1-d array of structured data types representing the fields in each row")
+  , (jsonOutput, "JSON array data, where the first element is an array of field names and subsequent elements are arrays of values in the same order")
   ]
 
 instance R.Parameter R.PathString OutputFormat where
   renderParameter = T.pack . outputExtension
-  parseParameter s = find ((s ==) . R.renderParameter) outputFormats
+  parseParameter s = find ((s ==) . R.renderParameter) (map fst outputFormats)
 
-apiDownload :: APIOp (Simulation, OutputFormat)
+instance R.Parameter R.PathString a => R.Parameter R.PathString (a, Maybe CompressionFormat) where
+  renderParameter (x, Nothing) = R.renderParameter x
+  renderParameter (x, Just z) = R.renderParameter x <> T.pack ('.' : compressionExtension z)
+  parseParameter s = runKleisli (first (Kleisli $ R.parseParameter . T.pack)) $ decompressExtension (T.unpack s)
+
+apiDownload :: APIOp (Simulation, (OutputFormat, Maybe CompressionFormat))
 apiDownload = APIOp
   { apiName = "download"
-  , apiSummary = "Download raw data"
+  , apiSummary = "Download raw data in bulk"
   , apiPath = catalogBase R.>* "data" R.>*< R.parameter
-  , apiExampleArg = ("sim", csvOutput)
+  , apiExampleArg = ("sim", (csvOutput, Nothing))
   , apiPathParams = return [catalogParam
     , mempty
       & OA.name .~ "format"
       & OA.schema ?~ OA.Inline (mempty
         & OA.type_ ?~ OA.OpenApiString
-        & OA.enum_ ?~ map (J.toJSON . outputExtension) outputFormats)
+        & OA.enum_ ?~ [ J.toJSON (R.renderParameter (f, z) :: T.Text)
+                      | (f, _) <- outputFormats
+                      , z <- Nothing : map Just encodingCompressions
+                      ])
     ]
   , apiQueryParams = [filtersQueryParam, fieldsQueryParam
     , sortParam
@@ -718,18 +738,22 @@ apiDownload = APIOp
         , ("sort", sort, False)
         ]
       ]
-  , apiAction = \(sim, fmt) req -> do
+  , apiAction = \(sim, (fmt, comp)) req -> do
     cat <- askCatalog sim
     body <- parseJSONBody req (parseDataJSON cat)
     let args = (fromMaybe (parseDataQuery cat req) body){ dataCount = maxDataCount }
+        enc = comp <|> listToMaybe (acceptCompressionEncoding req)
     out <- outputGenerator fmt req cat args
     g <- ask
     return $ Wai.responseStream ok200 (apiHeaders req ++
-      [ (hContentType, MT.renderHeader $ outputMimeType fmt)
-      , (hContentDisposition, "attachment; filename=" <> quoteHTTP (TE.encodeUtf8 sim <> BSC.pack ('.' : outputExtension fmt)))
-      ]
-      ++ maybeToList ((,) hContentLength . BSC.pack . show <$> outputSize out))
-      $ \chunk _ -> do
+      [ (hContentType, maybe (MT.renderHeader $ outputMimeType fmt) compressionMimeType comp)
+      , (hContentDisposition, "attachment; filename=" <> quoteHTTP (TE.encodeUtf8 sim
+        <> BSC.pack ('.' : outputExtension fmt ++ foldMap (('.' :) . compressionExtension) comp)))
+      ] ++ catMaybes
+      [ (,) hContentLength . BSC.pack . show <$> (guard (isNothing comp) >> outputSize out)
+      , compressionEncodingHeader <$> (guard (enc /= comp) >> enc)
+      ])
+      $ compressStream enc $ \chunk _ -> do
         chunk $ outputHeader out
         let loop arg = do
               (dat, off) <- runGlobal g $ queryData cat arg
@@ -738,9 +762,19 @@ apiDownload = APIOp
                 loop arg{ dataOffset = Left off }
         loop args
         chunk $ outputFooter out
-  , apiResponse = return $ mempty
-    & OA.content .~ HMI.fromList (map (\f -> (outputMimeType f, mempty
-      & OA.schema ?~ OA.Inline mempty)) outputFormats)
+  , apiResponse = do
+    ds <- dataSchema
+    return $ mempty
+      & OA.description .~ "file containing all matching content in the selected format"
+      & OA.content .~ HMI.fromList
+        (map (\(f, d) -> (outputMimeType f, mempty & OA.schema ?~ OA.Inline (mempty
+          & OA.title ?~ (T.pack (outputExtension f) <> " data")
+          & OA.description ?~ d
+          & OA.oneOf ?~ [ds]))) outputFormats
+        ++ map (\z -> (compressionMimeType z, mempty & OA.schema ?~ OA.Inline (mempty
+          & OA.title ?~ (TE.decodeLatin1 (compressionEncoding z) <> " data")
+          & OA.description ?~ "compressed version of the selected format"
+          & OA.oneOf ?~ [ds]))) encodingCompressions)
   }
 
 -------- /api/{catalog}/stats
@@ -823,7 +857,7 @@ apiStats = APIOp -- /api/{cat}/stats
       <> foldMap (\f -> fieldName f `JE.pair` fieldStatsJSON f) stats
   , apiResponse = do
     fs <- fieldStatsSchema
-    return $ jsonContent $ objectSchema "stats"
+    return $ jsonContent $ OA.Inline $ objectSchema "stats"
       [ ("count", OA.Inline $ schemaDescOf statsCount "number of matching rows", True) ]
       & OA.additionalProperties ?~ OA.AdditionalPropertiesSchema fs
       & OA.title ?~ "stats result"
@@ -952,7 +986,7 @@ apiHistogram = APIOp -- /api/{cat}/histogram
         histogramBuckets
   , apiResponse = do
     fv <- fieldValueSchema
-    return $ jsonContent $ objectSchema "histogram result"
+    return $ jsonContent $ OA.Inline $ objectSchema "histogram result"
       [ ("sizes", OA.Inline $ arraySchema (OA.Inline $ schemaDescOf (head . histogramSizes) "size of each histogram buckets in this dimension, either as an absolute width in linear space, or as a ratio in log space"
           & OA.title ?~ "bucket size"
           & OA.minimum_ ?~ 0
@@ -1061,13 +1095,13 @@ openApiBase = mempty &~ do
           & OA.in_ .~ OA.ParamPath
           & OA.required ?~ True) pparam
     op <- (OA.parameters .~ pparam') <$>
-      makeOp apiName apiSummary res
+      makeOp apiName apiSummary (res & OA.description %~ (\d -> if T.null d then apiName <> " result" else d))
     OA.paths . at' path .= (mempty
       & OA.get ?~ (op
         & OA.parameters %~ (++ qparam))
       & OA.post .~ fmap (\r -> op
         & OA.operationId %~ (fmap (<>"POST"))
-        & OA.requestBody ?~ OA.Inline (jsonContent (r & OA.title ?~ (apiName <> " request")))) reqs))
+        & OA.requestBody ?~ OA.Inline (jsonContent $ OA.Inline (r & OA.title ?~ (apiName <> " request")))) reqs))
     apiOps
 
 openApi :: Route ()

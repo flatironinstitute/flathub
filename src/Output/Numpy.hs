@@ -103,7 +103,7 @@ numpyGenerator cat args = do
 
 numpyOutput :: OutputFormat
 numpyOutput = OutputFormat
-  { outputMimeType = "application/octet-stream"
+  { outputMimeType = "application/x-npy"
   , outputExtension = "npy"
   , outputGenerator = \_ -> numpyGenerator
   }

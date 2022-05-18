@@ -344,5 +344,5 @@ catalogBulk = getPath (R.parameter R.>*< R.parameter) $ \(sim, fmt) req -> do
     , (hCacheControl, "public, max-age=86400")
     ]
     ++ maybeToList ((,) hContentLength . BSC.pack . show <$> bulkSize)
-    ++ compressionEncodingHeader (guard (enc /= bulkCompression) >> enc))
+    ++ maybeToList (compressionEncodingHeader <$> (guard (enc /= bulkCompression) >> enc)))
     $ compressStream enc $ \chunk _ -> bulkStream chunk
