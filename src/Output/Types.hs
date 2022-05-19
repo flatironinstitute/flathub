@@ -39,6 +39,7 @@ type OutputGenerator = Wai.Request -> Catalog -> DataArgs V.Vector -> M OutputSt
 data OutputFormat = OutputFormat
   { outputMimeType :: MT.MediaType
   , outputExtension :: String
+  , outputDescription :: T.Text
   , outputGenerator :: OutputGenerator
   }
 

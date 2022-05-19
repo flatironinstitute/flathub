@@ -1,12 +1,13 @@
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE ViewPatterns #-}
 
 module Api
@@ -24,7 +25,6 @@ module Api
   ) where
 
 import           Control.Applicative ((<|>))
-import           Control.Arrow (first, Kleisli(..))
 import           Control.Lens ((&), (&~), (.~), (?~), (%~), (.=))
 import           Control.Monad (mfilter, unless, when, join, guard)
 import           Control.Monad.IO.Class (liftIO)
@@ -687,34 +687,42 @@ jsonOutput :: OutputFormat
 jsonOutput = OutputFormat
   { outputMimeType = "application/json"
   , outputExtension = "json"
+  , outputDescription = "JSON array data, where the first element is an array of field names and subsequent elements are arrays of values in the same order"
   , outputGenerator = jsonGenerator
   }
 
-data DownloadFormat = DownloadFormat
-  { downloadOutputFormat :: !OutputFormat
-  , downloadDescription :: !T.Text
-  }
-
-instance KM.Keyed DownloadFormat where
-  type Key DownloadFormat = T.Text
-  key = KM.key . downloadOutputFormat
+newtype DownloadFormat = DownloadFormat OutputFormat
+  deriving (KM.Keyed)
 
 downloadFormats :: KM.KeyedMap DownloadFormat
-downloadFormats = KM.fromList
-  [ DownloadFormat csvOutput "Standard CSV file with a header of field names; missing values are represented by empty fields, arrays are encoded as JSON"
-  , DownloadFormat ecsvOutput "Enhanced CSV file as per https://github.com/astropy/astropy-APEs/blob/main/APE6.rst, with a YAML header followed by a standard CSV file"
-  , DownloadFormat numpyOutput "Numpy binary array file containing a 1-d array of structured data types representing the fields in each row"
-  , DownloadFormat jsonOutput "JSON array data, where the first element is an array of field names and subsequent elements are arrays of values in the same order"
+downloadFormats = KM.fromList $ map DownloadFormat
+  [ csvOutput 
+  , ecsvOutput 
+  , numpyOutput 
+  , jsonOutput 
   ]
 
 instance R.Parameter R.PathString DownloadFormat where
   renderParameter = KM.key
   parseParameter s = HM.lookup s downloadFormats
 
-instance R.Parameter R.PathString a => R.Parameter R.PathString (a, Maybe CompressionFormat) where
-  renderParameter (x, Nothing) = R.renderParameter x
-  renderParameter (x, Just z) = R.renderParameter x <> T.pack ('.' : compressionExtension z)
-  parseParameter s = runKleisli (first (Kleisli $ R.parseParameter . T.pack)) $ decompressExtension (T.unpack s)
+outputAction :: Simulation -> OutputFormat -> Maybe CompressionFormat -> (DataArgs V.Vector -> M ()) -> Action
+outputAction sim fmt comp check req = do
+  cat <- askCatalog sim
+  body <- parseJSONBody req (parseDataJSON cat)
+  let args = (fromMaybe (parseDataQuery cat req) body){ dataCount = maxDataCount }
+      enc = comp <|> listToMaybe (acceptCompressionEncoding req)
+  check args
+  out <- outputGenerator fmt req cat args
+  return $ Wai.responseStream ok200 (apiHeaders req ++
+    [ (hContentType, maybe (MT.renderHeader $ outputMimeType fmt) compressionMimeType comp)
+    , (hContentDisposition, "attachment; filename=" <> quoteHTTP (TE.encodeUtf8 sim
+      <> BSC.pack ('.' : outputExtension fmt ++ foldMap (('.' :) . compressionExtension) comp)))
+    ] ++ catMaybes
+    [ (,) hContentLength . BSC.pack . show <$> (guard (isNothing comp) >> outputSize out)
+    , compressionEncodingHeader <$> (guard (enc /= comp) >> enc)
+    ])
+    $ compressStream enc $ \chunk _ -> outputStream out chunk
 
 apiDownload :: APIOp (Simulation, (DownloadFormat, Maybe CompressionFormat))
 apiDownload = APIOp
@@ -747,29 +755,16 @@ apiDownload = APIOp
         , ("sort", sort, False)
         ]
       ]
-  , apiAction = \(sim, (DownloadFormat fmt _, comp)) req -> do
-    cat <- askCatalog sim
-    body <- parseJSONBody req (parseDataJSON cat)
-    let args = (fromMaybe (parseDataQuery cat req) body){ dataCount = maxDataCount }
-        enc = comp <|> listToMaybe (acceptCompressionEncoding req)
-    out <- outputGenerator fmt req cat args
-    return $ Wai.responseStream ok200 (apiHeaders req ++
-      [ (hContentType, maybe (MT.renderHeader $ outputMimeType fmt) compressionMimeType comp)
-      , (hContentDisposition, "attachment; filename=" <> quoteHTTP (TE.encodeUtf8 sim
-        <> BSC.pack ('.' : outputExtension fmt ++ foldMap (('.' :) . compressionExtension) comp)))
-      ] ++ catMaybes
-      [ (,) hContentLength . BSC.pack . show <$> (guard (isNothing comp) >> outputSize out)
-      , compressionEncodingHeader <$> (guard (enc /= comp) >> enc)
-      ])
-      $ compressStream enc $ \chunk _ -> outputStream out chunk
+  , apiAction = \(sim, (DownloadFormat fmt, comp)) -> outputAction sim fmt comp $ \_ -> do
+    return ()
   , apiResponse = do
     ds <- dataSchema
     return $ mempty
       & OA.description .~ "file containing all matching content in the selected format"
       & OA.content .~ HMI.fromList
-        (map (\(DownloadFormat f d) -> (outputMimeType f, mempty & OA.schema ?~ OA.Inline (mempty
+        (map (\(DownloadFormat f) -> (outputMimeType f, mempty & OA.schema ?~ OA.Inline (mempty
           & OA.title ?~ (T.pack (outputExtension f) <> " data")
-          & OA.description ?~ d
+          & OA.description ?~ outputDescription f
           & OA.oneOf ?~ [ds]))) (KM.toList downloadFormats)
         ++ map (\z -> (compressionMimeType z, mempty & OA.schema ?~ OA.Inline (mempty
           & OA.title ?~ (TE.decodeLatin1 (compressionEncoding z) <> " data")
@@ -1048,20 +1043,14 @@ apiAttachment = APIOp
 
 -------- /api/{cat}/attachments/{format}
 
-data AttachmentsFormat = AttachmentsFormat
-  { attachmentsOutputFormat :: !OutputFormat
-  , attachmentsDescription :: !T.Text
-  }
-
-instance KM.Keyed AttachmentsFormat where
-  type Key AttachmentsFormat = T.Text
-  key = KM.key . attachmentsOutputFormat
+newtype AttachmentsFormat = AttachmentsFormat OutputFormat
+  deriving (KM.Keyed)
 
 attachmentsFormats :: KM.KeyedMap AttachmentsFormat
-attachmentsFormats = KM.fromList
-  [ AttachmentsFormat zipAttachments ""
-  , AttachmentsFormat (listAttachments $ apiRoute apiAttachment) ""
-  , AttachmentsFormat (curlAttachments $ apiRoute apiAttachment) ""
+attachmentsFormats = KM.fromList $ map AttachmentsFormat
+  [ zipAttachments
+  , listAttachments $ apiRoute apiAttachment
+  , curlAttachments $ apiRoute apiAttachment
   ]
 
 instance R.Parameter R.PathString AttachmentsFormat where
@@ -1093,20 +1082,17 @@ apiAttachments = APIOp
         [ ("fields", list, True)
         ]
       ]
-  , apiAction = \(sim, fmt) req -> do
-    cat <- askCatalog sim
-    body <- parseJSONBody req (parseDataJSON cat)
-    let args = (fromMaybe (parseDataQuery cat req) body){ dataCount = maxDataCount }
-    fail "TODO"
+  , apiAction = \(sim, AttachmentsFormat fmt) -> outputAction sim fmt Nothing $ \args ->
+    unless (all (isJust . fieldAttachment) (dataFields args)) $
+      raise400 "Selected fields must be attachments"
   , apiResponse = do
-    ds <- dataSchema
     return $ mempty
       & OA.description .~ "file containing all matching attachments in the selected format"
       & OA.content .~ HMI.fromList
-        (map (\(AttachmentsFormat f d) -> (outputMimeType f, mempty & OA.schema ?~ OA.Inline (mempty
+        (map (\(AttachmentsFormat f) -> (outputMimeType f, mempty & OA.schema ?~ OA.Inline (mempty
           & OA.title ?~ (T.pack (outputExtension f) <> " attachments")
-          & OA.description ?~ d
-          & OA.oneOf ?~ [ds]))) (KM.toList attachmentsFormats))
+          & OA.description ?~ outputDescription f)))
+          (KM.toList attachmentsFormats))
   }
 
 
@@ -1134,6 +1120,7 @@ apiOps =
   , AnyAPIOp apiStats
   , AnyAPIOp apiHistogram
   , AnyAPIOp apiAttachment
+  , AnyAPIOp apiAttachments
   ]
 
 apiRoutes :: [R.RouteCase Action]

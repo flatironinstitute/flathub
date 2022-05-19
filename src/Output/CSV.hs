@@ -94,5 +94,6 @@ csvOutput :: OutputFormat
 csvOutput = OutputFormat
   { outputMimeType = fromString "text/csv"
   , outputExtension = "csv"
+  , outputDescription = T.pack "Standard CSV file with a header of field names; missing values are represented by empty fields, arrays are encoded as JSON"
   , outputGenerator = \_ -> csvGenerator
   }

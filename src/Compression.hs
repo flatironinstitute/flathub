@@ -1,4 +1,8 @@
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 
 module Compression
   ( CompressionFormat(..)
@@ -14,6 +18,7 @@ module Compression
   , compressStream
   ) where
 
+import           Control.Arrow (first, Kleisli(..))
 import           Control.Exception (throwIO)
 import           Control.Monad (unless)
 import qualified Codec.Compression.BZip as BZ
@@ -26,10 +31,12 @@ import           Data.Function (fix)
 import qualified Data.Streaming.ByteString.Builder as SB
 import qualified Data.Streaming.Zlib as SZ
 import           Data.String (IsString)
+import qualified Data.Text as T
 import           Network.HTTP.Types.Header (Header, hAcceptEncoding, hContentEncoding)
 import qualified Network.Wai as Wai
 import           System.FilePath (splitExtension, (<.>))
 import           Waimwork.HTTP (splitHTTP)
+import qualified Web.Route.Invertible as R
 
 data CompressionFormat
   = CompressionGZip
@@ -66,6 +73,11 @@ decompressExtension f = case splitExtension f of
   (b, ".gz") -> (b, Just CompressionGZip)
   (b, ".bz2") -> (b, Just CompressionBZip2)
   _ -> (f, Nothing)
+
+instance R.Parameter R.PathString a => R.Parameter R.PathString (a, Maybe CompressionFormat) where
+  renderParameter (x, Nothing) = R.renderParameter x
+  renderParameter (x, Just z) = R.renderParameter x <> T.pack ('.' : compressionExtension z)
+  parseParameter s = runKleisli (first (Kleisli $ R.parseParameter . T.pack)) $ decompressExtension (T.unpack s)
 
 decompress :: CompressionFormat -> BSLC.ByteString -> BSLC.ByteString
 decompress CompressionGZip = GZ.decompress

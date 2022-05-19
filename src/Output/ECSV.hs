@@ -74,5 +74,6 @@ ecsvOutput :: OutputFormat
 ecsvOutput = OutputFormat
   { outputMimeType = "text/x-ecsv"
   , outputExtension = "ecsv"
+  , outputDescription = "Enhanced CSV file as per https://github.com/astropy/astropy-APEs/blob/main/APE6.rst, with a YAML header followed by a standard CSV file"
   , outputGenerator = ecsvGenerator
   }

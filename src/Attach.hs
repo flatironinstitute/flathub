@@ -196,6 +196,7 @@ zipAttachments :: OutputFormat
 zipAttachments = OutputFormat
   { outputMimeType = "application/zip"
   , outputExtension = "zip"
+  , outputDescription = "A ZIP file containing all the selected attachments"
   , outputGenerator = zipGenerator
   }
 
@@ -231,6 +232,7 @@ listAttachments :: AttachmentApi -> OutputFormat
 listAttachments api = OutputFormat
   { outputMimeType = "text/uri-list"
   , outputExtension = "uris"
+  , outputDescription = "A text file listing all the URLs of the selected attachments, one per line, with a one line #comment header"
   , outputGenerator = listGenerator api
   }
 
@@ -245,5 +247,6 @@ curlAttachments :: AttachmentApi -> OutputFormat
 curlAttachments api = OutputFormat
   { outputMimeType = "text/x-shellscript"
   , outputExtension = "sh"
+  , outputDescription = "A text shell script that downloads all the selected attachments with curl -JO, one per line"
   , outputGenerator = curlGenerator api
   }

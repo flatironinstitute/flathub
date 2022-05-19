@@ -106,5 +106,6 @@ numpyOutput :: OutputFormat
 numpyOutput = OutputFormat
   { outputMimeType = "application/x-npy"
   , outputExtension = "npy"
+  , outputDescription = "Numpy binary array file containing a 1-d array of structured data types representing the fields in each row"
   , outputGenerator = \_ -> numpyGenerator
   }
