@@ -60,15 +60,15 @@ ecsvHeader cat fields meta = renderECSVHeader $ ECSVHeader
   , ecsvSchema = Nothing
   }
 
-ecsvGenerator :: Wai.Request -> Catalog -> DataArgs V.Vector -> M OutputBuilder
+ecsvGenerator :: Wai.Request -> Catalog -> DataArgs V.Vector -> M OutputStream
 ecsvGenerator req cat args = do
   csv <- outputGenerator csvOutput req cat args
-  return csv
-    { outputHeader = ecsvHeader cat (dataFields args)
+  return $ OutputStream Nothing $ \chunk -> do
+    chunk $ ecsvHeader cat (dataFields args)
       [ "filters" J..= dataFilters args
       , "sort" J..= map (\(f, a) -> J.object ["field" J..= fieldName f, "order" J..= if a then "asc" :: String else "desc"]) (dataSort args)
-      ] <> outputHeader csv
-    }
+      ]
+    outputStream csv chunk
 
 ecsvOutput :: OutputFormat
 ecsvOutput = OutputFormat

@@ -24,7 +24,7 @@ import qualified Data.ByteString.Char8 as BSC
 import           Data.Foldable (fold)
 import           Data.Function (on)
 import qualified Data.HashMap.Strict as HM
-import           Data.List (foldl', unionBy)
+import           Data.List (foldl', unionBy, nubBy)
 import           Data.Maybe (listToMaybe, maybeToList, isJust, mapMaybe)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -312,13 +312,12 @@ bulk (BulkAttachments a) _ cat req query = Bulk
   { bulkMimeType = "application/zip"
   , bulkExtension = maybe "attachments" T.unpack a <> ".zip"
   , bulkCompression = Nothing
-  , bulkQuery = query'{ queryFields = attachmentsFields cat att ++ ats }
+  , bulkQuery = query'{ queryFields = nubBy ((==) `on` fieldName) $ concatMap (attachmentFields cat) ats }
   , bulkGenerator = \next -> BulkStream Nothing <$> attachmentsBulkStream info ats next
   }
   where
   query' = attachmentQuery cat (fmap return a) query
   ats = queryFields query'
-  att = mapMaybe fieldAttachment ats
   info = TE.encodeUtf8 (catalogTitle cat <> (foldMap (T.cons ' ') a)) <> " downloaded from " <> Wai.rawPathInfo req
 bulk (BulkAttachmentList z a) sim cat req query = bulkAttachmentUrls a z sim cat req query
   "text/uri-list" ".uris" $ mempty

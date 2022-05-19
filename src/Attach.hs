@@ -7,14 +7,17 @@ module Attach
   , resolveAttachment
   , attachmentResponse
   , attachmentFields
-  , attachmentsFields
   , attachmentsBulkStream
+  , zipAttachments
+  , listAttachments
+  , curlAttachments
   ) where
 
 import qualified Codec.Archive.Zip.Conduit.Zip as Zip
 import           Control.Monad (void, guard)
 import           Control.Monad.IO.Class (liftIO)
-import           Control.Monad.Reader (asks)
+import           Control.Monad.Reader (ask, asks)
+import           Control.Monad.Trans.Class (lift)
 import qualified Data.Aeson as J
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
@@ -25,7 +28,6 @@ import qualified Data.Conduit.Combinators as C
 import           Data.Foldable (fold)
 import           Data.Functor (($>))
 import qualified Data.HashMap.Strict as HM
-import           Data.List (nub)
 import           Data.Maybe (catMaybes, mapMaybe)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -39,12 +41,20 @@ import qualified Network.Wai as Wai
 import           System.FilePath ((</>))
 import           System.IO.Error (tryIOError)
 import           System.Posix.Files (getFileStatus, isRegularFile, modificationTimeHiRes, fileSize)
+import qualified Web.Route.Invertible as R
+import           Web.Route.Invertible.Internal (requestRoute')
+import           Web.Route.Invertible.Render (renderUrlRequestBuilder)
+import           Web.Route.Invertible.Wai (waiRequest)
 import           Waimwork.HTTP (quoteHTTP)
 
+import qualified KeyedMap as KM
+import Monoid
 import Type
 import Field
 import Catalog
 import Global
+import Backend
+import Output.Types
 
 attachmentPresent :: TypeValue Maybe -> Bool
 attachmentPresent (Boolean (Just True)) = True
@@ -57,12 +67,10 @@ pathFields = mapMaybe pathField where
   pathField (DynamicPathSubstitute f _ _) = return f
   pathField _ = mempty
 
-attachmentFields :: Attachment -> [T.Text]
-attachmentFields (Attachment p n) = pathFields p ++ pathFields n
-
-attachmentsFields :: Catalog -> [Attachment] -> [Field]
-attachmentsFields cat =
-  mapMaybe (`HM.lookup` catalogFieldMap cat) . nub . concatMap attachmentFields
+attachmentFields :: Catalog -> Field -> [Field]
+attachmentFields cat f@Field{ fieldDesc = FieldDesc{ fieldDescAttachment = Just (Attachment p n) } } =
+  f : mapMaybe (`HM.lookup` catalogFieldMap cat) (pathFields p ++ pathFields n)
+attachmentFields _ _ = []
 
 pathStr :: DynamicPath -> J.Object -> String
 pathStr path doc = foldMap ps path where
@@ -132,3 +140,110 @@ attachmentsBulkStream info ats next = do
         , Zip.zipOptInfo = Zip.ZipInfo info
         })
     C..| C.mapM_ (liftIO . chunk . B.byteString)
+
+attachmentsFilter :: DataArgs V.Vector -> DataArgs V.Vector
+attachmentsFilter args = case V.toList (dataFields args) of
+  [f@Field{ fieldType = Boolean _ }] -> args
+    { dataFilters = (dataFilters args)
+      { filterFields = KM.insertWith (const id) f{ fieldType = Boolean (FieldEQ [True]) }
+        $ filterFields $ dataFilters args
+      }
+    }
+  _ -> args -- TODO could be more efficient with OR filters
+
+zipGenerator :: Wai.Request -> Catalog -> DataArgs V.Vector -> M OutputStream
+zipGenerator req cat args = do
+  dir <- asks globalDataDir
+  let ents doc = V.mapMaybeM (ent doc) ats
+      ent doc af@Field{ fieldDesc = FieldDesc{ fieldDescAttachment = ~(Just a) } }
+        | any attachmentPresent (HM.lookup (fieldName af) doc) =
+          enta $ resolveAttachment doc a
+        | otherwise = return Nothing
+      enta (path, name) = either
+        (const Nothing)
+        (\stat -> guard (isRegularFile stat) $>
+          (Zip.ZipEntry
+            { Zip.zipEntryName = Right name
+            , Zip.zipEntryTime = utcToLocalTime utc $ posixSecondsToUTCTime $ modificationTimeHiRes stat
+            , Zip.zipEntrySize = Just $ fromIntegral $ fileSize stat
+            , Zip.zipEntryExternalAttributes = Nothing
+            }
+          , Zip.zipFileData dirpath))
+        <$> tryIOError (getFileStatus dirpath)
+        where dirpath = dir </> path
+  g <- ask
+  return $ OutputStream Nothing $ \chunk -> C.runConduitRes
+    $ C.yield ()
+    C..| void (C.mapAccumWhileM (const $ next g) (Just args'))
+    C..| C.concatMapM (liftIO . fmap fold . V.mapM ents)
+    C..| void (Zip.zipStream Zip.ZipOptions
+        { Zip.zipOpt64 = False
+        , Zip.zipOptCompressLevel = 1
+        , Zip.zipOptInfo = Zip.ZipInfo $ TE.encodeUtf8 (catalogTitle cat <> (foldMap (T.cons ' ' . fieldName) ats)) <> " downloaded from " <> Wai.rawPathInfo req
+        })
+    C..| C.mapM_ (lift . chunk . B.byteString)
+  where
+  ats = dataFields args
+  args' = (attachmentsFilter args)
+    { dataFields = KM.fromList $ foldMap (attachmentFields cat) (dataFields args)
+    }
+  next g (Just a) = do
+    (r, o) <- lift $ runGlobal g $ queryData cat a
+    return $ Right (setDataOffset a <$> o, r)
+  next _ s = return $ Left s
+
+zipAttachments :: OutputFormat
+zipAttachments = OutputFormat
+  { outputMimeType = "application/zip"
+  , outputExtension = "zip"
+  , outputGenerator = zipGenerator
+  }
+
+type AttachmentApi = R.Route (Simulation, T.Text, T.Text)
+
+attachmentsStreamUrls :: AttachmentApi -> B.Builder -> (B.Builder -> B.Builder) -> B.Builder
+  -> Wai.Request -> Catalog -> DataArgs V.Vector -> M OutputStream
+attachmentsStreamUrls api hd row ft req cat args =
+  outputStreamRows
+    Nothing
+    hd
+    (\r -> let Just (Keyword (Just i), l) = V.uncons r in fold $ V.zipWith
+      (\f v -> mwhen (attachmentPresent v) $
+        row $ renderUrlRequestBuilder
+          (requestRoute' api (catalogName cat, fieldName f, i) (waiRequest req) { R.requestQuery = mempty }) mempty)
+      ats l)
+    ft
+    cat args'
+  where
+  ats = dataFields args
+  args' = (attachmentsFilter args)
+    { dataFields = V.cons idField ats
+    }
+
+listGenerator :: AttachmentApi -> Wai.Request -> Catalog -> DataArgs V.Vector -> M OutputStream
+listGenerator api req cat args = attachmentsStreamUrls api
+  ("# " <> TE.encodeUtf8Builder (catalogTitle cat) <> " attachments " <> mintersperseMap "," (TE.encodeUtf8Builder . fieldName) (V.toList $ dataFields args) <> "\n")
+  (<> "\n")
+  mempty
+  req cat args
+
+listAttachments :: AttachmentApi -> OutputFormat
+listAttachments api = OutputFormat
+  { outputMimeType = "text/uri-list"
+  , outputExtension = "uris"
+  , outputGenerator = listGenerator api
+  }
+
+curlGenerator :: AttachmentApi -> Wai.Request -> Catalog -> DataArgs V.Vector -> M OutputStream
+curlGenerator api req cat args = attachmentsStreamUrls api
+  ("#!/bin/sh\n# " <> TE.encodeUtf8Builder (catalogTitle cat) <> " attachments " <> mintersperseMap "," (TE.encodeUtf8Builder . fieldName) (V.toList $ dataFields args) <> "\n")
+  (("curl -JO " <>) . (<> "\n"))
+  mempty
+  req cat args
+
+curlAttachments :: AttachmentApi -> OutputFormat
+curlAttachments api = OutputFormat
+  { outputMimeType = "text/x-shellscript"
+  , outputExtension = "sh"
+  , outputGenerator = curlGenerator api
+  }

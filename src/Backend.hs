@@ -10,6 +10,7 @@ module Backend
   , DataOffset
   , DataArgs(..)
   , queryData
+  , setDataOffset
   , maxDataCount, maxResultWindow
   , StatsArgs(..)
   , queryStats
@@ -142,11 +143,11 @@ filterQuery Filters{..} = "query" .=*
 
 newtype DataOffset = DataAfter J.Array
 
-parseData :: Traversable f => f Field -> J.Value -> J.Parser (V.Vector (f (TypeValue Maybe)), DataOffset)
+parseData :: Traversable f => f Field -> J.Value -> J.Parser (V.Vector (f (TypeValue Maybe)), Maybe DataOffset)
 parseData fields = J.withObject "data res" $ \o ->
   o J..: "hits" >>= (J..: "hits") >>= \l -> (,)
     <$> mapM row l
-    <*> (DataAfter <$> if V.null l then return V.empty else V.last l J..: "sort")
+    <*> (if V.null l then return Nothing else Just . DataAfter <$> (V.last l J..: "sort"))
   where
   row = getf . storedFields
   getf o = mapM (parsef o) fields
@@ -160,16 +161,20 @@ data DataArgs f = DataArgs
   , dataOffset :: Either DataOffset Word16 -- ^Either continuation from a previous query, in which case all other arguments must be exactly the same, or starting offset
   }
 
+setDataOffset :: DataArgs f -> DataOffset -> DataArgs f
+setDataOffset a o = a{ dataOffset = Left o }
+
 maxDataCount :: Word16
 maxDataCount = fromIntegral maxResultWindow
 
 -- |Query raw data rows as specified, and return a vector of row data, matching dataFields order, and a DataOffset that can be used to return the next page of data
-queryData :: Traversable f => Catalog -> DataArgs f -> M (V.Vector (f (TypeValue Maybe)), DataOffset)
+queryData :: Traversable f => Catalog -> DataArgs f -> M (V.Vector (f (TypeValue Maybe)), Maybe DataOffset)
 queryData cat DataArgs{..} = do
   unless (dataCount <= maxDataCount && fromIntegral dataCount + either (const 0) fromIntegral dataOffset <= maxResultWindow)
     $ raise400 "count too large"
   searchCatalog cat [] (parseData dataFields) $ JE.pairs
-    $  "size" J..= dataCount
+    $  "track_total_hits" J..= False
+    <> "size" J..= dataCount
     <> "sort" `JE.pair` JE.list (\(f, a) ->
         JE.pairs (fieldName f J..= if a then "asc" else "desc" :: String))
       (dataSort ++ [(docField,True),(key,True)])

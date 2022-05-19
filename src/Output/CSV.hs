@@ -22,6 +22,7 @@ import           Data.Word (Word8)
 import Monoid
 import Type
 import Field
+import Catalog
 import Backend
 import Global
 import Output.Types
@@ -82,15 +83,16 @@ _csvValueRow = csvBuilderMap csvValue
 csvMaybeValueRow :: [TypeValue Maybe] -> B.Builder
 csvMaybeValueRow = csvBuilderMap csvMaybeValue
 
-csvGenerator :: DataArgs V.Vector -> M OutputBuilder
-csvGenerator args = return $ mempty
-  { outputHeader = csvTextRow $ map fieldName $ V.toList $ dataFields args
-  , outputRow = csvMaybeValueRow . V.toList
-  }
+csvGenerator :: Catalog -> DataArgs V.Vector -> M OutputStream
+csvGenerator cat args = outputStreamRows Nothing
+  (csvTextRow $ map fieldName $ V.toList $ dataFields args)
+  (csvMaybeValueRow . V.toList)
+  mempty
+  cat args
 
 csvOutput :: OutputFormat
 csvOutput = OutputFormat
   { outputMimeType = fromString "text/csv"
   , outputExtension = "csv"
-  , outputGenerator = \_ _ -> csvGenerator
+  , outputGenerator = \_ -> csvGenerator
   }

@@ -91,15 +91,16 @@ numpyRow (f:fl) x = numpyValue f j <> numpyRow fl jl where (j, jl) = unconsJ x
 numpyValueRow :: V.Vector Field -> V.Vector (TypeValue Maybe) -> B.Builder
 numpyValueRow f v = fold $ V.zipWith numpyBuild f v
 
-numpyGenerator :: Catalog -> DataArgs V.Vector -> M OutputBuilder
+numpyGenerator :: Catalog -> DataArgs V.Vector -> M OutputStream
 numpyGenerator cat args = do
   (count, _) <- queryStats cat (StatsArgs (dataFilters args) mempty)
   let (header, size) = numpyHeader (V.toList $ dataFields args) count
-  return $ mempty
-    { outputSize = Just size
-    , outputHeader = header
-    , outputRow = numpyValueRow $ dataFields args
-    }
+  outputStreamRows
+    (Just size)
+    header
+    (numpyValueRow $ dataFields args)
+    mempty
+    cat args
 
 numpyOutput :: OutputFormat
 numpyOutput = OutputFormat
