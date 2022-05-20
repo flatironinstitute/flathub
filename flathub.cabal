@@ -79,6 +79,7 @@ executable flathub
     , mtl
     , network-uri
     , openapi3
+    , resourcet
     , scientific
     , shakespeare
     , streaming-commons

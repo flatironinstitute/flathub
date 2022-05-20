@@ -2,7 +2,7 @@
 {-# LANGUAGE ViewPatterns #-}
 
 import           Control.Arrow (first, second)
-import           Control.Monad ((<=<), forM_, when, unless, void)
+import           Control.Monad ((<=<), forM_, when, unless)
 import           Control.Monad.IO.Class (liftIO)
 import           Data.Default (Default(def))
 import qualified Data.HashMap.Strict as HM
@@ -123,19 +123,19 @@ main = do
       (consts, cat) <- pconst (catalogMap catalogs HM.! sim) $ optConstFields opts
       n <- ingest cat consts args
       liftIO $ print n
-      when (n > 0) $ void $ ES.flushIndex cat
+      when (n > 0) $ ES.flushIndex cat
 
     forM_ (optOpen opts) $ \sim -> do
       let cat = catalogMap catalogs HM.! sim
-      liftIO . print =<< ES.openIndex cat
+      ES.openIndex cat
 
     forM_ (optClose opts) $ \sim -> do
       let cat = catalogMap catalogs HM.! sim
-      liftIO . print =<< ES.flushIndex cat
+      ES.flushIndex cat
       n <- ES.countIndex cat
       liftIO $ print n
       unless (all (n ==) $ catalogCount cat) $ fail $ T.unpack sim ++ ": incorrect document count"
-      liftIO . print =<< ES.closeIndex cat
+      ES.closeIndex cat
 
     let catalogs' = pruneCatalogs errs catalogs
     cats <- mapM populateStats (catalogMap catalogs')
