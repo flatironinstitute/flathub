@@ -72,6 +72,7 @@ executable flathub
     , http-media
     , http-types
     , insert-ordered-containers
+    , json-stream
     , lens
     , mime-types
     , monad-control
