@@ -45,6 +45,7 @@ import JSON
 import Type
 import Field
 import Catalog
+import Error
 import Global
 import Output.CSV
 import Output.ECSV

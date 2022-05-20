@@ -124,7 +124,7 @@ takeCatalogField n c = (, c
   , catalogFieldGroups = deleteField n               $ catalogFieldGroups c
   }) <$> HM.lookup n (catalogFieldMap c) where
 
-lookupField :: ErrorM m => Catalog -> Bool -> T.Text -> m Field
+lookupField :: MonadErr m => Catalog -> Bool -> T.Text -> m Field
 lookupField _ _ "_id" = return idField
 lookupField cat idx n =
   maybe (raise404 $ "Field not found: " <> show n) return

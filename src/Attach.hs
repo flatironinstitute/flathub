@@ -17,7 +17,6 @@ import qualified Codec.Archive.Zip.Conduit.Zip as Zip
 import           Control.Monad (void, guard)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (ask, asks)
-import           Control.Monad.Trans.Class (lift)
 import qualified Data.Aeson as J
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
@@ -173,23 +172,19 @@ zipGenerator req cat args = do
         where dirpath = dir </> path
   g <- ask
   return $ OutputStream Nothing $ \chunk -> C.runConduitRes
-    $ stream g args'
+    $ queryDataStream g cat args'
     C..| C.concatMapM (liftIO . ents)
     C..| void (Zip.zipStream Zip.ZipOptions
         { Zip.zipOpt64 = False
         , Zip.zipOptCompressLevel = 1
         , Zip.zipOptInfo = Zip.ZipInfo $ TE.encodeUtf8 (catalogTitle cat <> (foldMap (T.cons ' ' . fieldName) ats)) <> " downloaded from " <> Wai.rawPathInfo req
         })
-    C..| C.mapM_ (lift . chunk . B.byteString)
+    C..| C.mapM_ (liftIO . chunk . B.byteString)
   where
   ats = dataFields args
   args' = (attachmentsFilter args)
     { dataFields = KM.fromList $ foldMap (attachmentFields cat) (dataFields args)
     }
-  stream g a = do
-    (r, o) <- lift $ lift $ runGlobal g $ queryData cat a
-    C.yieldMany r
-    mapM_ (stream g . setDataOffset a) o
 
 zipAttachments :: OutputFormat
 zipAttachments = OutputFormat

@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -50,17 +51,21 @@ import qualified Network.HTTP.Client.Conduit as HTTP hiding (httpSource)
 import qualified Network.HTTP.Simple as HTTP
 import           Network.HTTP.Types.Header (hAccept, hContentType)
 import           Network.HTTP.Types.Method (StdMethod(GET, PUT, POST), renderStdMethod)
-import           Network.HTTP.Types.Status (badRequest400, internalServerError500)
 import qualified Network.URI as URI
 import           Text.Read (readEither)
 import qualified Waimwork.Config as C
+import Debug.Trace
 
 import Monoid
 import JSON
 import Type
 import Field
 import Catalog
+import Error
 import Global
+
+debug :: Bool
+debug = False
 
 initServer :: C.Config -> IO HTTP.Request
 initServer conf = HTTP.parseRequestThrow (conf C.! "server")
@@ -89,15 +94,15 @@ instance Body EmptyJSON where
   bodyRequest EmptyJSON = HTTP.RequestBodyBS "{}"
   bodyContentType _ = Just "application/json"
 
-elasticRequest :: Body b => StdMethod -> [String] -> HTTP.Query -> b -> M HTTP.Request
+elasticRequest :: (MonadGlobal m, Body b) => StdMethod -> [String] -> HTTP.Query -> b -> m HTTP.Request
 elasticRequest meth url query body = do
   req <- asks globalES
-  when debug $ liftIO $ do
-    print $ HTTP.path req
-    case bodyRequest body of
-      HTTP.RequestBodyBS b -> BSC.putStrLn b
-      HTTP.RequestBodyLBS b -> BSLC.putStrLn b
-      _ -> BSC.putStrLn "???"
+  when debug $ do
+    traceShowM $ HTTP.path req
+    traceM $ case bodyRequest body of
+      HTTP.RequestBodyBS b -> BSC.unpack b
+      HTTP.RequestBodyLBS b -> BSLC.unpack b
+      _ -> "???"
   return $ HTTP.setQueryString query req
     { HTTP.method = renderStdMethod meth
     , HTTP.path = HTTP.path req <> BS.intercalate "/" (map (BSC.pack . URI.escapeURIString URI.isUnescapedInURIComponent) url)
@@ -106,16 +111,12 @@ elasticRequest meth url query body = do
         : HTTP.requestHeaders req
     , HTTP.requestBody = bodyRequest body
     }
-  where
-  debug = False
 
-httpJSON :: (J.Value -> J.Parser r) -> HTTP.Request -> M r
+httpJSON :: (MonadIO m, MonadErr m) => (J.Value -> J.Parser r) -> HTTP.Request -> m r
 httpJSON pares req = do
   j <- liftIO $ HTTP.getResponseBody <$> HTTP.httpJSON req
-  when debug $ liftIO $ BSLC.putStrLn (J.encode j)
-  either (raise internalServerError500) return $ J.parseEither pares j
-  where
-  debug = False
+  when debug $ traceM $ BSLC.unpack $ J.encode j
+  either raise500 return $ J.parseEither pares j
 
 httpPrint :: HTTP.Request -> M ()
 httpPrint req = liftIO $ BSC.putStrLn . HTTP.getResponseBody =<< HTTP.httpBS req
@@ -127,7 +128,7 @@ catalogURL :: Catalog -> [String]
 catalogURL Catalog{ catalogIndex = idxn } =
   [T.unpack idxn]
 
-searchCatalog :: Body b => Catalog -> HTTP.Query -> (J.Value -> J.Parser r) -> b -> M r
+searchCatalog :: (MonadMIO m, Body b) => Catalog -> HTTP.Query -> (J.Value -> J.Parser r) -> b -> m r
 searchCatalog cat q p b = httpJSON p =<< elasticRequest GET (catalogURL cat ++ ["_search"]) q b
 
 defaultSettings :: Catalog -> J.Object
@@ -360,7 +361,7 @@ scrollSearch sid = httpJSON return =<< elasticRequest GET ["_search", "scroll"] 
 queryBulk :: Catalog -> Query -> M (IO (Word, V.Vector J.Object))
 queryBulk cat query@Query{..} = do
   unless (queryOffset == 0 && null queryAggs) $
-    raise badRequest400 "offset,aggs not supported for download"
+    raise400 "offset,aggs not supported for download"
   glob <- ask
   sidv <- liftIO $ newIORef Nothing
   return $ do
@@ -393,7 +394,7 @@ createBulk cat docs = do
   r <- httpJSON J.parseJSON =<< elasticRequest POST (catalogURL cat ++ ["_bulk"]) [] body
   -- TODO: ignore 409?
   unless (HM.lookup "errors" (r :: J.Object) == Just (J.Bool False))
-    $ raise internalServerError500 $ "createBulk: " ++ BSLC.unpack (J.encode r)
+    $ raise500 $ "createBulk: " ++ BSLC.unpack (J.encode r)
   where
   nl = B.char7 '\n'
 

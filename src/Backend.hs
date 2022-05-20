@@ -10,6 +10,7 @@ module Backend
   , DataOffset
   , DataArgs(..)
   , queryData
+  , queryDataStream
   , setDataOffset
   , maxDataCount, maxResultWindow
   , StatsArgs(..)
@@ -23,11 +24,13 @@ module Backend
   ) where
 
 import           Control.Monad (unless)
-import           Control.Monad.IO.Class (liftIO)
+import           Control.Monad.IO.Class (MonadIO, liftIO)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
 import           Data.Bits (xor)
+import qualified Data.Conduit as C
+import qualified Data.Conduit.Combinators as C
 import           Data.Foldable (toList)
 import           Data.Function (on)
 import           Data.Functor.Identity (Identity(Identity))
@@ -186,6 +189,12 @@ queryData cat DataArgs{..} = do
   offset (Right 0) = mempty
   offset (Right o) = "from" J..= o
   offset (Left (DataAfter a)) = "search_after" J..= a
+
+queryDataStream :: (MonadIO m, Traversable f) => Global -> Catalog -> DataArgs f -> C.Source m (f (TypeValue Maybe))
+queryDataStream g cat args = do
+  (r, o) <- liftIO $ runGlobal g $ queryData cat args
+  C.yieldMany r
+  mapM_ (queryDataStream g cat . setDataOffset args) o
 
 fieldUseTerms :: Field -> Bool
 fieldUseTerms f = fieldTerms f || not (typeIsNumeric $ snd $ unArrayType $ fieldType f)

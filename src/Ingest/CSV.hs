@@ -23,6 +23,7 @@ import           System.IO (hFlush, stdout)
 
 import Field
 import Catalog
+import Error
 import Global
 import qualified ES
 import Compression

@@ -50,6 +50,7 @@ import qualified Web.Route.Invertible.Wai as R
 import Type
 import Field
 import Catalog
+import Error
 import Global
 import Compression
 import Query

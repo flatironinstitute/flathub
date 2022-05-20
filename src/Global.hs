@@ -1,29 +1,15 @@
+{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Global
-  ( Global(..)
-  , M
-  , runGlobal
-  , runGlobalWai
-  , Err
-  , runErr
-  , raise
-  , raise400
-  , raise404
-  , Action
-  , Route
-  , Simulation
-  , getPath
-  , askCatalog
-  , once
-  ) where
+  where
 
 import qualified Data.HashMap.Strict as HM
 import           Control.Concurrent.MVar (newMVar, modifyMVar)
 import           Control.Monad.Except (ExceptT(..), liftEither, runExcept)
-import           Control.Monad.IO.Class (liftIO)
-import           Control.Monad.Reader (ReaderT(..), ask, asks)
+import           Control.Monad.IO.Class (MonadIO, liftIO)
+import           Control.Monad.Reader (ReaderT(..), ask, asks, MonadReader)
 import qualified Network.HTTP.Client as HTTP
 import qualified Network.Wai as Wai
 import qualified Waimwork.Config as C
@@ -42,6 +28,10 @@ data Global = Global
   }
 
 type M = ErrT (ReaderT Global IO)
+
+type MonadGlobal m = MonadReader Global m
+type MonadM m = (MonadGlobal m, MonadErr m)
+type MonadMIO m = (MonadIO m, MonadM m)
 
 runGlobal :: Global -> M a -> IO a
 runGlobal g (ExceptT (ReaderT f)) = either (fail . snd) return =<< f g

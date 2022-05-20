@@ -18,6 +18,7 @@ import qualified Data.Vector as V
 import Data.ECSV
 import Field
 import Catalog
+import Error
 import Global
 import Compression
 import Ingest.Types
