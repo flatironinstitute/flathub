@@ -68,6 +68,7 @@ executable flathub
     , hashable
     , hdf5
     , http-client
+    , http-conduit
     , http-media
     , http-types
     , insert-ordered-containers

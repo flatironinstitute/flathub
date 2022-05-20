@@ -9,6 +9,7 @@ import qualified Data.HashMap.Strict as HM
 import           Data.Maybe (fromMaybe, isNothing, isJust)
 import qualified Data.Text as T
 import qualified Network.HTTP.Client as HTTP
+import qualified Network.HTTP.Simple as HTTP
 import qualified System.Console.GetOpt as Opt
 import           System.Environment (getProgName, getArgs)
 import           System.Exit (exitFailure)
@@ -97,8 +98,7 @@ main = do
   es <- ES.initServer (conf C.! "elasticsearch")
   let global = Global
         { globalConfig = conf
-        , globalHTTP = httpmgr
-        , globalES = es
+        , globalES = HTTP.setRequestManager httpmgr es
         , globalCatalogs = catalogs
         , globalDataDir = fromMaybe "." $ conf C.! "datadir"
         , globalDevMode = fromMaybe False $ conf C.! "dev"

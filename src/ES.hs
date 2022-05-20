@@ -29,7 +29,6 @@ import           Control.Monad.Reader (ask, asks)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J (Parser, parseEither, parseMaybe, typeMismatch)
-import qualified Data.Attoparsec.ByteString as AP
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Char8 as BSC
@@ -45,11 +44,11 @@ import           Data.String (IsString)
 import qualified Data.Text as T
 import           Data.Typeable (cast)
 import qualified Data.Vector as V
-import qualified Network.HTTP.Client as HTTP
+import qualified Network.HTTP.Client.Conduit as HTTP
+import qualified Network.HTTP.Simple as HTTP
 import           Network.HTTP.Types.Header (hAccept, hContentType)
 import           Network.HTTP.Types.Method (StdMethod(GET, PUT, POST), renderStdMethod)
 import           Network.HTTP.Types.Status (badRequest400, internalServerError500)
-import qualified Network.HTTP.Types.URI as HTTP (Query)
 import qualified Network.URI as URI
 import           Text.Read (readEither)
 import qualified Waimwork.Config as C
@@ -62,7 +61,7 @@ import Catalog
 import Global
 
 initServer :: C.Config -> IO HTTP.Request
-initServer conf = HTTP.parseUrlThrow (conf C.! "server")
+initServer conf = HTTP.parseRequestThrow (conf C.! "server")
 
 class Body a where
   bodyRequest :: a -> HTTP.RequestBody
@@ -90,9 +89,8 @@ instance Body EmptyJSON where
 
 elasticSearch :: Body b => StdMethod -> [String] -> HTTP.Query -> (J.Value -> J.Parser r) -> b -> M r
 elasticSearch meth url query pares body = do
-  glob <- ask
-  let req = globalES glob
-      req' = HTTP.setQueryString query req
+  req <- asks globalES
+  let req' = HTTP.setQueryString query req
         { HTTP.method = renderStdMethod meth
         , HTTP.path = HTTP.path req <> BS.intercalate "/" (map (BSC.pack . URI.escapeURIString URI.isUnescapedInURIComponent) url)
         , HTTP.requestHeaders = maybe id ((:) . (,) hContentType) (bodyContentType body)
@@ -106,12 +104,10 @@ elasticSearch meth url query pares body = do
       HTTP.RequestBodyBS b -> BSC.putStrLn b
       HTTP.RequestBodyLBS b -> BSLC.putStrLn b
       _ -> BSC.putStrLn "???"
-  j <- either (raise internalServerError500) return . AP.eitherResult
-    =<< liftIO (HTTP.withResponse req' (globalHTTP glob) parse)
+  j <- liftIO $ HTTP.getResponseBody <$> HTTP.httpJSON req'
   when debug $ liftIO $ BSLC.putStrLn (J.encode j)
   either (raise internalServerError500) return $ J.parseEither pares j
   where
-  parse r = AP.parseWith (HTTP.responseBody r) (J.json <* AP.endOfInput) BS.empty
   debug = False
 
 catalogURL :: Catalog -> [String]

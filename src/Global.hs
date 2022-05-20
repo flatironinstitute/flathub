@@ -35,7 +35,6 @@ import Catalog
 
 data Global = Global
   { globalConfig :: C.Config
-  , globalHTTP :: HTTP.Manager
   , globalES :: HTTP.Request
   , globalCatalogs :: Catalogs
   , globalDataDir :: FilePath
