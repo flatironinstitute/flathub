@@ -173,9 +173,8 @@ zipGenerator req cat args = do
         where dirpath = dir </> path
   g <- ask
   return $ OutputStream Nothing $ \chunk -> C.runConduitRes
-    $ C.yield ()
-    C..| void (C.mapAccumWhileM (const $ next g) (Just args'))
-    C..| C.concatMapM (liftIO . fmap fold . V.mapM ents)
+    $ stream g args'
+    C..| C.concatMapM (liftIO . ents)
     C..| void (Zip.zipStream Zip.ZipOptions
         { Zip.zipOpt64 = False
         , Zip.zipOptCompressLevel = 1
@@ -187,10 +186,10 @@ zipGenerator req cat args = do
   args' = (attachmentsFilter args)
     { dataFields = KM.fromList $ foldMap (attachmentFields cat) (dataFields args)
     }
-  next g (Just a) = do
-    (r, o) <- lift $ runGlobal g $ queryData cat a
-    return $ Right (setDataOffset a <$> o, r)
-  next _ s = return $ Left s
+  stream g a = do
+    (r, o) <- lift $ lift $ runGlobal g $ queryData cat a
+    C.yieldMany r
+    mapM_ (stream g . setDataOffset a) o
 
 zipAttachments :: OutputFormat
 zipAttachments = OutputFormat
