@@ -246,7 +246,7 @@ setFieldValueUnsafe f t = f{ fieldType = t }
 setFieldValue :: (Functor t, Functor f) => FieldSub t Proxy -> TypeValue f -> FieldSub f Proxy
 setFieldValue f = setFieldValueUnsafe f . coerceTypeValue (fieldType f)
 
-updateFieldValueM :: (Functor t, Functor f, Monad m) => FieldSub t Proxy -> (forall a . Typed a => t a -> m (f a)) -> m (FieldSub f Proxy)
+updateFieldValueM :: Functor m => FieldSub t Proxy -> (forall a . Typed a => t a -> m (f a)) -> m (FieldSub f Proxy)
 updateFieldValueM f t = setFieldValueUnsafe f <$> traverseTypeValue t (fieldType f)
 
 numpyFieldSize :: Field -> Word

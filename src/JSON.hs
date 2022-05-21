@@ -8,7 +8,7 @@ module JSON
   , unsingletonJSON
   , jsLazyByteStringValue
   , loadYamlPath
-  , parseConduit
+  , parserConduit
   ) where
 
 import qualified Data.Aeson.Types as J
@@ -98,9 +98,9 @@ loadYamlPath f = do
   ent e = (T.pack (fromMaybe (fromMaybe e $ stripExtension "yml" e) $ stripExtension "yaml" e) ,) <$> loadYamlPath (f </> e)
   p = (++) (f ++ ": ")
 
--- |Convert a 'JS.ParseOutput' to a conduit from 'BS.ByteString' input chunks to results, finally returning any parse error or 'Nothing' on success.
-parseConduit :: JS.ParseOutput a -> C.ConduitT BS.ByteString a m (Maybe String)
-parseConduit p0 = CI.ConduitT (parsePipe p0) where
+-- |Convert a 'JS.Parser' to a conduit from 'BS.ByteString' input chunks to results, finally returning any parse error or 'Nothing' on success.
+parserConduit :: JS.Parser a -> C.ConduitT BS.ByteString a m (Maybe String)
+parserConduit ps = CI.ConduitT (parsePipe $ JS.runParser ps) where
   parsePipe (JS.ParseYield a p) r = CI.HaveOutput (parsePipe p r) a
   parsePipe (JS.ParseNeedData f) r = CI.NeedInput (\i -> parsePipe (f i) r) (\() -> r (Just "Incomplete JSON"))
   parsePipe (JS.ParseFailed e) r = r (Just e)

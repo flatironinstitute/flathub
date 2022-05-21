@@ -697,6 +697,7 @@ newtype DownloadFormat = DownloadFormat OutputFormat
 downloadFormats :: KM.KeyedMap DownloadFormat
 downloadFormats = KM.fromList $ map DownloadFormat
   [ csvOutput 
+  , csvOutput'
   , ecsvOutput 
   , numpyOutput 
   , jsonOutput 

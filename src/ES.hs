@@ -8,6 +8,10 @@
 
 module ES
   ( initServer
+  , HTTP.Request
+  , httpJSON
+  , httpStream
+  , searchCatalogRequest
   , searchCatalog
   , createIndex
   , checkIndices
@@ -128,8 +132,11 @@ catalogURL :: Catalog -> [String]
 catalogURL Catalog{ catalogIndex = idxn } =
   [T.unpack idxn]
 
+searchCatalogRequest :: (MonadGlobal m, Body b) => Catalog -> HTTP.Query -> b -> m HTTP.Request
+searchCatalogRequest cat q b = elasticRequest GET (catalogURL cat ++ ["_search"]) q b
+
 searchCatalog :: (MonadMIO m, Body b) => Catalog -> HTTP.Query -> (J.Value -> J.Parser r) -> b -> m r
-searchCatalog cat q p b = httpJSON p =<< elasticRequest GET (catalogURL cat ++ ["_search"]) q b
+searchCatalog cat q p b = httpJSON p =<< searchCatalogRequest cat q b
 
 defaultSettings :: Catalog -> J.Object
 defaultSettings cat = HM.fromList

@@ -26,8 +26,8 @@ module Type
   , renderValue
   , parseTypeValue
   , parseJSONTyped
-  , parseJSONTypeValue
   , parseTypeJSONValue
+  , parseStream
   , baseType
   , arrayHead
   , singletonArray
@@ -37,6 +37,7 @@ module Type
   , numpyTypeSize
   ) where
 
+import           Control.Applicative ((<|>), many, empty)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Types as J
 import qualified Data.ByteString.Builder as B
@@ -46,6 +47,7 @@ import           Data.Functor.Const (Const(..))
 import           Data.Functor.Compose (Compose(..))
 import           Data.Functor.Identity (Identity(Identity, runIdentity))
 import           Data.Int (Int64, Int32, Int16, Int8)
+import qualified Data.JsonStream.Parser as JS
 import           Data.Maybe (fromMaybe)
 import qualified Data.OpenApi as OA
 import           Data.Proxy (Proxy(Proxy))
@@ -106,6 +108,8 @@ class (Eq a, Ord a, Show a, Read a, J.ToJSON a, J.FromJSON a, OA.ToParamSchema a
   parseJSONTyped :: J.Value -> J.Parser a
   parseJSONTyped (J.Array v) | V.length v == 1 = J.parseJSON (V.head v)
   parseJSONTyped j = J.parseJSON j
+  parseStream, parseStream1 :: JS.Parser a
+  parseStream = parseStream1 <|> 0 JS..! parseStream1
   renderValue :: a -> B.Builder
   renderValue = J.fromEncoding . J.toEncoding
 
@@ -115,59 +119,72 @@ typeValue1 = typeValue . Identity
 instance Typed Word64 where
   typeValue = ULong
   toDouble = fromIntegral
+  parseStream1 = JS.integer
   renderValue = B.word64Dec
 instance Typed Int64  where
   typeValue = Long
   toDouble = fromIntegral
+  parseStream1 = JS.integer
   renderValue = B.int64Dec
 instance Typed Int32  where
   typeValue = Integer
   toDouble = fromIntegral
+  parseStream1 = JS.integer
   renderValue = B.int32Dec
 instance Typed Int16  where
   typeValue = Short
   toDouble = fromIntegral
+  parseStream1 = JS.integer
   renderValue = B.int16Dec
 instance Typed Int8   where
   typeValue = Byte
   toDouble = fromIntegral
+  parseStream1 = JS.integer
   renderValue = B.int8Dec
 instance Typed Double where
   typeValue = Double
   toDouble = id
+  parseStream1 = JS.real
   renderValue = B.doubleDec
 instance Typed Float  where
   typeValue = Float
   toDouble = realToFrac
+  parseStream1 = JS.real
   renderValue = B.floatDec
 instance Typed Half   where
   typeValue = HalfFloat
   toDouble = realToFrac
+  parseStream1 = JS.real
   renderValue = B.floatDec . realToFrac
 instance Typed Bool   where
   typeValue = Boolean
   toDouble False = 0
-  toDouble True = 0
+  toDouble True = 1
   parseJSONTyped (J.Bool b) = return b
   parseJSONTyped (J.Number 0) = return False
   parseJSONTyped (J.Number 1) = return True
   parseJSONTyped (J.Array v) | V.length v == 1 = parseJSONTyped (V.head v)
   parseJSONTyped j = J.typeMismatch "Bool" j
+  parseStream1 = JS.bool <|> toEnum <$> JS.integer
   renderValue False = "false"
   renderValue True = "true"
 instance Typed T.Text where
   typeValue = Keyword
   toDouble = read . T.unpack
+  parseStream1 = JS.string
   renderValue = TE.encodeUtf8Builder
 instance Typed Void   where
   typeValue = Void
   toDouble = absurd
+  parseStream1 = empty
   renderValue = absurd
 instance Typed a => Typed (V.Vector a) where
   typeValue = Array . typeValue . Compose
   toDouble = toDouble . V.head
   parseJSONTyped (J.Array v) = V.mapM parseJSONTyped v
   parseJSONTyped j = V.singleton <$> parseJSONTyped j
+  parseStream1 = V.singleton <$> parseStream1
+  parseStream = V.fromList <$> JS.arrayOf (many parseStream1) <|> parseStream1
 
 unTypeValue :: (forall a . Typed a => f a -> b) -> TypeValue f -> b
 unTypeValue f (Double    x) = f $! x
@@ -270,9 +287,6 @@ parseTypeValue t s = fmapTypeValue (\Proxy -> readMaybe $ T.unpack s) t
 instance {-# OVERLAPPABLE #-} J.ToJSON1 f => J.ToJSON (TypeValue f) where
   toJSON = unTypeValue J.toJSON1
   toEncoding = unTypeValue J.toEncoding1
-
-parseJSONTypeValue :: Type -> J.Value -> J.Parser Value
-parseJSONTypeValue t j = traverseTypeValue (\Proxy -> J.parseJSON j) t
 
 parseTypeJSONValue :: Type -> J.Value -> TypeValue Maybe
 parseTypeJSONValue t (J.String s) = parseTypeValue t s

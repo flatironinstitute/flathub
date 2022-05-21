@@ -2,6 +2,7 @@ module Output.CSV
   ( csvTextRow
   , csvJSONRow
   , csvOutput
+  , csvOutput'
   ) where
 
 import qualified Data.Aeson as J
@@ -96,4 +97,19 @@ csvOutput = OutputFormat
   , outputExtension = "csv"
   , outputDescription = T.pack "Standard CSV file with a header of field names; missing values are represented by empty fields, arrays are encoded as JSON"
   , outputGenerator = \_ -> csvGenerator
+  }
+
+csvGenerator' :: Catalog -> DataArgs V.Vector -> M OutputStream
+csvGenerator' cat args = outputStreamRows' Nothing
+  (csvTextRow $ map fieldName $ V.toList $ dataFields args)
+  (csvMaybeValueRow . V.toList)
+  mempty
+  cat args
+
+csvOutput' :: OutputFormat
+csvOutput' = OutputFormat
+  { outputMimeType = fromString "text/csv"
+  , outputExtension = "csvs"
+  , outputDescription = T.pack "Standard CSV file with a header of field names; missing values are represented by empty fields, arrays are encoded as JSON"
+  , outputGenerator = \_ -> csvGenerator'
   }

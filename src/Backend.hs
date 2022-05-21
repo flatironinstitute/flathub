@@ -11,6 +11,7 @@ module Backend
   , DataArgs(..)
   , queryData
   , queryDataStream
+  , queryDataStream'
   , setDataOffset
   , maxDataCount, maxResultWindow
   , StatsArgs(..)
@@ -23,8 +24,11 @@ module Backend
   , queryHistogram
   ) where
 
+import           Control.Applicative (many)
 import           Control.Monad (unless)
 import           Control.Monad.IO.Class (MonadIO, liftIO)
+import           Control.Monad.Trans.Class (lift)
+import           Control.Monad.Trans.Resource (MonadResource)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
@@ -36,6 +40,7 @@ import           Data.Function (on)
 import           Data.Functor.Identity (Identity(Identity))
 import           Data.Functor.Reverse (Reverse(Reverse))
 import qualified Data.HashMap.Strict as HM
+import qualified Data.JsonStream.Parser as JS
 import           Data.List (genericTake)
 import           Data.Maybe (fromMaybe, isJust, catMaybes)
 import           Data.Proxy (Proxy(Proxy))
@@ -156,6 +161,18 @@ parseData fields = J.withObject "data res" $ \o ->
   getf o = mapM (parsef o) fields
   parsef o f = traverseTypeValue (\Proxy -> mapM parseJSONTyped $ HM.lookup (fieldName f) o) (fieldType f)
 
+parseDataStream :: KM.KeyedMap Field -> JS.Parser ([FieldValue], DataOffset)
+parseDataStream fields = "hits" JS..: "hits" JS..: JS.arrayOf
+  ((,)
+   <$>
+    ((:)
+     <$> "_id" JS..: pf idField
+     <*> "fields" JS..: many (JS.objectKeyValues ps))
+   <*> "sort" JS..: (DataAfter . V.fromList <$> many (JS.arrayOf JS.value)))
+  where
+  ps fn = foldMap pf $ HM.lookup fn fields
+  pf f = updateFieldValueM f (\Proxy -> Identity <$> parseStream)
+
 data DataArgs f = DataArgs
   { dataFilters :: Filters
   , dataFields :: f Field -- ^Which fields to return (in order)
@@ -170,12 +187,9 @@ setDataOffset a o = a{ dataOffset = Left o }
 maxDataCount :: Word16
 maxDataCount = fromIntegral maxResultWindow
 
--- |Query raw data rows as specified, and return a vector of row data, matching dataFields order, and a DataOffset that can be used to return the next page of data
-queryData :: Traversable f => Catalog -> DataArgs f -> M (V.Vector (f (TypeValue Maybe)), Maybe DataOffset)
-queryData cat DataArgs{..} = do
-  unless (dataCount <= maxDataCount && fromIntegral dataCount + either (const 0) fromIntegral dataOffset <= maxResultWindow)
-    $ raise400 "count too large"
-  searchCatalog cat [] (parseData dataFields) $ JE.pairs
+queryDataRequest :: (MonadGlobal m, Foldable f) => Catalog -> DataArgs f -> m Request
+queryDataRequest cat DataArgs{..} =
+  searchCatalogRequest cat [] $ JE.pairs
     $  "track_total_hits" J..= False
     <> "size" J..= dataCount
     <> "sort" `JE.pair` JE.list (\(f, a) ->
@@ -190,11 +204,31 @@ queryData cat DataArgs{..} = do
   offset (Right o) = "from" J..= o
   offset (Left (DataAfter a)) = "search_after" J..= a
 
-queryDataStream :: (MonadIO m, Traversable f) => Global -> Catalog -> DataArgs f -> C.Source m (f (TypeValue Maybe))
+-- |Query raw data rows as specified, and return a vector of row data, matching dataFields order, and a DataOffset that can be used to return the next page of data
+queryData :: Traversable f => Catalog -> DataArgs f -> M (V.Vector (f (TypeValue Maybe)), Maybe DataOffset)
+queryData cat args@DataArgs{..} = do
+  unless (dataCount <= maxDataCount && fromIntegral dataCount + either (const 0) fromIntegral dataOffset <= maxResultWindow)
+    $ raise400 "count too large"
+  httpJSON (parseData dataFields) =<< queryDataRequest cat args
+
+queryDataStream :: (MonadIO m, Traversable f) => Global -> Catalog -> DataArgs f -> C.ConduitT a (f (TypeValue Maybe)) m ()
 queryDataStream g cat args = do
   (r, o) <- liftIO $ runGlobal g $ queryData cat args
   C.yieldMany r
   mapM_ (queryDataStream g cat . setDataOffset args) o
+
+fstAndLast :: Monad m => C.ConduitT (a, b) a m (Maybe b)
+fstAndLast = C.await >>= maybe (return Nothing) go where
+  loop b = C.await >>= maybe (return $ Just b) go
+  go (a, b) = C.yield a >> loop b
+
+queryDataStream' :: (MonadResource m, MonadIO m, MonadGlobal m, MonadFail m) => Catalog -> DataArgs (HM.HashMap T.Text) -> C.ConduitT a [FieldValue] m ()
+queryDataStream' cat args = do
+  req <- lift $ queryDataRequest cat args
+  off <- httpStream req
+    C..| (mapM_ fail =<< parserConduit (parseDataStream (dataFields args)))
+    C..| fstAndLast
+  mapM_ (queryDataStream' cat . setDataOffset args) off
 
 fieldUseTerms :: Field -> Bool
 fieldUseTerms f = fieldTerms f || not (typeIsNumeric $ snd $ unArrayType $ fieldType f)
