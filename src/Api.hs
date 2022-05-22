@@ -130,6 +130,13 @@ fieldListSchema = do
 parseReadQuery :: Read a => Wai.Request -> BS.ByteString -> Maybe a
 parseReadQuery req param = readMaybe . BSC.unpack =<< join (lookup param (Wai.queryString req))
 
+parseBoolQuery :: Wai.Request -> BS.ByteString -> Maybe Bool
+parseBoolQuery req param = fmap pb $ lookup param (Wai.queryString req)
+  where
+  pb Nothing = True
+  pb (Just "") = False
+  pb (Just s) = BSC.head s `elem` ("1ytYT" :: String)
+
 parseListQuery :: Wai.Request -> BS.ByteString -> [BS.ByteString]
 parseListQuery req param = foldMap sel $ Wai.queryString req where
   sel (p, v)
@@ -603,13 +610,16 @@ parseDataQuery cat req = DataArgs
   , dataOffset = fromMaybe 0 $ parseReadQuery req "offset"
   }
 
-parseDataJSON :: Catalog -> J.Value -> J.Parser (DataArgs V.Vector)
-parseDataJSON cat = J.withObject "data request" $ \o -> DataArgs
-  <$> parseFiltersJSON cat (HM.delete "fields" $ HM.delete "sort" $ HM.delete "count" $ HM.delete "offset" o)
+parseDataJSON :: Catalog -> J.Value -> J.Parser (DataArgs V.Vector, Bool)
+parseDataJSON cat = J.withObject "data request" $ \o -> (,) <$> (DataArgs
+  <$> parseFiltersJSON cat (foldl' (flip HM.delete) o fields)
   <*> (fmap V.fromList . parseFieldsJSON cat =<< o J..: "fields")
   <*> (parseSortJSON cat =<< o J..:? "sort")
   <*> o J..: "count"
-  <*> (o J..:? "offset" J..!= 0)
+  <*> o J..:? "offset" J..!= 0)
+  <*> o J..:? "object" J..!= False
+  where
+  fields = ["fields", "sort", "count", "offset", "object"]
 
 dataSchema :: OpenApiM (OA.Referenced OA.Schema)
 dataSchema = do
@@ -630,7 +640,7 @@ apiData = APIOp -- /api/{cat}/data
   , apiExampleArg = "sim"
   , apiPathParams = return [catalogParam]
   , apiQueryParams = [filtersQueryParam, fieldsQueryParam
-    , sortParam 
+    , sortParam
     , return $ OA.Inline $ mempty
       & OA.name .~ "count"
       & OA.in_ .~ OA.ParamQuery
@@ -642,11 +652,11 @@ apiData = APIOp -- /api/{cat}/data
       & OA.in_ .~ OA.ParamQuery
       & OA.style ?~ OA.StyleForm
       & OA.schema ?~ offsetSchema
-    {- , return $ OA.Inline $ mempty
+    , return $ OA.Inline $ mempty
       & OA.name .~ "object"
       & OA.in_ .~ OA.ParamQuery
       & OA.style ?~ OA.StyleForm
-      & OA.schema ?~ jobjectSchema -}
+      & OA.schema ?~ jobjectSchema
     ]
   , apiRequestSchema = Just $ do
     filt <- filtersSchema
@@ -660,15 +670,20 @@ apiData = APIOp -- /api/{cat}/data
         , ("sort", sort, False)
         , ("count", countSchema, True)
         , ("offset", offsetSchema, False)
-        -- , ("object", jobjectSchema, False)
+        , ("object", jobjectSchema, False)
         ]
       ]
   , apiAction = \sim req -> do
     cat <- askCatalog sim
     body <- parseJSONBody req (parseDataJSON cat)
-    let args = fromMaybe (parseDataQuery cat req) body
-    dat <- queryData cat args
-    return $ okResponse (apiHeaders req) $ J.toEncoding (dat :: V.Vector (V.Vector (TypeValue Maybe)))
+    let (args, jobj) = fromMaybe (parseDataQuery cat req, fromMaybe False $ parseBoolQuery req "object") body
+    okResponse (apiHeaders req) <$> if jobj
+      then do
+        dat <- queryData cat args{ dataFields = KM.fromList $ V.toList $ dataFields args }
+        return $ J.toEncoding (dat :: V.Vector (HM.HashMap T.Text Value))
+      else do
+        dat <- queryData cat args
+        return $ J.toEncoding (dat :: V.Vector (V.Vector (TypeValue Maybe)))
   , apiResponse = do
     ds <- dataSchema
     return $ jsonContent ds
@@ -680,7 +695,7 @@ apiData = APIOp -- /api/{cat}/data
   offsetSchema = OA.Inline $ schemaDescOf dataOffset "start at this row offset (0 means first)"
     & OA.maximum_ ?~ fromIntegral maxResultWindow - fromIntegral maxDataCount
     & OA.default_ ?~ J.Number 0
-  jobjectSchema = OA.Inline $ schemaDescOf (True ==) "return JSON objects instead of arrays"
+  jobjectSchema = OA.Inline $ schemaDescOf (True ==) "return JSON objects instead of arrays of data"
     & OA.default_ ?~ J.Bool False
 
 -------- /api/{catalog}/data/{format}
@@ -700,15 +715,31 @@ jsonOutput = OutputFormat
   , outputGenerator = jsonGenerator
   }
 
+ndjsonGenerator :: Wai.Request -> Catalog -> DataArgs V.Vector -> M OutputStream
+ndjsonGenerator _ cat args = outputStreamRows Nothing
+  mempty
+  (\j -> J.fromEncoding (J.toEncoding (j :: HM.HashMap T.Text Value)) <> "\n")
+  mempty
+  cat args{ dataFields = KM.fromList $ V.toList $ dataFields args }
+
+ndjsonOutput :: OutputFormat
+ndjsonOutput = OutputFormat
+  { outputMimeType = "application/x-ndjson"
+  , outputExtension = "ndjson"
+  , outputDescription = "Newline-delimited JSON data, where each line is an object of field values"
+  , outputGenerator = ndjsonGenerator
+  }
+
 newtype DownloadFormat = DownloadFormat OutputFormat
   deriving (KM.Keyed)
 
 downloadFormats :: KM.KeyedMap DownloadFormat
 downloadFormats = KM.fromList $ map DownloadFormat
-  [ csvOutput 
-  , ecsvOutput 
-  , numpyOutput 
-  , jsonOutput 
+  [ csvOutput
+  , ecsvOutput
+  , numpyOutput
+  , jsonOutput
+  , ndjsonOutput
   ]
 
 instance R.Parameter R.PathString DownloadFormat where
@@ -719,7 +750,7 @@ outputAction :: Simulation -> OutputFormat -> Maybe CompressionFormat -> (DataAr
 outputAction sim fmt comp check req = do
   cat <- askCatalog sim
   body <- parseJSONBody req (parseDataJSON cat)
-  let args = (fromMaybe (parseDataQuery cat req) body){ dataCount = maxDataCount }
+  let args = (maybe (parseDataQuery cat req) fst body){ dataCount = maxDataCount }
       enc = comp <|> listToMaybe (acceptCompressionEncoding req)
   check args
   out <- outputGenerator fmt req cat args
@@ -732,7 +763,7 @@ outputAction sim fmt comp check req = do
     [ (,) hContentLength . BSC.pack . show <$> (guard (isNothing comp) >> outputSize out)
     , compressionEncodingHeader <$> (guard (enc /= comp) >> enc)
     ])
-    $ compressStream enc $ \chunk _ -> 
+    $ compressStream enc $ \chunk _ ->
       runReaderT (C.runConduitRes $ outputStream out
         C..| C.mapM_ (liftIO . chunk)) g
 
@@ -1017,7 +1048,7 @@ apiAttachment :: APIOp (Simulation, T.Text, T.Text)
 apiAttachment = APIOp
   { apiName = "attachment"
   , apiSummary = "Download a row attachment"
-  , apiPath = catalogBase R.>* "attachment" R.>*<< R.parameter R.>*< R.parameter 
+  , apiPath = catalogBase R.>* "attachment" R.>*<< R.parameter R.>*< R.parameter
   , apiExampleArg = ("sim", "field", "rid")
   , apiPathParams = do
     fn <- fieldNameSchema
@@ -1045,7 +1076,7 @@ apiAttachment = APIOp
       , dataSort = []
       , dataOffset = 0
       }
-    doc <- maybe (raise404 "Attachment row not found") return $ 
+    doc <- maybe (raise404 "Attachment row not found") return $
       mfilter (any attachmentPresent . HM.lookup atn) (dat V.!? 0)
     uncurry attachmentResponse $ resolveAttachment doc att
   , apiResponse = return $ mempty
@@ -1144,7 +1175,7 @@ openApiBase = mempty &~ do
     & OA.title .~ "FlatHUB API"
     & OA.version .~ T.pack (showVersion Paths.version)
     & OA.description ?~ "Most operations support GET and POST, either of which accepts JSON request bodies or query parameters.  In most cases, query parameters are ignored when there is a request body.")
-  OA.servers .= 
+  OA.servers .=
     [ OA.Server (requestUrl $ baseApiRequest mempty{ R.requestSecure = True, R.requestHost = RI.splitHost "flathub.flatironinstitute.org" }) (Just "production") mempty
     ]
 

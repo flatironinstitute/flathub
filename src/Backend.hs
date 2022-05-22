@@ -148,18 +148,18 @@ filterQuery Filters{..} = "query" .=*
   term f (FieldWildcard w) | fieldWildcard f = "wildcard" .=* (fieldName f J..= w)
   term _ _ = error "invalid FieldFilder"
 
-class DataRow f r | r -> f where
+class DataRow f r where
   parseHit :: f -> J.Object -> J.Parser r
   parseHitStream :: f -> JS.Parser r
 
-instance DataRow () [(T.Text, J.Value)] where
+instance DataRow a [(T.Text, J.Value)] where
   parseHit f = fmap HM.toList . parseHit f
-  parseHitStream () = (:)
+  parseHitStream _ = (:)
     <$> "_id" JS..: ((,) "_id" <$> JS.value)
     <*> "fields" JS..: many (JS.objectItems JS.value)
 
-instance DataRow () (HM.HashMap T.Text J.Value) where
-  parseHit () = return . storedFields
+instance DataRow a (HM.HashMap T.Text J.Value) where
+  parseHit _ = return . storedFields
   parseHitStream = fmap HM.fromList . parseHitStream
 
 instance DataRow (HM.HashMap T.Text Field) [FieldValue] where
@@ -175,11 +175,11 @@ parseFieldValue' :: Field -> J.Value -> Value
 parseFieldValue' f v = fmapTypeValue (\Proxy -> either error Identity (J.parseEither parseJSONTyped v)) (fieldType f)
 
 instance DataRow (HM.HashMap T.Text Field) (HM.HashMap T.Text Value) where
-  parseHit fm = return . HM.intersectionWith parseFieldValue' fm
+  parseHit fm = return . HM.intersectionWith parseFieldValue' fm . storedFields
   parseHitStream fm = fmap (fieldType :: FieldValue -> Value) <$> parseHitStream fm
 
 instance DataRow (HM.HashMap T.Text Field) (HM.HashMap T.Text FieldValue) where
-  parseHit fm = return . HM.intersectionWith pfv fm where
+  parseHit fm = return . HM.intersectionWith pfv fm . storedFields where
     pfv f = setFieldValueUnsafe f . parseFieldValue' f
   parseHitStream fm = KM.fromList <$> parseHitStream fm
 
