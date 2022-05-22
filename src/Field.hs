@@ -35,6 +35,7 @@ module Field
   , Field, FieldGroup
   , Fields, FieldGroups
   , setFieldValue
+  , setFieldValueUnsafe
   , updateFieldValueM
   , parseFieldGroup
   , expandField, expandFields, expandAllFields

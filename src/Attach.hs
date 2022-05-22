@@ -16,7 +16,7 @@ module Attach
 import qualified Codec.Archive.Zip.Conduit.Zip as Zip
 import           Control.Monad (void, guard)
 import           Control.Monad.IO.Class (liftIO)
-import           Control.Monad.Reader (ask, asks)
+import           Control.Monad.Reader (asks)
 import qualified Data.Aeson as J
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
@@ -26,6 +26,7 @@ import qualified Data.Conduit as C
 import qualified Data.Conduit.Combinators as C
 import           Data.Foldable (fold)
 import           Data.Functor (($>))
+import           Data.Functor.Identity (Identity(..))
 import qualified Data.HashMap.Strict as HM
 import           Data.Maybe (catMaybes, mapMaybe)
 import qualified Data.Text as T
@@ -55,9 +56,9 @@ import Global
 import Backend
 import Output.Types
 
-attachmentPresent :: TypeValue Maybe -> Bool
-attachmentPresent (Boolean (Just True)) = True
-attachmentPresent (Void _) = True
+-- TODO: allow void? other types?
+attachmentPresent :: Value -> Bool
+attachmentPresent (Boolean (Identity True)) = True
 attachmentPresent _ = False
 
 pathFields :: DynamicPath -> [T.Text]
@@ -87,16 +88,16 @@ pathStr path doc = foldMap ps path where
   rf (Just J.Null) = ""
   rf Nothing = "?"
 
-resolveDynamicPath :: HM.HashMap T.Text (TypeValue Maybe) -> DynamicPath -> BSL.ByteString
+resolveDynamicPath :: HM.HashMap T.Text Value -> DynamicPath -> BSL.ByteString
 resolveDynamicPath doc path = B.toLazyByteString $ foldMap ps path where
   ps (DynamicPathLiteral s) = B.string8 s
   ps (DynamicPathField f) = rf $ HM.lookup f doc
   ps (DynamicPathSubstitute f a b) = case HM.lookup f doc of
-    Just (Keyword (Just s)) -> TE.encodeUtf8Builder $ T.replace a b s
+    Just (Keyword (Identity s)) -> TE.encodeUtf8Builder $ T.replace a b s
     x -> rf x
   rf = maybe "?" $ unTypeValue (foldMap renderValue)
 
-resolveAttachment :: HM.HashMap T.Text (TypeValue Maybe) -> Attachment -> (FilePath, BS.ByteString)
+resolveAttachment :: HM.HashMap T.Text Value -> Attachment -> (FilePath, BS.ByteString)
 resolveAttachment doc Attachment{..} = (BSLC.unpack $ rp attachmentPath, BSL.toStrict $ rp attachmentName) where
   rp = resolveDynamicPath doc
 
@@ -155,7 +156,7 @@ zipGenerator req cat args = do
   dir <- asks globalDataDir
   let ents doc = V.mapMaybeM (ent doc) ats
       ent doc af@Field{ fieldDesc = FieldDesc{ fieldDescAttachment = ~(Just a) } }
-        | any attachmentPresent (HM.lookup (fieldName af) doc) =
+        | any attachmentPresent $ HM.lookup (fieldName af) doc =
           enta $ resolveAttachment doc a
         | otherwise = return Nothing
       enta (path, name) = either
@@ -170,16 +171,15 @@ zipGenerator req cat args = do
           , Zip.zipFileData dirpath))
         <$> tryIOError (getFileStatus dirpath)
         where dirpath = dir </> path
-  g <- ask
-  return $ OutputStream Nothing $ \chunk -> C.runConduitRes
-    $ queryDataStream g cat args'
-    C..| C.concatMapM (liftIO . ents)
-    C..| void (Zip.zipStream Zip.ZipOptions
-        { Zip.zipOpt64 = False
-        , Zip.zipOptCompressLevel = 1
-        , Zip.zipOptInfo = Zip.ZipInfo $ TE.encodeUtf8 (catalogTitle cat <> (foldMap (T.cons ' ' . fieldName) ats)) <> " downloaded from " <> Wai.rawPathInfo req
-        })
-    C..| C.mapM_ (liftIO . chunk . B.byteString)
+  return $ OutputStream Nothing $
+    queryDataStream cat args'
+      C..| C.concatMapM (liftIO . ents)
+      C..| void (Zip.zipStream Zip.ZipOptions
+          { Zip.zipOpt64 = False
+          , Zip.zipOptCompressLevel = 1
+          , Zip.zipOptInfo = Zip.ZipInfo $ TE.encodeUtf8 (catalogTitle cat <> (foldMap (T.cons ' ' . fieldName) ats)) <> " downloaded from " <> Wai.rawPathInfo req
+          })
+      C..| C.map B.byteString
   where
   ats = dataFields args
   args' = (attachmentsFilter args)
@@ -198,21 +198,26 @@ type AttachmentApi = R.Route (Simulation, T.Text, T.Text)
 
 attachmentsStreamUrls :: AttachmentApi -> B.Builder -> (B.Builder -> B.Builder) -> B.Builder
   -> Wai.Request -> Catalog -> DataArgs V.Vector -> M OutputStream
-attachmentsStreamUrls api hd row ft req cat args =
+attachmentsStreamUrls api hd line ft req cat args =
   outputStreamRows
     Nothing
     hd
-    (\r -> let Just (Keyword (Just i), l) = V.uncons r in fold $ V.zipWith
-      (\f v -> mwhen (attachmentPresent v) $
-        row $ renderUrlRequestBuilder
-          (requestRoute' api (catalogName cat, fieldName f, i) (waiRequest req) { R.requestQuery = mempty }) mempty)
-      ats l)
+    row
     ft
     cat args'
   where
+  row r = fv idField $ \(Keyword (Identity i)) ->
+    V.foldMap (\f -> fv f $ \v ->
+      mwhen (attachmentPresent v) $
+        line $ renderUrlRequestBuilder
+          (requestRoute' api (catalogName cat, fieldName f, i) (waiRequest req) { R.requestQuery = mempty }) mempty)
+      ats
+    where
+    fv :: Field -> (Value -> B.Builder) -> B.Builder
+    fv f g = foldMap g $ HM.lookup (fieldName f) r
   ats = dataFields args
   args' = (attachmentsFilter args)
-    { dataFields = V.cons idField ats
+    { dataFields = KM.fromList $ idField : V.toList ats
     }
 
 listGenerator :: AttachmentApi -> Wai.Request -> Catalog -> DataArgs V.Vector -> M OutputStream

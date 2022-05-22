@@ -28,7 +28,7 @@ import           Control.Applicative ((<|>))
 import           Control.Lens ((&), (&~), (.~), (?~), (%~), (.=))
 import           Control.Monad (mfilter, unless, when, join, guard)
 import           Control.Monad.IO.Class (liftIO)
-import           Control.Monad.Reader (asks)
+import           Control.Monad.Reader (runReaderT, ask, asks)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
@@ -37,7 +37,8 @@ import           Data.Bits (xor)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.CaseInsensitive as CI
-import           Data.Either (fromRight)
+import qualified Data.Conduit as C
+import qualified Data.Conduit.Combinators as C
 import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
 import qualified Data.HashMap.Strict.InsOrd as HMI
@@ -599,7 +600,7 @@ parseDataQuery cat req = DataArgs
   , dataFields = V.fromList $ parseFieldsQuery cat req "fields"
   , dataSort = parseSortQuery cat req "sort"
   , dataCount = fromMaybe 0 $ parseReadQuery req "count"
-  , dataOffset = Right $ fromMaybe 0 $ parseReadQuery req "offset"
+  , dataOffset = fromMaybe 0 $ parseReadQuery req "offset"
   }
 
 parseDataJSON :: Catalog -> J.Value -> J.Parser (DataArgs V.Vector)
@@ -608,7 +609,7 @@ parseDataJSON cat = J.withObject "data request" $ \o -> DataArgs
   <*> (fmap V.fromList . parseFieldsJSON cat =<< o J..: "fields")
   <*> (parseSortJSON cat =<< o J..:? "sort")
   <*> o J..: "count"
-  <*> (Right <$> (o J..:? "offset" J..!= 0))
+  <*> (o J..:? "offset" J..!= 0)
 
 dataSchema :: OpenApiM (OA.Referenced OA.Schema)
 dataSchema = do
@@ -660,8 +661,8 @@ apiData = APIOp -- /api/{cat}/data
     cat <- askCatalog sim
     body <- parseJSONBody req (parseDataJSON cat)
     let args = fromMaybe (parseDataQuery cat req) body
-    (dat, _) <- queryData cat args
-    return $ okResponse (apiHeaders req) $ JE.list J.foldable (V.toList dat)
+    dat <- queryData cat args
+    return $ okResponse (apiHeaders req) $ J.toEncoding (dat :: V.Vector (V.Vector (TypeValue Maybe)))
   , apiResponse = do
     ds <- dataSchema
     return $ jsonContent ds
@@ -670,7 +671,7 @@ apiData = APIOp -- /api/{cat}/data
   where
   countSchema = OA.Inline $ schemaDescOf dataCount "number of rows to return"
     & OA.maximum_ ?~ fromIntegral maxDataCount
-  offsetSchema = OA.Inline $ schemaDescOf (fromRight 0 . dataOffset) "start at this row offset (0 means first)"
+  offsetSchema = OA.Inline $ schemaDescOf dataOffset "start at this row offset (0 means first)"
     & OA.maximum_ ?~ fromIntegral maxResultWindow - fromIntegral maxDataCount
     & OA.default_ ?~ J.Number 0
 
@@ -679,7 +680,7 @@ apiData = APIOp -- /api/{cat}/data
 jsonGenerator :: Wai.Request -> Catalog -> DataArgs V.Vector -> M OutputStream
 jsonGenerator _ cat args = outputStreamRows Nothing
   ("[" <> J.fromEncoding (J.toEncoding (V.map fieldName (dataFields args))))
-  (\j -> "," <> J.fromEncoding (J.toEncoding j))
+  (\j -> "," <> J.fromEncoding (J.toEncoding (j :: V.Vector (TypeValue Maybe))))
   "]"
   cat args
 
@@ -697,7 +698,6 @@ newtype DownloadFormat = DownloadFormat OutputFormat
 downloadFormats :: KM.KeyedMap DownloadFormat
 downloadFormats = KM.fromList $ map DownloadFormat
   [ csvOutput 
-  , csvOutput'
   , ecsvOutput 
   , numpyOutput 
   , jsonOutput 
@@ -715,6 +715,7 @@ outputAction sim fmt comp check req = do
       enc = comp <|> listToMaybe (acceptCompressionEncoding req)
   check args
   out <- outputGenerator fmt req cat args
+  g <- ask
   return $ Wai.responseStream ok200 (apiHeaders req ++
     [ (hContentType, maybe (MT.renderHeader $ outputMimeType fmt) compressionMimeType comp)
     , (hContentDisposition, "attachment; filename=" <> quoteHTTP (TE.encodeUtf8 sim
@@ -723,7 +724,9 @@ outputAction sim fmt comp check req = do
     [ (,) hContentLength . BSC.pack . show <$> (guard (isNothing comp) >> outputSize out)
     , compressionEncodingHeader <$> (guard (enc /= comp) >> enc)
     ])
-    $ compressStream enc $ \chunk _ -> outputStream out chunk
+    $ compressStream enc $ \chunk _ -> 
+      runReaderT (C.runConduitRes $ outputStream out
+        C..| C.mapM_ (liftIO . chunk)) g
 
 apiDownload :: APIOp (Simulation, (DownloadFormat, Maybe CompressionFormat))
 apiDownload = APIOp
@@ -1026,13 +1029,13 @@ apiAttachment = APIOp
     cat <- askCatalog sim
     atf <- lookupField cat False atn
     att <- maybe (raise404 "Not attachment field") return $ fieldAttachment atf
-    (dat, _) <- queryData cat DataArgs
+    dat <- queryData cat DataArgs
       { dataFilters = mempty{ filterFields = KM.singleton $
         idField{ fieldType = Keyword (FieldEQ [rid]) } }
       , dataCount = 1
       , dataFields = KM.fromList $ attachmentFields cat atf
       , dataSort = []
-      , dataOffset = Right 0
+      , dataOffset = 0
       }
     doc <- maybe (raise404 "Attachment row not found") return $ 
       mfilter (any attachmentPresent . HM.lookup atn) (dat V.!? 0)

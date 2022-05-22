@@ -10,6 +10,7 @@ module Output.ECSV
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Types as J
 import qualified Data.ByteString.Builder as B
+import qualified Data.Conduit as C
 import           Data.Maybe (maybeToList)
 import qualified Data.Vector as V
 import qualified Network.Wai as Wai
@@ -63,12 +64,12 @@ ecsvHeader cat fields meta = renderECSVHeader $ ECSVHeader
 ecsvGenerator :: Wai.Request -> Catalog -> DataArgs V.Vector -> M OutputStream
 ecsvGenerator req cat args = do
   csv <- outputGenerator csvOutput req cat args
-  return $ OutputStream Nothing $ \chunk -> do
-    chunk $ ecsvHeader cat (dataFields args)
+  return $ OutputStream Nothing $ do
+    C.yield $ ecsvHeader cat (dataFields args)
       [ "filters" J..= dataFilters args
       , "sort" J..= map (\(f, a) -> J.object ["field" J..= fieldName f, "order" J..= if a then "asc" :: String else "desc"]) (dataSort args)
       ]
-    outputStream csv chunk
+    outputStream csv
 
 ecsvOutput :: OutputFormat
 ecsvOutput = OutputFormat
