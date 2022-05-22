@@ -642,6 +642,11 @@ apiData = APIOp -- /api/{cat}/data
       & OA.in_ .~ OA.ParamQuery
       & OA.style ?~ OA.StyleForm
       & OA.schema ?~ offsetSchema
+    {- , return $ OA.Inline $ mempty
+      & OA.name .~ "object"
+      & OA.in_ .~ OA.ParamQuery
+      & OA.style ?~ OA.StyleForm
+      & OA.schema ?~ jobjectSchema -}
     ]
   , apiRequestSchema = Just $ do
     filt <- filtersSchema
@@ -655,6 +660,7 @@ apiData = APIOp -- /api/{cat}/data
         , ("sort", sort, False)
         , ("count", countSchema, True)
         , ("offset", offsetSchema, False)
+        -- , ("object", jobjectSchema, False)
         ]
       ]
   , apiAction = \sim req -> do
@@ -674,6 +680,8 @@ apiData = APIOp -- /api/{cat}/data
   offsetSchema = OA.Inline $ schemaDescOf dataOffset "start at this row offset (0 means first)"
     & OA.maximum_ ?~ fromIntegral maxResultWindow - fromIntegral maxDataCount
     & OA.default_ ?~ J.Number 0
+  jobjectSchema = OA.Inline $ schemaDescOf (True ==) "return JSON objects instead of arrays"
+    & OA.default_ ?~ J.Bool False
 
 -------- /api/{catalog}/data/{format}
 

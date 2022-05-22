@@ -227,14 +227,12 @@ queryDataRequest cat DataArgs{..} off =
     <> "size" J..= dataCount
     <> "sort" `JE.pair` JE.list (\(f, a) ->
         JE.pairs (fieldName f J..= if a then "asc" else "desc" :: String))
-      (dataSort ++ [(docField,True),(key,True)])
+      dataSort
     <> maybe
       (mwhen (dataOffset > 0) $ "from" J..= dataOffset)
       ("search_after" J..=) off
     <> storedFieldsArgs (toList dataFields)
     <> filterQuery dataFilters
-  where
-  key = fromMaybe idField $ (`HM.lookup` catalogFieldMap cat) =<< catalogKey cat
 
 -- |Query raw data rows as specified, and return a vector of row data, matching dataFields order.
 queryData :: (Foldable f, DataRow (f Field) a) => Catalog -> DataArgs f -> M (V.Vector a)
@@ -252,11 +250,12 @@ queryDataStream :: (MonadResource m, MonadIO m, MonadGlobal m, MonadFail m, Fold
   Catalog -> DataArgs f -> C.ConduitT i a m ()
 queryDataStream cat args = qds Nothing where
   qds off = do
-    req <- lift $ queryDataRequest cat args off
+    req <- lift $ queryDataRequest cat args{ dataSort = dataSort args ++ [(docField,True),(key,True)] } off
     off' <- httpStream req
       C..| (mapM_ fail =<< parserConduit (parseDataStream (dataFields args)))
       C..| fstAndLast
     mapM_ (qds . Just) off'
+  key = fromMaybe idField $ (`HM.lookup` catalogFieldMap cat) =<< catalogKey cat
 
 fieldUseTerms :: Field -> Bool
 fieldUseTerms f = fieldTerms f || not (typeIsNumeric $ snd $ unArrayType $ fieldType f)

@@ -53,7 +53,7 @@ import           Data.Typeable (cast)
 import qualified Data.Vector as V
 import qualified Network.HTTP.Client.Conduit as HTTP hiding (httpSource)
 import qualified Network.HTTP.Simple as HTTP
-import           Network.HTTP.Types.Header (hAccept, hContentType)
+import           Network.HTTP.Types.Header (hAcceptEncoding, hAccept, hContentType)
 import           Network.HTTP.Types.Method (StdMethod(GET, PUT, POST), renderStdMethod)
 import qualified Network.URI as URI
 import           Text.Read (readEither)
@@ -72,7 +72,14 @@ debug :: Bool
 debug = False
 
 initServer :: C.Config -> IO HTTP.Request
-initServer conf = HTTP.parseRequestThrow (conf C.! "server")
+initServer conf = do
+  req <- HTTP.parseRequestThrow (conf C.! "server")
+  return req
+    { HTTP.requestHeaders =
+        [ (hAcceptEncoding, " ") -- disable gzip
+        , (hAccept, "application/json")
+        ]
+    }
 
 class Body a where
   bodyRequest :: a -> HTTP.RequestBody
@@ -111,8 +118,7 @@ elasticRequest meth url query body = do
     { HTTP.method = renderStdMethod meth
     , HTTP.path = HTTP.path req <> BS.intercalate "/" (map (BSC.pack . URI.escapeURIString URI.isUnescapedInURIComponent) url)
     , HTTP.requestHeaders = maybe id ((:) . (,) hContentType) (bodyContentType body)
-        $ (hAccept, "application/json")
-        : HTTP.requestHeaders req
+        $ HTTP.requestHeaders req
     , HTTP.requestBody = bodyRequest body
     }
 
