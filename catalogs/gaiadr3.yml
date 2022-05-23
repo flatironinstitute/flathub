@@ -1369,19 +1369,19 @@ fields:
 # - name: flags_esphs
 #   type: int16 (01,02,03,04,11,12,13,14,90,91,92,93,94,95,999)
 #   descr: Quality flag of the ESP-HS parametrisation
-# - name: spectraltype_esphs
-#   type: keyword
-#   descr: Spectral type from ESP-ELS
-#   enum:
-#   - A
-#   - B
-#   - CSTAR
-#   - F
-#   - G
-#   - K
-#   - M
-#   - O
-#   - unknown
+  - name: spectraltype_esphs
+    type: enum
+    descr: Spectral type from ESP-ELS
+    enum:
+    - unknown
+    - O
+    - B
+    - A
+    - F
+    - G
+    - K
+    - M
+    - CSTAR
   - name: activityindex_espcs
     units: nm
     type: float

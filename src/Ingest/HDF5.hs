@@ -150,7 +150,7 @@ ingestBlock info dat =
   ingestWith info (blockDoc info mempty dat) =<< blockSize dat
 
 ingestSubBlocks :: Ingest -> H5.File -> DataBlock -> IngestJoin -> M Int
-ingestSubBlocks info hf pb IngestJoin{..} = do
+ingestSubBlocks info hf pb IngestHaloJoin{..} = do
   fcl <- V.zip <$> getcol joinFirst pb <*> getcol joinCount pb
   let fcl' = V.filter ((-1 /=) . fst) fcl
   if V.null fcl' then return 0 else do
@@ -168,6 +168,7 @@ ingestSubBlocks info hf pb IngestJoin{..} = do
   getcol f b = case lookup f b of
     Just (Integer v) -> return v
     _ -> fail $ "ingest join data not found for " ++ show f
+ingestSubBlocks _ _ _ _ = fail "join not supported"
 
 withHDF5 :: FilePath -> (H5.File -> IO a) -> IO a
 withHDF5 fn = bracket (H5.openFile (BSC.pack fn) [H5.ReadOnly] Nothing) H5.closeFile
@@ -247,7 +248,7 @@ ingestHFile info hf = do
         } fg
       return $ tfv False i
         { ingestCatalog = cat'
-        , ingestJoin = Just (IngestJoin si ff fc fp)
+        , ingestJoin = Just (IngestHaloJoin si ff fc fp)
         }
     _ -> return i -- XXX only top-level ingest flags processed here
   getIllustrisSize ill = liftIO $ do

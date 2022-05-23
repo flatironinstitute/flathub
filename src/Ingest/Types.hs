@@ -16,13 +16,18 @@ import Type
 import Field
 import Catalog
 
--- Indicates a (left, 1:many) join of the main data to child data
-data IngestJoin = IngestJoin
-  { joinIngest :: Ingest
-  , joinFirst -- ^parent field of first index
-  , joinCount -- ^parent field of count
-  , joinParent :: T.Text -- ^child field referencing parent
-  }
+data IngestJoin
+  = IngestHaloJoin -- ^Indicates a (left, 1:many) join of the main data to child data
+    { joinIngest :: Ingest
+    , joinFirst -- ^parent field of first index
+    , joinCount -- ^parent field of count
+    , joinParent :: T.Text -- ^child field referencing parent
+    }
+  | IngestLeftJoin -- ^Indicates a left join of the main data table to sub data
+    { joinIngest :: Ingest -- ^right table
+    , joinField -- ^field to join on (in both)
+    , joinPrefix :: T.Text -- ^prefix (group) for right table
+    }
 
 data Ingest = Ingest
   { ingestCatalog :: Catalog
