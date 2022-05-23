@@ -607,29 +607,31 @@ fields:
   type: float
   descr: Upper confidence level (84%) of reddening  $E(G_{\rm BP} - G_{\rm RP})$
     from GSP-Phot Aeneas best library using BP/RP spectra
-#- name: libname_gspphot
-# type: keyword
-# descr: Name of library that achieves the highest mean log-posterior in MCMC samples
-#   and was used to derive GSP-Phot parameters in this table
-# enum: [PHOENIX,MARCS,A,OB,...]
+- name: libname_gspphot
+  type: byte
+  descr: Name of library that achieves the highest mean log-posterior in MCMC samples
+    and was used to derive GSP-Phot parameters in this table
+  enum: [PHOENIX,MARCS,A,OB]
 
 ######## SUB TABLES follow #######
 - name: astrophysical_parameters
+  #count: 1590932717
   descr: |
     This is the main table containing the 1D astrophysical parameters produced by the Apsis processing chain developed in Gaia DPAC CU8 (see Chapter~\ref{chap:cu8par}). Additional parameters can be found in table {\tt AstrophysicalParametersSupp}.
   sub:
-  - name: classprob_dsc_combmod_quasar
-    type: float
-    descr: 'Probability from DSC-Combmod of being a quasar (data used: BP/RP spectrum,
-      photometry, astrometry)'
-  - name: classprob_dsc_combmod_galaxy
-    type: float
-    descr: 'Probability from DSC-Combmod of being a galaxy (data used: BP/RP spectrum,
-      photometry, astrometry)'
-  - name: classprob_dsc_combmod_star
-    type: float
-    descr: 'Probability from DSC-Combmod of being a single star (but not a white dwarf)
-      (data used: BP/RP spectrum, photometry, astrometry)'
+# duplicate gaia_source:
+# - name: classprob_dsc_combmod_quasar
+#   type: float
+#   descr: 'Probability from DSC-Combmod of being a quasar (data used: BP/RP spectrum,
+#     photometry, astrometry)'
+# - name: classprob_dsc_combmod_galaxy
+#   type: float
+#   descr: 'Probability from DSC-Combmod of being a galaxy (data used: BP/RP spectrum,
+#     photometry, astrometry)'
+# - name: classprob_dsc_combmod_star
+#   type: float
+#   descr: 'Probability from DSC-Combmod of being a single star (but not a white dwarf)
+#     (data used: BP/RP spectrum, photometry, astrometry)'
   - name: classprob_dsc_combmod_whitedwarf
     type: float
     descr: 'Probability from DSC-Combmod of being a white dwarf (data used: BP/RP
@@ -668,91 +670,92 @@ fields:
     type: float
     descr: 'Probability from DSC-Allosmod of being a star (data used: photometry,
       astrometry)'
-  - name: teff_gspphot
-    units: K
-    type: float
-    descr: Effective temperature from GSP-Phot Aeneas best library using BP/RP spectra
-  - name: teff_gspphot_lower
-    units: K
-    type: float
-    descr: Lower confidence level (16%) of effective temperature from GSP-Phot Aeneas
-      best library using BP/RP spectra
-  - name: teff_gspphot_upper
-    units: K
-    type: float
-    descr: Upper confidence level (84%) of effective temperature from GSP-Phot Aeneas
-      best library using BP/RP spectra
-  - name: logg_gspphot
-    units: log(cm.s**-2)
-    type: float
-    descr: Surface gravity from GSP-Phot Aeneas best library using BP/RP spectra
-  - name: logg_gspphot_lower
-    units: log(cm.s**-2)
-    type: float
-    descr: Lower confidence level (16%) of surface gravity from GSP-Phot Aeneas best
-      library using BP/RP spectra
-  - name: logg_gspphot_upper
-    units: log(cm.s**-2)
-    type: float
-    descr: Upper confidence level (84%) of surface gravity from GSP-Phot Aeneas best
-      library using BP/RP spectra
-  - name: mh_gspphot
-    units: '''dex'''
-    type: float
-    descr: Iron abundance from GSP-Phot Aeneas best library using BP/RP spectra
-  - name: mh_gspphot_lower
-    units: '''dex'''
-    type: float
-    descr: Lower confidence level (16%) of iron abundance from GSP-Phot Aeneas best
-      library using BP/RP spectra
-  - name: mh_gspphot_upper
-    units: '''dex'''
-    type: float
-    descr: Upper confidence level (84%) of iron abundance from GSP-Phot Aeneas best
-      library using BP/RP spectra
-  - name: distance_gspphot
-    units: pc
-    type: float
-    descr: Distance from GSP-Phot Aeneas best library using BP/RP spectra
-  - name: distance_gspphot_lower
-    units: pc
-    type: float
-    descr: Lower confidence level (16%) of distance from GSP-Phot Aeneas best library
-      using BP/RP spectra
-  - name: distance_gspphot_upper
-    units: pc
-    type: float
-    descr: Upper confidence level (84%) of distance from GSP-Phot Aeneas best library
-      using BP/RP spectra
-  - name: azero_gspphot
-    units: mag
-    type: float
-    descr: Monochromatic extinction $A_0$ at 547.7nm from GSP-Phot Aeneas best library
-      using BP/RP spectra
-  - name: azero_gspphot_lower
-    units: mag
-    type: float
-    descr: Lower confidence level (16%) of monochromatic extinction $A_0$ at 547.7nm
-      from GSP-Phot Aeneas best library using BP/RP spectra
-  - name: azero_gspphot_upper
-    units: mag
-    type: float
-    descr: Upper confidence level (84%) of monochromatic extinction $A_0$ at 547.7nm
-      from GSP-Phot Aeneas best library using BP/RP spectra
-  - name: ag_gspphot
-    units: mag
-    type: float
-    descr: Extinction in G band from GSP-Phot Aeneas best library using BP/RP spectra
-  - name: ag_gspphot_lower
-    units: mag
-    type: float
-    descr: Lower confidence level (16%) of extinction in G band from GSP-Phot Aeneas
-      best library using BP/RP spectra
-  - name: ag_gspphot_upper
-    units: mag
-    type: float
-    descr: Upper confidence level (84%) of extinction in G band from GSP-Phot Aeneas
-      best library using BP/RP spectra
+# duplicate gaia_source:
+# - name: teff_gspphot
+#   units: K
+#   type: float
+#   descr: Effective temperature from GSP-Phot Aeneas best library using BP/RP spectra
+# - name: teff_gspphot_lower
+#   units: K
+#   type: float
+#   descr: Lower confidence level (16%) of effective temperature from GSP-Phot Aeneas
+#     best library using BP/RP spectra
+# - name: teff_gspphot_upper
+#   units: K
+#   type: float
+#   descr: Upper confidence level (84%) of effective temperature from GSP-Phot Aeneas
+#     best library using BP/RP spectra
+# - name: logg_gspphot
+#   units: log(cm.s**-2)
+#   type: float
+#   descr: Surface gravity from GSP-Phot Aeneas best library using BP/RP spectra
+# - name: logg_gspphot_lower
+#   units: log(cm.s**-2)
+#   type: float
+#   descr: Lower confidence level (16%) of surface gravity from GSP-Phot Aeneas best
+#     library using BP/RP spectra
+# - name: logg_gspphot_upper
+#   units: log(cm.s**-2)
+#   type: float
+#   descr: Upper confidence level (84%) of surface gravity from GSP-Phot Aeneas best
+#     library using BP/RP spectra
+# - name: mh_gspphot
+#   units: '''dex'''
+#   type: float
+#   descr: Iron abundance from GSP-Phot Aeneas best library using BP/RP spectra
+# - name: mh_gspphot_lower
+#   units: '''dex'''
+#   type: float
+#   descr: Lower confidence level (16%) of iron abundance from GSP-Phot Aeneas best
+#     library using BP/RP spectra
+# - name: mh_gspphot_upper
+#   units: '''dex'''
+#   type: float
+#   descr: Upper confidence level (84%) of iron abundance from GSP-Phot Aeneas best
+#     library using BP/RP spectra
+# - name: distance_gspphot
+#   units: pc
+#   type: float
+#   descr: Distance from GSP-Phot Aeneas best library using BP/RP spectra
+# - name: distance_gspphot_lower
+#   units: pc
+#   type: float
+#   descr: Lower confidence level (16%) of distance from GSP-Phot Aeneas best library
+#     using BP/RP spectra
+# - name: distance_gspphot_upper
+#   units: pc
+#   type: float
+#   descr: Upper confidence level (84%) of distance from GSP-Phot Aeneas best library
+#     using BP/RP spectra
+# - name: azero_gspphot
+#   units: mag
+#   type: float
+#   descr: Monochromatic extinction $A_0$ at 547.7nm from GSP-Phot Aeneas best library
+#     using BP/RP spectra
+# - name: azero_gspphot_lower
+#   units: mag
+#   type: float
+#   descr: Lower confidence level (16%) of monochromatic extinction $A_0$ at 547.7nm
+#     from GSP-Phot Aeneas best library using BP/RP spectra
+# - name: azero_gspphot_upper
+#   units: mag
+#   type: float
+#   descr: Upper confidence level (84%) of monochromatic extinction $A_0$ at 547.7nm
+#     from GSP-Phot Aeneas best library using BP/RP spectra
+# - name: ag_gspphot
+#   units: mag
+#   type: float
+#   descr: Extinction in G band from GSP-Phot Aeneas best library using BP/RP spectra
+# - name: ag_gspphot_lower
+#   units: mag
+#   type: float
+#   descr: Lower confidence level (16%) of extinction in G band from GSP-Phot Aeneas
+#     best library using BP/RP spectra
+# - name: ag_gspphot_upper
+#   units: mag
+#   type: float
+#   descr: Upper confidence level (84%) of extinction in G band from GSP-Phot Aeneas
+#     best library using BP/RP spectra
   - name: abp_gspphot
     units: mag
     type: float
@@ -783,21 +786,21 @@ fields:
     type: float
     descr: Upper confidence level (84%) of extinction in $G_{\rm RP}$ band from GSP-Phot
       Aeneas best library using BP/RP spectra
-  - name: ebpminrp_gspphot
-    units: mag
-    type: float
-    descr: Reddening $E(G_{\rm BP} - G_{\rm RP})$ from GSP-Phot Aeneas best library
-      using BP/RP spectra
-  - name: ebpminrp_gspphot_lower
-    units: mag
-    type: float
-    descr: Lower confidence level (16%) of reddening  $E(G_{\rm BP} - G_{\rm RP})$
-      from GSP-Phot Aeneas best library using BP/RP spectra
-  - name: ebpminrp_gspphot_upper
-    units: mag
-    type: float
-    descr: Upper confidence level (84%) of reddening  $E(G_{\rm BP} - G_{\rm RP})$
-      from GSP-Phot Aeneas best library using BP/RP spectra
+# - name: ebpminrp_gspphot
+#   units: mag
+#   type: float
+#   descr: Reddening $E(G_{\rm BP} - G_{\rm RP})$ from GSP-Phot Aeneas best library
+#     using BP/RP spectra
+# - name: ebpminrp_gspphot_lower
+#   units: mag
+#   type: float
+#   descr: Lower confidence level (16%) of reddening  $E(G_{\rm BP} - G_{\rm RP})$
+#     from GSP-Phot Aeneas best library using BP/RP spectra
+# - name: ebpminrp_gspphot_upper
+#   units: mag
+#   type: float
+#   descr: Upper confidence level (84%) of reddening  $E(G_{\rm BP} - G_{\rm RP})$
+#     from GSP-Phot Aeneas best library using BP/RP spectra
   - name: mg_gspphot
     units: mag
     type: float
@@ -1279,9 +1282,9 @@ fields:
     units: nm
     type: float
     descr: Uncertainty of the Halpha pseudo-equivalent width from ESP-ELS
-# - name: ew_espels_halpha_flag
-#   type: boolean
-#   descr: Quality flag of the Halpha pseudo-equivalent width from ESP-ELS
+  - name: ew_espels_halpha_flag
+    type: boolean
+    descr: Quality flag of the Halpha pseudo-equivalent width from ESP-ELS
   - name: ew_espels_halpha_model
     units: nm
     type: float
@@ -1289,9 +1292,9 @@ fields:
 # - name: classlabel_espels
 #   type: keyword
 #   descr: Adopted ELS class label from ESP-ELS
-#   enum: ['beStar', 'wN', ?]
+#   enum: ['beStar', 'wN', 'RedDwarfEmStar', 'TTauri', ?]
 # - name: classlabel_espels_flag
-#   type: int8
+#   type: int8 (1,2,3,4,22,23,24)
 #   descr: Quality flag of the adopted ELS class label from ESP-ELS
   - name: classprob_espels_wcstar
     type: float
@@ -1364,7 +1367,7 @@ fields:
     type: float
     descr: Uncertainty on the projected rotational velocity from ESP-HS
 # - name: flags_esphs
-#   type: int16
+#   type: int16 (01,02,03,04,11,12,13,14,90,91,92,93,94,95,999)
 #   descr: Quality flag of the ESP-HS parametrisation
 # - name: spectraltype_esphs
 #   type: keyword
@@ -1402,9 +1405,8 @@ fields:
     type: float
     descr: Uncertainty of the effective temperature estimate produced by ESP-UCD
 # - name: flags_espucd
-#   type: keyword
+#   type: int8 (00,10,20)
 #   descr: Quality flags of the ESP-UCD parameter estimates
-#   blank?
   - name: radius_flame
     units: solRad
     type: float
@@ -1457,7 +1459,7 @@ fields:
     type: float
     descr: Upper confidence level (84%) of {\tt ageFlame}
 # - name: flags_flame
-#   type: int8
+#   type: int8 (00,01,02,10,11,12,20,21,22)
 #   descr: Flags indicating quality and processing information from FLAME
   - name: evolstage_flame
     type: integer
@@ -1619,9 +1621,10 @@ fields:
     descr: Percentile rank according to the distance distribution of the OA neuron
       that represents the source
 # - name: flags_oa
-#   type: int16
+#   type: int16 (4-digit numbers)
 #   descr: Flags indicating quality and processing information from OA
 - name: astrophysical_parameters_supp
+  #count: 473020612
   descr: |
     This table contains additional parameters from the Apsis processing chain, compared to the main table {\tt AstrophysicalParameters} (see Chapter~\ref{chap:cu8par}), from modules that produce more than one result for a parameter. It contains (1) the individual library results from GSP-Phot (see Section~\ref{ssec:cu8par_apsis_gspphot_method}), (2) FLAME results from processing GSP-Spec parameters given in the {\tt AstrophysicalParameters} table (see Section~\ref{ssec:cu8par_apsis_flame}), and (3) results from the GSP-Spec ANN algorithm (see Section~\ref{ssec:cu8par_apsis_gspspec}).
   sub:
@@ -2359,7 +2362,7 @@ fields:
     type: float
     descr: Logarithm of the goodness-of-fit for the GSP-Spec ANN parameters
 # - name: flags_gspspec_ann
-#   type: long
+#   type: long (12-digit [0-2]*)
 #   descr: Catalogue flags for GSP-Spec ANN
   - name: radius_flame_spec
     units: solRad
@@ -2413,7 +2416,7 @@ fields:
     type: float
     descr: Upper confidence level (84%) of {\tt ageFlameSpec}
 # - name: flags_flame_spec
-#   type: int8
+#   type: int8 (0,1,2)
 #   descr: Flag indicating quality of parameters from FLAME using GSP-Spec parameters
   - name: evolstage_flame_spec
     type: integer
