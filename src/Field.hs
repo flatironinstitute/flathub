@@ -38,6 +38,7 @@ module Field
   , setFieldValueUnsafe
   , updateFieldValueM
   , parseFieldGroup
+  , subField
   , expandField, expandFields, expandAllFields
   , deleteField
   , fieldsDepth

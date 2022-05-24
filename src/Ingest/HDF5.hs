@@ -248,7 +248,7 @@ ingestHFile info hf = do
         } fg
       return $ tfv False i
         { ingestCatalog = cat'
-        , ingestJoin = Just (IngestHaloJoin si ff fc fp)
+        , ingestJoin = Just $ IngestHaloJoin si ff fc fp
         }
     _ -> return i -- XXX only top-level ingest flags processed here
   getIllustrisSize ill = liftIO $ do

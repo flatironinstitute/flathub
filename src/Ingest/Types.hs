@@ -23,11 +23,6 @@ data IngestJoin
     , joinCount -- ^parent field of count
     , joinParent :: T.Text -- ^child field referencing parent
     }
-  | IngestLeftJoin -- ^Indicates a left join of the main data table to sub data
-    { joinIngest :: Ingest -- ^right table
-    , joinField -- ^field to join on (in both)
-    , joinPrefix :: T.Text -- ^prefix (group) for right table
-    }
 
 data Ingest = Ingest
   { ingestCatalog :: Catalog

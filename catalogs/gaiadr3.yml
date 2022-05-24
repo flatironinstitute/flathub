@@ -1,5 +1,8 @@
 title: Gaia DR3
 index: gaiadr3
+settings:
+  index:
+    mapping.total_fields.limit: 1300
 descr: >
   <a href='https://www.cosmos.esa.int/web/gaia/dr3'>Gaia Data Release 3</a> from the <a href='http://www.esa.int/ESA'>European Space Agency</a>
     How to cite and acknowledge Gaia: 
@@ -23,6 +26,7 @@ fields:
 - name: source_id
   type: long
   descr: Unique source identifier (unique within a particular Data Release)
+  ingest: _key:GaiaSource
 - name: random_index
   type: long
   descr: Random index for use when selecting subsets
@@ -615,6 +619,7 @@ fields:
 
 ######## SUB TABLES follow #######
 - name: astrophysical_parameters
+  ingest: _table:AstrophysicalParameters
   #count: 1590932717
   descr: |
     This is the main table containing the 1D astrophysical parameters produced by the Apsis processing chain developed in Gaia DPAC CU8 (see Chapter~\ref{chap:cu8par}). Additional parameters can be found in table {\tt AstrophysicalParametersSupp}.
@@ -1624,6 +1629,7 @@ fields:
 #   type: string (int16: 4-digit numbers)
 #   descr: Flags indicating quality and processing information from OA
 - name: astrophysical_parameters_supp
+  ingest: _table:AstrophysicalParametersSupp
   #count: 473020612
   descr: |
     This table contains additional parameters from the Apsis processing chain, compared to the main table {\tt AstrophysicalParameters} (see Chapter~\ref{chap:cu8par}), from modules that produce more than one result for a parameter. It contains (1) the individual library results from GSP-Phot (see Section~\ref{ssec:cu8par_apsis_gspphot_method}), (2) FLAME results from processing GSP-Spec parameters given in the {\tt AstrophysicalParameters} table (see Section~\ref{ssec:cu8par_apsis_flame}), and (3) results from the GSP-Spec ANN algorithm (see Section~\ref{ssec:cu8par_apsis_gspspec}).
@@ -2440,6 +2446,7 @@ fields:
     descr: Bolometric correction applied to derive {\tt lumFlameSpec} using GSP-Spec
       parameters
 - name: gaia_crf3_xm
+  ingest: _table:GaiaCrf3Xm
   descr: |
     This table contains the full cross-match information for the Gaia-CRF3 sources. The Gaia-CRF3 sources were selected from the cross-matches with 17 external QSO catalogues as detailed below (three of which are parts of ICRF3 described in the first paper). For each Gaia-CRF3 source  the information in which external catalogue this source was found and which name(s) this source has in those external catalogues is provided. The table allows the user to get all sources from an external catalogue that are in Gaia-CRF3.
     The external catalogues from which the Gaia-CRF3 sources were compiled are: \begin{itemize}  \item The third realization of the International Celestial Reference Frame by very long baseline interferometry \citep{2020A&A...644A.159C} \item A New Version of the OCARS Catalogue of Optical Characteristics of Astrometric Radio Sources \citep{2018ApJS..239...20M} (the catalogue downloaded from \url{http://www.gaoran.ru/english/as/ac_vlbi/#OCARS} on 17 June 2020) \item Identification of 1.4 Million Active Galactic Nuclei in the Mid-Infrared using WISE Data \citep{2015ApJS..221...12S} \item The WISE AGN Catalogue \citep{2018ApJS..234...23A} \item The Million Quasars (Milliquas) Catalogue, v6.4 \citep{2019arXiv191205614F} with the v6.5 (2020) update \item The Sloan Digital Sky Survey Quasar Catalogue: Fourteenth data release \citep{2018A&A...613A..51P} \item LQAC-5: The fifth release of the Large Quasar Astrometric Catalogue. A compilation of 592 809 objects with 398 697 Gaia counterparts \citep{2019A&A...624A.145S} \item The Large Sky Area Multi-object Fiber Spectroscopic Telescope (LAMOST) Quasar Survey: The Fourth and Fifth Data Releases \citep{2019ApJS..240....6Y} -- see also \url{https://nadc.china-vo.org/data/article/20190107155838} \item The large quasar reference frame (LQRF). An optical representation of the ICRS \citep{2009A&A...505..385A} \item The 2dF QSO Redshift Survey - XII. The spectroscopic catalogue and luminosity function \citep{2004MNRAS.349.1397C} \item The 5th edition of the Roma-BZCAT \citep{2015Ap&SS.357...75M} \item 2WHSP: A multi-frequency selected catalogue of high energy and very high energy {\ensuremath{\gamma}}-ray blazars and blazar candidates \citep{2017A&A...598A..17C} \item ALMA photometry of extragalactic radio sources \citep{2019MNRAS.485.1188B} \item Catalogues of active galactic nuclei from Gaia and unWISE data \citep{2019MNRAS.489.4741S} \item Quasar and galaxy classification in Gaia Data Release 2 \citep{2019MNRAS.490.5615B} \end{itemize}
@@ -2557,6 +2564,7 @@ fields:
 #   descr: The name for this source in the Gaia DR2 quasar and galaxy classification
 #     catalogue
 - name: galaxy_candidates
+  ingest: _table:GalaxyCandidates
   descr: "This table contains parameters derived from various modules dedicated to
     the classification and characterisation of sources considered as galaxy candidates.
     This table has been constructed with the intention to be complete rather than
@@ -2744,6 +2752,7 @@ fields:
     descr: Bit indicative of whether the input data from a given module met the source
       list eligibility criteria for the source of interest
 - name: galaxy_catalogue_name
+  ingest: _table:GalaxyCatalogueName
   descr: "This table provides the list of input catalogues that have been used to
     select any given source for which morphological analysis parameters are provided
     in table {\\tt GalaxyCandidates}.\nEach source may have been cross-matched to
@@ -2760,6 +2769,7 @@ fields:
     descr: The unique identifier for the catalogue(s) used to select the sources in
       the morphological analysis
 - name: nss_acceleration_astro
+  ingest: _table:NssAccelerationAstro
   descr: |
     This table contains non-single-star astrometric models for sources having a non-linear proper motion which is compatible with an acceleration solution. Several possible models are hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
     Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}.
@@ -2868,6 +2878,7 @@ fields:
     type: long
     descr: Quality flag for the achieved NSS solution
 - name: nss_non_linear_spectro
+  ingest: _table:NssNonLinearSpectro
   descr: |
     This table contains non-single-star orbital models for spectroscopic binaries compatible with a trend. Several possible models are hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
     Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}.
@@ -2925,6 +2936,7 @@ fields:
     type: long
     descr: Quality flag for the achieved NSS solution
 - name: nss_two_body_orbit
+  ingest: _table:NssTwoBodyOrbit
   descr: |
     This table contains non-single-star orbital models for sources compatible with an orbital two-body solution. This covers astrometric binaries, spectroscopic binaries, eclipsing binaries and certain combinations thereof. Several possible models are hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
     Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}. Warning: as a source may receive independent astrometric, spectroscopic or photometric orbits, a query using a given sourceId may return several solutions. This has to be accounted for when doing a crossmatch by sourceId.
@@ -3219,6 +3231,7 @@ fields:
     type: double
     descr: Uncorrelated astrometric jitter term
 - name: nss_vim_fl
+  ingest: _table:NssVimFl
   descr: |
     This table contains non-single-star models for sources compatible with an Variability Induced Mover (VIM) solution. Several possible models are in principle hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
     For DR3, only VIMF solutions are provided here.
@@ -3317,6 +3330,7 @@ fields:
     type: long
     descr: Quality flag for the achieved NSS solution
 - name: qso_candidates
+  ingest: _table:QsoCandidates
   descr: "This table contains parameters derived from various modules dedicated to
     the classification and characterisation of sources considered as QSO candidates.
     Together with those, the QSOs used to define the Gaia-CRF3 are also listed in
@@ -3516,6 +3530,7 @@ fields:
     descr: Bit indicative of whether the input data from a given module met the source
       list eligibility criteria for the source of interest
 - name: qso_catalogue_name
+  ingest: _table:QsoCatalogueName
   descr: "This table provides the list of input catalogues that have been used to
     select any given source for which morphological analysis parameters are provided
     in table \\texttt{QsoCandidates}.\nEach source may have been cross-matched to
@@ -3534,6 +3549,7 @@ fields:
     descr: The unique identifier for the catalogue(s) used to select the sources in
       the morphological analysis
 - name: rvs_mean_spectrum
+  ingest: _table:RvsMeanSpectrum
   descr: "This is the RVS mean sampled spectrum table. The spectra are in the rest
     frame, they are normalised and their wavelength grid ranges from 846 to 870 nm
     in steps of 0.01 nm (2401 elements). \nSee~~\\secref{sssec:cu6spe_meanspe} for
@@ -3566,6 +3582,7 @@ fields:
     type: short
     descr: number of deblended CCD spectra
 - name: sso_observation
+  ingest: _table:SsoObservation
   descr: "Solar System object observations. Each table line contains data obtained
     during the transit of the source on a single CCD, during a single transit. The
     corresponding epoch is provided. Data not varying within the transit are repeated
@@ -3697,6 +3714,7 @@ fields:
     type: integer
     descr: Result of processing the transit
 - name: sso_reflectance_spectrum
+  ingest: _table:SsoReflectanceSpectrum
   descr: |
     This table contains the mean BP/RP reflectance spectra of asteroids computed as the ratio between the asteroid flux and an averaged solar analogue flux. In each row, the reflectance spectrum of a given asteroid is given at a given wavelength. Entries for all asteroids are concatenated into a single table.
   sub:
@@ -3726,6 +3744,7 @@ fields:
     type: byte
     descr: Reflectance spectrum value flag
 - name: sso_source
+  ingest: _table:SsoSource
   descr: "This table contains data related to Solar System objects observed by Gaia.
     The quantities in the table are derived from data reduction and are associated
     to single objects. \n"
@@ -3743,6 +3762,7 @@ fields:
     type: integer
     descr: Number of epoch spectra used to compute the average
 - name: vari_agn
+  ingest: _table:VariAgn
   descr: |
     This table provides information on AGN properties.
   sub:
@@ -3762,6 +3782,7 @@ fields:
     type: float
     descr: Non-quasar variability metric in the G band
 - name: vari_cepheid
+  ingest: _table:VariCepheid
   descr: |
     This table describes the Cepheid stars.
   sub:
@@ -4134,6 +4155,7 @@ fields:
 #   type: string
 #   descr: Description of this classifier
 - name: vari_classifier_result
+  ingest: _table:VariClassifierResult
   descr: "Table with variability classification results of all classifiers, which
     are identified by the {\\tt classifierName} column. In DR3, multiple classifiers
     (depending on class) are combined into a single classifier with {\\tt classifierName}=`nTransits:5+',
@@ -4154,6 +4176,7 @@ fields:
     descr: Score of the best class
     # references vari_classifier_definition
 - name: vari_compact_companion
+  ingest: _table:VariCompactCompanion
   descr: |
     This table describes the compact companion candidates.
   sub:
@@ -4256,6 +4279,7 @@ fields:
     type: float
     descr: alpha ellipsoidal coefficient
 - name: vari_eclipsing_binary
+  ingest: _table:VariEclipsingBinary
   descr: "This table describes the properties of the eclipsing binaries resulting
     from the variability analysis. \n"
   sub:
@@ -4395,6 +4419,7 @@ fields:
     type: float
     descr: 'Secondary eclipse: uncertainty of \texttt{derivedSecondaryEclDepth}'
 - name: vari_epoch_radial_velocity
+  ingest: _table:VariEpochRadialVelocity
   descr: |
     This table contains the epoch radial velocity data points for a sub-set of variable stars. Each entry is a radial velocity in the solar barycentric reference frame for a given object and observation time.
   sub:
@@ -4417,6 +4442,7 @@ fields:
     type: boolean
     descr: Rejected by DPAC variability processing (or variability analysis)
 - name: vari_long_period_variable
+  ingest: _table:VariLongPeriodVariable
   descr: |
     This table describes the Long Period Variable stars.
     Some entries can be NaN when absent.
@@ -4441,6 +4467,7 @@ fields:
     type: boolean
     descr: Flag to mark C-stars
 - name: vari_microlensing
+  ingest: _table:VariMicrolensing
   descr: |
     This table describes the microlensing events.
   sub:
@@ -4567,6 +4594,7 @@ fields:
     type: float
     descr: Reduced chi square of level 1 Paczynski fit
 - name: vari_ms_oscillator
+  ingest: _table:VariMsOscillator
   descr: |
     This table describes the main-sequence oscillators.
   sub:
@@ -4609,6 +4637,7 @@ fields:
     descr: Phase of the oscillation in the G band corresponding to the third harmonic
       of the best frequency
 - name: vari_planetary_transit
+  ingest: _table:VariPlanetaryTransit
   descr: |
     This table describes the Planetary Transit candidate events.
   sub:
@@ -4632,6 +4661,7 @@ fields:
     type: byte
     descr: Number of in-transit observations
 - name: vari_rad_vel_statistics
+  ingest: _table:VariRadVelStatistics
   descr: |
     Statistical parameters of radial velocity time series, using only transits not rejected, see {\tt rejectedByVariability} column in {\tt VariEpochRadialVelocity}.
     Note that NaN will be reported when the parameter value is missing or cannot be calculated.
@@ -4689,6 +4719,7 @@ fields:
     type: float
     descr: Interquartile range for radial velocity transits
 - name: vari_rotation_modulation
+  ingest: _table:VariRotationModulation
   descr: |
     This table describes the solar-like stars with rotational modulation.
   sub:
@@ -4985,6 +5016,7 @@ fields:
     type: array float
     descr: Array of chisquares for linear models (RP band)
 - name: vari_rrlyrae
+  ingest: _table:VariRrlyrae
   descr: |
     This table describes the RR Lyrae stars.
   sub:
@@ -5316,6 +5348,7 @@ fields:
     type: float
     descr: Error on the interstellar absorption in the G-band
 - name: vari_short_timescale
+  ingest: _table:VariShortTimescale
   descr: "This table describes the short-timescale sources. \n"
   sub:
   - name: amplitude_estimate
@@ -5348,6 +5381,7 @@ fields:
     type: double
     descr: Frequency search result for either G CCD, G FoV, BP or RP photometry
 - name: vari_summary
+  ingest: _table:VariSummary
   descr: |
     Summary table that provides the information on where a {\tt sourceId} can be found in the different {\tt Variability} tables and statistical parameters of time series, using only transits not rejected.
     Note that NULL is reported when the statistical parameter value is missing or cannot be calculated.
@@ -5584,6 +5618,7 @@ fields:
     type: boolean
     descr: Source is present in \texttt{VariCompactCompanion}
 - name: xp_continuous_mean_spectrum
+  ingest: _table:XpContinuousMeanSpectrum
   descr: |
     Table hosting the mean BP and RP spectra based on the continuous representation in basis functions (see~\secref{cu5pho_ssec:meanSpecGen}).
   sub:
@@ -5670,6 +5705,7 @@ fields:
     descr: Measure of the relative shrinking of the coefficient vector when truncation
       is applied for the mean RP spectrum
 - name: xp_sampled_mean_spectrum
+  ingest: _table:XpSampledMeanSpectrum
   descr: |
     This is the BP/RP externally calibrated sampled mean spectrum. All mean spectra are sampled to the same set of absolute wavelength positions, which can be found in the field \texttt{wavelength} of table \texttt{XpMerge}.
   sub:
@@ -5692,6 +5728,7 @@ fields:
     type: array float
     descr: mean BP + RP combined spectrum flux error
 - name: xp_summary
+  ingest: _table:XpSummary
   descr: |
     This tables contains auxiliary information about the mean BP/RP spectrum of a given source. It should be used in order to refine queries on spectra and build dedicated samples before interrogating the DataLink protocol to download the results of those queries.
   sub:

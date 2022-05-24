@@ -33,6 +33,7 @@ executable flathub
     Ingest.CSV
     Ingest.Delim
     Ingest.ECSV
+    Ingest.GaiaDR3
     Ingest.HDF5
     Ingest.Types
     JSON
