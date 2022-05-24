@@ -620,6 +620,7 @@ fields:
 ######## SUB TABLES follow #######
 - name: astrophysical_parameters
   ingest: _table:AstrophysicalParameters
+  #sorted, 1:1 files
   #count: 1590932717
   descr: |
     This is the main table containing the 1D astrophysical parameters produced by the Apsis processing chain developed in Gaia DPAC CU8 (see Chapter~\ref{chap:cu8par}). Additional parameters can be found in table {\tt AstrophysicalParametersSupp}.
@@ -1630,6 +1631,7 @@ fields:
 #   descr: Flags indicating quality and processing information from OA
 - name: astrophysical_parameters_supp
   ingest: _table:AstrophysicalParametersSupp
+  #sorted, 1:1 files
   #count: 473020612
   descr: |
     This table contains additional parameters from the Apsis processing chain, compared to the main table {\tt AstrophysicalParameters} (see Chapter~\ref{chap:cu8par}), from modules that produce more than one result for a parameter. It contains (1) the individual library results from GSP-Phot (see Section~\ref{ssec:cu8par_apsis_gspphot_method}), (2) FLAME results from processing GSP-Spec parameters given in the {\tt AstrophysicalParameters} table (see Section~\ref{ssec:cu8par_apsis_flame}), and (3) results from the GSP-Spec ANN algorithm (see Section~\ref{ssec:cu8par_apsis_gspspec}).
@@ -2447,6 +2449,8 @@ fields:
       parameters
 - name: gaia_crf3_xm
   ingest: _table:GaiaCrf3Xm
+  #not sorted, 1:1 files
+  #count: 1614173
   descr: |
     This table contains the full cross-match information for the Gaia-CRF3 sources. The Gaia-CRF3 sources were selected from the cross-matches with 17 external QSO catalogues as detailed below (three of which are parts of ICRF3 described in the first paper). For each Gaia-CRF3 source  the information in which external catalogue this source was found and which name(s) this source has in those external catalogues is provided. The table allows the user to get all sources from an external catalogue that are in Gaia-CRF3.
     The external catalogues from which the Gaia-CRF3 sources were compiled are: \begin{itemize}  \item The third realization of the International Celestial Reference Frame by very long baseline interferometry \citep{2020A&A...644A.159C} \item A New Version of the OCARS Catalogue of Optical Characteristics of Astrometric Radio Sources \citep{2018ApJS..239...20M} (the catalogue downloaded from \url{http://www.gaoran.ru/english/as/ac_vlbi/#OCARS} on 17 June 2020) \item Identification of 1.4 Million Active Galactic Nuclei in the Mid-Infrared using WISE Data \citep{2015ApJS..221...12S} \item The WISE AGN Catalogue \citep{2018ApJS..234...23A} \item The Million Quasars (Milliquas) Catalogue, v6.4 \citep{2019arXiv191205614F} with the v6.5 (2020) update \item The Sloan Digital Sky Survey Quasar Catalogue: Fourteenth data release \citep{2018A&A...613A..51P} \item LQAC-5: The fifth release of the Large Quasar Astrometric Catalogue. A compilation of 592 809 objects with 398 697 Gaia counterparts \citep{2019A&A...624A.145S} \item The Large Sky Area Multi-object Fiber Spectroscopic Telescope (LAMOST) Quasar Survey: The Fourth and Fifth Data Releases \citep{2019ApJS..240....6Y} -- see also \url{https://nadc.china-vo.org/data/article/20190107155838} \item The large quasar reference frame (LQRF). An optical representation of the ICRS \citep{2009A&A...505..385A} \item The 2dF QSO Redshift Survey - XII. The spectroscopic catalogue and luminosity function \citep{2004MNRAS.349.1397C} \item The 5th edition of the Roma-BZCAT \citep{2015Ap&SS.357...75M} \item 2WHSP: A multi-frequency selected catalogue of high energy and very high energy {\ensuremath{\gamma}}-ray blazars and blazar candidates \citep{2017A&A...598A..17C} \item ALMA photometry of extragalactic radio sources \citep{2019MNRAS.485.1188B} \item Catalogues of active galactic nuclei from Gaia and unWISE data \citep{2019MNRAS.489.4741S} \item Quasar and galaxy classification in Gaia Data Release 2 \citep{2019MNRAS.490.5615B} \end{itemize}
@@ -2565,6 +2569,8 @@ fields:
 #     catalogue
 - name: galaxy_candidates
   ingest: _table:GalaxyCandidates
+  #sorted, 1:1 files
+  #count: 4842342
   descr: "This table contains parameters derived from various modules dedicated to
     the classification and characterisation of sources considered as galaxy candidates.
     This table has been constructed with the intention to be complete rather than
@@ -2753,6 +2759,7 @@ fields:
       list eligibility criteria for the source of interest
 - name: galaxy_catalogue_name
   ingest: _table:GalaxyCatalogueName
+  #count: 914837
   descr: "This table provides the list of input catalogues that have been used to
     select any given source for which morphological analysis parameters are provided
     in table {\\tt GalaxyCandidates}.\nEach source may have been cross-matched to
@@ -2770,6 +2777,8 @@ fields:
       the morphological analysis
 - name: nss_acceleration_astro
   ingest: _table:NssAccelerationAstro
+  #count: 338215
+  #not sorted, single file
   descr: |
     This table contains non-single-star astrometric models for sources having a non-linear proper motion which is compatible with an acceleration solution. Several possible models are hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
     Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}.
@@ -2879,6 +2888,8 @@ fields:
     descr: Quality flag for the achieved NSS solution
 - name: nss_non_linear_spectro
   ingest: _table:NssNonLinearSpectro
+  #count: 56808
+  #not sorted, single file
   descr: |
     This table contains non-single-star orbital models for spectroscopic binaries compatible with a trend. Several possible models are hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
     Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}.
@@ -2937,6 +2948,8 @@ fields:
     descr: Quality flag for the achieved NSS solution
 - name: nss_two_body_orbit
   ingest: _table:NssTwoBodyOrbit
+  #count: 443205
+  #not sorted, single file
   descr: |
     This table contains non-single-star orbital models for sources compatible with an orbital two-body solution. This covers astrometric binaries, spectroscopic binaries, eclipsing binaries and certain combinations thereof. Several possible models are hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
     Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}. Warning: as a source may receive independent astrometric, spectroscopic or photometric orbits, a query using a given sourceId may return several solutions. This has to be accounted for when doing a crossmatch by sourceId.
@@ -3232,6 +3245,8 @@ fields:
     descr: Uncorrelated astrometric jitter term
 - name: nss_vim_fl
   ingest: _table:NssVimFl
+  #count: 870
+  #not sorted, single file
   descr: |
     This table contains non-single-star models for sources compatible with an Variability Induced Mover (VIM) solution. Several possible models are in principle hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
     For DR3, only VIMF solutions are provided here.
@@ -3331,6 +3346,8 @@ fields:
     descr: Quality flag for the achieved NSS solution
 - name: qso_candidates
   ingest: _table:QsoCandidates
+  #sorted, 1:1 files
+  #count: 6649162
   descr: "This table contains parameters derived from various modules dedicated to
     the classification and characterisation of sources considered as QSO candidates.
     Together with those, the QSOs used to define the Gaia-CRF3 are also listed in
@@ -3531,6 +3548,8 @@ fields:
       list eligibility criteria for the source of interest
 - name: qso_catalogue_name
   ingest: _table:QsoCatalogueName
+  #sorted, 1:1 files
+  #count: 2722093
   descr: "This table provides the list of input catalogues that have been used to
     select any given source for which morphological analysis parameters are provided
     in table \\texttt{QsoCandidates}.\nEach source may have been cross-matched to
@@ -3550,6 +3569,8 @@ fields:
       the morphological analysis
 - name: rvs_mean_spectrum
   ingest: _table:RvsMeanSpectrum
+  #sorted, 1:1 files
+  #count: 999645
   descr: "This is the RVS mean sampled spectrum table. The spectra are in the rest
     frame, they are normalised and their wavelength grid ranges from 846 to 870 nm
     in steps of 0.01 nm (2401 elements). \nSee~~\\secref{sssec:cu6spe_meanspe} for
