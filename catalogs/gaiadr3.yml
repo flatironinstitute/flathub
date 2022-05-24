@@ -1141,7 +1141,7 @@ fields:
 #   name: libname_gspphot
 #   flag: hidden
 #   store: true
-#   type: string
+#   type: string dup gaia_source
 #   descr: Name of library that achieves the highest mean log-posterior in MCMC samples
 #     and was used to derive GSP-Phot parameters in this table
 #   enum: [PHOENIX,MARCS,A,OB,...]
@@ -1880,19 +1880,25 @@ fields:
     store: true
     type: float
     descr: Halpha pseudo-equivalent width from ESP-ELS measured on the synthetic spectrum
-# - ingest: AstrophysicalParameters.classlabel_espels
-#   name: classlabel_espels
-#   flag: hidden
-#   store: true
-#   type: string
-#   descr: Adopted ELS class label from ESP-ELS
-#   enum: ['beStar', 'wN', 'RedDwarfEmStar', 'TTauri', ?]
-# - ingest: AstrophysicalParameters.classlabel_espels_flag
-#   name: classlabel_espels_flag
-#   flag: hidden
-#   store: true
-#   type: string (int8: 1,2,3,4,22,23,24)
-#   descr: Quality flag of the adopted ELS class label from ESP-ELS
+  - ingest: AstrophysicalParameters.classlabel_espels
+    name: classlabel_espels
+    flag: hidden
+    store: true
+    type: byte
+    descr: Adopted ELS class label from ESP-ELS
+    enum:
+      - "HerbigStar"
+      - "PlanetaryNebula"
+      - "RedDwarfEmStar"
+      - "TTauri"
+      - "beStar"
+      - "wN"
+  - ingest: AstrophysicalParameters.classlabel_espels_flag
+    name: classlabel_espels_flag
+    flag: hidden
+    store: true
+    type: int8 #string (1,2,3,4,22,23,24)
+    descr: Quality flag of the adopted ELS class label from ESP-ELS
   - ingest: AstrophysicalParameters.classprob_espels_wcstar
     name: classprob_espels_wcstar
     flag: hidden
@@ -2057,14 +2063,14 @@ fields:
     store: true
     type: float
     descr: Uncertainty in the chromospheric activity index from ESP-CS
-# - ingest: AstrophysicalParameters.activityindex_espcs_input
-#   name: activityindex_espcs_input
-#   flag: hidden
-#   store: true
-#   type: string
-#   descr: Source of input stellar parameters for the computation of the activity
-#     index by ESP-CS
-#   enum: ['M1', 'M2']
+  - ingest: AstrophysicalParameters.activityindex_espcs_input
+    name: activityindex_espcs_input
+    flag: hidden
+    store: true
+    type: byte
+    descr: Source of input stellar parameters for the computation of the activity
+      index by ESP-CS
+    enum: ['M1', 'M2']
   - ingest: AstrophysicalParameters.teff_espucd
     name: teff_espucd
     units: K
@@ -2079,12 +2085,12 @@ fields:
     store: true
     type: float
     descr: Uncertainty of the effective temperature estimate produced by ESP-UCD
-# - ingest: AstrophysicalParameters.flags_espucd
-#   name: flags_espucd
-#   flag: hidden
-#   store: true
-#   type: string (int8: 00,10,20)
-#   descr: Quality flags of the ESP-UCD parameter estimates
+  - ingest: AstrophysicalParameters.flags_espucd
+    name: flags_espucd
+    flag: hidden
+    store: true
+    type: int8 #string (00,10,11,20)
+    descr: Quality flags of the ESP-UCD parameter estimates
   - ingest: AstrophysicalParameters.radius_flame
     name: radius_flame
     units: solRad
@@ -2172,12 +2178,12 @@ fields:
     store: true
     type: float
     descr: Upper confidence level (84%) of {\tt ageFlame}
-# - ingest: AstrophysicalParameters.flags_flame
-#   name: flags_flame
-#   flag: hidden
-#   store: true
-#   type: string (int8: 00,01,02,10,11,12,20,21,22)
-#   descr: Flags indicating quality and processing information from FLAME
+  - ingest: AstrophysicalParameters.flags_flame
+    name: flags_flame
+    flag: hidden
+    store: true
+    type: int8 #string (00,01,02,10,11,12,20,21,22)
+    descr: Flags indicating quality and processing information from FLAME
   - ingest: AstrophysicalParameters.evolstage_flame
     name: evolstage_flame
     flag: hidden
@@ -2419,12 +2425,12 @@ fields:
     store: true
     type: float
     descr: Mean drift of the MSC MCMC chain in units of parameter standard deviation
-# - ingest: AstrophysicalParameters.flags_msc
-#   name: flags_msc
-#   flag: hidden
-#   store: true
-#   type: string (boolean: 0,1)
-#   descr: Flag indicating quality information from MSC
+  - ingest: AstrophysicalParameters.flags_msc
+    name: flags_msc
+    flag: hidden
+    store: true
+    type: bool #string (0,1)
+    descr: Flag indicating quality information from MSC
   - ingest: AstrophysicalParameters.neuron_oa_id
     name: neuron_oa_id
     flag: hidden
@@ -2445,12 +2451,12 @@ fields:
     type: integer
     descr: Percentile rank according to the distance distribution of the OA neuron
       that represents the source
-# - ingest: AstrophysicalParameters.flags_oa
-#   name: flags_oa
-#   flag: hidden
-#   store: true
-#   type: string (int16: 4-digit numbers)
-#   descr: Flags indicating quality and processing information from OA
+  - ingest: AstrophysicalParameters.flags_oa
+    name: flags_oa
+    flag: hidden
+    store: true
+    type: int16 #string (4-digit numbers)
+    descr: Flags indicating quality and processing information from OA
 - name: astrophysical_parameters_supp
   ingest: _table:AstrophysicalParametersSupp #sorted, 1:1 files
   #count: 473020612
@@ -3745,12 +3751,12 @@ fields:
     store: true
     type: float
     descr: Upper confidence level (84%) of {\tt ageFlameSpec}
-# - ingest: AstrophysicalParametersSupp.flags_flame_spec
-#   name: flags_flame_spec
-#   flag: hidden
-#   store: true
-#   type: string (int8: 0,1,2)
-#   descr: Flag indicating quality of parameters from FLAME using GSP-Spec parameters
+  - ingest: AstrophysicalParametersSupp.flags_flame_spec
+    name: flags_flame_spec
+    flag: hidden
+    store: true
+    type: int8 #string (0,1,2)
+    descr: Flag indicating quality of parameters from FLAME using GSP-Spec parameters
   - ingest: AstrophysicalParametersSupp.evolstage_flame_spec
     name: evolstage_flame_spec
     flag: hidden
@@ -3799,21 +3805,38 @@ fields:
     this table was built, its content, and for recommendations regarding its exploitation.
     \n"
   sub:
-# - ingest: GalaxyCandidates.vari_best_class_name
-#   name: vari_best_class_name
-#   flag: hidden
-#   store: true
-#   type: string
-#   descr: Name of best class, see table VariClassifierClassDefinition for details
-#     of the class
-#   enum:
-#   - AGN
-#   - CV
-#   - ECL
-#   - GALAXY
-#   - LPV
-#   - RR
-#   - S
+  - ingest: GalaxyCandidates.vari_best_class_name
+    name: vari_best_class_name
+    flag: hidden
+    store: true
+    type: int8
+    descr: Name of best class, see table VariClassifierClassDefinition for details
+      of the class
+    enum:
+      - "AGN"                         #"Active Galactic Nuclei (including Quasars)."
+      - "DSCT|GDOR|SXPHE"             #"Set of variable types: delta Scuti, gamma Doradus, and SX Phoenicis."
+      - "WD"                          #"White Dwarf variable stars of types: ZZ Ceti (DAV, ZZA), V777 Herculis (DBV, ZZB), and GW Virginis (DOV, ZZO)."
+      - "LPV"                         #"Long Period Variable stars of types: omicron Ceti (Mira), OGLE Small Amplitude Red Giants, and semiregular."
+      - "ACV|CP|MCP|ROAM|ROAP|SXARI"  #"Set of variable types: alpha2 Canum Venaticorum, (Magnetic) Chemical Peculiar star, Rapidly Oscillating Am/Ap star, and SX Arietis variable."
+      - "S"                           #"Set of stars with short timescale variability."
+      - "MICROLENSING"                #"Star with microlensing event."
+      - "CEP"                         #"Cepheid variable types: delta Cepheid, anomalous Cepheid, and type-II Cepheid."
+      - "YSO"                         #"Young Stellar Object."
+      - "RS"                          #"RS Canum Venaticorum type variable."
+      - "ACYG"                        #"Alpha Cygni-type variable."
+      - "BCEP"                        #"Beta Cephei type variable."
+      - "BE|GCAS|SDOR|WR"             #"Subset of eruptive variable types: B-type emission line star, Gamma Cassiopeiae, S Doradus, and Wolf-Rayet."
+      - "SN"                          #"Supernovae."
+      - "SPB"                         #"Slowly Pulsating B-star variable."
+      - "ECL"                         #"Eclipsing Binaries of types: Beta Persei (Algol), Beta Lyrae, and W Ursae Majoris."
+      - "ELL"                         #"Ellipsoidal variable."
+      - "SYST"                        #"Symbiotic variable star."
+      - "SOLAR_LIKE"                  #"Stars with solar-like variability due to flares, spots, and rotational modulation."
+      - "CV"                          #"Cataclysmic variable."
+      - "SDB"                         #"Sub-dwarf B stars of types: V1093 Her and V361 Hya."
+      - "RR"                          #"RR Lyrae stars of the following types: fundamental-mode, first-overtone, double mode, and anomalous double mode."
+      - "EP"                          #"Star with exoplanet transits."
+      - "RCB"                         #"R Coronae Borealis type variable."
   - ingest: GalaxyCandidates.vari_best_class_score
     name: vari_best_class_score
     flag: hidden
@@ -4110,15 +4133,15 @@ fields:
     This table contains non-single-star astrometric models for sources having a non-linear proper motion which is compatible with an acceleration solution. Several possible models are hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
     Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}.
   sub:
-# - ingest: NssAccelerationAstro.nss_solution_type
-#   name: nss_solution_type
-#   flag: hidden
-#   store: true
-#   type: string
-#   descr: NSS model adopted
-#   enum:
-#   - Acceleration7
-#   - Acceleration9
+  - ingest: NssAccelerationAstro.nss_solution_type
+    name: nss_solution_type
+    flag: hidden
+    store: true
+    type: byte
+    descr: NSS model adopted
+    enum:
+    - Acceleration7
+    - Acceleration9
   - ingest: NssAccelerationAstro.ra
     name: ra
     units: deg
@@ -4300,15 +4323,15 @@ fields:
     This table contains non-single-star orbital models for spectroscopic binaries compatible with a trend. Several possible models are hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
     Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}.
   sub:
-# - ingest: NssNonLinearSpectro.nss_solution_type
-#   name: nss_solution_type
-#   flag: hidden
-#   store: true
-#   type: string
-#   descr: NSS model adopted
-#   enum:
-#   - FirstDegreeTrendSB1
-#   - SecondDegreeTrendSB1
+  - ingest: NssNonLinearSpectro.nss_solution_type
+    name: nss_solution_type
+    flag: hidden
+    store: true
+    type: byte
+    descr: NSS model adopted
+    enum:
+    - FirstDegreeTrendSB1
+    - SecondDegreeTrendSB1
   - ingest: NssNonLinearSpectro.mean_velocity
     name: mean_velocity
     units: km.s**-1
@@ -4394,31 +4417,31 @@ fields:
     type: long
     descr: Quality flag for the achieved NSS solution
 - name: nss_two_body_orbit
-  ingest: _table:NssTwoBodyOrbit #not sorted, single file
+  ingest: _table:NssTwoBodyOrbit #not sorted, single file, dups
   #count: 443205
   descr: |
     This table contains non-single-star orbital models for sources compatible with an orbital two-body solution. This covers astrometric binaries, spectroscopic binaries, eclipsing binaries and certain combinations thereof. Several possible models are hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
     Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}. Warning: as a source may receive independent astrometric, spectroscopic or photometric orbits, a query using a given sourceId may return several solutions. This has to be accounted for when doing a crossmatch by sourceId.
   sub:
-# - ingest: NssTwoBodyOrbit.nss_solution_type
-#   name: nss_solution_type
-#   flag: hidden
-#   store: true
-#   type: string
-#   descr: NSS model adopted
-#   enum:
-#   - AstroSpectroSB1
-#   - EclipsingBinary
-#   - EclipsingSpectro
-#   - Orbital
-#   - OrbitalAlternative
-#   - OrbitalAlternativeValidated
-#   - OrbitalTargetedSearch
-#   - OrbitalTargetedSearchValidated
-#   - SB1
-#   - SB1C
-#   - SB2
-#   - SB2C
+  - ingest: NssTwoBodyOrbit.nss_solution_type
+    name: nss_solution_type
+    flag: hidden
+    store: true
+    type: byte
+    descr: NSS model adopted
+    enum:
+    - AstroSpectroSB1
+    - EclipsingBinary
+    - EclipsingSpectro
+    - Orbital
+    - OrbitalAlternative
+    - OrbitalAlternativeValidated
+    - OrbitalTargetedSearch
+    - OrbitalTargetedSearchValidated
+    - SB1
+    - SB1C
+    - SB2
+    - SB2C
   - ingest: NssTwoBodyOrbit.ra
     name: ra
     units: deg
@@ -4921,13 +4944,13 @@ fields:
     For DR3, only VIMF solutions are provided here.
     Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}.
   sub:
-# - ingest: NssVimFl.nss_solution_type
-#   name: nss_solution_type
-#   flag: hidden
-#   store: true
-#   type: string
-#   descr: NSS model adopted
-#   enum: [VIMF]
+  - ingest: NssVimFl.nss_solution_type
+    name: nss_solution_type
+    flag: hidden
+    store: true
+    type: byte
+    descr: NSS model adopted
+    enum: [VIMF]
   - ingest: NssVimFl.ra
     name: ra
     units: deg
@@ -5112,29 +5135,38 @@ fields:
     store: true
     type: boolean
     descr: Flag indicative of whether the source was used define the Gaia-CRF3
-# - ingest: QsoCandidates.vari_best_class_name
-#   name: vari_best_class_name
-#   flag: hidden
-#   store: true
-#   type: string
-#   descr: Name of best class, see table VariClassifierClassDefinition for details
-#     of the class
-#   enum:
-#   - AGN
-#   - BE|GCAS|SDOR|WR
-#   - CEP
-#   - CV
-#   - DSCT|GDOR|SXPHE
-#   - ECL
-#   - GALAXY
-#   - LPV
-#   - RCB
-#   - RR
-#   - RS
-#   - S
-#   - SYST
-#   - WD
-#   - YSO
+  - ingest: QsoCandidates.vari_best_class_name
+    name: vari_best_class_name
+    flag: hidden
+    store: true
+    type: int8
+    descr: Name of best class, see table VariClassifierClassDefinition for details
+      of the class
+    enum:
+      - "AGN"                         #"Active Galactic Nuclei (including Quasars)."
+      - "DSCT|GDOR|SXPHE"             #"Set of variable types: delta Scuti, gamma Doradus, and SX Phoenicis."
+      - "WD"                          #"White Dwarf variable stars of types: ZZ Ceti (DAV, ZZA), V777 Herculis (DBV, ZZB), and GW Virginis (DOV, ZZO)."
+      - "LPV"                         #"Long Period Variable stars of types: omicron Ceti (Mira), OGLE Small Amplitude Red Giants, and semiregular."
+      - "ACV|CP|MCP|ROAM|ROAP|SXARI"  #"Set of variable types: alpha2 Canum Venaticorum, (Magnetic) Chemical Peculiar star, Rapidly Oscillating Am/Ap star, and SX Arietis variable."
+      - "S"                           #"Set of stars with short timescale variability."
+      - "MICROLENSING"                #"Star with microlensing event."
+      - "CEP"                         #"Cepheid variable types: delta Cepheid, anomalous Cepheid, and type-II Cepheid."
+      - "YSO"                         #"Young Stellar Object."
+      - "RS"                          #"RS Canum Venaticorum type variable."
+      - "ACYG"                        #"Alpha Cygni-type variable."
+      - "BCEP"                        #"Beta Cephei type variable."
+      - "BE|GCAS|SDOR|WR"             #"Subset of eruptive variable types: B-type emission line star, Gamma Cassiopeiae, S Doradus, and Wolf-Rayet."
+      - "SN"                          #"Supernovae."
+      - "SPB"                         #"Slowly Pulsating B-star variable."
+      - "ECL"                         #"Eclipsing Binaries of types: Beta Persei (Algol), Beta Lyrae, and W Ursae Majoris."
+      - "ELL"                         #"Ellipsoidal variable."
+      - "SYST"                        #"Symbiotic variable star."
+      - "SOLAR_LIKE"                  #"Stars with solar-like variability due to flares, spots, and rotational modulation."
+      - "CV"                          #"Cataclysmic variable."
+      - "SDB"                         #"Sub-dwarf B stars of types: V1093 Her and V361 Hya."
+      - "RR"                          #"RR Lyrae stars of the following types: fundamental-mode, first-overtone, double mode, and anomalous double mode."
+      - "EP"                          #"Star with exoplanet transits."
+      - "RCB"                         #"R Coronae Borealis type variable."
   - ingest: QsoCandidates.vari_best_class_score
     name: vari_best_class_score
     flag: hidden
@@ -6412,21 +6444,46 @@ fields:
     which is described in {\\tt VariClassifierDefinition} and identifies the classes
     defined in {\\tt VariClassifierClassDefinition}. \n"
   sub:
-# - ingest: VariClassifierResult.classifier_name
-#   name: classifier_name
-#   flag: hidden
-#   store: true
-#   type: string
-#   descr: Classifier name used to produce this result, use for lookup in \texttt{VariClassifierDefinition}
-#     table
-#   enum: ["nTransits:5+"]
-# - ingest: VariClassifierResult.best_class_name
-#   name: best_class_name
-#   flag: hidden
-#   store: true
-#   type: string
-#   descr: Name of best class, see table \texttt{VariClassifierClassDefinition} for
-#     details of the class
+  - ingest: VariClassifierResult.classifier_name
+    name: classifier_name
+    flag: hidden
+    store: true
+    type: byte
+    descr: Classifier name used to produce this result, use for lookup in \texttt{VariClassifierDefinition}
+      table
+    enum: ["nTransits:5+"]
+  - ingest: VariClassifierResult.best_class_name
+    name: best_class_name
+    flag: hidden
+    store: true
+    type: byte
+    descr: Name of best class, see table \texttt{VariClassifierClassDefinition} for
+      details of the class
+    enum:
+      - "AGN"                         #"Active Galactic Nuclei (including Quasars)."
+      - "DSCT|GDOR|SXPHE"             #"Set of variable types: delta Scuti, gamma Doradus, and SX Phoenicis."
+      - "WD"                          #"White Dwarf variable stars of types: ZZ Ceti (DAV, ZZA), V777 Herculis (DBV, ZZB), and GW Virginis (DOV, ZZO)."
+      - "LPV"                         #"Long Period Variable stars of types: omicron Ceti (Mira), OGLE Small Amplitude Red Giants, and semiregular."
+      - "ACV|CP|MCP|ROAM|ROAP|SXARI"  #"Set of variable types: alpha2 Canum Venaticorum, (Magnetic) Chemical Peculiar star, Rapidly Oscillating Am/Ap star, and SX Arietis variable."
+      - "S"                           #"Set of stars with short timescale variability."
+      - "MICROLENSING"                #"Star with microlensing event."
+      - "CEP"                         #"Cepheid variable types: delta Cepheid, anomalous Cepheid, and type-II Cepheid."
+      - "YSO"                         #"Young Stellar Object."
+      - "RS"                          #"RS Canum Venaticorum type variable."
+      - "ACYG"                        #"Alpha Cygni-type variable."
+      - "BCEP"                        #"Beta Cephei type variable."
+      - "BE|GCAS|SDOR|WR"             #"Subset of eruptive variable types: B-type emission line star, Gamma Cassiopeiae, S Doradus, and Wolf-Rayet."
+      - "SN"                          #"Supernovae."
+      - "SPB"                         #"Slowly Pulsating B-star variable."
+      - "ECL"                         #"Eclipsing Binaries of types: Beta Persei (Algol), Beta Lyrae, and W Ursae Majoris."
+      - "ELL"                         #"Ellipsoidal variable."
+      - "SYST"                        #"Symbiotic variable star."
+      - "SOLAR_LIKE"                  #"Stars with solar-like variability due to flares, spots, and rotational modulation."
+      - "CV"                          #"Cataclysmic variable."
+      - "SDB"                         #"Sub-dwarf B stars of types: V1093 Her and V361 Hya."
+      - "RR"                          #"RR Lyrae stars of the following types: fundamental-mode, first-overtone, double mode, and anomalous double mode."
+      - "EP"                          #"Star with exoplanet transits."
+      - "RCB"                         #"R Coronae Borealis type variable."
   - ingest: VariClassifierResult.best_class_score
     name: best_class_score
     flag: hidden
@@ -6755,19 +6812,19 @@ fields:
     store: true
     type: float
     descr: Uncertainty of \texttt{geomModelCosineHalfPeriodPhase}
-# - ingest: VariEclipsingBinary.model_type
-#   name: model_type
-#   flag: hidden
-#   store: true
-#   type: string
-#   descr: Type of geometrical model of the light curve
-#   enum:
-#   - ELLIPSOIDAL
-#   - ONEGAUSSIAN
-#   - ONEGAUSSIAN_WITH_ELLIPSOIDAL
-#   - TWOGAUSSIANS
-#   - TWOGAUSSIANS_WITH_ELLIPSOIDAL_ON_ECLIPSE1
-#   - TWOGAUSSIANS_WITH_ELLIPSOIDAL_ON_ECLIPSE2
+  - ingest: VariEclipsingBinary.model_type
+    name: model_type
+    flag: hidden
+    store: true
+    type: byte
+    descr: Type of geometrical model of the light curve
+    enum:
+    - ELLIPSOIDAL
+    - ONEGAUSSIAN
+    - ONEGAUSSIAN_WITH_ELLIPSOIDAL
+    - TWOGAUSSIANS
+    - TWOGAUSSIANS_WITH_ELLIPSOIDAL_ON_ECLIPSE1
+    - TWOGAUSSIANS_WITH_ELLIPSOIDAL_ON_ECLIPSE2
   - ingest: VariEclipsingBinary.num_model_parameters
     name: num_model_parameters
     flag: hidden
