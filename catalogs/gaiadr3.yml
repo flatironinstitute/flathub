@@ -770,8 +770,7 @@ fields:
 
 ######## SUB TABLES follow #######
 - name: astrophysical_parameters
-  ingest: _table:AstrophysicalParameters
-  #sorted, 1:1 files
+  ingest: _table:AstrophysicalParameters #sorted, 1:1 files
   #count: 1590932717
   descr: |
     This is the main table containing the 1D astrophysical parameters produced by the Apsis processing chain developed in Gaia DPAC CU8 (see Chapter~\ref{chap:cu8par}). Additional parameters can be found in table {\tt AstrophysicalParametersSupp}.
@@ -2453,8 +2452,7 @@ fields:
 #   type: string (int16: 4-digit numbers)
 #   descr: Flags indicating quality and processing information from OA
 - name: astrophysical_parameters_supp
-  ingest: _table:AstrophysicalParametersSupp
-  #sorted, 1:1 files
+  ingest: _table:AstrophysicalParametersSupp #sorted, 1:1 files
   #count: 473020612
   descr: |
     This table contains additional parameters from the Apsis processing chain, compared to the main table {\tt AstrophysicalParameters} (see Chapter~\ref{chap:cu8par}), from modules that produce more than one result for a parameter. It contains (1) the individual library results from GSP-Phot (see Section~\ref{ssec:cu8par_apsis_gspphot_method}), (2) FLAME results from processing GSP-Spec parameters given in the {\tt AstrophysicalParameters} table (see Section~\ref{ssec:cu8par_apsis_flame}), and (3) results from the GSP-Spec ANN algorithm (see Section~\ref{ssec:cu8par_apsis_gspspec}).
@@ -3790,8 +3788,7 @@ fields:
     descr: Bolometric correction applied to derive {\tt lumFlameSpec} using GSP-Spec
       parameters
 - name: galaxy_candidates
-  ingest: _table:GalaxyCandidates
-  #sorted, 1:1 files
+  ingest: _table:GalaxyCandidates #sorted, 1:1 files
   #count: 4842342
   descr: "This table contains parameters derived from various modules dedicated to
     the classification and characterisation of sources considered as galaxy candidates.
@@ -4086,7 +4083,7 @@ fields:
     descr: Bit indicative of whether the input data from a given module met the source
       list eligibility criteria for the source of interest
 - name: galaxy_catalogue_name
-  ingest: _table:GalaxyCatalogueName
+  ingest: _table:GalaxyCatalogueName #sorted, 1:1 files
   #count: 914837
   descr: "This table provides the list of input catalogues that have been used to
     select any given source for which morphological analysis parameters are provided
@@ -4107,9 +4104,8 @@ fields:
     descr: The unique identifier for the catalogue(s) used to select the sources in
       the morphological analysis
 - name: nss_acceleration_astro
-  ingest: _table:NssAccelerationAstro
+  ingest: _table:NssAccelerationAstro #not sorted, single file
   #count: 338215
-  #not sorted, single file
   descr: |
     This table contains non-single-star astrometric models for sources having a non-linear proper motion which is compatible with an acceleration solution. Several possible models are hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
     Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}.
@@ -4298,9 +4294,8 @@ fields:
     type: long
     descr: Quality flag for the achieved NSS solution
 - name: nss_non_linear_spectro
-  ingest: _table:NssNonLinearSpectro
+  ingest: _table:NssNonLinearSpectro #not sorted, single file
   #count: 56808
-  #not sorted, single file
   descr: |
     This table contains non-single-star orbital models for spectroscopic binaries compatible with a trend. Several possible models are hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
     Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}.
@@ -4399,9 +4394,8 @@ fields:
     type: long
     descr: Quality flag for the achieved NSS solution
 - name: nss_two_body_orbit
-  ingest: _table:NssTwoBodyOrbit
+  ingest: _table:NssTwoBodyOrbit #not sorted, single file
   #count: 443205
-  #not sorted, single file
   descr: |
     This table contains non-single-star orbital models for sources compatible with an orbital two-body solution. This covers astrometric binaries, spectroscopic binaries, eclipsing binaries and certain combinations thereof. Several possible models are hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
     Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}. Warning: as a source may receive independent astrometric, spectroscopic or photometric orbits, a query using a given sourceId may return several solutions. This has to be accounted for when doing a crossmatch by sourceId.
@@ -4920,9 +4914,8 @@ fields:
     type: double
     descr: Uncorrelated astrometric jitter term
 - name: nss_vim_fl
-  ingest: _table:NssVimFl
+  ingest: _table:NssVimFl #not sorted, single file
   #count: 870
-  #not sorted, single file
   descr: |
     This table contains non-single-star models for sources compatible with an Variability Induced Mover (VIM) solution. Several possible models are in principle hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
     For DR3, only VIMF solutions are provided here.
@@ -5095,8 +5088,7 @@ fields:
     type: long
     descr: Quality flag for the achieved NSS solution
 - name: qso_candidates
-  ingest: _table:QsoCandidates
-  #sorted, 1:1 files
+  ingest: _table:QsoCandidates #sorted, 1:1 files
   #count: 6649162
   descr: "This table contains parameters derived from various modules dedicated to
     the classification and characterisation of sources considered as QSO candidates.
@@ -5413,8 +5405,7 @@ fields:
     descr: Bit indicative of whether the input data from a given module met the source
       list eligibility criteria for the source of interest
 - name: qso_catalogue_name
-  ingest: _table:QsoCatalogueName
-  #sorted, 1:1 files
+  ingest: _table:QsoCatalogueName #sorted, 1:1 files
   #count: 2722093
   descr: "This table provides the list of input catalogues that have been used to
     select any given source for which morphological analysis parameters are provided
@@ -5437,8 +5428,7 @@ fields:
     descr: The unique identifier for the catalogue(s) used to select the sources in
       the morphological analysis
 - name: rvs_mean_spectrum
-  ingest: _table:RvsMeanSpectrum
-  #sorted, 1:1 files
+  ingest: _table:RvsMeanSpectrum #sorted, 1:1 files
   #count: 999645
   descr: "This is the RVS mean sampled spectrum table. The spectra are in the rest
     frame, they are normalised and their wavelength grid ranges from 846 to 870 nm
@@ -5491,7 +5481,8 @@ fields:
     type: short
     descr: number of deblended CCD spectra
 - name: sso_observation
-  ingest: _table:SsoObservation
+  ingest: _table:SsoObservation # weird source_ids, dups
+  #count: 23336467
   descr: "Solar System object observations. Each table line contains data obtained
     during the transit of the source on a single CCD, during a single transit. The
     corresponding epoch is provided. Data not varying within the transit are repeated
@@ -5721,7 +5712,8 @@ fields:
     type: integer
     descr: Result of processing the transit
 - name: sso_reflectance_spectrum
-  ingest: _table:SsoReflectanceSpectrum
+  ingest: _table:SsoReflectanceSpectrum # negative, dup source_ids
+  #count: 968288
   descr: |
     This table contains the mean BP/RP reflectance spectra of asteroids computed as the ratio between the asteroid flux and an averaged solar analogue flux. In each row, the reflectance spectrum of a given asteroid is given at a given wavelength. Entries for all asteroids are concatenated into a single table.
   sub:
@@ -5775,7 +5767,8 @@ fields:
     type: byte
     descr: Reflectance spectrum value flag
 - name: sso_source
-  ingest: _table:SsoSource
+  ingest: _table:SsoSource # negative, dup source_ids
+  #count: 158152
   descr: "This table contains data related to Solar System objects observed by Gaia.
     The quantities in the table are derived from data reduction and are associated
     to single objects. \n"
@@ -5805,7 +5798,8 @@ fields:
     type: integer
     descr: Number of epoch spectra used to compute the average
 - name: vari_agn
-  ingest: _table:VariAgn
+  ingest: _table:VariAgn #sorted, 1:1 files
+  #count: 872228
   descr: |
     This table provides information on AGN properties.
   sub:
@@ -5840,7 +5834,8 @@ fields:
     type: float
     descr: Non-quasar variability metric in the G band
 - name: vari_cepheid
-  ingest: _table:VariCepheid
+  ingest: _table:VariCepheid #sorted, 1:1 files
+  #count: 15021
   descr: |
     This table describes the Cepheid stars.
   sub:
@@ -6408,48 +6403,9 @@ fields:
     descr: 'Best multi mode DCEP classification out of: `F/1O'', `F/2O'', `1O/2O'',
       `1O/3O'', `2O/3O'', `F/1O/2O'', `1O/2O/3O'''
     enum: ['F/1O','F/2O','1O/2O','1O/3O','2O/3O','F/1O/2O','1O/2O/3O']
-#- name: vari_classifier_class_definition
-# descr: |
-#   Table with detailed descriptions of published classes for each classifier described in {\tt VariClassifierDefinition} and used in table {\tt VariClassifierResult}.
-#   In DR3, this table contains the details of a classifier with {\tt classifierName}=`nTransits:5+'.
-# sub:
-# - ingest: VariCepheid.classifier_name
-#   name: classifier_name
-#   flag: hidden
-#   store: true
-#   type: string
-#   descr: Name of the classifier that is detailed in this entry
-# - ingest: VariCepheid.class_name
-#   name: class_name
-#   flag: hidden
-#   store: true
-#   type: string
-#   descr: Name of the published class from this classifier
-# - ingest: VariCepheid.class_description
-#   name: class_description
-#   flag: hidden
-#   store: true
-#   type: string
-#   descr: Description of the published class from this classifier
-#- name: vari_classifier_definition
-# descr: |
-#   Table with detailed descriptions of all classifiers used in table {\tt VariClassifierResult}. Details of the published classes for each classifier can be found in {\tt VariClassifierClassDefinition}.
-#   In DR3, this table contains the details of a classifier with {\tt classifierName}=`nTransits:5+'.
-# sub:
-# - ingest: VariCepheid.classifier_name
-#   name: classifier_name
-#   flag: hidden
-#   store: true
-#   type: string
-#   descr: Name of the classifier that is detailed in this entry
-# - ingest: VariCepheid.classifier_description
-#   name: classifier_description
-#   flag: hidden
-#   store: true
-#   type: string
-#   descr: Description of this classifier
 - name: vari_classifier_result
-  ingest: _table:VariClassifierResult
+  ingest: _table:VariClassifierResult #sorted, 1:1 files
+  #count: 9976881
   descr: "Table with variability classification results of all classifiers, which
     are identified by the {\\tt classifierName} column. In DR3, multiple classifiers
     (depending on class) are combined into a single classifier with {\\tt classifierName}=`nTransits:5+',
@@ -6479,7 +6435,8 @@ fields:
     descr: Score of the best class
     # references vari_classifier_definition
 - name: vari_compact_companion
-  ingest: _table:VariCompactCompanion
+  ingest: _table:VariCompactCompanion #sorted, 1:1 files
+  #count: 6306
   descr: |
     This table describes the compact companion candidates.
   sub:
@@ -6648,7 +6605,8 @@ fields:
     type: float
     descr: alpha ellipsoidal coefficient
 - name: vari_eclipsing_binary
-  ingest: _table:VariEclipsingBinary
+  ingest: _table:VariEclipsingBinary #sorted, 1:1 files
+  #count: 2184477
   descr: "This table describes the properties of the eclipsing binaries resulting
     from the variability analysis. \n"
   sub:
@@ -6899,7 +6857,8 @@ fields:
     type: float
     descr: 'Secondary eclipse: uncertainty of \texttt{derivedSecondaryEclDepth}'
 - name: vari_epoch_radial_velocity
-  ingest: _table:VariEpochRadialVelocity
+  ingest: _table:VariEpochRadialVelocity #sorted, 1:1 files, 1:many entries!
+  #count: 43298
   descr: |
     This table contains the epoch radial velocity data points for a sub-set of variable stars. Each entry is a radial velocity in the solar barycentric reference frame for a given object and observation time.
   sub:
@@ -6937,7 +6896,8 @@ fields:
     type: boolean
     descr: Rejected by DPAC variability processing (or variability analysis)
 - name: vari_long_period_variable
-  ingest: _table:VariLongPeriodVariable
+  ingest: _table:VariLongPeriodVariable #sorted, 1:1 files
+  #count: 1720588
   descr: |
     This table describes the Long Period Variable stars.
     Some entries can be NaN when absent.
@@ -6977,7 +6937,8 @@ fields:
     type: boolean
     descr: Flag to mark C-stars
 - name: vari_microlensing
-  ingest: _table:VariMicrolensing
+  ingest: _table:VariMicrolensing #sorted, 1:1 files
+  #count: 363
   descr: |
     This table describes the microlensing events.
   sub:
@@ -7206,7 +7167,8 @@ fields:
     type: float
     descr: Reduced chi square of level 1 Paczynski fit
 - name: vari_ms_oscillator
-  ingest: _table:VariMsOscillator
+  ingest: _table:VariMsOscillator #sorted, 1:1 files
+  #count: 54476
   descr: |
     This table describes the main-sequence oscillators.
   sub:
@@ -7276,7 +7238,8 @@ fields:
     descr: Phase of the oscillation in the G band corresponding to the third harmonic
       of the best frequency
 - name: vari_planetary_transit
-  ingest: _table:VariPlanetaryTransit
+  ingest: _table:VariPlanetaryTransit #sorted, 1:1 files
+  #count: 214
   descr: |
     This table describes the Planetary Transit candidate events.
   sub:
@@ -7315,7 +7278,8 @@ fields:
     type: byte
     descr: Number of in-transit observations
 - name: vari_rad_vel_statistics
-  ingest: _table:VariRadVelStatistics
+  ingest: _table:VariRadVelStatistics #sorted, 1:1 files
+  #count: 1898
   descr: |
     Statistical parameters of radial velocity time series, using only transits not rejected, see {\tt rejectedByVariability} column in {\tt VariEpochRadialVelocity}.
     Note that NaN will be reported when the parameter value is missing or cannot be calculated.
@@ -7415,7 +7379,8 @@ fields:
     type: float
     descr: Interquartile range for radial velocity transits
 - name: vari_rotation_modulation
-  ingest: _table:VariRotationModulation
+  ingest: _table:VariRotationModulation #sorted, 1:1 files, NaNs in arrays
+  #count: 474026
   descr: |
     This table describes the solar-like stars with rotational modulation.
   sub:
@@ -7852,7 +7817,8 @@ fields:
     type: array float
     descr: Array of chisquares for linear models (RP band)
 - name: vari_rrlyrae
-  ingest: _table:VariRrlyrae
+  ingest: _table:VariRrlyrae #sorted, 1:1 files, NaNs in arrays
+  #count: 271779
   descr: |
     This table describes the RR Lyrae stars.
   sub:
@@ -8396,7 +8362,8 @@ fields:
     type: float
     descr: Error on the interstellar absorption in the G-band
 - name: vari_short_timescale
-  ingest: _table:VariShortTimescale
+  ingest: _table:VariShortTimescale #sorted, 1:1 files
+  #count: 471679
   descr: "This table describes the short-timescale sources. \n"
   sub:
   - ingest: VariShortTimescale.amplitude_estimate
@@ -8448,7 +8415,8 @@ fields:
     type: double
     descr: Frequency search result for either G CCD, G FoV, BP or RP photometry
 - name: vari_summary
-  ingest: _table:VariSummary
+  ingest: _table:VariSummary #sorted, 1:1 files
+  #count: 11754237
   descr: |
     Summary table that provides the information on where a {\tt sourceId} can be found in the different {\tt Variability} tables and statistical parameters of time series, using only transits not rejected.
     Note that NULL is reported when the statistical parameter value is missing or cannot be calculated.
