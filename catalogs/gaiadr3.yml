@@ -4215,7 +4215,6 @@ fields:
     descr: L2 norm for the Sersic Profile
   - ingest: GalaxyCandidates.morph_params_corr_vec_sersic
     name: morph_params_corr_vec_sersic
-    store: true
     flag: hidden
     store: true
     type: array double
@@ -4292,7 +4291,6 @@ fields:
     descr: L2 norm for the de Vaucouleurs Profile
   - ingest: GalaxyCandidates.morph_params_corr_vec_de_vaucouleurs
     name: morph_params_corr_vec_de_vaucouleurs
-    store: true
     flag: hidden
     store: true
     type: array double
@@ -4496,7 +4494,6 @@ fields:
     descr: Boolean mask for the fields above in the corrVec matrix
   - ingest: NssAccelerationAstro.corr_vec
     name: corr_vec
-    store: true
     flag: hidden
     store: true
     type: array float
@@ -4604,7 +4601,6 @@ fields:
     descr: Boolean mask for the fields above in the corrVec matrix
   - ingest: NssNonLinearSpectro.corr_vec
     name: corr_vec
-    store: true
     flag: hidden
     store: true
     type: array float
@@ -5031,7 +5027,6 @@ fields:
     descr: boolean mask for the fields above in the corrVec matrix
   - ingest: NssTwoBodyOrbit.corr_vec
     name: corr_vec
-    store: true
     flag: hidden
     store: true
     type: array float
@@ -5290,7 +5285,6 @@ fields:
     descr: Boolean mask for the fields above in the corrVec matrix
   - ingest: NssVimFl.corr_vec
     name: corr_vec
-    store: true
     flag: hidden
     store: true
     type: array float
@@ -5624,7 +5618,6 @@ fields:
     descr: L2 norm for the fitted Sersic profile
   - ingest: QsoCandidates.morph_params_corr_vec
     name: morph_params_corr_vec
-    store: true
     flag: hidden
     store: true
     type: array double
@@ -5694,14 +5687,12 @@ fields:
     descr: Declination
   - ingest: RvsMeanSpectrum.flux
     name: flux
-    store: true
     flag: hidden
     store: true
     type: array float
     descr: array of fluxes
   - ingest: RvsMeanSpectrum.flux_error
     name: flux_error
-    store: true
     flag: hidden
     store: true
     type: array float
@@ -5944,7 +5935,6 @@ fields:
     descr: Position angle of the scanning direction
   - ingest: SsoObservation.astrometric_outcome_ccd
     name: astrometric_outcome_ccd
-    store: true
     flag: hidden
     store: true
     type: array integer
@@ -6477,7 +6467,6 @@ fields:
       G band
   - ingest: VariCepheid.fund_freq1_harmonic_ampl_g
     name: fund_freq1_harmonic_ampl_g
-    store: true
     units: mag
     flag: hidden
     store: true
@@ -6488,7 +6477,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Errors of the amplitudes of the Fourier model for the first frequency in
       the G band
@@ -6497,7 +6485,6 @@ fields:
     store: true
     units: rad
     flag: hidden
-    store: true
     type: array float
     descr: Phases of the Fourier model for the first frequency in the G band
   - ingest: VariCepheid.fund_freq1_harmonic_phase_g_error
@@ -6505,7 +6492,6 @@ fields:
     store: true
     units: rad
     flag: hidden
-    store: true
     type: array float
     descr: Errors of the phases of the Fourier model for the first frequency in the
       G band
@@ -6514,7 +6500,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Amplitudes of the Fourier model for the first frequency in the BP band
   - ingest: VariCepheid.fund_freq1_harmonic_ampl_bp_error
@@ -6522,7 +6507,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Errors of the amplitudes of the Fourier model for the first frequency in
       the BP band
@@ -6531,7 +6515,6 @@ fields:
     store: true
     units: rad
     flag: hidden
-    store: true
     type: array float
     descr: Phases of the Fourier model for the first frequency in the BP band
   - ingest: VariCepheid.fund_freq1_harmonic_phase_bp_error
@@ -6539,7 +6522,6 @@ fields:
     store: true
     units: rad
     flag: hidden
-    store: true
     type: array float
     descr: Errors of the phases of the Fourier model for the first frequency in the
       BP band
@@ -6548,7 +6530,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Amplitudes of the Fourier model for the first frequency in the RP band
   - ingest: VariCepheid.fund_freq1_harmonic_ampl_rp_error
@@ -6556,7 +6537,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Errors of the amplitudes of the Fourier model for the first frequency in
       the RP band
@@ -6565,7 +6545,6 @@ fields:
     store: true
     units: rad
     flag: hidden
-    store: true
     type: array float
     descr: Phases of the Fourier model for the first frequency in the RP band
   - ingest: VariCepheid.fund_freq1_harmonic_phase_rp_error
@@ -6573,7 +6552,6 @@ fields:
     store: true
     units: rad
     flag: hidden
-    store: true
     type: array float
     descr: Errors of the phases of the Fourier model for the first frequency in the
       RP band
@@ -6582,7 +6560,6 @@ fields:
     store: true
     units: km.s**-1
     flag: hidden
-    store: true
     type: array float
     descr: Amplitudes of the Fourier model for the first frequency of the radial velocity
       curve
@@ -6591,7 +6568,6 @@ fields:
     store: true
     units: km.s**-1
     flag: hidden
-    store: true
     type: array float
     descr: Errors of the amplitudes of the Fourier model for the first frequency of
       the radial velocity curve
@@ -6600,7 +6576,6 @@ fields:
     store: true
     units: rad
     flag: hidden
-    store: true
     type: array float
     descr: Phases of the Fourier model for the first frequency of the radial velocity
       curve
@@ -6609,7 +6584,6 @@ fields:
     store: true
     units: rad
     flag: hidden
-    store: true
     type: array float
     descr: Errors of the phases of the Fourier model for the first frequency of the
       radial velocity curve
@@ -6795,7 +6769,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: G-band harmonics
   - ingest: VariCompactCompanion.harmonic_model_params_g_error
@@ -6803,7 +6776,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: G-band harmonics errors
   - ingest: VariCompactCompanion.harmonic_model_params_bp
@@ -6811,7 +6783,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: BP-band harmonics
   - ingest: VariCompactCompanion.harmonic_model_params_bp_error
@@ -6819,7 +6790,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: BP-band harmonics errors
   - ingest: VariCompactCompanion.harmonic_model_params_rp
@@ -6827,7 +6797,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: RP-band harmonics
   - ingest: VariCompactCompanion.harmonic_model_params_rp_error
@@ -6835,7 +6804,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: RP-band harmonics errors
   - ingest: VariCompactCompanion.model_mean_g
@@ -7687,7 +7655,6 @@ fields:
     store: true
     units: d
     flag: hidden
-    store: true
     type: array double
     descr: Times at which segments start
   - ingest: VariRotationModulation.segments_end_time
@@ -7695,49 +7662,42 @@ fields:
     store: true
     units: d
     flag: hidden
-    store: true
     type: array double
     descr: Times at which segments end
   - ingest: VariRotationModulation.segments_colour_mag_intercept
     name: segments_colour_mag_intercept
     store: true
     flag: hidden
-    store: true
     type: array float
     descr: Colour-Magnitude Intercept in segments
   - ingest: VariRotationModulation.segments_colour_mag_intercept_error
     name: segments_colour_mag_intercept_error
     store: true
     flag: hidden
-    store: true
     type: array float
     descr: Colour-Magnitude Intercept uncertainty in segments
   - ingest: VariRotationModulation.segments_colour_mag_slope
     name: segments_colour_mag_slope
     store: true
     flag: hidden
-    store: true
     type: array float
     descr: Colour-Magnitude Slope in segments
   - ingest: VariRotationModulation.segments_colour_mag_slope_error
     name: segments_colour_mag_slope_error
     store: true
     flag: hidden
-    store: true
     type: array float
     descr: Colour-Magnitude Slope uncertainty in segments
   - ingest: VariRotationModulation.segments_correlation_coefficient
     name: segments_correlation_coefficient
     store: true
     flag: hidden
-    store: true
     type: array float
     descr: Correlation coefficient in segments
   - ingest: VariRotationModulation.segments_correlation_significance
     name: segments_correlation_significance
     store: true
     flag: hidden
-    store: true
     type: array float
     descr: Correlation coefficient significance in segments
   - ingest: VariRotationModulation.num_outliers
@@ -7751,7 +7711,6 @@ fields:
     store: true
     units: d
     flag: hidden
-    store: true
     type: array double
     descr: Times at which outliers occurs
   - ingest: VariRotationModulation.segments_rotation_period
@@ -7759,7 +7718,6 @@ fields:
     store: true
     units: d
     flag: hidden
-    store: true
     type: array double
     descr: Rotation period in segment
   - ingest: VariRotationModulation.segments_rotation_period_error
@@ -7767,14 +7725,12 @@ fields:
     store: true
     units: d
     flag: hidden
-    store: true
     type: array float
     descr: Rotation period uncertainty in segment
   - ingest: VariRotationModulation.segments_rotation_period_fap
     name: segments_rotation_period_fap
     store: true
     flag: hidden
-    store: true
     type: array float
     descr: FAP on rotation period in segment
   - ingest: VariRotationModulation.best_rotation_period
@@ -7796,7 +7752,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: The unspotted G mags in segment
   - ingest: VariRotationModulation.segments_g_unspotted_error
@@ -7804,7 +7759,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: The unspotted G mag uncertainties in segment
   - ingest: VariRotationModulation.segments_bp_unspotted
@@ -7812,7 +7766,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: The unspotted BP mag in segment
   - ingest: VariRotationModulation.segments_bp_unspotted_error
@@ -7820,7 +7773,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: The unspotted BP mag uncertainties in segment
   - ingest: VariRotationModulation.segments_rp_unspotted
@@ -7828,7 +7780,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: The unspotted RP mag in segment
   - ingest: VariRotationModulation.segments_rp_unspotted_error
@@ -7836,7 +7787,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: The unspotted RP mag uncertainties in segment
   - ingest: VariRotationModulation.g_unspotted
@@ -7886,7 +7836,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Coefficient of cosine term of linear fit in segment in the G band
   - ingest: VariRotationModulation.segments_g_cos_term_error
@@ -7894,7 +7843,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Errors on cosine terms in the G band
   - ingest: VariRotationModulation.segments_g_sin_term
@@ -7902,7 +7850,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Coefficient of sine term of linear fit in segment in the G band
   - ingest: VariRotationModulation.segments_g_sin_term_error
@@ -7910,7 +7857,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Errors on sine terms in the G band
   - ingest: VariRotationModulation.segments_g_a0_term
@@ -7918,7 +7864,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Constant term (A0) of linear fit in segment in the G band
   - ingest: VariRotationModulation.segments_g_a0_term_error
@@ -7926,7 +7871,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Errors on constant terms in the G band
   - ingest: VariRotationModulation.segments_bp_cos_term
@@ -7934,7 +7878,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Coefficient of cosine term of linear fit in segment in the BP band
   - ingest: VariRotationModulation.segments_bp_cos_term_error
@@ -7942,7 +7885,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Errors on cosine terms in the BP band
   - ingest: VariRotationModulation.segments_bp_sin_term
@@ -7950,7 +7892,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Coefficient of sine term of linear fit in segment in the BP band
   - ingest: VariRotationModulation.segments_bp_sin_term_error
@@ -7958,7 +7899,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Errors on sine terms in the BP band
   - ingest: VariRotationModulation.segments_bp_a0_term
@@ -7966,7 +7906,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Constant term (A0) of linear fit in segment in the BP band
   - ingest: VariRotationModulation.segments_bp_a0_term_error
@@ -7974,7 +7913,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Errors on constant terms in the BP band
   - ingest: VariRotationModulation.segments_rp_cos_term
@@ -7982,7 +7920,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Coefficient of cosine term of linear fit in segment in the RP band
   - ingest: VariRotationModulation.segments_rp_cos_term_error
@@ -7990,7 +7927,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Errors on cosine terms in the RP band
   - ingest: VariRotationModulation.segments_rp_sin_term
@@ -7998,7 +7934,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Coefficient of sine term of linear fit in segment in the RP band
   - ingest: VariRotationModulation.segments_rp_sin_term_error
@@ -8006,7 +7941,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Errors on sine terms in the RP band
   - ingest: VariRotationModulation.segments_rp_a0_term
@@ -8014,7 +7948,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Constant term (A0) of linear fit in segment in the RP band
   - ingest: VariRotationModulation.segments_rp_a0_term_error
@@ -8022,7 +7955,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Errors on constant terms in the RP band
   - ingest: VariRotationModulation.segments_g_activity_index
@@ -8030,7 +7962,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Activity Index in segment (computed in G band)
   - ingest: VariRotationModulation.segments_g_activity_index_error
@@ -8038,7 +7969,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: error on Activity index in segment (computed in G band)
   - ingest: VariRotationModulation.segments_bp_activity_index
@@ -8046,7 +7976,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Activity Index in segment (computed in BP band)
   - ingest: VariRotationModulation.segments_bp_activity_index_error
@@ -8054,7 +7983,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: error on Activity index in segment (computed in BP band)
   - ingest: VariRotationModulation.segments_rp_activity_index
@@ -8062,7 +7990,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Activity Index in segment (computed in RP band)
   - ingest: VariRotationModulation.segments_rp_activity_index_error
@@ -8070,7 +7997,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: error on Activity index in segment (computed in RP band)
   - ingest: VariRotationModulation.max_activity_index_g
@@ -8091,14 +8017,12 @@ fields:
     name: segments_bp_rp_corr_coeff
     store: true
     flag: hidden
-    store: true
     type: array float
     descr: Pearson coefficient between BP and RP in segment
   - ingest: VariRotationModulation.segments_bp_rp_corr_signif
     name: segments_bp_rp_corr_signif
     store: true
     flag: hidden
-    store: true
     type: array float
     descr: Significance associated with Pearson coefficient
   - ingest: VariRotationModulation.segments_bp_rp_intercept
@@ -8106,7 +8030,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Intercept of regression fit of RP vs BP magnitudes in the segment
   - ingest: VariRotationModulation.segments_bp_rp_intercept_error
@@ -8114,21 +8037,18 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Error on intercept of regression fit of RP vs BP magnitudes in the segment
   - ingest: VariRotationModulation.segments_bp_rp_slope
     name: segments_bp_rp_slope
     store: true
     flag: hidden
-    store: true
     type: array float
     descr: Slope of regression fit of RP vs BP magnitudes in the segment
   - ingest: VariRotationModulation.segments_bp_rp_slope_error
     name: segments_bp_rp_slope_error
     store: true
     flag: hidden
-    store: true
     type: array float
     descr: Error on slope of regression fit of RP vs BP magnitudes in the segment
   - ingest: VariRotationModulation.segments_model_reference_time
@@ -8136,28 +8056,24 @@ fields:
     store: true
     units: d
     flag: hidden
-    store: true
     type: array double
     descr: Time used as reference time for the period search procedure in the segment
   - ingest: VariRotationModulation.segments_g_chi_square
     name: segments_g_chi_square
     store: true
     flag: hidden
-    store: true
     type: array float
     descr: Array of chisquares for linear models (G band)
   - ingest: VariRotationModulation.segments_bp_chi_square
     name: segments_bp_chi_square
     store: true
     flag: hidden
-    store: true
     type: array float
     descr: Array of chisquares for linear models (BP band)
   - ingest: VariRotationModulation.segments_rp_chi_square
     name: segments_rp_chi_square
     store: true
     flag: hidden
-    store: true
     type: array float
     descr: Array of chisquares for linear models (RP band)
 - name: vari_rrlyrae
@@ -8566,7 +8482,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Amplitudes of the Fourier model for the first frequency in the G band
   - ingest: VariRrlyrae.fund_freq1_harmonic_ampl_g_error
@@ -8574,7 +8489,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Errors of the amplitudes of the Fourier model for the first frequency in
       the G band
@@ -8583,7 +8497,6 @@ fields:
     store: true
     units: rad
     flag: hidden
-    store: true
     type: array float
     descr: Phases of the Fourier model for the first frequency in the G band
   - ingest: VariRrlyrae.fund_freq1_harmonic_phase_g_error
@@ -8591,7 +8504,6 @@ fields:
     store: true
     units: rad
     flag: hidden
-    store: true
     type: array float
     descr: Errors of the phases of the Fourier model for the first frequency in the
       G band
@@ -8600,7 +8512,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Amplitudes of the Fourier model for the first frequency in the BP band
   - ingest: VariRrlyrae.fund_freq1_harmonic_ampl_bp_error
@@ -8608,7 +8519,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Errors of the amplitudes of the Fourier model for the first frequency in
       the BP band
@@ -8617,7 +8527,6 @@ fields:
     store: true
     units: rad
     flag: hidden
-    store: true
     type: array float
     descr: Phases of the Fourier model for the first frequency in the BP band
   - ingest: VariRrlyrae.fund_freq1_harmonic_phase_bp_error
@@ -8625,7 +8534,6 @@ fields:
     store: true
     units: rad
     flag: hidden
-    store: true
     type: array float
     descr: Errors of the phases of the Fourier model for the first frequency in the
       BP band
@@ -8634,7 +8542,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Amplitudes of the Fourier model for the first frequency in the RP band
   - ingest: VariRrlyrae.fund_freq1_harmonic_ampl_rp_error
@@ -8642,7 +8549,6 @@ fields:
     store: true
     units: mag
     flag: hidden
-    store: true
     type: array float
     descr: Errors of the amplitudes of the Fourier model for the first frequency in
       the RP band
@@ -8651,7 +8557,6 @@ fields:
     store: true
     units: rad
     flag: hidden
-    store: true
     type: array float
     descr: Phases of the Fourier model for the first frequency in the RP band
   - ingest: VariRrlyrae.fund_freq1_harmonic_phase_rp_error
@@ -8659,7 +8564,6 @@ fields:
     store: true
     units: rad
     flag: hidden
-    store: true
     type: array float
     descr: Errors of the phases of the Fourier model for the first frequency in the
       RP band
@@ -8668,7 +8572,6 @@ fields:
     store: true
     units: km.s**-1
     flag: hidden
-    store: true
     type: array float
     descr: Amplitudes of the Fourier model for the first frequency of the radial velocity
       curve
@@ -8677,7 +8580,6 @@ fields:
     store: true
     units: km.s**-1
     flag: hidden
-    store: true
     type: array float
     descr: Errors of the amplitudes of the Fourier model for the first frequency of
       the radial velocity curve
@@ -8686,7 +8588,6 @@ fields:
     store: true
     units: rad
     flag: hidden
-    store: true
     type: array float
     descr: Phases of the Fourier model for the first frequency of the radial velocity
       curve
@@ -8695,7 +8596,6 @@ fields:
     store: true
     units: rad
     flag: hidden
-    store: true
     type: array float
     descr: Errors of the phases of the Fourier model for the first frequency of the
       radial velocity curve
@@ -8756,7 +8656,6 @@ fields:
     store: true
     units: d
     flag: hidden
-    store: true
     type: array float
     descr: Characteristic timescale(s) of variability
   - ingest: VariShortTimescale.variogram_values
@@ -8764,7 +8663,6 @@ fields:
     store: true
     units: mag**2
     flag: hidden
-    store: true
     type: array double
     descr: Variogram values associated with the {\tt variogramCharTimescales}
   - ingest: VariShortTimescale.frequency
@@ -9260,21 +9158,18 @@ fields:
     name: bp_coefficients
     store: true
     flag: hidden
-    store: true
     type: array double
     descr: Basis function coefficients for the BP spectrum representation
   - ingest: XpContinuousMeanSpectrum.bp_coefficient_errors
     name: bp_coefficient_errors
     store: true
     flag: hidden
-    store: true
     type: array float
     descr: Basis function coefficient errors for the BP spectrum representation
   - ingest: XpContinuousMeanSpectrum.bp_coefficient_correlations
     name: bp_coefficient_correlations
     store: true
     flag: hidden
-    store: true
     type: array float
     descr: Correlation matrix for BP coefficients
   - ingest: XpContinuousMeanSpectrum.bp_n_relevant_bases
@@ -9337,21 +9232,18 @@ fields:
     name: rp_coefficients
     store: true
     flag: hidden
-    store: true
     type: array double
     descr: Basis function coefficients for the RP spectrum representation
   - ingest: XpContinuousMeanSpectrum.rp_coefficient_errors
     name: rp_coefficient_errors
     store: true
     flag: hidden
-    store: true
     type: array float
     descr: Basis function coefficient errors for the RP spectrum representation
   - ingest: XpContinuousMeanSpectrum.rp_coefficient_correlations
     name: rp_coefficient_correlations
     store: true
     flag: hidden
-    store: true
     type: array float
     descr: Correlation matrix for RP coefficients
   - ingest: XpContinuousMeanSpectrum.rp_n_relevant_bases
@@ -9392,7 +9284,6 @@ fields:
     store: true
     units: W.m**-2.nm**-1
     flag: hidden
-    store: true
     type: array float
     descr: mean BP + RP combined spectrum flux
   - ingest: XpSampledMeanSpectrum.flux_error
@@ -9400,7 +9291,6 @@ fields:
     store: true
     units: W.m**-2.nm**-1
     flag: hidden
-    store: true
     type: array float
     descr: mean BP + RP combined spectrum flux error
 - name: xp_summary
