@@ -6913,45 +6913,6 @@ fields:
     store: true
     type: float
     descr: 'Secondary eclipse: uncertainty of \texttt{derivedSecondaryEclDepth}'
-- name: vari_epoch_radial_velocity
-  ingest: _table:VariEpochRadialVelocity #sorted, 1:1 files, 1:many entries!
-  #count: 43298
-  descr: |
-    This table contains the epoch radial velocity data points for a sub-set of variable stars. Each entry is a radial velocity in the solar barycentric reference frame for a given object and observation time.
-  sub:
-  - ingest: VariEpochRadialVelocity.transit_id
-    name: transit_id
-    flag: hidden
-    store: true
-    type: long
-    descr: Transit unique identifier
-  - ingest: VariEpochRadialVelocity.rv_obs_time
-    name: rv_obs_time
-    units: d
-    flag: hidden
-    store: true
-    type: double
-    descr: Observing time of the transit
-  - ingest: VariEpochRadialVelocity.radial_velocity
-    name: radial_velocity
-    units: km.s**-1
-    flag: hidden
-    store: true
-    type: double
-    descr: Barycentric radial velocity
-  - ingest: VariEpochRadialVelocity.radial_velocity_error
-    name: radial_velocity_error
-    units: km.s**-1
-    flag: hidden
-    store: true
-    type: double
-    descr: Barycentric radial velocity error
-  - ingest: VariEpochRadialVelocity.rejected_by_variability
-    name: rejected_by_variability
-    flag: hidden
-    store: true
-    type: boolean
-    descr: Rejected by DPAC variability processing (or variability analysis)
 - name: vari_long_period_variable
   ingest: _table:VariLongPeriodVariable #sorted, 1:1 files
   #count: 1720588
