@@ -25,7 +25,7 @@ fields:
 #  name: designation
 #  type: string
 #  descr: Unique source designation (unique across all Data Releases)
-- ingest: GaiaSource.source_id
+- ingest: _key:GaiaSource.source_id
   name: source_id
   type: long
   descr: Unique source identifier (unique within a particular Data Release)

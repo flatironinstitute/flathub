@@ -6,6 +6,7 @@ module Ingest.GaiaDR3
   ( ingestGaiaDR3
   ) where
 
+import           Control.Arrow (second)
 import           Control.Monad (mfilter)
 import           Control.Monad.IO.Class (liftIO)
 import qualified Data.Aeson as J
@@ -14,6 +15,7 @@ import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.Csv.Streaming as CSV
 import           Data.Foldable (fold)
+import qualified Data.HashMap.Strict as HM
 import           Data.List (isPrefixOf, sort)
 import           Data.Maybe (fromMaybe)
 import qualified Data.Text as T
@@ -34,8 +36,7 @@ import Ingest.CSV
 type Key = Int
 
 data TableInfo = TableInfo
-  { tableSubFields
-  , tableFields :: Fields
+  { tableFields :: Fields
   , tableKeyName :: BS.ByteString
   , tableKeyIndex :: Int
   , tableFieldIndex :: V.Vector Int
@@ -64,11 +65,11 @@ nextRow ts@TableStream{..} = do
 nextFile :: TableInfo -> IO TableStream
 nextFile ti@TableInfo{ tableFiles = [] } = return $ TableStream Nothing (CSV.Nil Nothing BSL.empty) ti
 nextFile ti@TableInfo{ tableFiles = file:files } = do
-  (hd, rows) <- loadECSV file (tableSubFields ti)
+  (hd, rows) <- loadECSV file (tableFields ti)
   let geti n = maybe (fail $ file ++ " missing field " ++ BSC.unpack n) return $ V.elemIndex n hd
   key <- geti (tableKeyName ti)
   cols <- mapM (\f -> geti (TE.encodeUtf8 $ fromMaybe (fieldName f) (mfilter (not . T.isPrefixOf "_") $ fieldIngest f)))
-    $ tableSubFields ti
+    $ tableFields ti
   nextRow TableStream
     { tableNext = Nothing
     , tableRows = rows
@@ -79,35 +80,35 @@ nextFile ti@TableInfo{ tableFiles = file:files } = do
       }
     }
 
-readTable :: T.Text -> FilePath -> T.Text -> FieldGroup -> FieldGroups -> IO TableStream
-readTable key path name base fields = do
+readTable :: Field -> FilePath -> T.Text -> Fields -> IO TableStream
+readTable keyf path name fields = do
   files <- map (dir </>) . sort . filter match <$> listDirectory dir
   nextFile $ TableInfo
-    { tableSubFields = fields'
-    , tableFields = V.map (subField base) fields'
-    , tableKeyName = TE.encodeUtf8 key
+    { tableFields = fields
+    , tableKeyName = TE.encodeUtf8 $ fieldSource keyf
     , tableKeyIndex = -1
     , tableFieldIndex = V.empty
     , tableFiles = files
     }
   where
-  fields' = expandFields fields
   name' = T.unpack name
   dir = path </> name'
   match f = (name' ++ "_") `isPrefixOf` f && ".csv" `isExtensionOf` f
 
+fieldSource :: Field -> T.Text
+fieldSource f = fromMaybe (fieldName f) $ fieldIngest f
+
 ingestGaiaDR3 :: Ingest -> M Word64
 ingestGaiaDR3 ing = do
-  maintab <- readtab keytab mempty fields
-  subtabs <- V.mapM readsub tables
+  tabs <- liftIO $ HM.traverseWithKey (readTable keyf (ingestFile ing)) tabfs
   return 0
   where
-  (tables, fields) = V.partition (any (T.isPrefixOf flagTable) . fieldIngest) $ catalogFieldGroups $ ingestCatalog ing
-  Just keyf = V.find (any (T.isPrefixOf flagKey) . fieldIngest) fields
-  Just keytab = T.stripPrefix flagKey =<< fieldIngest keyf
-  keyn = fieldName keyf
-  readtab n b = liftIO . readTable keyn (ingestFile ing) n b
-  readsub f = fromMaybe (fail "no table sub") $
-    readtab <$> (T.stripPrefix flagTable =<< fieldIngest f) <*> return f <*> fieldSub f
+  fields = catalogFields $ ingestCatalog ing
+  (keytab, keyf) = split $ fromMaybe (error "no _key")
+    $ V.find (any (T.isPrefixOf flagKey) . fieldIngest) fields
+  tabfs = HM.map V.fromList $ V.foldr (uncurry (HM.insertWith (++)) . second return . split) HM.empty fields
+  split f@Field{ fieldDesc = fd@FieldDesc{ fieldDescIngest = Just i } } =
+    second (\n -> f{ fieldDesc = fd{ fieldDescIngest = snd <$> T.uncons n } })
+      $ T.breakOn "." $ fromMaybe i (T.stripPrefix flagKey i)
+  split f = error $ "field missing ingest: " ++ T.unpack (fieldName f)
   flagKey = "_key:"
-  flagTable = "_table:"
