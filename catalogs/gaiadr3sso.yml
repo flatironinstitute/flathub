@@ -1,0 +1,320 @@
+title: Gaia DR3 SSO
+index: gaiadr3sso
+fields:
+- name: sso_observation
+  ingest: _table:SsoObservation # weird source_ids, dups
+  #count: 23336467
+  descr: "Solar System object observations. Each table line contains data obtained
+    during the transit of the source on a single CCD, during a single transit. The
+    corresponding epoch is provided. Data not varying within the transit are repeated
+    identically for all single observations of that transit. \n"
+  sub:
+# - ingest: SsoObservation.denomination
+#   name: denomination
+#   flag: hidden
+#   store: true
+#   type: string (lots of names)
+#   descr: standard MPC denomination of the asteroid
+  - ingest: SsoObservation.transit_id
+    name: transit_id
+    flag: hidden
+    store: true
+    type: long
+    descr: Transit Identifier
+  - ingest: SsoObservation.observation_id
+    name: observation_id
+    flag: hidden
+    store: true
+    type: long
+    descr: Observation Identifier
+  - ingest: SsoObservation.number_mp
+    name: number_mp
+    flag: hidden
+    store: true
+    type: long
+    descr: Minor Planet number
+  - ingest: SsoObservation.epoch
+    name: epoch
+    units: d
+    flag: hidden
+    store: true
+    type: double
+    descr: Gaia-centric epoch TCB(Gaia)
+  - ingest: SsoObservation.epoch_err
+    name: epoch_err
+    units: d
+    flag: hidden
+    store: true
+    type: double
+    descr: Error in Gaiacentric epoch
+  - ingest: SsoObservation.epoch_utc
+    name: epoch_utc
+    units: d
+    flag: hidden
+    store: true
+    type: double
+    descr: Gaia-centric TCB epoch converted to UTC
+  - ingest: SsoObservation.ra
+    name: ra
+    units: deg
+    flag: hidden
+    store: true
+    type: double
+    descr: Right ascension of the source
+  - ingest: SsoObservation.dec
+    name: dec
+    units: deg
+    flag: hidden
+    store: true
+    type: double
+    descr: Declination of the source
+  - ingest: SsoObservation.ra_error_systematic
+    name: ra_error_systematic
+    units: mas
+    flag: hidden
+    store: true
+    type: double
+    descr: Standard error of right ascension - systematic
+  - ingest: SsoObservation.dec_error_systematic
+    name: dec_error_systematic
+    units: mas
+    flag: hidden
+    store: true
+    type: double
+    descr: Standard error of declination - systematic
+  - ingest: SsoObservation.ra_dec_correlation_systematic
+    name: ra_dec_correlation_systematic
+    flag: hidden
+    store: true
+    type: double
+    descr: Correlation of ra and dec errors - systematic
+  - ingest: SsoObservation.ra_error_random
+    name: ra_error_random
+    units: mas
+    flag: hidden
+    store: true
+    type: double
+    descr: Standard error of right ascension - random
+  - ingest: SsoObservation.dec_error_random
+    name: dec_error_random
+    units: mas
+    flag: hidden
+    store: true
+    type: double
+    descr: Standard error of declination - random
+  - ingest: SsoObservation.ra_dec_correlation_random
+    name: ra_dec_correlation_random
+    flag: hidden
+    store: true
+    type: double
+    descr: Correlation of ra and dec errors - random
+  - ingest: SsoObservation.g_mag
+    name: g_mag
+    units: mag
+    flag: hidden
+    store: true
+    type: double
+    descr: Calibrated G mag
+  - ingest: SsoObservation.g_flux
+    name: g_flux
+    units: '''electron''.s**-1'
+    flag: hidden
+    store: true
+    type: double
+    descr: Average calibrated G flux for the transit
+  - ingest: SsoObservation.g_flux_error
+    name: g_flux_error
+    units: '''electron''.s**-1'
+    flag: hidden
+    store: true
+    type: double
+    descr: Error on the G flux
+  - ingest: SsoObservation.x_gaia
+    name: x_gaia
+    units: AU
+    flag: hidden
+    store: true
+    type: double
+    descr: Barycentric x position of Gaia
+  - ingest: SsoObservation.y_gaia
+    name: y_gaia
+    units: AU
+    flag: hidden
+    store: true
+    type: double
+    descr: Barycentric y position of Gaia
+  - ingest: SsoObservation.z_gaia
+    name: z_gaia
+    units: AU
+    flag: hidden
+    store: true
+    type: double
+    descr: Barycentric z position of Gaia
+  - ingest: SsoObservation.vx_gaia
+    name: vx_gaia
+    units: AU.d**-1
+    flag: hidden
+    store: true
+    type: double
+    descr: Barycentric x velocity of Gaia
+  - ingest: SsoObservation.vy_gaia
+    name: vy_gaia
+    units: AU.d**-1
+    flag: hidden
+    store: true
+    type: double
+    descr: Barycentric y velocity of Gaia
+  - ingest: SsoObservation.vz_gaia
+    name: vz_gaia
+    units: AU.d**-1
+    flag: hidden
+    store: true
+    type: double
+    descr: Barycentric z velocity of Gaia
+  - ingest: SsoObservation.x_gaia_geocentric
+    name: x_gaia_geocentric
+    units: AU
+    flag: hidden
+    store: true
+    type: double
+    descr: Geocentric x position of Gaia
+  - ingest: SsoObservation.y_gaia_geocentric
+    name: y_gaia_geocentric
+    units: AU
+    flag: hidden
+    store: true
+    type: double
+    descr: Geocentric y position of Gaia
+  - ingest: SsoObservation.z_gaia_geocentric
+    name: z_gaia_geocentric
+    units: AU
+    flag: hidden
+    store: true
+    type: double
+    descr: Geocentric z position of Gaia
+  - ingest: SsoObservation.vx_gaia_geocentric
+    name: vx_gaia_geocentric
+    units: AU.d**-1
+    flag: hidden
+    store: true
+    type: double
+    descr: Geocentric x velocity of Gaia
+  - ingest: SsoObservation.vy_gaia_geocentric
+    name: vy_gaia_geocentric
+    units: AU.d**-1
+    flag: hidden
+    store: true
+    type: double
+    descr: Geocentric y velocity of Gaia
+  - ingest: SsoObservation.vz_gaia_geocentric
+    name: vz_gaia_geocentric
+    units: AU.d**-1
+    flag: hidden
+    store: true
+    type: double
+    descr: Geocentric z velocity of Gaia
+  - ingest: SsoObservation.position_angle_scan
+    name: position_angle_scan
+    units: deg
+    flag: hidden
+    store: true
+    type: double
+    descr: Position angle of the scanning direction
+  - ingest: SsoObservation.astrometric_outcome_ccd
+    name: astrometric_outcome_ccd
+    flag: hidden
+    store: true
+    type: array integer
+    descr: Result of processing the CCDs
+  - ingest: SsoObservation.astrometric_outcome_transit
+    name: astrometric_outcome_transit
+    flag: hidden
+    store: true
+    type: integer
+    descr: Result of processing the transit
+- name: sso_reflectance_spectrum
+  ingest: _table:SsoReflectanceSpectrum # negative, dup source_ids
+  #count: 968288
+  descr: |
+    This table contains the mean BP/RP reflectance spectra of asteroids computed as the ratio between the asteroid flux and an averaged solar analogue flux. In each row, the reflectance spectrum of a given asteroid is given at a given wavelength. Entries for all asteroids are concatenated into a single table.
+  sub:
+  - ingest: SsoReflectanceSpectrum.number_mp
+    name: number_mp
+    flag: hidden
+    store: true
+    type: long
+    descr: Minor Planet number
+# - ingest: SsoReflectanceSpectrum.denomination
+#   name: denomination
+#   flag: hidden
+#   store: true
+#   type: string (lots of names)
+#   descr: standard MPC denomination of the asteroid
+  - ingest: SsoReflectanceSpectrum.nb_samples
+    name: nb_samples
+    flag: hidden
+    store: true
+    type: short
+    descr: Nb samples in spectrum
+  - ingest: SsoReflectanceSpectrum.num_of_spectra
+    name: num_of_spectra
+    flag: hidden
+    store: true
+    type: integer
+    descr: number of epoch spectra used to compute the average
+  - ingest: SsoReflectanceSpectrum.reflectance_spectrum
+    name: reflectance_spectrum
+    flag: hidden
+    store: true
+    type: float
+    descr: Reflectance spectrum
+  - ingest: SsoReflectanceSpectrum.reflectance_spectrum_err
+    name: reflectance_spectrum_err
+    flag: hidden
+    store: true
+    type: float
+    descr: Error in reflectance spectrum
+  - ingest: SsoReflectanceSpectrum.wavelength
+    name: wavelength
+    units: nm
+    flag: hidden
+    store: true
+    type: float
+    descr: Internally-calibrated wavelength of reflectance spectrum
+  - ingest: SsoReflectanceSpectrum.reflectance_spectrum_flag
+    name: reflectance_spectrum_flag
+    flag: hidden
+    store: true
+    type: byte
+    descr: Reflectance spectrum value flag
+- name: sso_source
+  ingest: _table:SsoSource # negative, dup source_ids
+  #count: 158152
+  descr: "This table contains data related to Solar System objects observed by Gaia.
+    The quantities in the table are derived from data reduction and are associated
+    to single objects. \n"
+  sub:
+  - ingest: SsoSource.num_of_obs
+    name: num_of_obs
+    flag: hidden
+    store: true
+    type: integer
+    descr: number of observations
+  - ingest: SsoSource.number_mp
+    name: number_mp
+    flag: hidden
+    store: true
+    type: long
+    descr: Minor Planet number
+# - ingest: SsoSource.denomination
+#   name: denomination
+#   flag: hidden
+#   store: true
+#   type: string (even more names)
+#   descr: standard MPC denomination of the asteroid
+  - ingest: SsoSource.num_of_spectra
+    name: num_of_spectra
+    flag: hidden
+    store: true
+    type: integer
+    descr: Number of epoch spectra used to compute the average
