@@ -53,11 +53,12 @@ ingest cat consts fs = do
   proc f = case takeExtension $ fst $ decompressExtension f of
     ".hdf5" -> Just ingestHDF5
     ".h5" -> Just ingestHDF5
-    ".csv" -> Just ingestCSV
+    ".csv"
+      | catalogName cat == "gaiadr3" -> Just ingestGaiaDR3
+      | otherwise -> Just ingestCSV
     ".ecsv" -> Just ingestECSV
     ".dat" -> Just ingestDat
     ".txt" -> Just ingestTxt
-    "" | catalogName cat == "gaiadr3" -> Just ingestGaiaDR3
     _ -> Nothing
   splitoff [] = ([], 0)
   splitoff ('@':(readMaybe -> Just i)) = ([], i)

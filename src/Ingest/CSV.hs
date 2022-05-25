@@ -48,9 +48,9 @@ takeCSV n r = do
 
 ingestCSVFrom :: Ingest -> V.Vector BS.ByteString -> CSV.Records (V.Vector BS.ByteString) -> M Word64
 ingestCSVFrom info@Ingest{ ingestCatalog = cat, ingestOffset = off } header rows = do
-  cols <- mapM (\f@Field{ fieldDesc = FieldDesc{ fieldDescName = n, fieldDescIngest = i } } ->
-      maybe (raise400 $ "csv header field missing: " ++ T.unpack n) (return . (,) f)
-        $ V.elemIndex (TE.encodeUtf8 $ fromMaybe n i) header)
+  cols <- mapM (\f ->
+      maybe (raise400 $ "csv header field missing: " ++ T.unpack (fieldName f)) (return . (,) f)
+        $ V.elemIndex (TE.encodeUtf8 $ fieldSource f) header)
     $ catalogFields cat
   let
     (del, rows') = dropCSV off rows

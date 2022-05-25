@@ -8,6 +8,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Char8 as BSC
 import           Data.Char (isControl)
+import           Data.Maybe (fromMaybe)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import           Data.Word (Word64)
@@ -39,6 +40,9 @@ data Ingest = Ingest
 
 addIngestConsts :: FieldValue -> Ingest -> Ingest
 addIngestConsts v i = i{ ingestConsts = v : ingestConsts i, ingestJConsts = fieldJValue v <> ingestJConsts i }
+
+fieldSource :: Field -> T.Text
+fieldSource f = fromMaybe (fieldName f) $ fieldIngest f
 
 ingestFieldBS :: Field -> BS.ByteString -> J.Series
 ingestFieldBS f v

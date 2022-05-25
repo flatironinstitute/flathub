@@ -45,7 +45,7 @@ loadECSV file fields = do
     fail "ECSV/CSV header mismatch"
   return csvhr
   where
-  fn = V.map (\f -> fromMaybe (fieldName f) (fieldIngest f)) fields
+  fn = V.map fieldSource fields
 
 ingestECSV :: Ingest -> M Word64
 ingestECSV info@Ingest{ ingestCatalog = cat } = do

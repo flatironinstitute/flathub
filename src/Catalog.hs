@@ -68,7 +68,7 @@ data Catalog = Catalog
   , catalogFields :: Fields
   , catalogFieldMap :: KM.KeyedMap Field
   , catalogStats :: IO (Count, KM.KeyedMap (FieldSub FieldStats Proxy)) -- ^deferred cached calculation of global stats (which we assume never change)
-  , catalogKey :: Maybe T.Text -- ^primary key (not much used)
+  , catalogKey :: Maybe T.Text -- ^primary key
   , catalogSort :: [T.Text] -- ^sort field(s) for index
   , catalogCount :: Maybe Count -- ^intended number of rows
   }
