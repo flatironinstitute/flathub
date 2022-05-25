@@ -5,12 +5,12 @@ settings:
     mapping.total_fields.limit: 1300
 descr: >
   <a href='https://www.cosmos.esa.int/web/gaia/dr3'>Gaia Data Release 3</a> from the <a href='http://www.esa.int/ESA'>European Space Agency</a>
-    How to cite and acknowledge Gaia: 
-    https://gea.esac.esa.int/archive/documentation/credits.html 
-    Known issues: 
-    https://www.cosmos.esa.int/web/gaia-users/known-issues 
-    Tutorials and documentation: 
-    https://www.cosmos.esa.int/web/gaia-users/archive 
+    How to cite and acknowledge Gaia:
+    https://gea.esac.esa.int/archive/documentation/credits.html
+    Known issues:
+    https://www.cosmos.esa.int/web/gaia-users/known-issues
+    Tutorials and documentation:
+    https://www.cosmos.esa.int/web/gaia-users/archive
 
   This table has an entry for every Gaia observed source as published with this data release. It contains the basic source parameters, in their final state as processed by the Gaia Data Processing and Analysis Consortium from the raw data coming from the spacecraft. The table is complemented with others containing information specific to certain kinds of objects (e.g.~Solar--system objects, non--single stars, variables etc.) and value--added processing (e.g.~astrophysical parameters etc.). Further array data types (spectra, epoch measurements) are presented separately via `Datalink' resources.
 count: 1811709771
@@ -38,6 +38,7 @@ fields:
   units: yr
   type: double
   descr: Reference epoch
+  store: true
 - name: ''
   title: pos
   descr: Barycentric position
@@ -62,6 +63,26 @@ fields:
     units: mas
     type: float
     descr: Standard error of declination
+  - ingest: GaiaSource.l
+    name: l
+    units: deg
+    type: double
+    descr: Galactic longitude
+  - ingest: GaiaSource.b
+    name: b
+    units: deg
+    type: double
+    descr: Galactic latitude
+  - ingest: GaiaSource.ecl_lon
+    name: ecl_lon
+    units: deg
+    type: double
+    descr: Ecliptic longitude
+  - ingest: GaiaSource.ecl_lat
+    name: ecl_lat
+    units: deg
+    type: double
+    descr: Ecliptic latitude
 - ingest: GaiaSource.parallax
   name: parallax
   units: mas
@@ -116,70 +137,86 @@ fields:
     name: ra_dec_corr
     type: float
     descr: Correlation between right ascension and declination
+    store: true
   - ingest: GaiaSource.ra_parallax_corr
     name: ra_parallax_corr
     type: float
     descr: Correlation between right ascension and parallax
+    store: true
   - ingest: GaiaSource.ra_pmra_corr
     name: ra_pmra_corr
     type: float
     descr: Correlation between right ascension and proper motion in right ascension
+    store: true
   - ingest: GaiaSource.ra_pmdec_corr
     name: ra_pmdec_corr
     type: float
     descr: Correlation between right ascension and proper motion in declination
+    store: true
   - ingest: GaiaSource.dec_parallax_corr
     name: dec_parallax_corr
     type: float
     descr: Correlation between declination and parallax
+    store: true
   - ingest: GaiaSource.dec_pmra_corr
     name: dec_pmra_corr
     type: float
     descr: Correlation between declination and proper motion in right ascension
+    store: true
   - ingest: GaiaSource.dec_pmdec_corr
     name: dec_pmdec_corr
     type: float
     descr: Correlation between declination and proper motion in declination
+    store: true
   - ingest: GaiaSource.parallax_pmra_corr
     name: parallax_pmra_corr
     type: float
     descr: Correlation between parallax and proper motion in right ascension
+    store: true
   - ingest: GaiaSource.parallax_pmdec_corr
     name: parallax_pmdec_corr
     type: float
     descr: Correlation between parallax and proper motion in declination
+    store: true
   - ingest: GaiaSource.pmra_pmdec_corr
     name: pmra_pmdec_corr
     type: float
     descr: Correlation between proper motion in right ascension and proper motion
       in declination
+    store: true
 - name: ''
-  title: astrometry
+  title: astrometric solution metadata
   sub:
   - ingest: GaiaSource.astrometric_n_obs_al
     name: astrometric_n_obs_al
     type: short
     descr: Total number of observations in the along-scan (AL) direction
+    store: true
   - ingest: GaiaSource.astrometric_n_obs_ac
     name: astrometric_n_obs_ac
     type: short
     descr: Total number of observations in the across-scan (AC) direction
+    store: true
   - ingest: GaiaSource.astrometric_n_good_obs_al
     name: astrometric_n_good_obs_al
     type: short
     descr: Number of good observations in the along-scan (AL) direction
+    store: true
   - ingest: GaiaSource.astrometric_n_bad_obs_al
     name: astrometric_n_bad_obs_al
     type: short
     descr: Number of bad observations in the along-scan (AL) direction
+    store: true
   - ingest: GaiaSource.astrometric_gof_al
     name: astrometric_gof_al
     type: float
     descr: Goodness of fit statistic of model wrt along-scan observations
+    store: true
   - ingest: GaiaSource.astrometric_chi2_al
     name: astrometric_chi2_al
     type: float
     descr: AL chi-square value
+    store: true
   - ingest: GaiaSource.astrometric_excess_noise
     name: astrometric_excess_noise
     units: mas
@@ -196,125 +233,151 @@ fields:
   - ingest: GaiaSource.astrometric_primary_flag
     name: astrometric_primary_flag
     type: boolean
-    descr: Primary or seconday
+    descr: Primary or secondary
   - ingest: GaiaSource.nu_eff_used_in_astrometry
     name: nu_eff_used_in_astrometry
     units: um**-1
     type: float
     descr: Effective wavenumber of the source used in the astrometric solution
+    store: true
   - ingest: GaiaSource.pseudocolour
     name: pseudocolour
     units: um**-1
     type: float
     descr: Astrometrically estimated pseudocolour of the source
+    store: true
   - ingest: GaiaSource.pseudocolour_error
     name: pseudocolour_error
     units: um**-1
     type: float
     descr: Standard error of the pseudocolour of the source
+    store: true
   - ingest: GaiaSource.ra_pseudocolour_corr
     name: ra_pseudocolour_corr
     type: float
     descr: Correlation between right ascension and pseudocolour
+    store: true
   - ingest: GaiaSource.dec_pseudocolour_corr
     name: dec_pseudocolour_corr
     type: float
     descr: Correlation between declination and pseudocolour
+    store: true
   - ingest: GaiaSource.parallax_pseudocolour_corr
     name: parallax_pseudocolour_corr
     type: float
     descr: Correlation between parallax and pseudocolour
+    store: true
   - ingest: GaiaSource.pmra_pseudocolour_corr
     name: pmra_pseudocolour_corr
     type: float
     descr: Correlation between proper motion in right asension and pseudocolour
+    store: true
   - ingest: GaiaSource.pmdec_pseudocolour_corr
     name: pmdec_pseudocolour_corr
     type: float
     descr: Correlation between proper motion in declination and pseudocolour
+    store: true
   - ingest: GaiaSource.astrometric_matched_transits
     name: astrometric_matched_transits
     type: short
     descr: Matched FOV transits used in the AGIS solution
+    store: true
   - ingest: GaiaSource.visibility_periods_used
     name: visibility_periods_used
     type: short
     descr: Number of visibility periods used in Astrometric solution
+    store: true
   - ingest: GaiaSource.astrometric_sigma5d_max
     name: astrometric_sigma5d_max
     units: mas
     type: float
     descr: The longest semi-major axis of the 5-d error ellipsoid
-- ingest: GaiaSource.matched_transits
-  name: matched_transits
-  type: short
-  descr: The number of transits matched to this source
-- ingest: GaiaSource.new_matched_transits
-  name: new_matched_transits
-  type: short
-  descr: The number of transits newly incorporated into an existing source in the
-    current cycle
-- ingest: GaiaSource.matched_transits_removed
-  name: matched_transits_removed
-  type: short
-  descr: The number of transits removed from an existing source in the current cycle
-- ingest: GaiaSource.ipd_gof_harmonic_amplitude
-  name: ipd_gof_harmonic_amplitude
-  type: float
-  descr: Amplitude of the IPD GoF versus position angle of scan
-- ingest: GaiaSource.ipd_gof_harmonic_phase
-  name: ipd_gof_harmonic_phase
-  units: deg
-  type: float
-  descr: Phase of the IPD GoF versus position angle of scan
-- ingest: GaiaSource.ipd_frac_multi_peak
-  name: ipd_frac_multi_peak
-  type: byte
-  descr: Percent of successful-IPD windows with more than one peak
-- ingest: GaiaSource.ipd_frac_odd_win
-  name: ipd_frac_odd_win
-  type: byte
-  descr: Percent of transits with truncated windows or multiple gate
-- ingest: GaiaSource.ruwe
-  name: ruwe
-  type: float
-  descr: Renormalised unit weight error
-- ingest: GaiaSource.scan_direction_strength_k1
-  name: scan_direction_strength_k1
-  type: float
-  descr: Degree of concentration of scan directions across the source
-- ingest: GaiaSource.scan_direction_strength_k2
-  name: scan_direction_strength_k2
-  type: float
-  descr: Degree of concentration of scan directions across the source
-- ingest: GaiaSource.scan_direction_strength_k3
-  name: scan_direction_strength_k3
-  type: float
-  descr: Degree of concentration of scan directions across the source
-- ingest: GaiaSource.scan_direction_strength_k4
-  name: scan_direction_strength_k4
-  type: float
-  descr: Degree of concentration of scan directions across the source
-- ingest: GaiaSource.scan_direction_mean_k1
-  name: scan_direction_mean_k1
-  units: deg
-  type: float
-  descr: Mean position angle of scan directions across the source
-- ingest: GaiaSource.scan_direction_mean_k2
-  name: scan_direction_mean_k2
-  units: deg
-  type: float
-  descr: Mean position angle of scan directions across the source
-- ingest: GaiaSource.scan_direction_mean_k3
-  name: scan_direction_mean_k3
-  units: deg
-  type: float
-  descr: Mean position angle of scan directions across the source
-- ingest: GaiaSource.scan_direction_mean_k4
-  name: scan_direction_mean_k4
-  units: deg
-  type: float
-  descr: Mean position angle of scan directions across the source
+    store: true
+  - ingest: GaiaSource.matched_transits
+    name: matched_transits
+    type: short
+    descr: The number of transits matched to this source
+    store: true
+  - ingest: GaiaSource.new_matched_transits
+    name: new_matched_transits
+    type: short
+    descr: The number of transits newly incorporated into an existing source in the
+      current cycle
+    store: true
+  - ingest: GaiaSource.matched_transits_removed
+    name: matched_transits_removed
+    type: short
+    descr: The number of transits removed from an existing source in the current cycle
+    store: true
+  - ingest: GaiaSource.ipd_gof_harmonic_amplitude
+    name: ipd_gof_harmonic_amplitude
+    type: float
+    descr: Amplitude of the IPD GoF versus position angle of scan
+    store: true
+  - ingest: GaiaSource.ipd_gof_harmonic_phase
+    name: ipd_gof_harmonic_phase
+    units: deg
+    type: float
+    descr: Phase of the IPD GoF versus position angle of scan
+    store: true
+  - ingest: GaiaSource.ipd_frac_multi_peak
+    name: ipd_frac_multi_peak
+    type: byte
+    descr: Percent of successful-IPD windows with more than one peak
+    store: true
+  - ingest: GaiaSource.ipd_frac_odd_win
+    name: ipd_frac_odd_win
+    type: byte
+    descr: Percent of transits with truncated windows or multiple gate
+    store: true
+  - ingest: GaiaSource.ruwe
+    name: ruwe
+    type: float
+    descr: Renormalised unit weight error
+  - ingest: GaiaSource.scan_direction_strength_k1
+    name: scan_direction_strength_k1
+    type: float
+    descr: Degree of concentration of scan directions across the source
+    store: true
+  - ingest: GaiaSource.scan_direction_strength_k2
+    name: scan_direction_strength_k2
+    type: float
+    descr: Degree of concentration of scan directions across the source
+    store: true
+  - ingest: GaiaSource.scan_direction_strength_k3
+    name: scan_direction_strength_k3
+    type: float
+    descr: Degree of concentration of scan directions across the source
+    store: true
+  - ingest: GaiaSource.scan_direction_strength_k4
+    name: scan_direction_strength_k4
+    type: float
+    descr: Degree of concentration of scan directions across the source
+    store: true
+  - ingest: GaiaSource.scan_direction_mean_k1
+    name: scan_direction_mean_k1
+    units: deg
+    type: float
+    descr: Mean position angle of scan directions across the source
+    store: true
+  - ingest: GaiaSource.scan_direction_mean_k2
+    name: scan_direction_mean_k2
+    units: deg
+    type: float
+    descr: Mean position angle of scan directions across the source
+    store: true
+  - ingest: GaiaSource.scan_direction_mean_k3
+    name: scan_direction_mean_k3
+    units: deg
+    type: float
+    descr: Mean position angle of scan directions across the source
+    store: true
+  - ingest: GaiaSource.scan_direction_mean_k4
+    name: scan_direction_mean_k4
+    units: deg
+    type: float
+    descr: Mean position angle of scan directions across the source
+    store: true
 - ingest: GaiaSource.duplicated_source
   name: duplicated_source
   type: boolean
@@ -375,6 +438,16 @@ fields:
     type: float
     descr: Integrated BP mean magnitude
     reversed: true
+  - ingest: GaiaSource.phot_bp_n_contaminated_transits
+    name: phot_bp_n_contaminated_transits
+    type: short
+    descr: Number of BP contaminated transits
+    store: true
+  - ingest: GaiaSource.phot_bp_n_blended_transits
+    name: phot_bp_n_blended_transits
+    type: short
+    descr: Number of BP blended transits
+    store: true
 - name: ''
   title: phot_rp
   descr: RP photometry
@@ -407,22 +480,16 @@ fields:
     type: float
     descr: BP/RP excess factor
     reversed: true
-- ingest: GaiaSource.phot_bp_n_contaminated_transits
-  name: phot_bp_n_contaminated_transits
-  type: short
-  descr: Number of BP contaminated transits
-- ingest: GaiaSource.phot_bp_n_blended_transits
-  name: phot_bp_n_blended_transits
-  type: short
-  descr: Number of BP blended transits
-- ingest: GaiaSource.phot_rp_n_contaminated_transits
-  name: phot_rp_n_contaminated_transits
-  type: short
-  descr: Number of RP contaminated transits
-- ingest: GaiaSource.phot_rp_n_blended_transits
-  name: phot_rp_n_blended_transits
-  type: short
-  descr: Number of RP blended transits
+  - ingest: GaiaSource.phot_rp_n_contaminated_transits
+    name: phot_rp_n_contaminated_transits
+    type: short
+    descr: Number of RP contaminated transits
+    store: true
+  - ingest: GaiaSource.phot_rp_n_blended_transits
+    name: phot_rp_n_blended_transits
+    type: short
+    descr: Number of RP blended transits
+    store: true
 - ingest: GaiaSource.phot_proc_mode
   name: phot_proc_mode
   type: byte
@@ -443,74 +510,83 @@ fields:
   units: mag
   type: float
   descr: G - RP colour
-- ingest: GaiaSource.radial_velocity
-  name: radial_velocity
-  units: km.s**-1
-  type: float
+- name: ''
+  title: rv
   descr: Radial velocity
-- ingest: GaiaSource.radial_velocity_error
-  name: radial_velocity_error
-  units: km.s**-1
-  type: float
-  descr: Radial velocity error
-- ingest: GaiaSource.rv_method_used
-  name: rv_method_used
-  type: byte
-  descr: Method used to obtain the radial velocity
-- ingest: GaiaSource.rv_nb_transits
-  name: rv_nb_transits
-  type: short
-  descr: Number of transits used to compute the radial velocity
-- ingest: GaiaSource.rv_nb_deblended_transits
-  name: rv_nb_deblended_transits
-  type: short
-  descr: Number of valid transits that have undergone deblending
-- ingest: GaiaSource.rv_visibility_periods_used
-  name: rv_visibility_periods_used
-  type: short
-  descr: Number of visibility periods used to estimate the radial velocity
-- ingest: GaiaSource.rv_expected_sig_to_noise
-  name: rv_expected_sig_to_noise
-  type: float
-  descr: Expected signal to noise ratio in the combination of the spectra used to
-    obtain the radial velocity
-- ingest: GaiaSource.rv_renormalised_gof
-  name: rv_renormalised_gof
-  type: float
-  descr: Radial velocity renormalised goodness of fit
-- ingest: GaiaSource.rv_chisq_pvalue
-  name: rv_chisq_pvalue
-  type: float
-  descr: P-value for constancy based on a chi-squared criterion
-- ingest: GaiaSource.rv_time_duration
-  name: rv_time_duration
-  units: d
-  type: float
-  descr: Time coverage of the radial velocity time series
-- ingest: GaiaSource.rv_amplitude_robust
-  name: rv_amplitude_robust
-  units: km.s**-1
-  type: float
-  descr: Total amplitude in the radial velocity time series after outlier removal
-- ingest: GaiaSource.rv_template_teff
-  name: rv_template_teff
-  units: K
-  type: float
-  descr: Teff of the template used to compute the radial velocity
-- ingest: GaiaSource.rv_template_logg
-  name: rv_template_logg
-  units: log(cm.s**-2)
-  type: float
-  descr: Logg of the template used to compute the radial velocity
-- ingest: GaiaSource.rv_template_fe_h
-  name: rv_template_fe_h
-  units: '''dex'''
-  type: float
-  descr: '[Fe/H] of the template used to compute the radial velocityy'
-- ingest: GaiaSource.rv_atm_param_origin
-  name: rv_atm_param_origin
-  type: short
-  descr: Origin of the atmospheric parameters associated to the template
+  sub:
+  - ingest: GaiaSource.radial_velocity
+    name: radial_velocity
+    units: km.s**-1
+    type: float
+    descr: Radial velocity
+  - ingest: GaiaSource.radial_velocity_error
+    name: radial_velocity_error
+    units: km.s**-1
+    type: float
+    descr: Radial velocity error
+  - ingest: GaiaSource.rv_method_used
+    name: rv_method_used
+    type: byte
+    descr: Method used to obtain the radial velocity
+  - ingest: GaiaSource.rv_nb_transits
+    name: rv_nb_transits
+    type: short
+    descr: Number of transits used to compute the radial velocity
+  - ingest: GaiaSource.rv_nb_deblended_transits
+    name: rv_nb_deblended_transits
+    type: short
+    descr: Number of valid transits that have undergone deblending
+  - ingest: GaiaSource.rv_visibility_periods_used
+    name: rv_visibility_periods_used
+    type: short
+    descr: Number of visibility periods used to estimate the radial velocity
+  - ingest: GaiaSource.rv_expected_sig_to_noise
+    name: rv_expected_sig_to_noise
+    type: float
+    descr: Expected signal to noise ratio in the combination of the spectra used to
+      obtain the radial velocity
+    store: true
+  - ingest: GaiaSource.rv_renormalised_gof
+    name: rv_renormalised_gof
+    type: float
+    descr: Radial velocity renormalised goodness of fit
+  - ingest: GaiaSource.rv_chisq_pvalue
+    name: rv_chisq_pvalue
+    type: float
+    descr: P-value for constancy based on a chi-squared criterion
+  - ingest: GaiaSource.rv_time_duration
+    name: rv_time_duration
+    units: d
+    type: float
+    descr: Time coverage of the radial velocity time series
+  - ingest: GaiaSource.rv_amplitude_robust
+    name: rv_amplitude_robust
+    units: km.s**-1
+    type: float
+    descr: Total amplitude in the radial velocity time series after outlier removal
+  - ingest: GaiaSource.rv_template_teff
+    name: rv_template_teff
+    units: K
+    type: float
+    descr: Teff of the template used to compute the radial velocity
+    store: true
+  - ingest: GaiaSource.rv_template_logg
+    name: rv_template_logg
+    units: log(cm.s**-2)
+    type: float
+    descr: Logg of the template used to compute the radial velocity
+    store: true
+  - ingest: GaiaSource.rv_template_fe_h
+    name: rv_template_fe_h
+    units: '''dex'''
+    type: float
+    descr: '[Fe/H] of the template used to compute the radial velocityy'
+    store: true
+  - ingest: GaiaSource.rv_atm_param_origin
+    name: rv_atm_param_origin
+    type: short
+    descr: Origin of the atmospheric parameters associated to the template
+    store: true
 - ingest: GaiaSource.vbroad
   name: vbroad
   units: km.s**-1
@@ -549,76 +625,60 @@ fields:
   descr: Photometric variability flag
   enum: ['CONSTANT', 'VARIABLE']
   missing: ['NOT_AVAILABLE']
-- ingest: GaiaSource.l
-  name: l
-  units: deg
-  type: double
-  descr: Galactic longitude
-- ingest: GaiaSource.b
-  name: b
-  units: deg
-  type: double
-  descr: Galactic latitude
-- ingest: GaiaSource.ecl_lon
-  name: ecl_lon
-  units: deg
-  type: double
-  descr: Ecliptic longitude
-- ingest: GaiaSource.ecl_lat
-  name: ecl_lat
-  units: deg
-  type: double
-  descr: Ecliptic latitude
-- ingest: GaiaSource.in_qso_candidates
-  name: in_qso_candidates
-  type: boolean
-  descr: Flag indicating the availability of additional information in the QsoCandidates
-    table
-- ingest: GaiaSource.in_galaxy_candidates
-  name: in_galaxy_candidates
-  type: boolean
-  descr: Flag indicating the availability of additional information in the GalaxyCandidates
-    table
-- ingest: GaiaSource.non_single_star
-  name: non_single_star
-  type: short
-  descr: Flag indicating the availability of additional information in the various
-    Non-Single Star tables
-- ingest: GaiaSource.has_xp_continuous
-  name: has_xp_continuous
-  type: boolean
-  descr: Flag indicating the availability of mean BP/RP spectrum in continuous representation
-    for this source
-- ingest: GaiaSource.has_xp_sampled
-  name: has_xp_sampled
-  type: boolean
-  descr: Flag indicating the availability of mean BP/RP spectrum in sampled form
-    for this source
-- ingest: GaiaSource.has_rvs
-  name: has_rvs
-  type: boolean
-  descr: Flag indicating the availability of mean RVS spectrum for this source
-- ingest: GaiaSource.has_epoch_photometry
-  name: has_epoch_photometry
-  type: boolean
-  descr: Flag indicating the availability of epoch photometry for this source
-- ingest: GaiaSource.has_epoch_rv
-  name: has_epoch_rv
-  type: boolean
-  descr: Flag indicating the availability of epoch radial velocity for this source
-- ingest: GaiaSource.has_mcmc_gspphot
-  name: has_mcmc_gspphot
-  type: boolean
-  descr: Flag indicating the availability of GSP-Phot MCMC samples for this source
-- ingest: GaiaSource.has_mcmc_msc
-  name: has_mcmc_msc
-  type: boolean
-  descr: Flag indicating the availability of MSC MCMC samples for this source
-- ingest: GaiaSource.in_andromeda_survey
-  name: in_andromeda_survey
-  type: boolean
-  descr: Flag indicating that the source is present in the Gaia Andromeda Photometric
-    Survey (GAPS)
+- name: ''
+  title: metadata_flags
+  descr: Flags that indicate presence of more specialized data for a given source
+  sub:
+  - ingest: GaiaSource.in_qso_candidates
+    name: in_qso_candidates
+    type: boolean
+    descr: Flag indicating the availability of additional information in the QsoCandidates
+      table
+  - ingest: GaiaSource.in_galaxy_candidates
+    name: in_galaxy_candidates
+    type: boolean
+    descr: Flag indicating the availability of additional information in the GalaxyCandidates
+      table
+  - ingest: GaiaSource.non_single_star
+    name: non_single_star
+    type: short
+    descr: Flag indicating the availability of additional information in the various
+      Non-Single Star tables
+  - ingest: GaiaSource.has_xp_continuous
+    name: has_xp_continuous
+    type: boolean
+    descr: Flag indicating the availability of mean BP/RP spectrum in continuous representation
+      for this source
+  - ingest: GaiaSource.has_xp_sampled
+    name: has_xp_sampled
+    type: boolean
+    descr: Flag indicating the availability of mean BP/RP spectrum in sampled form
+      for this source
+  - ingest: GaiaSource.has_rvs
+    name: has_rvs
+    type: boolean
+    descr: Flag indicating the availability of mean RVS spectrum for this source
+  - ingest: GaiaSource.has_epoch_photometry
+    name: has_epoch_photometry
+    type: boolean
+    descr: Flag indicating the availability of epoch photometry for this source
+  - ingest: GaiaSource.has_epoch_rv
+    name: has_epoch_rv
+    type: boolean
+    descr: Flag indicating the availability of epoch radial velocity for this source
+  - ingest: GaiaSource.has_mcmc_gspphot
+    name: has_mcmc_gspphot
+    type: boolean
+    descr: Flag indicating the availability of GSP-Phot MCMC samples for this source
+  - ingest: GaiaSource.has_mcmc_msc
+    name: has_mcmc_msc
+    type: boolean
+    descr: Flag indicating the availability of MSC MCMC samples for this source
+  - ingest: GaiaSource.in_andromeda_survey
+    name: in_andromeda_survey
+    type: boolean
+    descr: Flag indicating that the source is present in the Gaia Andromeda Photometric
+      Survey (GAPS)
 - ingest: GaiaSource.classprob_dsc_combmod_quasar
   name: classprob_dsc_combmod_quasar
   type: float
@@ -657,110 +717,146 @@ fields:
     type: float
     descr: Upper confidence level (84%) of effective temperature from GSP-Phot Aeneas
       best library using BP/RP spectra
-- ingest: GaiaSource.logg_gspphot
-  name: logg_gspphot
+- name: ''
+  title: logg
+  descr: stellar surface gravity
+  type: float
   units: log(cm.s**-2)
+  sub:
+  - ingest: GaiaSource.logg_gspphot
+    name: logg_gspphot
+    units: log(cm.s**-2)
+    type: float
+    descr: Surface gravity from GSP-Phot Aeneas best library using BP/RP spectra
+  - ingest: GaiaSource.logg_gspphot_lower
+    name: logg_gspphot_lower
+    units: log(cm.s**-2)
+    type: float
+    descr: Lower confidence level (16%) of surface gravity from GSP-Phot Aeneas best
+      library using BP/RP spectra
+  - ingest: GaiaSource.logg_gspphot_upper
+    name: logg_gspphot_upper
+    units: log(cm.s**-2)
+    type: float
+    descr: Upper confidence level (84%) of surface gravity from GSP-Phot Aeneas best
+      library using BP/RP spectra
+- name: ''
+  title: mh
+  descr: stellar metallicity
   type: float
-  descr: Surface gravity from GSP-Phot Aeneas best library using BP/RP spectra
-- ingest: GaiaSource.logg_gspphot_lower
-  name: logg_gspphot_lower
-  units: log(cm.s**-2)
+  units: dex
+  sub:
+  - ingest: GaiaSource.mh_gspphot
+    name: mh_gspphot
+    units: dex
+    type: float
+    descr: Iron abundance from GSP-Phot Aeneas best library using BP/RP spectra
+  - ingest: GaiaSource.mh_gspphot_lower
+    name: mh_gspphot_lower
+    units: dex
+    type: float
+    descr: Lower confidence level (16%) of iron abundance from GSP-Phot Aeneas best
+      library using BP/RP spectra
+  - ingest: GaiaSource.mh_gspphot_upper
+    name: mh_gspphot_upper
+    units: dex
+    type: float
+    descr: Upper confidence level (84%) of iron abundance from GSP-Phot Aeneas best
+      library using BP/RP spectra
+- name: ''
+  title: distance
+  descr: distance to star
   type: float
-  descr: Lower confidence level (16%) of surface gravity from GSP-Phot Aeneas best
-    library using BP/RP spectra
-- ingest: GaiaSource.logg_gspphot_upper
-  name: logg_gspphot_upper
-  units: log(cm.s**-2)
-  type: float
-  descr: Upper confidence level (84%) of surface gravity from GSP-Phot Aeneas best
-    library using BP/RP spectra
-- ingest: GaiaSource.mh_gspphot
-  name: mh_gspphot
-  units: '''dex'''
-  type: float
-  descr: Iron abundance from GSP-Phot Aeneas best library using BP/RP spectra
-- ingest: GaiaSource.mh_gspphot_lower
-  name: mh_gspphot_lower
-  units: '''dex'''
-  type: float
-  descr: Lower confidence level (16%) of iron abundance from GSP-Phot Aeneas best
-    library using BP/RP spectra
-- ingest: GaiaSource.mh_gspphot_upper
-  name: mh_gspphot_upper
-  units: '''dex'''
-  type: float
-  descr: Upper confidence level (84%) of iron abundance from GSP-Phot Aeneas best
-    library using BP/RP spectra
-- ingest: GaiaSource.distance_gspphot
-  name: distance_gspphot
   units: pc
+  sub:
+  - ingest: GaiaSource.distance_gspphot
+    name: distance_gspphot
+    units: pc
+    type: float
+    descr: Distance from GSP-Phot Aeneas best library using BP/RP spectra
+  - ingest: GaiaSource.distance_gspphot_lower
+    name: distance_gspphot_lower
+    units: pc
+    type: float
+    descr: Lower confidence level (16%) of distance from GSP-Phot Aeneas best library
+      using BP/RP spectra
+  - ingest: GaiaSource.distance_gspphot_upper
+    name: distance_gspphot_upper
+    units: pc
+    type: float
+    descr: Upper confidence level (84%) of distance from GSP-Phot Aeneas best library
+      using BP/RP spectra
+- name: ''
+  title: azero
+  descr: monochromatic extinction
   type: float
-  descr: Distance from GSP-Phot Aeneas best library using BP/RP spectra
-- ingest: GaiaSource.distance_gspphot_lower
-  name: distance_gspphot_lower
-  units: pc
-  type: float
-  descr: Lower confidence level (16%) of distance from GSP-Phot Aeneas best library
-    using BP/RP spectra
-- ingest: GaiaSource.distance_gspphot_upper
-  name: distance_gspphot_upper
-  units: pc
-  type: float
-  descr: Upper confidence level (84%) of distance from GSP-Phot Aeneas best library
-    using BP/RP spectra
-- ingest: GaiaSource.azero_gspphot
-  name: azero_gspphot
   units: mag
+  sub:
+  - ingest: GaiaSource.azero_gspphot
+    name: azero_gspphot
+    units: mag
+    type: float
+    descr: Monochromatic extinction $A_0$ at 547.7nm from GSP-Phot Aeneas best library
+      using BP/RP spectra
+  - ingest: GaiaSource.azero_gspphot_lower
+    name: azero_gspphot_lower
+    units: mag
+    type: float
+    descr: Lower confidence level (16%) of monochromatic extinction $A_0$ at 547.7nm
+      from GSP-Phot Aeneas best library using BP/RP spectra
+  - ingest: GaiaSource.azero_gspphot_upper
+    name: azero_gspphot_upper
+    units: mag
+    type: float
+    descr: Upper confidence level (84%) of monochromatic extinction $A_0$ at 547.7nm
+      from GSP-Phot Aeneas best library using BP/RP spectra
+- name: ''
+  title: ag
+  descr: extinction in G band
   type: float
-  descr: Monochromatic extinction $A_0$ at 547.7nm from GSP-Phot Aeneas best library
-    using BP/RP spectra
-- ingest: GaiaSource.azero_gspphot_lower
-  name: azero_gspphot_lower
   units: mag
+  sub:
+  - ingest: GaiaSource.ag_gspphot
+    name: ag_gspphot
+    units: mag
+    type: float
+    descr: Extinction in G band from GSP-Phot Aeneas best library using BP/RP spectra
+  - ingest: GaiaSource.ag_gspphot_lower
+    name: ag_gspphot_lower
+    units: mag
+    type: float
+    descr: Lower confidence level (16%) of extinction in G band from GSP-Phot Aeneas
+      best library using BP/RP spectra
+  - ingest: GaiaSource.ag_gspphot_upper
+    name: ag_gspphot_upper
+    units: mag
+    type: float
+    descr: Upper confidence level (84%) of extinction in G band from GSP-Phot Aeneas
+      best library using BP/RP spectra
+- name: ''
+  title: ebpminrp
+  descr: reddening
   type: float
-  descr: Lower confidence level (16%) of monochromatic extinction $A_0$ at 547.7nm
-    from GSP-Phot Aeneas best library using BP/RP spectra
-- ingest: GaiaSource.azero_gspphot_upper
-  name: azero_gspphot_upper
   units: mag
-  type: float
-  descr: Upper confidence level (84%) of monochromatic extinction $A_0$ at 547.7nm
-    from GSP-Phot Aeneas best library using BP/RP spectra
-- ingest: GaiaSource.ag_gspphot
-  name: ag_gspphot
-  units: mag
-  type: float
-  descr: Extinction in G band from GSP-Phot Aeneas best library using BP/RP spectra
-- ingest: GaiaSource.ag_gspphot_lower
-  name: ag_gspphot_lower
-  units: mag
-  type: float
-  descr: Lower confidence level (16%) of extinction in G band from GSP-Phot Aeneas
-    best library using BP/RP spectra
-- ingest: GaiaSource.ag_gspphot_upper
-  name: ag_gspphot_upper
-  units: mag
-  type: float
-  descr: Upper confidence level (84%) of extinction in G band from GSP-Phot Aeneas
-    best library using BP/RP spectra
-- ingest: GaiaSource.ebpminrp_gspphot
-  name: ebpminrp_gspphot
-  units: mag
-  type: float
-  descr: Reddening $E(G_{\rm BP} - G_{\rm RP})$ from GSP-Phot Aeneas best library
-    using BP/RP spectra
-- ingest: GaiaSource.ebpminrp_gspphot_lower
-  name: ebpminrp_gspphot_lower
-  units: mag
-  type: float
-  descr: Lower confidence level (16%) of reddening  $E(G_{\rm BP} - G_{\rm RP})$
-    from GSP-Phot Aeneas best library using BP/RP spectra
-- ingest: GaiaSource.ebpminrp_gspphot_upper
-  name: ebpminrp_gspphot_upper
-  units: mag
-  type: float
-  descr: Upper confidence level (84%) of reddening  $E(G_{\rm BP} - G_{\rm RP})$
-    from GSP-Phot Aeneas best library using BP/RP spectra
+  sub:
+  - ingest: GaiaSource.ebpminrp_gspphot
+    name: ebpminrp_gspphot
+    units: mag
+    type: float
+    descr: Reddening $E(G_{\rm BP} - G_{\rm RP})$ from GSP-Phot Aeneas best library
+      using BP/RP spectra
+  - ingest: GaiaSource.ebpminrp_gspphot_lower
+    name: ebpminrp_gspphot_lower
+    units: mag
+    type: float
+    descr: Lower confidence level (16%) of reddening  $E(G_{\rm BP} - G_{\rm RP})$
+      from GSP-Phot Aeneas best library using BP/RP spectra
+  - ingest: GaiaSource.ebpminrp_gspphot_upper
+    name: ebpminrp_gspphot_upper
+    units: mag
+    type: float
+    descr: Upper confidence level (84%) of reddening  $E(G_{\rm BP} - G_{\rm RP})$
+      from GSP-Phot Aeneas best library using BP/RP spectra
 - ingest: GaiaSource.libname_gspphot
   name: libname_gspphot
   type: byte
