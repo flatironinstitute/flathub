@@ -27,6 +27,10 @@ import Ingest.Types
 import Ingest.CSV
 import Output.ECSV (ecsvField)
 
+checkType :: Field -> ECSVColumn -> ECSVColumn -> Bool
+checkType _ _ ECSVColumn{ ecsvColDataType = ECSVString, ecsvColSubtype = Nothing } = True -- allow string for any type
+checkType _ e c = (on (==) (ecsvColDataType &&& ecsvColSubtype) e c)
+
 loadECSV :: FilePath -> Fields -> IO (V.Vector BS.ByteString, CSV.Records (V.Vector BS.ByteString))
 loadECSV file fields = do
   dat <- liftIO $ decompressFile file
@@ -34,10 +38,10 @@ loadECSV file fields = do
       csv = CSV.decode CSV.NoHeader body
   ecsv <- either (fail . show) return ehead
   V.zipWithM_ (\n f -> do
-    let t = ecsvField f
-    e <- maybe (fail $ "ECSV column missing: " ++ T.unpack n) return
+    let e = ecsvField f
+    c <- maybe (fail $ "ECSV column missing: " ++ T.unpack n) return
       $ V.find ((n ==) . ecsvColName) (ecsvDatatype ecsv)
-    unless (on (==) (ecsvColDataType &&& ecsvColSubtype) e t)
+    unless (checkType f e c)
       $ fail $ "ECSV column type mismatch: " ++ T.unpack n)
     fn fields
   csvhr@(csvh, _) <- failErr $ first (fromMaybe V.empty) <$> unconsCSV csv

@@ -16,7 +16,7 @@ import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Csv.Streaming as CSV
 import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
-import           Data.List (stripPrefix)
+import           Data.List (stripPrefix, mapAccumL)
 import           Data.Maybe (fromMaybe)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -51,7 +51,8 @@ keyInRange :: (Int, Int) -> Key -> Bool
 keyInRange (x, y) = \i -> i >= indexKey x && i < indexKey (succ y)
 
 data TableInfo = TableInfo
-  { tableKeyIndex :: Int
+  { tableName :: T.Text
+  , tableKeyIndex :: Int
   , tableFields :: Fields
   , tableFieldIndex :: V.Vector Int
   }
@@ -62,42 +63,36 @@ data TableStream = TableStream
   , tableInfo :: TableInfo
   }
 
-nextRow :: TableStream -> IO TableStream
-nextRow ts@TableStream{..} = do
-  (next, rows) <- failErr $ unconsCSV tableRows
-  maybe
-    (return ts{ tableNext = Nothing })
-    (\row -> do
-      k <- maybe (fail "key read") (return . fst) $ mfilter (BS.null . snd) $ BSC.readInt (row V.! tableKeyIndex tableInfo)
-      return ts
-        { tableNext = Just (k, fold $ V.zipWith (\f -> ingestFieldBS f . (row V.!)) (tableFields tableInfo) (tableFieldIndex tableInfo))
-        , tableRows = rows
-        })
-    next
+nextRow :: TableStream -> TableStream
+nextRow ts@TableStream{..} = ts
+  { tableNext = mk <$> next
+  , tableRows = rows
+  }
+  where
+  mk row = 
+    ( maybe (error "key read") fst $ mfilter (BS.null . snd) $ BSC.readInt (row V.! tableKeyIndex tableInfo)
+    , fold $ V.zipWith (\f -> ingestFieldBS f . (row V.!)) (tableFields tableInfo) (tableFieldIndex tableInfo))
+  (next, rows) = errorErr $ unconsCSV tableRows
 
-loadFile :: Field -> Fields -> FilePath -> IO TableStream
-loadFile keyf fields file = do
+readTable :: FilePath -> Field -> (Int, Int) -> T.Text -> Fields -> IO TableStream
+readTable path keyf range name fields = do
   (hd, rows) <- loadECSV file fields
   let geti n = maybe (fail $ file ++ " missing field " ++ BSC.unpack n) return $ V.elemIndex n hd
   key <- geti (fieldsrc keyf)
   cols <- mapM (geti . fieldsrc) fields
-  nextRow TableStream
+  return $ nextRow TableStream
     { tableNext = Nothing
     , tableRows = rows
     , tableInfo = TableInfo
-      { tableFields = fields
+      { tableName = name
+      , tableFields = fields
       , tableKeyIndex = key
       , tableFieldIndex = cols
       }
     }
   where
+  file = joinFile path (T.unpack name) range
   fieldsrc = TE.encodeUtf8 . fieldSource
-
-readTable :: FilePath -> Field -> (Int, Int) -> T.Text -> Fields -> IO TableStream
-readTable path keyf range name fields =
-  loadFile keyf fields $ joinFile path name' range
-  where
-  name' = T.unpack name
 
 -- |Split a path like /foo/bar/GaiaSource/GaiaSource_123456-789012.csv into @("/foo/bar/", "GaiaSource", 123456, 789012)@
 splitFile :: FilePath -> (FilePath, String, (Int, Int))
@@ -114,12 +109,34 @@ joinFile :: FilePath -> String -> (Int, Int) -> FilePath
 joinFile bd dn (i, j) = bd FP.</> dn FP.</> (dn ++ "_" ++ r i ++ "-" ++ r j) FP.<.> "csv" where
   r = printf "%06d"
 
+nextKey :: Key -> J.Series -> TableStream -> (J.Series, TableStream)
+nextKey k b ts@TableStream{ tableNext = Just (tk, r) } = case compare k tk of
+  LT -> (mempty, ts)
+  EQ -> (b <> r, nextRow ts)
+  GT -> error $ T.unpack (tableName (tableInfo ts)) ++ " out of order at " ++ show tk ++ " > " ++ show k
+nextKey _ b ts@TableStream{ tableNext = Nothing } = (b, ts)
+
+nextKeys :: Key -> J.Series -> [TableStream] -> (J.Series, [TableStream])
+nextKeys = mapAccumL . nextKey
+
 ingestGaiaDR3 :: Ingest -> M Word64
 ingestGaiaDR3 ing@Ingest{ ingestCatalog = cat } = do
   (keytab, keyf) <- split <$> lookupField cat True keyn
   unless (T.unpack keytab == maintabn) $ fail "file path doesn't match key table"
-  tabs <- liftIO $ HM.traverseWithKey (readTable basedir keyf range) tabfs
-  return 0
+  tabmap <- liftIO $ HM.traverseWithKey (readTable basedir keyf range) tabfs
+  let maintab = tabmap HM.! keytab
+      tabs = HM.elems $ HM.delete keytab tabmap
+      loop :: TableStream -> [TableStream] -> M Word64
+      loop m@TableStream{ tableNext = Just (k, r) } tl = do
+        liftIO $ print $ J.pairs r'
+        loop m' tl'
+        where
+        (r', tl') = nextKeys k r tl
+        m' = nextRow m
+      loop TableStream{ tableNext = Nothing } tl = do
+        mapM_ (\t -> mapM_ (\(k, _) -> fail $ "leftover in " ++ T.unpack (tableName (tableInfo t)) ++ ": " ++ show k) $ tableNext t) tl
+        return 0
+  loop maintab tabs
   where
   (basedir, maintabn, range) = splitFile (ingestFile ing)
   inrange = keyInRange range

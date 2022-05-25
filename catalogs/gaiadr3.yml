@@ -1,8 +1,5 @@
 title: Gaia DR3
 index: gaiadr3
-settings:
-  index:
-    mapping.total_fields.limit: 1300
 descr: >
   <a href='https://www.cosmos.esa.int/web/gaia/dr3'>Gaia Data Release 3</a> from the <a href='http://www.esa.int/ESA'>European Space Agency</a>
     How to cite and acknowledge Gaia:
@@ -8834,7 +8831,8 @@ fields:
     type: array float
     descr: mean BP + RP combined spectrum flux error
 - name: xp_summary
-  ingest: _table:XpSummary
+  ingest: _table:XpSummary #sorted, 1:1 files
+  #count: 219197643
   descr: |
     This tables contains auxiliary information about the mean BP/RP spectrum of a given source. It should be used in order to refine queries on spectra and build dedicated samples before interrogating the DataLink protocol to download the results of those queries.
   sub:
