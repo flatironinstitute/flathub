@@ -63,9 +63,9 @@ ingestFieldBS f v
   {-
   | any typeIsBoolean (typeIsArray ft)
     = fieldName f `JE.pair` JE.unsafeToEncoding (B.byteString (BSC.map toLower v)) -- fix "[True,False]"
-  | any typeIsFloating (typeIsArray ft)
-    = fieldName f `JE.pair` JE.unsafeToEncoding (substitute "NaN" "null" v) -- fix "[NaN]"
   -}
+  | any typeIsFloating (typeIsArray ft)
+    = fieldName f `JE.pair` JE.unsafeToEncoding (substitute "NaN" "null" v) -- fix "[NaN]" (nulls get dropped)
   | typeIsIntegral ft
     = fieldName f `JE.pair` JE.unsafeToEncoding (B.byteString $ drop0 v)
   | otherwise
@@ -82,8 +82,8 @@ ingestFieldBS f v
   bool "True" = J.Bool True
   bool _ = str v
   str = J.String . TE.decodeLatin1
-  _substitute x y s = B.byteString p
-    <> (if BS.null r then mempty else y <> _substitute x y (BS.drop (BS.length x) r))
+  substitute x y s = B.byteString p
+    <> (if BS.null r then mempty else y <> substitute x y (BS.drop (BS.length x) r))
     where (p, r) = BS.breakSubstring x s
   drop0 s
     | BSC.null s' = "0"

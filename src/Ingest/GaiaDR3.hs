@@ -38,6 +38,7 @@ import qualified ES
 
 type Key = Int
 
+{-
 indexLevel :: Int
 indexLevel = 59 - 2*level where
   level = 8
@@ -51,6 +52,7 @@ indexKey = (`shiftL` indexLevel)
 
 keyInRange :: (Int, Int) -> Key -> Bool
 keyInRange (x, y) = \i -> i >= indexKey x && i < indexKey (succ y)
+-}
 
 data TableInfo = TableInfo
   { tableName :: T.Text
