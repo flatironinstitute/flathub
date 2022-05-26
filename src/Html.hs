@@ -13,6 +13,7 @@ module Html
   , comparePage
   , staticHtml
   , firePage
+  , agoraPage
   ) where
 
 import           Control.Monad (forM_, when)
@@ -120,6 +121,7 @@ htmlResponse _req hdrs body = do
             <li .header__link--dropdown>
               <a href="@{topPage !:? mempty}">Catalogs
               <div .dropdown-content .dropdown-second>
+                <a href="@{agoraPage !:? mempty}"><text>AGORA
                 <a href="@{firePage !:? mempty}"><text>FIRE
                 $forall (key, cat) <- catalogsSorted cats
                   <a href="@{catalogPage !:? key}">
@@ -194,6 +196,8 @@ topPage = getPath R.unit $ \() req -> do
                       <div .box-head>Catalogs
                     <ul .link-list>
                       <li>
+                        <a .underline href="@{agoraPage !:? mempty}">AGORA
+                      <li>  
                         <a .underline href="@{firePage !:? mempty}">FIRE
                       $forall (sim, cat) <- catalogsSorted cats
                         <li>
@@ -773,6 +777,9 @@ staticHtml = getPath ("html" R.*< R.manyI R.parameter) $ \paths q -> do
         , (hContentType, "text/html")
         , cacheControl glob q
         ] (H.unsafeLazyByteString bod)
+
+agoraPage :: Route ()
+agoraPage = getPath "agora" $ \() -> R.routeAction staticHtml ["agora"]
 
 firePage :: Route ()
 firePage = getPath "fire" $ \() -> R.routeAction staticHtml ["fire"]
