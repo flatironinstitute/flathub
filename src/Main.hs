@@ -37,6 +37,7 @@ routes = R.routes (
   [ R.routeNormCase topPage
   , R.routeNormCase static
   , R.routeNormCase staticHtml
+  , R.routeNormCase agoraPage
   , R.routeNormCase firePage
   , R.routeNormCase catalogPage
   , R.routeNormCase groupPage
