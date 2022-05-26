@@ -196,7 +196,8 @@ topPage = getPath R.unit $ \() req -> do
                       <div .box-head>Catalogs
                     <ul .link-list>
                       <li>
-                        <a .underline href="@{agoraPage !:? mempty}">FIRE
+                        <a .underline href="@{agoraPage !:? mempty}">AGORA
+                      <li>  
                         <a .underline href="@{firePage !:? mempty}">FIRE
                       $forall (sim, cat) <- catalogsSorted cats
                         <li>
