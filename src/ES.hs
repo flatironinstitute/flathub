@@ -28,7 +28,7 @@ module ES
   ) where
 
 import           Control.Arrow ((&&&))
-import           Control.Monad (forM, forM_, when, unless)
+import           Control.Monad (forM, forM_, when, unless, (<=<))
 import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Control.Monad.Reader (ask, asks)
 import           Control.Monad.Trans.Resource (MonadResource)
@@ -45,7 +45,7 @@ import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
 import           Data.IORef (newIORef, readIORef, writeIORef)
 import           Data.List (find, partition)
-import           Data.Maybe (mapMaybe, fromMaybe, maybeToList)
+import           Data.Maybe (mapMaybe, fromMaybe, maybeToList, isJust)
 import           Data.Proxy (Proxy)
 import           Data.String (IsString)
 import qualified Data.Text as T
@@ -406,10 +406,15 @@ createBulk cat docs = do
         <> nl <> J.fromEncoding (J.pairs d) <> nl
   r <- httpJSON J.parseJSON =<< elasticRequest POST (catalogURL cat ++ ["_bulk"]) [] body
   -- TODO: ignore 409?
-  unless (HM.lookup "errors" (r :: J.Object) == Just (J.Bool False))
-    $ raise500 $ "createBulk: " ++ BSLC.unpack (J.encode r)
+  unless (getelem "errors" r == Just (J.Bool False)) $ do
+    liftIO $ V.mapM_ (BSLC.putStrLn . J.encode) (foldMap filterr $ getelem "items" r)
+    raise500 "createBulk"
   where
   nl = B.char7 '\n'
+  filterr (J.Array v) = V.filter (isJust . (getelem "error" <=< getelem "create")) v
+  filterr j = V.singleton j
+  getelem k (J.Object o) = HM.lookup k o
+  getelem _ _ = Nothing
 
 flushIndex :: Catalog -> M ()
 flushIndex Catalog{ catalogIndex = idxn } = do

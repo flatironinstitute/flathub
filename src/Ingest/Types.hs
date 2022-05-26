@@ -2,17 +2,20 @@
 module Ingest.Types
   where
 
+import           Control.Monad (guard)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Char8 as BSC
-import           Data.Char (isControl)
+import           Data.Char (isControl, isDigit)
 import           Data.Maybe (fromMaybe)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
+import qualified Data.Vector as V
 import           Data.Word (Word64)
 
+import Monoid
 import Type
 import Field
 import Catalog
@@ -50,6 +53,8 @@ ingestFieldBS f v
   || v `elem` fieldMissing f
   || typeIsFloating ft && v `elem` ["nan","NaN","Inf","-Inf","+Inf","inf"]
     = mempty
+  | Just i <- guard (not $ isDigit $ BSC.head v) >> fieldEnum f >>= V.elemIndex (TE.decodeLatin1 v)
+    = fieldName f J..= i
   | typeIsBoolean ft
     = fieldName f J..= bool v
   | typeIsString ft
@@ -61,6 +66,8 @@ ingestFieldBS f v
   | any typeIsFloating (typeIsArray ft)
     = fieldName f `JE.pair` JE.unsafeToEncoding (substitute "NaN" "null" v) -- fix "[NaN]"
   -}
+  | typeIsIntegral ft
+    = fieldName f `JE.pair` JE.unsafeToEncoding (B.byteString $ drop0 v)
   | otherwise
     = fieldName f `JE.pair` JE.unsafeToEncoding (B.byteString v)
   where
@@ -78,3 +85,7 @@ ingestFieldBS f v
   _substitute x y s = B.byteString p
     <> (if BS.null r then mempty else y <> _substitute x y (BS.drop (BS.length x) r))
     where (p, r) = BS.breakSubstring x s
+  drop0 s
+    | BSC.null s' = "0"
+    | otherwise = s'
+    where s' = BSC.dropWhile ('0' ==) s

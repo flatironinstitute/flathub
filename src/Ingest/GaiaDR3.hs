@@ -14,10 +14,10 @@ import           Data.Bits (shiftL, shiftR)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Csv.Streaming as CSV
-import           Data.Foldable (fold)
+import           Data.Foldable (fold, foldlM)
 import qualified Data.HashMap.Strict as HM
-import           Data.List (stripPrefix, mapAccumL)
-import           Data.Maybe (fromMaybe)
+import           Data.List (stripPrefix, mapAccumL, genericDrop)
+import           Data.Maybe (fromMaybe, mapMaybe)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V
@@ -25,6 +25,7 @@ import           Data.Word (Word64)
 import           Text.Printf (printf)
 import           Text.Read (readMaybe)
 import qualified System.FilePath as FP
+import           System.IO (hFlush, stdout)
 
 import Error
 import Field
@@ -33,6 +34,7 @@ import Global
 import Ingest.Types
 import Ingest.ECSV
 import Ingest.CSV
+import qualified ES
 
 type Key = Int
 
@@ -111,13 +113,25 @@ joinFile bd dn (i, j) = bd FP.</> dn FP.</> (dn ++ "_" ++ r i ++ "-" ++ r j) FP.
 
 nextKey :: Key -> J.Series -> TableStream -> (J.Series, TableStream)
 nextKey k b ts@TableStream{ tableNext = Just (tk, r) } = case compare k tk of
-  LT -> (mempty, ts)
+  LT -> (b, ts)
   EQ -> (b <> r, nextRow ts)
   GT -> error $ T.unpack (tableName (tableInfo ts)) ++ " out of order at " ++ show tk ++ " > " ++ show k
 nextKey _ b ts@TableStream{ tableNext = Nothing } = (b, ts)
 
 nextKeys :: Key -> J.Series -> [TableStream] -> (J.Series, [TableStream])
 nextKeys = mapAccumL . nextKey
+
+zipTables :: TableStream -> [TableStream] -> [(Key, J.Series)]
+zipTables m@TableStream{ tableNext = Just (k, r) } tl =
+  (k, r') : zipTables (nextRow m) tl'
+  where (r', tl') = nextKeys k r tl
+zipTables TableStream{ tableNext = Nothing } tl =
+  mapMaybe (\t -> (\(k, _) -> error $ "leftover in " ++ T.unpack (tableName (tableInfo t)) ++ ": " ++ show k) <$> tableNext t) tl
+
+groupsOf :: Int -> [a] -> [[a]]
+groupsOf _ [] = []
+groupsOf n l = p : groupsOf n r where
+  (p, r) = splitAt n l
 
 ingestGaiaDR3 :: Ingest -> M Word64
 ingestGaiaDR3 ing@Ingest{ ingestCatalog = cat } = do
@@ -126,20 +140,16 @@ ingestGaiaDR3 ing@Ingest{ ingestCatalog = cat } = do
   tabmap <- liftIO $ HM.traverseWithKey (readTable basedir keyf range) tabfs
   let maintab = tabmap HM.! keytab
       tabs = HM.elems $ HM.delete keytab tabmap
-      loop :: TableStream -> [TableStream] -> M Word64
-      loop m@TableStream{ tableNext = Just (k, r) } tl = do
-        liftIO $ print $ J.pairs r'
-        loop m' tl'
-        where
-        (r', tl') = nextKeys k r tl
-        m' = nextRow m
-      loop TableStream{ tableNext = Nothing } tl = do
-        mapM_ (\t -> mapM_ (\(k, _) -> fail $ "leftover in " ++ T.unpack (tableName (tableInfo t)) ++ ": " ++ show k) $ tableNext t) tl
-        return 0
-  loop maintab tabs
+      doc (k, b) = (show k, ingestJConsts ing <> b)
+      run o l = do
+        liftIO $ putStr (show o ++ "\r") >> hFlush stdout
+        ES.createBulk cat l
+        return $ o + fromIntegral (length l)
+  foldlM run (ingestOffset ing)
+    $ groupsOf (fromIntegral $ ingestBlockSize ing) $ map doc
+    $ genericDrop (ingestOffset ing) $ zipTables maintab tabs
   where
   (basedir, maintabn, range) = splitFile (ingestFile ing)
-  inrange = keyInRange range
   fields = catalogFields cat
   Just keyn = catalogKey cat
   tabfs = HM.map V.fromList $ V.foldr (uncurry (HM.insertWith (++)) . second return . split) HM.empty fields
