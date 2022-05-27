@@ -5529,7 +5529,7 @@ fields:
     type: integer
     descr: Bit indicative of whether the input data from a given module met the source
       list eligibility criteria for the source of interest
-  name: qso_catalogue_name
+# name: qso_catalogue_name
 # ingest: _table:QsoCatalogueName #sorted, 1:1 files
 # #count: 2722093
 # descr: "This table provides the list of input catalogues that have been used to
