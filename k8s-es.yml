@@ -26,6 +26,12 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: spec.nodeName
+          - name: node.attr.host
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          - name: cluster.routing.allocation.awareness.attributes
+            value: host
           - name: processors
             valueFrom:
               resourceFieldRef:
