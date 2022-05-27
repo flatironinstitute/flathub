@@ -4236,76 +4236,76 @@ fields:
     enum:
     - Acceleration7
     - Acceleration9
-  - ingest: NssAccelerationAstro.ra
-    name: ra
-    units: deg
-    flag: hidden
-    store: true
-    type: double
-    descr: Right ascension
-  - ingest: NssAccelerationAstro.ra_error
-    name: ra_error
-    units: mas
-    flag: hidden
-    store: true
-    type: float
-    descr: Standard error of right ascension
-  - ingest: NssAccelerationAstro.dec
-    name: dec
-    units: deg
-    flag: hidden
-    store: true
-    type: double
-    descr: Declination
-  - ingest: NssAccelerationAstro.dec_error
-    name: dec_error
-    units: mas
-    flag: hidden
-    store: true
-    type: float
-    descr: Standard error of declination
-  - ingest: NssAccelerationAstro.parallax
-    name: parallax
-    units: mas
-    flag: hidden
-    store: true
-    type: double
-    descr: Parallax
-  - ingest: NssAccelerationAstro.parallax_error
-    name: parallax_error
-    units: mas
-    flag: hidden
-    store: true
-    type: float
-    descr: Standard error of parallax
-  - ingest: NssAccelerationAstro.pmra
-    name: pmra
-    units: mas.yr**-1
-    flag: hidden
-    store: true
-    type: double
-    descr: Proper motion in right ascension direction
-  - ingest: NssAccelerationAstro.pmra_error
-    name: pmra_error
-    units: mas.yr**-1
-    flag: hidden
-    store: true
-    type: float
-    descr: Standard error of proper motion in right ascension direction
-  - ingest: NssAccelerationAstro.pmdec
-    name: pmdec
-    units: mas.yr**-1
-    flag: hidden
-    store: true
-    type: double
-    descr: Proper motion in declination direction
-  - ingest: NssAccelerationAstro.pmdec_error
-    name: pmdec_error
-    units: mas.yr**-1
-    flag: hidden
-    store: true
-    type: float
-    descr: Standard error of proper motion in declination direction
+# - ingest: NssAccelerationAstro.ra
+#   name: ra
+#   units: deg
+#   flag: hidden
+#   store: true
+#   type: double
+#   descr: Right ascension
+# - ingest: NssAccelerationAstro.ra_error
+#   name: ra_error
+#   units: mas
+#   flag: hidden
+#   store: true
+#   type: float
+#   descr: Standard error of right ascension
+# - ingest: NssAccelerationAstro.dec
+#   name: dec
+#   units: deg
+#   flag: hidden
+#   store: true
+#   type: double
+#   descr: Declination
+# - ingest: NssAccelerationAstro.dec_error
+#   name: dec_error
+#   units: mas
+#   flag: hidden
+#   store: true
+#   type: float
+#   descr: Standard error of declination
+# - ingest: NssAccelerationAstro.parallax
+#   name: parallax
+#   units: mas
+#   flag: hidden
+#   store: true
+#   type: double
+#   descr: Parallax
+# - ingest: NssAccelerationAstro.parallax_error
+#   name: parallax_error
+#   units: mas
+#   flag: hidden
+#   store: true
+#   type: float
+#   descr: Standard error of parallax
+# - ingest: NssAccelerationAstro.pmra
+#   name: pmra
+#   units: mas.yr**-1
+#   flag: hidden
+#   store: true
+#   type: double
+#   descr: Proper motion in right ascension direction
+# - ingest: NssAccelerationAstro.pmra_error
+#   name: pmra_error
+#   units: mas.yr**-1
+#   flag: hidden
+#   store: true
+#   type: float
+#   descr: Standard error of proper motion in right ascension direction
+# - ingest: NssAccelerationAstro.pmdec
+#   name: pmdec
+#   units: mas.yr**-1
+#   flag: hidden
+#   store: true
+#   type: double
+#   descr: Proper motion in declination direction
+# - ingest: NssAccelerationAstro.pmdec_error
+#   name: pmdec_error
+#   units: mas.yr**-1
+#   flag: hidden
+#   store: true
+#   type: float
+#   descr: Standard error of proper motion in declination direction
   - ingest: NssAccelerationAstro.accel_ra
     name: accel_ra
     units: mas.yr**-2
@@ -5045,76 +5045,76 @@ fields:
     type: byte
     descr: NSS model adopted
     enum: [VIMF]
-  - ingest: NssVimFl.ra
-    name: ra
-    units: deg
-    flag: hidden
-    store: true
-    type: double
-    descr: Right ascension
-  - ingest: NssVimFl.ra_error
-    name: ra_error
-    units: mas
-    flag: hidden
-    store: true
-    type: float
-    descr: Standard error of right ascension
-  - ingest: NssVimFl.dec
-    name: dec
-    units: deg
-    flag: hidden
-    store: true
-    type: double
-    descr: Declination
-  - ingest: NssVimFl.dec_error
-    name: dec_error
-    units: mas
-    flag: hidden
-    store: true
-    type: float
-    descr: Standard error of declination
-  - ingest: NssVimFl.parallax
-    name: parallax
-    units: mas
-    flag: hidden
-    store: true
-    type: double
-    descr: Parallax
-  - ingest: NssVimFl.parallax_error
-    name: parallax_error
-    units: mas
-    flag: hidden
-    store: true
-    type: float
-    descr: Standard error of parallax
-  - ingest: NssVimFl.pmra
-    name: pmra
-    units: mas.yr**-1
-    flag: hidden
-    store: true
-    type: double
-    descr: Proper motion in right ascension direction
-  - ingest: NssVimFl.pmra_error
-    name: pmra_error
-    units: mas.yr**-1
-    flag: hidden
-    store: true
-    type: float
-    descr: Standard error of proper motion in right ascension direction
-  - ingest: NssVimFl.pmdec
-    name: pmdec
-    units: mas.yr**-1
-    flag: hidden
-    store: true
-    type: double
-    descr: Proper motion in declination direction
-  - ingest: NssVimFl.pmdec_error
-    name: pmdec_error
-    units: mas.yr**-1
-    flag: hidden
-    store: true
-    type: float
-    descr: Standard error of proper motion in declination direction
+# - ingest: NssVimFl.ra
+#   name: ra
+#   units: deg
+#   flag: hidden
+#   store: true
+#   type: double
+#   descr: Right ascension
+# - ingest: NssVimFl.ra_error
+#   name: ra_error
+#   units: mas
+#   flag: hidden
+#   store: true
+#   type: float
+#   descr: Standard error of right ascension
+# - ingest: NssVimFl.dec
+#   name: dec
+#   units: deg
+#   flag: hidden
+#   store: true
+#   type: double
+#   descr: Declination
+# - ingest: NssVimFl.dec_error
+#   name: dec_error
+#   units: mas
+#   flag: hidden
+#   store: true
+#   type: float
+#   descr: Standard error of declination
+# - ingest: NssVimFl.parallax
+#   name: parallax
+#   units: mas
+#   flag: hidden
+#   store: true
+#   type: double
+#   descr: Parallax
+# - ingest: NssVimFl.parallax_error
+#   name: parallax_error
+#   units: mas
+#   flag: hidden
+#   store: true
+#   type: float
+#   descr: Standard error of parallax
+# - ingest: NssVimFl.pmra
+#   name: pmra
+#   units: mas.yr**-1
+#   flag: hidden
+#   store: true
+#   type: double
+#   descr: Proper motion in right ascension direction
+# - ingest: NssVimFl.pmra_error
+#   name: pmra_error
+#   units: mas.yr**-1
+#   flag: hidden
+#   store: true
+#   type: float
+#   descr: Standard error of proper motion in right ascension direction
+# - ingest: NssVimFl.pmdec
+#   name: pmdec
+#   units: mas.yr**-1
+#   flag: hidden
+#   store: true
+#   type: double
+#   descr: Proper motion in declination direction
+# - ingest: NssVimFl.pmdec_error
+#   name: pmdec_error
+#   units: mas.yr**-1
+#   flag: hidden
+#   store: true
+#   type: float
+#   descr: Standard error of proper motion in declination direction
   - ingest: NssVimFl.ref_flux_g
     name: ref_flux_g
     units: '''electron''.s**-1'
@@ -5261,6 +5261,7 @@ fields:
       - "RR"                          #"RR Lyrae stars of the following types: fundamental-mode, first-overtone, double mode, and anomalous double mode."
       - "EP"                          #"Star with exoplanet transits."
       - "RCB"                         #"R Coronae Borealis type variable."
+      - "GALAXY"                      #???
   - ingest: QsoCandidates.vari_best_class_score
     name: vari_best_class_score
     flag: hidden

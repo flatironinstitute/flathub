@@ -16,8 +16,8 @@ import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Csv.Streaming as CSV
 import           Data.Foldable (fold, foldlM)
 import qualified Data.HashMap.Strict as HM
-import           Data.List (stripPrefix, mapAccumL, genericDrop)
-import           Data.Maybe (fromMaybe, mapMaybe)
+import           Data.List (stripPrefix, mapAccumL, genericDrop, sortOn)
+import           Data.Maybe (fromMaybe)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V
@@ -27,21 +27,17 @@ import           Text.Read (readMaybe)
 import qualified System.FilePath as FP
 import           System.IO (hFlush, stdout)
 
-import Error
 import Field
 import Catalog
 import Global
 import Ingest.Types
 import Ingest.ECSV
-import Ingest.CSV
 import qualified ES
 
 type Key = Int
 
-{-
 indexLevel :: Int
-indexLevel = 59 - 2*level where
-  level = 8
+indexLevel = 59 - 2*level where level = 8
 
 -- |convert from source_id to file naming, HEALpix index level 8
 keyIndex :: Key -> Int
@@ -52,7 +48,6 @@ indexKey = (`shiftL` indexLevel)
 
 keyInRange :: (Int, Int) -> Key -> Bool
 keyInRange (x, y) = \i -> i >= indexKey x && i < indexKey (succ y)
--}
 
 data TableInfo = TableInfo
   { tableName :: T.Text
@@ -61,41 +56,42 @@ data TableInfo = TableInfo
   , tableFieldIndex :: V.Vector Int
   }
 
-data TableStream = TableStream
-  { tableNext :: Maybe (Key, J.Series)
-  , tableRows :: CSV.Records (V.Vector BS.ByteString)
-  , tableInfo :: TableInfo
+data Table = Table
+  { tableInfo :: TableInfo
+  , tableRows :: [(Key, J.Series)]
   }
 
-nextRow :: TableStream -> TableStream
-nextRow ts@TableStream{..} = ts
-  { tableNext = mk <$> next
-  , tableRows = rows
-  }
-  where
-  mk row = 
-    ( maybe (error "key read") fst $ mfilter (BS.null . snd) $ BSC.readInt (row V.! tableKeyIndex tableInfo)
-    , fold $ V.zipWith (\f -> ingestFieldBS f . (row V.!)) (tableFields tableInfo) (tableFieldIndex tableInfo))
-  (next, rows) = errorErr $ unconsCSV tableRows
+csvToList :: CSV.Records a -> [a]
+csvToList (CSV.Cons h r) = either error id h : csvToList r
+csvToList (CSV.Nil e _) = maybe [] error e
 
-readTable :: FilePath -> Field -> (Int, Int) -> T.Text -> Fields -> IO TableStream
+parseTable :: TableInfo -> CSV.Records (V.Vector BS.ByteString) -> Table
+parseTable ti@TableInfo{..} = Table ti . map row . csvToList where
+  row r =
+    ( maybe (error "key read") fst $ mfilter (BS.null . snd) $ BSC.readInt (r V.! tableKeyIndex)
+    , fold $ V.zipWith (\f -> ingestFieldBS f . (r V.!)) tableFields tableFieldIndex)
+
+sortFilterTable :: (Key -> Bool) -> Table -> Table
+sortFilterTable f t = t{ tableRows = sortOn fst $ filter (f . fst) $ tableRows t }
+
+readTable :: FilePath -> Field -> (Int, Int) -> T.Text -> Fields -> IO Table
 readTable path keyf range name fields = do
   (hd, rows) <- loadECSV file fields
   let geti n = maybe (fail $ file ++ " missing field " ++ BSC.unpack n) return $ V.elemIndex n hd
   key <- geti (fieldsrc keyf)
   cols <- mapM (geti . fieldsrc) fields
-  return $ nextRow TableStream
-    { tableNext = Nothing
-    , tableRows = rows
-    , tableInfo = TableInfo
-      { tableName = name
-      , tableFields = fields
-      , tableKeyIndex = key
-      , tableFieldIndex = cols
-      }
-    }
+  return $ (if singlesort then sortFilterTable (keyInRange range) else id) $ parseTable TableInfo
+    { tableName = name
+    , tableFields = fields
+    , tableKeyIndex = key
+    , tableFieldIndex = cols
+    } rows
   where
-  file = joinFile path (T.unpack name) range
+  singlesort = T.isPrefixOf "Nss" name
+  name' = T.unpack name
+  file 
+    | singlesort = joinFile' path name' "1"
+    | otherwise = joinFile path name' range
   fieldsrc = TE.encodeUtf8 . fieldSource
 
 -- |Split a path like /foo/bar/GaiaSource/GaiaSource_123456-789012.csv into @("/foo/bar/", "GaiaSource", 123456, 789012)@
@@ -109,26 +105,30 @@ splitFile fp = fromMaybe (error $ "could not parse file path: " ++ fp) $ do
   return (bd, dn, (i, j))
 
 -- |Inverse of 'splitFile'
+joinFile' :: FilePath -> String -> String -> FilePath
+joinFile' bd dn sf = bd FP.</> dn FP.</> (dn ++ "_" ++ sf) FP.<.> "csv"
+
+-- |Inverse of 'splitFile'
 joinFile :: FilePath -> String -> (Int, Int) -> FilePath
-joinFile bd dn (i, j) = bd FP.</> dn FP.</> (dn ++ "_" ++ r i ++ "-" ++ r j) FP.<.> "csv" where
+joinFile bd dn (i, j) = joinFile' bd dn (r i ++ "-" ++ r j) where
   r = printf "%06d"
 
-nextKey :: Key -> J.Series -> TableStream -> (J.Series, TableStream)
-nextKey k b ts@TableStream{ tableNext = Just (tk, r) } = case compare k tk of
+nextKey :: Key -> J.Series -> Table -> (J.Series, Table)
+nextKey k b ts@Table{ tableRows = (tk, r):l } = case compare k tk of
   LT -> (b, ts)
-  EQ -> (b <> r, nextRow ts)
+  EQ -> (b <> r, ts{ tableRows = l })
   GT -> error $ T.unpack (tableName (tableInfo ts)) ++ " out of order at " ++ show tk ++ " > " ++ show k
-nextKey _ b ts@TableStream{ tableNext = Nothing } = (b, ts)
+nextKey _ b ts@Table{ tableRows = [] } = (b, ts)
 
-nextKeys :: Key -> J.Series -> [TableStream] -> (J.Series, [TableStream])
+nextKeys :: Key -> J.Series -> [Table] -> (J.Series, [Table])
 nextKeys = mapAccumL . nextKey
 
-zipTables :: TableStream -> [TableStream] -> [(Key, J.Series)]
-zipTables m@TableStream{ tableNext = Just (k, r) } tl =
-  (k, r') : zipTables (nextRow m) tl'
+zipTables :: Table -> [Table] -> [(Key, J.Series)]
+zipTables m@Table{ tableRows = (k, r):l } tl =
+  (k, r') : zipTables m{ tableRows = l } tl'
   where (r', tl') = nextKeys k r tl
-zipTables TableStream{ tableNext = Nothing } tl =
-  mapMaybe (\t -> (\(k, _) -> error $ "leftover in " ++ T.unpack (tableName (tableInfo t)) ++ ": " ++ show k) <$> tableNext t) tl
+zipTables Table{ tableRows = [] } tl =
+  concatMap (\t -> (\(k, _) -> error $ "leftover in " ++ T.unpack (tableName (tableInfo t)) ++ ": " ++ show k) <$> tableRows t) tl
 
 groupsOf :: Int -> [a] -> [[a]]
 groupsOf _ [] = []
