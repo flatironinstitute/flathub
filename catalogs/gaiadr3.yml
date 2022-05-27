@@ -127,7 +127,7 @@ fields:
     descr: Standard error of proper motion in declination direction
 - name: ''
   title: corr
-  descr: Correlation
+  descr: astrometric correlation coefficients
   type: float
   sub:
   - ingest: GaiaSource.ra_dec_corr
@@ -677,190 +677,191 @@ fields:
     type: boolean
     descr: Flag indicating that the source is present in the Gaia Andromeda Photometric
       Survey (GAPS)
-- ingest: GaiaSource.classprob_dsc_combmod_quasar
-  name: classprob_dsc_combmod_quasar
-  type: float
-  descr: 'Probability from DSC-Combmod of being a quasar (data used: BP/RP spectrum,
-    photometry, astrometry)'
-- ingest: GaiaSource.classprob_dsc_combmod_galaxy
-  name: classprob_dsc_combmod_galaxy
-  type: float
-  descr: 'Probability from DSC-Combmod of being a galaxy (data used: BP/RP spectrum,
-    photometry, astrometry)'
-- ingest: GaiaSource.classprob_dsc_combmod_star
-  name: classprob_dsc_combmod_star
-  type: float
-  descr: 'Probability from DSC-Combmod of being a single star (but not a white dwarf)
-    (data used: BP/RP spectrum, photometry, astrometry)'
-- name: ''
-  title: teff
-  descr: stellar effective temperature
-  type: float
-  units: K
-  sub:
-  - ingest: GaiaSource.teff_gspphot
-    name: teff_gspphot
-    units: K
-    type: float
-    descr: Effective temperature from GSP-Phot Aeneas best library using BP/RP spectra
-  - ingest: GaiaSource.teff_gspphot_lower
-    name: teff_gspphot_lower
-    units: K
-    type: float
-    descr: Lower confidence level (16%) of effective temperature from GSP-Phot Aeneas
-      best library using BP/RP spectra
-  - ingest: GaiaSource.teff_gspphot_upper
-    name: teff_gspphot_upper
-    units: K
-    type: float
-    descr: Upper confidence level (84%) of effective temperature from GSP-Phot Aeneas
-      best library using BP/RP spectra
-- name: ''
-  title: logg
-  descr: stellar surface gravity
-  type: float
-  units: log(cm.s**-2)
-  sub:
-  - ingest: GaiaSource.logg_gspphot
-    name: logg_gspphot
-    units: log(cm.s**-2)
-    type: float
-    descr: Surface gravity from GSP-Phot Aeneas best library using BP/RP spectra
-  - ingest: GaiaSource.logg_gspphot_lower
-    name: logg_gspphot_lower
-    units: log(cm.s**-2)
-    type: float
-    descr: Lower confidence level (16%) of surface gravity from GSP-Phot Aeneas best
-      library using BP/RP spectra
-  - ingest: GaiaSource.logg_gspphot_upper
-    name: logg_gspphot_upper
-    units: log(cm.s**-2)
-    type: float
-    descr: Upper confidence level (84%) of surface gravity from GSP-Phot Aeneas best
-      library using BP/RP spectra
-- name: ''
-  title: mh
-  descr: stellar metallicity
-  type: float
-  units: dex
-  sub:
-  - ingest: GaiaSource.mh_gspphot
-    name: mh_gspphot
-    units: dex
-    type: float
-    descr: Iron abundance from GSP-Phot Aeneas best library using BP/RP spectra
-  - ingest: GaiaSource.mh_gspphot_lower
-    name: mh_gspphot_lower
-    units: dex
-    type: float
-    descr: Lower confidence level (16%) of iron abundance from GSP-Phot Aeneas best
-      library using BP/RP spectra
-  - ingest: GaiaSource.mh_gspphot_upper
-    name: mh_gspphot_upper
-    units: dex
-    type: float
-    descr: Upper confidence level (84%) of iron abundance from GSP-Phot Aeneas best
-      library using BP/RP spectra
-- name: ''
-  title: distance
-  descr: distance to star
-  type: float
-  units: pc
-  sub:
-  - ingest: GaiaSource.distance_gspphot
-    name: distance_gspphot
-    units: pc
-    type: float
-    descr: Distance from GSP-Phot Aeneas best library using BP/RP spectra
-  - ingest: GaiaSource.distance_gspphot_lower
-    name: distance_gspphot_lower
-    units: pc
-    type: float
-    descr: Lower confidence level (16%) of distance from GSP-Phot Aeneas best library
-      using BP/RP spectra
-  - ingest: GaiaSource.distance_gspphot_upper
-    name: distance_gspphot_upper
-    units: pc
-    type: float
-    descr: Upper confidence level (84%) of distance from GSP-Phot Aeneas best library
-      using BP/RP spectra
-- name: ''
-  title: azero
-  descr: monochromatic extinction
-  type: float
-  units: mag
-  sub:
-  - ingest: GaiaSource.azero_gspphot
-    name: azero_gspphot
-    units: mag
-    type: float
-    descr: Monochromatic extinction $A_0$ at 547.7nm from GSP-Phot Aeneas best library
-      using BP/RP spectra
-  - ingest: GaiaSource.azero_gspphot_lower
-    name: azero_gspphot_lower
-    units: mag
-    type: float
-    descr: Lower confidence level (16%) of monochromatic extinction $A_0$ at 547.7nm
-      from GSP-Phot Aeneas best library using BP/RP spectra
-  - ingest: GaiaSource.azero_gspphot_upper
-    name: azero_gspphot_upper
-    units: mag
-    type: float
-    descr: Upper confidence level (84%) of monochromatic extinction $A_0$ at 547.7nm
-      from GSP-Phot Aeneas best library using BP/RP spectra
-- name: ''
-  title: ag
-  descr: extinction in G band
-  type: float
-  units: mag
-  sub:
-  - ingest: GaiaSource.ag_gspphot
-    name: ag_gspphot
-    units: mag
-    type: float
-    descr: Extinction in G band from GSP-Phot Aeneas best library using BP/RP spectra
-  - ingest: GaiaSource.ag_gspphot_lower
-    name: ag_gspphot_lower
-    units: mag
-    type: float
-    descr: Lower confidence level (16%) of extinction in G band from GSP-Phot Aeneas
-      best library using BP/RP spectra
-  - ingest: GaiaSource.ag_gspphot_upper
-    name: ag_gspphot_upper
-    units: mag
-    type: float
-    descr: Upper confidence level (84%) of extinction in G band from GSP-Phot Aeneas
-      best library using BP/RP spectra
-- name: ''
-  title: ebpminrp
-  descr: reddening
-  type: float
-  units: mag
-  sub:
-  - ingest: GaiaSource.ebpminrp_gspphot
-    name: ebpminrp_gspphot
-    units: mag
-    type: float
-    descr: Reddening $E(G_{\rm BP} - G_{\rm RP})$ from GSP-Phot Aeneas best library
-      using BP/RP spectra
-  - ingest: GaiaSource.ebpminrp_gspphot_lower
-    name: ebpminrp_gspphot_lower
-    units: mag
-    type: float
-    descr: Lower confidence level (16%) of reddening  $E(G_{\rm BP} - G_{\rm RP})$
-      from GSP-Phot Aeneas best library using BP/RP spectra
-  - ingest: GaiaSource.ebpminrp_gspphot_upper
-    name: ebpminrp_gspphot_upper
-    units: mag
-    type: float
-    descr: Upper confidence level (84%) of reddening  $E(G_{\rm BP} - G_{\rm RP})$
-      from GSP-Phot Aeneas best library using BP/RP spectra
-- ingest: GaiaSource.libname_gspphot
-  name: libname_gspphot
-  type: byte
-  descr: Name of library that achieves the highest mean log-posterior in MCMC samples
-    and was used to derive GSP-Phot parameters in this table
-  enum: [PHOENIX,MARCS,A,OB]
+# duplicate AstrophysicalParameters:
+# - ingest: GaiaSource.classprob_dsc_combmod_quasar
+#   name: classprob_dsc_combmod_quasar
+#   type: float
+#   descr: 'Probability from DSC-Combmod of being a quasar (data used: BP/RP spectrum,
+#     photometry, astrometry)'
+# - ingest: GaiaSource.classprob_dsc_combmod_galaxy
+#   name: classprob_dsc_combmod_galaxy
+#   type: float
+#   descr: 'Probability from DSC-Combmod of being a galaxy (data used: BP/RP spectrum,
+#     photometry, astrometry)'
+# - ingest: GaiaSource.classprob_dsc_combmod_star
+#   name: classprob_dsc_combmod_star
+#   type: float
+#   descr: 'Probability from DSC-Combmod of being a single star (but not a white dwarf)
+#     (data used: BP/RP spectrum, photometry, astrometry)'
+# - name: ''
+#   title: teff
+#   descr: stellar effective temperature
+#   type: float
+#   units: K
+#   sub:
+#   - ingest: GaiaSource.teff_gspphot
+#     name: teff_gspphot
+#     units: K
+#     type: float
+#     descr: Effective temperature from GSP-Phot Aeneas best library using BP/RP spectra
+#   - ingest: GaiaSource.teff_gspphot_lower
+#     name: teff_gspphot_lower
+#     units: K
+#     type: float
+#     descr: Lower confidence level (16%) of effective temperature from GSP-Phot Aeneas
+#       best library using BP/RP spectra
+#   - ingest: GaiaSource.teff_gspphot_upper
+#     name: teff_gspphot_upper
+#     units: K
+#     type: float
+#     descr: Upper confidence level (84%) of effective temperature from GSP-Phot Aeneas
+#       best library using BP/RP spectra
+# - name: ''
+#   title: logg
+#   descr: stellar surface gravity
+#   type: float
+#   units: log(cm.s**-2)
+#   sub:
+#   - ingest: GaiaSource.logg_gspphot
+#     name: logg_gspphot
+#     units: log(cm.s**-2)
+#     type: float
+#     descr: Surface gravity from GSP-Phot Aeneas best library using BP/RP spectra
+#   - ingest: GaiaSource.logg_gspphot_lower
+#     name: logg_gspphot_lower
+#     units: log(cm.s**-2)
+#     type: float
+#     descr: Lower confidence level (16%) of surface gravity from GSP-Phot Aeneas best
+#       library using BP/RP spectra
+#   - ingest: GaiaSource.logg_gspphot_upper
+#     name: logg_gspphot_upper
+#     units: log(cm.s**-2)
+#     type: float
+#     descr: Upper confidence level (84%) of surface gravity from GSP-Phot Aeneas best
+#       library using BP/RP spectra
+# - name: ''
+#   title: mh
+#   descr: stellar metallicity
+#   type: float
+#   units: dex
+#   sub:
+#   - ingest: GaiaSource.mh_gspphot
+#     name: mh_gspphot
+#     units: dex
+#     type: float
+#     descr: Iron abundance from GSP-Phot Aeneas best library using BP/RP spectra
+#   - ingest: GaiaSource.mh_gspphot_lower
+#     name: mh_gspphot_lower
+#     units: dex
+#     type: float
+#     descr: Lower confidence level (16%) of iron abundance from GSP-Phot Aeneas best
+#       library using BP/RP spectra
+#   - ingest: GaiaSource.mh_gspphot_upper
+#     name: mh_gspphot_upper
+#     units: dex
+#     type: float
+#     descr: Upper confidence level (84%) of iron abundance from GSP-Phot Aeneas best
+#       library using BP/RP spectra
+# - name: ''
+#   title: distance
+#   descr: distance to star
+#   type: float
+#   units: pc
+#   sub:
+#   - ingest: GaiaSource.distance_gspphot
+#     name: distance_gspphot
+#     units: pc
+#     type: float
+#     descr: Distance from GSP-Phot Aeneas best library using BP/RP spectra
+#   - ingest: GaiaSource.distance_gspphot_lower
+#     name: distance_gspphot_lower
+#     units: pc
+#     type: float
+#     descr: Lower confidence level (16%) of distance from GSP-Phot Aeneas best library
+#       using BP/RP spectra
+#   - ingest: GaiaSource.distance_gspphot_upper
+#     name: distance_gspphot_upper
+#     units: pc
+#     type: float
+#     descr: Upper confidence level (84%) of distance from GSP-Phot Aeneas best library
+#       using BP/RP spectra
+# - name: ''
+#   title: azero
+#   descr: monochromatic extinction
+#   type: float
+#   units: mag
+#   sub:
+#   - ingest: GaiaSource.azero_gspphot
+#     name: azero_gspphot
+#     units: mag
+#     type: float
+#     descr: Monochromatic extinction $A_0$ at 547.7nm from GSP-Phot Aeneas best library
+#       using BP/RP spectra
+#   - ingest: GaiaSource.azero_gspphot_lower
+#     name: azero_gspphot_lower
+#     units: mag
+#     type: float
+#     descr: Lower confidence level (16%) of monochromatic extinction $A_0$ at 547.7nm
+#       from GSP-Phot Aeneas best library using BP/RP spectra
+#   - ingest: GaiaSource.azero_gspphot_upper
+#     name: azero_gspphot_upper
+#     units: mag
+#     type: float
+#     descr: Upper confidence level (84%) of monochromatic extinction $A_0$ at 547.7nm
+#       from GSP-Phot Aeneas best library using BP/RP spectra
+# - name: ''
+#   title: ag
+#   descr: extinction in G band
+#   type: float
+#   units: mag
+#   sub:
+#   - ingest: GaiaSource.ag_gspphot
+#     name: ag_gspphot
+#     units: mag
+#     type: float
+#     descr: Extinction in G band from GSP-Phot Aeneas best library using BP/RP spectra
+#   - ingest: GaiaSource.ag_gspphot_lower
+#     name: ag_gspphot_lower
+#     units: mag
+#     type: float
+#     descr: Lower confidence level (16%) of extinction in G band from GSP-Phot Aeneas
+#       best library using BP/RP spectra
+#   - ingest: GaiaSource.ag_gspphot_upper
+#     name: ag_gspphot_upper
+#     units: mag
+#     type: float
+#     descr: Upper confidence level (84%) of extinction in G band from GSP-Phot Aeneas
+#       best library using BP/RP spectra
+# - name: ''
+#   title: ebpminrp
+#   descr: reddening
+#   type: float
+#   units: mag
+#   sub:
+#   - ingest: GaiaSource.ebpminrp_gspphot
+#     name: ebpminrp_gspphot
+#     units: mag
+#     type: float
+#     descr: Reddening $E(G_{\rm BP} - G_{\rm RP})$ from GSP-Phot Aeneas best library
+#       using BP/RP spectra
+#   - ingest: GaiaSource.ebpminrp_gspphot_lower
+#     name: ebpminrp_gspphot_lower
+#     units: mag
+#     type: float
+#     descr: Lower confidence level (16%) of reddening  $E(G_{\rm BP} - G_{\rm RP})$
+#       from GSP-Phot Aeneas best library using BP/RP spectra
+#   - ingest: GaiaSource.ebpminrp_gspphot_upper
+#     name: ebpminrp_gspphot_upper
+#     units: mag
+#     type: float
+#     descr: Upper confidence level (84%) of reddening  $E(G_{\rm BP} - G_{\rm RP})$
+#       from GSP-Phot Aeneas best library using BP/RP spectra
+# - ingest: GaiaSource.libname_gspphot
+#   name: libname_gspphot
+#   type: byte
+#   descr: Name of library that achieves the highest mean log-posterior in MCMC samples
+#     and was used to derive GSP-Phot parameters in this table
+#   enum: [PHOENIX,MARCS,A,OB]
 
 ######## SUB TABLES follow #######
 - name: astrophysical_parameters
@@ -869,1071 +870,1211 @@ fields:
   descr: |
     This is the main table containing the 1D astrophysical parameters produced by the Apsis processing chain developed in Gaia DPAC CU8 (see Chapter~\ref{chap:cu8par}). Additional parameters can be found in table {\tt AstrophysicalParametersSupp}.
   sub:
-# duplicate gaia_source:
-# - ingest: AstrophysicalParameters.classprob_dsc_combmod_quasar
-#   name: classprob_dsc_combmod_quasar
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: 'Probability from DSC-Combmod of being a quasar (data used: BP/RP spectrum,
-#     photometry, astrometry)'
-# - ingest: AstrophysicalParameters.classprob_dsc_combmod_galaxy
-#   name: classprob_dsc_combmod_galaxy
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: 'Probability from DSC-Combmod of being a galaxy (data used: BP/RP spectrum,
-#     photometry, astrometry)'
-# - ingest: AstrophysicalParameters.classprob_dsc_combmod_star
-#   name: classprob_dsc_combmod_star
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: 'Probability from DSC-Combmod of being a single star (but not a white dwarf)
-#     (data used: BP/RP spectrum, photometry, astrometry)'
-  - ingest: AstrophysicalParameters.classprob_dsc_combmod_whitedwarf
-    name: classprob_dsc_combmod_whitedwarf
-    flag: hidden
-    store: true
+  - name: ''
+    title: classprob
+    descr: Class probabilities for source classification
     type: float
-    descr: 'Probability from DSC-Combmod of being a white dwarf (data used: BP/RP
-      spectrum, photometry, astrometry)'
-  - ingest: AstrophysicalParameters.classprob_dsc_combmod_binarystar
-    name: classprob_dsc_combmod_binarystar
-    flag: hidden
-    store: true
+    units:
+    sub:
+    - ingest: AstrophysicalParameters.classprob_dsc_combmod_quasar
+      name: classprob_dsc_combmod_quasar
+      flag: hidden
+      store: true
+      type: float
+      descr: 'Probability from DSC-Combmod of being a quasar (data used: BP/RP spectrum,
+        photometry, astrometry)'
+    - ingest: AstrophysicalParameters.classprob_dsc_combmod_galaxy
+      name: classprob_dsc_combmod_galaxy
+      flag: hidden
+      store: true
+      type: float
+      descr: 'Probability from DSC-Combmod of being a galaxy (data used: BP/RP spectrum,
+        photometry, astrometry)'
+    - ingest: AstrophysicalParameters.classprob_dsc_combmod_star
+      name: classprob_dsc_combmod_star
+      flag: hidden
+      store: true
+      type: float
+      descr: 'Probability from DSC-Combmod of being a single star (but not a white dwarf)
+        (data used: BP/RP spectrum, photometry, astrometry)'
+    - ingest: AstrophysicalParameters.classprob_dsc_combmod_whitedwarf
+      name: classprob_dsc_combmod_whitedwarf
+      flag: hidden
+      store: true
+      type: float
+      descr: 'Probability from DSC-Combmod of being a white dwarf (data used: BP/RP
+        spectrum, photometry, astrometry)'
+    - ingest: AstrophysicalParameters.classprob_dsc_combmod_binarystar
+      name: classprob_dsc_combmod_binarystar
+      flag: hidden
+      store: true
+      type: float
+      descr: 'Probability from DSC-Combmod of being a binary star (data used: BP/RP
+        spectrum, photometry, astrometry)'
+    - ingest: AstrophysicalParameters.classprob_dsc_specmod_quasar
+      name: classprob_dsc_specmod_quasar
+      flag: hidden
+      store: true
+      type: float
+      descr: 'Probability from DSC-Specmod of being a quasar (data used: BP/RP spectrum)'
+    - ingest: AstrophysicalParameters.classprob_dsc_specmod_galaxy
+      name: classprob_dsc_specmod_galaxy
+      flag: hidden
+      store: true
+      type: float
+      descr: 'Probability from DSC-Specmod of being a galaxy (data used: BP/RP spectrum)'
+    - ingest: AstrophysicalParameters.classprob_dsc_specmod_star
+      name: classprob_dsc_specmod_star
+      flag: hidden
+      store: true
+      type: float
+      descr: 'Probability from DSC-Specmod of being a single star (but not a white dwarf)
+        (data used: BP/RP spectrum)'
+    - ingest: AstrophysicalParameters.classprob_dsc_specmod_whitedwarf
+      name: classprob_dsc_specmod_whitedwarf
+      flag: hidden
+      store: true
+      type: float
+      descr: 'Probability from DSC-Specmod of being a white dwarf (data used: BP/RP
+        spectrum)'
+    - ingest: AstrophysicalParameters.classprob_dsc_specmod_binarystar
+      name: classprob_dsc_specmod_binarystar
+      flag: hidden
+      store: true
+      type: float
+      descr: 'Probability from DSC-Specmod of being a binary star (data used: BP/RP
+        spectrum)'
+    - ingest: AstrophysicalParameters.classprob_dsc_allosmod_quasar
+      name: classprob_dsc_allosmod_quasar
+      flag: hidden
+      store: true
+      type: float
+      descr: 'Probability from DSC-Allosmod of being a quasar (data used: photometry,
+        astrometry)'
+    - ingest: AstrophysicalParameters.classprob_dsc_allosmod_galaxy
+      name: classprob_dsc_allosmod_galaxy
+      flag: hidden
+      store: true
+      type: float
+      descr: 'Probability from DSC-Allosmod of being a galaxy (data used: photometry,
+        astrometry)'
+    - ingest: AstrophysicalParameters.classprob_dsc_allosmod_star
+      name: classprob_dsc_allosmod_star
+      flag: hidden
+      store: true
+      type: float
+      descr: 'Probability from DSC-Allosmod of being a star (data used: photometry,
+        astrometry)'
+  - name: ''
+    title: teff
+    descr: stellar effective temperature
     type: float
-    descr: 'Probability from DSC-Combmod of being a binary star (data used: BP/RP
-      spectrum, photometry, astrometry)'
-  - ingest: AstrophysicalParameters.classprob_dsc_specmod_quasar
-    name: classprob_dsc_specmod_quasar
-    flag: hidden
-    store: true
-    type: float
-    descr: 'Probability from DSC-Specmod of being a quasar (data used: BP/RP spectrum)'
-  - ingest: AstrophysicalParameters.classprob_dsc_specmod_galaxy
-    name: classprob_dsc_specmod_galaxy
-    flag: hidden
-    store: true
-    type: float
-    descr: 'Probability from DSC-Specmod of being a galaxy (data used: BP/RP spectrum)'
-  - ingest: AstrophysicalParameters.classprob_dsc_specmod_star
-    name: classprob_dsc_specmod_star
-    flag: hidden
-    store: true
-    type: float
-    descr: 'Probability from DSC-Specmod of being a single star (but not a white dwarf)
-      (data used: BP/RP spectrum)'
-  - ingest: AstrophysicalParameters.classprob_dsc_specmod_whitedwarf
-    name: classprob_dsc_specmod_whitedwarf
-    flag: hidden
-    store: true
-    type: float
-    descr: 'Probability from DSC-Specmod of being a white dwarf (data used: BP/RP
-      spectrum)'
-  - ingest: AstrophysicalParameters.classprob_dsc_specmod_binarystar
-    name: classprob_dsc_specmod_binarystar
-    flag: hidden
-    store: true
-    type: float
-    descr: 'Probability from DSC-Specmod of being a binary star (data used: BP/RP
-      spectrum)'
-  - ingest: AstrophysicalParameters.classprob_dsc_allosmod_quasar
-    name: classprob_dsc_allosmod_quasar
-    flag: hidden
-    store: true
-    type: float
-    descr: 'Probability from DSC-Allosmod of being a quasar (data used: photometry,
-      astrometry)'
-  - ingest: AstrophysicalParameters.classprob_dsc_allosmod_galaxy
-    name: classprob_dsc_allosmod_galaxy
-    flag: hidden
-    store: true
-    type: float
-    descr: 'Probability from DSC-Allosmod of being a galaxy (data used: photometry,
-      astrometry)'
-  - ingest: AstrophysicalParameters.classprob_dsc_allosmod_star
-    name: classprob_dsc_allosmod_star
-    flag: hidden
-    store: true
-    type: float
-    descr: 'Probability from DSC-Allosmod of being a star (data used: photometry,
-      astrometry)'
-# duplicate gaia_source:
-# - ingest: AstrophysicalParameters.teff_gspphot
-#   name: teff_gspphot
-#   units: K
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Effective temperature from GSP-Phot Aeneas best library using BP/RP spectra
-# - ingest: AstrophysicalParameters.teff_gspphot_lower
-#   name: teff_gspphot_lower
-#   units: K
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Lower confidence level (16%) of effective temperature from GSP-Phot Aeneas
-#     best library using BP/RP spectra
-# - ingest: AstrophysicalParameters.teff_gspphot_upper
-#   name: teff_gspphot_upper
-#   units: K
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Upper confidence level (84%) of effective temperature from GSP-Phot Aeneas
-#     best library using BP/RP spectra
-# - ingest: AstrophysicalParameters.logg_gspphot
-#   name: logg_gspphot
-#   units: log(cm.s**-2)
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Surface gravity from GSP-Phot Aeneas best library using BP/RP spectra
-# - ingest: AstrophysicalParameters.logg_gspphot_lower
-#   name: logg_gspphot_lower
-#   units: log(cm.s**-2)
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Lower confidence level (16%) of surface gravity from GSP-Phot Aeneas best
-#     library using BP/RP spectra
-# - ingest: AstrophysicalParameters.logg_gspphot_upper
-#   name: logg_gspphot_upper
-#   units: log(cm.s**-2)
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Upper confidence level (84%) of surface gravity from GSP-Phot Aeneas best
-#     library using BP/RP spectra
-# - ingest: AstrophysicalParameters.mh_gspphot
-#   name: mh_gspphot
-#   units: '''dex'''
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Iron abundance from GSP-Phot Aeneas best library using BP/RP spectra
-# - ingest: AstrophysicalParameters.mh_gspphot_lower
-#   name: mh_gspphot_lower
-#   units: '''dex'''
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Lower confidence level (16%) of iron abundance from GSP-Phot Aeneas best
-#     library using BP/RP spectra
-# - ingest: AstrophysicalParameters.mh_gspphot_upper
-#   name: mh_gspphot_upper
-#   units: '''dex'''
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Upper confidence level (84%) of iron abundance from GSP-Phot Aeneas best
-#     library using BP/RP spectra
-# - ingest: AstrophysicalParameters.distance_gspphot
-#   name: distance_gspphot
-#   units: pc
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Distance from GSP-Phot Aeneas best library using BP/RP spectra
-# - ingest: AstrophysicalParameters.distance_gspphot_lower
-#   name: distance_gspphot_lower
-#   units: pc
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Lower confidence level (16%) of distance from GSP-Phot Aeneas best library
-#     using BP/RP spectra
-# - ingest: AstrophysicalParameters.distance_gspphot_upper
-#   name: distance_gspphot_upper
-#   units: pc
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Upper confidence level (84%) of distance from GSP-Phot Aeneas best library
-#     using BP/RP spectra
-# - ingest: AstrophysicalParameters.azero_gspphot
-#   name: azero_gspphot
-#   units: mag
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Monochromatic extinction $A_0$ at 547.7nm from GSP-Phot Aeneas best library
-#     using BP/RP spectra
-# - ingest: AstrophysicalParameters.azero_gspphot_lower
-#   name: azero_gspphot_lower
-#   units: mag
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Lower confidence level (16%) of monochromatic extinction $A_0$ at 547.7nm
-#     from GSP-Phot Aeneas best library using BP/RP spectra
-# - ingest: AstrophysicalParameters.azero_gspphot_upper
-#   name: azero_gspphot_upper
-#   units: mag
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Upper confidence level (84%) of monochromatic extinction $A_0$ at 547.7nm
-#     from GSP-Phot Aeneas best library using BP/RP spectra
-# - ingest: AstrophysicalParameters.ag_gspphot
-#   name: ag_gspphot
-#   units: mag
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Extinction in G band from GSP-Phot Aeneas best library using BP/RP spectra
-# - ingest: AstrophysicalParameters.ag_gspphot_lower
-#   name: ag_gspphot_lower
-#   units: mag
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Lower confidence level (16%) of extinction in G band from GSP-Phot Aeneas
-#     best library using BP/RP spectra
-# - ingest: AstrophysicalParameters.ag_gspphot_upper
-#   name: ag_gspphot_upper
-#   units: mag
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Upper confidence level (84%) of extinction in G band from GSP-Phot Aeneas
-#     best library using BP/RP spectra
-  - ingest: AstrophysicalParameters.abp_gspphot
-    name: abp_gspphot
-    units: mag
-    flag: hidden
-    store: true
-    type: float
-    descr: Extinction in $G_{\rm BP}$ band from GSP-Phot Aeneas best library using
-      BP/RP spectra
-  - ingest: AstrophysicalParameters.abp_gspphot_lower
-    name: abp_gspphot_lower
-    units: mag
-    flag: hidden
-    store: true
-    type: float
-    descr: Lower confidence level (16%) of extinction in $G_{\rm BP}$ band from GSP-Phot
-      Aeneas best library using BP/RP spectra
-  - ingest: AstrophysicalParameters.abp_gspphot_upper
-    name: abp_gspphot_upper
-    units: mag
-    flag: hidden
-    store: true
-    type: float
-    descr: Upper confidence level (84%) of extinction in $G_{\rm BP}$ band from GSP-Phot
-      Aeneas best library using BP/RP spectra
-  - ingest: AstrophysicalParameters.arp_gspphot
-    name: arp_gspphot
-    units: mag
-    flag: hidden
-    store: true
-    type: float
-    descr: Extinction in $G_{\rm RP}$ band from GSP-Phot Aeneas best library using
-      BP/RP spectra
-  - ingest: AstrophysicalParameters.arp_gspphot_lower
-    name: arp_gspphot_lower
-    units: mag
-    flag: hidden
-    store: true
-    type: float
-    descr: Lower confidence level (16%) of extinction in $G_{\rm RP}$ band from GSP-Phot
-      Aeneas best library using BP/RP spectra
-  - ingest: AstrophysicalParameters.arp_gspphot_upper
-    name: arp_gspphot_upper
-    units: mag
-    flag: hidden
-    store: true
-    type: float
-    descr: Upper confidence level (84%) of extinction in $G_{\rm RP}$ band from GSP-Phot
-      Aeneas best library using BP/RP spectra
-# - ingest: AstrophysicalParameters.ebpminrp_gspphot
-#   name: ebpminrp_gspphot
-#   units: mag
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Reddening $E(G_{\rm BP} - G_{\rm RP})$ from GSP-Phot Aeneas best library
-#     using BP/RP spectra
-# - ingest: AstrophysicalParameters.ebpminrp_gspphot_lower
-#   name: ebpminrp_gspphot_lower
-#   units: mag
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Lower confidence level (16%) of reddening  $E(G_{\rm BP} - G_{\rm RP})$
-#     from GSP-Phot Aeneas best library using BP/RP spectra
-# - ingest: AstrophysicalParameters.ebpminrp_gspphot_upper
-#   name: ebpminrp_gspphot_upper
-#   units: mag
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Upper confidence level (84%) of reddening  $E(G_{\rm BP} - G_{\rm RP})$
-#     from GSP-Phot Aeneas best library using BP/RP spectra
-  - ingest: AstrophysicalParameters.mg_gspphot
-    name: mg_gspphot
-    units: mag
-    flag: hidden
-    store: true
-    type: float
-    descr: Absolute magnitude $M_{\rm G}$ from GSP-Phot Aeneas best library using
-      BP/RP spectra
-  - ingest: AstrophysicalParameters.mg_gspphot_lower
-    name: mg_gspphot_lower
-    units: mag
-    flag: hidden
-    store: true
-    type: float
-    descr: Lower confidence level (16%) of absolute magnitude $M_{\rm G}$ from GSP-Phot
-      Aeneas best library using BP/RP spectra
-  - ingest: AstrophysicalParameters.mg_gspphot_upper
-    name: mg_gspphot_upper
-    units: mag
-    flag: hidden
-    store: true
-    type: float
-    descr: Upper confidence level (84%) of absolute magnitude $M_{\rm G}$ from GSP-Phot
-      Aeneas best library using BP/RP spectra
-  - ingest: AstrophysicalParameters.radius_gspphot
-    name: radius_gspphot
-    units: solRad
-    flag: hidden
-    store: true
-    type: float
-    descr: Radius from GSP-Phot Aeneas best library using BP/RP spectra
-  - ingest: AstrophysicalParameters.radius_gspphot_lower
-    name: radius_gspphot_lower
-    units: solRad
-    flag: hidden
-    store: true
-    type: float
-    descr: Lower confidence level (16%) of radius from GSP-Phot Aeneas best library
-      using BP/RP spectra
-  - ingest: AstrophysicalParameters.radius_gspphot_upper
-    name: radius_gspphot_upper
-    units: solRad
-    flag: hidden
-    store: true
-    type: float
-    descr: Upper confidence level (84%) of radius from GSP-Phot Aeneas best library
-      using BP/RP spectra
-  - ingest: AstrophysicalParameters.logposterior_gspphot
-    name: logposterior_gspphot
-    flag: hidden
-    store: true
-    type: float
-    descr: Goodness-of-fit score (mean log-posterior of MCMC) of GSP-Phot Aeneas MCMC
-      best library
-  - ingest: AstrophysicalParameters.mcmcaccept_gspphot
-    name: mcmcaccept_gspphot
-    flag: hidden
-    store: true
-    type: float
-    descr: MCMC acceptance rate of GSP-Phot Aeneas MCMC best library
-# - ingest: AstrophysicalParameters.libname_gspphot
-#   name: libname_gspphot
-#   flag: hidden
-#   store: true
-#   type: string dup gaia_source
-#   descr: Name of library that achieves the highest mean log-posterior in MCMC samples
-#     and was used to derive GSP-Phot parameters in this table
-#   enum: [PHOENIX,MARCS,A,OB,...]
-  - ingest: AstrophysicalParameters.teff_gspspec
-    name: teff_gspspec
     units: K
-    flag: hidden
-    store: true
+    sub:
+    - ingest: AstrophysicalParameters.teff_gspphot
+      name: teff_gspphot
+      units: K
+      flag: hidden
+      store: true
+      type: float
+      descr: Effective temperature from GSP-Phot Aeneas best library using BP/RP spectra
+    - ingest: AstrophysicalParameters.teff_gspphot_lower
+      name: teff_gspphot_lower
+      units: K
+      flag: hidden
+      store: true
+      type: float
+      descr: Lower confidence level (16%) of effective temperature from GSP-Phot Aeneas
+        best library using BP/RP spectra
+    - ingest: AstrophysicalParameters.teff_gspphot_upper
+      name: teff_gspphot_upper
+      units: K
+      flag: hidden
+      store: true
+      type: float
+      descr: Upper confidence level (84%) of effective temperature from GSP-Phot Aeneas
+        best library using BP/RP spectra
+    - ingest: AstrophysicalParameters.teff_gspspec
+      name: teff_gspspec
+      units: K
+      flag: hidden
+      store: true
+      type: float
+      descr: Effective temperature from GSP-Spec MatisseGauguin using RVS spectra and
+        Monte Carlo realisations
+    - ingest: AstrophysicalParameters.teff_gspspec_lower
+      name: teff_gspspec_lower
+      units: K
+      flag: hidden
+      store: true
+      type: float
+      descr: 16th percentile of effective temperature from GSP-Spec MatisseGauguin using
+        RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.teff_gspspec_upper
+      name: teff_gspspec_upper
+      units: K
+      flag: hidden
+      store: true
+      type: float
+      descr: 84th percentile of effective temperature from GSP-Spec MatisseGauguin using
+        RVS spectra and Monte Carlo realisations
+  - name: ''
+    title: logg
+    descr: stellar surface gravity
     type: float
-    descr: Effective temperature from GSP-Spec MatisseGauguin using RVS spectra and
-      Monte Carlo realisations
-  - ingest: AstrophysicalParameters.teff_gspspec_lower
-    name: teff_gspspec_lower
-    units: K
-    flag: hidden
-    store: true
-    type: float
-    descr: 16th percentile of effective temperature from GSP-Spec MatisseGauguin using
-      RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.teff_gspspec_upper
-    name: teff_gspspec_upper
-    units: K
-    flag: hidden
-    store: true
-    type: float
-    descr: 84th percentile of effective temperature from GSP-Spec MatisseGauguin using
-      RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.logg_gspspec
-    name: logg_gspspec
     units: log(cm.s**-2)
-    flag: hidden
-    store: true
-    type: float
-    descr: Logarithm of the stellar surface gravity from GSP-Spec MatisseGauguin using
-      RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.logg_gspspec_lower
-    name: logg_gspspec_lower
-    units: log(cm.s**-2)
-    flag: hidden
-    store: true
-    type: float
-    descr: 16th percentile of the logarithm of the stellar surface gravity from GSP-Spec
-      MatisseGauguin using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.logg_gspspec_upper
-    name: logg_gspspec_upper
-    units: log(cm.s**-2)
-    flag: hidden
-    store: true
-    type: float
-    descr: 84th percentile of the logarithm of the stellar surface gravity from GSP-Spec
-      MatisseGauguin using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.mh_gspspec
-    name: mh_gspspec
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Global metallicity [M/H] from GSP-Spec MatisseGauguin using RVS spectra
-      and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.mh_gspspec_lower
-    name: mh_gspspec_lower
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 16th percentile of global metallicity [M/H] from GSP-Spec MatisseGauguin
-      using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.mh_gspspec_upper
-    name: mh_gspspec_upper
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 84th percentile of global metallicity [M/H] from GSP-Spec MatisseGauguin
-      using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.alphafe_gspspec
-    name: alphafe_gspspec
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Abundance of alpha-elements [alpha/Fe] with respect to iron from GSP-Spec
-      MatisseGauguin using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.alphafe_gspspec_lower
-    name: alphafe_gspspec_lower
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 16th percentile of the abundance of alpha-elements [alpha/Fe] with respect
-      to iron from GSP-Spec MatisseGauguin using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.alphafe_gspspec_upper
-    name: alphafe_gspspec_upper
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 84th percentile of the abundance of alpha-elements [alpha/Fe] with respect
-      to iron from GSP-Spec MatisseGauguin using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.fem_gspspec
-    name: fem_gspspec
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Abundance of neutral iron [Fe/M] from GSP-Spec MatisseGauguin using RVS
-      spectra and Monte Carlo realisations, applied to the individual N lines of the
-      element, given in {\tt femGspspecNlines}
-  - ingest: AstrophysicalParameters.fem_gspspec_lower
-    name: fem_gspspec_lower
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 16th percentile of the abundance of neutral iron [Fe/M] from GSP-Spec MatisseGauguin
-      using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.fem_gspspec_upper
-    name: fem_gspspec_upper
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 84th percentile of the abundance of neutral iron [Fe/M] from GSP-Spec MatisseGauguin
-      using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.fem_gspspec_nlines
-    name: fem_gspspec_nlines
-    flag: hidden
-    store: true
-    type: integer
-    descr: Number of lines used for [Fe/M] abundance estimation
-  - ingest: AstrophysicalParameters.fem_gspspec_linescatter
-    name: fem_gspspec_linescatter
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Uncertainty estimation of [Fe/M] abundance using N lines of the element,
-      given in {\tt femGspspecNlines}
-  - ingest: AstrophysicalParameters.sife_gspspec
-    name: sife_gspspec
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Abundance of Silicon [Si/Fe] from GSP-Spec MatisseGauguin using RVS spectra
-      and Monte Carlo realisations, applied to the individual N lines of the element,
-      given in {\tt sifeGspspecNlines}
-  - ingest: AstrophysicalParameters.sife_gspspec_lower
-    name: sife_gspspec_lower
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 16th percentile of the abundance of silicon [Si/Fe] from GSP-Spec MatisseGauguin
-      using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.sife_gspspec_upper
-    name: sife_gspspec_upper
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 84th percentile of the abundance of silicon [Si/Fe] from GSP-Spec MatisseGauguin
-      using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.sife_gspspec_nlines
-    name: sife_gspspec_nlines
-    flag: hidden
-    store: true
-    type: integer
-    descr: Number of lines used for [Si/Fe] abundance estimation
-  - ingest: AstrophysicalParameters.sife_gspspec_linescatter
-    name: sife_gspspec_linescatter
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Uncertainty estimation of [Si/Fe] abundance using N lines of the element,
-      given in {\tt sifeGspspecNlines}
-  - ingest: AstrophysicalParameters.cafe_gspspec
-    name: cafe_gspspec
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Abundance of Calcium [Ca/Fe] from GSP-Spec MatisseGauguin using RVS spectra
-      and Monte Carlo realisations, applied to the individual N lines of the element,
-      given in {\tt cafeGspspecNlines}
-  - ingest: AstrophysicalParameters.cafe_gspspec_lower
-    name: cafe_gspspec_lower
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 16th percentile of the abundance of Calcium [Ca/Fe] from GSP-Spec MatisseGauguin
-      using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.cafe_gspspec_upper
-    name: cafe_gspspec_upper
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 84th percentile of the abundance of Calcium [Ca/Fe] from GSP-Spec MatisseGauguin
-      using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.cafe_gspspec_nlines
-    name: cafe_gspspec_nlines
-    flag: hidden
-    store: true
-    type: integer
-    descr: Number of lines used for [Ca/Fe] abundance estimation
-  - ingest: AstrophysicalParameters.cafe_gspspec_linescatter
-    name: cafe_gspspec_linescatter
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Uncertainty estimation of [Ca/Fe] abundance using N lines of the element,
-      given in {\tt cafeGspspecNlines}
-  - ingest: AstrophysicalParameters.tife_gspspec
-    name: tife_gspspec
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Abundance of Titanium [Ti/Fe] from GSP-Spec MatisseGauguin using RVS spectra
-      and Monte Carlo realisations, applied to the individual N lines of the element,
-      given in {\tt tifeGspspecNlines}
-  - ingest: AstrophysicalParameters.tife_gspspec_lower
-    name: tife_gspspec_lower
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 16th percentile of the abundance of Titanium [Ti/Fe] from GSP-Spec MatisseGauguin
-      using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.tife_gspspec_upper
-    name: tife_gspspec_upper
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 84th percentile of the abundance of Titanium [Ti/Fe] from GSP-Spec MatisseGauguin
-      using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.tife_gspspec_nlines
-    name: tife_gspspec_nlines
-    flag: hidden
-    store: true
-    type: integer
-    descr: Number of lines used for [Ti/Fe] abundance estimation
-  - ingest: AstrophysicalParameters.tife_gspspec_linescatter
-    name: tife_gspspec_linescatter
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Uncertainty estimation of [Ti/Fe] abundance using N lines of the element,
-      given in {\tt tifeGspspecNlines}
-  - ingest: AstrophysicalParameters.mgfe_gspspec
-    name: mgfe_gspspec
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Abundance of Magnesium [Mg/Fe] from GSP-Spec MatisseGauguin using RVS spectra
-      and Monte Carlo realisations, applied to the individual N lines of the element,
-      given in {\tt mgfeGspspecNlines}
-  - ingest: AstrophysicalParameters.mgfe_gspspec_lower
-    name: mgfe_gspspec_lower
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 16th percentile of the abundance of Magnesium [Mg/Fe] from GSP-Spec MatisseGauguin
-      using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.mgfe_gspspec_upper
-    name: mgfe_gspspec_upper
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 84th percentile of the abundance of Magnesium [Mg/Fe] from GSP-Spec MatisseGauguin
-      using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.mgfe_gspspec_nlines
-    name: mgfe_gspspec_nlines
-    flag: hidden
-    store: true
-    type: integer
-    descr: Number of lines used for [Mg/Fe] abundance estimation
-  - ingest: AstrophysicalParameters.mgfe_gspspec_linescatter
-    name: mgfe_gspspec_linescatter
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Uncertainty estimation of [Mg/Fe] abundance using N lines of the element,
-      given in {\tt mgfeGspspecNlines}
-  - ingest: AstrophysicalParameters.ndfe_gspspec
-    name: ndfe_gspspec
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Abundance of neodymium [Nd/Fe] from GSP-Spec MatisseGauguin using RVS spectra
-      and Monte Carlo realisations, applied to the individual N lines of the element,
-      given in {\tt ndfeGspspecNlines}
-  - ingest: AstrophysicalParameters.ndfe_gspspec_lower
-    name: ndfe_gspspec_lower
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 16th percentile of the abundance of neodymium [Nd/Fe] from GSP-Spec MatisseGauguin
-      using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.ndfe_gspspec_upper
-    name: ndfe_gspspec_upper
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 84th percentile of the abundance of neodymium [Nd/Fe] from GSP-Spec MatisseGauguin
-      using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.ndfe_gspspec_nlines
-    name: ndfe_gspspec_nlines
-    flag: hidden
-    store: true
-    type: integer
-    descr: Number of lines used for [Nd/Fe] abundance estimation
-  - ingest: AstrophysicalParameters.ndfe_gspspec_linescatter
-    name: ndfe_gspspec_linescatter
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Uncertainty estimation of [Nd/Fe] abundance using N lines of the element,
-      given in {\tt ndfeGspspecNlines}
-  - ingest: AstrophysicalParameters.feiim_gspspec
-    name: feiim_gspspec
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Abundance of ionised iron [FeII/M] from GSP-Spec MatisseGauguin using RVS
-      spectra and Monte Carlo realisations, applied to the individual N lines of the
-      element, given in {\tt feiimGspspecNlines}
-  - ingest: AstrophysicalParameters.feiim_gspspec_lower
-    name: feiim_gspspec_lower
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 16th percentile of the abundance of ionised iron [FeII/M] from GSP-Spec
-      MatisseGauguin using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.feiim_gspspec_upper
-    name: feiim_gspspec_upper
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 84th percentile of the abundance of ionised iron [FeII/M] from GSP-Spec
-      MatisseGauguin using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.feiim_gspspec_nlines
-    name: feiim_gspspec_nlines
-    flag: hidden
-    store: true
-    type: integer
-    descr: Number of lines used for [FeII/M] abundance estimation
-  - ingest: AstrophysicalParameters.feiim_gspspec_linescatter
-    name: feiim_gspspec_linescatter
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Uncertainty estimation of [FeII/M] abundance using N lines of the element,
-      given in {\tt feiimGspspecNlines}
-  - ingest: AstrophysicalParameters.sfe_gspspec
-    name: sfe_gspspec
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Abundance of Sulphur [S/Fe] from GSP-Spec MatisseGauguin using RVS spectra
-      and Monte Carlo realisations, applied to the individual N lines of the element,
-      given in {\tt sfeGspspecNlines}
-  - ingest: AstrophysicalParameters.sfe_gspspec_lower
-    name: sfe_gspspec_lower
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 16th percentile of the abundance of Sulphur [S/Fe] from GSP-Spec MatisseGauguin
-      using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.sfe_gspspec_upper
-    name: sfe_gspspec_upper
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 84th percentile of the abundance of Sulphur [S/Fe] from GSP-Spec MatisseGauguin
-      using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.sfe_gspspec_nlines
-    name: sfe_gspspec_nlines
-    flag: hidden
-    store: true
-    type: integer
-    descr: Number of lines used for [S/Fe] abundance estimation
-  - ingest: AstrophysicalParameters.sfe_gspspec_linescatter
-    name: sfe_gspspec_linescatter
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Uncertainty estimation of [S/Fe] abundance using N lines of the element,
-      given in {\tt sfeGspspecNlines}
-  - ingest: AstrophysicalParameters.zrfe_gspspec
-    name: zrfe_gspspec
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Abundance of Zirconium [Zr/Fe] from GSP-Spec MatisseGauguin using RVS spectra
-      and Monte Carlo realisations, applied to the individual N lines of the element,
-      given in {\tt zrfeGspspecNlines}
-  - ingest: AstrophysicalParameters.zrfe_gspspec_lower
-    name: zrfe_gspspec_lower
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 16th percentile of the abundance of Zirconium [Zr/Fe] from GSP-Spec MatisseGauguin
-      using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.zrfe_gspspec_upper
-    name: zrfe_gspspec_upper
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 84th percentile of the abundance of Zirconium [Zr/Fe] from GSP-Spec MatisseGauguin
-      using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.zrfe_gspspec_nlines
-    name: zrfe_gspspec_nlines
-    flag: hidden
-    store: true
-    type: integer
-    descr: Number of lines used for [Zr/Fe] abundance estimation
-  - ingest: AstrophysicalParameters.zrfe_gspspec_linescatter
-    name: zrfe_gspspec_linescatter
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Uncertainty estimation of [Zr/Fe] abundance using N lines of the element,
-      given in {\tt zrfeGspspecNlines}
-  - ingest: AstrophysicalParameters.nfe_gspspec
-    name: nfe_gspspec
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Abundance of Nitrogen [N/Fe] from GSP-Spec MatisseGauguin using RVS spectra
-      and Monte Carlo realisations, applied to the individual N lines of the element,
-      given in {\tt nfeGspspecNlines}
-  - ingest: AstrophysicalParameters.nfe_gspspec_lower
-    name: nfe_gspspec_lower
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 16th percentile of the abundance of Nitrogen [N/Fe] from GSP-Spec MatisseGauguin
-      using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.nfe_gspspec_upper
-    name: nfe_gspspec_upper
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 84th percentile of the abundance of Nitrogen [N/Fe] from GSP-Spec MatisseGauguin
-      using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.nfe_gspspec_nlines
-    name: nfe_gspspec_nlines
-    flag: hidden
-    store: true
-    type: integer
-    descr: Number of lines used for [N/Fe] abundance estimation
-  - ingest: AstrophysicalParameters.nfe_gspspec_linescatter
-    name: nfe_gspspec_linescatter
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Uncertainty estimation of [N/Fe] abundance using N lines of the element,
-      given in {\tt nfeGspspecNlines}
-  - ingest: AstrophysicalParameters.crfe_gspspec
-    name: crfe_gspspec
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Abundance of Chromium [Cr/Fe] from GSP-Spec MatisseGauguin using RVS spectra
-      and Monte Carlo realisations, applied to the individual N lines of the element,
-      given in {\tt crfeGspspecNlines}
-  - ingest: AstrophysicalParameters.crfe_gspspec_lower
-    name: crfe_gspspec_lower
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 16th percentile of the abundance of Chromium [Cr/Fe] from GSP-Spec MatisseGauguin
-      using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.crfe_gspspec_upper
-    name: crfe_gspspec_upper
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 84th percentile of the abundance of Chromium [Cr/Fe] from GSP-Spec MatisseGauguin
-      using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.crfe_gspspec_nlines
-    name: crfe_gspspec_nlines
-    flag: hidden
-    store: true
-    type: integer
-    descr: Number of lines used for [Cr/Fe] abundance estimation
-  - ingest: AstrophysicalParameters.crfe_gspspec_linescatter
-    name: crfe_gspspec_linescatter
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Uncertainty estimation of [Cr/Fe] abundance using N lines of the element,
-      given in {\tt crfeGspspecNlines}
-  - ingest: AstrophysicalParameters.cefe_gspspec
-    name: cefe_gspspec
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Abundance of Cerium [Ce/Fe] from GSP-Spec MatisseGauguin using RVS spectra
-      and Monte Carlo realisations, applied to the individual N lines of the element,
-      given in {\tt cefeGspspecNlines}
-  - ingest: AstrophysicalParameters.cefe_gspspec_lower
-    name: cefe_gspspec_lower
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 16th percentile of the abundance of Cerium [Ce/Fe] from GSP-Spec MatisseGauguin
-      using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.cefe_gspspec_upper
-    name: cefe_gspspec_upper
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 84th percentile of the abundance of Cerium [Ce/Fe] from GSP-Spec MatisseGauguin
-      using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.cefe_gspspec_nlines
-    name: cefe_gspspec_nlines
-    flag: hidden
-    store: true
-    type: integer
-    descr: Number of lines used for [Ce/Fe] abundance estimation
-  - ingest: AstrophysicalParameters.cefe_gspspec_linescatter
-    name: cefe_gspspec_linescatter
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Uncertainty estimation of [Ce/Fe] abundance using N lines of the element,
-      given in {\tt cefeGspspecNlines}
-  - ingest: AstrophysicalParameters.nife_gspspec
-    name: nife_gspspec
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Abundance of Nickel [Ni/Fe] from GSP-Spec MatisseGauguin using RVS spectra
-      and Monte Carlo realisations, applied to the individual N lines of the element,
-      given in {\tt nifeGspspecNlines}
-  - ingest: AstrophysicalParameters.nife_gspspec_lower
-    name: nife_gspspec_lower
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 16th percentile of the abundance of Nickel [Ni/Fe] from GSP-Spec MatisseGauguin
-      using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.nife_gspspec_upper
-    name: nife_gspspec_upper
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: 84th percentile of the abundance of Nickel [Ni/Fe] from GSP-Spec MatisseGauguin
-      using RVS spectra and Monte Carlo realisations
-  - ingest: AstrophysicalParameters.nife_gspspec_nlines
-    name: nife_gspspec_nlines
-    flag: hidden
-    store: true
-    type: integer
-    descr: Number of lines used for [Ni/Fe] abundance estimation
-  - ingest: AstrophysicalParameters.nife_gspspec_linescatter
-    name: nife_gspspec_linescatter
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Uncertainty estimation of [Ni/Fe] abundance using N lines of the element,
-      given in {\tt nifeGspspecNlines}
-  - ingest: AstrophysicalParameters.cn0ew_gspspec
-    name: cn0ew_gspspec
-    units: nm
-    flag: hidden
-    store: true
-    type: float
-    descr: Equivalent witdh of cyanogen absorption line, derived from RVS spectra
-  - ingest: AstrophysicalParameters.cn0ew_gspspec_uncertainty
-    name: cn0ew_gspspec_uncertainty
-    units: nm
-    flag: hidden
-    store: true
-    type: float
-    descr: Uncertainty of equivalent witdh of cyanogen absorption line, derived from
-      RVS spectra
-  - ingest: AstrophysicalParameters.cn0_gspspec_centralline
-    name: cn0_gspspec_centralline
-    units: nm
-    flag: hidden
-    store: true
-    type: float
-    descr: Central wavelength of cyanogen line, derived from RVS spectra using DIB
-      algorithm
-  - ingest: AstrophysicalParameters.cn0_gspspec_width
-    name: cn0_gspspec_width
-    units: nm
-    flag: hidden
-    store: true
-    type: float
-    descr: Width of cyoanogen line, derived from RVS spectra using DIB algorithm
-  - ingest: AstrophysicalParameters.dib_gspspec_lambda
-    name: dib_gspspec_lambda
-    units: nm
-    flag: hidden
-    store: true
-    type: float
-    descr: DIB central wavelength from GSP-Spec MatisseGauguin using RVS spectra
-  - ingest: AstrophysicalParameters.dib_gspspec_lambda_uncertainty
-    name: dib_gspspec_lambda_uncertainty
-    units: nm
-    flag: hidden
-    store: true
-    type: float
-    descr: Uncertainty on DIB central wavelength from GSP-Spec MatisseGauguin using
-      RVS spectra
-  - ingest: AstrophysicalParameters.dibew_gspspec
-    name: dibew_gspspec
-    units: angstrom
-    flag: hidden
-    store: true
-    type: float
-    descr: Equivalent width of the DIB from GSP-Spec MatisseGauguin using RVS spectra
-  - ingest: AstrophysicalParameters.dibew_gspspec_uncertainty
-    name: dibew_gspspec_uncertainty
-    units: angstrom
-    flag: hidden
-    store: true
-    type: float
-    descr: Global uncertainty on DIB equivalent width value using DIB algorithm
-  - ingest: AstrophysicalParameters.dibewnoise_gspspec_uncertainty
-    name: dibewnoise_gspspec_uncertainty
-    units: angstrom
-    flag: hidden
-    store: true
-    type: float
-    descr: Uncertainty on DIB equivalent width value occuring from noise part
-  - ingest: AstrophysicalParameters.dibp0_gspspec
-    name: dibp0_gspspec
-    flag: hidden
-    store: true
-    type: float
-    descr: Depth ($p_0$ parameter) of the DIB derived from a Gaussian model fit
-  - ingest: AstrophysicalParameters.dibp2_gspspec
-    name: dibp2_gspspec
-    units: angstrom
-    flag: hidden
-    store: true
-    type: float
-    descr: Width ($p_2$ parameter) of the DIB derived from a Gaussian model fit
-  - ingest: AstrophysicalParameters.dibp2_gspspec_uncertainty
-    name: dibp2_gspspec_uncertainty
-    units: angstrom
-    flag: hidden
-    store: true
-    type: float
-    descr: Uncertainty on the {\tt dibp2Gspspec} parameter
-  - ingest: AstrophysicalParameters.dibqf_gspspec
-    name: dibqf_gspspec
-    flag: hidden
-    store: true
-    type: integer
-    descr: Quality flag of the DIB computation
+    sub:
+    - ingest: AstrophysicalParameters.logg_gspphot
+      name: logg_gspphot
+      units: log(cm.s**-2)
+      type: float
+      descr: Surface gravity from GSP-Phot Aeneas best library using BP/RP spectra
+    - ingest: AstrophysicalParameters.logg_gspphot_lower
+      name: logg_gspphot_lower
+      units: log(cm.s**-2)
+      type: float
+      descr: Lower confidence level (16%) of surface gravity from GSP-Phot Aeneas best
+        library using BP/RP spectra
+    - ingest: AstrophysicalParameters.logg_gspphot_upper
+      name: logg_gspphot_upper
+      units: log(cm.s**-2)
+      type: float
+      descr: Upper confidence level (84%) of surface gravity from GSP-Phot Aeneas best
+        library using BP/RP spectra
+    - ingest: AstrophysicalParameters.logg_gspspec
+      name: logg_gspspec
+      units: log(cm.s**-2)
+      flag: hidden
+      store: true
+      type: float
+      descr: Logarithm of the stellar surface gravity from GSP-Spec MatisseGauguin using
+        RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.logg_gspspec_lower
+      name: logg_gspspec_lower
+      units: log(cm.s**-2)
+      flag: hidden
+      store: true
+      type: float
+      descr: 16th percentile of the logarithm of the stellar surface gravity from GSP-Spec
+        MatisseGauguin using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.logg_gspspec_upper
+      name: logg_gspspec_upper
+      units: log(cm.s**-2)
+      flag: hidden
+      store: true
+      type: float
+      descr: 84th percentile of the logarithm of the stellar surface gravity from GSP-Spec
+        MatisseGauguin using RVS spectra and Monte Carlo realisations
+  - name: ''
+    title: mh
+    descr: stellar metallicity
+    type: float
+    units: dex
+    sub:
+    - ingest: AstrophysicalParameters.mh_gspphot
+      name: mh_gspphot
+      units: dex
+      type: float
+      descr: Iron abundance from GSP-Phot Aeneas best library using BP/RP spectra
+    - ingest: AstrophysicalParameters.mh_gspphot_lower
+      name: mh_gspphot_lower
+      units: dex
+      type: float
+      descr: Lower confidence level (16%) of iron abundance from GSP-Phot Aeneas best
+        library using BP/RP spectra
+    - ingest: AstrophysicalParameters.mh_gspphot_upper
+      name: mh_gspphot_upper
+      units: dex
+      type: float
+      descr: Upper confidence level (84%) of iron abundance from GSP-Phot Aeneas best
+        library using BP/RP spectra
+    - ingest: AstrophysicalParameters.mh_gspspec
+      name: mh_gspspec
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Global metallicity [M/H] from GSP-Spec MatisseGauguin using RVS spectra
+        and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.mh_gspspec_lower
+      name: mh_gspspec_lower
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 16th percentile of global metallicity [M/H] from GSP-Spec MatisseGauguin
+        using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.mh_gspspec_upper
+      name: mh_gspspec_upper
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 84th percentile of global metallicity [M/H] from GSP-Spec MatisseGauguin
+        using RVS spectra and Monte Carlo realisations
+  - name: ''
+    title: distance
+    descr: distance to star
+    type: float
+    units: pc
+    sub:
+    - ingest: AstrophysicalParameters.distance_gspphot
+      name: distance_gspphot
+      units: pc
+      type: float
+      descr: Distance from GSP-Phot Aeneas best library using BP/RP spectra
+    - ingest: AstrophysicalParameters.distance_gspphot_lower
+      name: distance_gspphot_lower
+      units: pc
+      type: float
+      descr: Lower confidence level (16%) of distance from GSP-Phot Aeneas best library
+        using BP/RP spectra
+    - ingest: AstrophysicalParameters.distance_gspphot_upper
+      name: distance_gspphot_upper
+      units: pc
+      type: float
+      descr: Upper confidence level (84%) of distance from GSP-Phot Aeneas best library
+        using BP/RP spectra
+  - name: ''
+    title: azero
+    descr: monochromatic extinction
+    type: float
+    units: mag
+    sub:
+    - ingest: AstrophysicalParameters.azero_gspphot
+      name: azero_gspphot
+      units: mag
+      type: float
+      descr: Monochromatic extinction $A_0$ at 547.7nm from GSP-Phot Aeneas best library
+        using BP/RP spectra
+    - ingest: AstrophysicalParameters.azero_gspphot_lower
+      name: azero_gspphot_lower
+      units: mag
+      type: float
+      descr: Lower confidence level (16%) of monochromatic extinction $A_0$ at 547.7nm
+        from GSP-Phot Aeneas best library using BP/RP spectra
+    - ingest: AstrophysicalParameters.azero_gspphot_upper
+      name: azero_gspphot_upper
+      units: mag
+      type: float
+      descr: Upper confidence level (84%) of monochromatic extinction $A_0$ at 547.7nm
+        from GSP-Phot Aeneas best library using BP/RP spectra
+  - name: ''
+    title: ag
+    descr: extinction in G band
+    type: float
+    units: mag
+    sub:
+    - ingest: AstrophysicalParameters.ag_gspphot
+      name: ag_gspphot
+      units: mag
+      type: float
+      descr: Extinction in G band from GSP-Phot Aeneas best library using BP/RP spectra
+    - ingest: AstrophysicalParameters.ag_gspphot_lower
+      name: ag_gspphot_lower
+      units: mag
+      type: float
+      descr: Lower confidence level (16%) of extinction in G band from GSP-Phot Aeneas
+        best library using BP/RP spectra
+    - ingest: AstrophysicalParameters.ag_gspphot_upper
+      name: ag_gspphot_upper
+      units: mag
+      type: float
+      descr: Upper confidence level (84%) of extinction in G band from GSP-Phot Aeneas
+        best library using BP/RP spectra
+  - name: ''
+    title: abp
+    descr: extinction in Bp
+    type: float
+    units: mag
+    sub:
+    - ingest: AstrophysicalParameters.abp_gspphot
+      name: abp_gspphot
+      units: mag
+      flag: hidden
+      store: true
+      type: float
+      descr: Extinction in $G_{\rm BP}$ band from GSP-Phot Aeneas best library using
+        BP/RP spectra
+    - ingest: AstrophysicalParameters.abp_gspphot_lower
+      name: abp_gspphot_lower
+      units: mag
+      flag: hidden
+      store: true
+      type: float
+      descr: Lower confidence level (16%) of extinction in $G_{\rm BP}$ band from GSP-Phot
+        Aeneas best library using BP/RP spectra
+    - ingest: AstrophysicalParameters.abp_gspphot_upper
+      name: abp_gspphot_upper
+      units: mag
+      flag: hidden
+      store: true
+      type: float
+      descr: Upper confidence level (84%) of extinction in $G_{\rm BP}$ band from GSP-Phot
+        Aeneas best library using BP/RP spectra
+  - name: ''
+    title: arp
+    descr: extinction in Rp
+    type: float
+    units: mag
+    sub:
+    - ingest: AstrophysicalParameters.arp_gspphot
+      name: arp_gspphot
+      units: mag
+      flag: hidden
+      store: true
+      type: float
+      descr: Extinction in $G_{\rm RP}$ band from GSP-Phot Aeneas best library using
+        BP/RP spectra
+    - ingest: AstrophysicalParameters.arp_gspphot_lower
+      name: arp_gspphot_lower
+      units: mag
+      flag: hidden
+      store: true
+      type: float
+      descr: Lower confidence level (16%) of extinction in $G_{\rm RP}$ band from GSP-Phot
+        Aeneas best library using BP/RP spectra
+    - ingest: AstrophysicalParameters.arp_gspphot_upper
+      name: arp_gspphot_upper
+      units: mag
+      flag: hidden
+      store: true
+      type: float
+      descr: Upper confidence level (84%) of extinction in $G_{\rm RP}$ band from GSP-Phot
+        Aeneas best library using BP/RP spectra
+  - name: ''
+    title: ebpminrp
+    descr: reddening
+    type: float
+    units: mag
+    sub:
+    - ingest: AstrophysicalParameters.ebpminrp_gspphot
+      name: ebpminrp_gspphot
+      units: mag
+      type: float
+      descr: Reddening $E(G_{\rm BP} - G_{\rm RP})$ from GSP-Phot Aeneas best library
+        using BP/RP spectra
+    - ingest: AstrophysicalParameters.ebpminrp_gspphot_lower
+      name: ebpminrp_gspphot_lower
+      units: mag
+      type: float
+      descr: Lower confidence level (16%) of reddening  $E(G_{\rm BP} - G_{\rm RP})$
+        from GSP-Phot Aeneas best library using BP/RP spectra
+    - ingest: AstrophysicalParameters.ebpminrp_gspphot_upper
+      name: ebpminrp_gspphot_upper
+      units: mag
+      type: float
+      descr: Upper confidence level (84%) of reddening  $E(G_{\rm BP} - G_{\rm RP})$
+        from GSP-Phot Aeneas best library using BP/RP spectra
+  - name: ''
+    title: mg
+    descr: Absolute magnitude
+    type: float
+    units: mag
+    sub:
+    - ingest: AstrophysicalParameters.mg_gspphot
+      name: mg_gspphot
+      units: mag
+      flag: hidden
+      store: true
+      type: float
+      descr: Absolute magnitude $M_{\rm G}$ from GSP-Phot Aeneas best library using
+        BP/RP spectra
+    - ingest: AstrophysicalParameters.mg_gspphot_lower
+      name: mg_gspphot_lower
+      units: mag
+      flag: hidden
+      store: true
+      type: float
+      descr: Lower confidence level (16%) of absolute magnitude $M_{\rm G}$ from GSP-Phot
+        Aeneas best library using BP/RP spectra
+    - ingest: AstrophysicalParameters.mg_gspphot_upper
+      name: mg_gspphot_upper
+      units: mag
+      flag: hidden
+      store: true
+      type: float
+      descr: Upper confidence level (84%) of absolute magnitude $M_{\rm G}$ from GSP-Phot
+        Aeneas best library using BP/RP spectra
+  - name: ''
+    title: radius
+    descr: Stellar radius
+    type: float
+    units: solRad
+    sub:
+    - ingest: AstrophysicalParameters.radius_gspphot
+      name: radius_gspphot
+      units: solRad
+      flag: hidden
+      store: true
+      type: float
+      descr: Radius from GSP-Phot Aeneas best library using BP/RP spectra
+    - ingest: AstrophysicalParameters.radius_gspphot_lower
+      name: radius_gspphot_lower
+      units: solRad
+      flag: hidden
+      store: true
+      type: float
+      descr: Lower confidence level (16%) of radius from GSP-Phot Aeneas best library
+        using BP/RP spectra
+    - ingest: AstrophysicalParameters.radius_gspphot_upper
+      name: radius_gspphot_upper
+      units: solRad
+      flag: hidden
+      store: true
+      type: float
+      descr: Upper confidence level (84%) of radius from GSP-Phot Aeneas best library
+        using BP/RP spectra
+  - name: ''
+    title: gspphot_metadata
+    descr: Metadata related to the gspphot processing
+    type: float
+    sub:
+    - ingest: AstrophysicalParameters.logposterior_gspphot
+      name: logposterior_gspphot
+      flag: hidden
+      store: true
+      type: float
+      descr: Goodness-of-fit score (mean log-posterior of MCMC) of GSP-Phot Aeneas MCMC
+        best library
+    - ingest: AstrophysicalParameters.mcmcaccept_gspphot
+      name: mcmcaccept_gspphot
+      flag: hidden
+      store: true
+      type: float
+      descr: MCMC acceptance rate of GSP-Phot Aeneas MCMC best library
+    - ingest: AstrophysicalParameters.libname_gspphot
+      name: libname_gspphot
+      flag: hidden
+      store: true
+      type: string dup gaia_source
+      descr: Name of library that achieves the highest mean log-posterior in MCMC samples
+        and was used to derive GSP-Phot parameters in this table
+      enum: [PHOENIX,MARCS,A,OB,...]
+  - name: ''
+    title: alphafe
+    descr: Abundance of alpha-elements [alpha/Fe]
+    type: float
+    units: dex
+    sub:
+    - ingest: AstrophysicalParameters.alphafe_gspspec
+      name: alphafe_gspspec
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Abundance of alpha-elements [alpha/Fe] with respect to iron from GSP-Spec
+        MatisseGauguin using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.alphafe_gspspec_lower
+      name: alphafe_gspspec_lower
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 16th percentile of the abundance of alpha-elements [alpha/Fe] with respect
+        to iron from GSP-Spec MatisseGauguin using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.alphafe_gspspec_upper
+      name: alphafe_gspspec_upper
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 84th percentile of the abundance of alpha-elements [alpha/Fe] with respect
+        to iron from GSP-Spec MatisseGauguin using RVS spectra and Monte Carlo realisations
+  - name: ''
+    title: fem
+    descr: Abundance of neutral iron
+    type: float
+    units: dex
+    sub:
+    - ingest: AstrophysicalParameters.fem_gspspec
+      name: fem_gspspec
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Abundance of neutral iron [Fe/M] from GSP-Spec MatisseGauguin using RVS
+        spectra and Monte Carlo realisations, applied to the individual N lines of the
+        element, given in {\tt femGspspecNlines}
+    - ingest: AstrophysicalParameters.fem_gspspec_lower
+      name: fem_gspspec_lower
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 16th percentile of the abundance of neutral iron [Fe/M] from GSP-Spec MatisseGauguin
+        using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.fem_gspspec_upper
+      name: fem_gspspec_upper
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 84th percentile of the abundance of neutral iron [Fe/M] from GSP-Spec MatisseGauguin
+        using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.fem_gspspec_nlines
+      name: fem_gspspec_nlines
+      flag: hidden
+      store: true
+      type: integer
+      descr: Number of lines used for [Fe/M] abundance estimation
+    - ingest: AstrophysicalParameters.fem_gspspec_linescatter
+      name: fem_gspspec_linescatter
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Uncertainty estimation of [Fe/M] abundance using N lines of the element,
+        given in {\tt femGspspecNlines}
+  - name: ''
+    title: sife
+    descr: Abundance of Silicon
+    type: float
+    units: dex
+    sub:
+    - ingest: AstrophysicalParameters.sife_gspspec
+      name: sife_gspspec
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Abundance of Silicon [Si/Fe] from GSP-Spec MatisseGauguin using RVS spectra
+        and Monte Carlo realisations, applied to the individual N lines of the element,
+        given in {\tt sifeGspspecNlines}
+    - ingest: AstrophysicalParameters.sife_gspspec_lower
+      name: sife_gspspec_lower
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 16th percentile of the abundance of silicon [Si/Fe] from GSP-Spec MatisseGauguin
+        using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.sife_gspspec_upper
+      name: sife_gspspec_upper
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 84th percentile of the abundance of silicon [Si/Fe] from GSP-Spec MatisseGauguin
+        using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.sife_gspspec_nlines
+      name: sife_gspspec_nlines
+      flag: hidden
+      store: true
+      type: integer
+      descr: Number of lines used for [Si/Fe] abundance estimation
+    - ingest: AstrophysicalParameters.sife_gspspec_linescatter
+      name: sife_gspspec_linescatter
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Uncertainty estimation of [Si/Fe] abundance using N lines of the element,
+        given in {\tt sifeGspspecNlines}
+  - name: ''
+    title: cafe
+    descr: Abundance of Calcium
+    type: float
+    units: dex
+    sub:
+    - ingest: AstrophysicalParameters.cafe_gspspec
+      name: cafe_gspspec
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Abundance of Calcium [Ca/Fe] from GSP-Spec MatisseGauguin using RVS spectra
+        and Monte Carlo realisations, applied to the individual N lines of the element,
+        given in {\tt cafeGspspecNlines}
+    - ingest: AstrophysicalParameters.cafe_gspspec_lower
+      name: cafe_gspspec_lower
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 16th percentile of the abundance of Calcium [Ca/Fe] from GSP-Spec MatisseGauguin
+        using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.cafe_gspspec_upper
+      name: cafe_gspspec_upper
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 84th percentile of the abundance of Calcium [Ca/Fe] from GSP-Spec MatisseGauguin
+        using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.cafe_gspspec_nlines
+      name: cafe_gspspec_nlines
+      flag: hidden
+      store: true
+      type: integer
+      descr: Number of lines used for [Ca/Fe] abundance estimation
+    - ingest: AstrophysicalParameters.cafe_gspspec_linescatter
+      name: cafe_gspspec_linescatter
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Uncertainty estimation of [Ca/Fe] abundance using N lines of the element,
+        given in {\tt cafeGspspecNlines}
+  - name: ''
+    title: tife
+    descr: Abundance of Titanium
+    type: float
+    units: dex
+    sub:
+    - ingest: AstrophysicalParameters.tife_gspspec
+      name: tife_gspspec
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Abundance of Titanium [Ti/Fe] from GSP-Spec MatisseGauguin using RVS spectra
+        and Monte Carlo realisations, applied to the individual N lines of the element,
+        given in {\tt tifeGspspecNlines}
+    - ingest: AstrophysicalParameters.tife_gspspec_lower
+      name: tife_gspspec_lower
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 16th percentile of the abundance of Titanium [Ti/Fe] from GSP-Spec MatisseGauguin
+        using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.tife_gspspec_upper
+      name: tife_gspspec_upper
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 84th percentile of the abundance of Titanium [Ti/Fe] from GSP-Spec MatisseGauguin
+        using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.tife_gspspec_nlines
+      name: tife_gspspec_nlines
+      flag: hidden
+      store: true
+      type: integer
+      descr: Number of lines used for [Ti/Fe] abundance estimation
+    - ingest: AstrophysicalParameters.tife_gspspec_linescatter
+      name: tife_gspspec_linescatter
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Uncertainty estimation of [Ti/Fe] abundance using N lines of the element,
+        given in {\tt tifeGspspecNlines}
+  - name: ''
+    title: mgfe
+    descr: Abundance of Magnesium
+    type: float
+    units: dex
+    sub:
+    - ingest: AstrophysicalParameters.mgfe_gspspec
+      name: mgfe_gspspec
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Abundance of Magnesium [Mg/Fe] from GSP-Spec MatisseGauguin using RVS spectra
+        and Monte Carlo realisations, applied to the individual N lines of the element,
+        given in {\tt mgfeGspspecNlines}
+    - ingest: AstrophysicalParameters.mgfe_gspspec_lower
+      name: mgfe_gspspec_lower
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 16th percentile of the abundance of Magnesium [Mg/Fe] from GSP-Spec MatisseGauguin
+        using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.mgfe_gspspec_upper
+      name: mgfe_gspspec_upper
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 84th percentile of the abundance of Magnesium [Mg/Fe] from GSP-Spec MatisseGauguin
+        using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.mgfe_gspspec_nlines
+      name: mgfe_gspspec_nlines
+      flag: hidden
+      store: true
+      type: integer
+      descr: Number of lines used for [Mg/Fe] abundance estimation
+    - ingest: AstrophysicalParameters.mgfe_gspspec_linescatter
+      name: mgfe_gspspec_linescatter
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Uncertainty estimation of [Mg/Fe] abundance using N lines of the element,
+        given in {\tt mgfeGspspecNlines}
+  - name: ''
+    title: ndfe
+    descr: Abundance of Neodymium
+    type: float
+    units: dex
+    sub:
+    - ingest: AstrophysicalParameters.ndfe_gspspec
+      name: ndfe_gspspec
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Abundance of neodymium [Nd/Fe] from GSP-Spec MatisseGauguin using RVS spectra
+        and Monte Carlo realisations, applied to the individual N lines of the element,
+        given in {\tt ndfeGspspecNlines}
+    - ingest: AstrophysicalParameters.ndfe_gspspec_lower
+      name: ndfe_gspspec_lower
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 16th percentile of the abundance of neodymium [Nd/Fe] from GSP-Spec MatisseGauguin
+        using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.ndfe_gspspec_upper
+      name: ndfe_gspspec_upper
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 84th percentile of the abundance of neodymium [Nd/Fe] from GSP-Spec MatisseGauguin
+        using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.ndfe_gspspec_nlines
+      name: ndfe_gspspec_nlines
+      flag: hidden
+      store: true
+      type: integer
+      descr: Number of lines used for [Nd/Fe] abundance estimation
+    - ingest: AstrophysicalParameters.ndfe_gspspec_linescatter
+      name: ndfe_gspspec_linescatter
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Uncertainty estimation of [Nd/Fe] abundance using N lines of the element,
+        given in {\tt ndfeGspspecNlines}
+  - name: ''
+    title: feiim
+    descr: Abundance of ionised Iron
+    type: float
+    units: dex
+    sub:
+    - ingest: AstrophysicalParameters.feiim_gspspec
+      name: feiim_gspspec
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Abundance of ionised iron [FeII/M] from GSP-Spec MatisseGauguin using RVS
+        spectra and Monte Carlo realisations, applied to the individual N lines of the
+        element, given in {\tt feiimGspspecNlines}
+    - ingest: AstrophysicalParameters.feiim_gspspec_lower
+      name: feiim_gspspec_lower
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 16th percentile of the abundance of ionised iron [FeII/M] from GSP-Spec
+        MatisseGauguin using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.feiim_gspspec_upper
+      name: feiim_gspspec_upper
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 84th percentile of the abundance of ionised iron [FeII/M] from GSP-Spec
+        MatisseGauguin using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.feiim_gspspec_nlines
+      name: feiim_gspspec_nlines
+      flag: hidden
+      store: true
+      type: integer
+      descr: Number of lines used for [FeII/M] abundance estimation
+    - ingest: AstrophysicalParameters.feiim_gspspec_linescatter
+      name: feiim_gspspec_linescatter
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Uncertainty estimation of [FeII/M] abundance using N lines of the element,
+        given in {\tt feiimGspspecNlines}
+  - name: ''
+    title: sfe
+    descr: Abundance of Sulphur
+    type: float
+    units: dex
+    sub:
+    - ingest: AstrophysicalParameters.sfe_gspspec
+      name: sfe_gspspec
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Abundance of Sulphur [S/Fe] from GSP-Spec MatisseGauguin using RVS spectra
+        and Monte Carlo realisations, applied to the individual N lines of the element,
+        given in {\tt sfeGspspecNlines}
+    - ingest: AstrophysicalParameters.sfe_gspspec_lower
+      name: sfe_gspspec_lower
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 16th percentile of the abundance of Sulphur [S/Fe] from GSP-Spec MatisseGauguin
+        using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.sfe_gspspec_upper
+      name: sfe_gspspec_upper
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 84th percentile of the abundance of Sulphur [S/Fe] from GSP-Spec MatisseGauguin
+        using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.sfe_gspspec_nlines
+      name: sfe_gspspec_nlines
+      flag: hidden
+      store: true
+      type: integer
+      descr: Number of lines used for [S/Fe] abundance estimation
+    - ingest: AstrophysicalParameters.sfe_gspspec_linescatter
+      name: sfe_gspspec_linescatter
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Uncertainty estimation of [S/Fe] abundance using N lines of the element,
+        given in {\tt sfeGspspecNlines}
+  - name: ''
+    title: zrfe
+    descr: Abundance of Zirconium
+    type: float
+    units: dex
+    sub:
+    - ingest: AstrophysicalParameters.zrfe_gspspec
+      name: zrfe_gspspec
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Abundance of Zirconium [Zr/Fe] from GSP-Spec MatisseGauguin using RVS spectra
+        and Monte Carlo realisations, applied to the individual N lines of the element,
+        given in {\tt zrfeGspspecNlines}
+    - ingest: AstrophysicalParameters.zrfe_gspspec_lower
+      name: zrfe_gspspec_lower
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 16th percentile of the abundance of Zirconium [Zr/Fe] from GSP-Spec MatisseGauguin
+        using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.zrfe_gspspec_upper
+      name: zrfe_gspspec_upper
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 84th percentile of the abundance of Zirconium [Zr/Fe] from GSP-Spec MatisseGauguin
+        using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.zrfe_gspspec_nlines
+      name: zrfe_gspspec_nlines
+      flag: hidden
+      store: true
+      type: integer
+      descr: Number of lines used for [Zr/Fe] abundance estimation
+    - ingest: AstrophysicalParameters.zrfe_gspspec_linescatter
+      name: zrfe_gspspec_linescatter
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Uncertainty estimation of [Zr/Fe] abundance using N lines of the element,
+        given in {\tt zrfeGspspecNlines}
+  - name: ''
+    title: nfe
+    descr: Abundance of Nitrogen
+    type: float
+    units: dex
+    sub:
+    - ingest: AstrophysicalParameters.nfe_gspspec
+      name: nfe_gspspec
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Abundance of Nitrogen [N/Fe] from GSP-Spec MatisseGauguin using RVS spectra
+        and Monte Carlo realisations, applied to the individual N lines of the element,
+        given in {\tt nfeGspspecNlines}
+    - ingest: AstrophysicalParameters.nfe_gspspec_lower
+      name: nfe_gspspec_lower
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 16th percentile of the abundance of Nitrogen [N/Fe] from GSP-Spec MatisseGauguin
+        using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.nfe_gspspec_upper
+      name: nfe_gspspec_upper
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 84th percentile of the abundance of Nitrogen [N/Fe] from GSP-Spec MatisseGauguin
+        using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.nfe_gspspec_nlines
+      name: nfe_gspspec_nlines
+      flag: hidden
+      store: true
+      type: integer
+      descr: Number of lines used for [N/Fe] abundance estimation
+    - ingest: AstrophysicalParameters.nfe_gspspec_linescatter
+      name: nfe_gspspec_linescatter
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Uncertainty estimation of [N/Fe] abundance using N lines of the element,
+        given in {\tt nfeGspspecNlines}
+  - name: ''
+    title: crfe
+    descr: Abundance of Chromium
+    type: float
+    units: dex
+    sub:
+    - ingest: AstrophysicalParameters.crfe_gspspec
+      name: crfe_gspspec
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Abundance of Chromium [Cr/Fe] from GSP-Spec MatisseGauguin using RVS spectra
+        and Monte Carlo realisations, applied to the individual N lines of the element,
+        given in {\tt crfeGspspecNlines}
+    - ingest: AstrophysicalParameters.crfe_gspspec_lower
+      name: crfe_gspspec_lower
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 16th percentile of the abundance of Chromium [Cr/Fe] from GSP-Spec MatisseGauguin
+        using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.crfe_gspspec_upper
+      name: crfe_gspspec_upper
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 84th percentile of the abundance of Chromium [Cr/Fe] from GSP-Spec MatisseGauguin
+        using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.crfe_gspspec_nlines
+      name: crfe_gspspec_nlines
+      flag: hidden
+      store: true
+      type: integer
+      descr: Number of lines used for [Cr/Fe] abundance estimation
+    - ingest: AstrophysicalParameters.crfe_gspspec_linescatter
+      name: crfe_gspspec_linescatter
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Uncertainty estimation of [Cr/Fe] abundance using N lines of the element,
+        given in {\tt crfeGspspecNlines}
+  - name: ''
+    title: cefe
+    descr: Abundance of Cerium
+    type: float
+    units: dex
+    sub:
+    - ingest: AstrophysicalParameters.cefe_gspspec
+      name: cefe_gspspec
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Abundance of Cerium [Ce/Fe] from GSP-Spec MatisseGauguin using RVS spectra
+        and Monte Carlo realisations, applied to the individual N lines of the element,
+        given in {\tt cefeGspspecNlines}
+    - ingest: AstrophysicalParameters.cefe_gspspec_lower
+      name: cefe_gspspec_lower
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 16th percentile of the abundance of Cerium [Ce/Fe] from GSP-Spec MatisseGauguin
+        using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.cefe_gspspec_upper
+      name: cefe_gspspec_upper
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 84th percentile of the abundance of Cerium [Ce/Fe] from GSP-Spec MatisseGauguin
+        using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.cefe_gspspec_nlines
+      name: cefe_gspspec_nlines
+      flag: hidden
+      store: true
+      type: integer
+      descr: Number of lines used for [Ce/Fe] abundance estimation
+    - ingest: AstrophysicalParameters.cefe_gspspec_linescatter
+      name: cefe_gspspec_linescatter
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Uncertainty estimation of [Ce/Fe] abundance using N lines of the element,
+        given in {\tt cefeGspspecNlines}
+  - name: ''
+    title: nife
+    descr: Abundance of Nickel
+    type: float
+    units: dex
+    sub:
+    - ingest: AstrophysicalParameters.nife_gspspec
+      name: nife_gspspec
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Abundance of Nickel [Ni/Fe] from GSP-Spec MatisseGauguin using RVS spectra
+        and Monte Carlo realisations, applied to the individual N lines of the element,
+        given in {\tt nifeGspspecNlines}
+    - ingest: AstrophysicalParameters.nife_gspspec_lower
+      name: nife_gspspec_lower
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 16th percentile of the abundance of Nickel [Ni/Fe] from GSP-Spec MatisseGauguin
+        using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.nife_gspspec_upper
+      name: nife_gspspec_upper
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: 84th percentile of the abundance of Nickel [Ni/Fe] from GSP-Spec MatisseGauguin
+        using RVS spectra and Monte Carlo realisations
+    - ingest: AstrophysicalParameters.nife_gspspec_nlines
+      name: nife_gspspec_nlines
+      flag: hidden
+      store: true
+      type: integer
+      descr: Number of lines used for [Ni/Fe] abundance estimation
+    - ingest: AstrophysicalParameters.nife_gspspec_linescatter
+      name: nife_gspspec_linescatter
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Uncertainty estimation of [Ni/Fe] abundance using N lines of the element,
+        given in {\tt nifeGspspecNlines}
+  - name: ''
+    title: cn0ew
+    descr: Equivalent witdh of cyanogen absorption line
+    type: float
+    units: dex
+    sub:
+    - ingest: AstrophysicalParameters.cn0ew_gspspec
+      name: cn0ew_gspspec
+      units: nm
+      flag: hidden
+      store: true
+      type: float
+      descr: Equivalent witdh of cyanogen absorption line, derived from RVS spectra
+    - ingest: AstrophysicalParameters.cn0ew_gspspec_uncertainty
+      name: cn0ew_gspspec_uncertainty
+      units: nm
+      flag: hidden
+      store: true
+      type: float
+      descr: Uncertainty of equivalent witdh of cyanogen absorption line, derived from
+        RVS spectra
+    - ingest: AstrophysicalParameters.cn0_gspspec_centralline
+      name: cn0_gspspec_centralline
+      units: nm
+      flag: hidden
+      store: true
+      type: float
+      descr: Central wavelength of cyanogen line, derived from RVS spectra using DIB
+        algorithm
+    - ingest: AstrophysicalParameters.cn0_gspspec_width
+      name: cn0_gspspec_width
+      units: nm
+      flag: hidden
+      store: true
+      type: float
+      descr: Width of cyoanogen line, derived from RVS spectra using DIB algorithm
+  - name: ''
+    title: dib
+    descr: Diffuse interstellar band (DIB)
+    type: float
+    sub:
+    - ingest: AstrophysicalParameters.dib_gspspec_lambda
+      name: dib_gspspec_lambda
+      units: nm
+      flag: hidden
+      store: true
+      type: float
+      descr: DIB central wavelength from GSP-Spec MatisseGauguin using RVS spectra
+    - ingest: AstrophysicalParameters.dib_gspspec_lambda_uncertainty
+      name: dib_gspspec_lambda_uncertainty
+      units: nm
+      flag: hidden
+      store: true
+      type: float
+      descr: Uncertainty on DIB central wavelength from GSP-Spec MatisseGauguin using
+        RVS spectra
+    - ingest: AstrophysicalParameters.dibew_gspspec
+      name: dibew_gspspec
+      units: angstrom
+      flag: hidden
+      store: true
+      type: float
+      descr: Equivalent width of the DIB from GSP-Spec MatisseGauguin using RVS spectra
+    - ingest: AstrophysicalParameters.dibew_gspspec_uncertainty
+      name: dibew_gspspec_uncertainty
+      units: angstrom
+      flag: hidden
+      store: true
+      type: float
+      descr: Global uncertainty on DIB equivalent width value using DIB algorithm
+    - ingest: AstrophysicalParameters.dibewnoise_gspspec_uncertainty
+      name: dibewnoise_gspspec_uncertainty
+      units: angstrom
+      flag: hidden
+      store: true
+      type: float
+      descr: Uncertainty on DIB equivalent width value occuring from noise part
+    - ingest: AstrophysicalParameters.dibp0_gspspec
+      name: dibp0_gspspec
+      flag: hidden
+      store: true
+      type: float
+      descr: Depth ($p_0$ parameter) of the DIB derived from a Gaussian model fit
+    - ingest: AstrophysicalParameters.dibp2_gspspec
+      name: dibp2_gspspec
+      units: angstrom
+      flag: hidden
+      store: true
+      type: float
+      descr: Width ($p_2$ parameter) of the DIB derived from a Gaussian model fit
+    - ingest: AstrophysicalParameters.dibp2_gspspec_uncertainty
+      name: dibp2_gspspec_uncertainty
+      units: angstrom
+      flag: hidden
+      store: true
+      type: float
+      descr: Uncertainty on the {\tt dibp2Gspspec} parameter
+    - ingest: AstrophysicalParameters.dibqf_gspspec
+      name: dibqf_gspspec
+      flag: hidden
+      store: true
+      type: integer
+      descr: Quality flag of the DIB computation
+  - name: ''
+    title: gspspec_metadata
+    descr: Metadata related to the gspspec processing
+    type: float
+    sub:
+# APW: can we include this? I think this is useful information
 # - ingest: AstrophysicalParameters.flags_gspspec
 #   name: flags_gspspec
 #   flag: hidden
@@ -1941,616 +2082,644 @@ fields:
 #   type: string
 #   descr: Catalogue flags for GSP-Spec MatisseGauguin
 #   big numbers?
-  - ingest: AstrophysicalParameters.logchisq_gspspec
-    name: logchisq_gspspec
-    flag: hidden
-    store: true
-    type: float
-    descr: Logarithm of the goodness-of-fit for the GSP-Spec MatisseGauguin parameters
-  - ingest: AstrophysicalParameters.ew_espels_halpha
-    name: ew_espels_halpha
-    units: nm
-    flag: hidden
-    store: true
-    type: float
-    descr: Halpha pseudo-equivalent width from ESP-ELS
-  - ingest: AstrophysicalParameters.ew_espels_halpha_uncertainty
-    name: ew_espels_halpha_uncertainty
-    units: nm
-    flag: hidden
-    store: true
-    type: float
-    descr: Uncertainty of the Halpha pseudo-equivalent width from ESP-ELS
-  - ingest: AstrophysicalParameters.ew_espels_halpha_flag
-    name: ew_espels_halpha_flag
-    flag: hidden
-    store: true
-    type: boolean
-    descr: Quality flag of the Halpha pseudo-equivalent width from ESP-ELS
-  - ingest: AstrophysicalParameters.ew_espels_halpha_model
-    name: ew_espels_halpha_model
-    units: nm
-    flag: hidden
-    store: true
-    type: float
-    descr: Halpha pseudo-equivalent width from ESP-ELS measured on the synthetic spectrum
-  - ingest: AstrophysicalParameters.classlabel_espels
-    name: classlabel_espels
-    flag: hidden
-    store: true
-    type: byte
-    descr: Adopted ELS class label from ESP-ELS
-    enum:
-      - "HerbigStar"
-      - "PlanetaryNebula"
-      - "RedDwarfEmStar"
-      - "TTauri"
-      - "beStar"
-      - "wN"
-  - ingest: AstrophysicalParameters.classlabel_espels_flag
-    name: classlabel_espels_flag
-    flag: hidden
-    store: true
-    type: int8 #string (1,2,3,4,22,23,24)
-    descr: Quality flag of the adopted ELS class label from ESP-ELS
-  - ingest: AstrophysicalParameters.classprob_espels_wcstar
-    name: classprob_espels_wcstar
-    flag: hidden
-    store: true
-    type: float
-    descr: Probability from ESP-ELS of being a Wolf-Rayet star of type WC
-  - ingest: AstrophysicalParameters.classprob_espels_wnstar
-    name: classprob_espels_wnstar
-    flag: hidden
-    store: true
-    type: float
-    descr: Probability from ESP-ELS of being a Wolf-Rayet star of type WN
-  - ingest: AstrophysicalParameters.classprob_espels_bestar
-    name: classprob_espels_bestar
-    flag: hidden
-    store: true
-    type: float
-    descr: Probability from ESP-ELS of being a Be Star
-  - ingest: AstrophysicalParameters.classprob_espels_ttauristar
-    name: classprob_espels_ttauristar
-    flag: hidden
-    store: true
-    type: float
-    descr: Probability from ESP-ELS of being a T Tauri Star
-  - ingest: AstrophysicalParameters.classprob_espels_herbigstar
-    name: classprob_espels_herbigstar
-    flag: hidden
-    store: true
-    type: float
-    descr: Probability from ESP-ELS of being a Herbig Ae/Be Star
-  - ingest: AstrophysicalParameters.classprob_espels_dmestar
-    name: classprob_espels_dmestar
-    flag: hidden
-    store: true
-    type: float
-    descr: Probability from ESP-ELS of being an active M dwarf Star
-  - ingest: AstrophysicalParameters.classprob_espels_pne
-    name: classprob_espels_pne
-    flag: hidden
-    store: true
-    type: float
-    descr: Probability from ESP-ELS of being a planetary nebula
-  - ingest: AstrophysicalParameters.azero_esphs
-    name: azero_esphs
-    units: mag
-    flag: hidden
-    store: true
-    type: float
-    descr: Monochromatic interstellar extinction, A$_\mathrm{0}$, from ESP-HS
-  - ingest: AstrophysicalParameters.azero_esphs_uncertainty
-    name: azero_esphs_uncertainty
-    units: mag
-    flag: hidden
-    store: true
-    type: float
-    descr: Uncertainty at a 68% confidence level on A$_\mathrm{0}$ from ESP-HS
-  - ingest: AstrophysicalParameters.ag_esphs
-    name: ag_esphs
-    units: mag
-    flag: hidden
-    store: true
-    type: float
-    descr: Intersterstellar extinction in G band from ESP-HS
-  - ingest: AstrophysicalParameters.ag_esphs_uncertainty
-    name: ag_esphs_uncertainty
-    units: mag
-    flag: hidden
-    store: true
-    type: float
-    descr: Uncertainty on $A_{\rm G}$ from ESP-HS
-  - ingest: AstrophysicalParameters.ebpminrp_esphs
-    name: ebpminrp_esphs
-    units: mag
-    flag: hidden
-    store: true
-    type: float
-    descr: Reddening $E(G_{\rm BP} - G_{\rm RP})$ from ESP-HS
-  - ingest: AstrophysicalParameters.ebpminrp_esphs_uncertainty
-    name: ebpminrp_esphs_uncertainty
-    units: mag
-    flag: hidden
-    store: true
-    type: float
-    descr: Uncertainty on $E(G_{\rm BP} - G_{\rm RP})$ from ESP-HS
-  - ingest: AstrophysicalParameters.teff_esphs
-    name: teff_esphs
-    units: K
-    flag: hidden
-    store: true
-    type: float
-    descr: Effective temperature from ESP-HS
-  - ingest: AstrophysicalParameters.teff_esphs_uncertainty
-    name: teff_esphs_uncertainty
-    units: K
-    flag: hidden
-    store: true
-    type: float
-    descr: Uncertainty at a 68% confidence level on the effective temperature from
-      ESP-HS
-  - ingest: AstrophysicalParameters.logg_esphs
-    name: logg_esphs
-    units: log(cm.s**-2)
-    flag: hidden
-    store: true
-    type: float
-    descr: Surface gravity from ESP-HS
-  - ingest: AstrophysicalParameters.logg_esphs_uncertainty
-    name: logg_esphs_uncertainty
-    units: log(cm.s**-2)
-    flag: hidden
-    store: true
-    type: float
-    descr: Uncertainty at a 68% confidence level on the surface gravity from ESP-HS
-  - ingest: AstrophysicalParameters.vsini_esphs
-    name: vsini_esphs
-    units: km.s**-1
-    flag: hidden
-    store: true
-    type: float
-    descr: Projected rotational velocity from ESP-HS
-  - ingest: AstrophysicalParameters.vsini_esphs_uncertainty
-    name: vsini_esphs_uncertainty
-    units: km.s**-1
-    flag: hidden
-    store: true
-    type: float
-    descr: Uncertainty on the projected rotational velocity from ESP-HS
-# - ingest: AstrophysicalParameters.flags_esphs
-#   name: flags_esphs
-#   flag: hidden
-#   store: true
-#   type: string (int8? int16? 01,02,03,04,11,12,13,14,90,91,92,93,94,95,999)
-#   descr: Quality flag of the ESP-HS parametrisation
-  - ingest: AstrophysicalParameters.spectraltype_esphs
-    name: spectraltype_esphs
-    flag: hidden
-    store: true
-    type: int8
-    descr: Spectral type from ESP-ELS
-    enum:
-    - unknown
-    - O
-    - B
-    - A
-    - F
-    - G
-    - K
-    - M
-    - CSTAR
-  - ingest: AstrophysicalParameters.activityindex_espcs
-    name: activityindex_espcs
-    units: nm
-    flag: hidden
-    store: true
-    type: float
-    descr: Chromospheric activity index from ESP-CS, measured on the calcium triplet
-      using RVS spectra
-  - ingest: AstrophysicalParameters.activityindex_espcs_uncertainty
-    name: activityindex_espcs_uncertainty
-    units: nm
-    flag: hidden
-    store: true
-    type: float
-    descr: Uncertainty in the chromospheric activity index from ESP-CS
-  - ingest: AstrophysicalParameters.activityindex_espcs_input
-    name: activityindex_espcs_input
-    flag: hidden
-    store: true
-    type: byte
-    descr: Source of input stellar parameters for the computation of the activity
-      index by ESP-CS
-    enum: ['M1', 'M2']
-  - ingest: AstrophysicalParameters.teff_espucd
-    name: teff_espucd
-    units: K
-    flag: hidden
-    store: true
-    type: float
-    descr: Effective temperature estimate from ESP-UCD based on the RP spectrum
-  - ingest: AstrophysicalParameters.teff_espucd_uncertainty
-    name: teff_espucd_uncertainty
-    units: K
-    flag: hidden
-    store: true
-    type: float
-    descr: Uncertainty of the effective temperature estimate produced by ESP-UCD
-  - ingest: AstrophysicalParameters.flags_espucd
-    name: flags_espucd
-    flag: hidden
-    store: true
-    type: int8 #string (00,10,11,20)
-    descr: Quality flags of the ESP-UCD parameter estimates
-  - ingest: AstrophysicalParameters.radius_flame
-    name: radius_flame
-    units: solRad
-    flag: hidden
-    store: true
-    type: float
-    descr: Radius of the star from FLAME using {\tt teffGspphot} and {\tt lumFlame}
-  - ingest: AstrophysicalParameters.radius_flame_lower
-    name: radius_flame_lower
-    units: solRad
-    flag: hidden
-    store: true
-    type: float
-    descr: Lower confidence level (16%) of {\tt radiusFlame}
-  - ingest: AstrophysicalParameters.radius_flame_upper
-    name: radius_flame_upper
-    units: solRad
-    flag: hidden
-    store: true
-    type: float
-    descr: Upper confidence level (84%) of {\tt radiusFlame}
-  - ingest: AstrophysicalParameters.lum_flame
-    name: lum_flame
-    units: solLum
-    flag: hidden
-    store: true
-    type: float
-    descr: Luminosity of the star from FLAME using G band magnitude, extinction ({\tt
-      agGspphot}),  parallax or distance, and a bolometric correction {\tt bcFlame}
-  - ingest: AstrophysicalParameters.lum_flame_lower
-    name: lum_flame_lower
-    units: solLum
-    flag: hidden
-    store: true
-    type: float
-    descr: Lower confidence level (16%) of {\tt lumFlame}
-  - ingest: AstrophysicalParameters.lum_flame_upper
-    name: lum_flame_upper
-    units: solLum
-    flag: hidden
-    store: true
-    type: float
-    descr: Upper confidence level (84%) of {\tt lumFlame}
-  - ingest: AstrophysicalParameters.mass_flame
-    name: mass_flame
-    units: solMass
-    flag: hidden
-    store: true
-    type: float
-    descr: Mass of the star from FLAME using stellar models, {\tt lumFlame}, and {\tt
-      teffGspphot}
-  - ingest: AstrophysicalParameters.mass_flame_lower
-    name: mass_flame_lower
-    units: solMass
-    flag: hidden
-    store: true
-    type: float
-    descr: Lower confidence level (16%) of {\tt massFlame}
-  - ingest: AstrophysicalParameters.mass_flame_upper
-    name: mass_flame_upper
-    units: solMass
-    flag: hidden
-    store: true
-    type: float
-    descr: Upper confidence level (84%) of {\tt massFlame}
-  - ingest: AstrophysicalParameters.age_flame
-    name: age_flame
-    units: Gyr
-    flag: hidden
-    store: true
-    type: float
-    descr: Age of the star from FLAME using stellar models, see {\tt massFlame} for
-      details
-  - ingest: AstrophysicalParameters.age_flame_lower
-    name: age_flame_lower
-    units: Gyr
-    flag: hidden
-    store: true
-    type: float
-    descr: Lower confidence level (16%) of {\tt ageFlame}
-  - ingest: AstrophysicalParameters.age_flame_upper
-    name: age_flame_upper
-    units: Gyr
-    flag: hidden
-    store: true
-    type: float
-    descr: Upper confidence level (84%) of {\tt ageFlame}
-  - ingest: AstrophysicalParameters.flags_flame
-    name: flags_flame
-    flag: hidden
-    store: true
-    type: int8 #string (00,01,02,10,11,12,20,21,22)
-    descr: Flags indicating quality and processing information from FLAME
-  - ingest: AstrophysicalParameters.evolstage_flame
-    name: evolstage_flame
-    flag: hidden
-    store: true
-    type: integer
-    descr: Evolutionary stage of the star from FLAME using stellar models, see {\tt
-      massFlame} for details
-  - ingest: AstrophysicalParameters.gravredshift_flame
-    name: gravredshift_flame
-    units: km.s**-1
-    flag: hidden
-    store: true
-    type: float
-    descr: Gravitational redshift from FLAME using {\tt radiusFlame} and {\tt loggGspphot}
-  - ingest: AstrophysicalParameters.gravredshift_flame_lower
-    name: gravredshift_flame_lower
-    units: km.s**-1
-    flag: hidden
-    store: true
-    type: float
-    descr: Lower confidence level (16%) of {\tt gravredshiftFlame}
-  - ingest: AstrophysicalParameters.gravredshift_flame_upper
-    name: gravredshift_flame_upper
-    units: km.s**-1
-    flag: hidden
-    store: true
-    type: float
-    descr: Upper confidence level (84%) of {\tt gravredshiftFlame}
-  - ingest: AstrophysicalParameters.bc_flame
-    name: bc_flame
-    units: mag
-    flag: hidden
-    store: true
-    type: float
-    descr: Bolometric correction used to derive {\tt lumFlame}
-  - ingest: AstrophysicalParameters.mh_msc
-    name: mh_msc
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Metallicity of the source treated as a binary system from MSC using BP/RP
-      spectra and parallax
-  - ingest: AstrophysicalParameters.mh_msc_upper
-    name: mh_msc_upper
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Upper confidence level (84%) of the metallicity from MSC using BP/RP spectra
-      and parallax
-  - ingest: AstrophysicalParameters.mh_msc_lower
-    name: mh_msc_lower
-    units: '''dex'''
-    flag: hidden
-    store: true
-    type: float
-    descr: Lower confidence level (16%) of the metallicity from MSC using BP/RP spectra
-      and parallax
-  - ingest: AstrophysicalParameters.azero_msc
-    name: azero_msc
-    units: mag
-    flag: hidden
-    store: true
-    type: float
-    descr: Monochromatic extinction $A_0$ at 547.7nm of the source treated as a binary
-      system from MSC using BP/RP spectra and parallax
-  - ingest: AstrophysicalParameters.azero_msc_upper
-    name: azero_msc_upper
-    units: mag
-    flag: hidden
-    store: true
-    type: float
-    descr: Upper confidence level (84%) of monochromatic extinction $A_0$ at 547.7nm
-      from MSC using BP/RP spectra and parallax
-  - ingest: AstrophysicalParameters.azero_msc_lower
-    name: azero_msc_lower
-    units: mag
-    flag: hidden
-    store: true
-    type: float
-    descr: Lower confidence level (16%) of monochromatic extinction $A_0$ at 547.7nm
-      from MSC using BP/RP spectra and parallax
-  - ingest: AstrophysicalParameters.distance_msc
-    name: distance_msc
-    units: pc
-    flag: hidden
-    store: true
-    type: float
-    descr: Distance from MSC using BP/RP spectra and parallax
-  - ingest: AstrophysicalParameters.distance_msc_upper
-    name: distance_msc_upper
-    units: pc
-    flag: hidden
-    store: true
-    type: float
-    descr: Upper confidence level (84%) of distance from MSC using BP/RP spectra and
-      parallax
-  - ingest: AstrophysicalParameters.distance_msc_lower
-    name: distance_msc_lower
-    units: pc
-    flag: hidden
-    store: true
-    type: float
-    descr: Lower confidence level (16%) of distance from MSC using BP/RP spectra and
-      parallax
-  - ingest: AstrophysicalParameters.teff_msc1
-    name: teff_msc1
-    units: K
-    flag: hidden
-    store: true
-    type: float
-    descr: Effective temperature of the primary from MSC using BP/RP spectra and parallax
-  - ingest: AstrophysicalParameters.teff_msc1_upper
-    name: teff_msc1_upper
-    units: K
-    flag: hidden
-    store: true
-    type: float
-    descr: Upper confidence level (84%) of effective temperature of the primary from
-      MSC using BP/RP spectra and parallax
-  - ingest: AstrophysicalParameters.teff_msc1_lower
-    name: teff_msc1_lower
-    units: K
-    flag: hidden
-    store: true
-    type: float
-    descr: Lower confidence level (16%) of effective temperature of the primary from
-      MSC using BP/RP spectra and parallax
-  - ingest: AstrophysicalParameters.teff_msc2
-    name: teff_msc2
-    units: K
-    flag: hidden
-    store: true
-    type: float
-    descr: Effective temperature of the secondary from MSC using BP/RP spectra and
-      parallax
-  - ingest: AstrophysicalParameters.teff_msc2_upper
-    name: teff_msc2_upper
-    units: K
-    flag: hidden
-    store: true
-    type: float
-    descr: Upper confidence level (84%) of effective temperature of the secondary
-      from MSC using BP/RP spectra and parallax
-  - ingest: AstrophysicalParameters.teff_msc2_lower
-    name: teff_msc2_lower
-    units: K
-    flag: hidden
-    store: true
-    type: float
-    descr: Lower confidence level (16%) of effective temperature of the secondary
-      from MSC using BP/RP spectra and parallax
-  - ingest: AstrophysicalParameters.logg_msc1
-    name: logg_msc1
-    units: log(cm.s**-2)
-    flag: hidden
-    store: true
-    type: float
-    descr: Surface gravity of the primary from MSC using BP/RP spectra and parallax
-  - ingest: AstrophysicalParameters.logg_msc1_upper
-    name: logg_msc1_upper
-    units: log(cm.s**-2)
-    flag: hidden
-    store: true
-    type: float
-    descr: Upper confidence level (84%) of surface gravity of the primary from MSC
-      using BP/RP spectra and parallax
-  - ingest: AstrophysicalParameters.logg_msc1_lower
-    name: logg_msc1_lower
-    units: log(cm.s**-2)
-    flag: hidden
-    store: true
-    type: float
-    descr: Lower confidence level (16%) of surface gravity of the primary from MSC
-      using BP/RP spectra and parallax
-  - ingest: AstrophysicalParameters.logg_msc2
-    name: logg_msc2
-    units: log(cm.s**-2)
-    flag: hidden
-    store: true
-    type: float
-    descr: Surface gravity of the secondary from MSC using BP/RP spectra and parallax
-  - ingest: AstrophysicalParameters.logg_msc2_upper
-    name: logg_msc2_upper
-    units: log(cm.s**-2)
-    flag: hidden
-    store: true
-    type: float
-    descr: Upper confidence level (84%) of surface gravity of the secondary from MSC
-      using BP/RP spectra and parallax
-  - ingest: AstrophysicalParameters.logg_msc2_lower
-    name: logg_msc2_lower
-    units: log(cm.s**-2)
-    flag: hidden
-    store: true
-    type: float
-    descr: Lower confidence level (16%) of surface gravity of the secondary from MSC
-      using BP/RP spectra and parallax
-  - ingest: AstrophysicalParameters.ag_msc
-    name: ag_msc
-    units: mag
-    flag: hidden
-    store: true
-    type: float
-    descr: Extinction in G band of the source treated as a binary system from MSC
-      using BP/RP spectra and parallax
-  - ingest: AstrophysicalParameters.ag_msc_upper
-    name: ag_msc_upper
-    units: mag
-    flag: hidden
-    store: true
-    type: float
-    descr: Upper confidence level (84%) of extinction in G band from MSC using BP/RP
-      spectra and parallax
-  - ingest: AstrophysicalParameters.ag_msc_lower
-    name: ag_msc_lower
-    units: mag
-    flag: hidden
-    store: true
-    type: float
-    descr: Lower confidence level (16%) of extinction in G band from MSC using BP/RP
-      spectra and parallax
-  - ingest: AstrophysicalParameters.logposterior_msc
-    name: logposterior_msc
-    flag: hidden
-    store: true
-    type: float
-    descr: Goodness-of-fit score (normalised log-posterior) of MSC MCMC
-  - ingest: AstrophysicalParameters.mcmcaccept_msc
-    name: mcmcaccept_msc
-    flag: hidden
-    store: true
-    type: float
-    descr: Mean MCMC acceptance rate of MSC MCMC
-  - ingest: AstrophysicalParameters.mcmcdrift_msc
-    name: mcmcdrift_msc
-    flag: hidden
-    store: true
-    type: float
-    descr: Mean drift of the MSC MCMC chain in units of parameter standard deviation
-  - ingest: AstrophysicalParameters.flags_msc
-    name: flags_msc
-    flag: hidden
-    store: true
-    type: bool #string (0,1)
-    descr: Flag indicating quality information from MSC
-  - ingest: AstrophysicalParameters.neuron_oa_id
-    name: neuron_oa_id
-    flag: hidden
-    store: true
-    type: long
-    descr: Identifier of the OA SOM map neuron that represents the source
-  - ingest: AstrophysicalParameters.neuron_oa_dist
-    name: neuron_oa_dist
-    flag: hidden
-    store: true
-    type: float
-    descr: Distance between the source XP spectra and the OA neuron XP prototype that
-      represents the source
-  - ingest: AstrophysicalParameters.neuron_oa_dist_percentile_rank
-    name: neuron_oa_dist_percentile_rank
-    flag: hidden
-    store: true
-    type: integer
-    descr: Percentile rank according to the distance distribution of the OA neuron
-      that represents the source
-  - ingest: AstrophysicalParameters.flags_oa
-    name: flags_oa
-    flag: hidden
-    store: true
-    type: int16 #string (4-digit numbers)
-    descr: Flags indicating quality and processing information from OA
+    - ingest: AstrophysicalParameters.logchisq_gspspec
+      name: logchisq_gspspec
+      flag: hidden
+      store: true
+      type: float
+      descr: Logarithm of the goodness-of-fit for the GSP-Spec MatisseGauguin parameters
+  - name: ''
+    title: espels
+    descr: Data from the ESP-ELS (emission line stars) processing
+    sub:
+    - ingest: AstrophysicalParameters.ew_espels_halpha
+      name: ew_espels_halpha
+      units: nm
+      flag: hidden
+      store: true
+      type: float
+      descr: Halpha pseudo-equivalent width from ESP-ELS
+    - ingest: AstrophysicalParameters.ew_espels_halpha_uncertainty
+      name: ew_espels_halpha_uncertainty
+      units: nm
+      flag: hidden
+      store: true
+      type: float
+      descr: Uncertainty of the Halpha pseudo-equivalent width from ESP-ELS
+    - ingest: AstrophysicalParameters.ew_espels_halpha_flag
+      name: ew_espels_halpha_flag
+      flag: hidden
+      store: true
+      type: boolean
+      descr: Quality flag of the Halpha pseudo-equivalent width from ESP-ELS
+    - ingest: AstrophysicalParameters.ew_espels_halpha_model
+      name: ew_espels_halpha_model
+      units: nm
+      flag: hidden
+      store: true
+      type: float
+      descr: Halpha pseudo-equivalent width from ESP-ELS measured on the synthetic spectrum
+    - ingest: AstrophysicalParameters.classlabel_espels
+      name: classlabel_espels
+      flag: hidden
+      store: true
+      type: byte
+      descr: Adopted ELS class label from ESP-ELS
+      enum:
+        - "HerbigStar"
+        - "PlanetaryNebula"
+        - "RedDwarfEmStar"
+        - "TTauri"
+        - "beStar"
+        - "wN"
+    - ingest: AstrophysicalParameters.classlabel_espels_flag
+      name: classlabel_espels_flag
+      flag: hidden
+      store: true
+      type: int8 #string (1,2,3,4,22,23,24)
+      descr: Quality flag of the adopted ELS class label from ESP-ELS
+    - ingest: AstrophysicalParameters.classprob_espels_wcstar
+      name: classprob_espels_wcstar
+      flag: hidden
+      store: true
+      type: float
+      descr: Probability from ESP-ELS of being a Wolf-Rayet star of type WC
+    - ingest: AstrophysicalParameters.classprob_espels_wnstar
+      name: classprob_espels_wnstar
+      flag: hidden
+      store: true
+      type: float
+      descr: Probability from ESP-ELS of being a Wolf-Rayet star of type WN
+    - ingest: AstrophysicalParameters.classprob_espels_bestar
+      name: classprob_espels_bestar
+      flag: hidden
+      store: true
+      type: float
+      descr: Probability from ESP-ELS of being a Be Star
+    - ingest: AstrophysicalParameters.classprob_espels_ttauristar
+      name: classprob_espels_ttauristar
+      flag: hidden
+      store: true
+      type: float
+      descr: Probability from ESP-ELS of being a T Tauri Star
+    - ingest: AstrophysicalParameters.classprob_espels_herbigstar
+      name: classprob_espels_herbigstar
+      flag: hidden
+      store: true
+      type: float
+      descr: Probability from ESP-ELS of being a Herbig Ae/Be Star
+    - ingest: AstrophysicalParameters.classprob_espels_dmestar
+      name: classprob_espels_dmestar
+      flag: hidden
+      store: true
+      type: float
+      descr: Probability from ESP-ELS of being an active M dwarf Star
+    - ingest: AstrophysicalParameters.classprob_espels_pne
+      name: classprob_espels_pne
+      flag: hidden
+      store: true
+      type: float
+      descr: Probability from ESP-ELS of being a planetary nebula
+  - name: ''
+    title: esphs
+    descr: Data from the ESP-HS (hot stars) processing
+    sub:
+    - ingest: AstrophysicalParameters.azero_esphs
+      name: azero_esphs
+      units: mag
+      flag: hidden
+      store: true
+      type: float
+      descr: Monochromatic interstellar extinction, A$_\mathrm{0}$, from ESP-HS
+    - ingest: AstrophysicalParameters.azero_esphs_uncertainty
+      name: azero_esphs_uncertainty
+      units: mag
+      flag: hidden
+      store: true
+      type: float
+      descr: Uncertainty at a 68% confidence level on A$_\mathrm{0}$ from ESP-HS
+    - ingest: AstrophysicalParameters.ag_esphs
+      name: ag_esphs
+      units: mag
+      flag: hidden
+      store: true
+      type: float
+      descr: Intersterstellar extinction in G band from ESP-HS
+    - ingest: AstrophysicalParameters.ag_esphs_uncertainty
+      name: ag_esphs_uncertainty
+      units: mag
+      flag: hidden
+      store: true
+      type: float
+      descr: Uncertainty on $A_{\rm G}$ from ESP-HS
+    - ingest: AstrophysicalParameters.ebpminrp_esphs
+      name: ebpminrp_esphs
+      units: mag
+      flag: hidden
+      store: true
+      type: float
+      descr: Reddening $E(G_{\rm BP} - G_{\rm RP})$ from ESP-HS
+    - ingest: AstrophysicalParameters.ebpminrp_esphs_uncertainty
+      name: ebpminrp_esphs_uncertainty
+      units: mag
+      flag: hidden
+      store: true
+      type: float
+      descr: Uncertainty on $E(G_{\rm BP} - G_{\rm RP})$ from ESP-HS
+    - ingest: AstrophysicalParameters.teff_esphs
+      name: teff_esphs
+      units: K
+      flag: hidden
+      store: true
+      type: float
+      descr: Effective temperature from ESP-HS
+    - ingest: AstrophysicalParameters.teff_esphs_uncertainty
+      name: teff_esphs_uncertainty
+      units: K
+      flag: hidden
+      store: true
+      type: float
+      descr: Uncertainty at a 68% confidence level on the effective temperature from
+        ESP-HS
+    - ingest: AstrophysicalParameters.logg_esphs
+      name: logg_esphs
+      units: log(cm.s**-2)
+      flag: hidden
+      store: true
+      type: float
+      descr: Surface gravity from ESP-HS
+    - ingest: AstrophysicalParameters.logg_esphs_uncertainty
+      name: logg_esphs_uncertainty
+      units: log(cm.s**-2)
+      flag: hidden
+      store: true
+      type: float
+      descr: Uncertainty at a 68% confidence level on the surface gravity from ESP-HS
+    - ingest: AstrophysicalParameters.vsini_esphs
+      name: vsini_esphs
+      units: km.s**-1
+      flag: hidden
+      store: true
+      type: float
+      descr: Projected rotational velocity from ESP-HS
+    - ingest: AstrophysicalParameters.vsini_esphs_uncertainty
+      name: vsini_esphs_uncertainty
+      units: km.s**-1
+      flag: hidden
+      store: true
+      type: float
+      descr: Uncertainty on the projected rotational velocity from ESP-HS
+  # - ingest: AstrophysicalParameters.flags_esphs
+  #   name: flags_esphs
+  #   flag: hidden
+  #   store: true
+  #   type: string (int8? int16? 01,02,03,04,11,12,13,14,90,91,92,93,94,95,999)
+  #   descr: Quality flag of the ESP-HS parametrisation
+    - ingest: AstrophysicalParameters.spectraltype_esphs
+      name: spectraltype_esphs
+      flag: hidden
+      store: true
+      type: int8
+      descr: Spectral type from ESP-ELS
+      enum:
+      - unknown
+      - O
+      - B
+      - A
+      - F
+      - G
+      - K
+      - M
+      - CSTAR
+  - name: ''
+    title: espcs
+    descr: Data from the ESP-CS (cool stars) processing
+    sub:
+    - ingest: AstrophysicalParameters.activityindex_espcs
+      name: activityindex_espcs
+      units: nm
+      flag: hidden
+      store: true
+      type: float
+      descr: Chromospheric activity index from ESP-CS, measured on the calcium triplet
+        using RVS spectra
+    - ingest: AstrophysicalParameters.activityindex_espcs_uncertainty
+      name: activityindex_espcs_uncertainty
+      units: nm
+      flag: hidden
+      store: true
+      type: float
+      descr: Uncertainty in the chromospheric activity index from ESP-CS
+    - ingest: AstrophysicalParameters.activityindex_espcs_input
+      name: activityindex_espcs_input
+      flag: hidden
+      store: true
+      type: byte
+      descr: Source of input stellar parameters for the computation of the activity
+        index by ESP-CS
+      enum: ['M1', 'M2']
+  - name: ''
+    title: espucd
+    descr: Data from the ESP-UCD (ultra cool dwarfs) processing
+    sub:
+    - ingest: AstrophysicalParameters.teff_espucd
+      name: teff_espucd
+      units: K
+      flag: hidden
+      store: true
+      type: float
+      descr: Effective temperature estimate from ESP-UCD based on the RP spectrum
+    - ingest: AstrophysicalParameters.teff_espucd_uncertainty
+      name: teff_espucd_uncertainty
+      units: K
+      flag: hidden
+      store: true
+      type: float
+      descr: Uncertainty of the effective temperature estimate produced by ESP-UCD
+    - ingest: AstrophysicalParameters.flags_espucd
+      name: flags_espucd
+      flag: hidden
+      store: true
+      type: int8 #string (00,10,11,20)
+      descr: Quality flags of the ESP-UCD parameter estimates
+  - name: ''
+    title: flame
+    descr: Stellar parameters from the Final Luminosity Age Mass Estimator (FLAME)
+    sub:
+    - ingest: AstrophysicalParameters.radius_flame
+      name: radius_flame
+      units: solRad
+      flag: hidden
+      store: true
+      type: float
+      descr: Radius of the star from FLAME using {\tt teffGspphot} and {\tt lumFlame}
+    - ingest: AstrophysicalParameters.radius_flame_lower
+      name: radius_flame_lower
+      units: solRad
+      flag: hidden
+      store: true
+      type: float
+      descr: Lower confidence level (16%) of {\tt radiusFlame}
+    - ingest: AstrophysicalParameters.radius_flame_upper
+      name: radius_flame_upper
+      units: solRad
+      flag: hidden
+      store: true
+      type: float
+      descr: Upper confidence level (84%) of {\tt radiusFlame}
+    - ingest: AstrophysicalParameters.lum_flame
+      name: lum_flame
+      units: solLum
+      flag: hidden
+      store: true
+      type: float
+      descr: Luminosity of the star from FLAME using G band magnitude, extinction ({\tt
+        agGspphot}),  parallax or distance, and a bolometric correction {\tt bcFlame}
+    - ingest: AstrophysicalParameters.lum_flame_lower
+      name: lum_flame_lower
+      units: solLum
+      flag: hidden
+      store: true
+      type: float
+      descr: Lower confidence level (16%) of {\tt lumFlame}
+    - ingest: AstrophysicalParameters.lum_flame_upper
+      name: lum_flame_upper
+      units: solLum
+      flag: hidden
+      store: true
+      type: float
+      descr: Upper confidence level (84%) of {\tt lumFlame}
+    - ingest: AstrophysicalParameters.mass_flame
+      name: mass_flame
+      units: solMass
+      flag: hidden
+      store: true
+      type: float
+      descr: Mass of the star from FLAME using stellar models, {\tt lumFlame}, and {\tt
+        teffGspphot}
+    - ingest: AstrophysicalParameters.mass_flame_lower
+      name: mass_flame_lower
+      units: solMass
+      flag: hidden
+      store: true
+      type: float
+      descr: Lower confidence level (16%) of {\tt massFlame}
+    - ingest: AstrophysicalParameters.mass_flame_upper
+      name: mass_flame_upper
+      units: solMass
+      flag: hidden
+      store: true
+      type: float
+      descr: Upper confidence level (84%) of {\tt massFlame}
+    - ingest: AstrophysicalParameters.age_flame
+      name: age_flame
+      units: Gyr
+      flag: hidden
+      store: true
+      type: float
+      descr: Age of the star from FLAME using stellar models, see {\tt massFlame} for
+        details
+    - ingest: AstrophysicalParameters.age_flame_lower
+      name: age_flame_lower
+      units: Gyr
+      flag: hidden
+      store: true
+      type: float
+      descr: Lower confidence level (16%) of {\tt ageFlame}
+    - ingest: AstrophysicalParameters.age_flame_upper
+      name: age_flame_upper
+      units: Gyr
+      flag: hidden
+      store: true
+      type: float
+      descr: Upper confidence level (84%) of {\tt ageFlame}
+    - ingest: AstrophysicalParameters.flags_flame
+      name: flags_flame
+      flag: hidden
+      store: true
+      type: int8 #string (00,01,02,10,11,12,20,21,22)
+      descr: Flags indicating quality and processing information from FLAME
+    - ingest: AstrophysicalParameters.evolstage_flame
+      name: evolstage_flame
+      flag: hidden
+      store: true
+      type: integer
+      descr: Evolutionary stage of the star from FLAME using stellar models, see {\tt
+        massFlame} for details
+    - ingest: AstrophysicalParameters.gravredshift_flame
+      name: gravredshift_flame
+      units: km.s**-1
+      flag: hidden
+      store: true
+      type: float
+      descr: Gravitational redshift from FLAME using {\tt radiusFlame} and {\tt loggGspphot}
+    - ingest: AstrophysicalParameters.gravredshift_flame_lower
+      name: gravredshift_flame_lower
+      units: km.s**-1
+      flag: hidden
+      store: true
+      type: float
+      descr: Lower confidence level (16%) of {\tt gravredshiftFlame}
+    - ingest: AstrophysicalParameters.gravredshift_flame_upper
+      name: gravredshift_flame_upper
+      units: km.s**-1
+      flag: hidden
+      store: true
+      type: float
+      descr: Upper confidence level (84%) of {\tt gravredshiftFlame}
+    - ingest: AstrophysicalParameters.bc_flame
+      name: bc_flame
+      units: mag
+      flag: hidden
+      store: true
+      type: float
+      descr: Bolometric correction used to derive {\tt lumFlame}
+  - name: ''
+    title: msc
+    descr: Stellar parameters from the Multiple Star Classifier (MSC)
+    sub:
+    - ingest: AstrophysicalParameters.mh_msc
+      name: mh_msc
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Metallicity of the source treated as a binary system from MSC using BP/RP
+        spectra and parallax
+    - ingest: AstrophysicalParameters.mh_msc_upper
+      name: mh_msc_upper
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Upper confidence level (84%) of the metallicity from MSC using BP/RP spectra
+        and parallax
+    - ingest: AstrophysicalParameters.mh_msc_lower
+      name: mh_msc_lower
+      units: '''dex'''
+      flag: hidden
+      store: true
+      type: float
+      descr: Lower confidence level (16%) of the metallicity from MSC using BP/RP spectra
+        and parallax
+    - ingest: AstrophysicalParameters.azero_msc
+      name: azero_msc
+      units: mag
+      flag: hidden
+      store: true
+      type: float
+      descr: Monochromatic extinction $A_0$ at 547.7nm of the source treated as a binary
+        system from MSC using BP/RP spectra and parallax
+    - ingest: AstrophysicalParameters.azero_msc_upper
+      name: azero_msc_upper
+      units: mag
+      flag: hidden
+      store: true
+      type: float
+      descr: Upper confidence level (84%) of monochromatic extinction $A_0$ at 547.7nm
+        from MSC using BP/RP spectra and parallax
+    - ingest: AstrophysicalParameters.azero_msc_lower
+      name: azero_msc_lower
+      units: mag
+      flag: hidden
+      store: true
+      type: float
+      descr: Lower confidence level (16%) of monochromatic extinction $A_0$ at 547.7nm
+        from MSC using BP/RP spectra and parallax
+    - ingest: AstrophysicalParameters.distance_msc
+      name: distance_msc
+      units: pc
+      flag: hidden
+      store: true
+      type: float
+      descr: Distance from MSC using BP/RP spectra and parallax
+    - ingest: AstrophysicalParameters.distance_msc_upper
+      name: distance_msc_upper
+      units: pc
+      flag: hidden
+      store: true
+      type: float
+      descr: Upper confidence level (84%) of distance from MSC using BP/RP spectra and
+        parallax
+    - ingest: AstrophysicalParameters.distance_msc_lower
+      name: distance_msc_lower
+      units: pc
+      flag: hidden
+      store: true
+      type: float
+      descr: Lower confidence level (16%) of distance from MSC using BP/RP spectra and
+        parallax
+    - ingest: AstrophysicalParameters.teff_msc1
+      name: teff_msc1
+      units: K
+      flag: hidden
+      store: true
+      type: float
+      descr: Effective temperature of the primary from MSC using BP/RP spectra and parallax
+    - ingest: AstrophysicalParameters.teff_msc1_upper
+      name: teff_msc1_upper
+      units: K
+      flag: hidden
+      store: true
+      type: float
+      descr: Upper confidence level (84%) of effective temperature of the primary from
+        MSC using BP/RP spectra and parallax
+    - ingest: AstrophysicalParameters.teff_msc1_lower
+      name: teff_msc1_lower
+      units: K
+      flag: hidden
+      store: true
+      type: float
+      descr: Lower confidence level (16%) of effective temperature of the primary from
+        MSC using BP/RP spectra and parallax
+    - ingest: AstrophysicalParameters.teff_msc2
+      name: teff_msc2
+      units: K
+      flag: hidden
+      store: true
+      type: float
+      descr: Effective temperature of the secondary from MSC using BP/RP spectra and
+        parallax
+    - ingest: AstrophysicalParameters.teff_msc2_upper
+      name: teff_msc2_upper
+      units: K
+      flag: hidden
+      store: true
+      type: float
+      descr: Upper confidence level (84%) of effective temperature of the secondary
+        from MSC using BP/RP spectra and parallax
+    - ingest: AstrophysicalParameters.teff_msc2_lower
+      name: teff_msc2_lower
+      units: K
+      flag: hidden
+      store: true
+      type: float
+      descr: Lower confidence level (16%) of effective temperature of the secondary
+        from MSC using BP/RP spectra and parallax
+    - ingest: AstrophysicalParameters.logg_msc1
+      name: logg_msc1
+      units: log(cm.s**-2)
+      flag: hidden
+      store: true
+      type: float
+      descr: Surface gravity of the primary from MSC using BP/RP spectra and parallax
+    - ingest: AstrophysicalParameters.logg_msc1_upper
+      name: logg_msc1_upper
+      units: log(cm.s**-2)
+      flag: hidden
+      store: true
+      type: float
+      descr: Upper confidence level (84%) of surface gravity of the primary from MSC
+        using BP/RP spectra and parallax
+    - ingest: AstrophysicalParameters.logg_msc1_lower
+      name: logg_msc1_lower
+      units: log(cm.s**-2)
+      flag: hidden
+      store: true
+      type: float
+      descr: Lower confidence level (16%) of surface gravity of the primary from MSC
+        using BP/RP spectra and parallax
+    - ingest: AstrophysicalParameters.logg_msc2
+      name: logg_msc2
+      units: log(cm.s**-2)
+      flag: hidden
+      store: true
+      type: float
+      descr: Surface gravity of the secondary from MSC using BP/RP spectra and parallax
+    - ingest: AstrophysicalParameters.logg_msc2_upper
+      name: logg_msc2_upper
+      units: log(cm.s**-2)
+      flag: hidden
+      store: true
+      type: float
+      descr: Upper confidence level (84%) of surface gravity of the secondary from MSC
+        using BP/RP spectra and parallax
+    - ingest: AstrophysicalParameters.logg_msc2_lower
+      name: logg_msc2_lower
+      units: log(cm.s**-2)
+      flag: hidden
+      store: true
+      type: float
+      descr: Lower confidence level (16%) of surface gravity of the secondary from MSC
+        using BP/RP spectra and parallax
+    - ingest: AstrophysicalParameters.ag_msc
+      name: ag_msc
+      units: mag
+      flag: hidden
+      store: true
+      type: float
+      descr: Extinction in G band of the source treated as a binary system from MSC
+        using BP/RP spectra and parallax
+    - ingest: AstrophysicalParameters.ag_msc_upper
+      name: ag_msc_upper
+      units: mag
+      flag: hidden
+      store: true
+      type: float
+      descr: Upper confidence level (84%) of extinction in G band from MSC using BP/RP
+        spectra and parallax
+    - ingest: AstrophysicalParameters.ag_msc_lower
+      name: ag_msc_lower
+      units: mag
+      flag: hidden
+      store: true
+      type: float
+      descr: Lower confidence level (16%) of extinction in G band from MSC using BP/RP
+        spectra and parallax
+    - ingest: AstrophysicalParameters.logposterior_msc
+      name: logposterior_msc
+      flag: hidden
+      store: true
+      type: float
+      descr: Goodness-of-fit score (normalised log-posterior) of MSC MCMC
+    - ingest: AstrophysicalParameters.mcmcaccept_msc
+      name: mcmcaccept_msc
+      flag: hidden
+      store: true
+      type: float
+      descr: Mean MCMC acceptance rate of MSC MCMC
+    - ingest: AstrophysicalParameters.mcmcdrift_msc
+      name: mcmcdrift_msc
+      flag: hidden
+      store: true
+      type: float
+      descr: Mean drift of the MSC MCMC chain in units of parameter standard deviation
+    - ingest: AstrophysicalParameters.flags_msc
+      name: flags_msc
+      flag: hidden
+      store: true
+      type: bool #string (0,1)
+      descr: Flag indicating quality information from MSC
+  - name: ''
+    title: oa
+    descr: ID and information for Outlier Analysis (OA) cross-match
+    sub:
+    - ingest: AstrophysicalParameters.neuron_oa_id
+      name: neuron_oa_id
+      flag: hidden
+      store: true
+      type: long
+      descr: Identifier of the OA SOM map neuron that represents the source
+    - ingest: AstrophysicalParameters.neuron_oa_dist
+      name: neuron_oa_dist
+      flag: hidden
+      store: true
+      type: float
+      descr: Distance between the source XP spectra and the OA neuron XP prototype that
+        represents the source
+    - ingest: AstrophysicalParameters.neuron_oa_dist_percentile_rank
+      name: neuron_oa_dist_percentile_rank
+      flag: hidden
+      store: true
+      type: integer
+      descr: Percentile rank according to the distance distribution of the OA neuron
+        that represents the source
+    - ingest: AstrophysicalParameters.flags_oa
+      name: flags_oa
+      flag: hidden
+      store: true
+      type: int16 #string (4-digit numbers)
+      descr: Flags indicating quality and processing information from OA
 # name: astrophysical_parameters_supp
 # ingest: _table:AstrophysicalParametersSupp #sorted, 1:1 files
 # #count: 473020612
