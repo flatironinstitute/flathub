@@ -4269,6 +4269,7 @@ fields:
     name: corr_vec
     flag: hidden
     type: array float
+    store: true
     descr: Vector form of the upper triangle of the correlation matrix
   - ingest: NssAccelerationAstro.obj_func
     name: obj_func
