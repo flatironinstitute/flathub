@@ -1294,10 +1294,10 @@ fields:
       name: libname_gspphot
       flag: hidden
       store: true
-      type: string dup gaia_source
+      type: byte
       descr: Name of library that achieves the highest mean log-posterior in MCMC samples
         and was used to derive GSP-Phot parameters in this table
-      enum: [PHOENIX,MARCS,A,OB,...]
+      enum: [PHOENIX,MARCS,A,OB]
   - name: ''
     title: alphafe
     descr: Abundance of alpha-elements [alpha/Fe]
