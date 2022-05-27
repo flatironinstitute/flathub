@@ -638,9 +638,10 @@ fields:
       table
   - ingest: GaiaSource.non_single_star
     name: non_single_star
-    type: byte
+    type: short
     descr: Flag indicating the availability of additional information in the various
       Non-Single Star tables
+    # TODO: split bitmask?
   - ingest: GaiaSource.has_xp_continuous
     name: has_xp_continuous
     type: boolean
@@ -8703,12 +8704,12 @@ fields:
     flag: hidden
     type: array float
     descr: Basis function coefficient errors for the BP spectrum representation
-  - ingest: XpContinuousMeanSpectrum.bp_coefficient_correlations
-    name: bp_coefficient_correlations
-    store: true
-    flag: hidden
-    type: array float
-    descr: Correlation matrix for BP coefficients
+# - ingest: XpContinuousMeanSpectrum.bp_coefficient_correlations
+#   name: bp_coefficient_correlations
+#   store: true
+#   flag: hidden
+#   type: array float
+#   descr: Correlation matrix for BP coefficients
   - ingest: XpContinuousMeanSpectrum.bp_n_relevant_bases
     name: bp_n_relevant_bases
     flag: hidden
@@ -8777,12 +8778,12 @@ fields:
     flag: hidden
     type: array float
     descr: Basis function coefficient errors for the RP spectrum representation
-  - ingest: XpContinuousMeanSpectrum.rp_coefficient_correlations
-    name: rp_coefficient_correlations
-    store: true
-    flag: hidden
-    type: array float
-    descr: Correlation matrix for RP coefficients
+# - ingest: XpContinuousMeanSpectrum.rp_coefficient_correlations
+#   name: rp_coefficient_correlations
+#   store: true
+#   flag: hidden
+#   type: array float
+#   descr: Correlation matrix for RP coefficients
   - ingest: XpContinuousMeanSpectrum.rp_n_relevant_bases
     name: rp_n_relevant_bases
     flag: hidden
