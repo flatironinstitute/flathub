@@ -4145,7 +4145,6 @@ fields:
   - ingest: NssAccelerationAstro.nss_solution_type
     name: nss_solution_type
     flag: hidden
-    store: true
     type: byte
     descr: NSS model adopted
     enum:
@@ -4154,133 +4153,105 @@ fields:
   - ingest: NssAccelerationAstro.ra
     name: ra
     units: deg
-    flag: hidden
-    store: true
     type: double
     descr: Right ascension
   - ingest: NssAccelerationAstro.ra_error
     name: ra_error
     units: mas
     flag: hidden
-    store: true
     type: float
     descr: Standard error of right ascension
   - ingest: NssAccelerationAstro.dec
     name: dec
     units: deg
-    flag: hidden
-    store: true
     type: double
     descr: Declination
   - ingest: NssAccelerationAstro.dec_error
     name: dec_error
     units: mas
     flag: hidden
-    store: true
     type: float
     descr: Standard error of declination
   - ingest: NssAccelerationAstro.parallax
     name: parallax
     units: mas
-    flag: hidden
-    store: true
     type: double
     descr: Parallax
   - ingest: NssAccelerationAstro.parallax_error
     name: parallax_error
     units: mas
     flag: hidden
-    store: true
     type: float
     descr: Standard error of parallax
   - ingest: NssAccelerationAstro.pmra
     name: pmra
     units: mas.yr**-1
-    flag: hidden
-    store: true
     type: double
     descr: Proper motion in right ascension direction
   - ingest: NssAccelerationAstro.pmra_error
     name: pmra_error
     units: mas.yr**-1
     flag: hidden
-    store: true
     type: float
     descr: Standard error of proper motion in right ascension direction
   - ingest: NssAccelerationAstro.pmdec
     name: pmdec
     units: mas.yr**-1
-    flag: hidden
-    store: true
     type: double
     descr: Proper motion in declination direction
   - ingest: NssAccelerationAstro.pmdec_error
     name: pmdec_error
     units: mas.yr**-1
     flag: hidden
-    store: true
     type: float
     descr: Standard error of proper motion in declination direction
   - ingest: NssAccelerationAstro.accel_ra
     name: accel_ra
     units: mas.yr**-2
-    flag: hidden
-    store: true
     type: double
     descr: Acceleration in RA
   - ingest: NssAccelerationAstro.accel_ra_error
     name: accel_ra_error
     units: mas.yr**-2
     flag: hidden
-    store: true
     type: float
     descr: Standard error of Acceleration in RA
   - ingest: NssAccelerationAstro.accel_dec
     name: accel_dec
     units: mas.yr**-2
-    flag: hidden
-    store: true
     type: double
     descr: Acceleration in DEC
   - ingest: NssAccelerationAstro.accel_dec_error
     name: accel_dec_error
     units: mas.yr**-2
     flag: hidden
-    store: true
     type: float
     descr: Standard error of Acceleration in DEC
   - ingest: NssAccelerationAstro.deriv_accel_ra
     name: deriv_accel_ra
     units: mas.yr**-3
-    flag: hidden
-    store: true
     type: double
     descr: Time derivative of the accel. in RA
   - ingest: NssAccelerationAstro.deriv_accel_ra_error
     name: deriv_accel_ra_error
     units: mas.yr**-3
     flag: hidden
-    store: true
     type: float
     descr: Standard error of Time derivative of the acceleration in RA
   - ingest: NssAccelerationAstro.deriv_accel_dec
     name: deriv_accel_dec
     units: mas.yr**-3
-    flag: hidden
-    store: true
     type: double
     descr: Time derivative of the accel. in DEC
   - ingest: NssAccelerationAstro.deriv_accel_dec_error
     name: deriv_accel_dec_error
     units: mas.yr**-3
     flag: hidden
-    store: true
     type: float
     descr: Standard error of Time derivative of the acceleration in DEC
   - ingest: NssAccelerationAstro.astrometric_n_obs_al
     name: astrometric_n_obs_al
     flag: hidden
-    store: true
     type: integer
     descr: Total astrometric CCD observations in AL considered
   - ingest: NssAccelerationAstro.astrometric_n_good_obs_al
@@ -4292,37 +4263,31 @@ fields:
   - ingest: NssAccelerationAstro.bit_index
     name: bit_index
     flag: hidden
-    store: true
     type: long
     descr: Boolean mask for the fields above in the corrVec matrix
   - ingest: NssAccelerationAstro.corr_vec
     name: corr_vec
     flag: hidden
-    store: true
     type: array float
     descr: Vector form of the upper triangle of the correlation matrix
   - ingest: NssAccelerationAstro.obj_func
     name: obj_func
     flag: hidden
-    store: true
     type: float
     descr: Value of the objective function at the solution
   - ingest: NssAccelerationAstro.goodness_of_fit
     name: goodness_of_fit
     flag: hidden
-    store: true
     type: float
     descr: Goodness of fit in the Hipparcos sense
   - ingest: NssAccelerationAstro.significance
     name: significance
     flag: hidden
-    store: true
     type: float
     descr: The significance of the solution (i.e. how worth keeping a model is)
   - ingest: NssAccelerationAstro.flags
     name: flags
     flag: hidden
-    store: true
     type: long
     descr: Quality flag for the achieved NSS solution
 - name: nss_non_linear_spectro
@@ -4334,8 +4299,6 @@ fields:
   sub:
   - ingest: NssNonLinearSpectro.nss_solution_type
     name: nss_solution_type
-    flag: hidden
-    store: true
     type: byte
     descr: NSS model adopted
     enum:
@@ -4344,61 +4307,49 @@ fields:
   - ingest: NssNonLinearSpectro.mean_velocity
     name: mean_velocity
     units: km.s**-1
-    flag: hidden
-    store: true
     type: double
     descr: Mean velocity
   - ingest: NssNonLinearSpectro.mean_velocity_error
     name: mean_velocity_error
     units: km.s**-1
     flag: hidden
-    store: true
     type: float
     descr: Standard error of Mean velocity
   - ingest: NssNonLinearSpectro.first_deriv_velocity
     name: first_deriv_velocity
     units: Km.s**-1.d**-1
-    flag: hidden
-    store: true
     type: double
     descr: First order derivative of the velocity
   - ingest: NssNonLinearSpectro.first_deriv_velocity_error
     name: first_deriv_velocity_error
     units: Km.s**-1.d**-1
     flag: hidden
-    store: true
     type: float
     descr: Standard error of First order derivative of the velocity
   - ingest: NssNonLinearSpectro.second_deriv_velocity
     name: second_deriv_velocity
     units: Km.s**-1.d**-2
-    flag: hidden
-    store: true
     type: double
     descr: Second order derivative of the velocity
   - ingest: NssNonLinearSpectro.second_deriv_velocity_error
     name: second_deriv_velocity_error
     units: Km.s**-1.d**-2
     flag: hidden
-    store: true
     type: float
     descr: Standard error of Second order derivative of the velocity
   - ingest: NssNonLinearSpectro.rv_n_obs_primary
     name: rv_n_obs_primary
     flag: hidden
-    store: true
     type: integer
     descr: Total number of radial velocities considered for the primary
   - ingest: NssNonLinearSpectro.rv_n_good_obs_primary
     name: rv_n_good_obs_primary
     flag: hidden
-    store: true
     type: integer
     descr: Total number of radial velocities actually used for the primary
   - ingest: NssNonLinearSpectro.bit_index
     name: bit_index
     flag: hidden
-    store: true
     type: long
     descr: Boolean mask for the fields above in the corrVec matrix
   - ingest: NssNonLinearSpectro.corr_vec
@@ -4410,19 +4361,16 @@ fields:
   - ingest: NssNonLinearSpectro.obj_func
     name: obj_func
     flag: hidden
-    store: true
     type: float
     descr: Value of the objective function at the solution
   - ingest: NssNonLinearSpectro.goodness_of_fit
     name: goodness_of_fit
     flag: hidden
-    store: true
     type: float
     descr: Goodness of fit in the Hipparcos sense
   - ingest: NssNonLinearSpectro.flags
     name: flags
     flag: hidden
-    store: true
     type: long
     descr: Quality flag for the achieved NSS solution
 # name: nss_two_body_orbit
@@ -4956,131 +4904,107 @@ fields:
   - ingest: NssVimFl.nss_solution_type
     name: nss_solution_type
     flag: hidden
-    store: true
     type: byte
     descr: NSS model adopted
     enum: [VIMF]
   - ingest: NssVimFl.ra
     name: ra
     units: deg
-    flag: hidden
-    store: true
     type: double
     descr: Right ascension
   - ingest: NssVimFl.ra_error
     name: ra_error
     units: mas
     flag: hidden
-    store: true
     type: float
     descr: Standard error of right ascension
   - ingest: NssVimFl.dec
     name: dec
     units: deg
-    flag: hidden
-    store: true
     type: double
     descr: Declination
   - ingest: NssVimFl.dec_error
     name: dec_error
     units: mas
     flag: hidden
-    store: true
     type: float
     descr: Standard error of declination
   - ingest: NssVimFl.parallax
     name: parallax
     units: mas
-    flag: hidden
-    store: true
     type: double
     descr: Parallax
   - ingest: NssVimFl.parallax_error
     name: parallax_error
     units: mas
     flag: hidden
-    store: true
     type: float
     descr: Standard error of parallax
   - ingest: NssVimFl.pmra
     name: pmra
     units: mas.yr**-1
-    flag: hidden
-    store: true
     type: double
     descr: Proper motion in right ascension direction
   - ingest: NssVimFl.pmra_error
     name: pmra_error
     units: mas.yr**-1
     flag: hidden
-    store: true
     type: float
     descr: Standard error of proper motion in right ascension direction
   - ingest: NssVimFl.pmdec
     name: pmdec
     units: mas.yr**-1
-    flag: hidden
-    store: true
     type: double
     descr: Proper motion in declination direction
   - ingest: NssVimFl.pmdec_error
     name: pmdec_error
     units: mas.yr**-1
     flag: hidden
-    store: true
     type: float
     descr: Standard error of proper motion in declination direction
   - ingest: NssVimFl.ref_flux_g
     name: ref_flux_g
     units: '''electron''.s**-1'
     flag: hidden
-    store: true
     type: float
     descr: Reference flux in the G band
   - ingest: NssVimFl.vim_d_ra
     name: vim_d_ra
     units: mas
     flag: hidden
-    store: true
     type: double
     descr: VIM coordinate in RA
   - ingest: NssVimFl.vim_d_ra_error
     name: vim_d_ra_error
     units: mas
     flag: hidden
-    store: true
     type: float
     descr: Standard error of VIM coordinate in RA
   - ingest: NssVimFl.vim_d_dec
     name: vim_d_dec
     units: mas
     flag: hidden
-    store: true
     type: double
     descr: VIM coordinate in DEC
   - ingest: NssVimFl.vim_d_dec_error
     name: vim_d_dec_error
     units: mas
     flag: hidden
-    store: true
     type: float
     descr: Standard error of VIM coordinate in DEC
   - ingest: NssVimFl.astrometric_n_obs_al
     name: astrometric_n_obs_al
     flag: hidden
-    store: true
     type: integer
     descr: Total astrometric CCD observations in AL considered
   - ingest: NssVimFl.astrometric_n_good_obs_al
     name: astrometric_n_good_obs_al
     flag: hidden
-    store: true
     type: integer
     descr: Total astrometric CCD observations in AL actually used
   - ingest: NssVimFl.bit_index
     name: bit_index
     flag: hidden
-    store: true
     type: long
     descr: Boolean mask for the fields above in the corrVec matrix
   - ingest: NssVimFl.corr_vec
@@ -5116,7 +5040,6 @@ fields:
   - ingest: NssVimFl.flags
     name: flags
     flag: hidden
-    store: true
     type: long
     descr: Quality flag for the achieved NSS solution
 - name: qso_candidates
@@ -5135,19 +5058,15 @@ fields:
   - ingest: QsoCandidates.astrometric_selection_flag
     name: astrometric_selection_flag
     flag: hidden
-    store: true
     type: boolean
     descr: Flag indicating if the source is part of the astrometric selection
   - ingest: QsoCandidates.gaia_crf_source
     name: gaia_crf_source
     flag: hidden
-    store: true
     type: boolean
     descr: Flag indicative of whether the source was used define the Gaia-CRF3
   - ingest: QsoCandidates.vari_best_class_name
     name: vari_best_class_name
-    flag: hidden
-    store: true
     type: int8
     descr: Name of best class, see table VariClassifierClassDefinition for details
       of the class
@@ -5179,63 +5098,51 @@ fields:
   - ingest: QsoCandidates.vari_best_class_score
     name: vari_best_class_score
     flag: hidden
-    store: true
     type: float
     descr: Score of the best class
   - ingest: QsoCandidates.fractional_variability_g
     name: fractional_variability_g
-    flag: hidden
-    store: true
     type: float
     descr: Fractional variability in the G band
   - ingest: QsoCandidates.structure_function_index
     name: structure_function_index
-    flag: hidden
-    store: true
     type: float
     descr: Index of the first-order structure function in the G band
   - ingest: QsoCandidates.structure_function_index_scatter
     name: structure_function_index_scatter
     flag: hidden
-    store: true
     type: double
     descr: Standard deviation of the index of the structure function
   - ingest: QsoCandidates.qso_variability
     name: qso_variability
     flag: hidden
-    store: true
     type: float
     descr: Quasar variability metric in the G band
   - ingest: QsoCandidates.non_qso_variability
     name: non_qso_variability
     flag: hidden
-    store: true
     type: float
     descr: Non-quasar variability metric in the G band
   - ingest: QsoCandidates.vari_agn_membership_score
     name: vari_agn_membership_score
     flag: hidden
-    store: true
     type: double
     descr: Membership score (0=lowest,1=highest) of source to be of AGN type
   - ingest: QsoCandidates.classprob_dsc_combmod_quasar
     name: classprob_dsc_combmod_quasar
     flag: hidden
-    store: true
     type: float
     descr: 'Probability from DSC-Combmod of being a quasar (data used: BP/RP spectrum,
       photometry, astrometry)'
   - ingest: QsoCandidates.classprob_dsc_combmod_galaxy
     name: classprob_dsc_combmod_galaxy
     flag: hidden
-    store: true
     type: float
     descr: 'Probability from DSC-Combmod of being a galaxy (data used: BP/RP spectrum,
       photometry, astrometry)'
   - ingest: QsoCandidates.classlabel_dsc
     name: classlabel_dsc
     flag: hidden
-    store: true
     type: byte
     descr: Class assigned by DSC based on the probability from its Combmod classifier
     enum:
@@ -5248,7 +5155,6 @@ fields:
   - ingest: QsoCandidates.classlabel_dsc_joint
     name: classlabel_dsc_joint
     flag: hidden
-    store: true
     type: byte
     descr: Class assigned by DSC based on the probability from its Specmod and Allosmod
       classifiers
@@ -5262,7 +5168,6 @@ fields:
   - ingest: QsoCandidates.classlabel_oa
     name: classlabel_oa
     flag: hidden
-    store: true
     type: byte
     descr: Class assigned by OA the neuron that represents the source
     enum:
@@ -5291,131 +5196,105 @@ fields:
     - WD
   - ingest: QsoCandidates.redshift_qsoc
     name: redshift_qsoc
-    flag: hidden
-    store: true
     type: float
     descr: Redshift from QSOC
   - ingest: QsoCandidates.redshift_qsoc_lower
     name: redshift_qsoc_lower
     flag: hidden
-    store: true
     type: float
     descr: Redshift lower confidence level from QSOC
   - ingest: QsoCandidates.redshift_qsoc_upper
     name: redshift_qsoc_upper
     flag: hidden
-    store: true
     type: float
     descr: Redshift upper confidence level from QSOC
   - ingest: QsoCandidates.ccfratio_qsoc
     name: ccfratio_qsoc
-    flag: hidden
-    store: true
     type: float
     descr: Value of the cross-correlation function used to derive the redshift from
       QSOC, relative to the maximum value
   - ingest: QsoCandidates.zscore_qsoc
     name: zscore_qsoc
     flag: hidden
-    store: true
     type: float
     descr: Redshift zscore from QSOC
   - ingest: QsoCandidates.flags_qsoc
     name: flags_qsoc
     flag: hidden
-    store: true
     type: long
     descr: Processing flags for the analysis based on BP/RP Spectra from QSOC
   - ingest: QsoCandidates.n_transits
     name: n_transits
     flag: hidden
-    store: true
     type: integer
     descr: Number of transits used for the morphological analysis
   - ingest: QsoCandidates.intensity_quasar
     name: intensity_quasar
     units: '''electron''.s**-1'
     flag: hidden
-    store: true
     type: double
     descr: Fitted intensity of the quasar at its center
   - ingest: QsoCandidates.intensity_quasar_error
     name: intensity_quasar_error
     units: '''electron''.s**-1'
     flag: hidden
-    store: true
     type: double
     descr: Error on the fitted intensity of the quasar at its center
   - ingest: QsoCandidates.intensity_hostgalaxy
     name: intensity_hostgalaxy
     units: '''electron''.s**-1'
     flag: hidden
-    store: true
     type: double
     descr: Fitted intensity of the host galaxy at the effective radius
   - ingest: QsoCandidates.intensity_hostgalaxy_error
     name: intensity_hostgalaxy_error
     units: '''electron''.s**-1'
     flag: hidden
-    store: true
     type: double
     descr: Error on the fitted intensity of the host galaxy at effective radius
   - ingest: QsoCandidates.radius_hostgalaxy
     name: radius_hostgalaxy
     units: mas
-    flag: hidden
-    store: true
     type: double
     descr: Fitted effective radius of the host galaxy
   - ingest: QsoCandidates.radius_hostgalaxy_error
     name: radius_hostgalaxy_error
     units: mas
     flag: hidden
-    store: true
     type: double
     descr: Error on the fitted effective radius of the host galaxy
   - ingest: QsoCandidates.sersic_index
     name: sersic_index
-    flag: hidden
-    store: true
     type: float
     descr: Fitted sersic Index
   - ingest: QsoCandidates.sersic_index_error
     name: sersic_index_error
     flag: hidden
-    store: true
     type: float
     descr: Error on the fitted sersic Index
   - ingest: QsoCandidates.ellipticity_hostgalaxy
     name: ellipticity_hostgalaxy
-    flag: hidden
-    store: true
     type: double
     descr: Fitted ellipticity of the host galaxy
   - ingest: QsoCandidates.ellipticity_hostgalaxy_error
     name: ellipticity_hostgalaxy_error
     flag: hidden
-    store: true
     type: double
     descr: Error on the fitted ellipticity of the host galaxy
   - ingest: QsoCandidates.posangle_hostgalaxy
     name: posangle_hostgalaxy
     units: deg
-    flag: hidden
-    store: true
     type: double
     descr: Fitted position angle of the host galaxy
   - ingest: QsoCandidates.posangle_hostgalaxy_error
     name: posangle_hostgalaxy_error
     units: deg
     flag: hidden
-    store: true
     type: double
     descr: Error on the fitted position angle of the host galaxy
   - ingest: QsoCandidates.host_galaxy_detected
     name: host_galaxy_detected
     flag: hidden
-    store: true
     type: boolean
     descr: Flag indicating whether a host galaxy has been detected
   - ingest: QsoCandidates.l2_norm
@@ -5434,14 +5313,12 @@ fields:
   - ingest: QsoCandidates.host_galaxy_flag
     name: host_galaxy_flag
     flag: hidden
-    store: true
     type: byte
     descr: Flag indicative of processing or scientific quality for the morphological
       parameters fitting
   - ingest: QsoCandidates.source_selection_flags
     name: source_selection_flags
     flag: hidden
-    store: true
     type: integer
     descr: Bit indicative of whether the input data from a given module met the source
       list eligibility criteria for the source of interest
@@ -5481,19 +5358,16 @@ fields:
     name: ra
     units: deg
     flag: hidden
-    store: true
     type: double
     descr: Right Ascension
   - ingest: RvsMeanSpectrum.dec
     name: dec
     units: deg
     flag: hidden
-    store: true
     type: double
     descr: Declination
   - ingest: RvsMeanSpectrum.flux
     name: flux
-    flag: hidden
     store: true
     type: array float
     descr: array of fluxes
@@ -5506,19 +5380,16 @@ fields:
   - ingest: RvsMeanSpectrum.combined_transits
     name: combined_transits
     flag: hidden
-    store: true
     type: short
     descr: number of combined transits
   - ingest: RvsMeanSpectrum.combined_ccds
     name: combined_ccds
     flag: hidden
-    store: true
     type: short
     descr: number of combined CCD spectra
   - ingest: RvsMeanSpectrum.deblended_ccds
     name: deblended_ccds
     flag: hidden
-    store: true
     type: short
     descr: number of deblended CCD spectra
 # name: vari_agn
@@ -8567,44 +8438,36 @@ fields:
   sub:
   - ingest: XpContinuousMeanSpectrum.bp_basis_function_id
     name: bp_basis_function_id
-    flag: hidden
-    store: true
     type: short
     descr: Identifier defining the set of basis functions for the BP spectrum representation
   - ingest: XpContinuousMeanSpectrum.bp_degrees_of_freedom
     name: bp_degrees_of_freedom
     flag: hidden
-    store: true
     type: short
     descr: Degrees of freedom for the BP spectrum representation
   - ingest: XpContinuousMeanSpectrum.bp_n_parameters
     name: bp_n_parameters
     flag: hidden
-    store: true
     type: byte
     descr: Number of parameters for the BP spectrum representation
   - ingest: XpContinuousMeanSpectrum.bp_n_measurements
     name: bp_n_measurements
     flag: hidden
-    store: true
     type: short
     descr: Number of measurements used for the BP spectrum generation
   - ingest: XpContinuousMeanSpectrum.bp_n_rejected_measurements
     name: bp_n_rejected_measurements
     flag: hidden
-    store: true
     type: short
     descr: Number of rejected measurements in the BP spectrum generation
   - ingest: XpContinuousMeanSpectrum.bp_standard_deviation
     name: bp_standard_deviation
     flag: hidden
-    store: true
     type: float
     descr: Standard deviation for the BP spectrum representation
   - ingest: XpContinuousMeanSpectrum.bp_chi_squared
     name: bp_chi_squared
     flag: hidden
-    store: true
     type: float
     descr: Chi squared for the BP spectrum representation
   - ingest: XpContinuousMeanSpectrum.bp_coefficients
@@ -8628,57 +8491,48 @@ fields:
   - ingest: XpContinuousMeanSpectrum.bp_n_relevant_bases
     name: bp_n_relevant_bases
     flag: hidden
-    store: true
     type: short
     descr: Number of bases that are relevant for the representation of this mean BP
       spectrum
   - ingest: XpContinuousMeanSpectrum.bp_relative_shrinking
     name: bp_relative_shrinking
     flag: hidden
-    store: true
     type: float
     descr: Measure of the relative shrinking of the coefficient vector when truncation
       is applied for the mean BP spectrum
   - ingest: XpContinuousMeanSpectrum.rp_basis_function_id
     name: rp_basis_function_id
     flag: hidden
-    store: true
     type: short
     descr: Identifier defining the set of basis functions for the BP spectrum representation
   - ingest: XpContinuousMeanSpectrum.rp_degrees_of_freedom
     name: rp_degrees_of_freedom
     flag: hidden
-    store: true
     type: short
     descr: Degrees of freedom for the RP spectrum representation
   - ingest: XpContinuousMeanSpectrum.rp_n_parameters
     name: rp_n_parameters
     flag: hidden
-    store: true
     type: byte
     descr: Number of parameters for the RP spectrum representation
   - ingest: XpContinuousMeanSpectrum.rp_n_measurements
     name: rp_n_measurements
     flag: hidden
-    store: true
     type: short
     descr: Number of measurements used for the RP spectrum generation
   - ingest: XpContinuousMeanSpectrum.rp_n_rejected_measurements
     name: rp_n_rejected_measurements
     flag: hidden
-    store: true
     type: short
     descr: Number of rejected measurements in the RP spectrum generation
   - ingest: XpContinuousMeanSpectrum.rp_standard_deviation
     name: rp_standard_deviation
     flag: hidden
-    store: true
     type: float
     descr: Standard deviation for the RP spectrum representation
   - ingest: XpContinuousMeanSpectrum.rp_chi_squared
     name: rp_chi_squared
     flag: hidden
-    store: true
     type: float
     descr: Chi squared for the RP spectrum representation
   - ingest: XpContinuousMeanSpectrum.rp_coefficients
@@ -8702,14 +8556,12 @@ fields:
   - ingest: XpContinuousMeanSpectrum.rp_n_relevant_bases
     name: rp_n_relevant_bases
     flag: hidden
-    store: true
     type: short
     descr: Number of bases that are relevant for the representation of this mean RP
       spectrum
   - ingest: XpContinuousMeanSpectrum.rp_relative_shrinking
     name: rp_relative_shrinking
     flag: hidden
-    store: true
     type: float
     descr: Measure of the relative shrinking of the coefficient vector when truncation
       is applied for the mean RP spectrum
@@ -8723,21 +8575,18 @@ fields:
     name: ra
     units: deg
     flag: hidden
-    store: true
     type: double
     descr: Right Ascension
   - ingest: XpSampledMeanSpectrum.dec
     name: dec
     units: deg
     flag: hidden
-    store: true
     type: double
     descr: Declination
   - ingest: XpSampledMeanSpectrum.flux
     name: flux
     store: true
     units: W.m**-2.nm**-1
-    flag: hidden
     type: array float
     descr: mean BP + RP combined spectrum flux
   - ingest: XpSampledMeanSpectrum.flux_error
