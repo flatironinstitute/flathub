@@ -638,7 +638,7 @@ fields:
       table
   - ingest: GaiaSource.non_single_star
     name: non_single_star
-    type: short
+    type: byte
     descr: Flag indicating the availability of additional information in the various
       Non-Single Star tables
   - ingest: GaiaSource.has_xp_continuous
@@ -4219,296 +4219,296 @@ fields:
 #   type: byte
 #   descr: The unique identifier for the catalogue(s) used to select the sources in
 #     the morphological analysis
-# name: nss_acceleration_astro
-# ingest: _table:NssAccelerationAstro #not sorted, single file
-# #count: 338215
-# descr: |
-#   This table contains non-single-star astrometric models for sources having a non-linear proper motion which is compatible with an acceleration solution. Several possible models are hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
-#   Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}.
-# sub:
-# - ingest: NssAccelerationAstro.nss_solution_type
-#   name: nss_solution_type
-#   flag: hidden
-#   store: true
-#   type: byte
-#   descr: NSS model adopted
-#   enum:
-#   - Acceleration7
-#   - Acceleration9
-# - ingest: NssAccelerationAstro.ra
-#   name: ra
-#   units: deg
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: Right ascension
-# - ingest: NssAccelerationAstro.ra_error
-#   name: ra_error
-#   units: mas
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Standard error of right ascension
-# - ingest: NssAccelerationAstro.dec
-#   name: dec
-#   units: deg
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: Declination
-# - ingest: NssAccelerationAstro.dec_error
-#   name: dec_error
-#   units: mas
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Standard error of declination
-# - ingest: NssAccelerationAstro.parallax
-#   name: parallax
-#   units: mas
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: Parallax
-# - ingest: NssAccelerationAstro.parallax_error
-#   name: parallax_error
-#   units: mas
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Standard error of parallax
-# - ingest: NssAccelerationAstro.pmra
-#   name: pmra
-#   units: mas.yr**-1
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: Proper motion in right ascension direction
-# - ingest: NssAccelerationAstro.pmra_error
-#   name: pmra_error
-#   units: mas.yr**-1
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Standard error of proper motion in right ascension direction
-# - ingest: NssAccelerationAstro.pmdec
-#   name: pmdec
-#   units: mas.yr**-1
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: Proper motion in declination direction
-# - ingest: NssAccelerationAstro.pmdec_error
-#   name: pmdec_error
-#   units: mas.yr**-1
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Standard error of proper motion in declination direction
-# - ingest: NssAccelerationAstro.accel_ra
-#   name: accel_ra
-#   units: mas.yr**-2
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: Acceleration in RA
-# - ingest: NssAccelerationAstro.accel_ra_error
-#   name: accel_ra_error
-#   units: mas.yr**-2
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Standard error of Acceleration in RA
-# - ingest: NssAccelerationAstro.accel_dec
-#   name: accel_dec
-#   units: mas.yr**-2
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: Acceleration in DEC
-# - ingest: NssAccelerationAstro.accel_dec_error
-#   name: accel_dec_error
-#   units: mas.yr**-2
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Standard error of Acceleration in DEC
-# - ingest: NssAccelerationAstro.deriv_accel_ra
-#   name: deriv_accel_ra
-#   units: mas.yr**-3
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: Time derivative of the accel. in RA
-# - ingest: NssAccelerationAstro.deriv_accel_ra_error
-#   name: deriv_accel_ra_error
-#   units: mas.yr**-3
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Standard error of Time derivative of the acceleration in RA
-# - ingest: NssAccelerationAstro.deriv_accel_dec
-#   name: deriv_accel_dec
-#   units: mas.yr**-3
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: Time derivative of the accel. in DEC
-# - ingest: NssAccelerationAstro.deriv_accel_dec_error
-#   name: deriv_accel_dec_error
-#   units: mas.yr**-3
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Standard error of Time derivative of the acceleration in DEC
-# - ingest: NssAccelerationAstro.astrometric_n_obs_al
-#   name: astrometric_n_obs_al
-#   flag: hidden
-#   store: true
-#   type: integer
-#   descr: Total astrometric CCD observations in AL considered
-# - ingest: NssAccelerationAstro.astrometric_n_good_obs_al
-#   name: astrometric_n_good_obs_al
-#   flag: hidden
-#   store: true
-#   type: integer
-#   descr: Total astrometric CCD observations in AL actually used
-# - ingest: NssAccelerationAstro.bit_index
-#   name: bit_index
-#   flag: hidden
-#   store: true
-#   type: long
-#   descr: Boolean mask for the fields above in the corrVec matrix
-# - ingest: NssAccelerationAstro.corr_vec
-#   name: corr_vec
-#   flag: hidden
-#   store: true
-#   type: array float
-#   descr: Vector form of the upper triangle of the correlation matrix
-# - ingest: NssAccelerationAstro.obj_func
-#   name: obj_func
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Value of the objective function at the solution
-# - ingest: NssAccelerationAstro.goodness_of_fit
-#   name: goodness_of_fit
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Goodness of fit in the Hipparcos sense
-# - ingest: NssAccelerationAstro.significance
-#   name: significance
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: The significance of the solution (i.e. how worth keeping a model is)
-# - ingest: NssAccelerationAstro.flags
-#   name: flags
-#   flag: hidden
-#   store: true
-#   type: long
-#   descr: Quality flag for the achieved NSS solution
-# name: nss_non_linear_spectro
-# ingest: _table:NssNonLinearSpectro #not sorted, single file
-# #count: 56808
-# descr: |
-#   This table contains non-single-star orbital models for spectroscopic binaries compatible with a trend. Several possible models are hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
-#   Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}.
-# sub:
-# - ingest: NssNonLinearSpectro.nss_solution_type
-#   name: nss_solution_type
-#   flag: hidden
-#   store: true
-#   type: byte
-#   descr: NSS model adopted
-#   enum:
-#   - FirstDegreeTrendSB1
-#   - SecondDegreeTrendSB1
-# - ingest: NssNonLinearSpectro.mean_velocity
-#   name: mean_velocity
-#   units: km.s**-1
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: Mean velocity
-# - ingest: NssNonLinearSpectro.mean_velocity_error
-#   name: mean_velocity_error
-#   units: km.s**-1
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Standard error of Mean velocity
-# - ingest: NssNonLinearSpectro.first_deriv_velocity
-#   name: first_deriv_velocity
-#   units: Km.s**-1.d**-1
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: First order derivative of the velocity
-# - ingest: NssNonLinearSpectro.first_deriv_velocity_error
-#   name: first_deriv_velocity_error
-#   units: Km.s**-1.d**-1
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Standard error of First order derivative of the velocity
-# - ingest: NssNonLinearSpectro.second_deriv_velocity
-#   name: second_deriv_velocity
-#   units: Km.s**-1.d**-2
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: Second order derivative of the velocity
-# - ingest: NssNonLinearSpectro.second_deriv_velocity_error
-#   name: second_deriv_velocity_error
-#   units: Km.s**-1.d**-2
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Standard error of Second order derivative of the velocity
-# - ingest: NssNonLinearSpectro.rv_n_obs_primary
-#   name: rv_n_obs_primary
-#   flag: hidden
-#   store: true
-#   type: integer
-#   descr: Total number of radial velocities considered for the primary
-# - ingest: NssNonLinearSpectro.rv_n_good_obs_primary
-#   name: rv_n_good_obs_primary
-#   flag: hidden
-#   store: true
-#   type: integer
-#   descr: Total number of radial velocities actually used for the primary
-# - ingest: NssNonLinearSpectro.bit_index
-#   name: bit_index
-#   flag: hidden
-#   store: true
-#   type: long
-#   descr: Boolean mask for the fields above in the corrVec matrix
-# - ingest: NssNonLinearSpectro.corr_vec
-#   name: corr_vec
-#   flag: hidden
-#   store: true
-#   type: array float
-#   descr: Vector form of the upper triangle of the correlation matrix
-# - ingest: NssNonLinearSpectro.obj_func
-#   name: obj_func
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Value of the objective function at the solution
-# - ingest: NssNonLinearSpectro.goodness_of_fit
-#   name: goodness_of_fit
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Goodness of fit in the Hipparcos sense
-# - ingest: NssNonLinearSpectro.flags
-#   name: flags
-#   flag: hidden
-#   store: true
-#   type: long
-#   descr: Quality flag for the achieved NSS solution
+- name: nss_acceleration_astro
+  ingest: _table:NssAccelerationAstro #not sorted, single file
+  #count: 338215
+  descr: |
+    This table contains non-single-star astrometric models for sources having a non-linear proper motion which is compatible with an acceleration solution. Several possible models are hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
+    Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}.
+  sub:
+  - ingest: NssAccelerationAstro.nss_solution_type
+    name: nss_solution_type
+    flag: hidden
+    store: true
+    type: byte
+    descr: NSS model adopted
+    enum:
+    - Acceleration7
+    - Acceleration9
+  - ingest: NssAccelerationAstro.ra
+    name: ra
+    units: deg
+    flag: hidden
+    store: true
+    type: double
+    descr: Right ascension
+  - ingest: NssAccelerationAstro.ra_error
+    name: ra_error
+    units: mas
+    flag: hidden
+    store: true
+    type: float
+    descr: Standard error of right ascension
+  - ingest: NssAccelerationAstro.dec
+    name: dec
+    units: deg
+    flag: hidden
+    store: true
+    type: double
+    descr: Declination
+  - ingest: NssAccelerationAstro.dec_error
+    name: dec_error
+    units: mas
+    flag: hidden
+    store: true
+    type: float
+    descr: Standard error of declination
+  - ingest: NssAccelerationAstro.parallax
+    name: parallax
+    units: mas
+    flag: hidden
+    store: true
+    type: double
+    descr: Parallax
+  - ingest: NssAccelerationAstro.parallax_error
+    name: parallax_error
+    units: mas
+    flag: hidden
+    store: true
+    type: float
+    descr: Standard error of parallax
+  - ingest: NssAccelerationAstro.pmra
+    name: pmra
+    units: mas.yr**-1
+    flag: hidden
+    store: true
+    type: double
+    descr: Proper motion in right ascension direction
+  - ingest: NssAccelerationAstro.pmra_error
+    name: pmra_error
+    units: mas.yr**-1
+    flag: hidden
+    store: true
+    type: float
+    descr: Standard error of proper motion in right ascension direction
+  - ingest: NssAccelerationAstro.pmdec
+    name: pmdec
+    units: mas.yr**-1
+    flag: hidden
+    store: true
+    type: double
+    descr: Proper motion in declination direction
+  - ingest: NssAccelerationAstro.pmdec_error
+    name: pmdec_error
+    units: mas.yr**-1
+    flag: hidden
+    store: true
+    type: float
+    descr: Standard error of proper motion in declination direction
+  - ingest: NssAccelerationAstro.accel_ra
+    name: accel_ra
+    units: mas.yr**-2
+    flag: hidden
+    store: true
+    type: double
+    descr: Acceleration in RA
+  - ingest: NssAccelerationAstro.accel_ra_error
+    name: accel_ra_error
+    units: mas.yr**-2
+    flag: hidden
+    store: true
+    type: float
+    descr: Standard error of Acceleration in RA
+  - ingest: NssAccelerationAstro.accel_dec
+    name: accel_dec
+    units: mas.yr**-2
+    flag: hidden
+    store: true
+    type: double
+    descr: Acceleration in DEC
+  - ingest: NssAccelerationAstro.accel_dec_error
+    name: accel_dec_error
+    units: mas.yr**-2
+    flag: hidden
+    store: true
+    type: float
+    descr: Standard error of Acceleration in DEC
+  - ingest: NssAccelerationAstro.deriv_accel_ra
+    name: deriv_accel_ra
+    units: mas.yr**-3
+    flag: hidden
+    store: true
+    type: double
+    descr: Time derivative of the accel. in RA
+  - ingest: NssAccelerationAstro.deriv_accel_ra_error
+    name: deriv_accel_ra_error
+    units: mas.yr**-3
+    flag: hidden
+    store: true
+    type: float
+    descr: Standard error of Time derivative of the acceleration in RA
+  - ingest: NssAccelerationAstro.deriv_accel_dec
+    name: deriv_accel_dec
+    units: mas.yr**-3
+    flag: hidden
+    store: true
+    type: double
+    descr: Time derivative of the accel. in DEC
+  - ingest: NssAccelerationAstro.deriv_accel_dec_error
+    name: deriv_accel_dec_error
+    units: mas.yr**-3
+    flag: hidden
+    store: true
+    type: float
+    descr: Standard error of Time derivative of the acceleration in DEC
+  - ingest: NssAccelerationAstro.astrometric_n_obs_al
+    name: astrometric_n_obs_al
+    flag: hidden
+    store: true
+    type: integer
+    descr: Total astrometric CCD observations in AL considered
+  - ingest: NssAccelerationAstro.astrometric_n_good_obs_al
+    name: astrometric_n_good_obs_al
+    flag: hidden
+    store: true
+    type: integer
+    descr: Total astrometric CCD observations in AL actually used
+  - ingest: NssAccelerationAstro.bit_index
+    name: bit_index
+    flag: hidden
+    store: true
+    type: long
+    descr: Boolean mask for the fields above in the corrVec matrix
+  - ingest: NssAccelerationAstro.corr_vec
+    name: corr_vec
+    flag: hidden
+    store: true
+    type: array float
+    descr: Vector form of the upper triangle of the correlation matrix
+  - ingest: NssAccelerationAstro.obj_func
+    name: obj_func
+    flag: hidden
+    store: true
+    type: float
+    descr: Value of the objective function at the solution
+  - ingest: NssAccelerationAstro.goodness_of_fit
+    name: goodness_of_fit
+    flag: hidden
+    store: true
+    type: float
+    descr: Goodness of fit in the Hipparcos sense
+  - ingest: NssAccelerationAstro.significance
+    name: significance
+    flag: hidden
+    store: true
+    type: float
+    descr: The significance of the solution (i.e. how worth keeping a model is)
+  - ingest: NssAccelerationAstro.flags
+    name: flags
+    flag: hidden
+    store: true
+    type: long
+    descr: Quality flag for the achieved NSS solution
+- name: nss_non_linear_spectro
+  ingest: _table:NssNonLinearSpectro #not sorted, single file
+  #count: 56808
+  descr: |
+    This table contains non-single-star orbital models for spectroscopic binaries compatible with a trend. Several possible models are hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
+    Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}.
+  sub:
+  - ingest: NssNonLinearSpectro.nss_solution_type
+    name: nss_solution_type
+    flag: hidden
+    store: true
+    type: byte
+    descr: NSS model adopted
+    enum:
+    - FirstDegreeTrendSB1
+    - SecondDegreeTrendSB1
+  - ingest: NssNonLinearSpectro.mean_velocity
+    name: mean_velocity
+    units: km.s**-1
+    flag: hidden
+    store: true
+    type: double
+    descr: Mean velocity
+  - ingest: NssNonLinearSpectro.mean_velocity_error
+    name: mean_velocity_error
+    units: km.s**-1
+    flag: hidden
+    store: true
+    type: float
+    descr: Standard error of Mean velocity
+  - ingest: NssNonLinearSpectro.first_deriv_velocity
+    name: first_deriv_velocity
+    units: Km.s**-1.d**-1
+    flag: hidden
+    store: true
+    type: double
+    descr: First order derivative of the velocity
+  - ingest: NssNonLinearSpectro.first_deriv_velocity_error
+    name: first_deriv_velocity_error
+    units: Km.s**-1.d**-1
+    flag: hidden
+    store: true
+    type: float
+    descr: Standard error of First order derivative of the velocity
+  - ingest: NssNonLinearSpectro.second_deriv_velocity
+    name: second_deriv_velocity
+    units: Km.s**-1.d**-2
+    flag: hidden
+    store: true
+    type: double
+    descr: Second order derivative of the velocity
+  - ingest: NssNonLinearSpectro.second_deriv_velocity_error
+    name: second_deriv_velocity_error
+    units: Km.s**-1.d**-2
+    flag: hidden
+    store: true
+    type: float
+    descr: Standard error of Second order derivative of the velocity
+  - ingest: NssNonLinearSpectro.rv_n_obs_primary
+    name: rv_n_obs_primary
+    flag: hidden
+    store: true
+    type: integer
+    descr: Total number of radial velocities considered for the primary
+  - ingest: NssNonLinearSpectro.rv_n_good_obs_primary
+    name: rv_n_good_obs_primary
+    flag: hidden
+    store: true
+    type: integer
+    descr: Total number of radial velocities actually used for the primary
+  - ingest: NssNonLinearSpectro.bit_index
+    name: bit_index
+    flag: hidden
+    store: true
+    type: long
+    descr: Boolean mask for the fields above in the corrVec matrix
+  - ingest: NssNonLinearSpectro.corr_vec
+    name: corr_vec
+    flag: hidden
+    store: true
+    type: array float
+    descr: Vector form of the upper triangle of the correlation matrix
+  - ingest: NssNonLinearSpectro.obj_func
+    name: obj_func
+    flag: hidden
+    store: true
+    type: float
+    descr: Value of the objective function at the solution
+  - ingest: NssNonLinearSpectro.goodness_of_fit
+    name: goodness_of_fit
+    flag: hidden
+    store: true
+    type: float
+    descr: Goodness of fit in the Hipparcos sense
+  - ingest: NssNonLinearSpectro.flags
+    name: flags
+    flag: hidden
+    store: true
+    type: long
+    descr: Quality flag for the achieved NSS solution
 # name: nss_two_body_orbit
 # ingest: _table:NssTwoBodyOrbit #not sorted, single file, dups
 # #count: 443205
@@ -5029,507 +5029,507 @@ fields:
 #   store: true
 #   type: double
 #   descr: Uncorrelated astrometric jitter term
-# name: nss_vim_fl
-# ingest: _table:NssVimFl #not sorted, single file
-# #count: 870
-# descr: |
-#   This table contains non-single-star models for sources compatible with an Variability Induced Mover (VIM) solution. Several possible models are in principle hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
-#   For DR3, only VIMF solutions are provided here.
-#   Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}.
-# sub:
-# - ingest: NssVimFl.nss_solution_type
-#   name: nss_solution_type
-#   flag: hidden
-#   store: true
-#   type: byte
-#   descr: NSS model adopted
-#   enum: [VIMF]
-# - ingest: NssVimFl.ra
-#   name: ra
-#   units: deg
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: Right ascension
-# - ingest: NssVimFl.ra_error
-#   name: ra_error
-#   units: mas
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Standard error of right ascension
-# - ingest: NssVimFl.dec
-#   name: dec
-#   units: deg
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: Declination
-# - ingest: NssVimFl.dec_error
-#   name: dec_error
-#   units: mas
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Standard error of declination
-# - ingest: NssVimFl.parallax
-#   name: parallax
-#   units: mas
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: Parallax
-# - ingest: NssVimFl.parallax_error
-#   name: parallax_error
-#   units: mas
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Standard error of parallax
-# - ingest: NssVimFl.pmra
-#   name: pmra
-#   units: mas.yr**-1
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: Proper motion in right ascension direction
-# - ingest: NssVimFl.pmra_error
-#   name: pmra_error
-#   units: mas.yr**-1
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Standard error of proper motion in right ascension direction
-# - ingest: NssVimFl.pmdec
-#   name: pmdec
-#   units: mas.yr**-1
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: Proper motion in declination direction
-# - ingest: NssVimFl.pmdec_error
-#   name: pmdec_error
-#   units: mas.yr**-1
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Standard error of proper motion in declination direction
-# - ingest: NssVimFl.ref_flux_g
-#   name: ref_flux_g
-#   units: '''electron''.s**-1'
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Reference flux in the G band
-# - ingest: NssVimFl.vim_d_ra
-#   name: vim_d_ra
-#   units: mas
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: VIM coordinate in RA
-# - ingest: NssVimFl.vim_d_ra_error
-#   name: vim_d_ra_error
-#   units: mas
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Standard error of VIM coordinate in RA
-# - ingest: NssVimFl.vim_d_dec
-#   name: vim_d_dec
-#   units: mas
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: VIM coordinate in DEC
-# - ingest: NssVimFl.vim_d_dec_error
-#   name: vim_d_dec_error
-#   units: mas
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Standard error of VIM coordinate in DEC
-# - ingest: NssVimFl.astrometric_n_obs_al
-#   name: astrometric_n_obs_al
-#   flag: hidden
-#   store: true
-#   type: integer
-#   descr: Total astrometric CCD observations in AL considered
-# - ingest: NssVimFl.astrometric_n_good_obs_al
-#   name: astrometric_n_good_obs_al
-#   flag: hidden
-#   store: true
-#   type: integer
-#   descr: Total astrometric CCD observations in AL actually used
-# - ingest: NssVimFl.bit_index
-#   name: bit_index
-#   flag: hidden
-#   store: true
-#   type: long
-#   descr: Boolean mask for the fields above in the corrVec matrix
-# - ingest: NssVimFl.corr_vec
-#   name: corr_vec
-#   flag: hidden
-#   store: true
-#   type: array float
-#   descr: Vector form of the upper triangle of the correlation matrix
-# - ingest: NssVimFl.obj_func
-#   name: obj_func
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Value of the objective function at the solution
-# - ingest: NssVimFl.goodness_of_fit
-#   name: goodness_of_fit
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Goodness of fit in the Hipparcos sense
-# - ingest: NssVimFl.efficiency
-#   name: efficiency
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Efficiency of the solution
-# - ingest: NssVimFl.significance
-#   name: significance
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: The significance of the solution (i.e. how worth keeping a model is)
-# - ingest: NssVimFl.flags
-#   name: flags
-#   flag: hidden
-#   store: true
-#   type: long
-#   descr: Quality flag for the achieved NSS solution
-# name: qso_candidates
-# ingest: _table:QsoCandidates #sorted, 1:1 files
-# #count: 6649162
-# descr: "This table contains parameters derived from various modules dedicated to
-#   the classification and characterisation of sources considered as QSO candidates.
-#   Together with those, the QSOs used to define the Gaia-CRF3 are also listed in
-#   this table. This table has been constructed with the intention to be complete
-#   rather than pure and, as such, it will contain a large fraction of non-genuine
-#   extragalactic sources. Purer samples can be drawn using dedicated flags or queries.
-#   Please refer to Chapter~\\ref{chap:cu3qso} of the on-line documentation for details
-#   about how this table was built, its content, and for recommendations regarding
-#   its exploitation. \n"
-# sub:
-# - ingest: QsoCandidates.astrometric_selection_flag
-#   name: astrometric_selection_flag
-#   flag: hidden
-#   store: true
-#   type: boolean
-#   descr: Flag indicating if the source is part of the astrometric selection
-# - ingest: QsoCandidates.gaia_crf_source
-#   name: gaia_crf_source
-#   flag: hidden
-#   store: true
-#   type: boolean
-#   descr: Flag indicative of whether the source was used define the Gaia-CRF3
-# - ingest: QsoCandidates.vari_best_class_name
-#   name: vari_best_class_name
-#   flag: hidden
-#   store: true
-#   type: int8
-#   descr: Name of best class, see table VariClassifierClassDefinition for details
-#     of the class
-#   enum:
-#     - "AGN"                         #"Active Galactic Nuclei (including Quasars)."
-#     - "DSCT|GDOR|SXPHE"             #"Set of variable types: delta Scuti, gamma Doradus, and SX Phoenicis."
-#     - "WD"                          #"White Dwarf variable stars of types: ZZ Ceti (DAV, ZZA), V777 Herculis (DBV, ZZB), and GW Virginis (DOV, ZZO)."
-#     - "LPV"                         #"Long Period Variable stars of types: omicron Ceti (Mira), OGLE Small Amplitude Red Giants, and semiregular."
-#     - "ACV|CP|MCP|ROAM|ROAP|SXARI"  #"Set of variable types: alpha2 Canum Venaticorum, (Magnetic) Chemical Peculiar star, Rapidly Oscillating Am/Ap star, and SX Arietis variable."
-#     - "S"                           #"Set of stars with short timescale variability."
-#     - "MICROLENSING"                #"Star with microlensing event."
-#     - "CEP"                         #"Cepheid variable types: delta Cepheid, anomalous Cepheid, and type-II Cepheid."
-#     - "YSO"                         #"Young Stellar Object."
-#     - "RS"                          #"RS Canum Venaticorum type variable."
-#     - "ACYG"                        #"Alpha Cygni-type variable."
-#     - "BCEP"                        #"Beta Cephei type variable."
-#     - "BE|GCAS|SDOR|WR"             #"Subset of eruptive variable types: B-type emission line star, Gamma Cassiopeiae, S Doradus, and Wolf-Rayet."
-#     - "SN"                          #"Supernovae."
-#     - "SPB"                         #"Slowly Pulsating B-star variable."
-#     - "ECL"                         #"Eclipsing Binaries of types: Beta Persei (Algol), Beta Lyrae, and W Ursae Majoris."
-#     - "ELL"                         #"Ellipsoidal variable."
-#     - "SYST"                        #"Symbiotic variable star."
-#     - "SOLAR_LIKE"                  #"Stars with solar-like variability due to flares, spots, and rotational modulation."
-#     - "CV"                          #"Cataclysmic variable."
-#     - "SDB"                         #"Sub-dwarf B stars of types: V1093 Her and V361 Hya."
-#     - "RR"                          #"RR Lyrae stars of the following types: fundamental-mode, first-overtone, double mode, and anomalous double mode."
-#     - "EP"                          #"Star with exoplanet transits."
-#     - "RCB"                         #"R Coronae Borealis type variable."
-# - ingest: QsoCandidates.vari_best_class_score
-#   name: vari_best_class_score
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Score of the best class
-# - ingest: QsoCandidates.fractional_variability_g
-#   name: fractional_variability_g
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Fractional variability in the G band
-# - ingest: QsoCandidates.structure_function_index
-#   name: structure_function_index
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Index of the first-order structure function in the G band
-# - ingest: QsoCandidates.structure_function_index_scatter
-#   name: structure_function_index_scatter
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: Standard deviation of the index of the structure function
-# - ingest: QsoCandidates.qso_variability
-#   name: qso_variability
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Quasar variability metric in the G band
-# - ingest: QsoCandidates.non_qso_variability
-#   name: non_qso_variability
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Non-quasar variability metric in the G band
-# - ingest: QsoCandidates.vari_agn_membership_score
-#   name: vari_agn_membership_score
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: Membership score (0=lowest,1=highest) of source to be of AGN type
-# - ingest: QsoCandidates.classprob_dsc_combmod_quasar
-#   name: classprob_dsc_combmod_quasar
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: 'Probability from DSC-Combmod of being a quasar (data used: BP/RP spectrum,
-#     photometry, astrometry)'
-# - ingest: QsoCandidates.classprob_dsc_combmod_galaxy
-#   name: classprob_dsc_combmod_galaxy
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: 'Probability from DSC-Combmod of being a galaxy (data used: BP/RP spectrum,
-#     photometry, astrometry)'
-# - ingest: QsoCandidates.classlabel_dsc
-#   name: classlabel_dsc
-#   flag: hidden
-#   store: true
-#   type: string
-#   descr: Class assigned by DSC based on the probability from its Combmod classifier
-#   enum:
-#   - galaxy
-#   - physicalbinary
-#   - quasar
-#   - star
-#   - unclassified
-#   - whitedwarf
-# - ingest: QsoCandidates.classlabel_dsc_joint
-#   name: classlabel_dsc_joint
-#   flag: hidden
-#   store: true
-#   type: string
-#   descr: Class assigned by DSC based on the probability from its Specmod and Allosmod
-#     classifiers
-#   enum:
-#   - galaxy
-#   - physicalbinary
-#   - quasar
-#   - star
-#   - unclassified
-#   - whitedwarf
-# - ingest: QsoCandidates.classlabel_oa
-#   name: classlabel_oa
-#   flag: hidden
-#   store: true
-#   type: string
-#   descr: Class assigned by OA the neuron that represents the source
-#   enum:
-#   - ELS
-#   - GAL_Z005_01
-#   - GAL_Z005_LT
-#   - GAL_Z01_015
-#   - GAL_Z01_02
-#   - GAL_Z01_LT
-#   - GAL_Z025_GT
-#   - GAL_Z02_GT
-#   - QSO_Z05_15
-#   - QSO_Z05_LT
-#   - QSO_Z15_25
-#   - QSO_Z15_LT
-#   - QSO_Z25_35
-#   - QSO_Z35_45
-#   - STAR_A
-#   - STAR_EARLY
-#   - STAR_F
-#   - STAR_G
-#   - STAR_INT
-#   - STAR_K
-#   - STAR_LATE
-#   - STAR_M
-#   - WD
-# - ingest: QsoCandidates.redshift_qsoc
-#   name: redshift_qsoc
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Redshift from QSOC
-# - ingest: QsoCandidates.redshift_qsoc_lower
-#   name: redshift_qsoc_lower
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Redshift lower confidence level from QSOC
-# - ingest: QsoCandidates.redshift_qsoc_upper
-#   name: redshift_qsoc_upper
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Redshift upper confidence level from QSOC
-# - ingest: QsoCandidates.ccfratio_qsoc
-#   name: ccfratio_qsoc
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Value of the cross-correlation function used to derive the redshift from
-#     QSOC, relative to the maximum value
-# - ingest: QsoCandidates.zscore_qsoc
-#   name: zscore_qsoc
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Redshift zscore from QSOC
-# - ingest: QsoCandidates.flags_qsoc
-#   name: flags_qsoc
-#   flag: hidden
-#   store: true
-#   type: long
-#   descr: Processing flags for the analysis based on BP/RP Spectra from QSOC
-# - ingest: QsoCandidates.n_transits
-#   name: n_transits
-#   flag: hidden
-#   store: true
-#   type: integer
-#   descr: Number of transits used for the morphological analysis
-# - ingest: QsoCandidates.intensity_quasar
-#   name: intensity_quasar
-#   units: '''electron''.s**-1'
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: Fitted intensity of the quasar at its center
-# - ingest: QsoCandidates.intensity_quasar_error
-#   name: intensity_quasar_error
-#   units: '''electron''.s**-1'
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: Error on the fitted intensity of the quasar at its center
-# - ingest: QsoCandidates.intensity_hostgalaxy
-#   name: intensity_hostgalaxy
-#   units: '''electron''.s**-1'
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: Fitted intensity of the host galaxy at the effective radius
-# - ingest: QsoCandidates.intensity_hostgalaxy_error
-#   name: intensity_hostgalaxy_error
-#   units: '''electron''.s**-1'
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: Error on the fitted intensity of the host galaxy at effective radius
-# - ingest: QsoCandidates.radius_hostgalaxy
-#   name: radius_hostgalaxy
-#   units: mas
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: Fitted effective radius of the host galaxy
-# - ingest: QsoCandidates.radius_hostgalaxy_error
-#   name: radius_hostgalaxy_error
-#   units: mas
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: Error on the fitted effective radius of the host galaxy
-# - ingest: QsoCandidates.sersic_index
-#   name: sersic_index
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Fitted sersic Index
-# - ingest: QsoCandidates.sersic_index_error
-#   name: sersic_index_error
-#   flag: hidden
-#   store: true
-#   type: float
-#   descr: Error on the fitted sersic Index
-# - ingest: QsoCandidates.ellipticity_hostgalaxy
-#   name: ellipticity_hostgalaxy
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: Fitted ellipticity of the host galaxy
-# - ingest: QsoCandidates.ellipticity_hostgalaxy_error
-#   name: ellipticity_hostgalaxy_error
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: Error on the fitted ellipticity of the host galaxy
-# - ingest: QsoCandidates.posangle_hostgalaxy
-#   name: posangle_hostgalaxy
-#   units: deg
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: Fitted position angle of the host galaxy
-# - ingest: QsoCandidates.posangle_hostgalaxy_error
-#   name: posangle_hostgalaxy_error
-#   units: deg
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: Error on the fitted position angle of the host galaxy
-# - ingest: QsoCandidates.host_galaxy_detected
-#   name: host_galaxy_detected
-#   flag: hidden
-#   store: true
-#   type: boolean
-#   descr: Flag indicating whether a host galaxy has been detected
-# - ingest: QsoCandidates.l2_norm
-#   name: l2_norm
-#   flag: hidden
-#   store: true
-#   type: double
-#   descr: L2 norm for the fitted Sersic profile
-# - ingest: QsoCandidates.morph_params_corr_vec
-#   name: morph_params_corr_vec
-#   flag: hidden
-#   store: true
-#   type: array double
-#   descr: Vector form of the upper triangle of the correlation matrix for the fitted
-#     morphological parameters
-# - ingest: QsoCandidates.host_galaxy_flag
-#   name: host_galaxy_flag
-#   flag: hidden
-#   store: true
-#   type: byte
-#   descr: Flag indicative of processing or scientific quality for the morphological
-#     parameters fitting
-# - ingest: QsoCandidates.source_selection_flags
-#   name: source_selection_flags
-#   flag: hidden
-#   store: true
-#   type: integer
-#   descr: Bit indicative of whether the input data from a given module met the source
-#     list eligibility criteria for the source of interest
-# name: qso_catalogue_name
+- name: nss_vim_fl
+  ingest: _table:NssVimFl #not sorted, single file
+  #count: 870
+  descr: |
+    This table contains non-single-star models for sources compatible with an Variability Induced Mover (VIM) solution. Several possible models are in principle hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
+    For DR3, only VIMF solutions are provided here.
+    Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}.
+  sub:
+  - ingest: NssVimFl.nss_solution_type
+    name: nss_solution_type
+    flag: hidden
+    store: true
+    type: byte
+    descr: NSS model adopted
+    enum: [VIMF]
+  - ingest: NssVimFl.ra
+    name: ra
+    units: deg
+    flag: hidden
+    store: true
+    type: double
+    descr: Right ascension
+  - ingest: NssVimFl.ra_error
+    name: ra_error
+    units: mas
+    flag: hidden
+    store: true
+    type: float
+    descr: Standard error of right ascension
+  - ingest: NssVimFl.dec
+    name: dec
+    units: deg
+    flag: hidden
+    store: true
+    type: double
+    descr: Declination
+  - ingest: NssVimFl.dec_error
+    name: dec_error
+    units: mas
+    flag: hidden
+    store: true
+    type: float
+    descr: Standard error of declination
+  - ingest: NssVimFl.parallax
+    name: parallax
+    units: mas
+    flag: hidden
+    store: true
+    type: double
+    descr: Parallax
+  - ingest: NssVimFl.parallax_error
+    name: parallax_error
+    units: mas
+    flag: hidden
+    store: true
+    type: float
+    descr: Standard error of parallax
+  - ingest: NssVimFl.pmra
+    name: pmra
+    units: mas.yr**-1
+    flag: hidden
+    store: true
+    type: double
+    descr: Proper motion in right ascension direction
+  - ingest: NssVimFl.pmra_error
+    name: pmra_error
+    units: mas.yr**-1
+    flag: hidden
+    store: true
+    type: float
+    descr: Standard error of proper motion in right ascension direction
+  - ingest: NssVimFl.pmdec
+    name: pmdec
+    units: mas.yr**-1
+    flag: hidden
+    store: true
+    type: double
+    descr: Proper motion in declination direction
+  - ingest: NssVimFl.pmdec_error
+    name: pmdec_error
+    units: mas.yr**-1
+    flag: hidden
+    store: true
+    type: float
+    descr: Standard error of proper motion in declination direction
+  - ingest: NssVimFl.ref_flux_g
+    name: ref_flux_g
+    units: '''electron''.s**-1'
+    flag: hidden
+    store: true
+    type: float
+    descr: Reference flux in the G band
+  - ingest: NssVimFl.vim_d_ra
+    name: vim_d_ra
+    units: mas
+    flag: hidden
+    store: true
+    type: double
+    descr: VIM coordinate in RA
+  - ingest: NssVimFl.vim_d_ra_error
+    name: vim_d_ra_error
+    units: mas
+    flag: hidden
+    store: true
+    type: float
+    descr: Standard error of VIM coordinate in RA
+  - ingest: NssVimFl.vim_d_dec
+    name: vim_d_dec
+    units: mas
+    flag: hidden
+    store: true
+    type: double
+    descr: VIM coordinate in DEC
+  - ingest: NssVimFl.vim_d_dec_error
+    name: vim_d_dec_error
+    units: mas
+    flag: hidden
+    store: true
+    type: float
+    descr: Standard error of VIM coordinate in DEC
+  - ingest: NssVimFl.astrometric_n_obs_al
+    name: astrometric_n_obs_al
+    flag: hidden
+    store: true
+    type: integer
+    descr: Total astrometric CCD observations in AL considered
+  - ingest: NssVimFl.astrometric_n_good_obs_al
+    name: astrometric_n_good_obs_al
+    flag: hidden
+    store: true
+    type: integer
+    descr: Total astrometric CCD observations in AL actually used
+  - ingest: NssVimFl.bit_index
+    name: bit_index
+    flag: hidden
+    store: true
+    type: long
+    descr: Boolean mask for the fields above in the corrVec matrix
+  - ingest: NssVimFl.corr_vec
+    name: corr_vec
+    flag: hidden
+    store: true
+    type: array float
+    descr: Vector form of the upper triangle of the correlation matrix
+  - ingest: NssVimFl.obj_func
+    name: obj_func
+    flag: hidden
+    store: true
+    type: float
+    descr: Value of the objective function at the solution
+  - ingest: NssVimFl.goodness_of_fit
+    name: goodness_of_fit
+    flag: hidden
+    store: true
+    type: float
+    descr: Goodness of fit in the Hipparcos sense
+  - ingest: NssVimFl.efficiency
+    name: efficiency
+    flag: hidden
+    store: true
+    type: float
+    descr: Efficiency of the solution
+  - ingest: NssVimFl.significance
+    name: significance
+    flag: hidden
+    store: true
+    type: float
+    descr: The significance of the solution (i.e. how worth keeping a model is)
+  - ingest: NssVimFl.flags
+    name: flags
+    flag: hidden
+    store: true
+    type: long
+    descr: Quality flag for the achieved NSS solution
+- name: qso_candidates
+  ingest: _table:QsoCandidates #sorted, 1:1 files
+  #count: 6649162
+  descr: "This table contains parameters derived from various modules dedicated to
+    the classification and characterisation of sources considered as QSO candidates.
+    Together with those, the QSOs used to define the Gaia-CRF3 are also listed in
+    this table. This table has been constructed with the intention to be complete
+    rather than pure and, as such, it will contain a large fraction of non-genuine
+    extragalactic sources. Purer samples can be drawn using dedicated flags or queries.
+    Please refer to Chapter~\\ref{chap:cu3qso} of the on-line documentation for details
+    about how this table was built, its content, and for recommendations regarding
+    its exploitation. \n"
+  sub:
+  - ingest: QsoCandidates.astrometric_selection_flag
+    name: astrometric_selection_flag
+    flag: hidden
+    store: true
+    type: boolean
+    descr: Flag indicating if the source is part of the astrometric selection
+  - ingest: QsoCandidates.gaia_crf_source
+    name: gaia_crf_source
+    flag: hidden
+    store: true
+    type: boolean
+    descr: Flag indicative of whether the source was used define the Gaia-CRF3
+  - ingest: QsoCandidates.vari_best_class_name
+    name: vari_best_class_name
+    flag: hidden
+    store: true
+    type: int8
+    descr: Name of best class, see table VariClassifierClassDefinition for details
+      of the class
+    enum:
+      - "AGN"                         #"Active Galactic Nuclei (including Quasars)."
+      - "DSCT|GDOR|SXPHE"             #"Set of variable types: delta Scuti, gamma Doradus, and SX Phoenicis."
+      - "WD"                          #"White Dwarf variable stars of types: ZZ Ceti (DAV, ZZA), V777 Herculis (DBV, ZZB), and GW Virginis (DOV, ZZO)."
+      - "LPV"                         #"Long Period Variable stars of types: omicron Ceti (Mira), OGLE Small Amplitude Red Giants, and semiregular."
+      - "ACV|CP|MCP|ROAM|ROAP|SXARI"  #"Set of variable types: alpha2 Canum Venaticorum, (Magnetic) Chemical Peculiar star, Rapidly Oscillating Am/Ap star, and SX Arietis variable."
+      - "S"                           #"Set of stars with short timescale variability."
+      - "MICROLENSING"                #"Star with microlensing event."
+      - "CEP"                         #"Cepheid variable types: delta Cepheid, anomalous Cepheid, and type-II Cepheid."
+      - "YSO"                         #"Young Stellar Object."
+      - "RS"                          #"RS Canum Venaticorum type variable."
+      - "ACYG"                        #"Alpha Cygni-type variable."
+      - "BCEP"                        #"Beta Cephei type variable."
+      - "BE|GCAS|SDOR|WR"             #"Subset of eruptive variable types: B-type emission line star, Gamma Cassiopeiae, S Doradus, and Wolf-Rayet."
+      - "SN"                          #"Supernovae."
+      - "SPB"                         #"Slowly Pulsating B-star variable."
+      - "ECL"                         #"Eclipsing Binaries of types: Beta Persei (Algol), Beta Lyrae, and W Ursae Majoris."
+      - "ELL"                         #"Ellipsoidal variable."
+      - "SYST"                        #"Symbiotic variable star."
+      - "SOLAR_LIKE"                  #"Stars with solar-like variability due to flares, spots, and rotational modulation."
+      - "CV"                          #"Cataclysmic variable."
+      - "SDB"                         #"Sub-dwarf B stars of types: V1093 Her and V361 Hya."
+      - "RR"                          #"RR Lyrae stars of the following types: fundamental-mode, first-overtone, double mode, and anomalous double mode."
+      - "EP"                          #"Star with exoplanet transits."
+      - "RCB"                         #"R Coronae Borealis type variable."
+  - ingest: QsoCandidates.vari_best_class_score
+    name: vari_best_class_score
+    flag: hidden
+    store: true
+    type: float
+    descr: Score of the best class
+  - ingest: QsoCandidates.fractional_variability_g
+    name: fractional_variability_g
+    flag: hidden
+    store: true
+    type: float
+    descr: Fractional variability in the G band
+  - ingest: QsoCandidates.structure_function_index
+    name: structure_function_index
+    flag: hidden
+    store: true
+    type: float
+    descr: Index of the first-order structure function in the G band
+  - ingest: QsoCandidates.structure_function_index_scatter
+    name: structure_function_index_scatter
+    flag: hidden
+    store: true
+    type: double
+    descr: Standard deviation of the index of the structure function
+  - ingest: QsoCandidates.qso_variability
+    name: qso_variability
+    flag: hidden
+    store: true
+    type: float
+    descr: Quasar variability metric in the G band
+  - ingest: QsoCandidates.non_qso_variability
+    name: non_qso_variability
+    flag: hidden
+    store: true
+    type: float
+    descr: Non-quasar variability metric in the G band
+  - ingest: QsoCandidates.vari_agn_membership_score
+    name: vari_agn_membership_score
+    flag: hidden
+    store: true
+    type: double
+    descr: Membership score (0=lowest,1=highest) of source to be of AGN type
+  - ingest: QsoCandidates.classprob_dsc_combmod_quasar
+    name: classprob_dsc_combmod_quasar
+    flag: hidden
+    store: true
+    type: float
+    descr: 'Probability from DSC-Combmod of being a quasar (data used: BP/RP spectrum,
+      photometry, astrometry)'
+  - ingest: QsoCandidates.classprob_dsc_combmod_galaxy
+    name: classprob_dsc_combmod_galaxy
+    flag: hidden
+    store: true
+    type: float
+    descr: 'Probability from DSC-Combmod of being a galaxy (data used: BP/RP spectrum,
+      photometry, astrometry)'
+  - ingest: QsoCandidates.classlabel_dsc
+    name: classlabel_dsc
+    flag: hidden
+    store: true
+    type: byte
+    descr: Class assigned by DSC based on the probability from its Combmod classifier
+    enum:
+    - galaxy
+    - physicalbinary
+    - quasar
+    - star
+    - unclassified
+    - whitedwarf
+  - ingest: QsoCandidates.classlabel_dsc_joint
+    name: classlabel_dsc_joint
+    flag: hidden
+    store: true
+    type: byte
+    descr: Class assigned by DSC based on the probability from its Specmod and Allosmod
+      classifiers
+    enum:
+    - galaxy
+    - physicalbinary
+    - quasar
+    - star
+    - unclassified
+    - whitedwarf
+  - ingest: QsoCandidates.classlabel_oa
+    name: classlabel_oa
+    flag: hidden
+    store: true
+    type: byte
+    descr: Class assigned by OA the neuron that represents the source
+    enum:
+    - ELS
+    - GAL_Z005_01
+    - GAL_Z005_LT
+    - GAL_Z01_015
+    - GAL_Z01_02
+    - GAL_Z01_LT
+    - GAL_Z025_GT
+    - GAL_Z02_GT
+    - QSO_Z05_15
+    - QSO_Z05_LT
+    - QSO_Z15_25
+    - QSO_Z15_LT
+    - QSO_Z25_35
+    - QSO_Z35_45
+    - STAR_A
+    - STAR_EARLY
+    - STAR_F
+    - STAR_G
+    - STAR_INT
+    - STAR_K
+    - STAR_LATE
+    - STAR_M
+    - WD
+  - ingest: QsoCandidates.redshift_qsoc
+    name: redshift_qsoc
+    flag: hidden
+    store: true
+    type: float
+    descr: Redshift from QSOC
+  - ingest: QsoCandidates.redshift_qsoc_lower
+    name: redshift_qsoc_lower
+    flag: hidden
+    store: true
+    type: float
+    descr: Redshift lower confidence level from QSOC
+  - ingest: QsoCandidates.redshift_qsoc_upper
+    name: redshift_qsoc_upper
+    flag: hidden
+    store: true
+    type: float
+    descr: Redshift upper confidence level from QSOC
+  - ingest: QsoCandidates.ccfratio_qsoc
+    name: ccfratio_qsoc
+    flag: hidden
+    store: true
+    type: float
+    descr: Value of the cross-correlation function used to derive the redshift from
+      QSOC, relative to the maximum value
+  - ingest: QsoCandidates.zscore_qsoc
+    name: zscore_qsoc
+    flag: hidden
+    store: true
+    type: float
+    descr: Redshift zscore from QSOC
+  - ingest: QsoCandidates.flags_qsoc
+    name: flags_qsoc
+    flag: hidden
+    store: true
+    type: long
+    descr: Processing flags for the analysis based on BP/RP Spectra from QSOC
+  - ingest: QsoCandidates.n_transits
+    name: n_transits
+    flag: hidden
+    store: true
+    type: integer
+    descr: Number of transits used for the morphological analysis
+  - ingest: QsoCandidates.intensity_quasar
+    name: intensity_quasar
+    units: '''electron''.s**-1'
+    flag: hidden
+    store: true
+    type: double
+    descr: Fitted intensity of the quasar at its center
+  - ingest: QsoCandidates.intensity_quasar_error
+    name: intensity_quasar_error
+    units: '''electron''.s**-1'
+    flag: hidden
+    store: true
+    type: double
+    descr: Error on the fitted intensity of the quasar at its center
+  - ingest: QsoCandidates.intensity_hostgalaxy
+    name: intensity_hostgalaxy
+    units: '''electron''.s**-1'
+    flag: hidden
+    store: true
+    type: double
+    descr: Fitted intensity of the host galaxy at the effective radius
+  - ingest: QsoCandidates.intensity_hostgalaxy_error
+    name: intensity_hostgalaxy_error
+    units: '''electron''.s**-1'
+    flag: hidden
+    store: true
+    type: double
+    descr: Error on the fitted intensity of the host galaxy at effective radius
+  - ingest: QsoCandidates.radius_hostgalaxy
+    name: radius_hostgalaxy
+    units: mas
+    flag: hidden
+    store: true
+    type: double
+    descr: Fitted effective radius of the host galaxy
+  - ingest: QsoCandidates.radius_hostgalaxy_error
+    name: radius_hostgalaxy_error
+    units: mas
+    flag: hidden
+    store: true
+    type: double
+    descr: Error on the fitted effective radius of the host galaxy
+  - ingest: QsoCandidates.sersic_index
+    name: sersic_index
+    flag: hidden
+    store: true
+    type: float
+    descr: Fitted sersic Index
+  - ingest: QsoCandidates.sersic_index_error
+    name: sersic_index_error
+    flag: hidden
+    store: true
+    type: float
+    descr: Error on the fitted sersic Index
+  - ingest: QsoCandidates.ellipticity_hostgalaxy
+    name: ellipticity_hostgalaxy
+    flag: hidden
+    store: true
+    type: double
+    descr: Fitted ellipticity of the host galaxy
+  - ingest: QsoCandidates.ellipticity_hostgalaxy_error
+    name: ellipticity_hostgalaxy_error
+    flag: hidden
+    store: true
+    type: double
+    descr: Error on the fitted ellipticity of the host galaxy
+  - ingest: QsoCandidates.posangle_hostgalaxy
+    name: posangle_hostgalaxy
+    units: deg
+    flag: hidden
+    store: true
+    type: double
+    descr: Fitted position angle of the host galaxy
+  - ingest: QsoCandidates.posangle_hostgalaxy_error
+    name: posangle_hostgalaxy_error
+    units: deg
+    flag: hidden
+    store: true
+    type: double
+    descr: Error on the fitted position angle of the host galaxy
+  - ingest: QsoCandidates.host_galaxy_detected
+    name: host_galaxy_detected
+    flag: hidden
+    store: true
+    type: boolean
+    descr: Flag indicating whether a host galaxy has been detected
+  - ingest: QsoCandidates.l2_norm
+    name: l2_norm
+    flag: hidden
+    store: true
+    type: double
+    descr: L2 norm for the fitted Sersic profile
+  - ingest: QsoCandidates.morph_params_corr_vec
+    name: morph_params_corr_vec
+    flag: hidden
+    store: true
+    type: array double
+    descr: Vector form of the upper triangle of the correlation matrix for the fitted
+      morphological parameters
+  - ingest: QsoCandidates.host_galaxy_flag
+    name: host_galaxy_flag
+    flag: hidden
+    store: true
+    type: byte
+    descr: Flag indicative of processing or scientific quality for the morphological
+      parameters fitting
+  - ingest: QsoCandidates.source_selection_flags
+    name: source_selection_flags
+    flag: hidden
+    store: true
+    type: integer
+    descr: Bit indicative of whether the input data from a given module met the source
+      list eligibility criteria for the source of interest
+  name: qso_catalogue_name
 # ingest: _table:QsoCatalogueName #sorted, 1:1 files
 # #count: 2722093
 # descr: "This table provides the list of input catalogues that have been used to
@@ -8798,7 +8798,8 @@ fields:
     descr: Measure of the relative shrinking of the coefficient vector when truncation
       is applied for the mean RP spectrum
 - name: xp_sampled_mean_spectrum
-  ingest: _table:XpSampledMeanSpectrum
+  ingest: _table:XpSampledMeanSpectrum #sorted, 1:1 files
+  #count: 34468373
   descr: |
     This is the BP/RP externally calibrated sampled mean spectrum. All mean spectra are sampled to the same set of absolute wavelength positions, which can be found in the field \texttt{wavelength} of table \texttt{XpMerge}.
   sub:
