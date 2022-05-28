@@ -25,8 +25,9 @@ import qualified Data.Vector as V
 import           Data.Word (Word64)
 import           Text.Printf (printf)
 import           Text.Read (readMaybe)
+import           System.Directory (doesPathExist)
 import qualified System.FilePath as FP
-import           System.IO (hFlush, stdout)
+import           System.IO (hFlush, hPutStrLn, stdout, stderr)
 
 import Field
 import Catalog
@@ -78,8 +79,13 @@ sortFilterTable :: (Key -> Bool) -> Table -> Table
 sortFilterTable f t = t{ tableRows = sortOn fst $ filter (f . fst) $ tableRows t }
 
 readTable :: FilePath -> Field -> (Int, Int) -> T.Text -> Fields -> IO Table
-readTable path keyf range name fields = do
-  (hd, rows) <- loadECSV file fields
+readTable path keyf range name fields =
+  liftIO (doesPathExist file) >>= \ex ->
+  if not ex then do
+    hPutStrLn stderr $ "Treating missing file as empty: " ++ file
+    return $ Table (TableInfo name (-1) fields V.empty) []
+  else do
+  (hd, rows) <- loadECSV file $ V.filter ((Just "_index" /=) . fieldIngest) fields
   let geti "_index" = return $ -1
       geti n = maybe (fail $ file ++ " missing field " ++ BSC.unpack n) return $ V.elemIndex n hd
   key <- geti (fieldsrc keyf)
