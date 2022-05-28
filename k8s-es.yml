@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: flathub-es
-        image: docker.elastic.co/elasticsearch/elasticsearch:7.15.2-amd64
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.17.4-amd64
         env:
           - name: cluster.name
             value: "astrosims" # XXX backwards compatibility
@@ -22,10 +22,14 @@ spec:
             value: "flathub-es-trans"
           - name: cluster.initial_master_nodes
             value: "popeye-k8s-1,popeye-k8s-2,popeye-k8s-4"
-          - name: node.name
+          - name: node.attr.host
             valueFrom:
               fieldRef:
                 fieldPath: spec.nodeName
+          - name: node.name
+            value: "$(node.attr.host)"
+          - name: cluster.routing.allocation.awareness.attributes
+            value: host
           - name: processors
             valueFrom:
               resourceFieldRef:
@@ -66,6 +70,83 @@ spec:
       - name: esdata
         hostPath:
           path: /nvme/esdata
+          type: DirectoryOrCreate
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: flathub-es2
+spec:
+  selector:
+    matchLabels:
+      name: flathub-es2
+  template:
+    metadata:
+      labels:
+        name: flathub-es2
+    spec:
+      nodeSelector:
+        nvme2: "true"
+      containers:
+      - name: flathub-es
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.17.4-amd64
+        env:
+          - name: cluster.name
+            value: "astrosims" # XXX backwards compatibility
+          - name: discovery.seed_hosts
+            value: "flathub-es-trans"
+          - name: cluster.initial_master_nodes
+            value: "popeye-k8s-1,popeye-k8s-2,popeye-k8s-5"
+          - name: node.attr.host
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          - name: node.name
+            value: "$(node.attr.host)-2"
+          - name: cluster.routing.allocation.awareness.attributes
+            value: host
+          - name: processors
+            valueFrom:
+              resourceFieldRef:
+                resource: requests.cpu
+          - name: TAKE_FILE_OWNERSHIP
+            value: "true"
+          - name: xpack.security.enabled
+            value: "false"
+          - name: node.roles
+            value: data
+        resources:
+          requests:
+            cpu: 2
+            memory: 32Gi
+          limits:
+            cpu: 8
+            memory: 48Gi
+        ports:
+          - containerPort: 9200
+            name: http
+          - containerPort: 9300
+            name: transport
+        livenessProbe:
+          tcpSocket:
+            port: transport
+          initialDelaySeconds: 15
+          periodSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /_cluster/health
+            port: http
+          initialDelaySeconds: 30
+          timeoutSeconds: 15
+          periodSeconds: 60
+        volumeMounts:
+        - name: esdata
+          mountPath: /usr/share/elasticsearch/data
+      terminationGracePeriodSeconds: 60
+      volumes:
+      - name: esdata
+        hostPath:
+          path: /nvme2/esdata
           type: DirectoryOrCreate
 ---
 apiVersion: v1
