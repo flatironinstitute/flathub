@@ -15,7 +15,6 @@ import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V
 import           Data.Word (Word64)
 
-import Monoid
 import Type
 import Field
 import Catalog

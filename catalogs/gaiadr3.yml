@@ -1,5 +1,8 @@
 title: Gaia DR3
 index: gaiadr3
+settings:
+  index:
+    number_of_shards: 64
 descr: >
   <a href='https://www.cosmos.esa.int/web/gaia/dr3'>Gaia Data Release 3</a> from the <a href='http://www.esa.int/ESA'>European Space Agency</a>
     How to cite and acknowledge Gaia:

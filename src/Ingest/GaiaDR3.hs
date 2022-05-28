@@ -16,6 +16,7 @@ import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Csv.Streaming as CSV
 import           Data.Foldable (fold, foldlM)
 import qualified Data.HashMap.Strict as HM
+import           Data.Int (Int64)
 import           Data.List (stripPrefix, mapAccumL, genericDrop, sortOn)
 import           Data.Maybe (fromMaybe)
 import qualified Data.Text as T
@@ -34,17 +35,17 @@ import Ingest.Types
 import Ingest.ECSV
 import qualified ES
 
-type Key = Int
+type Key = Int64
 
 indexLevel :: Int
 indexLevel = 59 - 2*level where level = 8
 
 -- |convert from source_id to file naming, HEALpix index level 8
 keyIndex :: Key -> Int
-keyIndex = (`shiftR` indexLevel)
+keyIndex = fromIntegral . (`shiftR` indexLevel)
 
 indexKey :: Int -> Key
-indexKey = (`shiftL` indexLevel)
+indexKey = (`shiftL` indexLevel) . fromIntegral
 
 keyInRange :: (Int, Int) -> Key -> Bool
 keyInRange (x, y) = \i -> i >= indexKey x && i < indexKey (succ y)
@@ -61,15 +62,17 @@ data Table = Table
   , tableRows :: [(Key, J.Series)]
   }
 
-csvToList :: CSV.Records a -> [a]
-csvToList (CSV.Cons h r) = either error id h : csvToList r
-csvToList (CSV.Nil e _) = maybe [] error e
+csvToList :: Word -> CSV.Records a -> [(Word, a)]
+csvToList i (CSV.Cons h r) = either error (i, ) h : csvToList (succ i) r
+csvToList _ (CSV.Nil e _) = maybe [] error e
 
 parseTable :: TableInfo -> CSV.Records (V.Vector BS.ByteString) -> Table
-parseTable ti@TableInfo{..} = Table ti . map row . csvToList where
-  row r =
-    ( maybe (error "key read") fst $ mfilter (BS.null . snd) $ BSC.readInt (r V.! tableKeyIndex)
-    , fold $ V.zipWith (\f -> ingestFieldBS f . (r V.!)) tableFields tableFieldIndex)
+parseTable ti@TableInfo{..} = Table ti . map row . csvToList 0 where
+  row (idx, r) =
+    ( maybe (error "key read") (fromInteger . fst) $ mfilter (BS.null . snd) $ BSC.readInteger (r V.! tableKeyIndex)
+    , fold $ V.zipWith cell tableFields tableFieldIndex) where
+    cell f (-1) = fieldName f J..= idx
+    cell f i = ingestFieldBS f (r V.! i)
 
 sortFilterTable :: (Key -> Bool) -> Table -> Table
 sortFilterTable f t = t{ tableRows = sortOn fst $ filter (f . fst) $ tableRows t }
@@ -77,7 +80,8 @@ sortFilterTable f t = t{ tableRows = sortOn fst $ filter (f . fst) $ tableRows t
 readTable :: FilePath -> Field -> (Int, Int) -> T.Text -> Fields -> IO Table
 readTable path keyf range name fields = do
   (hd, rows) <- loadECSV file fields
-  let geti n = maybe (fail $ file ++ " missing field " ++ BSC.unpack n) return $ V.elemIndex n hd
+  let geti "_index" = return $ -1
+      geti n = maybe (fail $ file ++ " missing field " ++ BSC.unpack n) return $ V.elemIndex n hd
   key <- geti (fieldsrc keyf)
   cols <- mapM (geti . fieldsrc) fields
   return $ (if singlesort then sortFilterTable (keyInRange range) else id) $ parseTable TableInfo
