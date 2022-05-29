@@ -4901,18 +4901,18 @@ fields:
     flag: hidden
     type: long
     descr: Quality flag for the achieved NSS solution
-# name: nss_two_body_orbit
-# ingest: _table:NssTwoBodyOrbit #not sorted, single file, dups
-# #count: 443205
-# descr: |
-#   This table contains non-single-star orbital models for sources compatible with an orbital two-body solution. This covers astrometric binaries, spectroscopic binaries, eclipsing binaries and certain combinations thereof. Several possible models are hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
-#   Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}. Warning: as a source may receive independent astrometric, spectroscopic or photometric orbits, a query using a given sourceId may return several solutions. This has to be accounted for when doing a crossmatch by sourceId.
-# sub:
-# - name: _index
-#   ingest: NssTwoBodyOrbit._index
-#   type: array int
-#   flags: hidden
-#   store: true
+- name: nss_two_body_orbit
+  ingest: _table:NssTwoBodyOrbit #not sorted, single file, dups
+  #count: 443205
+  descr: |
+    This table contains non-single-star orbital models for sources compatible with an orbital two-body solution. This covers astrometric binaries, spectroscopic binaries, eclipsing binaries and certain combinations thereof. Several possible models are hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
+    Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}. Warning: as a source may receive independent astrometric, spectroscopic or photometric orbits, a query using a given sourceId may return several solutions. This has to be accounted for when doing a crossmatch by sourceId.
+  sub:
+  - name: _index
+    ingest: NssTwoBodyOrbit._index
+    type: array int
+    flags: hidden
+    store: true
 # - ingest: NssTwoBodyOrbit.nss_solution_type
 #   name: nss_solution_type
 #   flag: hidden

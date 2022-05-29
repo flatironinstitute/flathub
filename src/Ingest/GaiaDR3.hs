@@ -6,18 +6,20 @@ module Ingest.GaiaDR3
   ( ingestGaiaDR3
   ) where
 
-import           Control.Arrow (second)
+import           Control.Arrow ((&&&), second)
 import           Control.Monad (mfilter, unless)
 import           Control.Monad.IO.Class (liftIO)
 import qualified Data.Aeson as J
+import qualified Data.Aeson.Encoding as JE
 import           Data.Bits (shiftL, shiftR)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Csv.Streaming as CSV
-import           Data.Foldable (fold, foldlM)
+import           Data.Foldable (foldlM)
+import           Data.Function (on)
 import qualified Data.HashMap.Strict as HM
 import           Data.Int (Int64)
-import           Data.List (stripPrefix, mapAccumL, genericDrop, sortOn)
+import           Data.List (stripPrefix, mapAccumL, genericDrop, sortOn, groupBy)
 import           Data.Maybe (fromMaybe)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -54,8 +56,7 @@ keyInRange (x, y) = \i -> i >= indexKey x && i < indexKey (succ y)
 data TableInfo = TableInfo
   { tableName :: T.Text
   , tableKeyIndex :: Int
-  , tableFields :: Fields
-  , tableFieldIndex :: V.Vector Int
+  , tableFields :: V.Vector (Field, Int)
   }
 
 data Table = Table
@@ -67,13 +68,23 @@ csvToList :: Word -> CSV.Records a -> [(Word, a)]
 csvToList i (CSV.Cons h r) = either error (i, ) h : csvToList (succ i) r
 csvToList _ (CSV.Nil e _) = maybe [] error e
 
+parseKeys :: TableInfo -> CSV.Records (V.Vector BS.ByteString) -> [(Word, (Key, V.Vector BS.ByteString))]
+parseKeys TableInfo{..} = map (second (key &&& id)) . csvToList 0 where
+  key r = maybe (error "key read") (fromInteger . fst) $ mfilter (BS.null . snd) $ BSC.readInteger (r V.! tableKeyIndex)
+
+parseTableDups :: TableInfo -> CSV.Records (V.Vector BS.ByteString) -> Table
+parseTableDups ti@TableInfo{..} = Table ti . map row . groupBy ((==) `on` fst . snd) . parseKeys ti where
+  row ~l@((_, (key, _)):_) =
+    (key, V.foldMap (\(f, i) -> fieldName f `JE.pair` JE.list (cell f i) l) tableFields) where
+    cell _ (-1) (idx, _) = J.toEncoding idx
+    cell f i (_, (_, r)) = fromMaybe (J.toEncoding J.Null) $ ingestValueBS f (r V.! i)
+
 parseTable :: TableInfo -> CSV.Records (V.Vector BS.ByteString) -> Table
-parseTable ti@TableInfo{..} = Table ti . map row . csvToList 0 where
-  row (idx, r) =
-    ( maybe (error "key read") (fromInteger . fst) $ mfilter (BS.null . snd) $ BSC.readInteger (r V.! tableKeyIndex)
-    , fold $ V.zipWith cell tableFields tableFieldIndex) where
-    cell f (-1) = fieldName f J..= idx
-    cell f i = ingestFieldBS f (r V.! i)
+parseTable ti@TableInfo{..} = Table ti . map row . parseKeys ti where
+  row (idx, (key, r)) =
+    (key, V.foldMap cell tableFields) where
+    cell (f,-1) = fieldName f J..= idx
+    cell (f,i) = ingestFieldBS f (r V.! i)
 
 sortFilterTable :: (Key -> Bool) -> Table -> Table
 sortFilterTable f t = t{ tableRows = sortOn fst $ filter (f . fst) $ tableRows t }
@@ -83,21 +94,23 @@ readTable path keyf range name fields =
   liftIO (doesPathExist file) >>= \ex ->
   if not ex then do
     hPutStrLn stderr $ "Treating missing file as empty: " ++ file
-    return $ Table (TableInfo name (-1) fields V.empty) []
+    return $ Table (TableInfo name (-1) V.empty) []
   else do
   (hd, rows) <- loadECSV file $ V.filter ((Just "_index" /=) . fieldIngest) fields
   let geti "_index" = return $ -1
       geti n = maybe (fail $ file ++ " missing field " ++ BSC.unpack n) return $ V.elemIndex n hd
   key <- geti (fieldsrc keyf)
   cols <- mapM (geti . fieldsrc) fields
-  return $ (if singlesort then sortFilterTable (keyInRange range) else id) $ parseTable TableInfo
+  return
+    $ (if singlesort then sortFilterTable (keyInRange range) else id)
+    $ (if dups then parseTableDups else parseTable) TableInfo
     { tableName = name
-    , tableFields = fields
     , tableKeyIndex = key
-    , tableFieldIndex = cols
+    , tableFields = V.zip fields cols
     } rows
   where
   singlesort = T.isPrefixOf "Nss" name
+  dups = name == "NssTwoBodyOrbit"
   name' = T.unpack name
   file 
     | singlesort = joinFile' path name' "1"

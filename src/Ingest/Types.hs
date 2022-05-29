@@ -46,29 +46,29 @@ addIngestConsts v i = i{ ingestConsts = v : ingestConsts i, ingestJConsts = fiel
 fieldSource :: Field -> T.Text
 fieldSource f = fromMaybe (fieldName f) $ fieldIngest f
 
-ingestFieldBS :: Field -> BS.ByteString -> J.Series
-ingestFieldBS f v
+ingestValueBS :: Field -> BS.ByteString -> Maybe J.Encoding
+ingestValueBS f v
   | BS.null v
   || v `elem` fieldMissing f
   || typeIsFloating ft && v `elem` ["nan","NaN","Inf","-Inf","+Inf","inf"]
-    = mempty
+    = Nothing
   | Just i <- guard (not $ isDigit $ BSC.head v) >> fieldEnum f >>= V.elemIndex (TE.decodeLatin1 v)
-    = fieldName f J..= i
+    = Just $ J.toEncoding i
   | typeIsBoolean ft
-    = fieldName f J..= bool v
+    = Just $ J.toEncoding $ bool v
   | typeIsString ft
   || BSC.any isControl v
-    = fieldName f J..= str v
+    = Just $ J.toEncoding $ str v
   {-
   | any typeIsBoolean (typeIsArray ft)
     = fieldName f `JE.pair` JE.unsafeToEncoding (B.byteString (BSC.map toLower v)) -- fix "[True,False]"
   -}
   | any typeIsFloating (typeIsArray ft)
-    = fieldName f `JE.pair` JE.unsafeToEncoding (substitute "NaN" "null" v) -- fix "[NaN]" (nulls get dropped)
+    = Just $ JE.unsafeToEncoding (substitute "NaN" "-999999" v) -- XXX fix "[NaN]"
   | typeIsIntegral ft
-    = fieldName f `JE.pair` JE.unsafeToEncoding (B.byteString $ drop0 v)
+    = Just $ JE.unsafeToEncoding (B.byteString $ drop0 v)
   | otherwise
-    = fieldName f `JE.pair` JE.unsafeToEncoding (B.byteString v)
+    = Just $ JE.unsafeToEncoding (B.byteString v)
   where
   ft = fieldType f
   bool "0" = J.Bool False
@@ -88,3 +88,6 @@ ingestFieldBS f v
     | BSC.null s' = "0"
     | otherwise = s'
     where s' = BSC.dropWhile ('0' ==) s
+
+ingestFieldBS :: Field -> BS.ByteString -> J.Series
+ingestFieldBS f v = foldMap (fieldName f `JE.pair`) $ ingestValueBS f v
