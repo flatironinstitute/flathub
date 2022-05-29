@@ -25,6 +25,12 @@ fields:
 #  name: designation
 #  type: string
 #  descr: Unique source designation (unique across all Data Releases)
+- ingest: _file_upper
+  name: _file_upper
+  type: int
+  descr: Upper bound for HEALpix index level 8 of source file for this row (used in determining source file name: "%s_%06d-%06d" % (table_name, source_id >> 43, _file_max))
+  store: true
+  flags: hidden
 - ingest: GaiaSource.source_id
   name: source_id
   type: long
@@ -878,6 +884,7 @@ fields:
     type: int
     flags: hidden
     store: true
+    description: Offset of this row in the source file for this table (see _file_max)
   - name: ''
     title: classprob
     descr: Class probabilities for source classification
@@ -2485,6 +2492,7 @@ fields:
     type: int
     flags: hidden
     store: true
+    description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: AstrophysicalParametersSupp.libname_best_gspphot
 #   name: libname_best_gspphot
 #   flag: hidden
@@ -3830,6 +3838,7 @@ fields:
     type: int
     flags: hidden
     store: true
+    description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: EpochPhotometry.solution_id
 #   name: solution_id
 #   type: long
@@ -4092,6 +4101,7 @@ fields:
 #   type: int
 #   flags: hidden
 #   store: true
+#   description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: GaiaCrf3Xm.icrf3sx
 #   name: icrf3sx
 #   flag: hidden
@@ -4326,6 +4336,7 @@ fields:
     type: int
     flags: hidden
     store: true
+    description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: GalaxyCandidates.vari_best_class_name
 #   name: vari_best_class_name
 #   flag: hidden
@@ -4645,6 +4656,7 @@ fields:
 #   type: array int
 #   flags: hidden
 #   store: true
+#   description: Offset of rows for this source_id in the source file for this table (see _file_max)
 # - ingest: GalaxyCatalogueName.catalogue_id
 #   name: catalogue_id
 #   flag: hidden
@@ -4664,6 +4676,7 @@ fields:
     type: int
     flags: hidden
     store: true
+    description: Offset of this row in the source file for this table
   - ingest: NssAccelerationAstro.nss_solution_type
     name: nss_solution_type
     flag: hidden
@@ -4790,7 +4803,7 @@ fields:
   - ingest: NssAccelerationAstro.corr_vec
     name: corr_vec
     flag: hidden
-    type: array float
+    type: array float #length: 36
     store: true
     descr: Vector form of the upper triangle of the correlation matrix
   - ingest: NssAccelerationAstro.obj_func
@@ -4825,6 +4838,7 @@ fields:
     type: int
     flags: hidden
     store: true
+    description: Offset of this row in the source file for this table
   - ingest: NssNonLinearSpectro.nss_solution_type
     name: nss_solution_type
     type: byte
@@ -4884,7 +4898,7 @@ fields:
     name: corr_vec
     flag: hidden
     store: true
-    type: array float
+    type: array float #length: 3
     descr: Vector form of the upper triangle of the correlation matrix
   - ingest: NssNonLinearSpectro.obj_func
     name: obj_func
@@ -4910,9 +4924,10 @@ fields:
   sub:
   - name: _index
     ingest: NssTwoBodyOrbit._index
-    type: array int
+    type: array int #maxlength: 3
     flags: hidden
     store: true
+    description: Offset of rows for this source_id in the source file for this table
 # - ingest: NssTwoBodyOrbit.nss_solution_type
 #   name: nss_solution_type
 #   flag: hidden
@@ -5439,6 +5454,7 @@ fields:
     type: int
     flags: hidden
     store: true
+    description: Offset of this row in the source file for this table
   - ingest: NssVimFl.nss_solution_type
     name: nss_solution_type
     flag: hidden
@@ -5549,7 +5565,7 @@ fields:
     name: corr_vec
     flag: hidden
     store: true
-    type: array float
+    type: array float #length: 21
     descr: Vector form of the upper triangle of the correlation matrix
   - ingest: NssVimFl.obj_func
     name: obj_func
@@ -5598,6 +5614,7 @@ fields:
     type: int
     flags: hidden
     store: true
+    description: Offset of this row in the source file for this table (see _file_max)
   - ingest: QsoCandidates.astrometric_selection_flag
     name: astrometric_selection_flag
     flag: hidden
@@ -5851,7 +5868,7 @@ fields:
     name: morph_params_corr_vec
     flag: hidden
     store: true
-    type: array double
+    type: array double #length: 15
     descr: Vector form of the upper triangle of the correlation matrix for the fitted
       morphological parameters
   - ingest: QsoCandidates.host_galaxy_flag
@@ -5887,6 +5904,7 @@ fields:
 #   type: array int
 #   flags: hidden
 #   store: true
+#   description: Offset of rows for this source_id in the source file for this table (see _file_max)
 # - ingest: QsoCatalogueName.catalogue_id
 #   name: catalogue_id
 #   flag: hidden
@@ -5908,6 +5926,7 @@ fields:
     type: int
     flags: hidden
     store: true
+    description: Offset of this row in the source file for this table (see _file_max)
   - ingest: RvsMeanSpectrum.ra
     name: ra
     units: deg
@@ -5923,13 +5942,13 @@ fields:
   - ingest: RvsMeanSpectrum.flux
     name: flux
     store: true
-    type: array float
+    type: array float #length: 2401
     descr: array of fluxes
   - ingest: RvsMeanSpectrum.flux_error
     name: flux_error
     flag: hidden
     store: true
-    type: array float
+    type: array float #length: 2401
     descr: array of uncertainties in flux
   - ingest: RvsMeanSpectrum.combined_transits
     name: combined_transits
@@ -5957,6 +5976,7 @@ fields:
     type: int
     flags: hidden
     store: true
+    description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: VariAgn.fractional_variability_g
 #   name: fractional_variability_g
 #   flag: hidden
@@ -5998,6 +6018,7 @@ fields:
     type: int
     flags: hidden
     store: true
+    description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: VariCepheid.pf
 #   name: pf
 #   units: d
@@ -6576,6 +6597,7 @@ fields:
     type: int
     flags: hidden
     store: true
+    description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: VariClassifierResult.classifier_name
 #   name: classifier_name
 #   flag: hidden
@@ -6634,6 +6656,7 @@ fields:
     type: int
     flags: hidden
     store: true
+    description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: VariCompactCompanion.period
 #   name: period
 #   units: d
@@ -6809,6 +6832,7 @@ fields:
     type: int
     flags: hidden
     store: true
+    description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: VariEclipsingBinary.global_ranking
 #   name: global_ranking
 #   flag: hidden
@@ -7067,6 +7091,7 @@ fields:
     type: int
     flags: hidden
     store: true
+    description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: VariLongPeriodVariable.frequency
 #   name: frequency
 #   units: d**-1
@@ -7112,6 +7137,7 @@ fields:
     type: int
     flags: hidden
     store: true
+    description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: VariMicrolensing.paczynski0_g0
 #   name: paczynski0_g0
 #   units: mag
@@ -7347,6 +7373,7 @@ fields:
     type: int
     flags: hidden
     store: true
+    description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: VariMsOscillator.frequency1
 #   name: frequency1
 #   units: d**-1
@@ -7423,6 +7450,7 @@ fields:
     type: int
     flags: hidden
     store: true
+    description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: VariPlanetaryTransit.transit_reference_time
 #   name: transit_reference_time
 #   units: d
@@ -7469,6 +7497,7 @@ fields:
     type: int
     flags: hidden
     store: true
+    description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: VariRadVelStatistics.num_selected_rv
 #   name: num_selected_rv
 #   flag: hidden
@@ -7574,6 +7603,7 @@ fields:
     type: int
     flags: hidden
     store: true
+    description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: VariRotationModulation.num_segments
 #   name: num_segments
 #   flag: hidden
@@ -8017,6 +8047,7 @@ fields:
     type: int
     flags: hidden
     store: true
+    description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: VariRrlyrae.pf
 #   name: pf
 #   units: d
@@ -8566,6 +8597,7 @@ fields:
     type: int
     flags: hidden
     store: true
+    description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: VariShortTimescale.amplitude_estimate
 #   name: amplitude_estimate
 #   units: mag
@@ -8626,6 +8658,7 @@ fields:
     type: int
     flags: hidden
     store: true
+    description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: VariSummary.num_selected_g_fov
 #   name: num_selected_g_fov
 #   flag: hidden
@@ -9065,6 +9098,7 @@ fields:
     type: int
     flags: hidden
     store: true
+    description: Offset of this row in the source file for this table (see _file_max)
   - ingest: XpContinuousMeanSpectrum.bp_basis_function_id
     name: bp_basis_function_id
     type: short
@@ -9103,19 +9137,19 @@ fields:
     name: bp_coefficients
     store: true
     flag: hidden
-    type: array double
+    type: array double #length: 55
     descr: Basis function coefficients for the BP spectrum representation
   - ingest: XpContinuousMeanSpectrum.bp_coefficient_errors
     name: bp_coefficient_errors
     store: true
     flag: hidden
-    type: array float
+    type: array float #length: 55
     descr: Basis function coefficient errors for the BP spectrum representation
 # - ingest: XpContinuousMeanSpectrum.bp_coefficient_correlations
 #   name: bp_coefficient_correlations
 #   store: true
 #   flag: hidden
-#   type: array float
+#   type: array float #length: 1485
 #   descr: Correlation matrix for BP coefficients
   - ingest: XpContinuousMeanSpectrum.bp_n_relevant_bases
     name: bp_n_relevant_bases
@@ -9168,19 +9202,19 @@ fields:
     name: rp_coefficients
     store: true
     flag: hidden
-    type: array double
+    type: array double #length: 55
     descr: Basis function coefficients for the RP spectrum representation
   - ingest: XpContinuousMeanSpectrum.rp_coefficient_errors
     name: rp_coefficient_errors
     store: true
     flag: hidden
-    type: array float
+    type: array float #length: 55
     descr: Basis function coefficient errors for the RP spectrum representation
 # - ingest: XpContinuousMeanSpectrum.rp_coefficient_correlations
 #   name: rp_coefficient_correlations
 #   store: true
 #   flag: hidden
-#   type: array float
+#   type: array float #length: 1485
 #   descr: Correlation matrix for RP coefficients
   - ingest: XpContinuousMeanSpectrum.rp_n_relevant_bases
     name: rp_n_relevant_bases
@@ -9205,6 +9239,7 @@ fields:
     type: int
     flags: hidden
     store: true
+    description: Offset of this row in the source file for this table (see _file_max)
   - ingest: XpSampledMeanSpectrum.ra
     name: ra
     units: deg
@@ -9221,14 +9256,14 @@ fields:
     name: flux
     store: true
     units: W.m**-2.nm**-1
-    type: array float
+    type: array float #length: 343
     descr: mean BP + RP combined spectrum flux
   - ingest: XpSampledMeanSpectrum.flux_error
     name: flux_error
     store: true
     units: W.m**-2.nm**-1
     flag: hidden
-    type: array float
+    type: array float #length: 343
     descr: mean BP + RP combined spectrum flux error
 - name: xp_summary
   ingest: _table:XpSummary #sorted, 1:1 files
@@ -9241,6 +9276,7 @@ fields:
     type: int
     flags: hidden
     store: true
+    description: Offset of this row in the source file for this table (see _file_max)
   - ingest: XpSummary.bp_n_relevant_bases
     name: bp_n_relevant_bases
     flag: hidden
