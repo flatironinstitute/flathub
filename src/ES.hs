@@ -28,7 +28,7 @@ module ES
   ) where
 
 import           Control.Arrow ((&&&))
-import           Control.Monad (forM, forM_, when, unless, (<=<))
+import           Control.Monad (forM, forM_, when, unless, (<=<), join)
 import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Control.Monad.Reader (ask, asks)
 import           Control.Monad.Trans.Resource (MonadResource)
@@ -56,6 +56,7 @@ import qualified Network.HTTP.Simple as HTTP
 import           Network.HTTP.Types.Header (hAcceptEncoding, hAccept, hContentType)
 import           Network.HTTP.Types.Method (StdMethod(GET, PUT, POST), renderStdMethod)
 import qualified Network.URI as URI
+import           System.IO (stderr)
 import           Text.Read (readEither)
 import qualified Waimwork.Config as C
 import Debug.Trace
@@ -122,9 +123,15 @@ elasticRequest meth url query body = do
     , HTTP.requestBody = bodyRequest body
     }
 
+getResponseBody :: MonadIO m => HTTP.Response a -> m a
+getResponseBody r = do
+  mapM_ (liftIO . BSC.hPutStrLn stderr) $ HTTP.getResponseHeader "warning" r
+  return $ HTTP.getResponseBody r
+
 httpJSON :: (MonadIO m, MonadErr m) => (J.Value -> J.Parser r) -> HTTP.Request -> m r
 httpJSON pares req = do
-  j <- liftIO $ HTTP.getResponseBody <$> HTTP.httpJSON req
+  r <- liftIO $ HTTP.httpJSON req
+  j <- getResponseBody r
   when debug $ traceM $ BSLC.unpack $ J.encode j
   either raise500 return $ J.parseEither pares j
 
@@ -132,7 +139,7 @@ httpPrint :: HTTP.Request -> M ()
 httpPrint req = liftIO $ BSC.putStrLn . HTTP.getResponseBody =<< HTTP.httpBS req
 
 httpStream :: (MonadResource m, MonadIO m) => HTTP.Request -> C.ConduitM i BS.ByteString m ()
-httpStream req = HTTP.httpSource req HTTP.getResponseBody
+httpStream req = HTTP.httpSource req (join . getResponseBody)
 
 catalogURL :: Catalog -> [String]
 catalogURL Catalog{ catalogIndex = idxn } =

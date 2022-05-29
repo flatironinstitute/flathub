@@ -8,7 +8,7 @@ extra-deps:
   - git: https://github.com/dylex/hs-hdf5
     commit: 49c9a85136d14c551c9c533ff5f0410ef3feb498
   - git: https://github.com/dylex/json-stream
-    commit: 3f24ba5575c7993476449e116d00cfe5073a469b
+    commit: 29218e1b7c05f6d37c440651b5b23eefb6ccb455
 flags:
   web-inv-route:
     snap: false
