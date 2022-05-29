@@ -165,7 +165,7 @@ ingestGaiaDR3 ing@Ingest{ ingestCatalog = cat } = do
   tabmap <- liftIO $ HM.traverseWithKey (readTable basedir keyf range) tabfs
   let maintab = tabmap HM.! keytab
       tabs = HM.elems $ HM.delete keytab tabmap
-      doc (k, b) = (show k, ingestJConsts ing <> b)
+      doc (k, b) = (show k, ingestJConsts ing <> fileUpper J..= snd range <> b)
       run o l = do
         liftIO $ putStr (show o ++ "\r") >> hFlush stdout
         ES.createBulk cat l
@@ -175,10 +175,13 @@ ingestGaiaDR3 ing@Ingest{ ingestCatalog = cat } = do
     $ genericDrop (ingestOffset ing) $ zipTables maintab tabs
   where
   (basedir, maintabn, range) = splitFile (ingestFile ing)
-  fields = catalogFields cat
   Just keyn = catalogKey cat
-  tabfs = HM.map V.fromList $ V.foldr (uncurry (HM.insertWith (++)) . second return . split) HM.empty fields
+  tabfs = HM.map V.fromList $ V.foldr addf HM.empty $ catalogFields cat
+  addf f
+    | fieldName f == fileUpper = id
+    | otherwise = uncurry (HM.insertWith (++)) $ second return $ split f
   split f@Field{ fieldDesc = fd@FieldDesc{ fieldDescIngest = Just i } } =
     second (\n -> f{ fieldDesc = fd{ fieldDescIngest = snd <$> T.uncons n } })
       $ T.breakOn "." i
   split f = error $ "field missing ingest: " ++ T.unpack (fieldName f)
+  fileUpper = "_file_upper"
