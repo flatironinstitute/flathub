@@ -16,3 +16,7 @@
 *.gz
 /web/package-lock.json
 /web/.sass-cache/
+*.hi
+*.dyn_hi
+*.o
+*.dyn_o

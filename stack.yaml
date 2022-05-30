@@ -6,7 +6,7 @@ extra-deps:
   - git: https://github.com/dylex/waimwork
     commit: 8ccaa63ac6b80a4ebc9ad7d61ca38cbb009e8f3c
   - git: https://github.com/dylex/hs-hdf5
-    commit: 49c9a85136d14c551c9c533ff5f0410ef3feb498
+    commit: ac3d3e772d8c7fc7ea25fb99f1c95cba208d72f4
   - git: https://github.com/ondrap/json-stream
     commit: e51d810c8b8bf312da9cb8b81cfd83d0feecc3fa
 flags:

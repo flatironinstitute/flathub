@@ -1,0 +1,442 @@
+# This provides "fixup" metadata for table columns used for converting to HDF5
+GaiaSource:
+  designation: null
+  phot_variable_flag:
+    enum: ['NOT_AVAILABLE', 'CONSTANT', 'VARIABLE']
+  libname_gspphot:
+    enum: [PHOENIX,MARCS,A,OB]
+AstrophysicalParameters:
+  libname_gspphot:
+    enum: [PHOENIX,MARCS,A,OB]
+  flags_gspspec:
+    length: 41
+  classlabel_espels:
+    enum:
+      - "HerbigStar"
+      - "PlanetaryNebula"
+      - "RedDwarfEmStar"
+      - "TTauri"
+      - "beStar"
+      - "wN"
+  spectraltype_esphs:
+    enum:
+    - unknown
+    - O
+    - B
+    - A
+    - F
+    - G
+    - K
+    - M
+    - CSTAR
+  activityindex_espcs_input:
+    enum: ['M1', 'M2']
+  ew_espels_halpha_flag:
+    type: bool
+  flags_esphs:
+    type: int16
+  flags_flame:
+    type: int8
+  flags_msc:
+    type: bool
+  flags_oa:
+    type: int16
+  flags_espucd:
+    type: int8
+  classlabel_espels_flag:
+    type: int8
+GaiaCrf3Xm:
+  icrf_name:
+    length: 21
+  iers_name:
+    length: 8
+  ocars_name:
+    length: 10
+  aw15_name:
+    length: 19
+  r90_name:
+    length: 19
+  m65_name:
+    length: 25
+  c75_name:
+    length: 19
+  dr14q_name:
+    length: 18
+  lqac5_name:
+    length: 16
+  lamost5_name:
+    length: 19
+  lqrf_name:
+    length: 5
+  cat2qz_name:
+    length: 15
+  bzcat5_name:
+    length: 15
+  cat2whspj_name:
+    length: 15
+  alma19_name:
+    length: 10
+  guw_name:
+    length: 16
+  b19_name:
+    length: 17
+AstrophysicalParametersSupp:
+  libname_best_gspphot:
+    enum: [PHOENIX,MARCS,A,OB]
+  flags_gspspec_ann:
+    type: int64
+  flags_flame_spec:
+    type: int8
+EpochPhotometry:
+  transit_id: &EpochPhotometryArray
+    #length: 274 #variable
+  g_transit_time: *EpochPhotometryArray
+  g_transit_flux: *EpochPhotometryArray
+  g_transit_flux_error: *EpochPhotometryArray
+  g_transit_flux_over_error: *EpochPhotometryArray
+  g_transit_mag: *EpochPhotometryArray
+  g_transit_n_obs: *EpochPhotometryArray
+  bp_obs_time: *EpochPhotometryArray
+  bp_flux: *EpochPhotometryArray
+  bp_flux_error: *EpochPhotometryArray
+  bp_flux_over_error: *EpochPhotometryArray
+  bp_mag: *EpochPhotometryArray
+  rp_obs_time: *EpochPhotometryArray
+  rp_flux: *EpochPhotometryArray
+  rp_flux_error: *EpochPhotometryArray
+  rp_flux_over_error: *EpochPhotometryArray
+  rp_mag: *EpochPhotometryArray
+  photometry_flag_noisy_data: *EpochPhotometryArray
+  photometry_flag_sm_unavailable: *EpochPhotometryArray
+  photometry_flag_af1_unavailable: *EpochPhotometryArray
+  photometry_flag_af2_unavailable: *EpochPhotometryArray
+  photometry_flag_af3_unavailable: *EpochPhotometryArray
+  photometry_flag_af4_unavailable: *EpochPhotometryArray
+  photometry_flag_af5_unavailable: *EpochPhotometryArray
+  photometry_flag_af6_unavailable: *EpochPhotometryArray
+  photometry_flag_af7_unavailable: *EpochPhotometryArray
+  photometry_flag_af8_unavailable: *EpochPhotometryArray
+  photometry_flag_af9_unavailable: *EpochPhotometryArray
+  photometry_flag_rp_unavailable: *EpochPhotometryArray
+  photometry_flag_bp_unavailable: *EpochPhotometryArray
+  photometry_flag_sm_reject: *EpochPhotometryArray
+  photometry_flag_af1_reject: *EpochPhotometryArray
+  photometry_flag_af2_reject: *EpochPhotometryArray
+  photometry_flag_af3_reject: *EpochPhotometryArray
+  photometry_flag_af4_reject: *EpochPhotometryArray
+  photometry_flag_af5_reject: *EpochPhotometryArray
+  photometry_flag_af6_reject: *EpochPhotometryArray
+  photometry_flag_af7_reject: *EpochPhotometryArray
+  photometry_flag_af8_reject: *EpochPhotometryArray
+  photometry_flag_af9_reject: *EpochPhotometryArray
+  photometry_flag_rp_reject: *EpochPhotometryArray
+  photometry_flag_bp_reject: *EpochPhotometryArray
+  variability_flag_g_reject: *EpochPhotometryArray
+  variability_flag_bp_reject: *EpochPhotometryArray
+  variability_flag_rp_reject: *EpochPhotometryArray
+GalaxyCandidates:
+  vari_best_class_name: &VariClassifierClass
+    enum:
+      - "AGN"                         #"Active Galactic Nuclei (including Quasars)."
+      - "DSCT|GDOR|SXPHE"             #"Set of variable types: delta Scuti, gamma Doradus, and SX Phoenicis."
+      - "WD"                          #"White Dwarf variable stars of types: ZZ Ceti (DAV, ZZA), V777 Herculis (DBV, ZZB), and GW Virginis (DOV, ZZO)."
+      - "LPV"                         #"Long Period Variable stars of types: omicron Ceti (Mira), OGLE Small Amplitude Red Giants, and semiregular."
+      - "ACV|CP|MCP|ROAM|ROAP|SXARI"  #"Set of variable types: alpha2 Canum Venaticorum, (Magnetic) Chemical Peculiar star, Rapidly Oscillating Am/Ap star, and SX Arietis variable."
+      - "S"                           #"Set of stars with short timescale variability."
+      - "MICROLENSING"                #"Star with microlensing event."
+      - "CEP"                         #"Cepheid variable types: delta Cepheid, anomalous Cepheid, and type-II Cepheid."
+      - "YSO"                         #"Young Stellar Object."
+      - "RS"                          #"RS Canum Venaticorum type variable."
+      - "ACYG"                        #"Alpha Cygni-type variable."
+      - "BCEP"                        #"Beta Cephei type variable."
+      - "BE|GCAS|SDOR|WR"             #"Subset of eruptive variable types: B-type emission line star, Gamma Cassiopeiae, S Doradus, and Wolf-Rayet."
+      - "SN"                          #"Supernovae."
+      - "SPB"                         #"Slowly Pulsating B-star variable."
+      - "ECL"                         #"Eclipsing Binaries of types: Beta Persei (Algol), Beta Lyrae, and W Ursae Majoris."
+      - "ELL"                         #"Ellipsoidal variable."
+      - "SYST"                        #"Symbiotic variable star."
+      - "SOLAR_LIKE"                  #"Stars with solar-like variability due to flares, spots, and rotational modulation."
+      - "CV"                          #"Cataclysmic variable."
+      - "SDB"                         #"Sub-dwarf B stars of types: V1093 Her and V361 Hya."
+      - "RR"                          #"RR Lyrae stars of the following types: fundamental-mode, first-overtone, double mode, and anomalous double mode."
+      - "EP"                          #"Star with exoplanet transits."
+      - "RCB"                         #"R Coronae Borealis type variable."
+      - "GALAXY"                      #???
+  classlabel_dsc: &classlabel_dsc
+    enum:
+    - galaxy
+    - physicalbinary
+    - quasar
+    - star
+    - whitedwarf
+    - unclassified
+  classlabel_dsc_joint: *classlabel_dsc
+  classlabel_oa: &classlabel_oa
+    enum:
+    - ELS
+    - GAL_Z005_01
+    - GAL_Z005_LT
+    - GAL_Z01_015
+    - GAL_Z01_02
+    - GAL_Z01_LT
+    - GAL_Z025_GT
+    - GAL_Z02_GT
+    - QSO_Z05_15
+    - QSO_Z05_LT
+    - QSO_Z15_25
+    - QSO_Z15_LT
+    - QSO_Z25_35
+    - QSO_Z35_45
+    - STAR_A
+    - STAR_EARLY
+    - STAR_F
+    - STAR_G
+    - STAR_INT
+    - STAR_K
+    - STAR_LATE
+    - STAR_M
+    - WD
+  morph_params_corr_vec_sersic:
+    length: 10
+  morph_params_corr_vec_de_vaucouleurs:
+    length: 6
+NssAccelerationAstro:
+  nss_solution_type:
+    enum:
+    - Acceleration7
+    - Acceleration9
+  corr_vec:
+    length: 36
+NssNonLinearSpectro:
+  nss_solution_type:
+    enum:
+    - FirstDegreeTrendSB1
+    - SecondDegreeTrendSB1
+  corr_vec:
+    length: 3
+NssTwoBodyOrbit:
+  nss_solution_type:
+    enum:
+    - AstroSpectroSB1
+    - EclipsingBinary
+    - EclipsingSpectro
+    - Orbital
+    - OrbitalAlternative
+    - OrbitalAlternativeValidated
+    - OrbitalTargetedSearch
+    - OrbitalTargetedSearchValidated
+    - SB1
+    - SB1C
+    - SB2
+    - SB2C
+  corr_vec:
+    length: 190
+NssVimFl:
+  nss_solution_type:
+    enum: [VIMF]
+  corr_vec:
+    length: 21
+QsoCandidates:
+  vari_best_class_name: *VariClassifierClass
+  classlabel_dsc: *classlabel_dsc
+  classlabel_dsc_joint: *classlabel_dsc
+  classlabel_oa: *classlabel_oa
+  morph_params_corr_vec:
+    length: 15
+RvsMeanSpectrum:
+  flux:
+    length: 2401
+  flux_error:
+    length: 2401
+VariCepheid:
+  type_best_classification:
+    enum: [DCEP,T2CEP,ACEP]
+  type2_best_sub_classification:
+    enum: [BL_HER,W_VIR,RV_TAU]
+  mode_best_classification:
+    enum: [FUNDAMENTAL,FIRST_OVERTONE,SECOND_OVERTONE,MULTI,UNDEFINED,NOT_APPLICABLE]
+  multi_mode_best_classification:
+    enum: ['F/1O','F/2O','1O/2O','1O/3O','2O/3O','F/1O/2O','1O/2O/3O']
+  fund_freq1_harmonic_ampl_g:
+    length: 16
+  fund_freq1_harmonic_ampl_g_error:
+    length: 16
+  fund_freq1_harmonic_phase_g:
+    length: 16
+  fund_freq1_harmonic_phase_g_error:
+    length: 16
+  fund_freq1_harmonic_ampl_bp:
+    length: 16
+  fund_freq1_harmonic_ampl_bp_error:
+    length: 16
+  fund_freq1_harmonic_phase_bp:
+    length: 16
+  fund_freq1_harmonic_phase_bp_error:
+    length: 16
+  fund_freq1_harmonic_ampl_rp:
+    length: 16
+  fund_freq1_harmonic_ampl_rp_error:
+    length: 16
+  fund_freq1_harmonic_phase_rp:
+    length: 16
+  fund_freq1_harmonic_phase_rp_error:
+    length: 16
+  fund_freq1_harmonic_ampl_rv:
+    length: 16
+  fund_freq1_harmonic_ampl_rv_error:
+    length: 16
+  fund_freq1_harmonic_phase_rv:
+    length: 16
+  fund_freq1_harmonic_phase_rv_error:
+    length: 16
+VariClassifierResult:
+  classifier_name:
+    enum: ["nTransits:5+"]
+  best_class_name: *VariClassifierClass
+VariEclipsingBinary:
+  model_type:
+    enum:
+    - ELLIPSOIDAL
+    - ONEGAUSSIAN
+    - ONEGAUSSIAN_WITH_ELLIPSOIDAL
+    - TWOGAUSSIANS
+    - TWOGAUSSIANS_WITH_ELLIPSOIDAL_ON_ECLIPSE1
+    - TWOGAUSSIANS_WITH_ELLIPSOIDAL_ON_ECLIPSE2
+VariRrlyrae:
+  best_classification:
+    enum: [RRc,RRab,RRd]
+  fund_freq1_harmonic_ampl_g:
+    length: 16
+  fund_freq1_harmonic_ampl_g_error:
+    length: 16
+  fund_freq1_harmonic_phase_g:
+    length: 16
+  fund_freq1_harmonic_phase_g_error:
+    length: 16
+  fund_freq1_harmonic_ampl_bp:
+    length: 16
+  fund_freq1_harmonic_ampl_bp_error:
+    length: 16
+  fund_freq1_harmonic_phase_bp:
+    length: 16
+  fund_freq1_harmonic_phase_bp_error:
+    length: 16
+  fund_freq1_harmonic_ampl_rp:
+    length: 16
+  fund_freq1_harmonic_ampl_rp_error:
+    length: 16
+  fund_freq1_harmonic_phase_rp:
+    length: 16
+  fund_freq1_harmonic_phase_rp_error:
+    length: 16
+  fund_freq1_harmonic_ampl_rv:
+    length: 16
+  fund_freq1_harmonic_ampl_rv_error:
+    length: 16
+  fund_freq1_harmonic_phase_rv:
+    length: 16
+  fund_freq1_harmonic_phase_rv_error:
+    length: 16
+VariRotationModulation:
+  outliers_time:
+    #length: 53 # variable
+  segments_start_time: &VariRotationModulationSegments
+    #length: 18 # variable
+  segments_end_time: *VariRotationModulationSegments
+  segments_colour_mag_intercept: *VariRotationModulationSegments
+  segments_colour_mag_intercept_error: *VariRotationModulationSegments
+  segments_colour_mag_slope: *VariRotationModulationSegments
+  segments_colour_mag_slope_error: *VariRotationModulationSegments
+  segments_correlation_coefficient: *VariRotationModulationSegments
+  segments_correlation_significance: *VariRotationModulationSegments
+  segments_rotation_period: *VariRotationModulationSegments
+  segments_rotation_period_error: *VariRotationModulationSegments
+  segments_rotation_period_fap: *VariRotationModulationSegments
+  segments_g_unspotted: *VariRotationModulationSegments
+  segments_g_unspotted_error: *VariRotationModulationSegments
+  segments_bp_unspotted: *VariRotationModulationSegments
+  segments_bp_unspotted_error: *VariRotationModulationSegments
+  segments_rp_unspotted: *VariRotationModulationSegments
+  segments_rp_unspotted_error: *VariRotationModulationSegments
+  segments_g_cos_term: *VariRotationModulationSegments
+  segments_g_cos_term_error: *VariRotationModulationSegments
+  segments_g_sin_term: *VariRotationModulationSegments
+  segments_g_sin_term_error: *VariRotationModulationSegments
+  segments_g_a0_term: *VariRotationModulationSegments
+  segments_g_a0_term_error: *VariRotationModulationSegments
+  segments_bp_cos_term: *VariRotationModulationSegments
+  segments_bp_cos_term_error: *VariRotationModulationSegments
+  segments_bp_sin_term: *VariRotationModulationSegments
+  segments_bp_sin_term_error: *VariRotationModulationSegments
+  segments_bp_a0_term: *VariRotationModulationSegments
+  segments_bp_a0_term_error: *VariRotationModulationSegments
+  segments_rp_cos_term: *VariRotationModulationSegments
+  segments_rp_cos_term_error: *VariRotationModulationSegments
+  segments_rp_sin_term: *VariRotationModulationSegments
+  segments_rp_sin_term_error: *VariRotationModulationSegments
+  segments_rp_a0_term: *VariRotationModulationSegments
+  segments_rp_a0_term_error: *VariRotationModulationSegments
+  segments_g_activity_index: *VariRotationModulationSegments
+  segments_g_activity_index_error: *VariRotationModulationSegments
+  segments_rp_activity_index: *VariRotationModulationSegments
+  segments_rp_activity_index_error: *VariRotationModulationSegments
+  segments_bp_activity_index: *VariRotationModulationSegments
+  segments_bp_activity_index_error: *VariRotationModulationSegments
+  segments_bp_rp_corr_coeff: *VariRotationModulationSegments
+  segments_bp_rp_corr_signif: *VariRotationModulationSegments
+  segments_bp_rp_intercept: *VariRotationModulationSegments
+  segments_bp_rp_intercept_error: *VariRotationModulationSegments
+  segments_bp_rp_slope: *VariRotationModulationSegments
+  segments_bp_rp_slope_error: *VariRotationModulationSegments
+  segments_model_reference_time: *VariRotationModulationSegments
+  segments_g_chi_square: *VariRotationModulationSegments
+  segments_bp_chi_square: *VariRotationModulationSegments
+  segments_rp_chi_square: *VariRotationModulationSegments
+VariShortTimescale:
+  variogram_char_timescales:
+    length: 1
+  variogram_values:
+    length: 1
+VariCompactCompanion:
+  harmonic_model_params_g:
+    length: 6
+  harmonic_model_params_g_error:
+    length: 6
+  harmonic_model_params_bp:
+    length: 6
+  harmonic_model_params_bp_error:
+    length: 6
+  harmonic_model_params_rp:
+    length: 6
+  harmonic_model_params_rp_error:
+    length: 6
+VariClassifierClassDefinition:
+  classifier_name:
+    length: 12
+  class_name:
+    length: 26
+  class_description:
+    length: 140
+VariClassifierDefinition:
+  classifier_name:
+    length: 12
+  classifier_description:
+    length: 186
+XpContinuousMeanSpectrum:
+  bp_coefficients:
+    length: 55
+  bp_coefficient_errors:
+    length: 55
+  bp_coefficient_correlations:
+    length: 1485
+  rp_coefficients:
+    length: 55
+  rp_coefficient_errors:
+    length: 55
+  rp_coefficient_correlations:
+    length: 1485
+XpSampledMeanSpectrum:
+  flux:
+    length: 343
+  flux_error:
+    length: 343
