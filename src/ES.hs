@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -7,6 +8,10 @@
 
 module ES
   ( initServer
+  , HTTP.Request
+  , httpJSON
+  , httpStream
+  , searchCatalogRequest
   , searchCatalog
   , createIndex
   , checkIndices
@@ -23,46 +28,59 @@ module ES
   ) where
 
 import           Control.Arrow ((&&&))
-import           Control.Monad (forM, forM_, when, unless)
-import           Control.Monad.IO.Class (liftIO)
+import           Control.Monad (forM, forM_, when, unless, (<=<), join)
+import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Control.Monad.Reader (ask, asks)
+import           Control.Monad.Trans.Resource (MonadResource)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J (Parser, parseEither, parseMaybe, typeMismatch)
-import qualified Data.Attoparsec.ByteString as AP
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy.Char8 as BSLC
+import qualified Data.Conduit as C
 import           Data.Either (partitionEithers)
 import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
 import           Data.IORef (newIORef, readIORef, writeIORef)
 import           Data.List (find, partition)
-import           Data.Maybe (mapMaybe, fromMaybe, maybeToList)
+import           Data.Maybe (mapMaybe, fromMaybe, maybeToList, isJust)
 import           Data.Proxy (Proxy)
 import           Data.String (IsString)
 import qualified Data.Text as T
 import           Data.Typeable (cast)
 import qualified Data.Vector as V
-import qualified Network.HTTP.Client as HTTP
-import           Network.HTTP.Types.Header (hAccept, hContentType)
+import qualified Network.HTTP.Client.Conduit as HTTP hiding (httpSource)
+import qualified Network.HTTP.Simple as HTTP
+import           Network.HTTP.Types.Header (hAcceptEncoding, hAccept, hContentType)
 import           Network.HTTP.Types.Method (StdMethod(GET, PUT, POST), renderStdMethod)
-import           Network.HTTP.Types.Status (badRequest400, internalServerError500)
-import qualified Network.HTTP.Types.URI as HTTP (Query)
 import qualified Network.URI as URI
+import           System.IO (stderr)
 import           Text.Read (readEither)
 import qualified Waimwork.Config as C
+import Debug.Trace
 
 import Monoid
 import JSON
 import Type
 import Field
 import Catalog
+import Error
 import Global
 
+debug :: Bool
+debug = False
+
 initServer :: C.Config -> IO HTTP.Request
-initServer conf = HTTP.parseUrlThrow (conf C.! "server")
+initServer conf = do
+  req <- HTTP.parseRequestThrow (conf C.! "server")
+  return req
+    { HTTP.requestHeaders =
+        [ (hAcceptEncoding, " ") -- disable gzip
+        , (hAccept, "application/json")
+        ]
+    }
 
 class Body a where
   bodyRequest :: a -> HTTP.RequestBody
@@ -88,38 +106,50 @@ instance Body EmptyJSON where
   bodyRequest EmptyJSON = HTTP.RequestBodyBS "{}"
   bodyContentType _ = Just "application/json"
 
-elasticSearch :: Body b => StdMethod -> [String] -> HTTP.Query -> (J.Value -> J.Parser r) -> b -> M r
-elasticSearch meth url query pares body = do
-  glob <- ask
-  let req = globalES glob
-      req' = HTTP.setQueryString query req
-        { HTTP.method = renderStdMethod meth
-        , HTTP.path = HTTP.path req <> BS.intercalate "/" (map (BSC.pack . URI.escapeURIString URI.isUnescapedInURIComponent) url)
-        , HTTP.requestHeaders = maybe id ((:) . (,) hContentType) (bodyContentType body)
-            $ (hAccept, "application/json")
-            : HTTP.requestHeaders req
-        , HTTP.requestBody = bodyRequest body
-        }
-  when debug $ liftIO $ do
-    print $ HTTP.path req'
-    case bodyRequest body of
-      HTTP.RequestBodyBS b -> BSC.putStrLn b
-      HTTP.RequestBodyLBS b -> BSLC.putStrLn b
-      _ -> BSC.putStrLn "???"
-  j <- either (raise internalServerError500) return . AP.eitherResult
-    =<< liftIO (HTTP.withResponse req' (globalHTTP glob) parse)
-  when debug $ liftIO $ BSLC.putStrLn (J.encode j)
-  either (raise internalServerError500) return $ J.parseEither pares j
-  where
-  parse r = AP.parseWith (HTTP.responseBody r) (J.json <* AP.endOfInput) BS.empty
-  debug = False
+elasticRequest :: (MonadGlobal m, Body b) => StdMethod -> [String] -> HTTP.Query -> b -> m HTTP.Request
+elasticRequest meth url query body = do
+  req <- asks globalES
+  when debug $ do
+    traceShowM $ HTTP.path req
+    traceM $ case bodyRequest body of
+      HTTP.RequestBodyBS b -> BSC.unpack b
+      HTTP.RequestBodyLBS b -> BSLC.unpack b
+      _ -> "???"
+  return $ HTTP.setQueryString query req
+    { HTTP.method = renderStdMethod meth
+    , HTTP.path = HTTP.path req <> BS.intercalate "/" (map (BSC.pack . URI.escapeURIString URI.isUnescapedInURIComponent) url)
+    , HTTP.requestHeaders = maybe id ((:) . (,) hContentType) (bodyContentType body)
+        $ HTTP.requestHeaders req
+    , HTTP.requestBody = bodyRequest body
+    }
+
+getResponseBody :: MonadIO m => HTTP.Response a -> m a
+getResponseBody r = do
+  mapM_ (liftIO . BSC.hPutStrLn stderr) $ HTTP.getResponseHeader "warning" r
+  return $ HTTP.getResponseBody r
+
+httpJSON :: (MonadIO m, MonadErr m) => (J.Value -> J.Parser r) -> HTTP.Request -> m r
+httpJSON pares req = do
+  r <- liftIO $ HTTP.httpJSON req
+  j <- getResponseBody r
+  when debug $ traceM $ BSLC.unpack $ J.encode j
+  either raise500 return $ J.parseEither pares j
+
+httpPrint :: HTTP.Request -> M ()
+httpPrint req = liftIO $ BSC.putStrLn . HTTP.getResponseBody =<< HTTP.httpBS req
+
+httpStream :: (MonadResource m, MonadIO m) => HTTP.Request -> C.ConduitM i BS.ByteString m ()
+httpStream req = HTTP.httpSource req (join . getResponseBody)
 
 catalogURL :: Catalog -> [String]
 catalogURL Catalog{ catalogIndex = idxn } =
   [T.unpack idxn]
 
-searchCatalog :: Body b => Catalog -> HTTP.Query -> (J.Value -> J.Parser r) -> b -> M r
-searchCatalog cat = elasticSearch GET (catalogURL cat ++ ["_search"])
+searchCatalogRequest :: (MonadGlobal m, Body b) => Catalog -> HTTP.Query -> b -> m HTTP.Request
+searchCatalogRequest cat q b = elasticRequest GET (catalogURL cat ++ ["_search"]) q b
+
+searchCatalog :: (MonadMIO m, Body b) => Catalog -> HTTP.Query -> (J.Value -> J.Parser r) -> b -> m r
+searchCatalog cat q p b = httpJSON p =<< searchCatalogRequest cat q b
 
 defaultSettings :: Catalog -> J.Object
 defaultSettings cat = HM.fromList
@@ -145,21 +175,20 @@ arrayMeta :: Bool -> Maybe String
 arrayMeta False = Nothing
 arrayMeta True = Just "1"
 
-createIndex :: Catalog -> M J.Value
+createIndex :: Catalog -> M ()
 createIndex cat@Catalog{..} = do
-  liftIO . print =<< mapM (\src ->
-    elasticSearch PUT ["_ingest","pipeline",T.unpack catalogIndex] [] return $ JE.pairs $
-      "processors" J..= [J.object
-        [ "script" J..= J.object
-          [ "source" J..= src ]
-        ]
-      ]) catalogIngestPipeline
-  elasticSearch PUT [T.unpack catalogIndex] [] return $ JE.pairs $
-       "settings" J..= mergeJSONObject catalogIndexSettings (defaultSettings cat)
+  mapM_ (\src ->
+    httpPrint =<< elasticRequest PUT ["_ingest","pipeline",T.unpack catalogIndex] [] (JE.pairs
+      $ "processors" .=*
+        ("script" .=*
+          ("source" J..= src))
+      )) catalogIngestPipeline
+  httpPrint =<< elasticRequest PUT [T.unpack catalogIndex] [] (JE.pairs
+    $  "settings" J..= mergeJSONObject catalogIndexSettings (defaultSettings cat)
     <> "mappings" .=*
       (  "dynamic" J..= J.String "strict"
       <> "_source" .=* ("enabled" J..= False)
-      <> "properties" .=* HM.foldMapWithKey field catalogFieldMap)
+      <> "properties" .=* HM.foldMapWithKey field catalogFieldMap))
   where
   field n f = n .=*
     (  "type" J..= t
@@ -171,7 +200,7 @@ createIndex cat@Catalog{..} = do
 checkIndices :: M (HM.HashMap Simulation String)
 checkIndices = do
   isdev <- asks globalDevMode
-  indices <- elasticSearch GET ["*"] [] J.parseJSON ()
+  indices <- httpJSON J.parseJSON =<< elasticRequest GET ["*"] [] ()
   HM.mapMaybe (\cat -> either Just (const Nothing) $ J.parseEither (catalog isdev cat) indices)
     <$> asks (catalogMap . globalCatalogs)
   where
@@ -264,8 +293,8 @@ queryIndexScroll scroll cat Query{..} = do
   gethists = HM.fromList . mapMaybe histsize . (histbnds ++) <$> if null histunks then return [] else
     fold . J.parseMaybe fillhistbnd <$> searchCatalog cat
       [] J.parseJSON
-      (JE.pairs $
-        "size" J..= J.Number 0
+      (JE.pairs
+      $  "size" J..= J.Number 0
       <> "query" .=* filts
       <> "aggs" .=* foldMap (\(f, _, _) ->
            ("0" <> fieldName f) .=* ("min" .=* field f)
@@ -345,14 +374,14 @@ queryIndex :: Catalog -> Query -> M J.Value
 queryIndex = queryIndexScroll False
 
 scrollSearch :: T.Text -> M J.Value
-scrollSearch sid = elasticSearch GET ["_search", "scroll"] [] return $ JE.pairs $
-     "scroll" J..= J.String scrollTime
-  <> "scroll_id" J..= sid
+scrollSearch sid = httpJSON return =<< elasticRequest GET ["_search", "scroll"] [] (JE.pairs
+  $  "scroll" J..= J.String scrollTime
+  <> "scroll_id" J..= sid)
 
 queryBulk :: Catalog -> Query -> M (IO (Word, V.Vector J.Object))
 queryBulk cat query@Query{..} = do
   unless (queryOffset == 0 && null queryAggs) $
-    raise badRequest400 "offset,aggs not supported for download"
+    raise400 "offset,aggs not supported for download"
   glob <- ask
   sidv <- liftIO $ newIORef Nothing
   return $ do
@@ -382,35 +411,38 @@ createBulk cat docs = do
       body = foldMap doc docs
       doc (i, d) = J.fromEncoding (J.pairs $ act .=* ("_id" J..= i))
         <> nl <> J.fromEncoding (J.pairs d) <> nl
-  r <- elasticSearch POST (catalogURL cat ++ ["_bulk"]) [] J.parseJSON body
-  -- TODO: ignore 409
-  unless (HM.lookup "errors" (r :: J.Object) == Just (J.Bool False))
-    $ raise internalServerError500 $ "createBulk: " ++ BSLC.unpack (J.encode r)
+  r <- httpJSON J.parseJSON =<< elasticRequest POST (catalogURL cat ++ ["_bulk"]) [] body
+  -- TODO: ignore 409?
+  unless (getelem "errors" r == Just (J.Bool False)) $ do
+    liftIO $ V.mapM_ (BSLC.putStrLn . J.encode) (foldMap filterr $ getelem "items" r)
+    raise500 "createBulk"
   where
   nl = B.char7 '\n'
+  filterr (J.Array v) = V.filter (isJust . (getelem "error" <=< getelem "create")) v
+  filterr j = V.singleton j
+  getelem k (J.Object o) = HM.lookup k o
+  getelem _ _ = Nothing
 
-flushIndex :: Catalog -> M (J.Value, J.Value)
-flushIndex Catalog{ catalogIndex = idxn } = (,)
-  <$> elasticSearch POST ([T.unpack idxn, "_refresh"]) [] return ()
-  <*> elasticSearch POST ([T.unpack idxn, "_flush"]) [] return ()
-
-newtype ESCount = ESCount{ esCount :: Word } deriving (Show)
-instance J.FromJSON ESCount where
-  parseJSON = fmap ESCount <$> J.withObject "count" (parseJSONField "count" $ \case
-    J.String t -> either fail return $ readEither (T.unpack t)
-    v -> J.parseJSON v)
+flushIndex :: Catalog -> M ()
+flushIndex Catalog{ catalogIndex = idxn } = do
+  httpPrint =<< elasticRequest POST ([T.unpack idxn, "_refresh"]) [] ()
+  httpPrint =<< elasticRequest POST ([T.unpack idxn, "_flush"]) [] ()
 
 countIndex :: Catalog -> M Word
 countIndex Catalog{ catalogIndex = idxn } =
-  sum . map esCount <$> elasticSearch GET (["_cat", "count", T.unpack idxn]) [] J.parseJSON EmptyJSON
+  httpJSON (fmap sum . parseCounts) =<< elasticRequest GET (["_cat", "count", T.unpack idxn]) [] EmptyJSON
+  where
+  parseCounts = J.withArray "counts" $ mapM $ J.withObject "count" (parseJSONField "count" $ \case
+    J.String t -> either fail return $ readEither (T.unpack t)
+    v -> J.parseJSON v)
 
-blockIndex :: Bool -> Catalog -> M J.Value
+blockIndex :: Bool -> Catalog -> M ()
 blockIndex ro Catalog{ catalogIndex = idxn } =
-  elasticSearch PUT ([T.unpack idxn, "_settings"]) [] return $ JE.pairs $
-    "index" .=* ("blocks" .=* ("read_only" J..= ro))
+  httpPrint =<< elasticRequest PUT ([T.unpack idxn, "_settings"]) [] (JE.pairs
+    $ "index" .=* ("blocks" .=* ("read_only" J..= ro)))
 
-closeIndex :: Catalog -> M J.Value
+closeIndex :: Catalog -> M ()
 closeIndex = blockIndex True
 
-openIndex :: Catalog -> M J.Value
+openIndex :: Catalog -> M ()
 openIndex = blockIndex False

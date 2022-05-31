@@ -30,6 +30,7 @@ export type Field = {
   reversed?: boolean;
   attachment?: boolean;
   wildcard?: boolean;
+  store?: boolean;
 };
 
 export type Catalog = {

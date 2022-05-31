@@ -4,17 +4,25 @@
 module Output.ECSV
   ( ecsvHeader
   , ecsvField
+  , ecsvOutput
   ) where
 
 import qualified Data.Aeson as J
+import qualified Data.Aeson.Types as J
 import qualified Data.ByteString.Builder as B
+import qualified Data.Conduit as C
 import           Data.Maybe (maybeToList)
 import qualified Data.Vector as V
+import qualified Network.Wai as Wai
 
 import Catalog
 import Type
 import Field
+import Backend
+import Global
 import Data.ECSV
+import Output.Types
+import Output.CSV
 
 ecsvType :: Type -> ECSVDataType
 ecsvType (Keyword _)   = ECSVString
@@ -42,14 +50,31 @@ ecsvField f = ECSVColumn
     maybeToList (("enum" J..=) <$> fieldEnum f)
   }
 
-ecsvHeader :: Catalog -> Query -> B.Builder
-ecsvHeader cat query = renderECSVHeader $ ECSVHeader
+ecsvHeader :: Catalog -> V.Vector Field -> [J.Pair] -> B.Builder
+ecsvHeader cat fields meta = renderECSVHeader $ ECSVHeader
   { ecsvDelimiter = ','
-  , ecsvDatatype = V.fromList $ map ecsvField $ queryFields query
-  , ecsvMeta = Just $ J.object
+  , ecsvDatatype = V.map ecsvField fields
+  , ecsvMeta = Just $ J.object $
     [ "name" J..= catalogTitle cat
     , "description" J..= catalogDescr cat
-    , "query" J..= query
-    ]
+    ] ++ meta
   , ecsvSchema = Nothing
+  }
+
+ecsvGenerator :: Wai.Request -> Catalog -> DataArgs V.Vector -> M OutputStream
+ecsvGenerator req cat args = do
+  csv <- outputGenerator csvOutput req cat args
+  return $ OutputStream Nothing $ do
+    C.yield $ ecsvHeader cat (dataFields args)
+      [ "filters" J..= dataFilters args
+      , "sort" J..= map (\(f, a) -> J.object ["field" J..= fieldName f, "order" J..= if a then "asc" :: String else "desc"]) (dataSort args)
+      ]
+    outputStream csv
+
+ecsvOutput :: OutputFormat
+ecsvOutput = OutputFormat
+  { outputMimeType = "text/x-ecsv"
+  , outputExtension = "ecsv"
+  , outputDescription = "Enhanced CSV file as per https://github.com/astropy/astropy-APEs/blob/main/APE6.rst, with a YAML header followed by a standard CSV file"
+  , outputGenerator = ecsvGenerator
   }

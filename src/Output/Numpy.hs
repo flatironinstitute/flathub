@@ -3,16 +3,19 @@
 module Output.Numpy
   ( numpyHeader
   , numpyRow
+  , numpyOutput
   ) where
 
 import qualified Data.Aeson.Types as J
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Lazy as BSL
+import           Data.Foldable (fold)
 import           Data.Maybe (fromMaybe)
 import           Data.Semigroup (stimesMonoid)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
+import qualified Data.Vector as V
 import           Data.Word (Word16, Word32, Word64)
 import           Foreign.C.Types (CUShort(CUShort))
 import           Numeric.Half (Half(Half))
@@ -20,7 +23,11 @@ import           Unsafe.Coerce (unsafeCoerce)
 
 import Type
 import Field
+import Catalog
 import Monoid
+import Output.Types
+import Global
+import Backend
 
 getHalf' :: Half -> Word16
 getHalf' (Half (CUShort x)) = x
@@ -80,3 +87,25 @@ unconsJ (j:l) = (j, l)
 numpyRow :: [Field] -> [J.Value] -> B.Builder
 numpyRow [] _ = mempty
 numpyRow (f:fl) x = numpyValue f j <> numpyRow fl jl where (j, jl) = unconsJ x
+
+numpyValueRow :: V.Vector Field -> V.Vector (TypeValue Maybe) -> B.Builder
+numpyValueRow f v = fold $ V.zipWith numpyBuild f v
+
+numpyGenerator :: Catalog -> DataArgs V.Vector -> M OutputStream
+numpyGenerator cat args = do
+  (count, _) <- queryStats cat (StatsArgs (dataFilters args) mempty)
+  let (header, size) = numpyHeader (V.toList $ dataFields args) count
+  outputStreamRows
+    (Just size)
+    header
+    (numpyValueRow $ dataFields args)
+    mempty
+    cat args
+
+numpyOutput :: OutputFormat
+numpyOutput = OutputFormat
+  { outputMimeType = "application/x-npy"
+  , outputExtension = "npy"
+  , outputDescription = "Numpy binary array file containing a 1-d array of structured data types representing the fields in each row"
+  , outputGenerator = \_ -> numpyGenerator
+  }

@@ -35,8 +35,10 @@ module Field
   , Field, FieldGroup
   , Fields, FieldGroups
   , setFieldValue
+  , setFieldValueUnsafe
   , updateFieldValueM
   , parseFieldGroup
+  , subField
   , expandField, expandFields, expandAllFields
   , deleteField
   , fieldsDepth
@@ -246,7 +248,7 @@ setFieldValueUnsafe f t = f{ fieldType = t }
 setFieldValue :: (Functor t, Functor f) => FieldSub t Proxy -> TypeValue f -> FieldSub f Proxy
 setFieldValue f = setFieldValueUnsafe f . coerceTypeValue (fieldType f)
 
-updateFieldValueM :: (Functor t, Functor f, Monad m) => FieldSub t Proxy -> (forall a . Typed a => t a -> m (f a)) -> m (FieldSub f Proxy)
+updateFieldValueM :: Functor m => FieldSub t Proxy -> (forall a . Typed a => t a -> m (f a)) -> m (FieldSub f Proxy)
 updateFieldValueM f t = setFieldValueUnsafe f <$> traverseTypeValue t (fieldType f)
 
 numpyFieldSize :: Field -> Word
@@ -280,6 +282,7 @@ instance J.ToJSON Field where
     , ("scale" J..=) <$> fieldDescScale
     , ("reversed" J..= fieldDescReversed) <$ guard fieldDescReversed
     , ("attachment" J..= True) <$ fieldDescAttachment
+    , ("store" J..= fieldDescStore) <$ guard (or fieldDescStore)
     ]
 
 parseFieldGroup :: HM.HashMap T.Text FieldGroup -> J.Value -> J.Parser FieldGroup

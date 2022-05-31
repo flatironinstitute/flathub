@@ -12,7 +12,7 @@ USER flathub
 EXPOSE 8092
 ENTRYPOINT ["/home/flathub/.local/bin/flathub"]
 CMD []
-ENV LD_LIBRARY_PATH=/home/stackage/.stack/programs/x86_64-linux/ghc-8.10.6/lib/ghc-8.10.6/rts
+ENV LD_LIBRARY_PATH=/home/stackage/.stack/programs/x86_64-linux/ghc-8.10.7/lib/ghc-8.10.7/rts
 
 COPY --chown=flathub stack.yaml *.cabal Setup.hs COPYING /home/flathub/flathub/
 WORKDIR /home/flathub/flathub

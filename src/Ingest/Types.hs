@@ -2,27 +2,30 @@
 module Ingest.Types
   where
 
+import           Control.Monad (guard)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Char8 as BSC
-import           Data.Char (isControl)
+import           Data.Char (isControl, isDigit)
+import           Data.Maybe (fromMaybe)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
+import qualified Data.Vector as V
 import           Data.Word (Word64)
 
 import Type
 import Field
 import Catalog
 
--- Indicates a (left, 1:many) join of the main data to child data
-data IngestJoin = IngestJoin
-  { joinIngest :: Ingest
-  , joinFirst -- ^parent field of first index
-  , joinCount -- ^parent field of count
-  , joinParent :: T.Text -- ^child field referencing parent
-  }
+data IngestJoin
+  = IngestHaloJoin -- ^Indicates a (left, 1:many) join of the main data to child data
+    { joinIngest :: Ingest
+    , joinFirst -- ^parent field of first index
+    , joinCount -- ^parent field of count
+    , joinParent :: T.Text -- ^child field referencing parent
+    }
 
 data Ingest = Ingest
   { ingestCatalog :: Catalog
@@ -40,25 +43,32 @@ data Ingest = Ingest
 addIngestConsts :: FieldValue -> Ingest -> Ingest
 addIngestConsts v i = i{ ingestConsts = v : ingestConsts i, ingestJConsts = fieldJValue v <> ingestJConsts i }
 
-ingestFieldBS :: Field -> BS.ByteString -> J.Series
-ingestFieldBS f v
+fieldSource :: Field -> T.Text
+fieldSource f = fromMaybe (fieldName f) $ fieldIngest f
+
+ingestValueBS :: Field -> BS.ByteString -> Maybe J.Encoding
+ingestValueBS f v
   | BS.null v
   || v `elem` fieldMissing f
   || typeIsFloating ft && v `elem` ["nan","NaN","Inf","-Inf","+Inf","inf"]
-    = mempty
+    = Nothing
+  | Just i <- guard (not $ isDigit $ BSC.head v) >> fieldEnum f >>= V.elemIndex (TE.decodeLatin1 v)
+    = Just $ J.toEncoding i
   | typeIsBoolean ft
-    = fieldName f J..= bool v
+    = Just $ J.toEncoding $ bool v
   | typeIsString ft
   || BSC.any isControl v
-    = fieldName f J..= str v
+    = Just $ J.toEncoding $ str v
   {-
   | any typeIsBoolean (typeIsArray ft)
     = fieldName f `JE.pair` JE.unsafeToEncoding (B.byteString (BSC.map toLower v)) -- fix "[True,False]"
-  | any typeIsFloating (typeIsArray ft)
-    = fieldName f `JE.pair` JE.unsafeToEncoding (substitute "NaN" "null" v) -- fix "[NaN]"
   -}
+  | any typeIsFloating (typeIsArray ft)
+    = Just $ JE.unsafeToEncoding (substitute "NaN" "-999999" v) -- XXX fix "[NaN]"
+  | typeIsIntegral ft
+    = Just $ JE.unsafeToEncoding (B.byteString $ drop0 v)
   | otherwise
-    = fieldName f `JE.pair` JE.unsafeToEncoding (B.byteString v)
+    = Just $ JE.unsafeToEncoding (B.byteString v)
   where
   ft = fieldType f
   bool "0" = J.Bool False
@@ -71,6 +81,13 @@ ingestFieldBS f v
   bool "True" = J.Bool True
   bool _ = str v
   str = J.String . TE.decodeLatin1
-  _substitute x y s = B.byteString p
-    <> (if BS.null r then mempty else y <> _substitute x y (BS.drop (BS.length x) r))
+  substitute x y s = B.byteString p
+    <> (if BS.null r then mempty else y <> substitute x y (BS.drop (BS.length x) r))
     where (p, r) = BS.breakSubstring x s
+  drop0 s
+    | BSC.null s' = "0"
+    | otherwise = s'
+    where s' = BSC.dropWhile ('0' ==) s
+
+ingestFieldBS :: Field -> BS.ByteString -> J.Series
+ingestFieldBS f v = foldMap (fieldName f `JE.pair`) $ ingestValueBS f v

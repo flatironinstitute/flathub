@@ -2,13 +2,14 @@
 {-# LANGUAGE ViewPatterns #-}
 
 import           Control.Arrow (first, second)
-import           Control.Monad ((<=<), forM_, when, unless, void)
+import           Control.Monad ((<=<), forM_, when, unless)
 import           Control.Monad.IO.Class (liftIO)
 import           Data.Default (Default(def))
 import qualified Data.HashMap.Strict as HM
 import           Data.Maybe (fromMaybe, isNothing, isJust)
 import qualified Data.Text as T
 import qualified Network.HTTP.Client as HTTP
+import qualified Network.HTTP.Simple as HTTP
 import qualified System.Console.GetOpt as Opt
 import           System.Environment (getProgName, getArgs)
 import           System.Exit (exitFailure)
@@ -36,6 +37,7 @@ routes = R.routes (
   [ R.routeNormCase topPage
   , R.routeNormCase static
   , R.routeNormCase staticHtml
+  , R.routeNormCase agoraPage
   , R.routeNormCase firePage
   , R.routeNormCase catalogPage
   , R.routeNormCase groupPage
@@ -97,8 +99,7 @@ main = do
   es <- ES.initServer (conf C.! "elasticsearch")
   let global = Global
         { globalConfig = conf
-        , globalHTTP = httpmgr
-        , globalES = es
+        , globalES = HTTP.setRequestManager httpmgr es
         , globalCatalogs = catalogs
         , globalDataDir = fromMaybe "." $ conf C.! "datadir"
         , globalDevMode = fromMaybe False $ conf C.! "dev"
@@ -123,19 +124,19 @@ main = do
       (consts, cat) <- pconst (catalogMap catalogs HM.! sim) $ optConstFields opts
       n <- ingest cat consts args
       liftIO $ print n
-      when (n > 0) $ void $ ES.flushIndex cat
+      when (n > 0) $ ES.flushIndex cat
 
     forM_ (optOpen opts) $ \sim -> do
       let cat = catalogMap catalogs HM.! sim
-      liftIO . print =<< ES.openIndex cat
+      ES.openIndex cat
 
     forM_ (optClose opts) $ \sim -> do
       let cat = catalogMap catalogs HM.! sim
-      liftIO . print =<< ES.flushIndex cat
+      ES.flushIndex cat
       n <- ES.countIndex cat
       liftIO $ print n
       unless (all (n ==) $ catalogCount cat) $ fail $ T.unpack sim ++ ": incorrect document count"
-      liftIO . print =<< ES.closeIndex cat
+      ES.closeIndex cat
 
     let catalogs' = pruneCatalogs errs catalogs
     cats <- mapM populateStats (catalogMap catalogs')

@@ -11,6 +11,7 @@ module Html
   , comparePage
   , staticHtml
   , firePage
+  , agoraPage
   , sqlSchema
   , csvSchema
   , attachment
@@ -50,6 +51,7 @@ import qualified Web.Route.Invertible.Wai as R
 import Type
 import Field
 import Catalog
+import Error
 import Global
 import Compression
 import Query
@@ -129,6 +131,7 @@ htmlResponse _req hdrs body = do
             <li .header__link--dropdown>
               <a href="@{topPage !:? mempty}">Catalogs
               <div .dropdown-content .dropdown-second>
+                <a href="@{agoraPage !:? mempty}"><text>AGORA
                 <a href="@{firePage !:? mempty}"><text>FIRE
                 $forall cat <- catalogsSorted cats
                   <a href="@{catalogPage !:? catalogName cat}">
@@ -203,6 +206,8 @@ topPage = getPath R.unit $ \() req -> do
                       <div .box-head>Catalogs
                     <ul .link-list>
                       <li>
+                        <a .underline href="@{agoraPage !:? mempty}">AGORA
+                      <li>  
                         <a .underline href="@{firePage !:? mempty}">FIRE
                       $forall cat <- catalogsSorted cats
                         <li>
@@ -296,7 +301,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                           <select #plot-#{axis}>
                             <option value="">Choose #{show axis}-Axis...
                             $forall f <- catalogFields cat
-                              $if typeIsFloating (fieldType f)
+                              $if typeIsFloating (fieldType f) && not (or (fieldStore f))
                                 <option
                                   .sel-#{fieldName f}
                                   :not (fieldDisp f):style="display:none"
@@ -322,7 +327,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                         <select #plot-c>
                           <option value="">None
                           $forall f <- catalogFields cat
-                            $if fieldTerms f || not (typeIsString (fieldType f))
+                            $if (fieldTerms f || not (typeIsString (fieldType f))) && not (or (fieldStore f))
                               <option
                                 .sel-#{fieldName f}
                                 :not (fieldDisp f):style="display:none"
@@ -436,11 +441,12 @@ catalogPage = getPath R.parameter $ \sim req -> do
                           <select #addfilt onchange="addFilter(event.target.value)">
                             <option value="">Add filter...
                             $forall f <- catalogFields cat
-                              <option #addfilt-#{fieldName f}
-                                .sel-#{fieldName f}
-                                value="#{fieldName f}"
-                                :not (fieldDisp f):style="display:none">
-                                #{fieldTitle f}
+                              $if not (or (fieldStore f))
+                                <option #addfilt-#{fieldName f}
+                                  .sel-#{fieldName f}
+                                  value="#{fieldName f}"
+                                  :not (fieldDisp f):style="display:none">
+                                  #{fieldTitle f}
                   <div .right-column-group>
                     <h6 .right-column-heading-leader>Random Sample
                     <div .sample-row>
@@ -750,6 +756,9 @@ staticHtml = getPath ("html" R.*< R.manyI R.parameter) $ \paths q -> do
         , (hContentType, "text/html")
         , cacheControl glob q
         ] (H.unsafeLazyByteString bod)
+
+agoraPage :: Route ()
+agoraPage = getPath "agora" $ \() -> R.routeAction staticHtml ["agora"]
 
 firePage :: Route ()
 firePage = getPath "fire" $ \() -> R.routeAction staticHtml ["fire"]

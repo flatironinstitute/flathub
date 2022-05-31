@@ -1,6 +1,7 @@
 module Output.CSV
   ( csvTextRow
   , csvJSONRow
+  , csvOutput
   ) where
 
 import qualified Data.Aeson as J
@@ -11,11 +12,20 @@ import qualified Data.ByteString.Char8 as BSC
 import           Data.ByteString.Internal (c2w)
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.ByteString.Lazy.Char8 as BSLC
+import           Data.Functor.Identity (Identity(Identity), runIdentity)
+import           Data.String (fromString)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
+import qualified Data.Vector as V
 import           Data.Word (Word8)
 
 import Monoid
+import Type
+import Field
+import Catalog
+import Backend
+import Global
+import Output.Types
 
 dQuote :: Word8
 dQuote = c2w '"'
@@ -50,11 +60,40 @@ csvJSON x@(J.Number _) = J.fromEncoding $ J.toEncoding x
 csvJSON x@(J.Bool _) = J.fromEncoding $ J.toEncoding x
 csvJSON x = csvLazyByteString $ J.encode x
 
-csvBuilderRow :: [B.Builder] -> B.Builder
-csvBuilderRow r = mintersperse (B.char8 ',') r <> B.char8 '\n'
+csvValue :: Value -> B.Builder
+csvValue (Keyword (Identity t)) = csvText t
+csvValue (Array v) = csvLazyByteString $ J.encode v
+csvValue v = unTypeValue (renderValue . runIdentity) v
+
+csvMaybeValue :: TypeValue Maybe -> B.Builder
+csvMaybeValue = foldMap csvValue . sequenceValue
+
+csvBuilderMap :: (a -> B.Builder) -> [a] -> B.Builder
+csvBuilderMap f r = mintersperseMap (B.char8 ',') f r <> B.char8 '\n'
 
 csvTextRow :: [T.Text] -> B.Builder
-csvTextRow = csvBuilderRow . map csvText
+csvTextRow = csvBuilderMap csvText
 
 csvJSONRow :: [J.Value] -> B.Builder
-csvJSONRow = csvBuilderRow . map csvJSON
+csvJSONRow = csvBuilderMap csvJSON
+
+_csvValueRow :: [Value] -> B.Builder
+_csvValueRow = csvBuilderMap csvValue
+
+csvMaybeValueRow :: [TypeValue Maybe] -> B.Builder
+csvMaybeValueRow = csvBuilderMap csvMaybeValue
+
+csvGenerator :: Catalog -> DataArgs V.Vector -> M OutputStream
+csvGenerator cat args = outputStreamRows Nothing
+  (csvTextRow $ map fieldName $ V.toList $ dataFields args)
+  (csvMaybeValueRow . V.toList)
+  mempty
+  cat args
+
+csvOutput :: OutputFormat
+csvOutput = OutputFormat
+  { outputMimeType = fromString "text/csv"
+  , outputExtension = "csv"
+  , outputDescription = T.pack "Standard CSV file with a header of field names; missing values are represented by empty fields, arrays are encoded as JSON"
+  , outputGenerator = \_ -> csvGenerator
+  }

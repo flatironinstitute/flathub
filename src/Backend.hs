@@ -1,5 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -7,9 +9,10 @@
 module Backend
   ( FieldFilter(..)
   , Filters(..)
-  , DataOffset
+  , DataRow
   , DataArgs(..)
   , queryData
+  , queryDataStream
   , maxDataCount, maxResultWindow
   , StatsArgs(..)
   , queryStats
@@ -21,19 +24,24 @@ module Backend
   , queryHistogram
   ) where
 
+import           Control.Applicative (many)
 import           Control.Monad (unless)
-import           Control.Monad.IO.Class (liftIO)
+import           Control.Monad.IO.Class (MonadIO, liftIO)
+import           Control.Monad.Trans.Class (lift)
+import           Control.Monad.Trans.Resource (MonadResource)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
 import           Data.Bits (xor)
+import qualified Data.Conduit as C
 import           Data.Foldable (toList)
 import           Data.Function (on)
-import           Data.Functor.Identity (Identity(Identity))
+import           Data.Functor.Identity (Identity(..))
 import           Data.Functor.Reverse (Reverse(Reverse))
 import qualified Data.HashMap.Strict as HM
+import qualified Data.JsonStream.Parser as JS
 import           Data.List (genericTake)
-import           Data.Maybe (fromMaybe, isJust)
+import           Data.Maybe (fromMaybe, isJust, catMaybes)
 import           Data.Proxy (Proxy(Proxy))
 import           Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
 import qualified Data.Text as T
@@ -75,27 +83,57 @@ instance TypeTraversable FieldFilter where
   sequenceTypeValue (FieldRange g l) = fmapTypeValue2 FieldRange (sequenceTypeValue g) (sequenceTypeValue l)
   sequenceTypeValue (FieldWildcard w) = Void $ FieldWildcard w
 
+instance J.ToJSON1 FieldFilter where
+  liftToJSON tj _ (FieldEQ [x]) = tj x
+  liftToJSON _ tjl (FieldEQ l) = tjl l
+  liftToJSON tj _ (FieldRange g l) = J.object $ catMaybes
+    [ (("gte" J..=) . tj) <$> g
+    , (("lte" J..=) . tj) <$> l
+    ]
+  liftToJSON _ _ (FieldWildcard t) = J.object ["wildcard" J..= t]
+  liftToEncoding tj _ (FieldEQ [x]) = tj x
+  liftToEncoding _ tjl (FieldEQ l) = tjl l
+  liftToEncoding tj _ (FieldRange g l) = J.pairs
+    $  foldMap (JE.pair "gte" . tj) g
+    <> foldMap (JE.pair "lte" . tj) l
+  liftToEncoding _ _ (FieldWildcard t) = J.pairs $ "wildcard" J..= t
+
 data Filters = Filters
   { filterSample :: Double
-  , filterSeed :: Maybe Word
+  , filterSeed :: Word
   , filterFields :: KM.KeyedMap (FieldSub FieldFilter Proxy)
   }
 
 instance Semigroup Filters where
   a <> b = Filters
     { filterSample = filterSample a *     filterSample b
-    , filterSeed   = joinMaybeWith xor (filterSeed a) (filterSeed a)
+    , filterSeed   = filterSeed   a `xor` filterSeed b
     , filterFields = filterFields a <>    filterFields b
     }
 
 instance Monoid Filters where
-  mempty = Filters 1 Nothing mempty
+  mempty = Filters 1 0 mempty
+
+instance J.ToJSON Filters where
+  toJSON Filters{..} = J.object $
+    mwhen (filterSample < 1)
+      [ "sample" J..= filterSample
+      , "seed" J..= filterSeed
+      ]
+    ++
+    map (\f -> fieldName f J..= fieldType f) (HM.elems filterFields)
+  toEncoding Filters{..} = J.pairs $
+    mwhen (filterSample < 1)
+      ("sample" J..= filterSample
+      <> "seed" J..= filterSeed)
+    <>
+    foldMap (\f -> fieldName f J..= fieldType f) filterFields
 
 filterQuery :: Filters -> J.Series
 filterQuery Filters{..} = "query" .=*
   (if filterSample < 1
     then \q -> ("function_score" .=* ("query" .=* q
-      <> "random_score" .=* foldMap (\s -> "seed" J..= s <> "field" J..= ("_seq_no" :: String)) filterSeed
+      <> "random_score" .=* ("seed" J..= filterSeed <> "field" J..= J.String "_seq_no")
       <> "boost_mode" J..= ("replace" :: String)
       <> "min_score" J..= (1 - filterSample)))
     else id)
@@ -110,47 +148,114 @@ filterQuery Filters{..} = "query" .=*
   term f (FieldWildcard w) | fieldWildcard f = "wildcard" .=* (fieldName f J..= w)
   term _ _ = error "invalid FieldFilder"
 
-newtype DataOffset = DataAfter J.Array
+class DataRow f r where
+  parseHit :: f -> J.Object -> J.Parser r
+  parseHitStream :: f -> JS.Parser r
 
-parseData :: Traversable f => f Field -> J.Value -> J.Parser (V.Vector (f (TypeValue Maybe)), DataOffset)
+instance DataRow a [(T.Text, J.Value)] where
+  parseHit f = fmap HM.toList . parseHit f
+  parseHitStream _ = (:)
+    <$> "_id" JS..: ((,) "_id" <$> JS.value)
+    <*> "fields" JS..: many (JS.objectItems JS.value)
+
+instance DataRow a (HM.HashMap T.Text J.Value) where
+  parseHit _ = return . storedFields
+  parseHitStream = fmap HM.fromList . parseHitStream
+
+instance DataRow (HM.HashMap T.Text Field) [FieldValue] where
+  parseHit f = fmap KM.toList . parseHit f
+  parseHitStream fields = (:)
+    <$> "_id" JS..: pf idField
+    <*> "fields" JS..: many (JS.objectKeyValues ps)
+    where
+    ps fn = foldMap pf $ HM.lookup fn fields
+    pf f = updateFieldValueM f (\Proxy -> Identity <$> parseStream)
+
+parseFieldValue' :: Field -> J.Value -> Value
+parseFieldValue' f v = fmapTypeValue (\Proxy -> either error Identity (J.parseEither parseJSONTyped v)) (fieldType f)
+
+instance DataRow (HM.HashMap T.Text Field) (HM.HashMap T.Text Value) where
+  parseHit fm = return . HM.intersectionWith parseFieldValue' fm . storedFields
+  parseHitStream fm = fmap (fieldType :: FieldValue -> Value) <$> parseHitStream fm
+
+instance DataRow (HM.HashMap T.Text Field) (HM.HashMap T.Text FieldValue) where
+  parseHit fm = return . HM.intersectionWith pfv fm . storedFields where
+    pfv f = setFieldValueUnsafe f . parseFieldValue' f
+  parseHitStream fm = KM.fromList <$> parseHitStream fm
+
+instance DataRow (V.Vector Field) (V.Vector (TypeValue Maybe)) where
+  parseHit fields = getf . storedFields where
+    getf o = mapM (parsef o) fields
+    parsef o f = traverseTypeValue (\Proxy -> mapM parseJSONTyped $ HM.lookup (fieldName f) o) (fieldType f)
+  parseHitStream fields = (ev V.//)
+    <$> many
+      (  "_id" JS..: ps "_id"
+      <> "fields" JS..: JS.objectKeyValues ps)
+    where
+    ps fn = foldMap pf $ HM.lookup fn fm
+    pf (i, t) = (,) i <$> traverseTypeValue (\Proxy -> Just <$> parseStream) t
+    ev = V.map (fmapTypeValue (\Proxy -> Nothing) . fieldType) fields
+    fm = HM.fromList $ V.toList $ V.imap (\i f -> (fieldName f, (i, fieldType f))) fields
+
+parseData :: DataRow f a => f -> J.Value -> J.Parser (V.Vector a)
 parseData fields = J.withObject "data res" $ \o ->
-  o J..: "hits" >>= (J..: "hits") >>= \l -> (,)
-    <$> mapM row l
-    <*> (DataAfter <$> if V.null l then return V.empty else V.last l J..: "sort")
-  where
-  row = getf . storedFields
-  getf o = mapM (parsef o) fields
-  parsef o f = traverseTypeValue (\Proxy -> mapM parseJSONTyped $ HM.lookup (fieldName f) o) (fieldType f)
+  o J..: "hits" >>= (J..: "hits") >>= mapM (parseHit fields)
+
+type DataOffset = [J.Value]
+
+parseDataStream :: DataRow f a => f -> JS.Parser (a, DataOffset)
+parseDataStream fields = "hits" JS..: "hits" JS..: JS.arrayOf
+  ((,)
+   <$> parseHitStream fields
+   <*> "sort" JS..: many (JS.arrayOf JS.value))
 
 data DataArgs f = DataArgs
   { dataFilters :: Filters
   , dataFields :: f Field -- ^Which fields to return (in order)
   , dataSort :: [(Field, Bool)] -- ^Sort order: (field, true=asc/false=desc)
   , dataCount :: Word16 -- ^Number of rows to return
-  , dataOffset :: Either DataOffset Word16 -- ^Either continuation from a previous query, in which case all other arguments must be exactly the same, or starting offset
+  , dataOffset :: Word16 -- ^Starting offset of rows to return
   }
 
 maxDataCount :: Word16
-maxDataCount = 5000
+maxDataCount = fromIntegral maxResultWindow
 
--- |Query raw data rows as specified, and return a vector of row data, matching dataFields order, and a DataOffset that can be used to return the next page of data
-queryData :: Traversable f => Catalog -> DataArgs f -> M (V.Vector (f (TypeValue Maybe)), DataOffset)
-queryData cat DataArgs{..} = do
-  unless (dataCount <= maxDataCount && fromIntegral dataCount + either (const 0) fromIntegral dataOffset <= maxResultWindow)
-    $ raise400 "count too large"
-  searchCatalog cat [] (parseData dataFields) $ JE.pairs
-    $  "size" J..= dataCount
+queryDataRequest :: (MonadGlobal m, Foldable f) => Catalog -> DataArgs f -> Maybe DataOffset -> m Request
+queryDataRequest cat DataArgs{..} off =
+  searchCatalogRequest cat [] $ JE.pairs
+    $  "track_total_hits" J..= False
+    <> "size" J..= dataCount
     <> "sort" `JE.pair` JE.list (\(f, a) ->
         JE.pairs (fieldName f J..= if a then "asc" else "desc" :: String))
-      (dataSort ++ [(docField,True),(key,True)])
-    <> offset dataOffset
+      dataSort
+    <> maybe
+      (mwhen (dataOffset > 0) $ "from" J..= dataOffset)
+      ("search_after" J..=) off
     <> storedFieldsArgs (toList dataFields)
     <> filterQuery dataFilters
-  where
+
+-- |Query raw data rows as specified, and return a vector of row data, matching dataFields order.
+queryData :: (Foldable f, DataRow (f Field) a) => Catalog -> DataArgs f -> M (V.Vector a)
+queryData cat args@DataArgs{..} = do
+  unless (dataCount <= maxDataCount && fromIntegral dataCount + fromIntegral dataOffset <= maxResultWindow)
+    $ raise400 "count too large"
+  httpJSON (parseData dataFields) =<< queryDataRequest cat args Nothing
+
+fstAndLast :: Monad m => C.ConduitT (a, b) a m (Maybe b)
+fstAndLast = C.await >>= maybe (return Nothing) go where
+  loop b = C.await >>= maybe (return $ Just b) go
+  go (a, b) = C.yield a >> loop b
+
+queryDataStream :: (MonadResource m, MonadIO m, MonadGlobal m, MonadFail m, Foldable f, DataRow (f Field) a) =>
+  Catalog -> DataArgs f -> C.ConduitT i a m ()
+queryDataStream cat args = qds Nothing where
+  qds off = do
+    req <- lift $ queryDataRequest cat args{ dataSort = dataSort args ++ [(docField,True),(key,True)] } off
+    off' <- httpStream req
+      C..| (mapM_ fail =<< parserConduit (parseDataStream (dataFields args)))
+      C..| fstAndLast
+    mapM_ (qds . Just) off'
   key = fromMaybe idField $ (`HM.lookup` catalogFieldMap cat) =<< catalogKey cat
-  offset (Right 0) = mempty
-  offset (Right o) = "from" J..= o
-  offset (Left (DataAfter a)) = "search_after" J..= a
 
 fieldUseTerms :: Field -> Bool
 fieldUseTerms f = fieldTerms f || not (typeIsNumeric $ snd $ unArrayType $ fieldType f)
@@ -158,7 +263,7 @@ fieldUseTerms f = fieldTerms f || not (typeIsNumeric $ snd $ unArrayType $ field
 parseStats :: Catalog -> J.Value -> J.Parser (Count, KM.KeyedMap (FieldSub FieldStats Proxy))
 parseStats cat = J.withObject "stats res" $ \o -> (,)
   <$> (o J..: "hits" >>= (J..: "total") >>= (J..: "value"))
-  <*> (HM.traverseWithKey pf =<< o J..: "aggregations") where
+  <*> (HM.traverseWithKey pf =<< o J..:! "aggregations" J..!= mempty) where
   pf n a = do
     f <- failErr $ lookupField cat False n
     updateFieldValueM f (flip (if fieldUseTerms f then pt else ps) a)

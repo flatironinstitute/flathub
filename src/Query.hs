@@ -24,7 +24,7 @@ import qualified Data.ByteString.Char8 as BSC
 import           Data.Foldable (fold)
 import           Data.Function (on)
 import qualified Data.HashMap.Strict as HM
-import           Data.List (foldl', unionBy)
+import           Data.List (foldl', unionBy, nubBy)
 import           Data.Maybe (listToMaybe, maybeToList, isJust, mapMaybe)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -45,6 +45,7 @@ import JSON
 import Type
 import Field
 import Catalog
+import Error
 import Global
 import Output.CSV
 import Output.ECSV
@@ -291,7 +292,7 @@ bulk (BulkCSV z) _ _ _ query = bulkBlock z query
   }
 bulk (BulkECSV z) _ cat _ query = bulkBlock z query
   "text/x-ecsv" "ecsv" $ const mempty
-  { bbsHeader = ecsvHeader cat query <> csvHeader query
+  { bbsHeader = ecsvHeader cat (V.fromList $ queryFields query) ["query" J..= query] <> csvHeader query
   , bbsRow = csvJSONRow
   }
 bulk (BulkNumpy z) _ _ _ query = bulkBlock z query
@@ -312,13 +313,12 @@ bulk (BulkAttachments a) _ cat req query = Bulk
   { bulkMimeType = "application/zip"
   , bulkExtension = maybe "attachments" T.unpack a <> ".zip"
   , bulkCompression = Nothing
-  , bulkQuery = query'{ queryFields = attachmentsFields cat att ++ ats }
+  , bulkQuery = query'{ queryFields = nubBy ((==) `on` fieldName) $ concatMap (attachmentFields cat) ats }
   , bulkGenerator = \next -> BulkStream Nothing <$> attachmentsBulkStream info ats next
   }
   where
   query' = attachmentQuery cat (fmap return a) query
   ats = queryFields query'
-  att = mapMaybe fieldAttachment ats
   info = TE.encodeUtf8 (catalogTitle cat <> (foldMap (T.cons ' ') a)) <> " downloaded from " <> Wai.rawPathInfo req
 bulk (BulkAttachmentList z a) sim cat req query = bulkAttachmentUrls a z sim cat req query
   "text/uri-list" ".uris" $ mempty
@@ -344,5 +344,5 @@ catalogBulk = getPath (R.parameter R.>*< R.parameter) $ \(sim, fmt) req -> do
     , (hCacheControl, "public, max-age=86400")
     ]
     ++ maybeToList ((,) hContentLength . BSC.pack . show <$> bulkSize)
-    ++ compressionEncodingHeader (guard (enc /= bulkCompression) >> enc))
+    ++ maybeToList (compressionEncodingHeader <$> (guard (enc /= bulkCompression) >> enc)))
     $ compressStream enc $ \chunk _ -> bulkStream chunk

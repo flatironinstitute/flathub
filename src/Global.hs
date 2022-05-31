@@ -1,28 +1,15 @@
+{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Global
-  ( Global(..)
-  , M
-  , runGlobal
-  , runGlobalWai
-  , Err
-  , runErr
-  , raise
-  , raise400
-  , raise404
-  , Action
-  , Route
-  , Simulation
-  , getPath
-  , askCatalog
-  , once
-  ) where
+  where
 
 import qualified Data.HashMap.Strict as HM
 import           Control.Concurrent.MVar (newMVar, modifyMVar)
 import           Control.Monad.Except (ExceptT(..), liftEither, runExcept)
-import           Control.Monad.Reader (ReaderT(..), asks)
+import           Control.Monad.IO.Class (MonadIO, liftIO)
+import           Control.Monad.Reader (ReaderT(..), ask, asks, MonadReader)
 import qualified Network.HTTP.Client as HTTP
 import qualified Network.Wai as Wai
 import qualified Waimwork.Config as C
@@ -34,7 +21,6 @@ import Catalog
 
 data Global = Global
   { globalConfig :: C.Config
-  , globalHTTP :: HTTP.Manager
   , globalES :: HTTP.Request
   , globalCatalogs :: Catalogs
   , globalDataDir :: FilePath
@@ -42,6 +28,10 @@ data Global = Global
   }
 
 type M = ErrT (ReaderT Global IO)
+
+type MonadGlobal m = MonadReader Global m
+type MonadM m = (MonadGlobal m, MonadErr m)
+type MonadMIO m = (MonadIO m, MonadM m)
 
 runGlobal :: Global -> M a -> IO a
 runGlobal g (ExceptT (ReaderT f)) = either (fail . snd) return =<< f g
@@ -64,8 +54,10 @@ askCatalog sim = maybe
   return =<< asks (HM.lookup sim . catalogMap . globalCatalogs)
 
 once :: M a -> M (IO a)
-once act = ExceptT $ ReaderT $ \g -> do
-  mv <- newMVar Nothing
-  return $ Right $ modifyMVar mv $
-    fmap (\v -> (Just v, v))
-      . maybe (runGlobal g act) return
+once act = do
+  g <- ask
+  liftIO $ do
+    mv <- newMVar Nothing
+    return $ modifyMVar mv $
+      fmap (\v -> (Just v, v))
+        . maybe (runGlobal g act) return

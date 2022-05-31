@@ -1,5 +1,5 @@
 name:           flathub
-version:        0.1
+version:        1.0
 description:    Flatiron simulation catalog repository
 author:         Dylan Simon
 maintainer:     dylan@dylex.net
@@ -33,6 +33,7 @@ executable flathub
     Ingest.CSV
     Ingest.Delim
     Ingest.ECSV
+    Ingest.GaiaDR3
     Ingest.HDF5
     Ingest.Types
     JSON
@@ -42,6 +43,7 @@ executable flathub
     Output.CSV
     Output.ECSV
     Output.Numpy
+    Output.Types
     Query
     Static
     Type
@@ -67,15 +69,18 @@ executable flathub
     , hashable
     , hdf5
     , http-client
+    , http-conduit
     , http-media
     , http-types
     , insert-ordered-containers
+    , json-stream
     , lens
     , mime-types
     , monad-control
     , mtl
     , network-uri
     , openapi3
+    , resourcet
     , scientific
     , shakespeare
     , streaming-commons

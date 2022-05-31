@@ -23,6 +23,7 @@ import           System.IO (hFlush, stdout)
 
 import Field
 import Catalog
+import Error
 import Global
 import qualified ES
 import Compression
@@ -45,12 +46,11 @@ takeCSV n r = do
     (\a' -> first (a':) <$> takeCSV (pred n) r')
     a
 
-ingestCSVFrom :: Ingest -> CSV.Records (V.Vector BS.ByteString) -> M Word64
-ingestCSVFrom info@Ingest{ ingestCatalog = cat, ingestOffset = off } csv = do
-  (fromMaybe V.empty -> header, rows) <- runErr $ unconsCSV csv
-  cols <- mapM (\f@Field{ fieldDesc = FieldDesc{ fieldDescName = n, fieldDescIngest = i } } ->
-      maybe (raise400 $ "csv header field missing: " ++ T.unpack n) (return . (,) f)
-        $ V.elemIndex (TE.encodeUtf8 $ fromMaybe n i) header)
+ingestCSVFrom :: Ingest -> V.Vector BS.ByteString -> CSV.Records (V.Vector BS.ByteString) -> M Word64
+ingestCSVFrom info@Ingest{ ingestCatalog = cat, ingestOffset = off } header rows = do
+  cols <- mapM (\f ->
+      maybe (raise400 $ "csv header field missing: " ++ T.unpack (fieldName f)) (return . (,) f)
+        $ V.elemIndex (TE.encodeUtf8 $ fieldSource f) header)
     $ catalogFields cat
   let
     (del, rows') = dropCSV off rows
@@ -73,4 +73,6 @@ ingestCSVFrom info@Ingest{ ingestCatalog = cat, ingestOffset = off } csv = do
 ingestCSV :: Ingest -> M Word64
 ingestCSV info = do
   dat <- liftIO $ decompressFile $ ingestFile info
-  ingestCSVFrom info $ CSV.decode CSV.NoHeader dat
+  let csv = CSV.decode CSV.NoHeader dat
+  (fromMaybe V.empty -> header, rows) <- runErr $ unconsCSV csv
+  ingestCSVFrom info header rows

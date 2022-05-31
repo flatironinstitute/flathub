@@ -16,6 +16,7 @@ import           Control.Monad (guard)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (ask)
 import qualified Data.Map.Strict as Map
+import           Data.Maybe (maybeToList)
 import           Data.String (IsString)
 import qualified Data.Text as T
 import           Data.Time.Clock (UTCTime)
@@ -75,7 +76,8 @@ static = getPath ("web" R.*< R.manyI R.parameter) $ \paths q -> do
   return $ Wai.responseFile ok200 (
     [ (hContentType, getMimeType (T.pack path))
     , cacheControl glob q
-    ] ++ compressionEncodingHeader enc) (compressionFilename enc path) Nothing
+    ] ++ maybeToList (compressionEncodingHeader <$> enc))
+    (compressionFilename enc path) Nothing
 
 staticURI :: [FilePathComponent] -> H.AttributeValue
 staticURI p = WH.routeActionValue static p mempty

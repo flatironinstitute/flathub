@@ -11,6 +11,7 @@ module KeyedMap
   , member
   , lookup
   , insert
+  , insertWith
   , delete
   , toList
   , fromList
@@ -34,11 +35,14 @@ singleton x = HM.singleton (key x) x
 member :: (Keyed a, Hashable (Key a), Eq (Key a)) => a -> KeyedMap a -> Bool
 member = HM.member . key
 
-lookup :: (Keyed a, Hashable (Key a), Eq (Key a)) => a -> KeyedMap a -> Maybe a
+lookup :: (Keyed k, Key k ~ Key a, Hashable (Key a), Eq (Key a)) => k -> KeyedMap a -> Maybe a
 lookup = HM.lookup . key
 
 insert :: (Keyed a, Hashable (Key a), Eq (Key a)) => a -> KeyedMap a -> KeyedMap a
 insert x = HM.insert (key x) x
+
+insertWith :: (Keyed a, Hashable (Key a), Eq (Key a)) => (a -> a -> a) -> a -> KeyedMap a -> KeyedMap a
+insertWith f x = HM.insertWith f (key x) x
 
 delete :: (Keyed a, Hashable (Key a), Eq (Key a)) => a -> KeyedMap a -> KeyedMap a
 delete = HM.delete . key
