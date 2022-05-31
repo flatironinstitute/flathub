@@ -18,6 +18,7 @@ AstrophysicalParameters:
       - "TTauri"
       - "beStar"
       - "wN"
+      - "wC"
   spectraltype_esphs:
     enum:
     - unknown

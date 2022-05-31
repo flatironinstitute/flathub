@@ -1988,6 +1988,7 @@ fields:
         - "TTauri"
         - "beStar"
         - "wN"
+        - "wC"
     - ingest: AstrophysicalParameters.classlabel_espels_flag
       name: classlabel_espels_flag
       flag: hidden
