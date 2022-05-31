@@ -89,7 +89,7 @@ AstrophysicalParametersSupp:
     type: int8
 EpochPhotometry:
   transit_id: &EpochPhotometryArray
-    #length: 274 #variable
+    {} #length: 274 #variable
   g_transit_time: *EpochPhotometryArray
   g_transit_flux: *EpochPhotometryArray
   g_transit_flux_error: *EpochPhotometryArray
@@ -339,9 +339,9 @@ VariRrlyrae:
     length: 16
 VariRotationModulation:
   outliers_time:
-    #length: 53 # variable
+    {} #length: 53 # variable
   segments_start_time: &VariRotationModulationSegments
-    #length: 18 # variable
+    {} #length: 18 # variable
   segments_end_time: *VariRotationModulationSegments
   segments_colour_mag_intercept: *VariRotationModulationSegments
   segments_colour_mag_intercept_error: *VariRotationModulationSegments

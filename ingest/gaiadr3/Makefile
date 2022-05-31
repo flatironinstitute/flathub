@@ -1,2 +1,2 @@
 %: %.hs
-	stack ghc -- -Wall -i../../src $<
+	stack ghc -- -O -Wall -i../../src $<
