@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Logo colors
+  #2C56C2 - dark blue
+  #107BF4 - light blue
+  cmyk(54%, 44%, 53%, 13%) - logo gray
+  #292c2f - dark footer color
+*/

@@ -2,7 +2,7 @@ http {
   port = 8092
 }
 elasticsearch {
-  server = "http://flathub-es:9200/"
+  server = "http://astrodb:9200/"
 }
 dev = true
 datadir = "."
