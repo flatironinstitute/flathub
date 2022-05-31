@@ -29,7 +29,7 @@ fields:
   type: int
   descr: 'Upper bound for HEALpix index level 8 of source file for this row (used in determining source file name: "%s_%06d-%06d" % (table_name, source_id >> 43, _file_max))'
   store: true
-  flags: hidden
+  flag: hidden
 - ingest: GaiaSource.source_id
   name: source_id
   type: long
@@ -881,7 +881,7 @@ fields:
   - name: _index
     ingest: AstrophysicalParameters._index
     type: int
-    flags: hidden
+    flag: hidden
     store: true
     description: Offset of this row in the source file for this table (see _file_max)
   - name: ''
@@ -2489,7 +2489,7 @@ fields:
   - name: _index
     ingest: AstrophysicalParametersSupp._index
     type: int
-    flags: hidden
+    flag: hidden
     store: true
     description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: AstrophysicalParametersSupp.libname_best_gspphot
@@ -3835,7 +3835,7 @@ fields:
   - name: _index
     ingest: EpochPhotometry._index
     type: int
-    flags: hidden
+    flag: hidden
     store: true
     description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: EpochPhotometry.solution_id
@@ -4098,7 +4098,7 @@ fields:
 # - name: _index
 #   ingest: GaiaCrf3Xm._index
 #   type: int
-#   flags: hidden
+#   flag: hidden
 #   store: true
 #   description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: GaiaCrf3Xm.icrf3sx
@@ -4333,7 +4333,7 @@ fields:
   - name: _index
     ingest: GalaxyCandidates._index
     type: int
-    flags: hidden
+    flag: hidden
     store: true
     description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: GalaxyCandidates.vari_best_class_name
@@ -4653,7 +4653,7 @@ fields:
 # - name: _index
 #   ingest: GalaxyCatalogueName._index
 #   type: array int
-#   flags: hidden
+#   flag: hidden
 #   store: true
 #   description: Offset of rows for this source_id in the source file for this table (see _file_max)
 # - ingest: GalaxyCatalogueName.catalogue_id
@@ -4673,7 +4673,7 @@ fields:
   - name: _index
     ingest: NssAccelerationAstro._index
     type: int
-    flags: hidden
+    flag: hidden
     store: true
     description: Offset of this row in the source file for this table
   - ingest: NssAccelerationAstro.nss_solution_type
@@ -4835,7 +4835,7 @@ fields:
   - name: _index
     ingest: NssNonLinearSpectro._index
     type: int
-    flags: hidden
+    flag: hidden
     store: true
     description: Offset of this row in the source file for this table
   - ingest: NssNonLinearSpectro.nss_solution_type
@@ -4924,7 +4924,7 @@ fields:
   - name: _index
     ingest: NssTwoBodyOrbit._index
     type: array int #maxlength: 3
-    flags: hidden
+    flag: hidden
     store: true
     description: Offset of rows for this source_id in the source file for this table
 # - ingest: NssTwoBodyOrbit.nss_solution_type
@@ -5451,7 +5451,7 @@ fields:
   - name: _index
     ingest: NssVimFl._index
     type: int
-    flags: hidden
+    flag: hidden
     store: true
     description: Offset of this row in the source file for this table
   - ingest: NssVimFl.nss_solution_type
@@ -5611,7 +5611,7 @@ fields:
   - name: _index
     ingest: QsoCandidates._index
     type: int
-    flags: hidden
+    flag: hidden
     store: true
     description: Offset of this row in the source file for this table (see _file_max)
   - ingest: QsoCandidates.astrometric_selection_flag
@@ -5901,7 +5901,7 @@ fields:
 # - name: _index
 #   ingest: QsoCatalogueName._index
 #   type: array int
-#   flags: hidden
+#   flag: hidden
 #   store: true
 #   description: Offset of rows for this source_id in the source file for this table (see _file_max)
 # - ingest: QsoCatalogueName.catalogue_id
@@ -5923,7 +5923,7 @@ fields:
   - name: _index
     ingest: RvsMeanSpectrum._index
     type: int
-    flags: hidden
+    flag: hidden
     store: true
     description: Offset of this row in the source file for this table (see _file_max)
   - ingest: RvsMeanSpectrum.ra
@@ -5973,7 +5973,7 @@ fields:
   - name: _index
     ingest: VariAgn._index
     type: int
-    flags: hidden
+    flag: hidden
     store: true
     description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: VariAgn.fractional_variability_g
@@ -6015,7 +6015,7 @@ fields:
   - name: _index
     ingest: VariCepheid._index
     type: int
-    flags: hidden
+    flag: hidden
     store: true
     description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: VariCepheid.pf
@@ -6594,7 +6594,7 @@ fields:
   - name: _index
     ingest: VariClassifierResult._index
     type: int
-    flags: hidden
+    flag: hidden
     store: true
     description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: VariClassifierResult.classifier_name
@@ -6653,7 +6653,7 @@ fields:
   - name: _index
     ingest: VariCompactCompanion._index
     type: int
-    flags: hidden
+    flag: hidden
     store: true
     description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: VariCompactCompanion.period
@@ -6829,7 +6829,7 @@ fields:
   - name: _index
     ingest: VariEclipsingBinary._index
     type: int
-    flags: hidden
+    flag: hidden
     store: true
     description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: VariEclipsingBinary.global_ranking
@@ -7088,7 +7088,7 @@ fields:
   - name: _index
     ingest: VariLongPeriodVariable._index
     type: int
-    flags: hidden
+    flag: hidden
     store: true
     description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: VariLongPeriodVariable.frequency
@@ -7134,7 +7134,7 @@ fields:
   - name: _index
     ingest: VariMicrolensing._index
     type: int
-    flags: hidden
+    flag: hidden
     store: true
     description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: VariMicrolensing.paczynski0_g0
@@ -7370,7 +7370,7 @@ fields:
   - name: _index
     ingest: VariMsOscillator._index
     type: int
-    flags: hidden
+    flag: hidden
     store: true
     description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: VariMsOscillator.frequency1
@@ -7447,7 +7447,7 @@ fields:
   - name: _index
     ingest: VariPlanitaryTransit._index
     type: int
-    flags: hidden
+    flag: hidden
     store: true
     description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: VariPlanetaryTransit.transit_reference_time
@@ -7494,7 +7494,7 @@ fields:
   - name: _index
     ingest: VariRadVelStatistics._index
     type: int
-    flags: hidden
+    flag: hidden
     store: true
     description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: VariRadVelStatistics.num_selected_rv
@@ -7600,7 +7600,7 @@ fields:
   - name: _index
     ingest: VariRotationModulation._index
     type: int
-    flags: hidden
+    flag: hidden
     store: true
     description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: VariRotationModulation.num_segments
@@ -8044,7 +8044,7 @@ fields:
   - name: _index
     ingest: VariRrlyrae._index
     type: int
-    flags: hidden
+    flag: hidden
     store: true
     description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: VariRrlyrae.pf
@@ -8594,7 +8594,7 @@ fields:
   - name: _index
     ingest: VariShortTimescale._index
     type: int
-    flags: hidden
+    flag: hidden
     store: true
     description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: VariShortTimescale.amplitude_estimate
@@ -8655,7 +8655,7 @@ fields:
   - name: _index
     ingest: VariSummary._index
     type: int
-    flags: hidden
+    flag: hidden
     store: true
     description: Offset of this row in the source file for this table (see _file_max)
 # - ingest: VariSummary.num_selected_g_fov
@@ -9096,7 +9096,7 @@ fields:
   - name: _index
     ingest: XpContinuousMeanSpectrum._index
     type: int
-    flags: hidden
+    flag: hidden
     store: true
     description: Offset of this row in the source file for this table (see _file_max)
   - ingest: XpContinuousMeanSpectrum.bp_basis_function_id
@@ -9237,7 +9237,7 @@ fields:
   - name: _index
     ingest: XpSampledMeanSpectrum._index
     type: int
-    flags: hidden
+    flag: hidden
     store: true
     description: Offset of this row in the source file for this table (see _file_max)
   - ingest: XpSampledMeanSpectrum.ra
@@ -9274,7 +9274,7 @@ fields:
   - name: _index
     ingest: XpSummary._index
     type: int
-    flags: hidden
+    flag: hidden
     store: true
     description: Offset of this row in the source file for this table (see _file_max)
   - ingest: XpSummary.bp_n_relevant_bases

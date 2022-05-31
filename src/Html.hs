@@ -301,7 +301,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                           <select #plot-#{axis}>
                             <option value="">Choose #{show axis}-Axis...
                             $forall f <- catalogFields cat
-                              $if typeIsFloating (fieldType f)
+                              $if typeIsFloating (fieldType f) && not (or (fieldStore f))
                                 <option
                                   .sel-#{fieldName f}
                                   :not (fieldDisp f):style="display:none"
@@ -327,7 +327,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                         <select #plot-c>
                           <option value="">None
                           $forall f <- catalogFields cat
-                            $if fieldTerms f || not (typeIsString (fieldType f))
+                            $if (fieldTerms f || not (typeIsString (fieldType f))) && not (or (fieldStore f))
                               <option
                                 .sel-#{fieldName f}
                                 :not (fieldDisp f):style="display:none"
@@ -441,11 +441,12 @@ catalogPage = getPath R.parameter $ \sim req -> do
                           <select #addfilt onchange="addFilter(event.target.value)">
                             <option value="">Add filter...
                             $forall f <- catalogFields cat
-                              <option #addfilt-#{fieldName f}
-                                .sel-#{fieldName f}
-                                value="#{fieldName f}"
-                                :not (fieldDisp f):style="display:none">
-                                #{fieldTitle f}
+                              $if not (or (fieldStore f))
+                                <option #addfilt-#{fieldName f}
+                                  .sel-#{fieldName f}
+                                  value="#{fieldName f}"
+                                  :not (fieldDisp f):style="display:none">
+                                  #{fieldTitle f}
                   <div .right-column-group>
                     <h6 .right-column-heading-leader>Random Sample
                     <div .sample-row>

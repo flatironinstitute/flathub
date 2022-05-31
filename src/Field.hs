@@ -282,6 +282,7 @@ instance J.ToJSON Field where
     , ("scale" J..=) <$> fieldDescScale
     , ("reversed" J..= fieldDescReversed) <$ guard fieldDescReversed
     , ("attachment" J..= True) <$ fieldDescAttachment
+    , ("store" J..= fieldDescStore) <$ guard (or fieldDescStore)
     ]
 
 parseFieldGroup :: HM.HashMap T.Text FieldGroup -> J.Value -> J.Parser FieldGroup
