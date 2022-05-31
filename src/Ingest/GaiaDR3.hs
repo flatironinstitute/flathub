@@ -6,7 +6,7 @@ module Ingest.GaiaDR3
   ( ingestGaiaDR3
   ) where
 
-import           Control.Arrow ((&&&), second)
+import           Control.Arrow (second)
 import           Control.Monad (mfilter, unless)
 import           Control.Monad.IO.Class (liftIO)
 import qualified Data.Aeson as J
@@ -53,6 +53,15 @@ indexKey = (`shiftL` indexLevel) . fromIntegral
 keyInRange :: (Int, Int) -> Key -> Bool
 keyInRange (x, y) = \i -> i >= indexKey x && i < indexKey (succ y)
 
+data Row a = Row
+  { rowIndex :: !Word
+  , rowKey :: !Key
+  , rowData :: !a
+  }
+
+instance Functor Row where
+  fmap f r = r{ rowData = f (rowData r) }
+
 data TableInfo = TableInfo
   { tableName :: T.Text
   , tableKeyIndex :: Int
@@ -61,33 +70,32 @@ data TableInfo = TableInfo
 
 data Table = Table
   { tableInfo :: TableInfo
-  , tableRows :: [(Key, J.Series)]
+  , tableRows :: [Row J.Series]
   }
 
-csvToList :: Word -> CSV.Records a -> [(Word, a)]
-csvToList i (CSV.Cons h r) = either error (i, ) h : csvToList (succ i) r
-csvToList _ (CSV.Nil e _) = maybe [] error e
-
-parseKeys :: TableInfo -> CSV.Records (V.Vector BS.ByteString) -> [(Word, (Key, V.Vector BS.ByteString))]
-parseKeys TableInfo{..} = map (second (key &&& id)) . csvToList 0 where
+parseRows :: TableInfo -> CSV.Records (V.Vector BS.ByteString) -> [Row (V.Vector BS.ByteString)]
+parseRows TableInfo{..} = rows 0 where
   key r = maybe (error "key read") (fromInteger . fst) $ mfilter (BS.null . snd) $ BSC.readInteger (r V.! tableKeyIndex)
+  row i d = Row i (key d) d
+  rows i (CSV.Cons h r) = either error (row i) h : rows (succ i) r
+  rows _ (CSV.Nil e _) = maybe [] error e
 
-parseTableDups :: TableInfo -> CSV.Records (V.Vector BS.ByteString) -> Table
-parseTableDups ti@TableInfo{..} = Table ti . map row . groupBy ((==) `on` fst . snd) . parseKeys ti where
-  row ~l@((_, (key, _)):_) =
-    (key, V.foldMap (\(f, i) -> fieldName f `JE.pair` JE.list (cell f i) l) tableFields) where
-    cell _ (-1) (idx, _) = J.toEncoding idx
-    cell f i (_, (_, r)) = fromMaybe (J.toEncoding J.Null) $ ingestValueBS f (r V.! i)
+parseTableDups :: TableInfo -> [Row (V.Vector BS.ByteString)] -> Table
+parseTableDups ti@TableInfo{..} = Table ti . map row . groupBy ((==) `on` rowKey) where
+  row ~l@(r:_) =
+    r{ rowData = V.foldMap (\(f, i) -> fieldName f `JE.pair` JE.list (cell f i) l) tableFields } where
+    cell _ (-1) Row{ rowIndex = idx } = J.toEncoding idx
+    cell f i Row{ rowData = d } = fromMaybe (J.toEncoding J.Null) $ ingestValueBS f (d V.! i)
 
-parseTable :: TableInfo -> CSV.Records (V.Vector BS.ByteString) -> Table
-parseTable ti@TableInfo{..} = Table ti . map row . parseKeys ti where
-  row (idx, (key, r)) =
-    (key, V.foldMap cell tableFields) where
+parseTable :: TableInfo -> [Row (V.Vector BS.ByteString)] -> Table
+parseTable ti@TableInfo{..} = Table ti . map row where
+  row r@(Row idx _ d) =
+    r{ rowData = V.foldMap cell tableFields } where
     cell (f,-1) = fieldName f J..= idx
-    cell (f,i) = ingestFieldBS f (r V.! i)
+    cell (f,i) = ingestFieldBS f (d V.! i)
 
-sortFilterTable :: (Key -> Bool) -> Table -> Table
-sortFilterTable f t = t{ tableRows = sortOn fst $ filter (f . fst) $ tableRows t }
+sortFilterTable :: (Key -> Bool) -> [Row a] -> [Row a]
+sortFilterTable f = sortOn rowKey . filter (f . rowKey)
 
 readTable :: FilePath -> Field -> (Int, Int) -> T.Text -> Fields -> IO Table
 readTable path keyf range name fields =
@@ -101,13 +109,15 @@ readTable path keyf range name fields =
       geti n = maybe (fail $ file ++ " missing field " ++ BSC.unpack n) return $ V.elemIndex n hd
   key <- geti (fieldsrc keyf)
   cols <- mapM (geti . fieldsrc) fields
+  let ti = TableInfo
+        { tableName = name
+        , tableKeyIndex = key
+        , tableFields = V.zip fields cols
+        }
   return
+    $ (if dups then parseTableDups else parseTable) ti
     $ (if singlesort then sortFilterTable (keyInRange range) else id)
-    $ (if dups then parseTableDups else parseTable) TableInfo
-    { tableName = name
-    , tableKeyIndex = key
-    , tableFields = V.zip fields cols
-    } rows
+    $ parseRows ti rows
   where
   singlesort = T.isPrefixOf "Nss" name
   dups = name == "NssTwoBodyOrbit"
@@ -137,7 +147,7 @@ joinFile bd dn (i, j) = joinFile' bd dn (r i ++ "-" ++ r j) where
   r = printf "%06d"
 
 nextKey :: Key -> J.Series -> Table -> (J.Series, Table)
-nextKey k b ts@Table{ tableRows = (tk, r):l } = case compare k tk of
+nextKey k b ts@Table{ tableRows = Row{ rowKey = tk, rowData = r }:l } = case compare k tk of
   LT -> (b, ts)
   EQ -> (b <> r, ts{ tableRows = l })
   GT -> error $ T.unpack (tableName (tableInfo ts)) ++ " out of order at " ++ show tk ++ " > " ++ show k
@@ -147,11 +157,11 @@ nextKeys :: Key -> J.Series -> [Table] -> (J.Series, [Table])
 nextKeys = mapAccumL . nextKey
 
 zipTables :: Table -> [Table] -> [(Key, J.Series)]
-zipTables m@Table{ tableRows = (k, r):l } tl =
+zipTables m@Table{ tableRows = Row{ rowKey = k, rowData = r }:l } tl =
   (k, r') : zipTables m{ tableRows = l } tl'
   where (r', tl') = nextKeys k r tl
 zipTables Table{ tableRows = [] } tl =
-  concatMap (\t -> (\(k, _) -> error $ "leftover in " ++ T.unpack (tableName (tableInfo t)) ++ ": " ++ show k) <$> tableRows t) tl
+  concatMap (\t -> (\Row{ rowKey = k } -> error $ "leftover in " ++ T.unpack (tableName (tableInfo t)) ++ ": " ++ show k) <$> tableRows t) tl
 
 groupsOf :: Int -> [a] -> [[a]]
 groupsOf _ [] = []

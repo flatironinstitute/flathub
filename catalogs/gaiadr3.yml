@@ -6557,7 +6557,7 @@ fields:
 #   store: true
 #   type: byte
 #   descr: 'Best type classification estimate out of: `DCEP'', `T2CEP'', `ACEP'''
-#   enum: [DECP,T2CEP,ACEP]
+#   enum: [DCEP,T2CEP,ACEP]
 # - ingest: VariCepheid.type2_best_sub_classification
 #   name: type2_best_sub_classification
 #   flag: hidden
@@ -9088,7 +9088,8 @@ fields:
 #   type: boolean
 #   descr: Source is present in \texttt{VariCompactCompanion}
 - name: xp_continuous_mean_spectrum
-  ingest: _table:XpContinuousMeanSpectrum
+  ingest: _table:XpContinuousMeanSpectrum #sorted, 1:1 files
+  #count: 219197643
   descr: |
     Table hosting the mean BP and RP spectra based on the continuous representation in basis functions (see~\secref{cu5pho_ssec:meanSpecGen}).
   sub:
