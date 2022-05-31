@@ -1,22 +1,16 @@
 -- Export gaia ecsv to hdf5 files, uses gaiadr3fix.yml
 --
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE ExistentialQuantification #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE ScopedTypeVariables #-}
 
 import qualified Bindings.HDF5 as H5
 import qualified Bindings.HDF5.Error as H5E
 import qualified Bindings.HDF5.Raw as H5R
 import           Control.Arrow (first)
 import           Control.Exception (bracket)
-import           Control.Monad (when, unless, mfilter)
+import           Control.Monad ((<=<), when, unless, mfilter)
 import qualified Data.Aeson as J
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
@@ -27,8 +21,6 @@ import qualified Data.HashMap.Strict as HM
 import           Data.Int (Int8, Int16, Int32, Int64)
 import           Data.List (sortOn)
 import           Data.Maybe (fromMaybe)
-import           Data.Proxy (Proxy(Proxy))
-import           Data.Tagged (Tagged(Tagged))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V
@@ -37,10 +29,10 @@ import           Data.Word (Word8, Word16, Word32, Word64)
 import qualified Data.Yaml as Y
 import           Foreign.C.String (CString)
 import           Foreign.Marshal.Alloc (allocaBytes)
+import           Foreign.Marshal.Array (copyArray, advancePtr)
 import           Foreign.Marshal.Utils (copyBytes, fillBytes)
 import           Foreign.Ptr (Ptr, nullPtr, castPtr, plusPtr)
 import           Foreign.Storable (Storable(..))
-import           GHC.TypeLits (Nat, KnownNat, natVal)
 import           System.Environment (getProgName, getArgs)
 import qualified System.FilePath as FP
 import           System.IO (hPutStrLn, stderr)
@@ -48,8 +40,6 @@ import           Text.Read (readMaybe)
 import           Unsafe.Coerce (unsafeCoerce)
 
 import Data.ECSV
-
-import Debug.Trace
 
 data ColumnFixup = ColumnFixup
   { fixupType :: Maybe ECSVDataType
@@ -67,8 +57,6 @@ instance J.FromJSON ColumnFixup where
     <*> o J..:? "enum"
 
 type EnumType = Int8
-enumType :: ECSVDataType
-enumType = ECSVInt8
 
 data ColumnHandler
   = ColumnOmit
@@ -118,7 +106,7 @@ withType :: IO H5.Datatype -> (H5.Datatype -> IO a) -> IO a
 withType c = bracket c H5.closeTypeID
 
 data ValueOps a = ValueOps
-  { fillValue :: Maybe a
+  { fillValue :: a
   , withValuetype :: forall b . (H5.Datatype -> IO b) -> IO b
   , parseValue :: BS.ByteString -> Maybe a
   , valueSize :: Int
@@ -129,7 +117,7 @@ data AnyValueOps = forall a. AnyValueOps (ValueOps a)
 
 nativeValueOps :: H5.NativeType a => a -> (BS.ByteString -> Maybe a) -> ValueOps a
 nativeValueOps x r = ValueOps
-  { fillValue = Just x
+  { fillValue = x
   , withValuetype = ($ H5.nativeTypeOf x)
   , parseValue = r
   , valueSize = sizeOf x
@@ -152,8 +140,8 @@ integralValueOps = (defaultValueOps fill)
   maxb = maxBound
   inint = toInteger minb >= toInteger (minBound :: Int) && toInteger maxb <= toInteger (maxBound :: Int)
 
-basetypeOps :: ECSVDataType -> AnyValueOps
-basetypeOps ECSVBool = AnyValueOps $ nativeValueOps (H5R.HBool_t maxBound) bool
+basetypeOps :: ECSVDataType -> (forall a . H5.NativeType a => ValueOps a -> b) -> b
+basetypeOps ECSVBool = ($ nativeValueOps (H5R.HBool_t maxBound) bool)
   where
   bool "0" = Just $ H5R.HBool_t 0
   bool "false" = Just $ H5R.HBool_t 0
@@ -162,21 +150,21 @@ basetypeOps ECSVBool = AnyValueOps $ nativeValueOps (H5R.HBool_t maxBound) bool
   bool "true" = Just $ H5R.HBool_t 1
   bool "True" = Just $ H5R.HBool_t 1
   bool _ = Nothing
-basetypeOps ECSVInt8    = AnyValueOps (integralValueOps :: ValueOps Int8)
-basetypeOps ECSVInt16   = AnyValueOps (integralValueOps :: ValueOps Int16)
-basetypeOps ECSVInt32   = AnyValueOps (integralValueOps :: ValueOps Int32)
-basetypeOps ECSVInt64   = AnyValueOps (integralValueOps :: ValueOps Int64)
-basetypeOps ECSVUInt8   = AnyValueOps (integralValueOps :: ValueOps Word8)
-basetypeOps ECSVUInt16  = AnyValueOps (integralValueOps :: ValueOps Word16)
-basetypeOps ECSVUInt32  = AnyValueOps (integralValueOps :: ValueOps Word32)
-basetypeOps ECSVUInt64  = AnyValueOps (integralValueOps :: ValueOps Word64)
-basetypeOps ECSVFloat32 = AnyValueOps $ (defaultValueOps (unsafeCoerce (0x7fc0ffff::Word32) :: Float))
-basetypeOps ECSVFloat64 = AnyValueOps $ (defaultValueOps (unsafeCoerce (0x7ff80000ffffffff::Word64) :: Double))
-basetypeOps t           = error $ "basetypeOps: " ++ show t
+basetypeOps ECSVInt8    = ($ (integralValueOps :: ValueOps Int8))
+basetypeOps ECSVInt16   = ($ (integralValueOps :: ValueOps Int16))
+basetypeOps ECSVInt32   = ($ (integralValueOps :: ValueOps Int32))
+basetypeOps ECSVInt64   = ($ (integralValueOps :: ValueOps Int64))
+basetypeOps ECSVUInt8   = ($ (integralValueOps :: ValueOps Word8))
+basetypeOps ECSVUInt16  = ($ (integralValueOps :: ValueOps Word16))
+basetypeOps ECSVUInt32  = ($ (integralValueOps :: ValueOps Word32))
+basetypeOps ECSVUInt64  = ($ (integralValueOps :: ValueOps Word64))
+basetypeOps ECSVFloat32 = ($ (defaultValueOps (unsafeCoerce (0x7fc0ffff::Word32) :: Float)))
+basetypeOps ECSVFloat64 = ($ (defaultValueOps (unsafeCoerce (0x7ff80000ffffffff::Word64) :: Double)))
+basetypeOps t           = ($ (error ("basetypeOps: " ++ show t) :: ValueOps H5R.HErr_t))
 
 handlerOps :: ColumnHandler -> AnyValueOps
 handlerOps ColumnOmit = error "handlerOps ColumnOmit"
-handlerOps (ColumnScalar t) = basetypeOps t
+handlerOps (ColumnScalar t) = basetypeOps t AnyValueOps
 
 handlerOps (ColumnEnum e) = AnyValueOps integralValueOps
   { withValuetype = withType (H5.createEnum $ sortOn snd $ HM.toList e)
@@ -184,7 +172,7 @@ handlerOps (ColumnEnum e) = AnyValueOps integralValueOps
   }
 
 handlerOps (ColumnString Nothing) = AnyValueOps ValueOps
-  { fillValue = Nothing
+  { fillValue = BS.empty
   , withValuetype = \f -> withType (H5.createTypeID H5.String H5R.h5t_VARIABLE) $ \t -> do
       H5.setStringPad t H5.NullPad 
       H5.setCSet t H5.UTF8
@@ -196,67 +184,53 @@ handlerOps (ColumnString Nothing) = AnyValueOps ValueOps
   }
 
 handlerOps (ColumnString (Just l)) = AnyValueOps ValueOps
-  { fillValue = Just $ BS.replicate l 0
+  { fillValue = BS.replicate l 0
   , withValuetype = \f -> withType (H5.createTypeID H5.String $ fromIntegral l) $ \t -> do
       H5.setStringPad t H5.NullPad 
       H5.setCSet t H5.UTF8
       f t
   , parseValue = Just
   , valueSize = l
-  , pokeValue = \p s f -> BSU.unsafeUseAsCStringLen s $ \(sp, sl) -> do
+  , pokeValue = \p s f -> do
+      let sl = BS.length s
+          p' = castPtr p :: CString
       when (sl > l) $ fail $ "string too long: " ++ show s
-      let p' = castPtr p :: CString
-      copyBytes p' sp sl
+      BSU.unsafeUseAsCString s $ \sp -> copyBytes p' sp sl
       fillBytes (plusPtr p' sl) 0 (l - sl)
       f
   }
 
+handlerOps (ColumnArray t Nothing) = basetypeOps t $ \baseops ->
+  AnyValueOps ValueOps
+    { fillValue = VS.empty
+    , withValuetype = \f -> withValuetype baseops $ \bt ->
+        withType (H5.createVLenType bt) f
+    , parseValue = fmap VS.fromList . parseArrayWith (parseValue baseops)
+    , valueSize = sizeOf (H5R.HVl_t 0 nullPtr)
+    , pokeValue = \p v f -> VS.unsafeWith v $ \vp ->
+        poke (castPtr p) (H5R.HVl_t (fromIntegral $ VS.length v * sizeOf (VS.head v)) (castPtr vp)) >> f
+    }
 
-{-
-withDatatype :: ColumnHandler -> (forall a . Maybe (H5R.In a) -> H5.Datatype -> IO ()) -> IO ()
-withDatatype ColumnOmit _ = return ()
-withDatatype (ColumnScalar t) f = withBasetype t $ \x -> 
-  H5R.withIn x $ \i -> f (Just i) (H5.nativeTypeOf x)
-withDatatype (ColumnEnum e) f = withBasetype enumType $ \x ->
-  H5R.withIn x $
-    withType (H5.createEnum $ sortOn snd $ HM.toList e) . f . Just
-withDatatype (ColumnArray t (Just l)) f = withBasetype t $ \x ->
-  H5R.withInVector (VS.replicate l x) $
-    withType (H5.createArrayType (H5.nativeTypeOf x) [fromIntegral l]) . f . Just . H5R.In . H5R.unwrapPtr
-withDatatype (ColumnArray t Nothing) f = withBasetype t $ \x ->
-  withType (H5.createVLenType (H5.nativeTypeOf x)) $ f Nothing
-withDatatype (ColumnString (Just l)) f =
-  H5R.withInByteString (BS.replicate l 0) $ \(H5R.InArray i) ->
-    withType (H5.createTypeID H5.String (fromIntegral l)) $ \t -> do
-      H5.setStringPad t H5.NullPad 
-      H5.setCSet t H5.UTF8
-      f (Just $ H5R.In i) t
-withDatatype (ColumnString Nothing) f =
-  withType (H5.createTypeID H5.String H5R.h5t_VARIABLE) $ \t -> do
-    H5.setStringPad t H5.NullPad 
-    H5.setCSet t H5.UTF8
-    f Nothing t
+handlerOps (ColumnArray t (Just l)) = basetypeOps t $ \baseops ->
+  let fillv = VS.replicate l $ fillValue baseops in
+  AnyValueOps ValueOps
+    { fillValue = fillv
+    , withValuetype = \f -> withValuetype baseops $ \bt ->
+        withType (H5.createArrayType bt [fromIntegral l]) f
+    , parseValue = fmap VS.fromList . parseArrayWith (parseValue baseops)
+    , valueSize = l * valueSize baseops
+    , pokeValue = \p v f -> do
+        let vl = VS.length v
+            p' = castPtr p
+        when (vl > l) $ fail $ "array too long: " ++ show vl
+        VS.unsafeWith v $ \vp -> copyArray p' vp vl
+        VS.unsafeWith fillv $ \fp -> copyArray (advancePtr p' vl) (advancePtr fp vl) (l - vl)
+        f
+    }
 
-newtype FixedArray a (l :: Nat) = FixedArray (VS.Vector a)
-newtype FixedString (l :: Nat) = FixedString BS.ByteString
-newtype VarArray a = VarArray (VS.Vector a)
-newtype VarString = VarString BS.ByteString
+parseArrayWith :: (BS.ByteString -> Maybe a) -> BS.ByteString -> Maybe [a]
+parseArrayWith pv = mapM pv . BSC.split ',' <=< BS.stripPrefix "[" <=< BS.stripSuffix "]"
 
-fixedLength :: KnownNat l => p l -> Int
-fixedLength = fromInteger . natVal
-
-instance (KnownNat l, Storable a) => Storable (FixedArray a l) where
-  sizeOf a@(FixedArray v) = fixedLength a * sizeOf (VS.head v)
-  alignment (FixedArray v) = alignment (VS.head v)
-  peek p = FixedArray <$> VS.generateM (fixedLength (Proxy :: Proxy l)) (peekElemOff $ castPtr p)
-  poke p (FixedArray v) = VS.imapM_ (pokeElemOff $ castPtr p) v
-
-instance KnownNat l => Storable (FixedString l) where
-  sizeOf (FixedString s) = fromInteger (natVal (Proxy :: Proxy l)) * sizeOf (BS.head s)
-  alignment (FixedString s) = alignment (BS.head s)
-  peek p = FixedString <$> BS.packCStringLen (castPtr p, fixedLength (Proxy :: Proxy l))
-  poke p (FixedString s) = BSU.unsafeUseAsCStringLen s $ \(sp, sl) -> fail "TODO"
-    -}
     
 createStringAttribute :: H5.Location loc => loc -> BS.ByteString -> T.Text -> IO ()
 createStringAttribute loc name val =
@@ -280,19 +254,21 @@ makeDataset h5f h5s col vals = case handlerOps (columnHandler col) of
   AnyValueOps ValueOps{..} ->
     withValuetype $ \h5t -> do
       dcpl <- H5.createPropertyList
-      mapM_ (\x -> do
-        H5.setFillTime dcpl H5.Never
-        allocaBytes valueSize $ \xp ->
-          pokeValue xp x $
-            H5E.withErrorCheck_ $ H5R.h5p_set_fill_value (H5.hid dcpl) (H5.hid h5t) (H5R.In xp))
-        fillValue
+      -- H5.setFillTime dcpl H5.Never
+      allocaBytes valueSize $ \fp ->
+        pokeValue fp fillValue $
+          H5E.withErrorCheck_ $ H5R.h5p_set_fill_value (H5.hid dcpl) (H5.hid h5t) (H5R.In fp)
       bracket
         (H5.createDataset h5f (TE.encodeUtf8 $ columnName col) h5t h5s Nothing (Just dcpl) Nothing)
         H5.closeDataset $ \h5d -> do
           mapM_ (createStringAttribute h5d "description") $ ecsvColDescription $ columnECSV col
           mapM_ (createStringAttribute h5d "unit") $ ecsvColUnit $ columnECSV col
           allocaBytes (valueSize * V.length vals) $ \vp -> do
-            H5E.withErrorCheck_ $ H5R.h5d_write (H5.hid h5d) (H5.hid h5t) H5R.h5s_ALL H5R.h5s_ALL H5R.h5p_DEFAULT (H5R.InArray vp)
+            V.ifoldr (\i s -> pokeValue (plusPtr vp $ valueSize * i)
+                (if BS.null s then fillValue else
+                  fromMaybe (error $ "parseValue " ++ T.unpack (columnName col) ++ " " ++ show i ++ ": " ++ BSC.unpack s) $ parseValue s))
+              (H5E.withErrorCheck_ $ H5R.h5d_write (H5.hid h5d) (H5.hid h5t) H5R.h5s_ALL H5R.h5s_ALL H5R.h5p_DEFAULT (H5R.InArray vp))
+              vals
 
 convert :: Maybe FilePath -> FilePath -> IO ()
 convert outdir file = do
