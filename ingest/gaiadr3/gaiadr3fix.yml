@@ -19,6 +19,7 @@ AstrophysicalParameters:
       - "beStar"
       - "wN"
       - "wC"
+      - "star"
   spectraltype_esphs:
     enum:
     - unknown
@@ -33,7 +34,7 @@ AstrophysicalParameters:
   activityindex_espcs_input:
     enum: ['M1', 'M2']
   ew_espels_halpha_flag:
-    type: bool
+    type: int8
   flags_esphs:
     type: int16
   flags_flame:

@@ -1969,7 +1969,7 @@ fields:
     - ingest: AstrophysicalParameters.ew_espels_halpha_flag
       name: ew_espels_halpha_flag
       flag: hidden
-      type: boolean
+      type: int8 #string (0,1,9)
       descr: Quality flag of the Halpha pseudo-equivalent width from ESP-ELS
     - ingest: AstrophysicalParameters.ew_espels_halpha_model
       name: ew_espels_halpha_model
@@ -1989,6 +1989,7 @@ fields:
         - "beStar"
         - "wN"
         - "wC"
+        - "star"
     - ingest: AstrophysicalParameters.classlabel_espels_flag
       name: classlabel_espels_flag
       flag: hidden
