@@ -4811,7 +4811,8 @@ fields:
   - ingest: NssAccelerationAstro.corr_vec
     name: corr_vec
     flag: hidden
-    type: array float #length: 36
+    type: array float
+    length: 36
     store: true
     descr: Vector form of the upper triangle of the correlation matrix
   - ingest: NssAccelerationAstro.obj_func
@@ -4906,7 +4907,8 @@ fields:
     name: corr_vec
     flag: hidden
     store: true
-    type: array float #length: 3
+    type: array float
+    length: 3
     descr: Vector form of the upper triangle of the correlation matrix
   - ingest: NssNonLinearSpectro.obj_func
     name: obj_func
@@ -4932,7 +4934,8 @@ fields:
   sub:
   - name: _index
     ingest: NssTwoBodyOrbit._index
-    type: array int #maxlength: 3
+    type: array int
+    length: 3 # variable
     flag: hidden
     store: true
     description: Offset of rows for this source_id in the source file for this table
@@ -5573,7 +5576,8 @@ fields:
     name: corr_vec
     flag: hidden
     store: true
-    type: array float #length: 21
+    type: array float
+    length: 21
     descr: Vector form of the upper triangle of the correlation matrix
   - ingest: NssVimFl.obj_func
     name: obj_func
@@ -5876,7 +5880,8 @@ fields:
     name: morph_params_corr_vec
     flag: hidden
     store: true
-    type: array double #length: 15
+    type: array double
+    length: 15
     descr: Vector form of the upper triangle of the correlation matrix for the fitted
       morphological parameters
   - ingest: QsoCandidates.host_galaxy_flag
@@ -5950,13 +5955,15 @@ fields:
   - ingest: RvsMeanSpectrum.flux
     name: flux
     store: true
-    type: array float #length: 2401
+    type: array float
+    length: 2401
     descr: array of fluxes
   - ingest: RvsMeanSpectrum.flux_error
     name: flux_error
     flag: hidden
     store: true
-    type: array float #length: 2401
+    type: array float
+    length: 2401
     descr: array of uncertainties in flux
   - ingest: RvsMeanSpectrum.combined_transits
     name: combined_transits
@@ -9146,19 +9153,22 @@ fields:
     name: bp_coefficients
     store: true
     flag: hidden
-    type: array double #length: 55
+    type: array double
+    length: 55
     descr: Basis function coefficients for the BP spectrum representation
   - ingest: XpContinuousMeanSpectrum.bp_coefficient_errors
     name: bp_coefficient_errors
     store: true
     flag: hidden
-    type: array float #length: 55
+    type: array float
+    length: 55
     descr: Basis function coefficient errors for the BP spectrum representation
 # - ingest: XpContinuousMeanSpectrum.bp_coefficient_correlations
 #   name: bp_coefficient_correlations
 #   store: true
 #   flag: hidden
-#   type: array float #length: 1485
+#   type: array float
+#   length: 1485
 #   descr: Correlation matrix for BP coefficients
   - ingest: XpContinuousMeanSpectrum.bp_n_relevant_bases
     name: bp_n_relevant_bases
@@ -9211,19 +9221,22 @@ fields:
     name: rp_coefficients
     store: true
     flag: hidden
-    type: array double #length: 55
+    type: array double
+    length: 55
     descr: Basis function coefficients for the RP spectrum representation
   - ingest: XpContinuousMeanSpectrum.rp_coefficient_errors
     name: rp_coefficient_errors
     store: true
     flag: hidden
-    type: array float #length: 55
+    type: array float
+    length: 55
     descr: Basis function coefficient errors for the RP spectrum representation
 # - ingest: XpContinuousMeanSpectrum.rp_coefficient_correlations
 #   name: rp_coefficient_correlations
 #   store: true
 #   flag: hidden
-#   type: array float #length: 1485
+#   type: array float
+#   length: 1485
 #   descr: Correlation matrix for RP coefficients
   - ingest: XpContinuousMeanSpectrum.rp_n_relevant_bases
     name: rp_n_relevant_bases
@@ -9265,14 +9278,16 @@ fields:
     name: flux
     store: true
     units: W.m**-2.nm**-1
-    type: array float #length: 343
+    type: array float
+    length: 343
     descr: mean BP + RP combined spectrum flux
   - ingest: XpSampledMeanSpectrum.flux_error
     name: flux_error
     store: true
     units: W.m**-2.nm**-1
     flag: hidden
-    type: array float #length: 343
+    type: array float
+    length: 343
     descr: mean BP + RP combined spectrum flux error
 - name: xp_summary
   ingest: _table:XpSummary #sorted, 1:1 files
