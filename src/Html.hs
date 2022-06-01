@@ -180,7 +180,7 @@ topPage = getPath R.unit $ \() req -> do
   cats <- asks globalCatalogs
   case acceptable ["application/json", "text/html"] req of
     Just "application/json" ->
-      return $ okResponse [] $ J.encode $ HM.map catalogTitle $ catalogMap cats
+      return $ okResponse [] $ J.toEncoding $ HM.map catalogTitle $ catalogMap cats
     _ -> htmlResponse req [] $ hamlet [Hamlet.hamlet|
       <div>
         <div .section .gray-heading>

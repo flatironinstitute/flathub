@@ -1202,7 +1202,7 @@ openApiBase = mempty &~ do
 
 openApi :: Route ()
 openApi = getPath "openapi.json" $ \() req ->
-  return $ okResponse ((hContentType, "application/json") : apiHeaders req) $ J.encode $ openApiBase
+  return $ okResponse (apiHeaders req) $ J.toEncoding $ openApiBase
     & OA.servers %~ (OA.Server (requestUrl $ baseApiRequest $ R.waiRequest req) Nothing mempty :)
 
 baseApiRequest :: R.Request -> R.Request
