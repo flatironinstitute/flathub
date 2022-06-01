@@ -17,7 +17,13 @@ root.render(
   </React.StrictMode>
 );
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals(console.log);
+// TODO: Update with GA-integration. See: https://nandolinhares.medium.com/google-analytics-with-react-and-typescript-june-2021-12d6f48f4842
+// <!-- Global site tag (gtag.js) - Google Analytics: linked to elovero@flatironinstitute.org-->
+// <script async src="https://www.googletagmanager.com/gtag/js?id=G-SFZ35MZK8H"></script>
+// <script>
+//   window.dataLayer = window.dataLayer || [];
+//   function gtag(){dataLayer.push(arguments);}
+//   gtag('js', new Date());
+//   gtag('config', 'G-SFZ35MZK8H');
+// </script>
+// reportWebVitals(console.log);

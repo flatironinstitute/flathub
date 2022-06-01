@@ -1,29 +1,25 @@
-import React, { useState } from "react";
-import { ResponseCatalog } from "../../types/Response";
-import {Service} from "../../types/Service";
-import useGaiaService from "../../useGaiaService";
+import React, { useState } from 'react';
+import { ResponseCatalog } from '../../types/Response';
+import { Service } from '../../types/Service';
+import useSingleCatalogService from '../../useSingleCatalogService';
 
 const TableShell: React.FC<{}> = () => {
-  const service:any  = useGaiaService();
+  const service: any = useSingleCatalogService();
 
-  console.log("🪨", service);
+  console.log('🪨🪨🪨', service);
 
   return (
     <div className="h-full flex">
       <div className="status">
-        {service.status === "loading" && <div>Loading</div>}
-        {service.status === "error" && <div>Error, keep on trucking.</div>}
+        {service.status === 'loading' && <div>Loading</div>}
+        {service.status === 'error' && <div>Error, keep on trucking.</div>}
       </div>
-      {service.status === "loaded" && (
-        <p>data is loaded</p>
-      )}
+      {service.status === 'loaded' && <p>data is loaded</p>}
     </div>
-  )
-
+  );
 };
 
 export default TableShell;
-
 
 // import { Fragment, useState } from 'react'
 // import { Dialog, Menu, Transition } from '@headlessui/react'

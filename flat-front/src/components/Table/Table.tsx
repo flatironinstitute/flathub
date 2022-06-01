@@ -1,10 +1,14 @@
-import React, {useState} from "react";
-import {classNames} from "../../app/utils";
-import useGaiaService from "../../useGaiaService";
+import React, { useState } from 'react';
+import { classNames } from '../../app/utils';
 
 const people = [
-  { name: 'Lindsay Walton', title: 'Front-end Developer', email: 'lindsay.walton@example.com', role: 'Member' },
-]
+  {
+    name: 'Lindsay Walton',
+    title: 'Front-end Developer',
+    email: 'lindsay.walton@example.com',
+    role: 'Member',
+  },
+];
 
 export default function Table() {
   return (
@@ -13,7 +17,8 @@ export default function Table() {
         <div className="sm:flex-auto">
           <h1 className="text-xl font-semibold text-gray-900">Gaia</h1>
           <p className="mt-2 text-sm text-gray-700">
-            Space, the final frontier. These are the voyages of the Starship Enterprise. 
+            Space, the final frontier. These are the voyages of the Starship
+            Enterprise.
           </p>
         </div>
         <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
@@ -29,7 +34,10 @@ export default function Table() {
         <div className="-my-2 -mx-4 sm:-mx-6 lg:-mx-8">
           <div className="inline-block min-w-full py-2 align-middle">
             <div className="shadow-sm ring-1 ring-black ring-opacity-5">
-              <table className="min-w-full border-separate" style={{ borderSpacing: 0 }}>
+              <table
+                className="min-w-full border-separate"
+                style={{ borderSpacing: 0 }}
+              >
                 <thead className="bg-gray-50">
                   <tr>
                     <th
@@ -69,7 +77,9 @@ export default function Table() {
                     <tr key={person.email}>
                       <td
                         className={classNames(
-                          personIdx !== people.length - 1 ? 'border-b border-gray-200' : '',
+                          personIdx !== people.length - 1
+                            ? 'border-b border-gray-200'
+                            : '',
                           'whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 lg:pl-8'
                         )}
                       >
@@ -77,7 +87,9 @@ export default function Table() {
                       </td>
                       <td
                         className={classNames(
-                          personIdx !== people.length - 1 ? 'border-b border-gray-200' : '',
+                          personIdx !== people.length - 1
+                            ? 'border-b border-gray-200'
+                            : '',
                           'whitespace-nowrap px-3 py-4 text-sm text-gray-500 hidden sm:table-cell'
                         )}
                       >
@@ -85,7 +97,9 @@ export default function Table() {
                       </td>
                       <td
                         className={classNames(
-                          personIdx !== people.length - 1 ? 'border-b border-gray-200' : '',
+                          personIdx !== people.length - 1
+                            ? 'border-b border-gray-200'
+                            : '',
                           'whitespace-nowrap px-3 py-4 text-sm text-gray-500 hidden lg:table-cell'
                         )}
                       >
@@ -93,7 +107,9 @@ export default function Table() {
                       </td>
                       <td
                         className={classNames(
-                          personIdx !== people.length - 1 ? 'border-b border-gray-200' : '',
+                          personIdx !== people.length - 1
+                            ? 'border-b border-gray-200'
+                            : '',
                           'whitespace-nowrap px-3 py-4 text-sm text-gray-500'
                         )}
                       >
@@ -101,11 +117,16 @@ export default function Table() {
                       </td>
                       <td
                         className={classNames(
-                          personIdx !== people.length - 1 ? 'border-b border-gray-200' : '',
+                          personIdx !== people.length - 1
+                            ? 'border-b border-gray-200'
+                            : '',
                           'relative whitespace-nowrap py-4 pr-4 pl-3 text-right text-sm font-medium sm:pr-6 lg:pr-8'
                         )}
                       >
-                        <a href="#" className="text-indigo-600 hover:text-indigo-900">
+                        <a
+                          href="#"
+                          className="text-indigo-600 hover:text-indigo-900"
+                        >
                           Edit<span className="sr-only">, {person.name}</span>
                         </a>
                       </td>
@@ -118,5 +139,5 @@ export default function Table() {
         </div>
       </div>
     </div>
-  )
+  );
 }
