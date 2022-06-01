@@ -1990,6 +1990,7 @@ fields:
         - "wN"
         - "wC"
         - "star"
+        - "unknown"
     - ingest: AstrophysicalParameters.classlabel_espels_flag
       name: classlabel_espels_flag
       flag: hidden

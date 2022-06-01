@@ -20,6 +20,7 @@ AstrophysicalParameters:
       - "wN"
       - "wC"
       - "star"
+      - "unknown"
   spectraltype_esphs:
     enum:
     - unknown
@@ -69,9 +70,9 @@ GaiaCrf3Xm:
   lamost5_name:
     length: 19
   lqrf_name:
-    length: 5
+    length: 6
   cat2qz_name:
-    length: 15
+    length: 16
   bzcat5_name:
     length: 15
   cat2whspj_name:
