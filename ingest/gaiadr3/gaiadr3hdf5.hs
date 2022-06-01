@@ -309,9 +309,8 @@ parseArgs :: [String] -> Maybe (Bool, Maybe FilePath, [FilePath])
 parseArgs ("-f":args) = case parseArgs args of
   Just (False, d, a) -> Just (True, d, a)
   _ -> Nothing
-parseArgs args@(dir:files@(_:_))
-  | FP.isExtensionOf "csv" dir = Just (False, Nothing, args)
-  | otherwise = Just (False, Just dir, files)
+parseArgs (dir:files@(_:_)) | not (FP.isExtensionOf "csv" dir) = Just (False, Just dir, files)
+parseArgs files@(_:_) = Just (False, Nothing, files)
 parseArgs _ = Nothing
 
 main :: IO ()
