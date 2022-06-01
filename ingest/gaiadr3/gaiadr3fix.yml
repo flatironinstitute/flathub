@@ -80,7 +80,7 @@ GaiaCrf3Xm:
   guw_name:
     length: 16
   b19_name:
-    length: 17
+    length: 18
 AstrophysicalParametersSupp:
   libname_best_gspphot:
     enum: [PHOENIX,MARCS,A,OB]

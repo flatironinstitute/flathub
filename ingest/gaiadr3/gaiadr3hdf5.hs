@@ -33,7 +33,9 @@ import           Foreign.Marshal.Array (copyArray, advancePtr)
 import           Foreign.Marshal.Utils (copyBytes, fillBytes)
 import           Foreign.Ptr (Ptr, nullPtr, castPtr, plusPtr)
 import           Foreign.Storable (Storable(..))
+import           System.Directory (doesFileExist)
 import           System.Environment (getProgName, getArgs)
+import           System.Exit (exitFailure)
 import qualified System.FilePath as FP
 import           System.IO (hPutStrLn, stderr)
 import           Text.Read (readMaybe)
@@ -205,10 +207,10 @@ handlerOps (ColumnArray t Nothing) = basetypeOps t $ \baseops ->
     { fillValue = VS.empty
     , withValuetype = \f -> withValuetype baseops $ \bt ->
         withType (H5.createVLenType bt) f
-    , parseValue = fmap VS.fromList . parseArrayWith (parseValue baseops)
+    , parseValue = parseArrayWith baseops
     , valueSize = sizeOf (H5R.HVl_t 0 nullPtr)
     , pokeValue = \p v f -> VS.unsafeWith v $ \vp ->
-        poke (castPtr p) (H5R.HVl_t (fromIntegral $ VS.length v * sizeOf (VS.head v)) (castPtr vp)) >> f
+        poke (castPtr p) (H5R.HVl_t (fromIntegral $ VS.length v) (castPtr vp)) >> f
     }
 
 handlerOps (ColumnArray t (Just l)) = basetypeOps t $ \baseops ->
@@ -217,7 +219,7 @@ handlerOps (ColumnArray t (Just l)) = basetypeOps t $ \baseops ->
     { fillValue = fillv
     , withValuetype = \f -> withValuetype baseops $ \bt ->
         withType (H5.createArrayType bt [fromIntegral l]) f
-    , parseValue = fmap VS.fromList . parseArrayWith (parseValue baseops)
+    , parseValue = parseArrayWith baseops
     , valueSize = l * valueSize baseops
     , pokeValue = \p v f -> do
         let vl = VS.length v
@@ -228,8 +230,12 @@ handlerOps (ColumnArray t (Just l)) = basetypeOps t $ \baseops ->
         f
     }
 
-parseArrayWith :: (BS.ByteString -> Maybe a) -> BS.ByteString -> Maybe [a]
-parseArrayWith pv = mapM pv . BSC.split ',' <=< BS.stripPrefix "[" <=< BS.stripSuffix "]"
+parseArrayWith :: Storable a => ValueOps a -> BS.ByteString -> Maybe (VS.Vector a)
+parseArrayWith ops = fmap VS.fromList . mapM pve . BSC.split ',' <=< BS.stripPrefix "[" <=< BS.stripSuffix "]" where
+  pve "null" = Just (fillValue ops)
+  pve s -- hacky json string parsing
+    | Just s' <- BS.stripPrefix "\"" =<< BS.stripSuffix "\"" s = parseValue ops s'
+    | otherwise = parseValue ops s
 
     
 createStringAttribute :: H5.Location loc => loc -> BS.ByteString -> T.Text -> IO ()
@@ -270,8 +276,10 @@ makeDataset h5f h5s col vals = case handlerOps (columnHandler col) of
               (H5E.withErrorCheck_ $ H5R.h5d_write (H5.hid h5d) (H5.hid h5t) H5R.h5s_ALL H5R.h5s_ALL H5R.h5p_DEFAULT (H5R.InArray vp))
               vals
 
-convert :: Maybe FilePath -> FilePath -> IO ()
-convert outdir file = do
+convert :: Bool -> Maybe FilePath -> FilePath -> IO ()
+convert force outdir file =
+  (if force then return False else doesFileExist outfile) >>= \ex ->
+  if ex then return () else do
   putStrLn file
   fixup <- HM.findWithDefault mempty tabname <$> Y.decodeFileThrow "gaiadr3fix.yml"
   (ecsv, dat) <- first (either (error . show) id) . parseECSVHeader <$> BSLC.readFile file
@@ -296,13 +304,21 @@ convert outdir file = do
   basedir = FP.takeDirectory $ FP.takeDirectory filedir
   outfile = fromMaybe (basedir FP.</> "hdf5" FP.</> tabname) outdir FP.</> basename FP.<.> "hdf5"
 
+-- hacky arg parser
+parseArgs :: [String] -> Maybe (Bool, Maybe FilePath, [FilePath])
+parseArgs ("-f":args) = case parseArgs args of
+  Just (False, d, a) -> Just (True, d, a)
+  _ -> Nothing
+parseArgs args@(dir:files@(_:_))
+  | FP.isExtensionOf "csv" dir = Just (False, Nothing, args)
+  | otherwise = Just (False, Just dir, files)
+parseArgs _ = Nothing
+
 main :: IO ()
-main = do
+main = maybe (do
   prog <- getProgName
-  args <- getArgs
-  (outdir, files) <- case args of
-    [] -> (Nothing, []) <$ hPutStrLn stderr ("Usage: " ++ prog ++ " [OUTDIR] FILE.csv ...")
-    outdir:files
-      | FP.isExtensionOf "csv" outdir -> return (Nothing, args)
-      | otherwise -> return (Just outdir, files)
-  mapM_ (convert outdir) files
+  hPutStrLn stderr ("Usage: " ++ prog ++ " [-f] [OUTDIR] FILE.csv ...")
+  exitFailure)
+  (\(force, outdir, files) ->
+    mapM_ (convert force outdir) files)
+  . parseArgs =<< getArgs
