@@ -418,13 +418,13 @@ VariClassifierClassDefinition:
     length: 12
   class_name:
     length: 26
-  class_description:
-    length: 140
+  #class_description:
+  # length: 140
 VariClassifierDefinition:
   classifier_name:
     length: 12
-  classifier_description:
-    length: 186
+  #classifier_description:
+  # length: 186
 XpContinuousMeanSpectrum:
   bp_coefficients:
     length: 55

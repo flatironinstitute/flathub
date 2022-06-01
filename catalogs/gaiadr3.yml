@@ -17,6 +17,17 @@ count: 1811709771
 key: source_id
 sort: source_id
 fields:
+- name: _file_upper
+  type: int
+  descr: 'Upper bound for HEALpix index level 8 of source file for this row (used in determining source file name: "%s_%06d-%06d" % (table_name, source_id >> 43, _file_max))'
+  store: true
+  flag: hidden
+#- name: gaia_source__index # TODO: add?
+# ingest: GaiaSource._index
+# type: int
+# flag: hidden
+# store: true
+# description: Offset of this row in the source file for this table (see _file_max)
 #- ingest: GaiaSource.solution_id
 #  name: solution_id
 #  type: long
@@ -25,11 +36,6 @@ fields:
 #  name: designation
 #  type: string
 #  descr: Unique source designation (unique across all Data Releases)
-- name: _file_upper
-  type: int
-  descr: 'Upper bound for HEALpix index level 8 of source file for this row (used in determining source file name: "%s_%06d-%06d" % (table_name, source_id >> 43, _file_max))'
-  store: true
-  flag: hidden
 - ingest: GaiaSource.source_id
   name: source_id
   type: long
