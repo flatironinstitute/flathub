@@ -11,6 +11,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Lazy as BSL
 import           Data.Foldable (fold)
+import           Data.Functor.Compose (getCompose)
 import           Data.Maybe (fromMaybe)
 import           Data.Semigroup (stimesMonoid)
 import qualified Data.Text as T
@@ -51,10 +52,13 @@ numpyBuild _ (Boolean (Just False)) = B.int8 0
 numpyBuild _ (Boolean (Just True)) = B.int8 1
 numpyBuild f (Keyword   x) = numpyString (fieldSize f) x
 numpyBuild _ (Void      _) = mempty
-numpyBuild f (Array     x) = numpyBuild f $ arrayHead x
+numpyBuild f (Array     x) = V.foldMap (numpyBuild f) $ traverseTypeValue (pad . fromMaybe V.empty . getCompose) x where
+   pad v = V.map Just v V.++ V.replicate (fromIntegral (fieldLength f) - V.length v) Nothing
 
 numpyRowSize :: [Field] -> Word
-numpyRowSize = sum . map numpyFieldSize
+numpyRowSize = sum . map nfs where
+  nfs f@Field{ fieldType = Array _ } = fieldLength f * numpyFieldSize f
+  nfs f = numpyFieldSize f
 
 numpyHeader :: [Field] -> Word -> (B.Builder, Word)
 numpyHeader fields count = (B.string8 "\147NUMPY"
@@ -70,7 +74,9 @@ numpyHeader fields count = (B.string8 "\147NUMPY"
   header = "{'descr':["
     <> mintersperseMap (B.char7 ',') field fields 
     <> "],'fortran_order':False,'shape':(" <> B.wordDec count <> ",)}"
-  field f = B.char7 '(' <> jenc (fieldName f) <> B.char7 ',' <> B.char7 '\'' <> B.string7 (numpyDtype f) <> B.char7 '\'' <> B.char7 ')'
+  field f = B.char7 '(' <> jenc (fieldName f) <> B.char7 ',' <> B.char7 '\'' <> B.string7 (numpyDtype f) <> B.char7 '\'' <> array f <> B.char7 ')'
+  array f@Field{ fieldType = Array _ } = ",(" <> B.wordDec (fieldLength f) <> ",)"
+  array _ = mempty
   len = succ $ BSL.length $ B.toLazyByteString header
   pad = negate $ (plen + len) `mod` (-64)
   len' = len + pad

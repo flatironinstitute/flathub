@@ -18,6 +18,9 @@ AstrophysicalParameters:
       - "TTauri"
       - "beStar"
       - "wN"
+      - "wC"
+      - "star"
+      - "unknown"
   spectraltype_esphs:
     enum:
     - unknown
@@ -32,7 +35,7 @@ AstrophysicalParameters:
   activityindex_espcs_input:
     enum: ['M1', 'M2']
   ew_espels_halpha_flag:
-    type: bool
+    type: int8
   flags_esphs:
     type: int16
   flags_flame:
@@ -67,9 +70,9 @@ GaiaCrf3Xm:
   lamost5_name:
     length: 19
   lqrf_name:
-    length: 5
+    length: 6
   cat2qz_name:
-    length: 15
+    length: 16
   bzcat5_name:
     length: 15
   cat2whspj_name:
@@ -79,7 +82,7 @@ GaiaCrf3Xm:
   guw_name:
     length: 16
   b19_name:
-    length: 17
+    length: 19
 AstrophysicalParametersSupp:
   libname_best_gspphot:
     enum: [PHOENIX,MARCS,A,OB]
@@ -415,13 +418,13 @@ VariClassifierClassDefinition:
     length: 12
   class_name:
     length: 26
-  class_description:
-    length: 140
+  #class_description:
+  # length: 140
 VariClassifierDefinition:
   classifier_name:
     length: 12
-  classifier_description:
-    length: 186
+  #classifier_description:
+  # length: 186
 XpContinuousMeanSpectrum:
   bp_coefficients:
     length: 55

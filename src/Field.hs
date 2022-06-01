@@ -27,6 +27,7 @@ module Field
   , fieldReversed
   , fieldWildcard
   , fieldSize
+  , fieldLength
   , fieldIngest
   , fieldMissing
   , fieldAttachment
@@ -153,7 +154,8 @@ data FieldDesc s = FieldDesc
   , fieldDescScale :: Maybe Scientific -- ^scale factor, to display scale*x instead
   , fieldDescReversed :: Bool -- ^reverse axis on plotting
   , fieldDescWildcard :: Bool -- ^allow wildcard text filter
-  , fieldDescSize :: Word -- ^string length
+  , fieldDescSize :: Word -- ^string length (maximum)
+  , fieldDescLength :: Word -- ^array length (maximum)
   , fieldDescIngest :: Maybe T.Text -- ^special handling on ingest (interpretation depends on format)
   , fieldDescMissing :: [BS.ByteString] -- ^values to treat as missing on ingest
   , fieldDescAttachment :: Maybe Attachment
@@ -191,6 +193,8 @@ fieldWildcard :: FieldSub t s -> Bool
 fieldWildcard = fieldDescWildcard . fieldDesc
 fieldSize :: FieldSub t s -> Word
 fieldSize = fieldDescSize . fieldDesc
+fieldLength :: FieldSub t s -> Word
+fieldLength = fieldDescLength . fieldDesc
 fieldIngest :: FieldSub t s -> Maybe T.Text
 fieldIngest = fieldDescIngest . fieldDesc
 fieldMissing :: FieldSub t s -> [BS.ByteString]
@@ -230,6 +234,7 @@ instance Alternative s => Default (FieldDesc s) where
     , fieldDescAttachment = Nothing
     , fieldDescWildcard = False
     , fieldDescSize = 8
+    , fieldDescLength = 1
     }
 
 instance Alternative s => Default (FieldSub Proxy s) where
@@ -252,7 +257,7 @@ updateFieldValueM :: Functor m => FieldSub t Proxy -> (forall a . Typed a => t a
 updateFieldValueM f t = setFieldValueUnsafe f <$> traverseTypeValue t (fieldType f)
 
 numpyFieldSize :: Field -> Word
-numpyFieldSize Field{ fieldType = Keyword _, fieldDesc = d } = fieldDescSize d
+numpyFieldSize f@Field{ fieldType = Keyword _ } = fieldSize f
 numpyFieldSize Field{ fieldType = t } = numpyTypeSize t
 
 numpyDtype :: Field -> String
@@ -316,6 +321,7 @@ parseFieldGroup dict = parseFieldDefs def where
     fieldDescTerms <- f J..:! "terms" J..!= (isJust fieldDescEnum || typeIsString fieldType)
     fieldDescWildcard <- f J..:! "wildcard" J..!= fieldWildcard d
     fieldDescSize <- f J..:? "size" J..!= fieldSize d
+    fieldDescLength <- f J..:? "length" J..!= fieldLength d
     fieldDescSub <- (<|> fieldSub d) <$> J.explicitParseFieldMaybe' (J.withArray "subfields" $ V.mapM $
         parseFieldDefs defd
           { fieldType = fieldType

@@ -183,14 +183,16 @@ catalogJSON Catalog{..} =
   <> "order" J..= catalogOrder
   <> "title" J..= catalogTitle
   <> "synopsis" J..= catalogSynopsis
+  <> "descr" J..= catalogDescr
 
 catalogSchema :: OpenApiM (OA.Referenced OA.Schema)
 catalogSchema = define "CatalogMeta" $ objectSchema
   "High-level metadata for a dataset catalog"
-  [ ("name", OA.Inline $ schemaDescOf catalogName "globally unique catalog id used in urls", True)
+  [ ("name", OA.Inline $ schemaDescOf catalogName "globally unique catalog name used in urls", True)
   , ("order", OA.Inline $ schemaDescOf catalogOrder "sort key for display order", True)
   , ("title", OA.Inline $ schemaDescOf catalogTitle "display name", True)
-  , ("synopsis", OA.Inline $ schemaDescOf catalogSynopsis "short description", True)
+  , ("synopsis", OA.Inline $ schemaDescOf catalogSynopsis "short description in plain text", True)
+  , ("descr", OA.Inline $ schemaDescOf catalogDescr "long description in html", True)
   ]
   & OA.title ?~ "catalog metadata"
 
@@ -292,7 +294,7 @@ catalogBase = R.parameter
 
 catalogParam :: OA.Param
 catalogParam = mempty
-  & OA.name .~ "sim"
+  & OA.name .~ "catalog"
   & OA.description ?~ "catalog name from list of catalogs"
   & OA.schema ?~ OA.Inline (schemaDescOf T.pack "catalog name")
 
@@ -301,7 +303,7 @@ apiCatalog = APIOp -- /api/{cat}
   { apiName = "catalog"
   , apiSummary = "Get full metadata about a specific catalog"
   , apiPath = catalogBase
-  , apiExampleArg = "sim"
+  , apiExampleArg = "catalog"
   , apiPathParams = return [catalogParam]
   , apiQueryParams = []
   , apiRequestSchema = Nothing
@@ -338,7 +340,7 @@ apiSchemaSQL = APIOp -- /api/{cat}/schema.sql
   { apiName = "schema.sql"
   , apiSummary = "Get a SQL representation of the catalog schema (no data)"
   , apiPath = catalogBase R.>* "schema.sql"
-  , apiExampleArg = "sim"
+  , apiExampleArg = "catalog"
   , apiPathParams = return [catalogParam]
   , apiQueryParams = []
   , apiRequestSchema = Nothing
@@ -378,7 +380,7 @@ apiSchemaCSV = APIOp -- /api/{cat}/schema.csv
   { apiName = "schema.csv"
   , apiSummary = "Get a CSV representation of the catalog schema (no data)"
   , apiPath = catalogBase R.>* "schema.csv"
-  , apiExampleArg = "sim"
+  , apiExampleArg = "catalog"
   , apiPathParams = return [catalogParam]
   , apiQueryParams = []
   , apiRequestSchema = Nothing
@@ -637,7 +639,7 @@ apiData = APIOp -- /api/{cat}/data
   { apiName = "data"
   , apiSummary = "Get a sample of raw data rows"
   , apiPath = catalogBase R.>* "data"
-  , apiExampleArg = "sim"
+  , apiExampleArg = "catalog"
   , apiPathParams = return [catalogParam]
   , apiQueryParams = [filtersQueryParam, fieldsQueryParam
     , sortParam
@@ -772,7 +774,7 @@ apiDownload = APIOp
   { apiName = "download"
   , apiSummary = "Download raw data in bulk"
   , apiPath = catalogBase R.>* "data" R.>*< R.parameter
-  , apiExampleArg = ("sim", (head $ KM.toList downloadFormats, Nothing))
+  , apiExampleArg = ("catalog", (head $ KM.toList downloadFormats, Nothing))
   , apiPathParams = return [catalogParam
     , mempty
       & OA.name .~ "format"
@@ -872,7 +874,7 @@ apiStats = APIOp -- /api/{cat}/stats
   { apiName = "stats"
   , apiSummary = "Get statistics about fields (given some filters)"
   , apiPath = catalogBase R.>* "stats"
-  , apiExampleArg = "sim"
+  , apiExampleArg = "catalog"
   , apiPathParams = return [catalogParam]
   , apiQueryParams = [filtersQueryParam, fieldsQueryParam]
   , apiRequestSchema = Just $ do
@@ -980,7 +982,7 @@ apiHistogram = APIOp -- /api/{cat}/histogram
   { apiName = "histogram"
   , apiSummary = "Get a histogram of data across one or more fields"
   , apiPath = catalogBase R.>* "histogram"
-  , apiExampleArg = "sim"
+  , apiExampleArg = "catalog"
   , apiPathParams = return [catalogParam]
   , apiQueryParams = [filtersQueryParam
     , histogramListSchema >>= \hist -> return $ OA.Inline $ mempty
@@ -1049,7 +1051,7 @@ apiAttachment = APIOp
   { apiName = "attachment"
   , apiSummary = "Download a row attachment"
   , apiPath = catalogBase R.>* "attachment" R.>*<< R.parameter R.>*< R.parameter
-  , apiExampleArg = ("sim", "field", "rid")
+  , apiExampleArg = ("catalog", "field", "rid")
   , apiPathParams = do
     fn <- fieldNameSchema
     return [catalogParam
@@ -1105,7 +1107,7 @@ apiAttachments = APIOp
   { apiName = "attachments"
   , apiSummary = "Download attachments in bulk from matching rows"
   , apiPath = catalogBase R.>* "attachments" R.>*< R.parameter
-  , apiExampleArg = ("sim", head $ KM.toList attachmentsFormats)
+  , apiExampleArg = ("catalog", head $ KM.toList attachmentsFormats)
   , apiPathParams = return [catalogParam
     , mempty
       & OA.name .~ "format"
@@ -1200,7 +1202,7 @@ openApiBase = mempty &~ do
 
 openApi :: Route ()
 openApi = getPath "openapi.json" $ \() req ->
-  return $ okResponse (apiHeaders req) $ J.encode $ openApiBase
+  return $ okResponse (apiHeaders req) $ J.toEncoding $ openApiBase
     & OA.servers %~ (OA.Server (requestUrl $ baseApiRequest $ R.waiRequest req) Nothing mempty :)
 
 baseApiRequest :: R.Request -> R.Request

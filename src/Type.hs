@@ -298,11 +298,11 @@ arrayHead = fmapTypeValue (fmap V.head . getCompose)
 singletonArray :: Functor f => TypeValue f -> TypeValue (Compose f V.Vector)
 singletonArray = fmapTypeValue (Compose . fmap V.singleton)
 
-typeIsArray :: Type -> Maybe Type
+typeIsArray :: Functor f => TypeValue f -> Maybe (TypeValue f)
 typeIsArray (Array t) = Just $ arrayHead t
 typeIsArray _ = Nothing
 
-unArrayType :: Type -> (Bool, Type)
+unArrayType :: Functor f => TypeValue f -> (Bool, TypeValue f)
 unArrayType t = maybe (False, t) (True ,) $ typeIsArray t
 
 instance Default Type where
@@ -386,12 +386,13 @@ typeIsBoolean :: TypeValue f -> Bool
 typeIsBoolean (Boolean _) = True
 typeIsBoolean _ = False
 
-baseType :: (a,a,a,a,a) -> TypeValue f -> a
+baseType :: Functor f => (a,a,a,a,a) -> TypeValue f -> a
 baseType (f,i,b,s,_) t
-  | typeIsFloating t = f
-  | typeIsIntegral t = i
-  | typeIsString   t = s
-  | typeIsBoolean  t = b
+  | typeIsFloating t' = f
+  | typeIsIntegral t' = i
+  | typeIsString   t' = s
+  | typeIsBoolean  t' = b
+  where (_,t') = unArrayType t
 baseType (_,_,_,_,v) ~(Void _) = v
 
 numpyTypeSize :: Type -> Word
@@ -406,4 +407,4 @@ numpyTypeSize (Byte      _) = 1
 numpyTypeSize (Boolean   _) = 1
 numpyTypeSize (Keyword   _) = 8 -- XXX overridden in numpyFieldSize
 numpyTypeSize (Void      _) = 0
-numpyTypeSize (Array     t) = numpyTypeSize (arrayHead t) -- XXX not supported
+numpyTypeSize (Array     t) = numpyTypeSize (arrayHead t)
