@@ -42,11 +42,11 @@ numpyBuild :: Field -> TypeValue Maybe -> B.Builder
 numpyBuild _ (Double    x) = B.doubleLE $ fromMaybe (unsafeCoerce (0x7ff80000ffffffff::Word64)) x
 numpyBuild _ (Float     x) = B.floatLE  $ fromMaybe (unsafeCoerce (0x7fc0ffff::Word32)) x
 numpyBuild _ (HalfFloat x) = B.word16LE $ maybe 0x7cff getHalf' x
-numpyBuild _ (Long      x) = B.int64LE  $ fromMaybe (-1) x
+numpyBuild _ (Long      x) = B.int64LE  $ fromMaybe minBound x
 numpyBuild _ (ULong     x) = B.word64LE $ fromMaybe maxBound x
-numpyBuild _ (Integer   x) = B.int32LE  $ fromMaybe (-1) x
-numpyBuild _ (Short     x) = B.int16LE  $ fromMaybe (-1) x
-numpyBuild _ (Byte      x) = B.int8     $ fromMaybe (-1) x
+numpyBuild _ (Integer   x) = B.int32LE  $ fromMaybe minBound x
+numpyBuild _ (Short     x) = B.int16LE  $ fromMaybe minBound x
+numpyBuild _ (Byte      x) = B.int8     $ fromMaybe minBound x
 numpyBuild _ (Boolean Nothing) = B.int8 0
 numpyBuild _ (Boolean (Just False)) = B.int8 0
 numpyBuild _ (Boolean (Just True)) = B.int8 1
@@ -112,6 +112,6 @@ numpyOutput :: OutputFormat
 numpyOutput = OutputFormat
   { outputMimeType = "application/x-npy"
   , outputExtension = "npy"
-  , outputDescription = "Numpy binary array file containing a 1-d array of structured data types representing the fields in each row"
+  , outputDescription = "Numpy binary array file containing a 1-d array of structured data types representing the fields in each row; missing values are generally represented by NaN or extreme values"
   , outputGenerator = \_ -> numpyGenerator
   }
