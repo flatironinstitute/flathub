@@ -1,9 +1,9 @@
 import { Fragment } from 'react';
 import { Popover, Transition } from '@headlessui/react';
 import {
+  AtSymbolIcon,
   BookmarkAltIcon,
   BriefcaseIcon,
-  ChartBarIcon,
   CheckCircleIcon,
   CursorClickIcon,
   DesktopComputerIcon,
@@ -12,8 +12,6 @@ import {
   MenuIcon,
   NewspaperIcon,
   OfficeBuildingIcon,
-  PhoneIcon,
-  PlayIcon,
   ShieldCheckIcon,
   UserGroupIcon,
   ViewGridIcon,
@@ -24,37 +22,51 @@ import icon from './icon.svg';
 import logo from './logo.svg';
 import { Button } from '../Buttons/Button';
 
-const solutions = [
+const collections = [
   {
-    name: 'Analytics',
+    name: 'Milky Way',
     description:
-      'Get a better understanding of where your traffic is coming from.',
-    href: '#',
-    icon: ChartBarIcon,
+      'Observational data from the galaxy that includes our Solar System.',
+    href: '/group/milkyway',
+    icon: AtSymbolIcon,
   },
   {
-    name: 'Engagement',
-    description: 'Speak directly to your customers in a more meaningful way.',
-    href: '#',
+    name: 'Cosmological Galaxy Simulations',
+    description:
+      'Gravito-hydrodynamical simulations of galaxy formation within the cosmic large-scale structure.',
+    href: '/group/cosmo-hydro',
     icon: CursorClickIcon,
   },
   {
-    name: 'Security',
-    description: "Your customers' data will be safe and secure.",
-    href: '#',
+    name: 'Cosmological Dark Matter-Only Simulations',
+    description:
+      'N-body simulations of the cosmic large-scale structure with cosmological initial conditions.',
+    href: '/group/cosmo-dm',
     icon: ShieldCheckIcon,
   },
   {
-    name: 'Integrations',
-    description: "Connect with third-party tools that you're already using.",
-    href: '#',
+    name: 'CANDELS',
+    description:
+      'Theory friendly observational catalogs and mock catalogs from the Cosmic Assembly Near-infrared Deep Extragalactic Survey.',
+    href: '/group/candels',
     icon: ViewGridIcon,
+  },
+  {
+    name: 'Isolated Galaxy Simulations',
+    description:
+      'Simulations of galaxies evolved in isolation, e.g. a non-cosmological framework.',
+    href: '/group/galaxy-iso',
+    icon: GlobeAltIcon,
   },
 ];
 const callsToAction = [
-  { name: 'Watch Demo', href: '#', icon: PlayIcon },
-  { name: 'View All Products', href: '#', icon: CheckCircleIcon },
-  { name: 'Contact Sales', href: '#', icon: PhoneIcon },
+  { name: 'About FlatHUB', href: '/about', icon: InformationCircleIcon },
+  { name: 'Browse All Catalogs', href: '#', icon: CheckCircleIcon },
+  {
+    name: 'View Source Code',
+    href: 'https://github.com/flatironinstitute/flathub',
+    icon: DesktopComputerIcon,
+  },
 ];
 const company = [
   { name: 'About', href: '#', icon: InformationCircleIcon },
@@ -106,7 +118,11 @@ export default function Header() {
           <div>
             <a href="/" className="flex">
               <span className="sr-only">Flathub</span>
-              <img className="h-8 w-auto sm:h-10" src={logo} alt="Flathub Logo" />
+              <img
+                className="h-8 w-auto sm:h-10"
+                src={logo}
+                alt="Flathub Logo"
+              />
             </a>
           </div>
           <div className="-mr-2 -my-2 md:hidden">
@@ -146,8 +162,8 @@ export default function Header() {
                       leaveTo="opacity-0 -translate-y-1"
                     >
                       <Popover.Panel className="hidden md:block absolute z-10 top-full inset-x-0 transform shadow-lg bg-white">
-                        <div className="max-w-7xl mx-auto grid gap-y-6 px-4 py-6 sm:grid-cols-2 sm:gap-8 sm:px-6 sm:py-8 lg:grid-cols-4 lg:px-8 lg:py-12 xl:py-16">
-                          {solutions.map((item) => (
+                        <div className="max-w-7xl mx-auto grid gap-y-6 px-4 py-6 sm:grid-cols-2 sm:gap-8 sm:px-6 sm:py-8 lg:grid-cols-5 lg:px-8 lg:py-12 xl:py-16">
+                          {collections.map((item) => (
                             <a
                               key={item.name}
                               href={item.href}
@@ -380,7 +396,7 @@ export default function Header() {
               <div className="mt-6 sm:mt-8">
                 <nav>
                   <div className="grid gap-7 sm:grid-cols-2 sm:gap-y-8 sm:gap-x-4">
-                    {solutions.map((item) => (
+                    {collections.map((item) => (
                       <a
                         key={item.name}
                         href={item.href}
@@ -397,11 +413,11 @@ export default function Header() {
                   </div>
                   <div className="mt-8 text-base">
                     <a
-                      href="#"
+                      href="/catalogs"
                       className="font-medium text-blue-600 hover:text-blue-500"
                     >
                       {' '}
-                      View all products <span aria-hidden="true">&rarr;</span>
+                      View all catalogs <span aria-hidden="true">&rarr;</span>
                     </a>
                   </div>
                 </nav>

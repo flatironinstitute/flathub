@@ -13,6 +13,7 @@ root.render(
   <React.StrictMode>
     <Provider store={store}>
       <App />
+      {/* TODO: THIS VERSION OF REACT ROUTER */}
     </Provider>
   </React.StrictMode>
 );

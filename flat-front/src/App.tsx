@@ -1,19 +1,24 @@
-import React, { useState } from "react";
-import logo from './logo.svg';
-import { Catalogs } from './features/catalogs/Catalogs';
-import Header from './components/Header/Header';
-import Table from './components/Table/Table';
-import TableShell from './components/TableShell/TableShell';
-import './App.css';
+import React, { useState } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 function App() {
   return (
     <div>
-      <Header />
-      <TableShell />
-      <Table />
+      <h1>Bookkeeper!</h1>
     </div>
   );
 }
 
 export default App;
+
+function Home() {
+  return <h2>Home</h2>;
+}
+
+function About() {
+  return <h2>About</h2>;
+}
+
+function Users() {
+  return <h2>Users</h2>;
+}
