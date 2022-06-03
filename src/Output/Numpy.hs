@@ -53,7 +53,8 @@ numpyBuild _ (Boolean (Just True)) = B.int8 1
 numpyBuild f (Keyword   x) = numpyString (fieldSize f) x
 numpyBuild _ (Void      _) = mempty
 numpyBuild f (Array     x) = V.foldMap (numpyBuild f) $ traverseTypeValue (pad . fromMaybe V.empty . getCompose) x where
-   pad v = V.map Just v V.++ V.replicate (fromIntegral (fieldLength f) - V.length v) Nothing
+   pad v = V.map Just (V.take l' v) V.++ V.replicate (l' - V.length v) Nothing
+   l' = fromIntegral (fieldLength f)
 
 numpyRowSize :: [Field] -> Word
 numpyRowSize = sum . map nfs where

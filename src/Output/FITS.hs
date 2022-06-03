@@ -3,25 +3,22 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Output.FITS
-  -- ( fitsOutput )
+  ( fitsOutput )
   where
 
+import           Control.Applicative ((<|>))
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Builder as B
-import qualified Data.ByteString.Lazy as BSL
 import           Data.Foldable (fold)
 import           Data.Functor.Compose (getCompose)
 import           Data.Maybe (fromMaybe, isJust, catMaybes)
 import           Data.Monoid (Sum(Sum))
 import           Data.Proxy (Proxy(Proxy), asProxyTypeOf)
 import           Data.Semigroup (stimesMonoid)
-import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V
-import           Data.Word (Word16, Word32, Word64)
-import           Foreign.C.Types (CUShort(CUShort))
-import           Numeric.Half (Half(Half))
+import           Data.Word (Word32, Word64)
 import           Unsafe.Coerce (unsafeCoerce)
 
 import Type
@@ -63,20 +60,33 @@ data HeaderValue
 data HeaderRecord = HeaderRecord
   { headerName :: BS.ByteString
   , headerValue :: Maybe HeaderValue -- used fixed-format for all
-  , headerComment :: Maybe BS.ByteString -- no continuation
+  , headerComment :: Maybe BS.ByteString
   }
 
+zipLast :: (a -> b -> c) -> a -> a -> [b] -> [c]
+zipLast _ _ _ [] = []
+zipLast f _ z [x] = [f z x]
+zipLast f a z (x:r) = f a x:zipLast f a z r
+
 renderRecord :: HeaderRecord -> BS.ByteString
-renderRecord (HeaderRecord n v c) =
-  pad 8 n <> maybe (padding 2 <> pad 70 (fold c)) (("= " <>) . hv) v
+renderRecord HeaderRecord{..} =
+  pad 8 headerName <> maybe ("  " <> commtail 0 (fold headerComment)) (("= " <>) . hv) headerValue
   where
-  hv (HeaderString s) = case spls $ esc s of
-    [] -> comm BS.empty
-    (f:r) -> comm (quot f) <> foldMap (("CONTINUE  " <>) . pad 70 . quot) r
-  hv (HeaderLogical b) = comm (padR 20 (if b then "T" else "F"))
-  hv (HeaderInteger i) = comm (padR 20 (showBS i))
-  comm s = pad 70 (s <> foldMap (" / " <>) c)
-  quot s = ('\'' `BSC.cons` s) `BSC.snoc` '\''
+  hv (HeaderString s) = case zipLast commval Nothing headerComment $ map quote $ spls $ esc s of
+    ~(f:r) -> f <> foldMap ("CONTINUE  " <>) r
+  hv (HeaderLogical b) = commval headerComment $ padR 20 (if b then "T" else "F")
+  hv (HeaderInteger i) = commval headerComment $ padR 20 (showBS i)
+  commval Nothing s = pad 70 s
+  commval (Just c) s
+    | BS.length s >= 67 = pad 70 s <> comment c
+    | otherwise = s <> " / " <> commtail (BS.length s + 3) c
+  commtail u s = pad p f <> comment r where
+    (f, r) = BS.splitAt p s
+    p = 70 - u
+  comment s
+    | BS.null s = BS.empty
+    | otherwise = "COMMENT   " <> commtail 0 s
+  quote s = ('\'' `BSC.cons` s) `BSC.snoc` '\''
   esc s = BSC.split '\'' s
   spls [] = []
   spls [x]
@@ -93,8 +103,7 @@ renderBlock h = s <> padding (blockPadding (BS.length s)) where
 data TField = TField
   { tfCount :: Word
   , tfType :: Char
-  , tfName :: Maybe BS.ByteString
-  , tfUnit :: Maybe BS.ByteString
+  , tfTypeComment, tfName, tfNameComment, tfUnit :: Maybe BS.ByteString
   -- , tfScale, tFieldZero :: Rational
   , tfNull :: Maybe Integer
   }
@@ -121,7 +130,9 @@ cField :: Char -> TField
 cField t = TField
   { tfCount = 1
   , tfType = t
+  , tfTypeComment = Nothing
   , tfName = Nothing
+  , tfNameComment = Nothing
   , tfUnit = Nothing
   -- , tfScale = 1
   -- , tfZero = 0
@@ -136,10 +147,10 @@ typeInfo (Double    _) = cField 'D'
 typeInfo (Float     _) = cField 'E'
 typeInfo (HalfFloat _) = typeInfo (Float Proxy)
 typeInfo (Long      p) = cFieldInt 'K' p
-typeInfo (ULong     _) = (cField 'K'){- tfZero = 2^63 -}
+typeInfo (ULong     _) = (cField 'K'){ tfNull = Just (-1), tfTypeComment = Just "unsigned" {- tfZero = 2^63 -} }
 typeInfo (Integer   p) = cFieldInt 'J' p
 typeInfo (Short     p) = cFieldInt 'I' p
-typeInfo (Byte      _) = (cField 'B'){- tfZero = -127 -}
+typeInfo (Byte      _) = (cField 'B'){ tfNull = Just 128, tfTypeComment = Just "signed" {- tfZero = -127 -} }
 typeInfo (Boolean   _) = cField 'L'
 typeInfo (Keyword   _) = cField 'A' -- count set by size below
 typeInfo (Void      _) = (cField 'P'){ tfCount = 0 }
@@ -150,21 +161,24 @@ tField f@Field{ fieldType = ft } = ti
   { tfCount = tfCount ti
       * (if typeIsString ft         then fieldSize f   else 1)
       * (if isJust (typeIsArray ft) then fieldLength f else 1)
-  , tfName = Just $ TE.encodeUtf8 $ fieldName f -- XXX supposed to be ASCII -- will anyone care?
+  -- XXX supposed to be ASCII -- will anyone care?
+  , tfTypeComment = BS.intercalate "," . map TE.encodeUtf8 . V.toList <$> fieldEnum f <|> tfTypeComment ti
+  , tfName = Just $ TE.encodeUtf8 $ fieldName f
+  , tfNameComment = TE.encodeUtf8 <$> fieldDescr f
   , tfUnit = TE.encodeUtf8 <$> fieldUnits f
   } where ti = typeInfo ft
 
 tFieldRecords :: Int -> TField -> [HeaderRecord]
 tFieldRecords i TField{..} =
-  [ rec "TFORM" $ HeaderString $ mwhen (tfCount /= 1) (showBS tfCount) `BSC.snoc` tfType
+  [ rec "TFORM" tfTypeComment $ HeaderString $ mwhen (tfCount /= 1) (showBS tfCount) `BSC.snoc` tfType
   ] ++ catMaybes
-  [ rec "TTYPE" . HeaderString <$> tfName
-  , rec "TUNIT" . HeaderString <$> tfUnit
-  , rec "TNULL" . HeaderInteger <$> tfNull
+  [ rec "TTYPE" tfNameComment . HeaderString <$> tfName
+  , rec "TUNIT" Nothing . HeaderString <$> tfUnit
+  , rec "TNULL" Nothing . HeaderInteger <$> tfNull
   ]
   where
   is = BSC.pack $ show i
-  rec n v = HeaderRecord (n <> is) (Just v) Nothing
+  rec n c v = HeaderRecord (n <> is) (Just v) c
 
 axisHeaders :: Int -> [Word] -> [HeaderRecord]
 axisHeaders bitpix naxis =
@@ -190,3 +204,45 @@ fitsHeaders fields count =
   tfields = V.map tField fields
   Sum rowsize = V.foldMap (Sum . tfBytes) tfields
   datasize = count * rowsize
+
+fitsValue :: Field -> TypeValue Maybe -> B.Builder
+fitsValue _ (Double    x) = B.doubleBE $ fromMaybe (unsafeCoerce (0x7ff80000ffffffff::Word64)) x
+fitsValue _ (Float     x) = B.floatBE  $ fromMaybe (unsafeCoerce (0x7fc0ffff::Word32)) x
+fitsValue f (HalfFloat x) = fitsValue f (Float $ realToFrac <$> x)
+fitsValue _ (Long      x) = B.int64BE  $ fromMaybe minBound x
+fitsValue _ (ULong     x) = B.word64BE $ fromMaybe maxBound x -- should be signed with zero shift
+fitsValue _ (Integer   x) = B.int32BE  $ fromMaybe minBound x
+fitsValue _ (Short     x) = B.int16BE  $ fromMaybe minBound x
+fitsValue _ (Byte      x) = B.int8     $ fromMaybe minBound x -- should be unsigned with zero shift
+fitsValue _ (Boolean Nothing) = B.int8 0
+fitsValue _ (Boolean (Just False)) = B.char7 'F'
+fitsValue _ (Boolean (Just True)) = B.char7 'T'
+fitsValue f (Keyword   x) = B.byteString s <> stimesMonoid (l' - BS.length s) (B.char7 '\0') where
+  s = BS.take l' $ foldMap TE.encodeUtf8 x -- supposed to be ASCII oh well
+  l' = fromIntegral (fieldSize f)
+fitsValue _ (Void      _) = mempty
+fitsValue f (Array     x) = V.foldMap (fitsValue f) $ traverseTypeValue (padv . fromMaybe V.empty . getCompose) x where
+   padv v = V.map Just (V.take l' v) V.++ V.replicate (l' - V.length v) Nothing
+   l' = fromIntegral (fieldLength f)
+
+fitsRow :: V.Vector Field -> V.Vector (TypeValue Maybe) -> B.Builder
+fitsRow f v = fold $ V.zipWith fitsValue f v
+
+fitsGenerator :: Catalog -> DataArgs V.Vector -> M OutputStream
+fitsGenerator cat args = do
+  (count, _) <- queryStats cat (StatsArgs (dataFilters args) mempty)
+  let (header, size, footer) = fitsHeaders (dataFields args) count
+  outputStreamRows
+    (Just $ fromIntegral (BS.length header) + size + fromIntegral (BS.length footer))
+    (B.byteString header)
+    (fitsRow $ dataFields args)
+    (B.byteString footer)
+    cat args
+
+fitsOutput :: OutputFormat
+fitsOutput = OutputFormat
+  { outputMimeType = "application/fits"
+  , outputExtension = "fits"
+  , outputDescription = "FITS BINTABLE binary table file containing the requested fields"
+  , outputGenerator = \_ -> fitsGenerator
+  }

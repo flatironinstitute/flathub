@@ -78,6 +78,7 @@ import Backend
 import Output.Types
 import Output.CSV
 import Output.ECSV
+import Output.FITS
 import Output.Numpy
 import Attach
 import Compression
@@ -740,6 +741,7 @@ downloadFormats = KM.fromList $ map DownloadFormat
   [ csvOutput
   , ecsvOutput
   , numpyOutput
+  , fitsOutput
   , jsonOutput
   , ndjsonOutput
   ]
