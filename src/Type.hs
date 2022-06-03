@@ -184,7 +184,7 @@ instance Typed a => Typed (V.Vector a) where
   parseJSONTyped (J.Array v) = V.mapM parseJSONTyped v
   parseJSONTyped j = V.singleton <$> parseJSONTyped j
   parseStream1 = V.singleton <$> parseStream1
-  parseStream = V.fromList <$> JS.arrayOf (many parseStream1) <|> parseStream1
+  parseStream = V.fromList <$> many (JS.arrayOf parseStream1) <|> parseStream1
 
 unTypeValue :: (forall a . Typed a => f a -> b) -> TypeValue f -> b
 unTypeValue f (Double    x) = f $! x
