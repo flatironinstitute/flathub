@@ -819,6 +819,38 @@ apiDownload = APIOp
           & OA.oneOf ?~ [ds]))) encodingCompressions)
   }
 
+-------- /api/{catalog}/count
+
+parseCountQuery :: Catalog -> Wai.Request -> CountArgs
+parseCountQuery = parseFiltersQuery
+
+parseCountJSON :: Catalog -> J.Value -> J.Parser CountArgs
+parseCountJSON cat = J.withObject "count request" $
+  parseFiltersJSON cat
+
+apiCount :: APIOp Simulation
+apiCount = APIOp -- /api/{cat}/count
+  { apiName = "count"
+  , apiSummary = "Get count of matching rows (given some filters)"
+  , apiPath = catalogBase R.>* "count"
+  , apiExampleArg = "catalog"
+  , apiPathParams = return [catalogParam]
+  , apiQueryParams = [filtersQueryParam]
+  , apiRequestSchema = Just $ do
+    filt <- filtersSchema
+    return $ mempty & OA.allOf ?~
+      [ filt
+      ]
+  , apiAction = \sim req -> do
+    cat <- askCatalog sim
+    body <- parseJSONBody req (parseCountJSON cat)
+    count <- queryCount cat $ fromMaybe (parseCountQuery cat req) body
+    return $ okResponse (apiHeaders req) $ J.toEncoding count
+  , apiResponse = do
+    return $ jsonContent $ OA.Inline $ schemaDescOf statsCount "number of matching rows"
+      & OA.title ?~ "stats result"
+  }
+
 -------- /api/{catalog}/stats
 
 parseStatsQuery :: Catalog -> Wai.Request -> StatsArgs
@@ -1164,6 +1196,7 @@ apiOps =
   , AnyAPIOp apiSchemaCSV
   , AnyAPIOp apiData
   , AnyAPIOp apiDownload
+  , AnyAPIOp apiCount
   , AnyAPIOp apiStats
   , AnyAPIOp apiHistogram
   , AnyAPIOp apiAttachment

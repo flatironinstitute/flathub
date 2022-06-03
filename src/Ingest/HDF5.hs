@@ -168,7 +168,6 @@ ingestSubBlocks info hf pb IngestHaloJoin{..} = do
   getcol f b = case lookup f b of
     Just (Integer v) -> return v
     _ -> fail $ "ingest join data not found for " ++ show f
-ingestSubBlocks _ _ _ _ = fail "join not supported"
 
 withHDF5 :: FilePath -> (H5.File -> IO a) -> IO a
 withHDF5 fn = bracket (H5.openFile (BSC.pack fn) [H5.ReadOnly] Nothing) H5.closeFile

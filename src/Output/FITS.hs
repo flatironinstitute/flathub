@@ -230,7 +230,7 @@ fitsRow f v = fold $ V.zipWith fitsValue f v
 
 fitsGenerator :: Catalog -> DataArgs V.Vector -> M OutputStream
 fitsGenerator cat args = do
-  (count, _) <- queryStats cat (StatsArgs (dataFilters args) mempty)
+  count <- queryCount cat (dataFilters args)
   let (header, size, footer) = fitsHeaders (dataFields args) count
   outputStreamRows
     (Just $ fromIntegral (BS.length header) + size + fromIntegral (BS.length footer))

@@ -11,8 +11,10 @@ module ES
   , HTTP.Request
   , httpJSON
   , httpStream
+  , elasticRequest
   , searchCatalogRequest
   , searchCatalog
+  , catalogURL
   , createIndex
   , checkIndices
   , storedFieldsArgs

@@ -100,7 +100,7 @@ numpyValueRow f v = fold $ V.zipWith numpyBuild f v
 
 numpyGenerator :: Catalog -> DataArgs V.Vector -> M OutputStream
 numpyGenerator cat args = do
-  (count, _) <- queryStats cat (StatsArgs (dataFilters args) mempty)
+  count <- queryCount cat (dataFilters args)
   let (header, size) = numpyHeader (V.toList $ dataFields args) count
   outputStreamRows
     (Just size)

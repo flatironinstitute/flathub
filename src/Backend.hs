@@ -14,6 +14,8 @@ module Backend
   , queryData
   , queryDataStream
   , maxDataCount, maxResultWindow
+  , CountArgs
+  , queryCount
   , StatsArgs(..)
   , queryStats
   , Histogram(..)
@@ -47,6 +49,7 @@ import           Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
 import qualified Data.Text as T
 import qualified Data.Vector as V
 import           Data.Word (Word16)
+import           Network.HTTP.Types.Method (StdMethod(GET))
 
 import Error
 import Monoid
@@ -197,6 +200,8 @@ instance DataRow (V.Vector Field) (V.Vector (TypeValue Maybe)) where
     ev = V.map (fmapTypeValue (\Proxy -> Nothing) . fieldType) fields
     fm = HM.fromList $ V.toList $ V.imap (\i f -> (fieldName f, (i, fieldType f))) fields
 
+-------- data
+
 parseData :: DataRow f a => f -> J.Value -> J.Parser (V.Vector a)
 parseData fields = J.withObject "data res" $ \o ->
   o J..: "hits" >>= (J..: "hits") >>= mapM (parseHit fields)
@@ -257,6 +262,20 @@ queryDataStream cat args = qds Nothing where
     mapM_ (qds . Just) off'
   key = fromMaybe idField $ (`HM.lookup` catalogFieldMap cat) =<< catalogKey cat
 
+-------- count
+
+parseCount :: J.Value -> J.Parser Count
+parseCount = J.withObject "count res" $ (J..: "count")
+
+type CountArgs = Filters
+
+queryCount :: Catalog -> CountArgs -> M Count
+queryCount cat filt =
+  httpJSON parseCount =<< elasticRequest GET (catalogURL cat ++ ["_count"]) []
+    (JE.pairs $ filterQuery filt)
+
+-------- stats
+
 fieldUseTerms :: Field -> Bool
 fieldUseTerms f = fieldTerms f || not (typeIsNumeric $ snd $ unArrayType $ fieldType f)
 
@@ -298,6 +317,8 @@ queryStats cat StatsArgs{..} =
     <> filterQuery statsFilters
   where
   field = ("field" J..=) . fieldName
+
+-------- histogram
 
 data Histogram = Histogram
   { histogramField :: Field
