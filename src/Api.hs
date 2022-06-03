@@ -535,13 +535,13 @@ fieldsQueryParam = do
     & OA.explode ?~ False
     & OA.schema ?~ fl
 
-parseFieldsQuery :: Catalog -> Wai.Request -> BS.ByteString -> [Field]
-parseFieldsQuery cat req param =
-  mapMaybe (lookupFieldQuery cat False) $ parseListQuery req param
+parseFieldsQuery :: Catalog -> Bool -> Wai.Request -> BS.ByteString -> [Field]
+parseFieldsQuery cat ind req param =
+  mapMaybe (lookupFieldQuery cat ind) $ parseListQuery req param
 
-parseFieldsJSON :: Catalog -> J.Value -> J.Parser [Field]
-parseFieldsJSON cat = J.withArray "field list" $
-  mapM (J.withText "field name" $ failErr . lookupField cat False) . V.toList
+parseFieldsJSON :: Catalog -> Bool -> J.Value -> J.Parser [Field]
+parseFieldsJSON cat ind = J.withArray "field list" $
+  mapM (J.withText "field name" $ failErr . lookupField cat ind) . V.toList
 
 -------- /api/{catalog}/data
 
@@ -607,7 +607,7 @@ sortParam = do
 parseDataQuery :: Catalog -> Wai.Request -> DataArgs V.Vector
 parseDataQuery cat req = DataArgs
   { dataFilters = parseFiltersQuery cat req
-  , dataFields = V.fromList $ parseFieldsQuery cat req "fields"
+  , dataFields = V.fromList $ parseFieldsQuery cat False req "fields"
   , dataSort = parseSortQuery cat req "sort"
   , dataCount = fromMaybe 0 $ parseReadQuery req "count"
   , dataOffset = fromMaybe 0 $ parseReadQuery req "offset"
@@ -616,7 +616,7 @@ parseDataQuery cat req = DataArgs
 parseDataJSON :: Catalog -> J.Value -> J.Parser (DataArgs V.Vector, Bool)
 parseDataJSON cat = J.withObject "data request" $ \o -> (,) <$> (DataArgs
   <$> parseFiltersJSON cat (foldl' (flip HM.delete) o fields)
-  <*> (fmap V.fromList . parseFieldsJSON cat =<< o J..: "fields")
+  <*> (fmap V.fromList . parseFieldsJSON cat False =<< o J..: "fields")
   <*> (parseSortJSON cat =<< o J..:? "sort")
   <*> o J..: "count"
   <*> o J..:? "offset" J..!= 0)
@@ -824,13 +824,13 @@ apiDownload = APIOp
 parseStatsQuery :: Catalog -> Wai.Request -> StatsArgs
 parseStatsQuery cat req = StatsArgs
   { statsFilters = parseFiltersQuery cat req
-  , statsFields = KM.fromList $ parseFieldsQuery cat req "fields"
+  , statsFields = KM.fromList $ parseFieldsQuery cat True req "fields"
   }
 
 parseStatsJSON :: Catalog -> J.Value -> J.Parser StatsArgs
 parseStatsJSON cat = J.withObject "stats request" $ \o -> StatsArgs
   <$> parseFiltersJSON cat (HM.delete "fields" o)
-  <*> (maybe (return KM.empty) (fmap KM.fromList . parseFieldsJSON cat) =<< o J..:? "fields")
+  <*> (maybe (return KM.empty) (fmap KM.fromList . parseFieldsJSON cat True) =<< o J..:? "fields")
 
 fieldStatsJSON :: FieldSub FieldStats m -> J.Encoding
 fieldStatsJSON = unTypeValue fsj . fieldType
