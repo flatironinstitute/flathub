@@ -451,7 +451,7 @@ OaNeuronInformation:
 ScienceAlerts:
   name:
     length: 9
-XpSampling:
+aux: #XpSampling:
   band:
     enum: [BP,RP]
 McmcSamplesGspPhot: {}
