@@ -611,6 +611,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
       data-type=#{baseType (asTypeOf "num" T.empty,"num","string","string","string") $ fieldType f}
       data-class-name="dt-body-#{ifs (typeIsNumeric (fieldType f)) "right" "left"}"
       :not (fieldDisp f):data-visible="false"
+      :or (fieldStore f):data-orderable="false"
       data-default-content="">
       #{fieldBody d f}
     |]
