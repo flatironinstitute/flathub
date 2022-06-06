@@ -17,9 +17,14 @@ module Api
   , apiSchemaSQL
   , apiSchemaCSV
   , apiData
+  , apiDownload
+  , downloadFormats
   , apiStats
   , apiHistogram
   , apiAttachment
+  , apiAttachments
+  , apiAttachmentsField
+  , attachmentsFormats
   , apiRoutes
   , openApi
   ) where
@@ -750,14 +755,14 @@ instance R.Parameter R.PathString DownloadFormat where
   renderParameter = KM.key
   parseParameter s = HM.lookup s downloadFormats
 
-outputAction :: Simulation -> OutputFormat -> Maybe CompressionFormat -> (DataArgs V.Vector -> M ()) -> Action
+outputAction :: Simulation -> OutputFormat -> Maybe CompressionFormat -> (DataArgs V.Vector -> M (DataArgs V.Vector)) -> Action
 outputAction sim fmt comp check req = do
   cat <- askCatalog sim
   body <- parseJSONBody req (parseDataJSON cat)
   let args = (maybe (parseDataQuery cat req) fst body){ dataCount = maxDataCount }
       enc = comp <|> listToMaybe (acceptCompressionEncoding req)
-  check args
-  out <- outputGenerator fmt req cat args
+  args' <- check args
+  out <- outputGenerator fmt req cat args'
   g <- ask
   return $ Wai.responseStream ok200 (apiHeaders req ++
     [ (hContentType, maybe (MT.renderHeader $ outputMimeType fmt) compressionMimeType comp)
@@ -771,12 +776,12 @@ outputAction sim fmt comp check req = do
       runReaderT (C.runConduitRes $ outputStream out
         C..| C.mapM_ (liftIO . chunk)) g
 
-apiDownload :: APIOp (Simulation, (DownloadFormat, Maybe CompressionFormat))
+apiDownload :: APIOp (Simulation, DownloadFormat, Maybe CompressionFormat)
 apiDownload = APIOp
   { apiName = "download"
   , apiSummary = "Download raw data in bulk"
-  , apiPath = catalogBase R.>* "data" R.>*< R.parameter
-  , apiExampleArg = ("catalog", (head $ KM.toList downloadFormats, Nothing))
+  , apiPath = catalogBase R.>* "data" R.>*<< R.parameter
+  , apiExampleArg = ("catalog", head $ KM.toList downloadFormats, Nothing)
   , apiPathParams = return [catalogParam
     , mempty
       & OA.name .~ "format"
@@ -802,8 +807,7 @@ apiDownload = APIOp
         , ("sort", sort, False)
         ]
       ]
-  , apiAction = \(sim, (DownloadFormat fmt, comp)) -> outputAction sim fmt comp $ \_ -> do
-    return ()
+  , apiAction = \(sim, DownloadFormat fmt, comp) -> outputAction sim fmt comp $ return
   , apiResponse = do
     ds <- dataSchema
     return $ mempty
@@ -1136,10 +1140,19 @@ instance R.Parameter R.PathString AttachmentsFormat where
   renderParameter = KM.key
   parseParameter s = HM.lookup s attachmentsFormats
 
+attachmentsResponse :: OA.Response
+attachmentsResponse = mempty
+  & OA.description .~ "file containing all matching attachments in the selected format"
+  & OA.content .~ HMI.fromList
+    (map (\(AttachmentsFormat f) -> (outputMimeType f, mempty & OA.schema ?~ OA.Inline (mempty
+      & OA.title ?~ (T.pack (outputExtension f) <> " attachments")
+      & OA.description ?~ outputDescription f)))
+      (KM.toList attachmentsFormats))
+
 apiAttachments :: APIOp (Simulation, AttachmentsFormat)
 apiAttachments = APIOp
   { apiName = "attachments"
-  , apiSummary = "Download attachments in bulk from matching rows"
+  , apiSummary = "Download attachments in bulk from matching rows for multiple fields"
   , apiPath = catalogBase R.>* "attachments" R.>*< R.parameter
   , apiExampleArg = ("catalog", head $ KM.toList attachmentsFormats)
   , apiPathParams = return [catalogParam
@@ -1161,19 +1174,46 @@ apiAttachments = APIOp
         [ ("fields", list, True)
         ]
       ]
-  , apiAction = \(sim, AttachmentsFormat fmt) -> outputAction sim fmt Nothing $ \args ->
-    unless (all (isJust . fieldAttachment) (dataFields args)) $
-      raise400 "Selected fields must be attachments"
-  , apiResponse = do
-    return $ mempty
-      & OA.description .~ "file containing all matching attachments in the selected format"
-      & OA.content .~ HMI.fromList
-        (map (\(AttachmentsFormat f) -> (outputMimeType f, mempty & OA.schema ?~ OA.Inline (mempty
-          & OA.title ?~ (T.pack (outputExtension f) <> " attachments")
-          & OA.description ?~ outputDescription f)))
-          (KM.toList attachmentsFormats))
+  , apiAction = \(sim, AttachmentsFormat fmt) -> outputAction sim fmt Nothing $ \args -> do
+    return args
+      { dataFields = V.filter (isJust . fieldAttachment) (dataFields args)
+      }
+  , apiResponse = return attachmentsResponse
   }
 
+apiAttachmentsField :: APIOp (Simulation, AttachmentsFormat, T.Text)
+apiAttachmentsField = APIOp
+  { apiName = "attachments1"
+  , apiSummary = "Download attachments in bulk from matching rows for single field"
+  , apiPath = catalogBase R.>* "attachments" R.>*< R.parameter R.>>*< R.parameter
+  , apiExampleArg = ("catalog", head $ KM.toList attachmentsFormats, "field")
+  , apiPathParams = do
+    fn <- fieldNameSchema
+    return
+      [ catalogParam
+      , mempty
+        & OA.name .~ "format"
+        & OA.schema ?~ OA.Inline (mempty
+          & OA.type_ ?~ OA.OpenApiString
+          & OA.enum_ ?~ map (J.toJSON . KM.key) (KM.toList attachmentsFormats))
+      , mempty
+        & OA.name .~ "field"
+        & OA.schema ?~ fn
+      ]
+  , apiQueryParams = [filtersQueryParam]
+  , apiRequestSchema = Just $ do
+    filt <- filtersSchema
+    return $ mempty & OA.allOf ?~
+      [ filt
+      ]
+  , apiAction = \(sim, AttachmentsFormat fmt, atn) -> outputAction sim fmt Nothing $ \args -> do
+    cat <- askCatalog sim
+    atf <- lookupField cat False atn
+    unless (isJust (fieldAttachment atf)) $
+      raise404 "Not attachment field"
+    return args{ dataFields = V.singleton atf }
+  , apiResponse = return attachmentsResponse
+  }
 
 -------- global
 
@@ -1201,6 +1241,7 @@ apiOps =
   , AnyAPIOp apiHistogram
   , AnyAPIOp apiAttachment
   , AnyAPIOp apiAttachments
+  , AnyAPIOp apiAttachmentsField
   ]
 
 apiRoutes :: [R.RouteCase Action]

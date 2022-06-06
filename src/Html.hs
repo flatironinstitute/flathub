@@ -43,7 +43,7 @@ import qualified Waimwork.Blaze as H (text, preEscapedBuilder)
 import           Waimwork.HTTP (parseHTTPDate, formatHTTPDate)
 import           Waimwork.Response (okResponse, response)
 import qualified Web.Route.Invertible as R
-import           Web.Route.Invertible ((!:?))
+import           Web.Route.Invertible (BoundRoute((:?)), (!:?))
 import qualified Web.Route.Invertible.Internal as R (requestRoute')
 import qualified Web.Route.Invertible.Render as R
 import qualified Web.Route.Invertible.Wai as R
@@ -534,17 +534,26 @@ catalogPage = getPath R.parameter $ \sim req -> do
               <select v-model="bulk">
                 <option value="">Choose format...
                 <optgroup label="raw data">
-                  $forall b <- [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkECSV Nothing, BulkECSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)]
-                    #{bulklink sim b}
-                $forall (l, a) <- [("" ++ "files", BulkAttachments), ("download script", BulkAttachmentScript Nothing)]
+                  $forall (n, f) <- HM.toList downloadFormats
+                    <option #download.#{n} .download-option
+                      value="@{apiRoute apiDownload :? (sim, f, Nothing)}">
+                      #{n}
+                    <option #download.#{n}.gz .download-option
+                      value="@{apiRoute apiDownload :? (sim, f, Just CompressionGZip)}">
+                      #{n}.gz
+                $forall (l, f) <- [("" ++ "files", "zip"), ("download script", "sh")]
                   <optgroup label="attachment #{l}">
-                    $with att <- HM.filter (isJust . fieldAttachment) $ catalogFieldMap cat
-                      $forall f <- att
-                        #{bulklink sim (a (Just (fieldName f)))}
-                      $if not $ HM.null att
-                        #{bulklink sim (a Nothing)}
+                    $with att <- HM.keys $ HM.filter (isJust . fieldAttachment) $ catalogFieldMap cat
+                      $forall a <- att
+                        <option #download.attachment.#{a}.#{f} .download-option
+                          value="@{apiRoute apiAttachmentsField :? (sim, attachmentsFormats ! f, a)}">
+                          #{a}.#{f}
+                      $if not $ null att
+                        <option #download.attachments.#{f} .download-option
+                          value="@{apiRoute apiAttachments :? (sim, attachmentsFormats ! f)}">
+                          all selected.#{f}
               <a .button .button-secondary #download-btn
-                v-bind:href="link">
+                v-bind:href="link" download>
                 Download
 
         <div .container-fluid .catalog-summary .raw-data #rawdata>
@@ -555,13 +564,6 @@ catalogPage = getPath R.parameter $ \sim req -> do
               #{toprow}
       |]
   where
-  bulklink :: Simulation -> BulkFormat -> H.Html
-  bulklink sim b = hamlet [Hamlet.hamlet|
-      <option #download.#{n} .download-option
-        value="@{catalogBulk !:? (sim, b)}">
-        #{n}
-    |]
-    where n = R.renderParameter b :: T.Text
   fielddesc :: FieldGroup -> FieldGroup -> Int -> H.Html
   fielddesc f g d = do
     hamlet [Hamlet.hamlet|
