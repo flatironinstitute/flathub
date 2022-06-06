@@ -112,6 +112,7 @@ objectSchema desc props = mempty
   & OA.type_ ?~ OA.OpenApiObject
   & OA.description ?~ desc
   & OA.properties .~ HMI.fromList (map (\(n,s,_) -> (n,s)) props)
+  & OA.additionalProperties ?~ OA.AdditionalPropertiesAllowed False
   & OA.required .~ map (\(n,_,_) -> n) (filter (\(_,_,r) -> r) props)
 
 arraySchema :: OA.Referenced OA.Schema -> OA.Schema
