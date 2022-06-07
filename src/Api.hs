@@ -760,7 +760,7 @@ outputAction sim fmt comp check req = do
   cat <- askCatalog sim
   body <- parseJSONBody req (parseDataJSON cat)
   let args = (maybe (parseDataQuery cat req) fst body){ dataCount = maxDataCount }
-      enc = comp <|> listToMaybe (acceptCompressionEncoding req)
+      enc = comp -- <|> listToMaybe (acceptCompressionEncoding req)
   args' <- check args
   out <- outputGenerator fmt req cat args'
   g <- ask
@@ -769,7 +769,7 @@ outputAction sim fmt comp check req = do
     , (hContentDisposition, "attachment; filename=" <> quoteHTTP (TE.encodeUtf8 sim
       <> BSC.pack ('.' : outputExtension fmt ++ foldMap (('.' :) . compressionExtension) comp)))
     ] ++ catMaybes
-    [ (,) hContentLength . BSC.pack . show <$> (guard (isNothing comp) >> outputSize out)
+    [ (,) hContentLength . BSC.pack . show <$> (guard (isNothing enc) >> outputSize out)
     , compressionEncodingHeader <$> (guard (enc /= comp) >> enc)
     ])
     $ compressStream enc $ \chunk _ ->
