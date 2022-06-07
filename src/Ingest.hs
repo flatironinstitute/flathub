@@ -1,5 +1,6 @@
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE ViewPatterns #-}
 
 module Ingest
   ( ingest
@@ -9,10 +10,8 @@ import           Control.Arrow (first)
 import           Control.Monad (foldM)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (asks)
-import           Data.List (sort)
-import           Data.Maybe (isJust, fromMaybe)
+import           Data.Maybe (fromMaybe)
 import           Data.Word (Word64)
-import           System.Directory (doesDirectoryExist, listDirectory)
 import           System.FilePath (takeExtension, (</>), takeBaseName)
 import           Text.Read (readMaybe)
 
@@ -21,22 +20,18 @@ import Catalog
 import Global
 import Ingest.Types
 import Ingest.CSV
+import Ingest.ECSV
 import Ingest.Delim
 import Ingest.HDF5
+import Ingest.GaiaDR3
 import Compression
 
 ingest :: Catalog -> [FieldValue] -> [String] -> M Word64
 ingest cat consts fs = do
   base <- asks globalDataDir
-  fs' <- liftIO $ concat <$> mapM (expand base) fs
-  foldM run 0 fs'
+  foldM run 0 $ map (expand base) fs
   where
-  expand base (splitoff -> (splitpfx -> (p,f'),o)) = do
-    d <- doesDirectoryExist f
-    if d
-      then map ((p, , 0) . (f </>)) . drop (fromIntegral o) . sort . filter (isJust . proc) <$> listDirectory f
-      else return [(p,f,o)]
-    where f = base </> f'
+  expand base (splitoff -> (splitpfx -> (p,f'),o)) = (p,base </> f',o)
   run start (p, f, off) = do
     liftIO $ putStrLn $ f <> " [" <> p <> "]"
     n <- ing f p start off
@@ -58,7 +53,10 @@ ingest cat consts fs = do
   proc f = case takeExtension $ fst $ decompressExtension f of
     ".hdf5" -> Just ingestHDF5
     ".h5" -> Just ingestHDF5
-    ".csv" -> Just ingestCSV
+    ".csv"
+      | catalogName cat == "gaiadr3" -> Just ingestGaiaDR3
+      | otherwise -> Just ingestCSV
+    ".ecsv" -> Just ingestECSV
     ".dat" -> Just ingestDat
     ".txt" -> Just ingestTxt
     _ -> Nothing

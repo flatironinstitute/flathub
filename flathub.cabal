@@ -16,23 +16,35 @@ source-repository head
 executable flathub
   main-is: Main.hs
   other-modules:
+    Paths_flathub
+    Api
     Attach
+    Backend
     Catalog
     Compression
+    Data.ECSV
     ES
+    Error
     Field
     Global
+    Half
     Html
     Ingest
-    Ingest.Types
     Ingest.CSV
-    Ingest.HDF5
     Ingest.Delim
+    Ingest.ECSV
+    Ingest.GaiaDR3
+    Ingest.HDF5
+    Ingest.Types
     JSON
+    KeyedMap
     Monoid
+    OpenApi
     Output.CSV
     Output.ECSV
+    Output.FITS
     Output.Numpy
+    Output.Types
     Query
     Static
     Type
@@ -47,6 +59,7 @@ executable flathub
     , blaze-markup
     , bytestring
     , bzlib
+    , case-insensitive
     , cassava
     , conduit
     , containers
@@ -57,16 +70,24 @@ executable flathub
     , hashable
     , hdf5
     , http-client
+    , http-conduit
+    , http-media
     , http-types
+    , insert-ordered-containers
+    , json-stream
+    , lens
     , mime-types
     , monad-control
     , mtl
     , network-uri
+    , openapi3
+    , resourcet
     , scientific
     , shakespeare
     , streaming-commons
     , text
     , time
+    , transformers
     , unix
     , unordered-containers
     , vector

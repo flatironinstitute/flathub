@@ -2,13 +2,17 @@ resolver: lts-18.28
 packages:
 - '.'
 extra-deps:
-  - web-inv-route-0.1.3.1
+  - web-inv-route-0.1.3.2
   - git: https://github.com/dylex/waimwork
-    commit: 0ec1caed3aaa4583430484b2b63b5793b94cdb61
+    commit: 8ccaa63ac6b80a4ebc9ad7d61ca38cbb009e8f3c
   - git: https://github.com/dylex/hs-hdf5
-    commit: 49c9a85136d14c551c9c533ff5f0410ef3feb498
-  - bzlib-0.5.1.0
+    commit: ac3d3e772d8c7fc7ea25fb99f1c95cba208d72f4
+  - git: https://github.com/ondrap/json-stream
+    commit: e51d810c8b8bf312da9cb8b81cfd83d0feecc3fa
 flags:
   web-inv-route:
     snap: false
     happstack: false
+  aeson:
+    cffi: true
+    fast: false

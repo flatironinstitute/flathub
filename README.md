@@ -25,3 +25,15 @@ There is also a [docker-compose](docker-compose.yml) definition for installing e
 - Run `docker-compose run --rm -v /data/dir:/data flathub -i CATALOG /data/FILE ...` to ingest data into each catalog.
    - Or, alternatively, define your own script and execute it outside of the containers.
 - To bring the containers down, use `docker compose down`. To bring the containers down AND remove all stored data, use `docker compose down -v`.
+
+
+Notes: 
+- For macOS installations:
+   - Install hdf5 with `brew install hdf5@1.10` 
+   - Run `stack install` with the ` --extra-include-dirs=/usr/local/opt/hdf5@1.10/include` `--extra-lib-dirs=/usr/local/opt/hdf5@1.10/lib`
+   - If brew is not installed in the default location use the appropriate path for the above flags.
+- For internal FI use: 
+   elasticsearch {
+      server = "http://astrodb:9200/"
+   }
+- OpenAPI: http://<url>/openapi.json

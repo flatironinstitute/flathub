@@ -55,12 +55,12 @@ ingestFlags = map (s . show &&& id) $ enumFromTo minBound maxBound where
   s ~('I':'n':'g':'e':'s':'t':u:r) = T.pack (toLower u : r)
 
 parseIngest :: FieldSub t m -> (Maybe IngestFlag, T.Text)
-parseIngest Field{ fieldName = n, fieldIngest = Nothing } = (Nothing, n)
-parseIngest Field{ fieldName = n, fieldIngest = Just (T.stripPrefix "_" -> Just (T.breakOn ":" -> ((`lookup` ingestFlags) -> Just f, s))) } = 
+parseIngest Field{ fieldDesc = FieldDesc{ fieldDescName = n, fieldDescIngest = Nothing } } = (Nothing, n)
+parseIngest Field{ fieldDesc = FieldDesc{ fieldDescName = n, fieldDescIngest = Just (T.stripPrefix "_" -> Just (T.breakOn ":" -> ((`lookup` ingestFlags) -> Just f, s))) } } = 
   (Just f, case T.uncons s of
     Nothing -> n
     Just (~':', r) -> r)
-parseIngest Field{ fieldIngest = Just i } = (Nothing, i)
+parseIngest Field{ fieldDesc = FieldDesc{ fieldDescIngest = Just i } } = (Nothing, i)
 
 hdf5ReadVector :: H5.NativeType a => T.Text -> H5.Dataset -> [H5.HSize] -> Word64 -> IO (V.Vector a)
 hdf5ReadVector label d o l = do
@@ -116,7 +116,7 @@ loadBlock info@Ingest{ ingestCatalog = Catalog{ catalogFieldGroups = cat }, inge
       handleJust
         (\(H5E.errorStack -> (H5E.HDF5Error{ H5E.classId = cls, H5E.majorNum = Just H5E.Sym, H5E.minorNum = Just H5E.NotFound }:_)) -> guard (cls == H5E.hdfError))
         (\() -> return [])
-      $ loadf f{ fieldIngest = Just n } -- not quite right name handling
+      $ loadf f{ fieldDesc = (fieldDesc f){ fieldDescIngest = Just n } } -- not quite right name handling
     (Just IngestIllustris, _) -> indexf f
     (Just IngestCamels, _) -> indexf f
     (Just IngestSubhalo, _) -> return []
@@ -126,7 +126,7 @@ loadBlock info@Ingest{ ingestCatalog = Catalog{ catalogFieldGroups = cat }, inge
         loop i (f':fs') = do
           x <- hdf5ReadType (fieldType f') $ hdf5ReadVector (fieldName f') hd (fromIntegral off : if i == 0 then [] else [i]) $ ingestBlockSize info
           ((fieldName f', x) :) <$> loop (succ i) fs'
-      loop 0 $ expandFields (V.singleton f)
+      loop 0 $ V.toList $ expandFields (V.singleton f)
   indexf f = return
     [(fieldName f, Long (V.generate (fromIntegral $ maybe id (min . subtract off) (ingestSize info) $ ingestBlockSize info) ((+) (fromIntegral $ ingestStart info + off) . fromIntegral)))]
 
@@ -139,7 +139,7 @@ blockDoc info e d i =
   , ingestJConsts info <> e <> blockJson d i)
 
 ingestWith :: Ingest -> (Int -> (String, J.Series)) -> Int -> M Int
-ingestWith Ingest{ ingestCatalog = cat@Catalog{ catalogStore = ~CatalogES{} } } doc n = do
+ingestWith Ingest{ ingestCatalog = cat } doc n = do
   when (n /= 0) $ ES.createBulk cat docs
   return n
   where
@@ -150,7 +150,7 @@ ingestBlock info dat =
   ingestWith info (blockDoc info mempty dat) =<< blockSize dat
 
 ingestSubBlocks :: Ingest -> H5.File -> DataBlock -> IngestJoin -> M Int
-ingestSubBlocks info hf pb IngestJoin{..} = do
+ingestSubBlocks info hf pb IngestHaloJoin{..} = do
   fcl <- V.zip <$> getcol joinFirst pb <*> getcol joinCount pb
   let fcl' = V.filter ((-1 /=) . fst) fcl
   if V.null fcl' then return 0 else do
@@ -215,10 +215,10 @@ ingestHFile info hf = do
   infof i f = case parseIngest f of
     (Just IngestAttribute, n) -> do
       v <- liftIO $ readScalarAttribute hf n (fieldType f)
-      return $ addIngestConsts f{ fieldType = v, fieldSub = Proxy } i
+      return $ addIngestConsts f{ fieldType = v, fieldDesc = (fieldDesc f){ fieldDescSub = Proxy } } i
     (Just IngestConst, n) -> do
       v <- liftIO $ readScalarValue n <$> withDataset hf n (\hd -> hdf5ReadType (fieldType f) $ hdf5ReadVector n hd [] 2)
-      return $ addIngestConsts f{ fieldType = v, fieldSub = Proxy } i
+      return $ addIngestConsts f{ fieldType = v, fieldDesc = (fieldDesc f){ fieldDescSub = Proxy } } i
     (Just IngestIllustris, ill) -> do
       sz <- getIllustrisSize ill
       si <- constv "simulation" i
@@ -229,7 +229,7 @@ ingestHFile info hf = do
     (Just IngestCamels, ill) -> do
       sz <- getIllustrisSize ill
       ssuite <- constv "simulation_suite" i
-      Field{ fieldEnum = Just ssete, fieldType = Byte ssetv } <- constf "simulation_set" i
+      Field{ fieldDesc = FieldDesc{ fieldDescEnum = Just ssete }, fieldType = Byte ssetv } <- constf "simulation_set" i
       sid <- constv "simulation_set_id" i
       sn <- constv "snapshot" i
       return i
@@ -238,7 +238,7 @@ ingestHFile info hf = do
     (Just IngestSubhalo, T.words -> ft : fl@[ff, fc, fp]) -> do
       (tf, cat') <- maybe (fail "missing join type field") return $ takeCatalogField ft (ingestCatalog i)
       unless (all (`HM.member` catalogFieldMap (ingestCatalog i)) fl) $ fail "missing join fields"
-      let tfv x = addIngestConsts tf{ fieldType = Boolean (Identity x), fieldSub = Proxy }
+      let tfv x = addIngestConsts tf{ fieldType = Boolean (Identity x) }
           fg = fold $ fieldSub f
       si <- foldM infof (tfv True i)
         { ingestCatalog = cat'{ catalogFieldGroups = (f <>) <$> fg }
@@ -247,7 +247,7 @@ ingestHFile info hf = do
         } fg
       return $ tfv False i
         { ingestCatalog = cat'
-        , ingestJoin = Just (IngestJoin si ff fc fp)
+        , ingestJoin = Just $ IngestHaloJoin si ff fc fp
         }
     _ -> return i -- XXX only top-level ingest flags processed here
   getIllustrisSize ill = liftIO $ do

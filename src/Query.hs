@@ -24,28 +24,28 @@ import qualified Data.ByteString.Char8 as BSC
 import           Data.Foldable (fold)
 import           Data.Function (on)
 import qualified Data.HashMap.Strict as HM
-import           Data.List (foldl', unionBy)
+import           Data.List (foldl', unionBy, nubBy)
 import           Data.Maybe (listToMaybe, maybeToList, isJust, mapMaybe)
-import           Data.Proxy (Proxy(Proxy))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V
 import           Network.HTTP.Types.Header (hContentType, hContentDisposition, hContentLength, hCacheControl)
-import           Network.HTTP.Types.Status (ok200, badRequest400)
+import           Network.HTTP.Types.Status (ok200)
 import qualified Network.Wai as Wai
 import           Text.Read (readMaybe)
 import           Waimwork.HTTP (quoteHTTP)
-import           Waimwork.Response (response, okResponse)
-import           Waimwork.Result (result)
+import           Waimwork.Response (okResponse)
 import           System.FilePath ((<.>), splitExtension)
 import qualified Web.Route.Invertible as R
 import           Web.Route.Invertible.Render (renderUrlRequestBuilder)
 import           Web.Route.Invertible.Internal (requestRoute')
 import           Web.Route.Invertible.Wai (waiRequest)
 
+import JSON
 import Type
 import Field
 import Catalog
+import Error
 import Global
 import Output.CSV
 import Output.ECSV
@@ -54,6 +54,7 @@ import Compression
 import Output.Numpy
 import Monoid
 import Attach
+import Api
 
 parseQuery :: Catalog -> Wai.Request -> Query
 parseQuery cat req = fill $ foldl' parseQueryItem mempty $ Wai.queryString req where
@@ -99,7 +100,7 @@ parseQuery cat req = fill $ foldl' parseQueryItem mempty $ Wai.queryString req w
     | typeIsNumeric (fieldType f) = return $ [QueryHist f n t l]
     | otherwise = fail "non-numeric hist"
   fill q@Query{ queryFields = [] } | all (("fields" /=) . fst) (Wai.queryString req) =
-    q{ queryFields = filter fieldDisp $ catalogFields cat }
+    q{ queryFields = filter fieldDisp $ V.toList $ catalogFields cat }
   fill q = q
   spld = BSC.splitWith delim
   delim ',' = True
@@ -117,28 +118,26 @@ catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do
   let query = parseQuery cat req
       hsize = histsSize $ queryAggs query
   unless (queryLimit query <= 5000) $
-    result $ response badRequest400 [] ("limit too large" :: String)
+    raise400 "limit too large"
   unless (hsize > 0 && hsize <= 1024) $
-    result $ response badRequest400 [] ("hist too large" :: String)
-  case catalogStore cat of
-    CatalogES{ catalogStoreField = store } -> do
-      res <- ES.queryIndex cat query
-      return $ okResponse [] $ clean store res
+    raise400 "hist too large"
+  res <- ES.queryIndex cat query
+  return $ okResponse [] $ clean res
   where
   histSize (QueryHist _ n _ l) = n * histsSize l
   histSize _ = 1
   histsSize = product . map histSize
-  clean store = mapObject $ HM.mapMaybeWithKey (cleanTop store)
-  cleanTop _ "aggregations" = Just
-  cleanTop _ "histsize" = Just
-  cleanTop store "hits" = Just . mapObject (HM.mapMaybeWithKey $ cleanHits store)
-  cleanTop _ _ = const Nothing
-  cleanHits _ "total" (J.Object o) = HM.lookup "value" o
-  cleanHits _ "total" v = Just v
-  cleanHits store "hits" a = Just $ mapArray (V.map $ cleanHit store) a
-  cleanHits _ _ _ = Nothing
-  cleanHit store (J.Object o) = J.Object $ ES.storedFields' store o
-  cleanHit _ v = v
+  clean = mapObject $ HM.mapMaybeWithKey cleanTop
+  cleanTop "aggregations" = Just
+  cleanTop "histsize" = Just
+  cleanTop "hits" = Just . mapObject (HM.mapMaybeWithKey cleanHits)
+  cleanTop _ = const Nothing
+  cleanHits "total" (J.Object o) = HM.lookup "value" o
+  cleanHits "total" v = Just v
+  cleanHits "hits" a = Just $ mapArray (V.map cleanHit) a
+  cleanHits _ _ = Nothing
+  cleanHit (J.Object o) = J.Object $ HM.map unsingletonJSON $ ES.storedFields o
+  cleanHit v = v
   mapObject :: (J.Object -> J.Object) -> J.Value -> J.Value
   mapObject f (J.Object o) = J.Object (f o)
   mapObject _ v = v
@@ -255,7 +254,7 @@ attachmentQuery :: Catalog -> Maybe [T.Text] -> Query -> Query
 attachmentQuery cat atn query = query
   { queryFields = ats
   , queryFilter = (case ats of
-    [x@Field{ fieldType = Boolean _ }] -> (x{ fieldSub = Proxy, fieldType = Boolean (FilterEQ True) } :)
+    [x@Field{ fieldType = Boolean _ }] -> (x{ fieldType = Boolean (FilterEQ True) } :)
     -- TODO could do better with OR filters
     _ -> id) $ queryFilter query
   } where
@@ -276,21 +275,24 @@ bulkAttachmentUrls a z sim cat req query mt ext bbs = compressBulk z Bulk
     { bbsRow = \(J.String i:j) -> fold $ zipWith
       (\f v -> mwhen (attachmentExists v) $
         bbsRow bbs $ renderUrlRequestBuilder
-          (requestRoute' (R.actionRoute attachment) (sim, fieldName f, i) (waiRequest req) { R.requestQuery = mempty })
+          (requestRoute' (apiRoute apiAttachment) (sim, fieldName f, i) (waiRequest req) { R.requestQuery = mempty })
           mempty)
       (queryFields query) j
     }
   }
 
+csvHeader :: Query -> B.Builder
+csvHeader = csvTextRow . map fieldName . queryFields
+
 bulk :: BulkFormat -> Simulation -> Catalog -> Wai.Request -> Query -> Bulk
 bulk (BulkCSV z) _ _ _ query = bulkBlock z query
   "text/csv" "csv" $ const mempty
-  { bbsHeader = csvTextRow $ map fieldName $ queryFields query
+  { bbsHeader = csvHeader query
   , bbsRow = csvJSONRow
   }
 bulk (BulkECSV z) _ cat _ query = bulkBlock z query
   "text/x-ecsv" "ecsv" $ const mempty
-  { bbsHeader = ecsvHeader cat query
+  { bbsHeader = ecsvHeader cat (V.fromList $ queryFields query) ["query" J..= query] <> csvHeader query
   , bbsRow = csvJSONRow
   }
 bulk (BulkNumpy z) _ _ _ query = bulkBlock z query
@@ -311,13 +313,12 @@ bulk (BulkAttachments a) _ cat req query = Bulk
   { bulkMimeType = "application/zip"
   , bulkExtension = maybe "attachments" T.unpack a <> ".zip"
   , bulkCompression = Nothing
-  , bulkQuery = query'{ queryFields = attachmentsFields cat att ++ ats }
+  , bulkQuery = query'{ queryFields = nubBy ((==) `on` fieldName) $ concatMap (attachmentFields cat) ats }
   , bulkGenerator = \next -> BulkStream Nothing <$> attachmentsBulkStream info ats next
   }
   where
   query' = attachmentQuery cat (fmap return a) query
   ats = queryFields query'
-  att = mapMaybe fieldAttachment ats
   info = TE.encodeUtf8 (catalogTitle cat <> (foldMap (T.cons ' ') a)) <> " downloaded from " <> Wai.rawPathInfo req
 bulk (BulkAttachmentList z a) sim cat req query = bulkAttachmentUrls a z sim cat req query
   "text/uri-list" ".uris" $ mempty
@@ -343,5 +344,5 @@ catalogBulk = getPath (R.parameter R.>*< R.parameter) $ \(sim, fmt) req -> do
     , (hCacheControl, "public, max-age=86400")
     ]
     ++ maybeToList ((,) hContentLength . BSC.pack . show <$> bulkSize)
-    ++ compressionEncodingHeader (guard (enc /= bulkCompression) >> enc))
+    ++ maybeToList (compressionEncodingHeader <$> (guard (enc /= bulkCompression) >> enc)))
     $ compressStream enc $ \chunk _ -> bulkStream chunk

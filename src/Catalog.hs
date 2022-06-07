@@ -1,14 +1,16 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module Catalog
-  ( ESStoreField(..)
-  , CatalogStore(..)
+  ( Simulation
   , Catalog(..)
   , takeCatalogField
+  , lookupField
   , Grouping(..)
   , groupingName
   , groupingCatalog
@@ -26,7 +28,7 @@ module Catalog
   ) where
 
 import           Control.Arrow ((&&&))
-import           Control.Monad (guard, unless)
+import           Control.Monad (guard, unless, mfilter)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
@@ -40,54 +42,43 @@ import           Data.Proxy (Proxy(Proxy))
 import qualified Data.Text as T
 import qualified Data.Vector as V
 
+import Error
 import Monoid
 import Type
 import Field
 import JSON
+import qualified KeyedMap as KM
 
-data ESStoreField
-  = ESStoreSource
-  | ESStoreValues
-  | ESStoreStore
-  deriving (Eq, Ord, Enum, Show)
-
-instance J.FromJSON ESStoreField where
-  parseJSON J.Null                  = return ESStoreSource
-  parseJSON (J.Bool False)          = return ESStoreValues
-  parseJSON (J.Bool True)           = return ESStoreStore
-  parseJSON (J.String "source")     = return ESStoreSource
-  parseJSON (J.String "doc_values") = return ESStoreValues
-  parseJSON (J.String "docvalue")   = return ESStoreValues
-  parseJSON (J.String "value")      = return ESStoreValues
-  parseJSON (J.String "store")      = return ESStoreStore
-  parseJSON x = J.typeMismatch "ESStoreField" x
-
-data CatalogStore
-  = CatalogES
-    { catalogIndex :: !T.Text
-    , catalogSettings :: J.Object
-    , catalogStoreField :: !ESStoreField
-    }
+-- |Just a catalog identifier (name)
+type Simulation = T.Text
 
 data Catalog = Catalog
-  { catalogEnabled :: !Bool
+  { catalogName :: !Simulation
+  , catalogEnabled :: !Bool
+  , catalogIndex :: !T.Text
+  , catalogIndexSettings :: J.Object
+  , catalogIngestPipeline :: Maybe T.Text
   , catalogVisible :: !Bool
   , catalogOrder :: !T.Text -- ^display order in catalog list
   , catalogTitle :: !T.Text
   , catalogSynopsis :: Maybe T.Text
   , catalogDescr :: Maybe T.Text
   , catalogHtml :: Maybe T.Text
-  , catalogStore :: !CatalogStore
   , catalogFieldGroups :: FieldGroups
   , catalogFields :: Fields
-  , catalogFieldMap :: HM.HashMap T.Text Field
-  , catalogKey :: Maybe T.Text -- ^primary key (not really used)
+  , catalogFieldMap :: KM.KeyedMap Field
+  , catalogStats :: IO (Count, KM.KeyedMap (FieldSub FieldStats Proxy)) -- ^deferred cached calculation of global stats (which we assume never change)
+  , catalogKey :: Maybe T.Text -- ^primary key
   , catalogSort :: [T.Text] -- ^sort field(s) for index
-  , catalogCount :: Maybe Word
+  , catalogCount :: Maybe Count -- ^intended number of rows
   }
 
-parseCatalog :: HM.HashMap T.Text FieldGroup -> J.Value -> J.Parser Catalog
-parseCatalog dict = J.withObject "catalog" $ \c -> do
+instance KM.Keyed Catalog where
+  type Key Catalog = Simulation
+  key = catalogName
+
+parseCatalog :: HM.HashMap T.Text FieldGroup -> T.Text -> J.Value -> J.Parser Catalog
+parseCatalog dict catalogName = J.withObject "catalog" $ \c -> do
   catalogEnabled <- c J..:! "enabled" J..!= True
   catalogVisible <- c J..:! "visible" J..!= True
   catalogFieldGroups <- parseJSONField "fields" (J.withArray "fields" $ mapM (parseFieldGroup dict)) c
@@ -102,19 +93,16 @@ parseCatalog dict = J.withObject "catalog" $ \c -> do
     Just (J.String s) -> return [s]
     Just s -> J.parseJSON s
   catalogCount <- c J..:? "count"
-  catalogStore <- CatalogES
-      <$> (c J..: "index")
-      <*> (c J..:? "settings" J..!= HM.empty)
-      <*> (c J..:? "store" J..!= ESStoreValues)
-  catalogOrder <- c J..:? "order" J..!= catalogIndex catalogStore
+  catalogIndex <- c J..:? "index" J..!= catalogName
+  catalogIndexSettings <- c J..:? "settings" J..!= HM.empty
+  catalogIngestPipeline <- c J..:? "pipeline"
+  catalogOrder <- c J..:? "order" J..!= catalogName
   let catalogFields = expandFields catalogFieldGroups
-      catalogFieldMap = HM.fromList $ map (fieldName &&& id) catalogFields
+      catalogFieldMap = KM.fromList $ V.toList catalogFields
+      catalogStats = fail "catalogStats" -- filled in later
   mapM_ (\k -> unless (HM.member k catalogFieldMap) $ fail "key field not found in catalog") catalogKey
   mapM_ (\k -> unless (HM.member k catalogFieldMap) $ fail "sort field not found in catalog") catalogSort
   return Catalog{..}
-
-instance J.FromJSON Catalog where
-  parseJSON = parseCatalog mempty
 
 instance J.ToJSON Catalog where
   toJSON Catalog{..} = J.object $
@@ -132,9 +120,16 @@ instance J.ToJSON Catalog where
 takeCatalogField :: T.Text -> Catalog -> Maybe (Field, Catalog)
 takeCatalogField n c = (, c
   { catalogFieldMap    = HM.delete n                 $ catalogFieldMap c
-  , catalogFields      = filter ((n /=) . fieldName) $ catalogFields c
+  , catalogFields      = V.filter ((n /=) . fieldName) $ catalogFields c
   , catalogFieldGroups = deleteField n               $ catalogFieldGroups c
   }) <$> HM.lookup n (catalogFieldMap c) where
+
+lookupField :: MonadErr m => Catalog -> Bool -> T.Text -> m Field
+lookupField _ _ "_id" = return idField
+lookupField cat idx n =
+  maybe (raise404 $ "Field not found: " <> show n) return
+    $ mfilter (not . (&&) idx . or . fieldStore)
+    $ HM.lookup n $ catalogFieldMap cat
 
 data Grouping
   = GroupCatalog !T.Text
@@ -147,6 +142,11 @@ data Grouping
     }
   deriving (Show)
 
+instance KM.Keyed Grouping where
+  type Key Grouping = T.Text
+  key (GroupCatalog n) = n
+  key Grouping{ groupName = n } = n
+
 groupingName :: Grouping -> T.Text
 groupingName (GroupCatalog n) = n
 groupingName Grouping{ groupName = n } = n
@@ -157,7 +157,7 @@ groupingCatalog _ _ = Nothing
 
 data Groupings = Groupings
   { groupList :: V.Vector Grouping
-  , groupMap :: HM.HashMap T.Text Grouping
+  , groupMap :: KM.KeyedMap Grouping
   } deriving (Show)
 
 instance J.FromJSON Grouping where
@@ -209,8 +209,8 @@ findGroupsCatalog :: T.Text -> Groupings -> [[T.Text]]
 findGroupsCatalog t = foldMap (findGroupCatalog t) . groupList
 
 data Catalogs = Catalogs
-  { catalogDict :: [Field]
-  , catalogMap :: !(HM.HashMap T.Text Catalog)
+  { catalogDict :: Fields
+  , catalogMap :: !(KM.KeyedMap Catalog)
   , catalogGroupings :: Groupings
   }
 
@@ -251,7 +251,7 @@ instance J.FromJSON Catalogs where
   parseJSON = J.withObject "top" $ \o -> do
     dict <- o J..:? "_dict" J..!= mempty
     groups <- o J..:? "_group" J..!= mempty
-    cats <- mapM (parseCatalog $ expandAllFields dict) (HM.delete "_dict" $ HM.delete "_group" o)
+    cats <- HM.traverseWithKey (parseCatalog $ expandAllFields dict) (HM.delete "_dict" $ HM.delete "_group" o)
     mapM_ (\c -> unless (HM.member c cats) $ fail $ "Group catalog " ++ show c ++ " not found") $ groupingsCatalogs groups
     return $ Catalogs (expandFields dict) cats groups
 
@@ -277,7 +277,7 @@ instance Ord a => Semigroup (Filter a) where
     | all (a >) u = FilterRange (Just a) u
     | otherwise = FilterEQ a
   FilterRange la ua <> FilterRange lb ub =
-    FilterRange (max la lb) (min ua ub)
+    FilterRange (max la lb) (joinMaybeWith min ua ub)
   r <> e = e <> r
 
 -- |'mempty' is unbounded
@@ -295,15 +295,15 @@ instance J.ToJSON1 Filter where
 
 liftFilterValue :: Field -> Filter Value -> FieldSub Filter Proxy
 liftFilterValue f (FilterEQ v) =
-  f{ fieldSub = Proxy, fieldType = fmapTypeValue (FilterEQ . runIdentity) v }
+  f{ fieldType = fmapTypeValue (FilterEQ . runIdentity) v }
 liftFilterValue f (FilterRange (Just l) (Just u)) =
-  f{ fieldSub = Proxy, fieldType = fmapTypeValue2 (\x y -> FilterRange (Just $ runIdentity x) (Just $ runIdentity y)) l u }
+  f{ fieldType = fmapTypeValue2 (\x y -> FilterRange (Just $ runIdentity x) (Just $ runIdentity y)) l u }
 liftFilterValue f (FilterRange (Just l) Nothing) =
-  f{ fieldSub = Proxy, fieldType = fmapTypeValue (\x -> FilterRange (Just $ runIdentity x) Nothing) l }
+  f{ fieldType = fmapTypeValue (\x -> FilterRange (Just $ runIdentity x) Nothing) l }
 liftFilterValue f (FilterRange Nothing (Just u)) =
-  f{ fieldSub = Proxy, fieldType = fmapTypeValue (\x -> FilterRange Nothing (Just $ runIdentity x)) u }
+  f{ fieldType = fmapTypeValue (\x -> FilterRange Nothing (Just $ runIdentity x)) u }
 liftFilterValue f (FilterRange Nothing Nothing) =
-  f{ fieldSub = Proxy, fieldType = fmapTypeValue (\Proxy -> FilterRange Nothing Nothing) (fieldType f) }
+  f{ fieldType = fmapTypeValue (\Proxy -> FilterRange Nothing Nothing) (fieldType f) }
 
 data QueryAgg
   = QueryStats

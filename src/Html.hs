@@ -7,13 +7,14 @@
 module Html
   ( topPage
   , catalogPage
-  , sqlSchema
-  , csvSchema
   , groupPage
   , comparePage
   , staticHtml
   , firePage
   , agoraPage
+  , sqlSchema
+  , csvSchema
+  , attachment
   ) where
 
 import           Control.Monad (forM_, when)
@@ -21,16 +22,18 @@ import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (ask, asks)
 import qualified Data.Aeson as J
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Lazy as BSL
 import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
 import           Data.HashMap.Strict ((!)) -- hamlet doesn't like qualified operators
-import           Data.List (find, inits, sortOn)
+import           Data.List (find, inits, sortOn, intercalate)
 import           Data.Maybe (isNothing, isJust)
 import qualified Data.Text as T
 import qualified Data.Vector as V
-import           Network.HTTP.Types.Header (ResponseHeaders, hAccept, hIfModifiedSince, hLastModified, hContentType)
-import           Network.HTTP.Types.Status (ok200, notModified304, notFound404)
+import           Network.HTTP.Types.Header (Header, ResponseHeaders, hAccept, hIfModifiedSince, hLastModified, hContentType, hLocation)
+import qualified Network.HTTP.Types.URI as U
+import           Network.HTTP.Types.Status (notModified304, permanentRedirect308)
 import qualified Network.Wai as Wai
 import           Network.Wai.Parse (parseHttpAccept)
 import qualified System.FilePath as FP
@@ -38,20 +41,27 @@ import qualified Text.Blaze.Html5 as H hiding (text, textValue)
 import qualified Text.Hamlet as Hamlet
 import qualified Waimwork.Blaze as H (text, preEscapedBuilder)
 import           Waimwork.HTTP (parseHTTPDate, formatHTTPDate)
-import           Waimwork.Response (response, okResponse)
-import           Waimwork.Result (result)
+import           Waimwork.Response (okResponse, response)
 import qualified Web.Route.Invertible as R
-import           Web.Route.Invertible ((!:?))
+import           Web.Route.Invertible (BoundRoute((:?)), (!:?))
+import qualified Web.Route.Invertible.Internal as R (requestRoute')
 import qualified Web.Route.Invertible.Render as R
+import qualified Web.Route.Invertible.Wai as R
 
 import Type
 import Field
 import Catalog
+import Error
 import Global
 import Compression
 import Query
 import Monoid
 import Static
+import Api
+
+locationHeader :: Wai.Request -> R.Route a -> a -> U.Query -> Header
+locationHeader req r a q = (hLocation, BSL.toStrict $ B.toLazyByteString $
+  R.renderRequestBuilder (R.requestRoute' r a (R.waiRequest req)) q)
 
 jsonEncodingVar :: T.Text -> J.Encoding -> H.Html
 jsonEncodingVar var enc = do
@@ -63,8 +73,8 @@ jsonEncodingVar var enc = do
 jsonVar :: J.ToJSON a => T.Text -> a -> H.Html
 jsonVar var = jsonEncodingVar var . J.toEncoding
 
-catalogsSorted :: Catalogs -> [(T.Text, Catalog)]
-catalogsSorted = sortOn (catalogOrder . snd) . filter (catalogVisible . snd) . HM.toList . catalogMap
+catalogsSorted :: Catalogs -> [Catalog]
+catalogsSorted = sortOn catalogOrder . filter catalogVisible . HM.elems . catalogMap
 
 groupingTitle :: Grouping -> Maybe Catalog -> T.Text
 groupingTitle g = maybe (groupTitle g) catalogTitle
@@ -123,8 +133,8 @@ htmlResponse _req hdrs body = do
               <div .dropdown-content .dropdown-second>
                 <a href="@{agoraPage !:? mempty}"><text>AGORA
                 <a href="@{firePage !:? mempty}"><text>FIRE
-                $forall (key, cat) <- catalogsSorted cats
-                  <a href="@{catalogPage !:? key}">
+                $forall cat <- catalogsSorted cats
+                  <a href="@{catalogPage !:? catalogName cat}">
                     <text>#{catalogTitle cat}
             <li .header__link>
               <a href="@{staticHtml !:? ["about"]}">About
@@ -170,7 +180,7 @@ topPage = getPath R.unit $ \() req -> do
   cats <- asks globalCatalogs
   case acceptable ["application/json", "text/html"] req of
     Just "application/json" ->
-      return $ okResponse [] $ J.encode $ HM.map catalogTitle $ catalogMap cats
+      return $ okResponse [] $ J.toEncoding $ HM.map catalogTitle $ catalogMap cats
     _ -> htmlResponse req [] $ hamlet [Hamlet.hamlet|
       <div>
         <div .section .gray-heading>
@@ -199,9 +209,9 @@ topPage = getPath R.unit $ \() req -> do
                         <a .underline href="@{agoraPage !:? mempty}">AGORA
                       <li>  
                         <a .underline href="@{firePage !:? mempty}">FIRE
-                      $forall (sim, cat) <- catalogsSorted cats
+                      $forall cat <- catalogsSorted cats
                         <li>
-                          <a .underline href="@{catalogPage !:? sim}">#{catalogTitle cat}
+                          <a .underline href="@{catalogPage !:? catalogName cat}">#{catalogTitle cat}
                 <div .box>
                   <div .box-content>
                     <div .box-copy>
@@ -291,7 +301,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                           <select #plot-#{axis}>
                             <option value="">Choose #{show axis}-Axis...
                             $forall f <- catalogFields cat
-                              $if typeIsFloating (fieldType f)
+                              $if typeIsFloating (fieldType f) && not (or (fieldStore f))
                                 <option
                                   .sel-#{fieldName f}
                                   :not (fieldDisp f):style="display:none"
@@ -317,7 +327,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                         <select #plot-c>
                           <option value="">None
                           $forall f <- catalogFields cat
-                            $if fieldTerms f || not (typeIsString (fieldType f))
+                            $if (fieldTerms f || not (typeIsString (fieldType f))) && not (or (fieldStore f))
                               <option
                                 .sel-#{fieldName f}
                                 :not (fieldDisp f):style="display:none"
@@ -431,11 +441,12 @@ catalogPage = getPath R.parameter $ \sim req -> do
                           <select #addfilt onchange="addFilter(event.target.value)">
                             <option value="">Add filter...
                             $forall f <- catalogFields cat
-                              <option #addfilt-#{fieldName f}
-                                .sel-#{fieldName f}
-                                value="#{fieldName f}"
-                                :not (fieldDisp f):style="display:none">
-                                #{fieldTitle f}
+                              $if not (or (fieldStore f))
+                                <option #addfilt-#{fieldName f}
+                                  .sel-#{fieldName f}
+                                  value="#{fieldName f}"
+                                  :not (fieldDisp f):style="display:none">
+                                  #{fieldTitle f}
                   <div .right-column-group>
                     <h6 .right-column-heading-leader>Random Sample
                     <div .sample-row>
@@ -523,17 +534,26 @@ catalogPage = getPath R.parameter $ \sim req -> do
               <select v-model="bulk">
                 <option value="">Choose format...
                 <optgroup label="raw data">
-                  $forall b <- [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkECSV Nothing, BulkECSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)]
-                    #{bulklink sim b}
-                $forall (l, a) <- [("" ++ "files", BulkAttachments), ("download script", BulkAttachmentScript Nothing)]
+                  $forall (n, f) <- HM.toList downloadFormats
+                    <option #download.#{n} .download-option
+                      value="@{apiRoute apiDownload :? (sim, f, Nothing)}">
+                      #{n}
+                    <option #download.#{n}.gz .download-option
+                      value="@{apiRoute apiDownload :? (sim, f, Just CompressionGZip)}">
+                      #{n}.gz
+                $forall (l, f) <- [("" ++ "files", "zip"), ("download script", "sh")]
                   <optgroup label="attachment #{l}">
-                    $with att <- HM.filter (isJust . fieldAttachment) $ catalogFieldMap cat
-                      $forall f <- att
-                        #{bulklink sim (a (Just (fieldName f)))}
-                      $if not $ HM.null att
-                        #{bulklink sim (a Nothing)}
+                    $with att <- HM.keys $ HM.filter (isJust . fieldAttachment) $ catalogFieldMap cat
+                      $forall a <- att
+                        <option #download.attachment.#{a}.#{f} .download-option
+                          value="@{apiRoute apiAttachmentsField :? (sim, attachmentsFormats ! f, a)}">
+                          #{a}.#{f}
+                      $if not $ null att
+                        <option #download.attachments.#{f} .download-option
+                          value="@{apiRoute apiAttachments :? (sim, attachmentsFormats ! f)}">
+                          all selected.#{f}
               <a .button .button-secondary #download-btn
-                v-bind:href="link">
+                v-bind:href="link" download>
                 Download
 
         <div .container-fluid .catalog-summary .raw-data #rawdata>
@@ -544,13 +564,6 @@ catalogPage = getPath R.parameter $ \sim req -> do
               #{toprow}
       |]
   where
-  bulklink :: Simulation -> BulkFormat -> H.Html
-  bulklink sim b = hamlet [Hamlet.hamlet|
-      <option #download.#{n} .download-option
-        value="@{catalogBulk !:? (sim, b)}">
-        #{n}
-    |]
-    where n = R.renderParameter b :: T.Text
   fielddesc :: FieldGroup -> FieldGroup -> Int -> H.Html
   fielddesc f g d = do
     hamlet [Hamlet.hamlet|
@@ -558,7 +571,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
         <td .depth-#{d}>
           <input type="checkbox"
               :isNothing (fieldSub g):id="#{key f}"
-              class="colvis #{T.unwords $ map key fs}"
+              class="colvis #{T.unwords $ map key $ V.toList fs}"
               :fieldDisp g:checked=checked
               onclick="colvisSet(event)">
           #{fieldTitle g}
@@ -592,7 +605,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
         <span class="tooltiptext">#{d}
     |]
   field :: Word -> FieldGroup -> FieldGroup -> H.Html
-  field d f' f@Field{ fieldSub = Nothing } = hamlet [Hamlet.hamlet|
+  field d f' f@Field{ fieldDesc = FieldDesc{ fieldDescSub = Nothing } } = hamlet [Hamlet.hamlet|
     <th .tooltip-dt
       rowspan=#{d}
       data-data=#{fieldName f'}
@@ -600,12 +613,13 @@ catalogPage = getPath R.parameter $ \sim req -> do
       data-type=#{baseType (asTypeOf "num" T.empty,"num","string","string","string") $ fieldType f}
       data-class-name="dt-body-#{ifs (typeIsNumeric (fieldType f)) "right" "left"}"
       :not (fieldDisp f):data-visible="false"
+      :or (fieldStore f):data-orderable="false"
       data-default-content="">
       #{fieldBody d f}
     |]
-  field _ _ f@Field{ fieldSub = Just s } = hamlet [Hamlet.hamlet|
+  field _ _ f@Field{ fieldDesc = FieldDesc{ fieldDescSub = Just s } } = hamlet [Hamlet.hamlet|
     <th .tooltip-dt
-      colspan=#{length $ expandFields s}>
+      colspan=#{V.length $ expandFields s}>
       #{fieldBody 1 f}
     |]
   row :: Word -> [(FieldGroup -> FieldGroup, FieldGroup)] -> H.Html
@@ -614,42 +628,10 @@ catalogPage = getPath R.parameter $ \sim req -> do
     when (d > 1) $ row (pred d) $ foldMap (\(p, f) -> foldMap (fmap (p . mappend f, ) . V.toList) $ fieldSub f) l
 
 
-sqlSchema :: Route Simulation
-sqlSchema = getPath (R.parameter R.>* "schema.sql") $ \sim _ -> do
-  cat <- askCatalog sim
-  let tab = catalogIndex (catalogStore cat)
-  return $ okResponse [] $
-    foldMap (\f -> foldMap (\e -> "CREATE TYPE " <> tab <> "_" <> fieldName f <> " AS ENUM(" <> mintersperseMap ", " sqls (V.toList e) <> ");\n") (fieldEnum f)) (catalogFields cat)
-    <> "CREATE TABLE " <> tab <> " ("
-    <> mintersperseMap "," (\f -> "\n  " <> fieldName f <> " " <> maybe (sqlType (fieldType f)) (\_ -> tab <> "_" <> fieldName f) (fieldEnum f)) (catalogFields cat)
-    <> foldMap (\k -> ",\n PRIMARY KEY (" <> k <> ")") (catalogKey cat)
-    <> "\n);\n"
-    <> "COMMENT ON TABLE " <> tab <> " IS " <> sqls (catalogTitle cat <> foldMap (": " <>) (catalogDescr cat)) <> ";\n"
-    <> foldMap (\f -> "COMMENT ON COLUMN " <> tab <> "." <> fieldName f <> " IS " <> sqls (fieldTitle f <> foldMap ((" [" <>) . (<> "]")) (fieldUnits f) <> foldMap (": " <>) (fieldDescr f)) <> ";\n") (catalogFields cat)
-  where
-  sqls s = "$SqL$" <> s <> "$SqL$" -- hacky dangerous
-
-csvSchema :: Route Simulation
-csvSchema = getPath (R.parameter R.>* "schema.csv") $ \sim _ -> do
-  fields <- if sim == "dict" then asks $ populateDict . globalCatalogs else catalogFields <$> askCatalog sim
-  return $ Wai.responseBuilder ok200
-    [ (hContentType, "text/csv")
-    ]
-    $ fieldsCSV fields
-  where
-  populateDict cats = map pf $ catalogDict cats where
-    pf f = f{ fieldDict = Just $ T.intercalate ";" $ md (fieldName f) }
-    md d =
-      [ c <> "." <> fieldName f <> foldMap (T.cons '[' . (`T.snoc` ']')) (fieldUnits f) <> foldMap (T.cons '*' . T.pack . show) (fieldScale f)
-      | (c, cf) <- HM.toList (catalogMap cats)
-      , f <- catalogFields cf
-      , Just d == fieldDict f
-      ]
-
 groupPage :: Route [T.Text]
 groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
   cats <- asks globalCatalogs
-  grp <- maybe (result $ response notFound404 [] (T.intercalate "/" path <> " not found")) return $
+  grp <- maybe (raise404 (intercalate "/" (map T.unpack path) ++ " not found")) return $
     lookupGrouping path $ catalogGrouping cats
   htmlResponse req [] $ hamlet [Hamlet.hamlet|
     <nav .breadcrumb-container>
@@ -728,7 +710,7 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
 
 comparePage :: Route [T.Text]
 comparePage = getPath ("compare" R.*< R.manyI R.parameter) $ \path req -> do
-  cats <- maybe (result $ response notFound404 [] (T.intercalate "/" path <> " not found")) return .
+  cats <- maybe (raise404 $ intercalate "/" (map T.unpack path) ++ " not found") return .
     groupedCatalogs path =<< asks globalCatalogs
   htmlResponse req [] $ hamlet [Hamlet.hamlet|
     <script>
@@ -744,8 +726,8 @@ comparePage = getPath ("compare" R.*< R.manyI R.parameter) $ \path req -> do
             <td>
               <select name="selcat" onchange="selectCat(event.target)">
                 <option value="" selected="selected">Choose catalog...
-                $forall (sim, cat) <- catalogsSorted cats
-                  <option value="#{sim}">
+                $forall cat <- catalogsSorted cats
+                  <option value="#{catalogName cat}">
                     <text>#{catalogTitle cat}
         <tbody>
         <tfoot>
@@ -765,7 +747,7 @@ comparePage = getPath ("compare" R.*< R.manyI R.parameter) $ \path req -> do
 staticHtml :: Route [FilePathComponent]
 staticHtml = getPath ("html" R.*< R.manyI R.parameter) $ \paths q -> do
   let path = FP.joinPath ("html" : map componentFilePath paths) FP.<.> "html"
-  fmod <- maybe (result $ response notFound404 [] (path ++ " not found")) return =<<
+  fmod <- maybe (raise404 $ path ++ " not found") return =<<
     liftIO (getModificationTime' path)
   if any (fmod <=) $ parseHTTPDate =<< lookup hIfModifiedSince (Wai.requestHeaders q)
     then return $ Wai.responseBuilder notModified304 [] mempty
@@ -783,3 +765,17 @@ agoraPage = getPath "agora" $ \() -> R.routeAction staticHtml ["agora"]
 
 firePage :: Route ()
 firePage = getPath "fire" $ \() -> R.routeAction staticHtml ["fire"]
+
+-- backwards compatibility
+
+sqlSchema :: Route Simulation
+sqlSchema = getPath (R.parameter R.>* "schema.sql") $ \sim req ->
+  return $ response permanentRedirect308 [ locationHeader req (apiRoute apiSchemaSQL) sim [] ] ()
+
+csvSchema :: Route Simulation
+csvSchema = getPath (R.parameter R.>* "schema.csv") $ \sim req ->
+  return $ response permanentRedirect308 [ locationHeader req (apiRoute apiSchemaCSV) sim [] ] ()
+
+attachment :: Route (Simulation, T.Text, T.Text)
+attachment = getPath (R.parameter R.>* "attachment" R.>*<< R.parameter R.>*< R.parameter) $ \arg req ->
+  return $ response permanentRedirect308 [ locationHeader req (apiRoute apiAttachment) arg [] ] ()

@@ -2,161 +2,273 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Type
   ( TypeValue(..)
   , Type, Value
+  , Void
+  , scalarTypes
   , Typed
   , typeValue, typeValue1
-  , traverseTypeValue
-  , sequenceTypeValue
+  , traverseValue
+  , sequenceValue
+  , fmapValue
+  , traverseTypeValue, traverseTypeValue2
   , fmapTypeValue, fmapTypeValue1, fmapTypeValue2
+  , coerceTypeValue
+  , TypeTraversable(..)
   , typeOfValue
   , unTypeValue
+  , toDouble
+  , renderValue
   , parseTypeValue
-  , parseJSONTypeValue
+  , parseJSONTyped
   , parseTypeJSONValue
+  , parseStream
   , baseType
+  , arrayHead
+  , singletonArray
+  , typeIsArray
+  , unArrayType
   , typeIsFloating, typeIsIntegral, typeIsNumeric, typeIsString, typeIsBoolean
   , numpyTypeSize
-  , sqlType
   ) where
 
+import           Control.Applicative ((<|>), many, empty)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Types as J
+import qualified Data.ByteString.Builder as B
 import           Data.Default (Default(def))
 import           Data.Functor.Classes (Eq1, eq1, Show1, showsPrec1)
-import           Data.Functor.Const (Const(Const, getConst))
+import           Data.Functor.Const (Const(..))
+import           Data.Functor.Compose (Compose(..))
 import           Data.Functor.Identity (Identity(Identity, runIdentity))
 import           Data.Int (Int64, Int32, Int16, Int8)
+import qualified Data.JsonStream.Parser as JS
 import           Data.Maybe (fromMaybe)
+import qualified Data.OpenApi as OA
 import           Data.Proxy (Proxy(Proxy))
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import           Data.Typeable (Typeable)
-import           Numeric.Half (Half)
+import qualified Data.Vector as V
+import           Data.Void (Void, absurd, vacuous)
+import           Data.Word (Word64)
 import           Text.Read (readMaybe, readPrec, Lexeme(Ident), lexP, readEither)
 
-instance J.ToJSON Half where
-  toJSON = J.toJSON . (realToFrac :: Half -> Float)
-  toEncoding = J.toEncoding . (realToFrac :: Half -> Float)
+import Half
 
-instance J.FromJSON Half where
-  parseJSON = fmap (realToFrac :: Float -> Half) . J.parseJSON
+instance OA.ToParamSchema Void where
+  toParamSchema _ = mempty
+    { OA._schemaTitle = Just "void"
+    , OA._schemaNot = Just (OA.Inline mempty)
+    }
 
-instance Enum Half where
-  succ = (+) 1
-  pred = (-) 1
-  toEnum = realToFrac
-  fromEnum = truncate
-  enumFrom x = x : enumFrom (succ x)
-  enumFromThen x y = x : f y where
-    d = y - x
-    f a = a : f (a + d)
-  enumFromTo x z
-    | z >= x = x : enumFromTo (succ x) z
-    | otherwise = []
-  enumFromThenTo x y z
-    | c x = x : f y
-    | otherwise = [] where
-    f a
-      | c a = a : f (a + d)
-      | otherwise = []
-    d = y - x
-    c | d > 0 = (z >=)
-      | otherwise = (z <=)
+instance OA.ToSchema Void where
+  declareNamedSchema = return . OA.NamedSchema Nothing . OA.paramSchemaToSchema
 
 data TypeValue f
   = Double    !(f Double)
   | Float     !(f Float)
   | HalfFloat !(f Half)
   | Long      !(f Int64)
+  | ULong     !(f Word64)
   | Integer   !(f Int32)
   | Short     !(f Int16)
   | Byte      !(f Int8)
   | Boolean   !(f Bool)
-  | Void      !(f ())
   | Keyword   !(f T.Text)
+  | Array (TypeValue (Compose f V.Vector))
+  | Void      !(f Void)
 
 type Type = TypeValue Proxy
 type Value = TypeValue Identity
 
-class (Eq a, Ord a, Show a, Read a, J.ToJSON a, J.FromJSON a, Typeable a) => Typed a where
+scalarTypes :: [Type]
+scalarTypes =
+  [ Double    Proxy
+  , Float     Proxy
+  , HalfFloat Proxy
+  , Long      Proxy
+  , ULong     Proxy
+  , Integer   Proxy
+  , Short     Proxy
+  , Byte      Proxy
+  , Boolean   Proxy
+  , Keyword   Proxy
+  ]
+
+class (Eq a, Ord a, Show a, Read a, J.ToJSON a, J.FromJSON a, OA.ToParamSchema a, OA.ToSchema a, Typeable a) => Typed a where
   typeValue :: f a -> TypeValue f
+  toDouble :: a -> Double
+  -- |Certain representations ES uses do not always match what you expect, see we need a more permissive parser in some cases
+  parseJSONTyped :: J.Value -> J.Parser a
+  parseJSONTyped (J.Array v) | V.length v == 1 = J.parseJSON (V.head v)
+  parseJSONTyped j = J.parseJSON j
+  parseStream, parseStream1 :: JS.Parser a
+  parseStream = parseStream1 <|> 0 JS..! parseStream1
+  renderValue :: a -> B.Builder
+  renderValue = J.fromEncoding . J.toEncoding
 
 typeValue1 :: Typed a => a -> Value
 typeValue1 = typeValue . Identity
 
-instance Typed Int64  where typeValue = Long
-instance Typed Int32  where typeValue = Integer
-instance Typed Int16  where typeValue = Short
-instance Typed Int8   where typeValue = Byte
-instance Typed Double where typeValue = Double
-instance Typed Float  where typeValue = Float
-instance Typed Half   where typeValue = HalfFloat
-instance Typed Bool   where typeValue = Boolean
-instance Typed T.Text where typeValue = Keyword
-instance Typed ()     where typeValue = Void
+instance Typed Word64 where
+  typeValue = ULong
+  toDouble = fromIntegral
+  parseStream1 = JS.integer
+  renderValue = B.word64Dec
+instance Typed Int64  where
+  typeValue = Long
+  toDouble = fromIntegral
+  parseStream1 = JS.integer
+  renderValue = B.int64Dec
+instance Typed Int32  where
+  typeValue = Integer
+  toDouble = fromIntegral
+  parseStream1 = JS.integer
+  renderValue = B.int32Dec
+instance Typed Int16  where
+  typeValue = Short
+  toDouble = fromIntegral
+  parseStream1 = JS.integer
+  renderValue = B.int16Dec
+instance Typed Int8   where
+  typeValue = Byte
+  toDouble = fromIntegral
+  parseStream1 = JS.integer
+  renderValue = B.int8Dec
+instance Typed Double where
+  typeValue = Double
+  toDouble = id
+  parseStream1 = JS.real
+  renderValue = B.doubleDec
+instance Typed Float  where
+  typeValue = Float
+  toDouble = realToFrac
+  parseStream1 = JS.real
+  renderValue = B.floatDec
+instance Typed Half   where
+  typeValue = HalfFloat
+  toDouble = realToFrac
+  parseStream1 = JS.real
+  renderValue = B.floatDec . realToFrac
+instance Typed Bool   where
+  typeValue = Boolean
+  toDouble False = 0
+  toDouble True = 1
+  parseJSONTyped (J.Bool b) = return b
+  parseJSONTyped (J.Number 0) = return False
+  parseJSONTyped (J.Number 1) = return True
+  parseJSONTyped (J.Array v) | V.length v == 1 = parseJSONTyped (V.head v)
+  parseJSONTyped j = J.typeMismatch "Bool" j
+  parseStream1 = JS.bool <|> toEnum <$> JS.integer
+  renderValue False = "false"
+  renderValue True = "true"
+instance Typed T.Text where
+  typeValue = Keyword
+  toDouble = read . T.unpack
+  parseStream1 = JS.string
+  renderValue = TE.encodeUtf8Builder
+instance Typed Void   where
+  typeValue = Void
+  toDouble = absurd
+  parseStream1 = empty
+  renderValue = absurd
+instance Typed a => Typed (V.Vector a) where
+  typeValue = Array . typeValue . Compose
+  toDouble = toDouble . V.head
+  parseJSONTyped (J.Array v) = V.mapM parseJSONTyped v
+  parseJSONTyped j = V.singleton <$> parseJSONTyped j
+  parseStream1 = V.singleton <$> parseStream1
+  parseStream = V.fromList <$> many (JS.arrayOf parseStream1) <|> parseStream1
 
 unTypeValue :: (forall a . Typed a => f a -> b) -> TypeValue f -> b
 unTypeValue f (Double    x) = f $! x
 unTypeValue f (Float     x) = f $! x
 unTypeValue f (HalfFloat x) = f $! x
 unTypeValue f (Long      x) = f $! x
+unTypeValue f (ULong     x) = f $! x
 unTypeValue f (Integer   x) = f $! x
 unTypeValue f (Short     x) = f $! x
 unTypeValue f (Byte      x) = f $! x
 unTypeValue f (Boolean   x) = f $! x
 unTypeValue f (Keyword   x) = f $! x
-unTypeValue f (Void      x) = f $! x
+unTypeValue f (Array     x) = unTypeValue (f . getCompose) x
+unTypeValue f (Void      x) = f x
 
-transformTypeValue :: Functor g => (forall a . Typed a => f a -> g (h a)) -> TypeValue f -> g (TypeValue h)
-transformTypeValue f (Double    x) = Double    <$> f x
-transformTypeValue f (Float     x) = Float     <$> f x
-transformTypeValue f (HalfFloat x) = HalfFloat <$> f x
-transformTypeValue f (Long      x) = Long      <$> f x
-transformTypeValue f (Integer   x) = Integer   <$> f x
-transformTypeValue f (Short     x) = Short     <$> f x
-transformTypeValue f (Byte      x) = Byte      <$> f x
-transformTypeValue f (Boolean   x) = Boolean   <$> f x
-transformTypeValue f (Keyword   x) = Keyword   <$> f x
-transformTypeValue f (Void      x) = Void      <$> f x
+traverseTypeValue :: Functor m => (forall a . Typed a => f a -> m (h a)) -> TypeValue f -> m (TypeValue h)
+traverseTypeValue f (Double    x) = Double    <$> f x
+traverseTypeValue f (Float     x) = Float     <$> f x
+traverseTypeValue f (HalfFloat x) = HalfFloat <$> f x
+traverseTypeValue f (Long      x) = Long      <$> f x
+traverseTypeValue f (ULong     x) = ULong     <$> f x
+traverseTypeValue f (Integer   x) = Integer   <$> f x
+traverseTypeValue f (Short     x) = Short     <$> f x
+traverseTypeValue f (Byte      x) = Byte      <$> f x
+traverseTypeValue f (Boolean   x) = Boolean   <$> f x
+traverseTypeValue f (Keyword   x) = Keyword   <$> f x
+traverseTypeValue f (Array     x) = Array     <$> traverseTypeValue (fmap Compose . f . getCompose) x
+traverseTypeValue f (Void      x) = Void      <$> f x
 
-transformTypeValue2 :: MonadFail g => (forall a . Typed a => f a -> f a -> g (h a)) -> TypeValue f -> TypeValue f -> g (TypeValue h)
-transformTypeValue2 f (Double    x) (Double    y) = Double    <$> f x y
-transformTypeValue2 f (Float     x) (Float     y) = Float     <$> f x y
-transformTypeValue2 f (HalfFloat x) (HalfFloat y) = HalfFloat <$> f x y
-transformTypeValue2 f (Long      x) (Long      y) = Long      <$> f x y
-transformTypeValue2 f (Integer   x) (Integer   y) = Integer   <$> f x y
-transformTypeValue2 f (Short     x) (Short     y) = Short     <$> f x y
-transformTypeValue2 f (Byte      x) (Byte      y) = Byte      <$> f x y
-transformTypeValue2 f (Boolean   x) (Boolean   y) = Boolean   <$> f x y
-transformTypeValue2 f (Keyword   x) (Keyword   y) = Keyword   <$> f x y
-transformTypeValue2 f (Void      x) (Void      y) = Void      <$> f x y
-transformTypeValue2 _ _             _             = fail "transformTypeValue2: type mismatch"
-
-traverseTypeValue :: Functor g => (forall a . Typed a => f a -> g a) -> TypeValue f -> g Value
-traverseTypeValue f = transformTypeValue (fmap Identity . f)
-
-sequenceTypeValue :: Functor f => TypeValue f -> f Value
-sequenceTypeValue = transformTypeValue (fmap Identity)
+traverseTypeValue2 :: (Functor f, Functor g, MonadFail m) => (forall a . Typed a => f a -> g a -> m (h a)) -> TypeValue f -> TypeValue g -> m (TypeValue h)
+traverseTypeValue2 f (Double    x) (Double    y) = Double    <$> f x y
+traverseTypeValue2 f (Float     x) (Float     y) = Float     <$> f x y
+traverseTypeValue2 f (HalfFloat x) (HalfFloat y) = HalfFloat <$> f x y
+traverseTypeValue2 f (Long      x) (Long      y) = Long      <$> f x y
+traverseTypeValue2 f (ULong     x) (ULong     y) = ULong     <$> f x y
+traverseTypeValue2 f (Integer   x) (Integer   y) = Integer   <$> f x y
+traverseTypeValue2 f (Short     x) (Short     y) = Short     <$> f x y
+traverseTypeValue2 f (Byte      x) (Byte      y) = Byte      <$> f x y
+traverseTypeValue2 f (Boolean   x) (Boolean   y) = Boolean   <$> f x y
+traverseTypeValue2 f (Keyword   x) (Keyword   y) = Keyword   <$> f x y
+traverseTypeValue2 f (Array     x) (Array     y) = Array     <$> traverseTypeValue2 (\x' y' -> Compose <$> f (getCompose x') (getCompose y')) x y
+traverseTypeValue2 f (Void      x) v             = traverseTypeValue (f (vacuous x)) v
+traverseTypeValue2 f v             (Void      y) = traverseTypeValue (\x -> f x (vacuous y)) v
+traverseTypeValue2 _ _             _             = fail "traverseTypeValue2: type mismatch"
 
 -- isn't there a Functor1 class for this or something?
 fmapTypeValue :: (forall a . Typed a => f a -> g a) -> TypeValue f -> TypeValue g
-fmapTypeValue f = runIdentity . transformTypeValue (Identity . f)
+fmapTypeValue f = runIdentity . traverseTypeValue (Identity . f)
 
 fmapTypeValue1 :: (forall a . Typed a => f a -> a) -> TypeValue f -> Value
 fmapTypeValue1 f = fmapTypeValue (Identity . f)
 
-fmapTypeValue2 :: (forall a . Typed a => f a -> f a -> g a) -> TypeValue f -> TypeValue f -> TypeValue g
-fmapTypeValue2 f = (fromMaybe (error "fmapTypeValue2: type mismatch") .) . transformTypeValue2 ((Just .) . f)
+fmapTypeValue2 :: (Functor f, Functor g) => (forall a . Typed a => f a -> g a -> h a) -> TypeValue f -> TypeValue g -> TypeValue h
+fmapTypeValue2 f = (fromMaybe (error "fmapTypeValue2: type mismatch") .) . traverseTypeValue2 ((Just .) . f)
+
+coerceTypeValue :: (Functor f, Functor g) => TypeValue f -> TypeValue g -> TypeValue g
+coerceTypeValue = fmapTypeValue2 (\_ -> id)
+
+class Traversable f => TypeTraversable f where
+  sequenceTypeValue :: f Value -> TypeValue f
+
+instance TypeTraversable [] where
+  sequenceTypeValue [] = Void [] -- hrm
+  sequenceTypeValue [v] = fmapTypeValue ((:[]) . runIdentity) v
+  sequenceTypeValue (v:l) = fmapTypeValue2 ((:) . runIdentity) v (sequenceTypeValue l)
+
+instance TypeTraversable Maybe where
+  sequenceTypeValue Nothing = Void Nothing -- hrm
+  sequenceTypeValue (Just v) = fmapTypeValue (Just . runIdentity) v
+
+traverseValue :: Functor g => (forall a . Typed a => f a -> g a) -> TypeValue f -> g Value
+traverseValue f = traverseTypeValue (fmap Identity . f)
+
+sequenceValue :: Functor f => TypeValue f -> f Value
+sequenceValue = traverseTypeValue (fmap Identity)
+
+fmapValue :: (forall a . Typed a => a -> a) -> Value -> Value
+fmapValue f = fmapTypeValue1 (f . runIdentity)
 
 typeOfValue :: TypeValue f -> Type
 typeOfValue = fmapTypeValue (const Proxy)
 
-instance Eq1 f => Eq (TypeValue f) where
-  a == b = maybe False (unTypeValue getConst) $ transformTypeValue2 (\x y -> Just $ Const $ eq1 x y) a b
+instance (Functor f, Eq1 f) => Eq (TypeValue f) where
+  a == b = maybe False (unTypeValue getConst) $ traverseTypeValue2 (\x y -> Just $ Const $ eq1 x y) a b
 
 instance {-# OVERLAPPABLE #-} Show1 f => Show (TypeValue f) where
   showsPrec i = unTypeValue (showsPrec1 i)
@@ -176,12 +288,22 @@ instance {-# OVERLAPPABLE #-} J.ToJSON1 f => J.ToJSON (TypeValue f) where
   toJSON = unTypeValue J.toJSON1
   toEncoding = unTypeValue J.toEncoding1
 
-parseJSONTypeValue :: Type -> J.Value -> J.Parser Value
-parseJSONTypeValue t j = traverseTypeValue (\Proxy -> J.parseJSON j) t
-
 parseTypeJSONValue :: Type -> J.Value -> TypeValue Maybe
 parseTypeJSONValue t (J.String s) = parseTypeValue t s
 parseTypeJSONValue t j = fmapTypeValue (\Proxy -> J.parseMaybe J.parseJSON j) t
+
+arrayHead :: Functor f => TypeValue (Compose f V.Vector) -> TypeValue f
+arrayHead = fmapTypeValue (fmap V.head . getCompose)
+
+singletonArray :: Functor f => TypeValue f -> TypeValue (Compose f V.Vector)
+singletonArray = fmapTypeValue (Compose . fmap V.singleton)
+
+typeIsArray :: Functor f => TypeValue f -> Maybe (TypeValue f)
+typeIsArray (Array t) = Just $ arrayHead t
+typeIsArray _ = Nothing
+
+unArrayType :: Functor f => TypeValue f -> (Bool, TypeValue f)
+unArrayType t = maybe (False, t) (True ,) $ typeIsArray t
 
 instance Default Type where
   def = Float Proxy
@@ -189,6 +311,7 @@ instance Default Type where
 instance {-# OVERLAPPING #-} Show Type where
   show (Keyword _)   = "keyword"
   show (Long _)      = "long"
+  show (ULong _)     = "unsigned_long"
   show (Integer _)   = "integer"
   show (Short _)     = "short"
   show (Byte _)      = "byte"
@@ -197,13 +320,19 @@ instance {-# OVERLAPPING #-} Show Type where
   show (HalfFloat _) = "half_float"
   show (Boolean _)   = "boolean"
   show (Void _)      = "void"
+  show (Array x)     = "array " <> show (arrayHead x)
 
 instance Read Type where
   readPrec = do
     Ident s <- lexP
     case s of
+      "array"       -> Array . singletonArray <$> readPrec
       "keyword"     -> return (Keyword Proxy)
       "long"        -> return (Long Proxy)
+      "int64"       -> return (Long Proxy)
+      "unsigned_long" -> return (ULong Proxy)
+      "ulong"       -> return (ULong Proxy)
+      "uint64"      -> return (ULong Proxy)
       "int"         -> return (Integer Proxy)
       "integer"     -> return (Integer Proxy)
       "int32"       -> return (Integer Proxy)
@@ -213,10 +342,13 @@ instance Read Type where
       "int8"        -> return (Byte Proxy)
       "double"      -> return (Double Proxy)
       "float8"      -> return (Double Proxy)
+      "float64"     -> return (Double Proxy)
       "float"       -> return (Float Proxy)
       "float4"      -> return (Float Proxy)
+      "float32"     -> return (Float Proxy)
       "half_float"  -> return (HalfFloat Proxy)
       "float2"      -> return (HalfFloat Proxy)
+      "float16"     -> return (HalfFloat Proxy)
       "bool"        -> return (Boolean Proxy)
       "boolean"     -> return (Boolean Proxy)
       "void"        -> return (Void Proxy)
@@ -229,36 +361,38 @@ instance {-# OVERLAPPING #-} J.ToJSON Type where
 instance J.FromJSON Type where
   parseJSON = J.withText "type" $ either fail return . readEither . T.unpack
 
-typeIsFloating :: Type -> Bool
+typeIsFloating :: TypeValue f -> Bool
 typeIsFloating (Double    _) = True
 typeIsFloating (Float     _) = True
 typeIsFloating (HalfFloat _) = True
 typeIsFloating _ = False
 
-typeIsIntegral :: Type -> Bool
+typeIsIntegral :: TypeValue f -> Bool
 typeIsIntegral (Long      _) = True
+typeIsIntegral (ULong     _) = True
 typeIsIntegral (Integer   _) = True
 typeIsIntegral (Short     _) = True
 typeIsIntegral (Byte      _) = True
 typeIsIntegral _ = False
 
-typeIsNumeric :: Type -> Bool
+typeIsNumeric :: TypeValue f -> Bool
 typeIsNumeric t = typeIsFloating t || typeIsIntegral t
 
-typeIsString :: Type -> Bool
+typeIsString :: TypeValue f -> Bool
 typeIsString (Keyword   _) = True
 typeIsString _ = False
 
-typeIsBoolean :: Type -> Bool
+typeIsBoolean :: TypeValue f -> Bool
 typeIsBoolean (Boolean _) = True
 typeIsBoolean _ = False
 
-baseType :: (a,a,a,a,a) -> Type -> a
+baseType :: Functor f => (a,a,a,a,a) -> TypeValue f -> a
 baseType (f,i,b,s,_) t
-  | typeIsFloating t = f
-  | typeIsIntegral t = i
-  | typeIsString   t = s
-  | typeIsBoolean  t = b
+  | typeIsFloating t' = f
+  | typeIsIntegral t' = i
+  | typeIsString   t' = s
+  | typeIsBoolean  t' = b
+  where (_,t') = unArrayType t
 baseType (_,_,_,_,v) ~(Void _) = v
 
 numpyTypeSize :: Type -> Word
@@ -266,21 +400,11 @@ numpyTypeSize (Double    _) = 8
 numpyTypeSize (Float     _) = 4
 numpyTypeSize (HalfFloat _) = 2
 numpyTypeSize (Long      _) = 8
+numpyTypeSize (ULong     _) = 8
 numpyTypeSize (Integer   _) = 4
 numpyTypeSize (Short     _) = 2
 numpyTypeSize (Byte      _) = 1
 numpyTypeSize (Boolean   _) = 1
 numpyTypeSize (Keyword   _) = 8 -- XXX overridden in numpyFieldSize
 numpyTypeSize (Void      _) = 0
-
-sqlType :: Type -> T.Text
-sqlType (Keyword _)   = "text"
-sqlType (Long _)      = "bigint"
-sqlType (Integer _)   = "integer"
-sqlType (Short _)     = "smallint"
-sqlType (Byte _)      = "smallint"
-sqlType (Double _)    = "double precision"
-sqlType (Float _)     = "real"
-sqlType (HalfFloat _) = "real"
-sqlType (Boolean _)   = "boolean"
-sqlType (Void _)      = "void"
+numpyTypeSize (Array     t) = numpyTypeSize (arrayHead t)
