@@ -44,12 +44,14 @@ fields:
   name: random_index
   type: long
   descr: Random index for use when selecting subsets
+  flag: hidden
 - ingest: GaiaSource.ref_epoch
   name: ref_epoch
   units: yr
   type: double
   descr: Reference epoch
   store: true
+  flag: hidden
 - name: ''
   title: pos
   descr: Barycentric position
@@ -64,6 +66,7 @@ fields:
     units: mas
     type: float
     descr: Standard error of right ascension
+    flag: hidden
   - ingest: GaiaSource.dec
     name: dec
     units: deg
@@ -74,26 +77,31 @@ fields:
     units: mas
     type: float
     descr: Standard error of declination
+    flag: hidden
   - ingest: GaiaSource.l
     name: l
     units: deg
     type: double
     descr: Galactic longitude
+    flag: hidden
   - ingest: GaiaSource.b
     name: b
     units: deg
     type: double
     descr: Galactic latitude
+    flag: hidden
   - ingest: GaiaSource.ecl_lon
     name: ecl_lon
     units: deg
     type: double
     descr: Ecliptic longitude
+    flag: hidden
   - ingest: GaiaSource.ecl_lat
     name: ecl_lat
     units: deg
     type: double
     descr: Ecliptic latitude
+    flag: hidden
 - ingest: GaiaSource.parallax
   name: parallax
   units: mas
@@ -104,10 +112,12 @@ fields:
   units: mas
   type: float
   descr: Standard error of parallax
+  flag: hidden
 - ingest: GaiaSource.parallax_over_error
   name: parallax_over_error
   type: float
   descr: Parallax divided by its standard error
+  flag: hidden
 - name: ''
   title: pm
   descr: Proper motion
@@ -119,6 +129,7 @@ fields:
     units: mas.yr**-1
     type: float
     descr: Total proper motion
+    flag: hidden
   - ingest: GaiaSource.pmra
     name: pmra
     units: mas.yr**-1
@@ -129,6 +140,7 @@ fields:
     units: mas.yr**-1
     type: float
     descr: Standard error of proper motion in right ascension direction
+    flag: hidden
   - ingest: GaiaSource.pmdec
     name: pmdec
     units: mas.yr**-1
@@ -139,10 +151,12 @@ fields:
     units: mas.yr**-1
     type: float
     descr: Standard error of proper motion in declination direction
+    flag: hidden
 - name: ''
   title: corr
   descr: astrometric correlation coefficients
   type: float
+  flag: hidden
   sub:
   - ingest: GaiaSource.ra_dec_corr
     name: ra_dec_corr
@@ -197,6 +211,7 @@ fields:
     store: true
 - name: ''
   title: astrometric solution metadata
+  flag: hidden
   sub:
   - ingest: GaiaSource.astrometric_n_obs_al
     name: astrometric_n_obs_al
@@ -393,9 +408,11 @@ fields:
   name: duplicated_source
   type: boolean
   descr: Source with multiple source identifiers
+  flag: hidden
 - name: ''
   title: phot_g
   descr: G-band photometry
+  flag: hidden
   sub:
   - ingest: GaiaSource.phot_g_n_obs
     name: phot_g_n_obs
@@ -421,9 +438,11 @@ fields:
     type: float
     descr: G-band mean magnitude
     reversed: true
+    flag: null
 - name: ''
   title: phot_bp
   descr: BP photometry
+  flag: hidden
   sub:
   - ingest: GaiaSource.phot_bp_n_obs
     name: phot_bp_n_obs
@@ -449,6 +468,7 @@ fields:
     type: float
     descr: Integrated BP mean magnitude
     reversed: true
+    flag: null
   - ingest: GaiaSource.phot_bp_n_contaminated_transits
     name: phot_bp_n_contaminated_transits
     type: short
@@ -462,6 +482,7 @@ fields:
 - name: ''
   title: phot_rp
   descr: RP photometry
+  flag: hidden
   sub:
   - ingest: GaiaSource.phot_rp_n_obs
     name: phot_rp_n_obs
@@ -486,6 +507,7 @@ fields:
     units: mag
     type: float
     descr: Integrated RP mean magnitude
+    flag: null
   - ingest: GaiaSource.phot_bp_rp_excess_factor
     name: phot_bp_rp_excess_factor
     type: float
@@ -506,6 +528,7 @@ fields:
   type: byte
   descr: Photometry processing mode
   terms: true
+  flag: hidden
 - ingest: GaiaSource.bp_rp
   name: bp_rp
   units: mag
@@ -516,20 +539,24 @@ fields:
   units: mag
   type: float
   descr: BP - G colour
+  flag: hidden
 - ingest: GaiaSource.g_rp
   name: g_rp
   units: mag
   type: float
   descr: G - RP colour
+  flag: hidden
 - name: ''
   title: rv
   descr: Radial velocity
+  flag: hidden
   sub:
   - ingest: GaiaSource.radial_velocity
     name: radial_velocity
     units: km.s**-1
     type: float
     descr: Radial velocity
+    flag: null
   - ingest: GaiaSource.radial_velocity_error
     name: radial_velocity_error
     units: km.s**-1
@@ -603,42 +630,51 @@ fields:
   units: km.s**-1
   type: float
   descr: Spectral line broadening parameter
+  flag: hidden
 - ingest: GaiaSource.vbroad_error
   name: vbroad_error
   units: km.s**-1
   type: float
   descr: Uncertainty on the spectral line broadening
+  flag: hidden
 - ingest: GaiaSource.vbroad_nb_transits
   name: vbroad_nb_transits
   type: short
   descr: Number of transits used to compute vbroad
+  flag: hidden
 - ingest: GaiaSource.grvs_mag
   name: grvs_mag
   units: mag
   type: float
   descr: Integrated Grvs magnitude
+  flag: hidden
 - ingest: GaiaSource.grvs_mag_error
   name: grvs_mag_error
   units: mag
   type: float
   descr: Grvs magnitude uncertainty
+  flag: hidden
 - ingest: GaiaSource.grvs_mag_nb_transits
   name: grvs_mag_nb_transits
   type: short
   descr: Number of transits used to compute Grvs
+  flag: hidden
 - ingest: GaiaSource.rvs_spec_sig_to_noise
   name: rvs_spec_sig_to_noise
   type: float
   descr: Signal to noise ratio in the mean RVS spectrum
+  flag: hidden
 - ingest: GaiaSource.phot_variable_flag
   name: phot_variable_flag
   type: byte
   descr: Photometric variability flag
   enum: ['CONSTANT', 'VARIABLE']
   missing: ['NOT_AVAILABLE']
+  flag: hidden
 - name: ''
   title: metadata_flags
   descr: Flags that indicate presence of more specialized data for a given source
+  flag: hidden
   sub:
   - ingest: GaiaSource.in_qso_candidates
     name: in_qso_candidates
@@ -883,6 +919,7 @@ fields:
   #count: 1590932717
   descr: |
     This is the main table containing the 1D astrophysical parameters produced by the Apsis processing chain developed in Gaia DPAC CU8 (see Chapter~\ref{chap:cu8par}). Additional parameters can be found in table {\tt AstrophysicalParametersSupp}.
+  flag: hidden
   sub:
   - name: _index
     ingest: AstrophysicalParameters._index
@@ -2494,6 +2531,7 @@ fields:
   #count: 473020612
   descr: |
     This table contains additional parameters from the Apsis processing chain, compared to the main table {\tt AstrophysicalParameters} (see Chapter~\ref{chap:cu8par}), from modules that produce more than one result for a parameter. It contains (1) the individual library results from GSP-Phot (see Section~\ref{ssec:cu8par_apsis_gspphot_method}), (2) FLAME results from processing GSP-Spec parameters given in the {\tt AstrophysicalParameters} table (see Section~\ref{ssec:cu8par_apsis_flame}), and (3) results from the GSP-Spec ANN algorithm (see Section~\ref{ssec:cu8par_apsis_gspspec}).
+  flag: hidden
   sub:
   - name: _index
     ingest: AstrophysicalParametersSupp._index
@@ -3840,6 +3878,7 @@ fields:
     per source per row can be obtained using INDIVIDUAL or COMBINED. \nNote this table
     is not available through the main archive TAP interface, but via the Massive Data
     service, indexed by the VO Datalink protocol, described in \\secref{ssec:cu9arch_product_linking}.\n"
+  flag: hidden
   sub:
   - name: _index
     ingest: EpochPhotometry._index
@@ -4338,6 +4377,7 @@ fields:
     to Chapter~\\ref{chap:cu3qso} of the on-line documentation for details about how
     this table was built, its content, and for recommendations regarding its exploitation.
     \n"
+  flag: hidden
   sub:
   - name: _index
     ingest: GalaxyCandidates._index
@@ -4678,6 +4718,7 @@ fields:
   descr: |
     This table contains non-single-star astrometric models for sources having a non-linear proper motion which is compatible with an acceleration solution. Several possible models are hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
     Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}.
+  flag: hidden
   sub:
   - name: _index
     ingest: NssAccelerationAstro._index
@@ -4841,6 +4882,7 @@ fields:
   descr: |
     This table contains non-single-star orbital models for spectroscopic binaries compatible with a trend. Several possible models are hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
     Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}.
+  flag: hidden
   sub:
   - name: _index
     ingest: NssNonLinearSpectro._index
@@ -4931,6 +4973,7 @@ fields:
   descr: |
     This table contains non-single-star orbital models for sources compatible with an orbital two-body solution. This covers astrometric binaries, spectroscopic binaries, eclipsing binaries and certain combinations thereof. Several possible models are hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
     Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}. Warning: as a source may receive independent astrometric, spectroscopic or photometric orbits, a query using a given sourceId may return several solutions. This has to be accounted for when doing a crossmatch by sourceId.
+  flag: hidden
   sub:
   - name: _index
     ingest: NssTwoBodyOrbit._index
@@ -5459,6 +5502,7 @@ fields:
     This table contains non-single-star models for sources compatible with an Variability Induced Mover (VIM) solution. Several possible models are in principle hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
     For DR3, only VIMF solutions are provided here.
     Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}.
+  flag: hidden
   sub:
   - name: _index
     ingest: NssVimFl._index
@@ -5620,6 +5664,7 @@ fields:
     Please refer to Chapter~\\ref{chap:cu3qso} of the on-line documentation for details
     about how this table was built, its content, and for recommendations regarding
     its exploitation. \n"
+  flag: hidden
   sub:
   - name: _index
     ingest: QsoCandidates._index
@@ -5933,6 +5978,7 @@ fields:
     in steps of 0.01 nm (2401 elements). \nSee~~\\secref{sssec:cu6spe_meanspe} for
     a description on how the mean spectra are obtained, and \\citet{DR3-DPACP-154}
     for a description of the spectra validation.\n"
+  flag: hidden
   sub:
   - name: _index
     ingest: RvsMeanSpectrum._index
@@ -5985,6 +6031,7 @@ fields:
   #count: 872228
   descr: |
     This table provides information on AGN properties.
+  flag: hidden
   sub:
   - name: _index
     ingest: VariAgn._index
@@ -6027,6 +6074,7 @@ fields:
   #count: 15021
   descr: |
     This table describes the Cepheid stars.
+  flag: hidden
   sub:
   - name: _index
     ingest: VariCepheid._index
@@ -6606,6 +6654,7 @@ fields:
     (depending on class) are combined into a single classifier with {\\tt classifierName}=`nTransits:5+',
     which is described in {\\tt VariClassifierDefinition} and identifies the classes
     defined in {\\tt VariClassifierClassDefinition}. \n"
+  flag: hidden
   sub:
   - name: _index
     ingest: VariClassifierResult._index
@@ -6665,6 +6714,7 @@ fields:
   #count: 6306
   descr: |
     This table describes the compact companion candidates.
+  flag: hidden
   sub:
   - name: _index
     ingest: VariCompactCompanion._index
@@ -6841,6 +6891,7 @@ fields:
   #count: 2184477
   descr: "This table describes the properties of the eclipsing binaries resulting
     from the variability analysis. \n"
+  flag: hidden
   sub:
   - name: _index
     ingest: VariEclipsingBinary._index
@@ -7100,6 +7151,7 @@ fields:
   descr: |
     This table describes the Long Period Variable stars.
     Some entries can be NaN when absent.
+  flag: hidden
   sub:
   - name: _index
     ingest: VariLongPeriodVariable._index
@@ -7146,6 +7198,7 @@ fields:
   #count: 363
   descr: |
     This table describes the microlensing events.
+  flag: hidden
   sub:
   - name: _index
     ingest: VariMicrolensing._index
@@ -7382,6 +7435,7 @@ fields:
   #count: 54476
   descr: |
     This table describes the main-sequence oscillators.
+  flag: hidden
   sub:
   - name: _index
     ingest: VariMsOscillator._index
@@ -7459,6 +7513,7 @@ fields:
   #count: 214
   descr: |
     This table describes the Planetary Transit candidate events.
+  flag: hidden
   sub:
   - name: _index
     ingest: VariPlanitaryTransit._index
@@ -7506,6 +7561,7 @@ fields:
   descr: |
     Statistical parameters of radial velocity time series, using only transits not rejected, see {\tt rejectedByVariability} column in {\tt VariEpochRadialVelocity}.
     Note that NaN will be reported when the parameter value is missing or cannot be calculated.
+  flag: hidden
   sub:
   - name: _index
     ingest: VariRadVelStatistics._index
@@ -7612,6 +7668,7 @@ fields:
   #count: 474026
   descr: |
     This table describes the solar-like stars with rotational modulation.
+  flag: hidden
   sub:
   - name: _index
     ingest: VariRotationModulation._index
@@ -8056,6 +8113,7 @@ fields:
   #count: 271779
   descr: |
     This table describes the RR Lyrae stars.
+  flag: hidden
   sub:
   - name: _index
     ingest: VariRrlyrae._index
@@ -8606,6 +8664,7 @@ fields:
   ingest: _table:VariShortTimescale #sorted, 1:1 files
   #count: 471679
   descr: "This table describes the short-timescale sources. \n"
+  flag: hidden
   sub:
   - name: _index
     ingest: VariShortTimescale._index
@@ -8667,6 +8726,7 @@ fields:
   descr: |
     Summary table that provides the information on where a {\tt sourceId} can be found in the different {\tt Variability} tables and statistical parameters of time series, using only transits not rejected.
     Note that NULL is reported when the statistical parameter value is missing or cannot be calculated.
+  flag: hidden
   sub:
   - name: _index
     ingest: VariSummary._index
@@ -9108,6 +9168,7 @@ fields:
   #count: 219197643
   descr: |
     Table hosting the mean BP and RP spectra based on the continuous representation in basis functions (see~\secref{cu5pho_ssec:meanSpecGen}).
+  flag: hidden
   sub:
   - name: _index
     ingest: XpContinuousMeanSpectrum._index
@@ -9255,6 +9316,7 @@ fields:
   #count: 34468373
   descr: |
     This is the BP/RP externally calibrated sampled mean spectrum. All mean spectra are sampled to the same set of absolute wavelength positions, which can be found in the field \texttt{wavelength} of table \texttt{XpMerge}.
+  flag: hidden
   sub:
   - name: _index
     ingest: XpSampledMeanSpectrum._index
@@ -9294,6 +9356,7 @@ fields:
   #count: 219197643
   descr: |
     This tables contains auxiliary information about the mean BP/RP spectrum of a given source. It should be used in order to refine queries on spectra and build dedicated samples before interrogating the DataLink protocol to download the results of those queries.
+  flag: hidden
   sub:
   - name: _index
     ingest: XpSummary._index
