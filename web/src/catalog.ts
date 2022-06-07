@@ -952,10 +952,26 @@ function toggleShowData(show?: boolean) {
 }
 (<any>window).toggleShowData = toggleShowData;
 
+function array_render(rf: (x: any) => string, data: any): string {
+  if (!data)
+    return "";
+  if (!Array.isArray(data))
+    return rf(data);
+  let ext = "";
+  if (data.length > 3) {
+    ext = ",...[" + data.length + "]";
+    data = data.slice(0,3);
+  }
+  return data.map(rf).toString() + ext;
+}
+
 function cell_render(field: Field): (data: any, type: string, row: any) => string {
   if (field.attachment)
     return (data, type, row) => (data ? "<a href='/api/" + Catalog.name + "/attachment/" + field.name + "/" + encodeURIComponent(row._id) + "'><img class='download-icon' src='/web/download.svg'></a>" : "");
-  return render_funct(field);
+  const rf = render_funct(field);
+  if (field.type.startsWith("array "))
+    return (data, type, row) => array_render(rf, data);
+  return rf;
 }
 
 export function initCatalog(table: JQuery<HTMLTableElement>) {
