@@ -7,18 +7,25 @@ module Output.FITS
   where
 
 import           Control.Applicative ((<|>))
+import           Control.Monad (join)
+import           Control.Monad.IO.Class (liftIO)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Builder as B
+import           Data.Char (toUpper)
 import           Data.Foldable (fold)
-import           Data.Functor.Compose (getCompose)
+import           Data.Functor.Compose (Compose(..))
+import           Data.Functor.Identity (Identity(..))
 import           Data.Maybe (fromMaybe, isJust, catMaybes)
 import           Data.Monoid (Sum(Sum))
 import           Data.Proxy (Proxy(Proxy), asProxyTypeOf)
 import           Data.Semigroup (stimesMonoid)
 import qualified Data.Text.Encoding as TE
+import           Data.Time.Clock (getCurrentTime, UTCTime)
+import           Data.Time.Format (formatTime, defaultTimeLocale)
 import qualified Data.Vector as V
 import           Data.Word (Word32, Word64)
+import qualified Network.Wai as Wai
 import           Unsafe.Coerce (unsafeCoerce)
 
 import Type
@@ -28,6 +35,7 @@ import Monoid
 import Output.Types
 import Global
 import Backend
+import qualified KeyedMap as KM
 
 padding :: Int -> BS.ByteString
 padding n = BSC.replicate n ' '
@@ -55,7 +63,7 @@ data HeaderValue
   = HeaderString BS.ByteString
   | HeaderLogical Bool
   | HeaderInteger Integer
-  -- other types not used
+  | HeaderDouble Double
 
 data HeaderRecord = HeaderRecord
   { headerName :: BS.ByteString
@@ -76,6 +84,7 @@ renderRecord HeaderRecord{..} =
     ~(f:r) -> f <> foldMap ("CONTINUE  " <>) r
   hv (HeaderLogical b) = commval headerComment $ padR 20 (if b then "T" else "F")
   hv (HeaderInteger i) = commval headerComment $ padR 20 (showBS i)
+  hv (HeaderDouble d) = commval headerComment $ padR 20 (BSC.map toUpper $ showBS d)
   commval Nothing s = pad 70 s
   commval (Just c) s
     | BS.length s >= 67 = pad 70 s <> comment c
@@ -106,6 +115,7 @@ data TField = TField
   , tfTypeComment, tfName, tfNameComment, tfUnit :: Maybe BS.ByteString
   -- , tfScale, tFieldZero :: Rational
   , tfNull :: Maybe Integer
+  , tfMin, tfMax :: Maybe Double
   }
 
 typeBytes :: Char -> Word
@@ -137,6 +147,8 @@ cField t = TField
   -- , tfScale = 1
   -- , tfZero = 0
   , tfNull = Nothing
+  , tfMin = Nothing
+  , tfMax = Nothing
   }
 
 cFieldInt :: (Integral a, Bounded a) => Char -> Proxy a -> TField
@@ -156,7 +168,7 @@ typeInfo (Keyword   _) = cField 'A' -- count set by size below
 typeInfo (Void      _) = (cField 'P'){ tfCount = 0 }
 typeInfo (Array     t) = typeInfo (arrayHead t) -- count set by length below
 
-tField :: Field -> TField
+tField :: FieldSub FieldFilter Proxy -> TField
 tField f@Field{ fieldType = ft } = ti
   { tfCount = tfCount ti
       * (if typeIsString ft         then fieldSize f   else 1)
@@ -164,9 +176,17 @@ tField f@Field{ fieldType = ft } = ti
   -- XXX supposed to be ASCII -- will anyone care?
   , tfTypeComment = BS.intercalate "," . map TE.encodeUtf8 . V.toList <$> fieldEnum f <|> tfTypeComment ti
   , tfName = Just $ TE.encodeUtf8 $ fieldName f
-  , tfNameComment = TE.encodeUtf8 <$> fieldDescr f
+  , tfNameComment = Just $ TE.encodeUtf8 $ fieldTitle f <> foldMap (": " <>) (fieldDescr f)
   , tfUnit = TE.encodeUtf8 <$> fieldUnits f
-  } where ti = typeInfo ft
+  , tfMin = tmin
+  , tfMax = tmax
+  } where
+  ti = typeInfo $ typeOfValue ft
+  (tmin, tmax) = unTypeValue rf ft
+  rf :: Typed a => FieldFilter a -> (Maybe Double, Maybe Double)
+  rf (FieldRange x y) = (toDouble <$> x, toDouble <$> y)
+  rf (FieldEQ [x]) = join (,) $ Just $ toDouble x
+  rf _ = (Nothing, Nothing)
 
 tFieldRecords :: Int -> TField -> [HeaderRecord]
 tFieldRecords i TField{..} =
@@ -175,6 +195,8 @@ tFieldRecords i TField{..} =
   [ rec "TTYPE" tfNameComment . HeaderString <$> tfName
   , rec "TUNIT" Nothing . HeaderString <$> tfUnit
   , rec "TNULL" Nothing . HeaderInteger <$> tfNull
+  , rec "TDMIN" Nothing . HeaderDouble <$> tfMin
+  , rec "TDMAX" Nothing . HeaderDouble <$> tfMax
   ]
   where
   is = BSC.pack $ show i
@@ -186,22 +208,27 @@ axisHeaders bitpix naxis =
   , HeaderRecord "NAXIS" (Just $ HeaderInteger $ toInteger $ length naxis) Nothing
   ] ++ zipWith (\i n -> HeaderRecord ("NAXIS" <> showBS i) (Just $ HeaderInteger $ toInteger n) Nothing) [(1::Int)..] naxis
 
-fitsHeaders :: V.Vector Field -> Word -> (BS.ByteString, Word, BS.ByteString)
-fitsHeaders fields count =
+fitsHeaders :: UTCTime -> Wai.Request -> Catalog -> DataArgs V.Vector -> Word -> (BS.ByteString, Word, BS.ByteString)
+fitsHeaders date req cat args count =
   ( renderBlock (
       [ HeaderRecord "SIMPLE" (Just $ HeaderLogical True) (Just "FITS")
       ] ++ axisHeaders 8 [] ++
-      [ HeaderRecord "EXTEND" (Just $ HeaderLogical True) Nothing ])
+      [ HeaderRecord "DATE" (Just $ HeaderString $ BSC.pack $ formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S" date) (Just "time of download")
+      , HeaderRecord "ORIGIN" (Just $ HeaderString $ Wai.rawPathInfo req) (Just $ TE.encodeUtf8 $ catalogTitle cat)
+      , HeaderRecord "EXTEND" (Just $ HeaderLogical True) Nothing ])
     <> renderBlock (
       [ HeaderRecord "XTENSION" (Just $ HeaderString "BINTABLE") (Just "binary table")
       ] ++ axisHeaders 8 [rowsize, count] ++
       [ HeaderRecord "PCOUNT" (Just $ HeaderInteger 0) Nothing
       , HeaderRecord "GCOUNT" (Just $ HeaderInteger 1) Nothing
-      , HeaderRecord "TFIELDS" (Just $ HeaderInteger $ toInteger $ V.length fields) Nothing
-      ] ++ fold (V.imap (tFieldRecords . succ) tfields))
+      , HeaderRecord "TFIELDS" (Just $ HeaderInteger $ toInteger $ V.length $ dataFields args) Nothing
+      ] ++ fold (V.imap (tFieldRecords  . succ) tfields))
   , datasize, BS.replicate (blockPadding $ fromIntegral datasize) 0)
   where
-  tfields = V.map tField fields
+  tfields = V.map (\f -> tField (KM.lookupDefault
+      (runIdentity $ updateFieldValueM f (\_ -> Identity $ FieldEQ []))
+      $ filterFields $ dataFilters args))
+    $ dataFields args
   Sum rowsize = V.foldMap (Sum . tfBytes) tfields
   datasize = count * rowsize
 
@@ -228,10 +255,11 @@ fitsValue f (Array     x) = V.foldMap (fitsValue f) $ traverseTypeValue (padv . 
 fitsRow :: V.Vector Field -> V.Vector (TypeValue Maybe) -> B.Builder
 fitsRow f v = fold $ V.zipWith fitsValue f v
 
-fitsGenerator :: Catalog -> DataArgs V.Vector -> M OutputStream
-fitsGenerator cat args = do
+fitsGenerator :: Wai.Request -> Catalog -> DataArgs V.Vector -> M OutputStream
+fitsGenerator req cat args = do
   count <- queryCount cat (dataFilters args)
-  let (header, size, footer) = fitsHeaders (dataFields args) count
+  now <- liftIO getCurrentTime
+  let (header, size, footer) = fitsHeaders now req cat args count
   outputStreamRows
     (Just $ fromIntegral (BS.length header) + size + fromIntegral (BS.length footer))
     (B.byteString header)
@@ -244,5 +272,5 @@ fitsOutput = OutputFormat
   { outputMimeType = "application/fits"
   , outputExtension = "fits"
   , outputDescription = "FITS BINTABLE binary table file containing the requested fields"
-  , outputGenerator = \_ -> fitsGenerator
+  , outputGenerator = fitsGenerator
   }

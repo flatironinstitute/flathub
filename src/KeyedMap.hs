@@ -10,6 +10,7 @@ module KeyedMap
   , HM.size
   , member
   , lookup
+  , lookupDefault
   , insert
   , insertWith
   , delete
@@ -37,6 +38,9 @@ member = HM.member . key
 
 lookup :: (Keyed k, Key k ~ Key a, Hashable (Key a), Eq (Key a)) => k -> KeyedMap a -> Maybe a
 lookup = HM.lookup . key
+
+lookupDefault :: (Keyed a, Hashable (Key a), Eq (Key a)) => a -> KeyedMap a -> a
+lookupDefault k = HM.lookupDefault k (key k)
 
 insert :: (Keyed a, Hashable (Key a), Eq (Key a)) => a -> KeyedMap a -> KeyedMap a
 insert x = HM.insert (key x) x
