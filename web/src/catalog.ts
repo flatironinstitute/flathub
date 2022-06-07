@@ -959,6 +959,7 @@ function array_render(rf: (x: any) => string, data: any): string {
     return rf(data);
   let ext = "";
   if (data.length > 3) {
+    /* TODO: make this click to expand */
     ext = ",...[" + data.length + "]";
     data = data.slice(0,3);
   }
