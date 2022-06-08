@@ -1003,11 +1003,6 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
       topts.order = Query.sort.map((o) => {
         return [Fields_idx[o.field], o.asc ? "asc" : "desc"];
       });
-    if (Query.fields && Query.fields.length) {
-      for (let f of Catalog.fields) {
-        f.disp = Query.fields.indexOf(<string>f.name) >= 0;
-      }
-    }
   }
   topts.columns = [];
   topts.columns.push.apply(topts.columns, Catalog.fields.map((c) => {

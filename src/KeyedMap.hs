@@ -33,7 +33,7 @@ type KeyedMap a = HM.HashMap (Key a) a
 singleton :: (Keyed a, Hashable (Key a)) => a -> KeyedMap a
 singleton x = HM.singleton (key x) x
 
-member :: (Keyed a, Hashable (Key a), Eq (Key a)) => a -> KeyedMap a -> Bool
+member :: (Keyed k, Key k ~ Key a, Hashable (Key k), Eq (Key k)) => k -> KeyedMap a -> Bool
 member = HM.member . key
 
 lookup :: (Keyed k, Key k ~ Key a, Hashable (Key a), Eq (Key a)) => k -> KeyedMap a -> Maybe a
