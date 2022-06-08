@@ -14,6 +14,12 @@ descr: >
   <li><a href="https://sdsc-users.flatironinstitute.org/~gaia/dr3/README">Bulk access through Flatiron Institute</a></li>
   </ul>
 
+  Preset field selections:
+  <ul>
+  <li><a href="/gaiadr3?fields=source_id+ra+dec+parallax+pmra+pmdec+phot_g_mean_mag+phot_bp_mean_mag+phot_rp_mean_mag+bp_rp+radial_velocity+astrophysical_parameters_teff_gspphot+astrophysical_parameters_logg_gspphot+astrophysical_parameters_mh_gspphot+astrophysical_parameters_distance_gspphot+astrophysical_parameters_azero_gspphot+astrophysical_parameters_ag_gspphot+astrophysical_parameters_abp_gspphot+astrophysical_parameters_arp_gspphot+astrophysical_parameters_mg_gspphot+xp_sampled_mean_spectrum_flux+xp_sampled_mean_spectrum_flux_error">Xp spectra and astrophysical parameters</a></li>
+  <li><a href="/gaiadr3?fields=source_id+ra+dec+parallax+pmra+pmdec+phot_g_mean_mag+phot_bp_mean_mag+phot_rp_mean_mag+bp_rp+radial_velocity+astrophysical_parameters_teff_gspphot+astrophysical_parameters_logg_gspphot+astrophysical_parameters_mh_gspphot+astrophysical_parameters_alphafe_gspspec+rvs_mean_spectrum_flux+rvs_mean_spectrum_flux_error">RVS spectra and astrophysical parameters</a></li>
+  </ul>
+
   <br>
   gaia_source: This table has an entry for every Gaia observed source as published with this data release. It contains the basic source parameters, in their final state as processed by the Gaia Data Processing and Analysis Consortium from the raw data coming from the spacecraft. The table is complemented with others containing information specific to certain kinds of objects (e.g.~Solar--system objects, non--single stars, variables etc.) and value--added processing (e.g.~astrophysical parameters etc.). Further array data types (spectra, epoch measurements) are presented separately via `Datalink' resources.
 count: 1811709771
