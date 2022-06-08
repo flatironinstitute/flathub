@@ -32,7 +32,7 @@ ENV LD_LIBRARY_PATH=/home/stackage/.stack/programs/x86_64-linux/ghc-8.10.7/lib/g
 USER flathub
 
 COPY --chown=flathub web ./web
-RUN make -C web
+RUN make -C web && rm -rf web/node_modules
 COPY --from=build /home/flathub/.local/bin/flathub /home/flathub/.local/bin/flathub
 COPY html ./html
 COPY config ./config
