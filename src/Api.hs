@@ -29,7 +29,6 @@ module Api
   , openApi
   ) where
 
-import           Control.Applicative ((<|>))
 import           Control.Lens ((&), (&~), (.~), (?~), (%~), (.=))
 import           Control.Monad (mfilter, unless, when, join, guard)
 import           Control.Monad.IO.Class (liftIO)
@@ -49,7 +48,7 @@ import qualified Data.HashMap.Strict as HM
 import qualified Data.HashMap.Strict.InsOrd as HMI
 import           Data.IORef (newIORef, readIORef, writeIORef)
 import           Data.List (foldl')
-import           Data.Maybe (isJust, isNothing, mapMaybe, fromMaybe, listToMaybe, catMaybes)
+import           Data.Maybe (isJust, isNothing, mapMaybe, fromMaybe, catMaybes)
 import qualified Data.OpenApi as OA
 import           Data.Proxy (Proxy)
 import qualified Data.Text as T
@@ -760,7 +759,7 @@ outputAction sim fmt comp check req = do
   cat <- askCatalog sim
   body <- parseJSONBody req (parseDataJSON cat)
   let args = (maybe (parseDataQuery cat req) fst body){ dataCount = maxDataCount }
-      enc = comp -- <|> listToMaybe (acceptCompressionEncoding req)
+      enc = comp -- <|> listToMaybe (acceptCompressionEncoding req) -- transfer-encoding breaks content-length/progress
   args' <- check args
   out <- outputGenerator fmt req cat args'
   g <- ask
