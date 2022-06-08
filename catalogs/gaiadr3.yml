@@ -5,14 +5,23 @@ settings:
     number_of_shards: 64
 descr: >
   <a href='https://www.cosmos.esa.int/web/gaia/dr3'>Gaia Data Release 3</a> from the <a href='http://www.esa.int/ESA'>European Space Agency</a>
-    How to cite and acknowledge Gaia:
-    https://gea.esac.esa.int/archive/documentation/credits.html
-    Known issues:
-    https://www.cosmos.esa.int/web/gaia-users/known-issues
-    Tutorials and documentation:
-    https://www.cosmos.esa.int/web/gaia-users/archive
+  <br>
+  Important links to official Gaia Data Release documentation:
+  <ul>
+  <li><a href="https://gea.esac.esa.int/archive/documentation/GDR3/index.html">On-line documentation</a></li>
+  <li><a href="https://archives.esac.esa.int/doi/html/data/astronomy/gaia/DR3.html">DOI</a></li>
+  <li><a href="https://gea.esac.esa.int/archive/documentation/GDR3/Miscellaneous/sec_credit_and_citation_instructions/">Credit and citation instructions</a></li>
+  <li><a href="https://sdsc-users.flatironinstitute.org/~gaia/dr3/README">Bulk access through Flatiron Institute</a></li>
+  </ul>
 
-  This table has an entry for every Gaia observed source as published with this data release. It contains the basic source parameters, in their final state as processed by the Gaia Data Processing and Analysis Consortium from the raw data coming from the spacecraft. The table is complemented with others containing information specific to certain kinds of objects (e.g.~Solar--system objects, non--single stars, variables etc.) and value--added processing (e.g.~astrophysical parameters etc.). Further array data types (spectra, epoch measurements) are presented separately via `Datalink' resources.
+  Preset field selections:
+  <ul>
+  <li><a href="/gaiadr3?fields=source_id+ra+dec+parallax+pmra+pmdec+phot_g_mean_mag+phot_bp_mean_mag+phot_rp_mean_mag+bp_rp+radial_velocity+astrophysical_parameters_teff_gspphot+astrophysical_parameters_logg_gspphot+astrophysical_parameters_mh_gspphot+astrophysical_parameters_distance_gspphot+astrophysical_parameters_azero_gspphot+astrophysical_parameters_ag_gspphot+astrophysical_parameters_abp_gspphot+astrophysical_parameters_arp_gspphot+astrophysical_parameters_mg_gspphot+xp_sampled_mean_spectrum_flux+xp_sampled_mean_spectrum_flux_error">Xp spectra and astrophysical parameters</a></li>
+  <li><a href="/gaiadr3?fields=source_id+ra+dec+parallax+pmra+pmdec+phot_g_mean_mag+phot_bp_mean_mag+phot_rp_mean_mag+bp_rp+radial_velocity+astrophysical_parameters_teff_gspphot+astrophysical_parameters_logg_gspphot+astrophysical_parameters_mh_gspphot+astrophysical_parameters_alphafe_gspspec+rvs_mean_spectrum_flux+rvs_mean_spectrum_flux_error">RVS spectra and astrophysical parameters</a></li>
+  </ul>
+
+  <br>
+  gaia_source: This table has an entry for every Gaia observed source as published with this data release. It contains the basic source parameters, in their final state as processed by the Gaia Data Processing and Analysis Consortium from the raw data coming from the spacecraft. The table is complemented with others containing information specific to certain kinds of objects (e.g.~Solar--system objects, non--single stars, variables etc.) and value--added processing (e.g.~astrophysical parameters etc.). Further array data types (spectra, epoch measurements) are presented separately via `Datalink' resources.
 count: 1811709771
 key: source_id
 sort: source_id
@@ -845,19 +854,19 @@ fields:
 #     name: azero_gspphot
 #     units: mag
 #     type: float
-#     descr: Monochromatic extinction $A_0$ at 547.7nm from GSP-Phot Aeneas best library
+#     descr: Monochromatic extinction \(A_0\) at 547.7nm from GSP-Phot Aeneas best library
 #       using BP/RP spectra
 #   - ingest: GaiaSource.azero_gspphot_lower
 #     name: azero_gspphot_lower
 #     units: mag
 #     type: float
-#     descr: Lower confidence level (16%) of monochromatic extinction $A_0$ at 547.7nm
+#     descr: Lower confidence level (16%) of monochromatic extinction \(A_0\) at 547.7nm
 #       from GSP-Phot Aeneas best library using BP/RP spectra
 #   - ingest: GaiaSource.azero_gspphot_upper
 #     name: azero_gspphot_upper
 #     units: mag
 #     type: float
-#     descr: Upper confidence level (84%) of monochromatic extinction $A_0$ at 547.7nm
+#     descr: Upper confidence level (84%) of monochromatic extinction \(A_0\) at 547.7nm
 #       from GSP-Phot Aeneas best library using BP/RP spectra
 # - name: ''
 #   title: ag
@@ -892,19 +901,19 @@ fields:
 #     name: ebpminrp_gspphot
 #     units: mag
 #     type: float
-#     descr: Reddening $E(G_{\rm BP} - G_{\rm RP})$ from GSP-Phot Aeneas best library
+#     descr: Reddening \(E(G_{\rm BP} - G_{\rm RP})\) from GSP-Phot Aeneas best library
 #       using BP/RP spectra
 #   - ingest: GaiaSource.ebpminrp_gspphot_lower
 #     name: ebpminrp_gspphot_lower
 #     units: mag
 #     type: float
-#     descr: Lower confidence level (16%) of reddening  $E(G_{\rm BP} - G_{\rm RP})$
+#     descr: Lower confidence level (16%) of reddening  \(E(G_{\rm BP} - G_{\rm RP})\)
 #       from GSP-Phot Aeneas best library using BP/RP spectra
 #   - ingest: GaiaSource.ebpminrp_gspphot_upper
 #     name: ebpminrp_gspphot_upper
 #     units: mag
 #     type: float
-#     descr: Upper confidence level (84%) of reddening  $E(G_{\rm BP} - G_{\rm RP})$
+#     descr: Upper confidence level (84%) of reddening  \(E(G_{\rm BP} - G_{\rm RP})\)
 #       from GSP-Phot Aeneas best library using BP/RP spectra
 # - ingest: GaiaSource.libname_gspphot
 #   name: libname_gspphot
@@ -1161,21 +1170,21 @@ fields:
       name: azero_gspphot
       units: mag
       type: float
-      descr: Monochromatic extinction $A_0$ at 547.7nm from GSP-Phot Aeneas best library
+      descr: Monochromatic extinction \(A_0\) at 547.7nm from GSP-Phot Aeneas best library
         using BP/RP spectra
     - ingest: AstrophysicalParameters.azero_gspphot_lower
       name: azero_gspphot_lower
       units: mag
       flag: hidden
       type: float
-      descr: Lower confidence level (16%) of monochromatic extinction $A_0$ at 547.7nm
+      descr: Lower confidence level (16%) of monochromatic extinction \(A_0\) at 547.7nm
         from GSP-Phot Aeneas best library using BP/RP spectra
     - ingest: AstrophysicalParameters.azero_gspphot_upper
       name: azero_gspphot_upper
       units: mag
       flag: hidden
       type: float
-      descr: Upper confidence level (84%) of monochromatic extinction $A_0$ at 547.7nm
+      descr: Upper confidence level (84%) of monochromatic extinction \(A_0\) at 547.7nm
         from GSP-Phot Aeneas best library using BP/RP spectra
   - name: ''
     title: ag
@@ -1212,21 +1221,21 @@ fields:
       name: abp_gspphot
       units: mag
       type: float
-      descr: Extinction in $G_{\rm BP}$ band from GSP-Phot Aeneas best library using
+      descr: Extinction in \(G_{\rm BP}\) band from GSP-Phot Aeneas best library using
         BP/RP spectra
     - ingest: AstrophysicalParameters.abp_gspphot_lower
       name: abp_gspphot_lower
       units: mag
       flag: hidden
       type: float
-      descr: Lower confidence level (16%) of extinction in $G_{\rm BP}$ band from GSP-Phot
+      descr: Lower confidence level (16%) of extinction in \(G_{\rm BP}\) band from GSP-Phot
         Aeneas best library using BP/RP spectra
     - ingest: AstrophysicalParameters.abp_gspphot_upper
       name: abp_gspphot_upper
       units: mag
       flag: hidden
       type: float
-      descr: Upper confidence level (84%) of extinction in $G_{\rm BP}$ band from GSP-Phot
+      descr: Upper confidence level (84%) of extinction in \(G_{\rm BP}\) band from GSP-Phot
         Aeneas best library using BP/RP spectra
   - name: ''
     title: arp
@@ -1238,21 +1247,21 @@ fields:
       name: arp_gspphot
       units: mag
       type: float
-      descr: Extinction in $G_{\rm RP}$ band from GSP-Phot Aeneas best library using
+      descr: Extinction in \(G_{\rm RP}\) band from GSP-Phot Aeneas best library using
         BP/RP spectra
     - ingest: AstrophysicalParameters.arp_gspphot_lower
       name: arp_gspphot_lower
       units: mag
       flag: hidden
       type: float
-      descr: Lower confidence level (16%) of extinction in $G_{\rm RP}$ band from GSP-Phot
+      descr: Lower confidence level (16%) of extinction in \(G_{\rm RP}\) band from GSP-Phot
         Aeneas best library using BP/RP spectra
     - ingest: AstrophysicalParameters.arp_gspphot_upper
       name: arp_gspphot_upper
       units: mag
       flag: hidden
       type: float
-      descr: Upper confidence level (84%) of extinction in $G_{\rm RP}$ band from GSP-Phot
+      descr: Upper confidence level (84%) of extinction in \(G_{\rm RP}\) band from GSP-Phot
         Aeneas best library using BP/RP spectra
   - name: ''
     title: ebpminrp
@@ -1264,19 +1273,19 @@ fields:
       name: ebpminrp_gspphot
       units: mag
       type: float
-      descr: Reddening $E(G_{\rm BP} - G_{\rm RP})$ from GSP-Phot Aeneas best library
+      descr: Reddening \(E(G_{\rm BP} - G_{\rm RP})\) from GSP-Phot Aeneas best library
         using BP/RP spectra
     - ingest: AstrophysicalParameters.ebpminrp_gspphot_lower
       name: ebpminrp_gspphot_lower
       units: mag
       type: float
-      descr: Lower confidence level (16%) of reddening  $E(G_{\rm BP} - G_{\rm RP})$
+      descr: Lower confidence level (16%) of reddening  \(E(G_{\rm BP} - G_{\rm RP})\)
         from GSP-Phot Aeneas best library using BP/RP spectra
     - ingest: AstrophysicalParameters.ebpminrp_gspphot_upper
       name: ebpminrp_gspphot_upper
       units: mag
       type: float
-      descr: Upper confidence level (84%) of reddening  $E(G_{\rm BP} - G_{\rm RP})$
+      descr: Upper confidence level (84%) of reddening  \(E(G_{\rm BP} - G_{\rm RP})\)
         from GSP-Phot Aeneas best library using BP/RP spectra
   - name: ''
     title: mg
@@ -1288,21 +1297,21 @@ fields:
       name: mg_gspphot
       units: mag
       type: float
-      descr: Absolute magnitude $M_{\rm G}$ from GSP-Phot Aeneas best library using
+      descr: Absolute magnitude \(M_{\rm G}\) from GSP-Phot Aeneas best library using
         BP/RP spectra
     - ingest: AstrophysicalParameters.mg_gspphot_lower
       name: mg_gspphot_lower
       units: mag
       flag: hidden
       type: float
-      descr: Lower confidence level (16%) of absolute magnitude $M_{\rm G}$ from GSP-Phot
+      descr: Lower confidence level (16%) of absolute magnitude \(M_{\rm G}\) from GSP-Phot
         Aeneas best library using BP/RP spectra
     - ingest: AstrophysicalParameters.mg_gspphot_upper
       name: mg_gspphot_upper
       units: mag
       flag: hidden
       type: float
-      descr: Upper confidence level (84%) of absolute magnitude $M_{\rm G}$ from GSP-Phot
+      descr: Upper confidence level (84%) of absolute magnitude \(M_{\rm G}\) from GSP-Phot
         Aeneas best library using BP/RP spectra
   - name: ''
     title: radius
@@ -1957,13 +1966,13 @@ fields:
       name: dibp0_gspspec
       flag: hidden
       type: float
-      descr: Depth ($p_0$ parameter) of the DIB derived from a Gaussian model fit
+      descr: Depth (\(p_0\) parameter) of the DIB derived from a Gaussian model fit
     - ingest: AstrophysicalParameters.dibp2_gspspec
       name: dibp2_gspspec
       units: angstrom
       flag: hidden
       type: float
-      descr: Width ($p_2$ parameter) of the DIB derived from a Gaussian model fit
+      descr: Width (\(p_2\) parameter) of the DIB derived from a Gaussian model fit
     - ingest: AstrophysicalParameters.dibp2_gspspec_uncertainty
       name: dibp2_gspspec_uncertainty
       units: angstrom
@@ -2082,13 +2091,13 @@ fields:
       name: azero_esphs
       units: mag
       type: float
-      descr: Monochromatic interstellar extinction, A$_\mathrm{0}$, from ESP-HS
+      descr: Monochromatic interstellar extinction, A\(_\mathrm{0}\), from ESP-HS
     - ingest: AstrophysicalParameters.azero_esphs_uncertainty
       name: azero_esphs_uncertainty
       units: mag
       flag: hidden
       type: float
-      descr: Uncertainty at a 68% confidence level on A$_\mathrm{0}$ from ESP-HS
+      descr: Uncertainty at a 68% confidence level on A\(_\mathrm{0}\) from ESP-HS
     - ingest: AstrophysicalParameters.ag_esphs
       name: ag_esphs
       units: mag
@@ -2099,18 +2108,18 @@ fields:
       units: mag
       flag: hidden
       type: float
-      descr: Uncertainty on $A_{\rm G}$ from ESP-HS
+      descr: Uncertainty on \(A_{\rm G}\) from ESP-HS
     - ingest: AstrophysicalParameters.ebpminrp_esphs
       name: ebpminrp_esphs
       units: mag
       type: float
-      descr: Reddening $E(G_{\rm BP} - G_{\rm RP})$ from ESP-HS
+      descr: Reddening \(E(G_{\rm BP} - G_{\rm RP})\) from ESP-HS
     - ingest: AstrophysicalParameters.ebpminrp_esphs_uncertainty
       name: ebpminrp_esphs_uncertainty
       units: mag
       flag: hidden
       type: float
-      descr: Uncertainty on $E(G_{\rm BP} - G_{\rm RP})$ from ESP-HS
+      descr: Uncertainty on \(E(G_{\rm BP} - G_{\rm RP})\) from ESP-HS
     - ingest: AstrophysicalParameters.teff_esphs
       name: teff_esphs
       units: K
@@ -2345,21 +2354,21 @@ fields:
       name: azero_msc
       units: mag
       type: float
-      descr: Monochromatic extinction $A_0$ at 547.7nm of the source treated as a binary
+      descr: Monochromatic extinction \(A_0\) at 547.7nm of the source treated as a binary
         system from MSC using BP/RP spectra and parallax
     - ingest: AstrophysicalParameters.azero_msc_upper
       name: azero_msc_upper
       units: mag
       flag: hidden
       type: float
-      descr: Upper confidence level (84%) of monochromatic extinction $A_0$ at 547.7nm
+      descr: Upper confidence level (84%) of monochromatic extinction \(A_0\) at 547.7nm
         from MSC using BP/RP spectra and parallax
     - ingest: AstrophysicalParameters.azero_msc_lower
       name: azero_msc_lower
       units: mag
       flag: hidden
       type: float
-      descr: Lower confidence level (16%) of monochromatic extinction $A_0$ at 547.7nm
+      descr: Lower confidence level (16%) of monochromatic extinction \(A_0\) at 547.7nm
         from MSC using BP/RP spectra and parallax
     - ingest: AstrophysicalParameters.distance_msc
       name: distance_msc
@@ -2646,7 +2655,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Monochromatic extinction $A_0$ at 547.7nm from GSP-Phot Aeneas for MARCS
+#   descr: Monochromatic extinction \(A_0\) at 547.7nm from GSP-Phot Aeneas for MARCS
 #     library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.azero_gspphot_marcs_lower
 #   name: azero_gspphot_marcs_lower
@@ -2654,7 +2663,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Lower confidence level (16%) of monochromatic extinction $A_0$ at 547.7nm
+#   descr: Lower confidence level (16%) of monochromatic extinction \(A_0\) at 547.7nm
 #     from GSP-Phot Aeneas for MARCS library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.azero_gspphot_marcs_upper
 #   name: azero_gspphot_marcs_upper
@@ -2662,7 +2671,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Upper confidence level (84%) of monochromatic extinction $A_0$ at 547.7nm
+#   descr: Upper confidence level (84%) of monochromatic extinction \(A_0\) at 547.7nm
 #     from GSP-Phot Aeneas for MARCS library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.ag_gspphot_marcs
 #   name: ag_gspphot_marcs
@@ -2694,7 +2703,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Extinction in $G_{BP}$ band from GSP-Phot Aeneas for MARCS library using
+#   descr: Extinction in \(G_{BP}\) band from GSP-Phot Aeneas for MARCS library using
 #     BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.abp_gspphot_marcs_lower
 #   name: abp_gspphot_marcs_lower
@@ -2702,7 +2711,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Lower confidence level (16%) of extinction in $G_{BP}$ band from GSP-Phot
+#   descr: Lower confidence level (16%) of extinction in \(G_{BP}\) band from GSP-Phot
 #     Aeneas for MARCS library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.abp_gspphot_marcs_upper
 #   name: abp_gspphot_marcs_upper
@@ -2710,7 +2719,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Upper confidence level (84%) of extinction in $G_{BP}$ band from GSP-Phot
+#   descr: Upper confidence level (84%) of extinction in \(G_{BP}\) band from GSP-Phot
 #     Aeneas for MARCS library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.arp_gspphot_marcs
 #   name: arp_gspphot_marcs
@@ -2718,7 +2727,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Extinction in $G_{RP}$ band from GSP-Phot Aeneas for MARCS library using
+#   descr: Extinction in \(G_{RP}\) band from GSP-Phot Aeneas for MARCS library using
 #     BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.arp_gspphot_marcs_lower
 #   name: arp_gspphot_marcs_lower
@@ -2726,7 +2735,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Lower confidence level (16%) of extinction in $G_{RP}$ band from GSP-Phot
+#   descr: Lower confidence level (16%) of extinction in \(G_{RP}\) band from GSP-Phot
 #     Aeneas for MARCS library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.arp_gspphot_marcs_upper
 #   name: arp_gspphot_marcs_upper
@@ -2734,7 +2743,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Upper confidence level (84%) of extinction in $G_{RP}$ band from GSP-Phot
+#   descr: Upper confidence level (84%) of extinction in \(G_{RP}\) band from GSP-Phot
 #     Aeneas for MARCS library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.ebpminrp_gspphot_marcs
 #   name: ebpminrp_gspphot_marcs
@@ -2742,7 +2751,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Reddening $E(BP-RP)$ from GSP-Phot Aeneas for MARCS library using BP/RP
+#   descr: Reddening \(E(BP-RP)\) from GSP-Phot Aeneas for MARCS library using BP/RP
 #     spectra
 # - ingest: AstrophysicalParametersSupp.ebpminrp_gspphot_marcs_lower
 #   name: ebpminrp_gspphot_marcs_lower
@@ -2750,7 +2759,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Lower confidence level (16%) of reddening  $E(BP-RP)$ from GSP-Phot Aeneas
+#   descr: Lower confidence level (16%) of reddening  \(E(BP-RP)\) from GSP-Phot Aeneas
 #     for MARCS library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.ebpminrp_gspphot_marcs_upper
 #   name: ebpminrp_gspphot_marcs_upper
@@ -2758,7 +2767,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Upper confidence level (84%) of reddening  $E(BP-RP)$ from GSP-Phot Aeneas
+#   descr: Upper confidence level (84%) of reddening  \(E(BP-RP)\) from GSP-Phot Aeneas
 #     for MARCS library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.mg_gspphot_marcs
 #   name: mg_gspphot_marcs
@@ -2766,7 +2775,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Absolute magnitude $M_G$ from GSP-Phot Aeneas for MARCS library using BP/RP
+#   descr: Absolute magnitude \(M_G\) from GSP-Phot Aeneas for MARCS library using BP/RP
 #     spectra
 # - ingest: AstrophysicalParametersSupp.mg_gspphot_marcs_lower
 #   name: mg_gspphot_marcs_lower
@@ -2774,7 +2783,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Lower confidence level (16%) of absolute magnitude $M_G$ from GSP-Phot
+#   descr: Lower confidence level (16%) of absolute magnitude \(M_G\) from GSP-Phot
 #     Aeneas for MARCS library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.mg_gspphot_marcs_upper
 #   name: mg_gspphot_marcs_upper
@@ -2782,7 +2791,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Upper confidence level (84%) of absolute magnitude $M_G$ from GSP-Phot
+#   descr: Upper confidence level (84%) of absolute magnitude \(M_G\) from GSP-Phot
 #     Aeneas for MARCS library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.radius_gspphot_marcs
 #   name: radius_gspphot_marcs
@@ -2919,7 +2928,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Monochromatic extinction $A_0$ at 547.7nm from GSP-Phot Aeneas for PHOENIX
+#   descr: Monochromatic extinction \(A_0\) at 547.7nm from GSP-Phot Aeneas for PHOENIX
 #     library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.azero_gspphot_phoenix_lower
 #   name: azero_gspphot_phoenix_lower
@@ -2927,7 +2936,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Lower confidence level (16%) of monochromatic extinction $A_0$ at 547.7nm
+#   descr: Lower confidence level (16%) of monochromatic extinction \(A_0\) at 547.7nm
 #     from GSP-Phot Aeneas for PHOENIX library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.azero_gspphot_phoenix_upper
 #   name: azero_gspphot_phoenix_upper
@@ -2935,7 +2944,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Upper confidence level (84%) of monochromatic extinction $A_0$ at 547.7nm
+#   descr: Upper confidence level (84%) of monochromatic extinction \(A_0\) at 547.7nm
 #     from GSP-Phot Aeneas for PHOENIX library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.ag_gspphot_phoenix
 #   name: ag_gspphot_phoenix
@@ -2967,7 +2976,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Extinction in $G_{BP}$ band from GSP-Phot Aeneas for PHOENIX library using
+#   descr: Extinction in \(G_{BP}\) band from GSP-Phot Aeneas for PHOENIX library using
 #     BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.abp_gspphot_phoenix_lower
 #   name: abp_gspphot_phoenix_lower
@@ -2975,7 +2984,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Lower confidence level (16%) of extinction in $G_{BP}$ band from GSP-Phot
+#   descr: Lower confidence level (16%) of extinction in \(G_{BP}\) band from GSP-Phot
 #     Aeneas for PHOENIX library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.abp_gspphot_phoenix_upper
 #   name: abp_gspphot_phoenix_upper
@@ -2983,7 +2992,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Upper confidence level (84%) of extinction in $G_{BP}$ band from GSP-Phot
+#   descr: Upper confidence level (84%) of extinction in \(G_{BP}\) band from GSP-Phot
 #     Aeneas for PHOENIX library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.arp_gspphot_phoenix
 #   name: arp_gspphot_phoenix
@@ -2991,7 +3000,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Extinction in $G_{RP}$ band from GSP-Phot Aeneas for PHOENIX library using
+#   descr: Extinction in \(G_{RP}\) band from GSP-Phot Aeneas for PHOENIX library using
 #     BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.arp_gspphot_phoenix_lower
 #   name: arp_gspphot_phoenix_lower
@@ -2999,7 +3008,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Lower confidence level (16%) of extinction in $G_{RP}$ band from GSP-Phot
+#   descr: Lower confidence level (16%) of extinction in \(G_{RP}\) band from GSP-Phot
 #     Aeneas for PHOENIX library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.arp_gspphot_phoenix_upper
 #   name: arp_gspphot_phoenix_upper
@@ -3007,7 +3016,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Upper confidence level (84%) of extinction in $G_{RP}$ band from GSP-Phot
+#   descr: Upper confidence level (84%) of extinction in \(G_{RP}\) band from GSP-Phot
 #     Aeneas for PHOENIX library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.ebpminrp_gspphot_phoenix
 #   name: ebpminrp_gspphot_phoenix
@@ -3015,7 +3024,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Reddening $E(BP-RP)$ from GSP-Phot Aeneas for PHOENIX library using BP/RP
+#   descr: Reddening \(E(BP-RP)\) from GSP-Phot Aeneas for PHOENIX library using BP/RP
 #     spectra
 # - ingest: AstrophysicalParametersSupp.ebpminrp_gspphot_phoenix_lower
 #   name: ebpminrp_gspphot_phoenix_lower
@@ -3023,7 +3032,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Lower confidence level (16%) of reddening  $E(BP-RP)$ from GSP-Phot Aeneas
+#   descr: Lower confidence level (16%) of reddening  \(E(BP-RP)\) from GSP-Phot Aeneas
 #     for PHOENIX library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.ebpminrp_gspphot_phoenix_upper
 #   name: ebpminrp_gspphot_phoenix_upper
@@ -3031,7 +3040,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Upper confidence level (84%) of reddening  $E(BP-RP)$ from GSP-Phot Aeneas
+#   descr: Upper confidence level (84%) of reddening  \(E(BP-RP)\) from GSP-Phot Aeneas
 #     for PHOENIX library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.mg_gspphot_phoenix
 #   name: mg_gspphot_phoenix
@@ -3039,7 +3048,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Absolute magnitude $M_G$ from GSP-Phot Aeneas for PHOENIX library using
+#   descr: Absolute magnitude \(M_G\) from GSP-Phot Aeneas for PHOENIX library using
 #     BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.mg_gspphot_phoenix_lower
 #   name: mg_gspphot_phoenix_lower
@@ -3047,7 +3056,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Lower confidence level (16%) of absolute magnitude $M_G$ from GSP-Phot
+#   descr: Lower confidence level (16%) of absolute magnitude \(M_G\) from GSP-Phot
 #     Aeneas for PHOENIX library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.mg_gspphot_phoenix_upper
 #   name: mg_gspphot_phoenix_upper
@@ -3055,7 +3064,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Upper confidence level (84%) of absolute magnitude $M_G$ from GSP-Phot
+#   descr: Upper confidence level (84%) of absolute magnitude \(M_G\) from GSP-Phot
 #     Aeneas for PHOENIX library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.radius_gspphot_phoenix
 #   name: radius_gspphot_phoenix
@@ -3191,7 +3200,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Monochromatic extinction $A_0$ at 547.7nm from GSP-Phot Aeneas for OB library
+#   descr: Monochromatic extinction \(A_0\) at 547.7nm from GSP-Phot Aeneas for OB library
 #     using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.azero_gspphot_ob_lower
 #   name: azero_gspphot_ob_lower
@@ -3199,7 +3208,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Lower confidence level (16%) of monochromatic extinction $A_0$ at 547.7nm
+#   descr: Lower confidence level (16%) of monochromatic extinction \(A_0\) at 547.7nm
 #     from GSP-Phot Aeneas for OB library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.azero_gspphot_ob_upper
 #   name: azero_gspphot_ob_upper
@@ -3207,7 +3216,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Upper confidence level (84%) of monochromatic extinction $A_0$ at 547.7nm
+#   descr: Upper confidence level (84%) of monochromatic extinction \(A_0\) at 547.7nm
 #     from GSP-Phot Aeneas for OB library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.ag_gspphot_ob
 #   name: ag_gspphot_ob
@@ -3238,7 +3247,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Extinction in $G_{BP}$ band from GSP-Phot Aeneas for OB library using BP/RP
+#   descr: Extinction in \(G_{BP}\) band from GSP-Phot Aeneas for OB library using BP/RP
 #     spectra
 # - ingest: AstrophysicalParametersSupp.abp_gspphot_ob_lower
 #   name: abp_gspphot_ob_lower
@@ -3246,7 +3255,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Lower confidence level (16%) of extinction in $G_{BP}$ band from GSP-Phot
+#   descr: Lower confidence level (16%) of extinction in \(G_{BP}\) band from GSP-Phot
 #     Aeneas for OB library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.abp_gspphot_ob_upper
 #   name: abp_gspphot_ob_upper
@@ -3254,7 +3263,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Upper confidence level (84%) of extinction in $G_{BP}$ band from GSP-Phot
+#   descr: Upper confidence level (84%) of extinction in \(G_{BP}\) band from GSP-Phot
 #     Aeneas for OB library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.arp_gspphot_ob
 #   name: arp_gspphot_ob
@@ -3262,7 +3271,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Extinction in $G_{RP}$ band from GSP-Phot Aeneas for OB library using BP/RP
+#   descr: Extinction in \(G_{RP}\) band from GSP-Phot Aeneas for OB library using BP/RP
 #     spectra
 # - ingest: AstrophysicalParametersSupp.arp_gspphot_ob_lower
 #   name: arp_gspphot_ob_lower
@@ -3270,7 +3279,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Lower confidence level (16%) of extinction in $G_{RP}$ band from GSP-Phot
+#   descr: Lower confidence level (16%) of extinction in \(G_{RP}\) band from GSP-Phot
 #     Aeneas for OB library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.arp_gspphot_ob_upper
 #   name: arp_gspphot_ob_upper
@@ -3278,7 +3287,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Upper confidence level (84%) of extinction in $G_{RP}$ band from GSP-Phot
+#   descr: Upper confidence level (84%) of extinction in \(G_{RP}\) band from GSP-Phot
 #     Aeneas for OB library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.ebpminrp_gspphot_ob
 #   name: ebpminrp_gspphot_ob
@@ -3309,7 +3318,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Absolute magnitude $M_G$ from GSP-Phot Aeneas for OB library using BP/RP
+#   descr: Absolute magnitude \(M_G\) from GSP-Phot Aeneas for OB library using BP/RP
 #     spectra
 # - ingest: AstrophysicalParametersSupp.mg_gspphot_ob_lower
 #   name: mg_gspphot_ob_lower
@@ -3317,7 +3326,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Lower confidence level (16%) of absolute magnitude $M_G$ from GSP-Phot
+#   descr: Lower confidence level (16%) of absolute magnitude \(M_G\) from GSP-Phot
 #     Aeneas for OB library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.mg_gspphot_ob_upper
 #   name: mg_gspphot_ob_upper
@@ -3325,7 +3334,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Upper confidence level (84%) of absolute magnitude $M_G$ from GSP-Phot
+#   descr: Upper confidence level (84%) of absolute magnitude \(M_G\) from GSP-Phot
 #     Aeneas for OB library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.radius_gspphot_ob
 #   name: radius_gspphot_ob
@@ -3461,7 +3470,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Monochromatic extinction $A_0$ at 547.7nm from GSP-Phot Aeneas for A library
+#   descr: Monochromatic extinction \(A_0\) at 547.7nm from GSP-Phot Aeneas for A library
 #     using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.azero_gspphot_a_lower
 #   name: azero_gspphot_a_lower
@@ -3469,7 +3478,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Lower confidence level (16%) of monochromatic extinction $A_0$ at 547.7nm
+#   descr: Lower confidence level (16%) of monochromatic extinction \(A_0\) at 547.7nm
 #     from GSP-Phot Aeneas for A library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.azero_gspphot_a_upper
 #   name: azero_gspphot_a_upper
@@ -3477,7 +3486,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Upper confidence level (84%) of monochromatic extinction $A_0$ at 547.7nm
+#   descr: Upper confidence level (84%) of monochromatic extinction \(A_0\) at 547.7nm
 #     from GSP-Phot Aeneas for A library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.ag_gspphot_a
 #   name: ag_gspphot_a
@@ -3508,7 +3517,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Extinction in $G_{BP}$ band from GSP-Phot Aeneas for A library using BP/RP
+#   descr: Extinction in \(G_{BP}\) band from GSP-Phot Aeneas for A library using BP/RP
 #     spectra
 # - ingest: AstrophysicalParametersSupp.abp_gspphot_a_lower
 #   name: abp_gspphot_a_lower
@@ -3516,7 +3525,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Lower confidence level (16%) of extinction in $G_{BP}$ band from GSP-Phot
+#   descr: Lower confidence level (16%) of extinction in \(G_{BP}\) band from GSP-Phot
 #     Aeneas for A library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.abp_gspphot_a_upper
 #   name: abp_gspphot_a_upper
@@ -3524,7 +3533,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Upper confidence level (84%) of extinction in $G_{BP}$ band from GSP-Phot
+#   descr: Upper confidence level (84%) of extinction in \(G_{BP}\) band from GSP-Phot
 #     Aeneas for A library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.arp_gspphot_a
 #   name: arp_gspphot_a
@@ -3532,7 +3541,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Extinction in $G_{RP}$ band from GSP-Phot Aeneas for A library using BP/RP
+#   descr: Extinction in \(G_{RP}\) band from GSP-Phot Aeneas for A library using BP/RP
 #     spectra
 # - ingest: AstrophysicalParametersSupp.arp_gspphot_a_lower
 #   name: arp_gspphot_a_lower
@@ -3540,7 +3549,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Lower confidence level (16%) of extinction in $G_{RP}$ band from GSP-Phot
+#   descr: Lower confidence level (16%) of extinction in \(G_{RP}\) band from GSP-Phot
 #     Aeneas for A library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.arp_gspphot_a_upper
 #   name: arp_gspphot_a_upper
@@ -3548,7 +3557,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Upper confidence level (84%) of extinction in $G_{RP}$ band from GSP-Phot
+#   descr: Upper confidence level (84%) of extinction in \(G_{RP}\) band from GSP-Phot
 #     Aeneas for A library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.ebpminrp_gspphot_a
 #   name: ebpminrp_gspphot_a
@@ -3556,14 +3565,14 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Reddening $E(BP-RP)$ from GSP-Phot Aeneas for A library using BP/RP spectra
+#   descr: Reddening \(E(BP-RP)\) from GSP-Phot Aeneas for A library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.ebpminrp_gspphot_a_lower
 #   name: ebpminrp_gspphot_a_lower
 #   units: mag
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Lower confidence level (16%) of reddening  $E(BP-RP)$ from GSP-Phot Aeneas
+#   descr: Lower confidence level (16%) of reddening  \(E(BP-RP)\) from GSP-Phot Aeneas
 #     for A library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.ebpminrp_gspphot_a_upper
 #   name: ebpminrp_gspphot_a_upper
@@ -3571,7 +3580,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Upper confidence level (84%) of reddening  $E(BP-RP)$ from GSP-Phot Aeneas
+#   descr: Upper confidence level (84%) of reddening  \(E(BP-RP)\) from GSP-Phot Aeneas
 #     for A library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.mg_gspphot_a
 #   name: mg_gspphot_a
@@ -3579,7 +3588,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Absolute magnitude $M_G$ from GSP-Phot Aeneas for A library using BP/RP
+#   descr: Absolute magnitude \(M_G\) from GSP-Phot Aeneas for A library using BP/RP
 #     spectra
 # - ingest: AstrophysicalParametersSupp.mg_gspphot_a_lower
 #   name: mg_gspphot_a_lower
@@ -3587,7 +3596,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Lower confidence level (16%) of absolute magnitude $M_G$ from GSP-Phot
+#   descr: Lower confidence level (16%) of absolute magnitude \(M_G\) from GSP-Phot
 #     Aeneas for A library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.mg_gspphot_a_upper
 #   name: mg_gspphot_a_upper
@@ -3595,7 +3604,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Upper confidence level (84%) of absolute magnitude $M_G$ from GSP-Phot
+#   descr: Upper confidence level (84%) of absolute magnitude \(M_G\) from GSP-Phot
 #     Aeneas for A library using BP/RP spectra
 # - ingest: AstrophysicalParametersSupp.radius_gspphot_a
 #   name: radius_gspphot_a
