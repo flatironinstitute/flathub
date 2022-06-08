@@ -42,7 +42,7 @@ import           Data.Functor.Identity (Identity(..))
 import           Data.Functor.Reverse (Reverse(Reverse))
 import qualified Data.HashMap.Strict as HM
 import qualified Data.JsonStream.Parser as JS
-import           Data.List (genericTake)
+import           Data.List (genericTake, nubBy)
 import           Data.Maybe (fromMaybe, isJust, catMaybes)
 import           Data.Proxy (Proxy(Proxy))
 import           Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
@@ -255,11 +255,12 @@ queryDataStream :: (MonadResource m, MonadIO m, MonadGlobal m, MonadFail m, Fold
   Catalog -> DataArgs f -> C.ConduitT i a m ()
 queryDataStream cat args = qds Nothing where
   qds off = do
-    req <- lift $ queryDataRequest cat args{ dataSort = dataSort args ++ [(docField,True),(key,True)] } off
+    req <- lift $ queryDataRequest cat args' off
     off' <- httpStream req
-      C..| (mapM_ fail =<< parserConduit (parseDataStream (dataFields args)))
+      C..| (mapM_ fail =<< parserConduit (parseDataStream (dataFields args')))
       C..| fstAndLast
     mapM_ (qds . Just) off'
+  args' = args{ dataSort = nubBy ((==) `on` fieldName . fst) $ dataSort args ++ [(key,True)] }
   key = fromMaybe idField $ (`HM.lookup` catalogFieldMap cat) =<< catalogKey cat
 
 -------- count
