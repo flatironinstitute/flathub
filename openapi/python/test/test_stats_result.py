@@ -11,10 +11,10 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.field_stats import FieldStats
+import flathub
+from flathub.model.field_stats import FieldStats
 globals()['FieldStats'] = FieldStats
-from openapi_client.model.stats_result import StatsResult
+from flathub.model.stats_result import StatsResult
 
 
 class TestStatsResult(unittest.TestCase):

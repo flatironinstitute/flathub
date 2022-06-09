@@ -11,10 +11,10 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.bucket import Bucket
+import flathub
+from flathub.model.bucket import Bucket
 globals()['Bucket'] = Bucket
-from openapi_client.model.histogram_result import HistogramResult
+from flathub.model.histogram_result import HistogramResult
 
 
 class TestHistogramResult(unittest.TestCase):

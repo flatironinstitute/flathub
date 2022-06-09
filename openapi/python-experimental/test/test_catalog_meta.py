@@ -11,8 +11,8 @@
 
 import unittest
 
-import openapi_client
-from openapi_client.model.catalog_meta import CatalogMeta
+import flathub
+from flathub.model.catalog_meta import CatalogMeta
 
 
 class TestCatalogMeta(unittest.TestCase):

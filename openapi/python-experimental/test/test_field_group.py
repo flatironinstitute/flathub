@@ -11,8 +11,8 @@
 
 import unittest
 
-import openapi_client
-from openapi_client.model.field_group import FieldGroup
+import flathub
+from flathub.model.field_group import FieldGroup
 
 
 class TestFieldGroup(unittest.TestCase):

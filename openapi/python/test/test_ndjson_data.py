@@ -11,10 +11,10 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.data import Data
+import flathub
+from flathub.model.data import Data
 globals()['Data'] = Data
-from openapi_client.model.ndjson_data import NdjsonData
+from flathub.model.ndjson_data import NdjsonData
 
 
 class TestNdjsonData(unittest.TestCase):

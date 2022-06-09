@@ -11,14 +11,14 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.filters import Filters
-from openapi_client.model.histogram_list import HistogramList
-from openapi_client.model.histogram_parameters import HistogramParameters
+import flathub
+from flathub.model.filters import Filters
+from flathub.model.histogram_list import HistogramList
+from flathub.model.histogram_parameters import HistogramParameters
 globals()['Filters'] = Filters
 globals()['HistogramList'] = HistogramList
 globals()['HistogramParameters'] = HistogramParameters
-from openapi_client.model.histogram_request import HistogramRequest
+from flathub.model.histogram_request import HistogramRequest
 
 
 class TestHistogramRequest(unittest.TestCase):

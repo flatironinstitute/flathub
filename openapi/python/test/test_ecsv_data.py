@@ -11,10 +11,10 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.data import Data
+import flathub
+from flathub.model.data import Data
 globals()['Data'] = Data
-from openapi_client.model.ecsv_data import EcsvData
+from flathub.model.ecsv_data import EcsvData
 
 
 class TestEcsvData(unittest.TestCase):

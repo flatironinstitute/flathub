@@ -11,10 +11,10 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.field_value_scalar import FieldValueScalar
+import flathub
+from flathub.model.field_value_scalar import FieldValueScalar
 globals()['FieldValueScalar'] = FieldValueScalar
-from openapi_client.model.field_value import FieldValue
+from flathub.model.field_value import FieldValue
 
 
 class TestFieldValue(unittest.TestCase):

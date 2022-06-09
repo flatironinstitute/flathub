@@ -11,14 +11,14 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.field_value import FieldValue
-from openapi_client.model.filter_range import FilterRange
-from openapi_client.model.filter_wildcard import FilterWildcard
+import flathub
+from flathub.model.field_value import FieldValue
+from flathub.model.filter_range import FilterRange
+from flathub.model.filter_wildcard import FilterWildcard
 globals()['FieldValue'] = FieldValue
 globals()['FilterRange'] = FilterRange
 globals()['FilterWildcard'] = FilterWildcard
-from openapi_client.model.filters_value import FiltersValue
+from flathub.model.filters_value import FiltersValue
 
 
 class TestFiltersValue(unittest.TestCase):

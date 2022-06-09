@@ -11,8 +11,8 @@
 
 import unittest
 
-import openapi_client
-from openapi_client.model.histogram_list import HistogramList
+import flathub
+from flathub.model.histogram_list import HistogramList
 
 
 class TestHistogramList(unittest.TestCase):

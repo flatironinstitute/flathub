@@ -11,16 +11,16 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.data_request_all_of import DataRequestAllOf
-from openapi_client.model.field_list import FieldList
-from openapi_client.model.filters import Filters
-from openapi_client.model.sort import Sort
+import flathub
+from flathub.model.data_request_all_of import DataRequestAllOf
+from flathub.model.field_list import FieldList
+from flathub.model.filters import Filters
+from flathub.model.sort import Sort
 globals()['DataRequestAllOf'] = DataRequestAllOf
 globals()['FieldList'] = FieldList
 globals()['Filters'] = Filters
 globals()['Sort'] = Sort
-from openapi_client.model.data_request import DataRequest
+from flathub.model.data_request import DataRequest
 
 
 class TestDataRequest(unittest.TestCase):

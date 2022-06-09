@@ -11,10 +11,10 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.field_value import FieldValue
+import flathub
+from flathub.model.field_value import FieldValue
 globals()['FieldValue'] = FieldValue
-from openapi_client.model.filter_range import FilterRange
+from flathub.model.filter_range import FilterRange
 
 
 class TestFilterRange(unittest.TestCase):

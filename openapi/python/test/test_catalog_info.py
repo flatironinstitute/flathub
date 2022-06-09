@@ -11,10 +11,10 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.field_group import FieldGroup
+import flathub
+from flathub.model.field_group import FieldGroup
 globals()['FieldGroup'] = FieldGroup
-from openapi_client.model.catalog_info import CatalogInfo
+from flathub.model.catalog_info import CatalogInfo
 
 
 class TestCatalogInfo(unittest.TestCase):

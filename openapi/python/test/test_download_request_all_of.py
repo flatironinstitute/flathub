@@ -11,12 +11,12 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.field_list import FieldList
-from openapi_client.model.sort import Sort
+import flathub
+from flathub.model.field_list import FieldList
+from flathub.model.sort import Sort
 globals()['FieldList'] = FieldList
 globals()['Sort'] = Sort
-from openapi_client.model.download_request_all_of import DownloadRequestAllOf
+from flathub.model.download_request_all_of import DownloadRequestAllOf
 
 
 class TestDownloadRequestAllOf(unittest.TestCase):

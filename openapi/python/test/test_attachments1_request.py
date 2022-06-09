@@ -11,10 +11,10 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.filters import Filters
+import flathub
+from flathub.model.filters import Filters
 globals()['Filters'] = Filters
-from openapi_client.model.attachments1_request import Attachments1Request
+from flathub.model.attachments1_request import Attachments1Request
 
 
 class TestAttachments1Request(unittest.TestCase):

@@ -11,14 +11,14 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.attachments_request_all_of import AttachmentsRequestAllOf
-from openapi_client.model.field_list import FieldList
-from openapi_client.model.filters import Filters
+import flathub
+from flathub.model.attachments_request_all_of import AttachmentsRequestAllOf
+from flathub.model.field_list import FieldList
+from flathub.model.filters import Filters
 globals()['AttachmentsRequestAllOf'] = AttachmentsRequestAllOf
 globals()['FieldList'] = FieldList
 globals()['Filters'] = Filters
-from openapi_client.model.attachments_request import AttachmentsRequest
+from flathub.model.attachments_request import AttachmentsRequest
 
 
 class TestAttachmentsRequest(unittest.TestCase):

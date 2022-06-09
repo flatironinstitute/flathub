@@ -11,8 +11,8 @@
 
 import unittest
 
-import openapi_client
-from openapi_client.model.data import Data
+import flathub
+from flathub.model.data import Data
 
 
 class TestData(unittest.TestCase):

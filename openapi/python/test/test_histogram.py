@@ -11,10 +11,10 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.histogram_desc import HistogramDesc
+import flathub
+from flathub.model.histogram_desc import HistogramDesc
 globals()['HistogramDesc'] = HistogramDesc
-from openapi_client.model.histogram import Histogram
+from flathub.model.histogram import Histogram
 
 
 class TestHistogram(unittest.TestCase):

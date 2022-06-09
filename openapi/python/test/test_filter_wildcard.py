@@ -11,8 +11,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.filter_wildcard import FilterWildcard
+import flathub
+from flathub.model.filter_wildcard import FilterWildcard
 
 
 class TestFilterWildcard(unittest.TestCase):

@@ -11,14 +11,14 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.field_list import FieldList
-from openapi_client.model.filters import Filters
-from openapi_client.model.stats_fields import StatsFields
+import flathub
+from flathub.model.field_list import FieldList
+from flathub.model.filters import Filters
+from flathub.model.stats_fields import StatsFields
 globals()['FieldList'] = FieldList
 globals()['Filters'] = Filters
 globals()['StatsFields'] = StatsFields
-from openapi_client.model.stats_request import StatsRequest
+from flathub.model.stats_request import StatsRequest
 
 
 class TestStatsRequest(unittest.TestCase):

@@ -11,10 +11,10 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.data_row_inner import DataRowInner
+import flathub
+from flathub.model.data_row_inner import DataRowInner
 globals()['DataRowInner'] = DataRowInner
-from openapi_client.model.data import Data
+from flathub.model.data import Data
 
 
 class TestData(unittest.TestCase):

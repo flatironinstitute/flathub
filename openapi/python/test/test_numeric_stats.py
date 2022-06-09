@@ -11,8 +11,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.numeric_stats import NumericStats
+import flathub
+from flathub.model.numeric_stats import NumericStats
 
 
 class TestNumericStats(unittest.TestCase):

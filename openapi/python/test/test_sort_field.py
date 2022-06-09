@@ -11,10 +11,10 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.sort_descriptor import SortDescriptor
+import flathub
+from flathub.model.sort_descriptor import SortDescriptor
 globals()['SortDescriptor'] = SortDescriptor
-from openapi_client.model.sort_field import SortField
+from flathub.model.sort_field import SortField
 
 
 class TestSortField(unittest.TestCase):

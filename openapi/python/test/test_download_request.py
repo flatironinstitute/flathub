@@ -11,16 +11,16 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.download_request_all_of import DownloadRequestAllOf
-from openapi_client.model.field_list import FieldList
-from openapi_client.model.filters import Filters
-from openapi_client.model.sort import Sort
+import flathub
+from flathub.model.download_request_all_of import DownloadRequestAllOf
+from flathub.model.field_list import FieldList
+from flathub.model.filters import Filters
+from flathub.model.sort import Sort
 globals()['DownloadRequestAllOf'] = DownloadRequestAllOf
 globals()['FieldList'] = FieldList
 globals()['Filters'] = Filters
 globals()['Sort'] = Sort
-from openapi_client.model.download_request import DownloadRequest
+from flathub.model.download_request import DownloadRequest
 
 
 class TestDownloadRequest(unittest.TestCase):

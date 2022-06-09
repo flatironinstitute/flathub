@@ -11,10 +11,10 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.filters_value import FiltersValue
+import flathub
+from flathub.model.filters_value import FiltersValue
 globals()['FiltersValue'] = FiltersValue
-from openapi_client.model.filters import Filters
+from flathub.model.filters import Filters
 
 
 class TestFilters(unittest.TestCase):

@@ -11,10 +11,10 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.filters import Filters
+import flathub
+from flathub.model.filters import Filters
 globals()['Filters'] = Filters
-from openapi_client.model.count_request import CountRequest
+from flathub.model.count_request import CountRequest
 
 
 class TestCountRequest(unittest.TestCase):

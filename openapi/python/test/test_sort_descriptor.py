@@ -11,8 +11,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.sort_descriptor import SortDescriptor
+import flathub
+from flathub.model.sort_descriptor import SortDescriptor
 
 
 class TestSortDescriptor(unittest.TestCase):

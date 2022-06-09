@@ -11,8 +11,8 @@
 
 import unittest
 
-import openapi_client
-from openapi_client.model.sort import Sort
+import flathub
+from flathub.model.sort import Sort
 
 
 class TestSort(unittest.TestCase):

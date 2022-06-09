@@ -11,8 +11,8 @@
 
 import unittest
 
-import openapi_client
-from openapi_client.api.default_api import DefaultApi  # noqa: E501
+import flathub
+from flathub.api.default_api import DefaultApi  # noqa: E501
 
 
 class TestDefaultApi(unittest.TestCase):

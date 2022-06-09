@@ -11,8 +11,8 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.field_list import FieldList
+import flathub
+from flathub.model.field_list import FieldList
 
 
 class TestFieldList(unittest.TestCase):

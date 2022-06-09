@@ -1,4 +1,4 @@
-# openapi_client.DefaultApi
+# flathub.DefaultApi
 
 All URIs are relative to *https://flathub.flatironinstitute.org/api*
 
@@ -32,17 +32,17 @@ Download a row attachment
 ### Example
 
 ```python
-import openapi_client
-from openapi_client.api import default_api
+import flathub
+from flathub.api import default_api
 from pprint import pprint
 # Defining the host is optional and defaults to https://flathub.flatironinstitute.org/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = flathub.Configuration(
     host = "https://flathub.flatironinstitute.org/api"
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with flathub.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = default_api.DefaultApi(api_client)
 
@@ -58,7 +58,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             path_params=path_params,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->attachment: %s\n" % e)
 ```
 ### Parameters
@@ -144,19 +144,19 @@ Download attachments in bulk from matching rows for multiple fields
 ### Example
 
 ```python
-import openapi_client
-from openapi_client.api import default_api
-from openapi_client.model.filters import Filters
-from openapi_client.model.field_list import FieldList
+import flathub
+from flathub.api import default_api
+from flathub.model.filters import Filters
+from flathub.model.field_list import FieldList
 from pprint import pprint
 # Defining the host is optional and defaults to https://flathub.flatironinstitute.org/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = flathub.Configuration(
     host = "https://flathub.flatironinstitute.org/api"
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with flathub.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = default_api.DefaultApi(api_client)
 
@@ -174,7 +174,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             query_params=query_params,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->attachments: %s\n" % e)
 
     # example passing only optional values
@@ -198,7 +198,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             query_params=query_params,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->attachments: %s\n" % e)
 ```
 ### Parameters
@@ -313,18 +313,18 @@ Download attachments in bulk from matching rows for single field
 ### Example
 
 ```python
-import openapi_client
-from openapi_client.api import default_api
-from openapi_client.model.filters import Filters
+import flathub
+from flathub.api import default_api
+from flathub.model.filters import Filters
 from pprint import pprint
 # Defining the host is optional and defaults to https://flathub.flatironinstitute.org/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = flathub.Configuration(
     host = "https://flathub.flatironinstitute.org/api"
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with flathub.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = default_api.DefaultApi(api_client)
 
@@ -343,7 +343,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             query_params=query_params,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->attachments1: %s\n" % e)
 
     # example passing only optional values
@@ -365,7 +365,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             query_params=query_params,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->attachments1: %s\n" % e)
 ```
 ### Parameters
@@ -482,18 +482,18 @@ Download attachments in bulk from matching rows for single field
 ### Example
 
 ```python
-import openapi_client
-from openapi_client.api import default_api
-from openapi_client.model.filters import Filters
+import flathub
+from flathub.api import default_api
+from flathub.model.filters import Filters
 from pprint import pprint
 # Defining the host is optional and defaults to https://flathub.flatironinstitute.org/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = flathub.Configuration(
     host = "https://flathub.flatironinstitute.org/api"
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with flathub.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = default_api.DefaultApi(api_client)
 
@@ -509,7 +509,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             path_params=path_params,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->attachments1_post: %s\n" % e)
 
     # example passing only optional values
@@ -526,7 +526,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             body=body,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->attachments1_post: %s\n" % e)
 ```
 ### Parameters
@@ -639,19 +639,19 @@ Download attachments in bulk from matching rows for multiple fields
 ### Example
 
 ```python
-import openapi_client
-from openapi_client.api import default_api
-from openapi_client.model.filters import Filters
-from openapi_client.model.field_list import FieldList
+import flathub
+from flathub.api import default_api
+from flathub.model.filters import Filters
+from flathub.model.field_list import FieldList
 from pprint import pprint
 # Defining the host is optional and defaults to https://flathub.flatironinstitute.org/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = flathub.Configuration(
     host = "https://flathub.flatironinstitute.org/api"
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with flathub.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = default_api.DefaultApi(api_client)
 
@@ -666,7 +666,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             path_params=path_params,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->attachments_post: %s\n" % e)
 
     # example passing only optional values
@@ -682,7 +682,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             body=body,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->attachments_post: %s\n" % e)
 ```
 ### Parameters
@@ -786,19 +786,19 @@ Get full metadata about a specific catalog
 ### Example
 
 ```python
-import openapi_client
-from openapi_client.api import default_api
-from openapi_client.model.catalog_meta import CatalogMeta
-from openapi_client.model.field_group import FieldGroup
+import flathub
+from flathub.api import default_api
+from flathub.model.field_group import FieldGroup
+from flathub.model.catalog_meta import CatalogMeta
 from pprint import pprint
 # Defining the host is optional and defaults to https://flathub.flatironinstitute.org/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = flathub.Configuration(
     host = "https://flathub.flatironinstitute.org/api"
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with flathub.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = default_api.DefaultApi(api_client)
 
@@ -812,7 +812,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             path_params=path_params,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->catalog: %s\n" % e)
 ```
 ### Parameters
@@ -878,18 +878,18 @@ Get count of matching rows (given some filters)
 ### Example
 
 ```python
-import openapi_client
-from openapi_client.api import default_api
-from openapi_client.model.filters import Filters
+import flathub
+from flathub.api import default_api
+from flathub.model.filters import Filters
 from pprint import pprint
 # Defining the host is optional and defaults to https://flathub.flatironinstitute.org/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = flathub.Configuration(
     host = "https://flathub.flatironinstitute.org/api"
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with flathub.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = default_api.DefaultApi(api_client)
 
@@ -906,7 +906,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             query_params=query_params,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->count: %s\n" % e)
 
     # example passing only optional values
@@ -926,7 +926,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             query_params=query_params,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->count: %s\n" % e)
 ```
 ### Parameters
@@ -1008,18 +1008,18 @@ Get count of matching rows (given some filters)
 ### Example
 
 ```python
-import openapi_client
-from openapi_client.api import default_api
-from openapi_client.model.filters import Filters
+import flathub
+from flathub.api import default_api
+from flathub.model.filters import Filters
 from pprint import pprint
 # Defining the host is optional and defaults to https://flathub.flatironinstitute.org/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = flathub.Configuration(
     host = "https://flathub.flatironinstitute.org/api"
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with flathub.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = default_api.DefaultApi(api_client)
 
@@ -1033,7 +1033,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             path_params=path_params,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->count_post: %s\n" % e)
 
     # example passing only optional values
@@ -1048,7 +1048,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             body=body,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->count_post: %s\n" % e)
 ```
 ### Parameters
@@ -1126,21 +1126,21 @@ Get a sample of raw data rows
 ### Example
 
 ```python
-import openapi_client
-from openapi_client.api import default_api
-from openapi_client.model.sort import Sort
-from openapi_client.model.filters import Filters
-from openapi_client.model.data import Data
-from openapi_client.model.field_list import FieldList
+import flathub
+from flathub.api import default_api
+from flathub.model.data import Data
+from flathub.model.filters import Filters
+from flathub.model.sort import Sort
+from flathub.model.field_list import FieldList
 from pprint import pprint
 # Defining the host is optional and defaults to https://flathub.flatironinstitute.org/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = flathub.Configuration(
     host = "https://flathub.flatironinstitute.org/api"
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with flathub.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = default_api.DefaultApi(api_client)
 
@@ -1158,7 +1158,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             query_params=query_params,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->data: %s\n" % e)
 
     # example passing only optional values
@@ -1187,7 +1187,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             query_params=query_params,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->data: %s\n" % e)
 ```
 ### Parameters
@@ -1308,21 +1308,21 @@ Get a sample of raw data rows
 ### Example
 
 ```python
-import openapi_client
-from openapi_client.api import default_api
-from openapi_client.model.sort import Sort
-from openapi_client.model.filters import Filters
-from openapi_client.model.data import Data
-from openapi_client.model.field_list import FieldList
+import flathub
+from flathub.api import default_api
+from flathub.model.data import Data
+from flathub.model.filters import Filters
+from flathub.model.sort import Sort
+from flathub.model.field_list import FieldList
 from pprint import pprint
 # Defining the host is optional and defaults to https://flathub.flatironinstitute.org/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = flathub.Configuration(
     host = "https://flathub.flatironinstitute.org/api"
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with flathub.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = default_api.DefaultApi(api_client)
 
@@ -1336,7 +1336,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             path_params=path_params,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->data_post: %s\n" % e)
 
     # example passing only optional values
@@ -1351,7 +1351,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             body=body,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->data_post: %s\n" % e)
 ```
 ### Parameters
@@ -1427,21 +1427,21 @@ Download raw data in bulk
 ### Example
 
 ```python
-import openapi_client
-from openapi_client.api import default_api
-from openapi_client.model.sort import Sort
-from openapi_client.model.filters import Filters
-from openapi_client.model.data import Data
-from openapi_client.model.field_list import FieldList
+import flathub
+from flathub.api import default_api
+from flathub.model.data import Data
+from flathub.model.filters import Filters
+from flathub.model.sort import Sort
+from flathub.model.field_list import FieldList
 from pprint import pprint
 # Defining the host is optional and defaults to https://flathub.flatironinstitute.org/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = flathub.Configuration(
     host = "https://flathub.flatironinstitute.org/api"
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with flathub.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = default_api.DefaultApi(api_client)
 
@@ -1459,7 +1459,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             query_params=query_params,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->download: %s\n" % e)
 
     # example passing only optional values
@@ -1486,7 +1486,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             query_params=query_params,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->download: %s\n" % e)
 ```
 ### Parameters
@@ -1644,21 +1644,21 @@ Download raw data in bulk
 ### Example
 
 ```python
-import openapi_client
-from openapi_client.api import default_api
-from openapi_client.model.sort import Sort
-from openapi_client.model.filters import Filters
-from openapi_client.model.data import Data
-from openapi_client.model.field_list import FieldList
+import flathub
+from flathub.api import default_api
+from flathub.model.data import Data
+from flathub.model.filters import Filters
+from flathub.model.sort import Sort
+from flathub.model.field_list import FieldList
 from pprint import pprint
 # Defining the host is optional and defaults to https://flathub.flatironinstitute.org/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = flathub.Configuration(
     host = "https://flathub.flatironinstitute.org/api"
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with flathub.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = default_api.DefaultApi(api_client)
 
@@ -1673,7 +1673,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             path_params=path_params,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->download_post: %s\n" % e)
 
     # example passing only optional values
@@ -1689,7 +1689,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             body=body,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->download_post: %s\n" % e)
 ```
 ### Parameters
@@ -1829,20 +1829,20 @@ Get a histogram of data across one or more fields
 ### Example
 
 ```python
-import openapi_client
-from openapi_client.api import default_api
-from openapi_client.model.field_value import FieldValue
-from openapi_client.model.histogram_list import HistogramList
-from openapi_client.model.filters import Filters
+import flathub
+from flathub.api import default_api
+from flathub.model.filters import Filters
+from flathub.model.histogram_list import HistogramList
+from flathub.model.field_value import FieldValue
 from pprint import pprint
 # Defining the host is optional and defaults to https://flathub.flatironinstitute.org/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = flathub.Configuration(
     host = "https://flathub.flatironinstitute.org/api"
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with flathub.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = default_api.DefaultApi(api_client)
 
@@ -1860,7 +1860,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             query_params=query_params,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->histogram: %s\n" % e)
 
     # example passing only optional values
@@ -1882,7 +1882,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             query_params=query_params,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->histogram: %s\n" % e)
 ```
 ### Parameters
@@ -1982,20 +1982,20 @@ Get a histogram of data across one or more fields
 ### Example
 
 ```python
-import openapi_client
-from openapi_client.api import default_api
-from openapi_client.model.field_value import FieldValue
-from openapi_client.model.histogram_list import HistogramList
-from openapi_client.model.filters import Filters
+import flathub
+from flathub.api import default_api
+from flathub.model.filters import Filters
+from flathub.model.histogram_list import HistogramList
+from flathub.model.field_value import FieldValue
 from pprint import pprint
 # Defining the host is optional and defaults to https://flathub.flatironinstitute.org/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = flathub.Configuration(
     host = "https://flathub.flatironinstitute.org/api"
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with flathub.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = default_api.DefaultApi(api_client)
 
@@ -2009,7 +2009,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             path_params=path_params,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->histogram_post: %s\n" % e)
 
     # example passing only optional values
@@ -2024,7 +2024,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             body=body,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->histogram_post: %s\n" % e)
 ```
 ### Parameters
@@ -2104,17 +2104,17 @@ Get a CSV representation of the catalog schema (no data)
 ### Example
 
 ```python
-import openapi_client
-from openapi_client.api import default_api
+import flathub
+from flathub.api import default_api
 from pprint import pprint
 # Defining the host is optional and defaults to https://flathub.flatironinstitute.org/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = flathub.Configuration(
     host = "https://flathub.flatironinstitute.org/api"
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with flathub.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = default_api.DefaultApi(api_client)
 
@@ -2128,7 +2128,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             path_params=path_params,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->schema_csv: %s\n" % e)
 ```
 ### Parameters
@@ -2196,17 +2196,17 @@ Get a SQL representation of the catalog schema (no data)
 ### Example
 
 ```python
-import openapi_client
-from openapi_client.api import default_api
+import flathub
+from flathub.api import default_api
 from pprint import pprint
 # Defining the host is optional and defaults to https://flathub.flatironinstitute.org/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = flathub.Configuration(
     host = "https://flathub.flatironinstitute.org/api"
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with flathub.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = default_api.DefaultApi(api_client)
 
@@ -2220,7 +2220,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             path_params=path_params,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->schema_sql: %s\n" % e)
 ```
 ### Parameters
@@ -2288,20 +2288,20 @@ Get statistics about fields (given some filters)
 ### Example
 
 ```python
-import openapi_client
-from openapi_client.api import default_api
-from openapi_client.model.field_stats import FieldStats
-from openapi_client.model.filters import Filters
-from openapi_client.model.field_list import FieldList
+import flathub
+from flathub.api import default_api
+from flathub.model.filters import Filters
+from flathub.model.field_stats import FieldStats
+from flathub.model.field_list import FieldList
 from pprint import pprint
 # Defining the host is optional and defaults to https://flathub.flatironinstitute.org/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = flathub.Configuration(
     host = "https://flathub.flatironinstitute.org/api"
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with flathub.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = default_api.DefaultApi(api_client)
 
@@ -2318,7 +2318,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             query_params=query_params,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->stats: %s\n" % e)
 
     # example passing only optional values
@@ -2341,7 +2341,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             query_params=query_params,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->stats: %s\n" % e)
 ```
 ### Parameters
@@ -2432,20 +2432,20 @@ Get statistics about fields (given some filters)
 ### Example
 
 ```python
-import openapi_client
-from openapi_client.api import default_api
-from openapi_client.model.field_stats import FieldStats
-from openapi_client.model.filters import Filters
-from openapi_client.model.field_list import FieldList
+import flathub
+from flathub.api import default_api
+from flathub.model.filters import Filters
+from flathub.model.field_stats import FieldStats
+from flathub.model.field_list import FieldList
 from pprint import pprint
 # Defining the host is optional and defaults to https://flathub.flatironinstitute.org/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = flathub.Configuration(
     host = "https://flathub.flatironinstitute.org/api"
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with flathub.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = default_api.DefaultApi(api_client)
 
@@ -2459,7 +2459,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             path_params=path_params,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->stats_post: %s\n" % e)
 
     # example passing only optional values
@@ -2474,7 +2474,7 @@ with openapi_client.ApiClient(configuration) as api_client:
             body=body,
         )
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->stats_post: %s\n" % e)
 ```
 ### Parameters
@@ -2554,18 +2554,18 @@ Get the list of available dataset catalogs
 ### Example
 
 ```python
-import openapi_client
-from openapi_client.api import default_api
-from openapi_client.model.catalog_meta import CatalogMeta
+import flathub
+from flathub.api import default_api
+from flathub.model.catalog_meta import CatalogMeta
 from pprint import pprint
 # Defining the host is optional and defaults to https://flathub.flatironinstitute.org/api
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = flathub.Configuration(
     host = "https://flathub.flatironinstitute.org/api"
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with flathub.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = default_api.DefaultApi(api_client)
 
@@ -2574,7 +2574,7 @@ with openapi_client.ApiClient(configuration) as api_client:
         # Get the list of available dataset catalogs
         api_response = api_instance.top()
         pprint(api_response)
-    except openapi_client.ApiException as e:
+    except flathub.ApiException as e:
         print("Exception when calling DefaultApi->top: %s\n" % e)
 ```
 ### Parameters

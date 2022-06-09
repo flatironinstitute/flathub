@@ -11,10 +11,10 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.data import Data
+import flathub
+from flathub.model.data import Data
 globals()['Data'] = Data
-from openapi_client.model.gzip_data import GzipData
+from flathub.model.gzip_data import GzipData
 
 
 class TestGzipData(unittest.TestCase):

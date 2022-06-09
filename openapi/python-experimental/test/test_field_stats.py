@@ -11,8 +11,8 @@
 
 import unittest
 
-import openapi_client
-from openapi_client.model.field_stats import FieldStats
+import flathub
+from flathub.model.field_stats import FieldStats
 
 
 class TestFieldStats(unittest.TestCase):

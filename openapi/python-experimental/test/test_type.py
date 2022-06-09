@@ -11,8 +11,8 @@
 
 import unittest
 
-import openapi_client
-from openapi_client.model.type import Type
+import flathub
+from flathub.model.type import Type
 
 
 class TestType(unittest.TestCase):

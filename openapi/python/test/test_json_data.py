@@ -11,10 +11,10 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.data import Data
+import flathub
+from flathub.model.data import Data
 globals()['Data'] = Data
-from openapi_client.model.json_data import JsonData
+from flathub.model.json_data import JsonData
 
 
 class TestJsonData(unittest.TestCase):

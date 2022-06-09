@@ -11,14 +11,14 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.field_stats_one_of import FieldStatsOneOf
-from openapi_client.model.numeric_stats import NumericStats
-from openapi_client.model.top_term import TopTerm
+import flathub
+from flathub.model.field_stats_one_of import FieldStatsOneOf
+from flathub.model.numeric_stats import NumericStats
+from flathub.model.top_term import TopTerm
 globals()['FieldStatsOneOf'] = FieldStatsOneOf
 globals()['NumericStats'] = NumericStats
 globals()['TopTerm'] = TopTerm
-from openapi_client.model.field_stats import FieldStats
+from flathub.model.field_stats import FieldStats
 
 
 class TestFieldStats(unittest.TestCase):

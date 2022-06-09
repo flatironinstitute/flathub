@@ -11,14 +11,14 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.catalog_info import CatalogInfo
-from openapi_client.model.catalog_meta import CatalogMeta
-from openapi_client.model.field_group import FieldGroup
+import flathub
+from flathub.model.catalog_info import CatalogInfo
+from flathub.model.catalog_meta import CatalogMeta
+from flathub.model.field_group import FieldGroup
 globals()['CatalogInfo'] = CatalogInfo
 globals()['CatalogMeta'] = CatalogMeta
 globals()['FieldGroup'] = FieldGroup
-from openapi_client.model.catalog_result import CatalogResult
+from flathub.model.catalog_result import CatalogResult
 
 
 class TestCatalogResult(unittest.TestCase):

@@ -11,8 +11,8 @@
 
 import unittest
 
-import openapi_client
-from openapi_client.model.filters import Filters
+import flathub
+from flathub.model.filters import Filters
 
 
 class TestFilters(unittest.TestCase):

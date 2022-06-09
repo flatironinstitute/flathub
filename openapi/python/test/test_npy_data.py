@@ -11,10 +11,10 @@
 import sys
 import unittest
 
-import openapi_client
-from openapi_client.model.data import Data
+import flathub
+from flathub.model.data import Data
 globals()['Data'] = Data
-from openapi_client.model.npy_data import NpyData
+from flathub.model.npy_data import NpyData
 
 
 class TestNpyData(unittest.TestCase):
