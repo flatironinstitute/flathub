@@ -1253,7 +1253,7 @@ openApiBase = mempty &~ do
     & OA.version .~ T.pack (showVersion Paths.version)
     & OA.description ?~ "Most operations support GET and POST, either of which accepts JSON request bodies or query parameters.  In most cases, query parameters are ignored when there is a request body.")
   OA.servers .=
-    [ OA.Server (requestUrl $ baseApiRequest mempty{ R.requestSecure = True, R.requestHost = RI.splitHost "flathub.flatironinstitute.org" }) (Just "production") mempty
+    [ OA.Server (routeRequestUrl $ baseApiRequest mempty{ R.requestSecure = True, R.requestHost = RI.splitHost "flathub.flatironinstitute.org" }) (Just "production") mempty
     ]
 
   mapM_ (\(AnyAPIOp APIOp{..}) -> do
@@ -1278,7 +1278,7 @@ openApiBase = mempty &~ do
 openApi :: Route ()
 openApi = getPath "openapi.json" $ \() req ->
   return $ okResponse (apiHeaders req) $ J.toEncoding $ openApiBase
-    & OA.servers %~ (OA.Server (requestUrl $ baseApiRequest $ R.waiRequest req) Nothing mempty :)
+    & OA.servers %~ (OA.Server (routeRequestUrl $ baseApiRequest $ R.waiRequest req) Nothing mempty :)
 
 baseApiRequest :: R.Request -> R.Request
 baseApiRequest = RI.requestRoute' (R.routePath apiBase) ()

@@ -290,9 +290,9 @@ bulk (BulkCSV z) _ _ _ query = bulkBlock z query
   { bbsHeader = csvHeader query
   , bbsRow = csvJSONRow
   }
-bulk (BulkECSV z) _ cat _ query = bulkBlock z query
+bulk (BulkECSV z) _ cat req query = bulkBlock z query
   "text/x-ecsv" "ecsv" $ const mempty
-  { bbsHeader = ecsvHeader cat (V.fromList $ queryFields query) ["query" J..= query] <> csvHeader query
+  { bbsHeader = ecsvHeader req cat (V.fromList $ queryFields query) ["query" J..= query] <> csvHeader query
   , bbsRow = csvJSONRow
   }
 bulk (BulkNumpy z) _ _ _ query = bulkBlock z query

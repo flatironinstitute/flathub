@@ -177,7 +177,7 @@ zipGenerator req cat args = do
       C..| void (Zip.zipStream Zip.ZipOptions
           { Zip.zipOpt64 = False
           , Zip.zipOptCompressLevel = 1
-          , Zip.zipOptInfo = Zip.ZipInfo $ TE.encodeUtf8 (catalogTitle cat <> (foldMap (T.cons ' ' . fieldName) ats)) <> " downloaded from " <> Wai.rawPathInfo req
+          , Zip.zipOptInfo = Zip.ZipInfo $ BSL.toStrict $ B.toLazyByteString $ sourceComment req cat args
           })
       C..| C.map B.byteString
   where
@@ -220,9 +220,15 @@ attachmentsStreamUrls api hd line ft req cat args =
     { dataFields = KM.fromList $ idField : V.toList ats
     }
 
+sourceComment :: Wai.Request -> Catalog -> DataArgs V.Vector -> B.Builder
+sourceComment req cat args =
+  TE.encodeUtf8Builder (catalogTitle cat)
+    <> " attachments " <> mintersperseMap "," (TE.encodeUtf8Builder . fieldName) (V.toList $ dataFields args)
+    <> " downloaded from " <> requestUrl req
+
 listGenerator :: AttachmentApi -> Wai.Request -> Catalog -> DataArgs V.Vector -> M OutputStream
 listGenerator api req cat args = attachmentsStreamUrls api
-  ("# " <> TE.encodeUtf8Builder (catalogTitle cat) <> " attachments " <> mintersperseMap "," (TE.encodeUtf8Builder . fieldName) (V.toList $ dataFields args) <> "\n")
+  ("# " <> sourceComment req cat args <> "\n")
   (<> "\n")
   mempty
   req cat args
@@ -237,7 +243,7 @@ listAttachments api = OutputFormat
 
 curlGenerator :: AttachmentApi -> Wai.Request -> Catalog -> DataArgs V.Vector -> M OutputStream
 curlGenerator api req cat args = attachmentsStreamUrls api
-  ("#!/bin/sh\n# " <> TE.encodeUtf8Builder (catalogTitle cat) <> " attachments " <> mintersperseMap "," (TE.encodeUtf8Builder . fieldName) (V.toList $ dataFields args) <> "\n")
+  ("#!/bin/sh\n# " <> sourceComment req cat args <> "\n")
   (("curl -JO " <>) . (<> "\n"))
   mempty
   req cat args
