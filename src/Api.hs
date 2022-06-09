@@ -187,8 +187,8 @@ catalogJSON Catalog{..} =
      "name" J..= catalogName
   <> "order" J..= catalogOrder
   <> "title" J..= catalogTitle
-  <> "synopsis" J..= catalogSynopsis
-  <> "descr" J..= catalogDescr
+  <> foldMap ("synopsis" J..=) catalogSynopsis
+  <> foldMap ("descr" J..=) catalogDescr
 
 catalogSchema :: OpenApiM (OA.Referenced OA.Schema)
 catalogSchema = define "CatalogMeta" $ objectSchema
@@ -196,10 +196,11 @@ catalogSchema = define "CatalogMeta" $ objectSchema
   [ ("name", OA.Inline $ schemaDescOf catalogName "globally unique catalog name used in urls", True)
   , ("order", OA.Inline $ schemaDescOf catalogOrder "sort key for display order", True)
   , ("title", OA.Inline $ schemaDescOf catalogTitle "display name", True)
-  , ("synopsis", OA.Inline $ schemaDescOf catalogSynopsis "short description in plain text", True)
-  , ("descr", OA.Inline $ schemaDescOf catalogDescr "long description in html", True)
+  , ("synopsis", OA.Inline $ schemaDescOf catalogSynopsis "short description in plain text", False)
+  , ("descr", OA.Inline $ schemaDescOf catalogDescr "long description in html", False)
   ]
   & OA.title ?~ "catalog metadata"
+  & OA.additionalProperties .~ Nothing
 
 apiTop :: APIOp ()
 apiTop = APIOp -- /api
@@ -336,6 +337,7 @@ apiCatalog = APIOp -- /api/{cat}
         , ("sort", OA.Inline $ schemaDescOf catalogSort "default sort fields", False)
         ]
         & OA.title ?~ "catalog info"
+        & OA.additionalProperties .~ Nothing
       ]
       & OA.title ?~ "catalog result"
   }
@@ -679,6 +681,7 @@ apiData = APIOp -- /api/{cat}/data
         , ("offset", offsetSchema, False)
         , ("object", jobjectSchema, False)
         ]
+        & OA.additionalProperties .~ Nothing
       ]
   , apiAction = \sim req -> do
     cat <- askCatalog sim
@@ -805,6 +808,7 @@ apiDownload = APIOp
         [ ("fields", list, True)
         , ("sort", sort, False)
         ]
+        & OA.additionalProperties .~ Nothing
       ]
   , apiAction = \(sim, DownloadFormat fmt, comp) -> outputAction sim fmt comp $ return
   , apiResponse = do
@@ -924,6 +928,7 @@ apiStats = APIOp -- /api/{cat}/stats
         [ ("fields", list, False)
         ]
         & OA.title ?~ "stats fields"
+        & OA.additionalProperties .~ Nothing
       ]
   , apiAction = \sim req -> do
     cat <- askCatalog sim
@@ -1048,6 +1053,7 @@ apiHistogram = APIOp -- /api/{cat}/histogram
         , ("quartiles", fn, False)
         ]
         & OA.title ?~ "histogram parameters"
+        & OA.additionalProperties .~ Nothing
       ]
   , apiAction = \sim req -> do
     cat <- askCatalog sim
@@ -1172,6 +1178,7 @@ apiAttachments = APIOp
         "attachments to return; use fields parameter to specify which attachments to include, and filter to select which rows"
         [ ("fields", list, True)
         ]
+        & OA.additionalProperties .~ Nothing
       ]
   , apiAction = \(sim, AttachmentsFormat fmt) -> outputAction sim fmt Nothing $ \args -> do
     return args
