@@ -1,0 +1,78 @@
+<div>
+  <div class="section gray-heading">
+    <div class="container">
+      <div class="row">
+        <div class="heading-content heading-content--horizontal">
+          <h1 class="heading-heading">Gaia data release 3</h1>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md">
+          <div class="body-copy">
+            <h4>Summary</h4>
+            <p>
+              This is a mirror of the <a class="underline" target="_blank" rel="noopener" href="https://sites.google.com/site/santacruzcomparisonproject/"
+              >Gaia data release 3</a> from the <a class="underline" target="_blank" rel="noopener" href="https://www.esa.int/"
+              >European Space Agency</a> (ESA) hosted by <a class="underline" target="_blank" rel="noopener" href="https://www.simonsfoundation.org/flatiron/"
+              >Flatiron Institute</a> at SDSC, San Diego, CA, USA.
+            </p>
+            <p>Gaia is ESA’s mission to create the most accurate and complete multi-dimensional map of the Milky Way. This allows astronomers to reconstruct our home galaxy’s past and future evolution over billions of years, better understand the lifecycle of stars, and our place in the Universe. Data release 3 includes a total of 1.8 billion (thousand million) Milky Way stars – providing astronomers with an unprecedented view of stellar characteristics and their life cycle, and the galaxy's structure and evolution.</p>
+            <p>Important links to official Gaia data release documentation:</p>
+            <ul>
+              <li>
+                <a
+                  class="underline"
+                  target="_blank"
+                  rel="noopener"
+                  href="https://gea.esac.esa.int/archive/documentation/GDR3/index.html"
+                  >On-line documentation</a
+                  >
+              </li>
+              <li>
+                <a
+                  class="underline"
+                  target="_blank"
+                  rel="noopener"
+                  href="https://archives.esac.esa.int/doi/html/data/astronomy/gaia/DR3.html"
+                  >DOI</a
+                  >
+              </li>
+              <li>
+                <a
+                  class="underline"
+                  target="_blank"
+                  rel="noopener"
+                  href="https://gea.esac.esa.int/archive/documentation/GDR3/Miscellaneous/sec_credit_and_citation_instructions/"
+                  >Credit and citation instructions</a
+                  >
+              </li>
+            </ul>
+            <p>From this interface, all the tables from Gaia DR3 are available in three formats:</p>
+            <ul>
+              <li>
+                <b>gbin</b>: The original RAW distribution of the data.  The Java-based tools for
+                extracting this are available under docs/GaiaDataLibs-20.2.0
+              </li>
+              <li>
+                <b>csv</b>: The extracted ECSV format files from the GBIN.  Missing values are
+                represented by empty fields.  Files are gzip-compressed.
+              </li>
+              <li>
+                <b>hdf5</b>: A one-to-one conversion of the ECSV files.  Each field is represented
+                by a single dataset.  Some string fields have been converted to enumerations
+                or integers for convenience.  Strings and arrays may be fixed- or
+                variable-length depending on their structure.  Missing or padded values are
+                represeted by the fill value, which depends on type (usually min or max val).
+              </li>
+            </ul>
+            <p>Most tables are split into 3386 separate files based on their HEALpix index level 8 (which can be computed by source_id >> 43).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
