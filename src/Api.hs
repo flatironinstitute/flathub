@@ -1258,7 +1258,7 @@ openApiBase = mempty &~ do
   OA.info .= (mempty
     & OA.title .~ "FlatHUB API"
     & OA.version .~ T.pack (showVersion Paths.version)
-    & OA.description ?~ "Most operations support GET and POST, either of which accepts JSON request bodies or query parameters.  In most cases, query parameters are ignored when there is a request body.")
+    & OA.description ?~ "API to FlatHUB data repository.  Most operations support GET and POST, either of which accepts JSON request bodies or query parameters.  In most cases, query parameters are ignored when there is a request body.")
   OA.servers .=
     [ OA.Server (routeRequestUrl $ baseApiRequest mempty{ R.requestSecure = True, R.requestHost = RI.splitHost "flathub.flatironinstitute.org" }) (Just "production") mempty
     ]
