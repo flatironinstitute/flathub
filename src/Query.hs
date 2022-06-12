@@ -1,3 +1,5 @@
+-- This is all old deprecated API support
+
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -93,7 +95,7 @@ parseQuery cat req = fill $ foldl' parseQueryItem mempty $ Wai.queryString req w
   parseFilt f a = FilterEQ <$> parseVal' f a
   parseVal _ "" = return Nothing
   parseVal f v = Just <$> parseVal' f v
-  parseVal' f = fmap fieldType . parseFieldValue f . TE.decodeUtf8
+  parseVal' f = fmap fieldType . parseFieldValue f
   eqAgg (QueryStats f) (QueryStats g) = fieldName f == fieldName g
   eqAgg _ _ = False
   mkHist f (t, n) l
@@ -290,9 +292,9 @@ bulk (BulkCSV z) _ _ _ query = bulkBlock z query
   { bbsHeader = csvHeader query
   , bbsRow = csvJSONRow
   }
-bulk (BulkECSV z) _ cat _ query = bulkBlock z query
+bulk (BulkECSV z) _ cat req query = bulkBlock z query
   "text/x-ecsv" "ecsv" $ const mempty
-  { bbsHeader = ecsvHeader cat (V.fromList $ queryFields query) ["query" J..= query] <> csvHeader query
+  { bbsHeader = ecsvHeader req cat (V.fromList $ queryFields query) ["query" J..= query] <> csvHeader query
   , bbsRow = csvJSONRow
   }
 bulk (BulkNumpy z) _ _ _ query = bulkBlock z query

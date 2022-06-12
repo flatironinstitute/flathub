@@ -10,8 +10,9 @@ import           Control.Applicative ((<|>))
 import           Control.Monad (join)
 import           Control.Monad.IO.Class (liftIO)
 import qualified Data.ByteString as BS
-import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Builder as B
+import qualified Data.ByteString.Char8 as BSC
+import qualified Data.ByteString.Lazy as BSL
 import           Data.Char (toUpper)
 import           Data.Foldable (fold)
 import           Data.Functor.Compose (Compose(..))
@@ -214,7 +215,7 @@ fitsHeaders date req cat args count =
       [ HeaderRecord "SIMPLE" (Just $ HeaderLogical True) (Just "FITS")
       ] ++ axisHeaders 8 [] ++
       [ HeaderRecord "DATE" (Just $ HeaderString $ BSC.pack $ formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S" date) (Just "time of download")
-      , HeaderRecord "ORIGIN" (Just $ HeaderString $ Wai.rawPathInfo req) (Just $ TE.encodeUtf8 $ catalogTitle cat)
+      , HeaderRecord "ORIGIN" (Just $ HeaderString $ BSL.toStrict $ B.toLazyByteString $ requestUrl req) (Just $ TE.encodeUtf8 $ catalogTitle cat)
       , HeaderRecord "EXTEND" (Just $ HeaderLogical True) Nothing ])
     <> renderBlock (
       [ HeaderRecord "XTENSION" (Just $ HeaderString "BINTABLE") (Just "binary table")

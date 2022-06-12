@@ -2,6 +2,7 @@
   title: Milky Way
   children:
     - gaiadr2
+    - gaiadr3
     - ananke
 - name: cosmo-hydro
   title: Cosmological Galaxy Formation Simulations

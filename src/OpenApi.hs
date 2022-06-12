@@ -3,7 +3,7 @@
 {-# LANGUAGE RankNTypes #-}
 
 module OpenApi
-  ( requestUrl
+  ( routeRequestUrl
   , pathPlaceholders
   , OpenApiM
   , stateDeclareSchema
@@ -89,8 +89,8 @@ instance Define OA.Header where componentsDefinitions = OA.headers
 instance Define OA.Link where componentsDefinitions = OA.links
 instance Define OA.Callback where componentsDefinitions = OA.callbacks
 
-requestUrl :: R.Request -> T.Text
-requestUrl r = TE.decodeUtf8 $ BSL.toStrict $ B.toLazyByteString $ R.renderUrlRequestBuilder r mempty
+routeRequestUrl :: R.Request -> T.Text
+routeRequestUrl r = TE.decodeUtf8 $ BSL.toStrict $ B.toLazyByteString $ R.renderUrlRequestBuilder r mempty
 
 pathPlaceholders :: R.Path a -> a -> [OA.Param] -> [T.Text]
 pathPlaceholders path arg params =

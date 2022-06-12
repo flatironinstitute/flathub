@@ -175,7 +175,7 @@ instance DataRow (HM.HashMap T.Text Field) [FieldValue] where
     pf f = updateFieldValueM f (\Proxy -> Identity <$> parseStream)
 
 parseFieldValue' :: Field -> J.Value -> Value
-parseFieldValue' f v = fmapTypeValue (\Proxy -> either error Identity (J.parseEither parseJSONTyped v)) (fieldType f)
+parseFieldValue' f v = fmapTypeValue (\Proxy -> either error Identity (J.parseEither parseJSONValue v)) (fieldType f)
 
 instance DataRow (HM.HashMap T.Text Field) (HM.HashMap T.Text Value) where
   parseHit fm = return . HM.intersectionWith parseFieldValue' fm . storedFields
@@ -189,7 +189,7 @@ instance DataRow (HM.HashMap T.Text Field) (HM.HashMap T.Text FieldValue) where
 instance DataRow (V.Vector Field) (V.Vector (TypeValue Maybe)) where
   parseHit fields = getf . storedFields where
     getf o = mapM (parsef o) fields
-    parsef o f = traverseTypeValue (\Proxy -> mapM parseJSONTyped $ HM.lookup (fieldName f) o) (fieldType f)
+    parsef o f = traverseTypeValue (\Proxy -> mapM parseJSONValue $ HM.lookup (fieldName f) o) (fieldType f)
   parseHitStream fields = (ev V.//)
     <$> many
       (  "_id" JS..: ps "_id"
@@ -299,7 +299,7 @@ parseStats cat = J.withObject "stats res" $ \o -> (,)
     <*> o J..: "sum_other_doc_count"
   pb :: Typed a => Proxy a -> J.Value -> J.Parser (a, Count)
   pb _ = J.withObject "bucket" $ \o -> (,)
-    <$> (parseJSONTyped =<< o J..: "key")
+    <$> (parseJSONValue =<< o J..: "key")
     <*> o J..: "doc_count"
 
 data StatsArgs = StatsArgs
@@ -390,7 +390,9 @@ remainder n d = d * snd (properFraction (n / d) :: (Integer, a))
 
 queryHistogram :: Catalog -> HistogramArgs -> M HistogramResult
 queryHistogram cat hist@HistogramArgs{..} = do
-  unless (length histogramFields + fromEnum (isJust histogramQuartiles) <= fromIntegral maxHistogramDepth
+  unless (depth > 0)
+    $ raise400 "empty histogram"
+  unless (depth <= fromIntegral maxHistogramDepth
       && product (map (fromIntegral . histogramSize) histogramFields) <= maxHistogramSize)
     $ raise400 "histograms too large"
   (_, stats) <- liftIO $ catalogStats cat
@@ -421,6 +423,7 @@ queryHistogram cat hist@HistogramArgs{..} = do
       <> haggs sizes
   return $ HistogramResult (map histogramInterval sizes) dat
   where
+  depth = length histogramFields + fromEnum (isJust histogramQuartiles)
   srng FieldStats{ statsMin = Just x, statsMax = Just y } = Just (toRealFloat x, toRealFloat y)
   srng _ = Nothing
   haggs (hi:l) =

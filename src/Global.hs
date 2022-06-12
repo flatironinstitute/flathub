@@ -5,6 +5,7 @@
 module Global
   where
 
+import qualified Data.ByteString.Builder as B
 import qualified Data.HashMap.Strict as HM
 import           Control.Concurrent.MVar (newMVar, modifyMVar)
 import           Control.Monad.Except (ExceptT(..), liftEither, runExcept)
@@ -15,6 +16,8 @@ import qualified Network.Wai as Wai
 import qualified Waimwork.Config as C
 import           Waimwork.Response (response)
 import qualified Web.Route.Invertible as R
+import qualified Web.Route.Invertible.Render as R
+import qualified Web.Route.Invertible.Wai as R
 
 import Error
 import Catalog
@@ -61,3 +64,6 @@ once act = do
     return $ modifyMVar mv $
       fmap (\v -> (Just v, v))
         . maybe (runGlobal g act) return
+
+requestUrl :: Wai.Request -> B.Builder
+requestUrl req = R.renderUrlRequestBuilder (R.waiRequest req) []
