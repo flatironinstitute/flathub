@@ -390,7 +390,9 @@ remainder n d = d * snd (properFraction (n / d) :: (Integer, a))
 
 queryHistogram :: Catalog -> HistogramArgs -> M HistogramResult
 queryHistogram cat hist@HistogramArgs{..} = do
-  unless (length histogramFields + fromEnum (isJust histogramQuartiles) <= fromIntegral maxHistogramDepth
+  unless (depth > 0)
+    $ raise400 "empty histogram"
+  unless (depth <= fromIntegral maxHistogramDepth
       && product (map (fromIntegral . histogramSize) histogramFields) <= maxHistogramSize)
     $ raise400 "histograms too large"
   (_, stats) <- liftIO $ catalogStats cat
@@ -421,6 +423,7 @@ queryHistogram cat hist@HistogramArgs{..} = do
       <> haggs sizes
   return $ HistogramResult (map histogramInterval sizes) dat
   where
+  depth = length histogramFields + fromEnum (isJust histogramQuartiles)
   srng FieldStats{ statsMin = Just x, statsMax = Just y } = Just (toRealFloat x, toRealFloat y)
   srng _ = Nothing
   haggs (hi:l) =

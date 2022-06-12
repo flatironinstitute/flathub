@@ -257,14 +257,14 @@ setFieldValue f = setFieldValueUnsafe f . coerceTypeValue (fieldType f)
 updateFieldValueM :: Functor m => FieldSub t Proxy -> (forall a . Typed a => t a -> m (f a)) -> m (FieldSub f Proxy)
 updateFieldValueM f t = setFieldValueUnsafe f <$> traverseTypeValue t (fieldType f)
 
-numpyFieldSize :: Field -> Word
+numpyFieldSize :: Functor t => FieldSub t s -> Word
 numpyFieldSize f@Field{ fieldType = Keyword _ } = fieldSize f
 numpyFieldSize Field{ fieldType = t } = numpyTypeSize t
 
-numpyDtype :: Field -> String
+numpyDtype :: Functor t => FieldSub t s -> String
 numpyDtype Field{ fieldType = Boolean _ } = "?"
-numpyDtype Field{ fieldType = ULong _ } = "<u8"
-numpyDtype f = '<' : baseType ('f','i','?','S','V') (fieldType f) : show (numpyFieldSize f)
+numpyDtype f@Field{ fieldType = ULong _ } = 'u' : show (numpyFieldSize f)
+numpyDtype f = baseType ('f','i','?','S','V') (fieldType f) : show (numpyFieldSize f)
 
 instance J.ToJSON Field where
   toJSON f@Field{ fieldDesc = FieldDesc{..}, ..} = J.object $

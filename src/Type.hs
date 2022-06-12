@@ -409,7 +409,7 @@ baseType (f,i,b,s,_) t
   where (_,t') = unArrayType t
 baseType (_,_,_,_,v) ~(Void _) = v
 
-numpyTypeSize :: Type -> Word
+numpyTypeSize :: Functor f => TypeValue f -> Word
 numpyTypeSize (Double    _) = 8
 numpyTypeSize (Float     _) = 4
 numpyTypeSize (HalfFloat _) = 2

@@ -75,7 +75,7 @@ numpyHeader fields count = (B.string8 "\147NUMPY"
   header = "{'descr':["
     <> mintersperseMap (B.char7 ',') field fields 
     <> "],'fortran_order':False,'shape':(" <> B.wordDec count <> ",)}"
-  field f = B.char7 '(' <> jenc (fieldName f) <> B.char7 ',' <> B.char7 '\'' <> B.string7 (numpyDtype f) <> B.char7 '\'' <> array f <> B.char7 ')'
+  field f = B.char7 '(' <> jenc (fieldName f) <> ",'<" <> B.string7 (numpyDtype f) <> B.char7 '\'' <> array f <> B.char7 ')'
   array f@Field{ fieldType = Array _ } = ",(" <> B.wordDec (fieldLength f) <> ",)"
   array _ = mempty
   len = succ $ BSL.length $ B.toLazyByteString header

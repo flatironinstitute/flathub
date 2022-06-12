@@ -234,6 +234,7 @@ fieldsJSON stats b = JE.list fieldJSON . V.toList where
     <> foldMap ("descr" J..=) fieldDescDescr
     <> "type" J..= fieldType
     <> "base" J..= baseType ('f','i','b','s','v') fieldType
+    <> "dtype" J..= numpyDtype bf
     <> mwhen (or fieldDescStore) ("store" J..= fieldDescStore)
     <> foldMap ("enum" J..=) fieldDescEnum
     <> mwhen (fieldDisp f) ("disp" J..= True)
@@ -272,10 +273,11 @@ fieldGroupSchema = do
     , ("descr", OA.Inline $ schemaDescOf fieldDescr "description of field within the group", False)
     , ("type", ft, True)
     , ("base", OA.Inline $ mempty
-        & OA.description ?~ "base storage type (floating, integral, boolean, string, void)"
+        & OA.description ?~ "base storage type (floating, integral, boolean, string, void) for base scalar values of this field"
         & OA.type_ ?~ OA.OpenApiString
         & OA.enum_ ?~ map J.toJSON "fibsv"
         , True)
+    , ("dtype", OA.Inline $ schemaDescOf T.unpack "numpy dtype for base scalar values of this field", True)
     , ("store", OA.Inline $ schemaDescOf fieldStore "true if this field is stored but not indexed, so not permitted for filtering or aggregations", False)
     , ("enum", OA.Inline $ schemaDescOf fieldEnum "if present, display values as these keywords instead (integral or boolean: enum[<int>value])", False)
     , ("disp", OA.Inline $ schemaDescOf fieldDisp "include field in data display by default", False)
@@ -1285,7 +1287,7 @@ openApiBase = mempty &~ do
   OA.info .= (mempty
     & OA.title .~ "FlatHUB API"
     & OA.version .~ T.pack (showVersion Paths.version)
-    & OA.description ?~ "API to FlatHUB data repository.  Most operations support GET and POST, either of which accepts JSON request bodies or query parameters.  In most cases, query parameters are ignored when there is a request body.")
+    & OA.description ?~ "API to FlatHUB data repository.  Most operations support GET and POST, either of which accepts JSON request bodies or query parameters.  In most cases, query parameters are ignored when there is a request body.  Structured query values have simplified representations described in the schema, or most support JSON- (and uri-)encoded values (e.g., field={\"gte\":0}&fields=[\"field\"]).")
   OA.servers .=
     [ OA.Server (routeRequestUrl $ baseApiRequest mempty{ R.requestSecure = True, R.requestHost = RI.splitHost "flathub.flatironinstitute.org" }) (Just "production") mempty
     ]
