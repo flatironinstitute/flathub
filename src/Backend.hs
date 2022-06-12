@@ -175,7 +175,7 @@ instance DataRow (HM.HashMap T.Text Field) [FieldValue] where
     pf f = updateFieldValueM f (\Proxy -> Identity <$> parseStream)
 
 parseFieldValue' :: Field -> J.Value -> Value
-parseFieldValue' f v = fmapTypeValue (\Proxy -> either error Identity (J.parseEither parseJSONTyped v)) (fieldType f)
+parseFieldValue' f v = fmapTypeValue (\Proxy -> either error Identity (J.parseEither parseJSONValue v)) (fieldType f)
 
 instance DataRow (HM.HashMap T.Text Field) (HM.HashMap T.Text Value) where
   parseHit fm = return . HM.intersectionWith parseFieldValue' fm . storedFields
@@ -189,7 +189,7 @@ instance DataRow (HM.HashMap T.Text Field) (HM.HashMap T.Text FieldValue) where
 instance DataRow (V.Vector Field) (V.Vector (TypeValue Maybe)) where
   parseHit fields = getf . storedFields where
     getf o = mapM (parsef o) fields
-    parsef o f = traverseTypeValue (\Proxy -> mapM parseJSONTyped $ HM.lookup (fieldName f) o) (fieldType f)
+    parsef o f = traverseTypeValue (\Proxy -> mapM parseJSONValue $ HM.lookup (fieldName f) o) (fieldType f)
   parseHitStream fields = (ev V.//)
     <$> many
       (  "_id" JS..: ps "_id"
@@ -299,7 +299,7 @@ parseStats cat = J.withObject "stats res" $ \o -> (,)
     <*> o J..: "sum_other_doc_count"
   pb :: Typed a => Proxy a -> J.Value -> J.Parser (a, Count)
   pb _ = J.withObject "bucket" $ \o -> (,)
-    <$> (parseJSONTyped =<< o J..: "key")
+    <$> (parseJSONValue =<< o J..: "key")
     <*> o J..: "doc_count"
 
 data StatsArgs = StatsArgs

@@ -38,6 +38,7 @@ module Field
   , setFieldValue
   , setFieldValueUnsafe
   , updateFieldValueM
+  , parseValueForField
   , parseFieldGroup
   , subField
   , expandField, expandFields, expandAllFields
@@ -62,7 +63,7 @@ import qualified Data.Aeson.Types as J
 import qualified Data.ByteString as BS
 import           Data.Char (isAlphaNum)
 import           Data.Default (Default(def))
-import           Data.Functor.Identity (Identity)
+import           Data.Functor.Identity (Identity(Identity))
 import qualified Data.HashMap.Strict as HM
 import           Data.Maybe (isJust, maybeToList)
 import           Data.Proxy (Proxy(Proxy))
@@ -385,11 +386,13 @@ fieldsDepth :: FieldGroups -> Word
 fieldsDepth = getMax . depth where
   depth = succ . foldMap (foldMap depth . fieldSub)
 
-parseFieldValue :: Field -> T.Text -> Maybe FieldValue
-parseFieldValue f = fmap (setFieldValueUnsafe f) . pv f where
-  pv Field{ fieldType = (Byte _), fieldDesc = FieldDesc{ fieldDescEnum = Just l } } s
-    | Just i <- V.elemIndex s l = Just $ Byte $ fromIntegral i
-  pv Field{ fieldType = t } s = sequenceValue $ parseTypeValue t s
+parseValueForField :: Typed a => Field -> BS.ByteString -> Maybe a
+parseValueForField Field{ fieldDesc = FieldDesc{ fieldDescEnum = Just l } } s
+  | Just i <- V.findIndex ((s ==) . TE.encodeUtf8) l = Just $ fromInt i
+parseValueForField _ s = readValue s
+
+parseFieldValue :: Field -> BS.ByteString -> Maybe FieldValue
+parseFieldValue f s = updateFieldValueM f (\Proxy -> Identity <$> parseValueForField f s)
 
 fieldJValue :: FieldValue -> J.Series
 fieldJValue f = fieldName f J..= fieldType f

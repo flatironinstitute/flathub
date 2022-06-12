@@ -507,17 +507,31 @@ parseFiltersQuery cat req = foldl' parseQueryItem mempty $ Wai.queryString req w
     q{ filterSample = filterSample q * p }
   parseQueryItem q ("sample", Just (splitBS ('@' ==) -> Just (readBS -> Just p, readBS -> Just s))) =
     q{ filterSample = filterSample q * p, filterSeed = filterSeed q `xor` s }
-  parseQueryItem q (lookupFieldQuery cat True -> Just f, Just (parseFilt f -> Just v)) =
-    q{ filterFields = filterFields q <> KM.fromList [setFieldValue f $ sequenceTypeValue v] }
+  parseQueryItem q ("seed", Just (readBS -> Just s)) =
+    q{ filterSeed = filterSeed q `xor` s }
+  parseQueryItem q (lookupFieldQuery cat True -> Just f, Just (parseFilter f -> Just v)) =
+    q{ filterFields = KM.insertWith oreq v $ filterFields q }
   parseQueryItem q _ = q -- just ignore anything we can't parse
-  parseFilt f (splitBS isDelim -> Just (a, b))
+  oreq f@Field{ fieldType = a } Field{ fieldType = b } = 
+    f{ fieldType = fmapTypeValue2 oreqf a b }
+  oreqf (FieldEQ a) (FieldEQ b) = FieldEQ (b ++ a)
+  oreqf f _ = f
+  parseFilter :: Field -> BS.ByteString -> Maybe (FieldSub FieldFilter Proxy)
+  parseFilter f s = updateFieldValueM f (parseFilt f s)
+  parseFilt :: Typed a => Field -> BS.ByteString -> Proxy a -> Maybe (FieldFilter a)
+  parseFilt _ "" _ = Nothing
+  parseFilt f s _
+    | BSC.head s `elem` ('"' : "[{") = J.parseMaybe (parseFilterJSON f) =<< J.decodeStrict s
+  parseFilt f (splitBS isDelim -> Just (a, b)) _
     | typeIsNumeric (fieldType f) = FieldRange <$> parseVal f a <*> parseVal f b
-  parseFilt f a
+  parseFilt f a _
     | fieldWildcard f && BSC.elem '*' a = return $ FieldWildcard (decodeUtf8' a)
-  parseFilt f a = FieldEQ . return <$> parseVal' f a
+  parseFilt f a _ = FieldEQ . return <$> parseVal' f a
+  parseVal :: Typed a => Field -> BS.ByteString -> Maybe (Maybe a)
   parseVal _ "" = return Nothing
   parseVal f v = Just <$> parseVal' f v
-  parseVal' f = fmap fieldType . parseFieldValue f . decodeUtf8'
+  parseVal' :: Typed a => Field -> BS.ByteString -> Maybe a
+  parseVal' = parseValueForField
 
 filtersQueryParam :: OpenApiM (OA.Referenced OA.Param)
 filtersQueryParam = do
@@ -539,9 +553,14 @@ fieldsQueryParam = do
     & OA.description ?~ "list of fields to return"
     & OA.style ?~ OA.StyleForm
     & OA.explode ?~ False
+    & OA.required ?~ True
     & OA.schema ?~ fl
 
 parseFieldsQuery :: Catalog -> Bool -> Wai.Request -> BS.ByteString -> [Field]
+parseFieldsQuery _ _ _ "" = []
+parseFieldsQuery cat ind _ s
+  | BSC.head s == '['
+  , Just r <- J.parseMaybe (parseFieldsJSON cat ind) =<< J.decodeStrict s = r
 parseFieldsQuery cat ind req param =
   mapMaybe (lookupFieldQuery cat ind) $ parseListQuery req param
 
@@ -552,6 +571,10 @@ parseFieldsJSON cat ind = J.withArray "field list" $
 -------- /api/{catalog}/data
 
 parseSortQuery :: Catalog -> Wai.Request -> BS.ByteString -> [(Field, Bool)]
+parseSortQuery _ _ "" = []
+parseSortQuery cat _ s
+  | BSC.head s == '['
+  , Just r <- J.parseMaybe (parseSortJSON cat) =<< J.decodeStrict s = r
 parseSortQuery cat req param =
   mapMaybe parseSort $ parseListQuery req param
   where
@@ -983,6 +1006,10 @@ histogramListSchema = do
     & OA.title ?~ "histogram fields"
 
 parseHistogramsQuery :: Catalog -> Wai.Request -> BS.ByteString -> [Histogram]
+parseHistogramsQuery _ _ "" = []
+parseHistogramsQuery cat _ s
+  | BSC.head s == '['
+  , Just r <- J.parseMaybe (mapM (parseHistogramsJSON cat)) =<< J.decodeStrict s = r
 parseHistogramsQuery cat req param =
   mapMaybe parseHist $ parseListQuery req param
   where

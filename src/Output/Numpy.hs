@@ -85,7 +85,7 @@ numpyHeader fields count = (B.string8 "\147NUMPY"
   jenc = J.fromEncoding . J.toEncoding -- json is similar enough to python for most things
 
 numpyValue :: Field -> J.Value -> B.Builder
-numpyValue f = numpyBuild f . parseTypeJSONValue (fieldType f)
+numpyValue f j = numpyBuild f $ fmapTypeValue (\_ -> J.parseMaybe parseJSONValue j) (fieldType f)
 
 unconsJ :: [J.Value] -> (J.Value, [J.Value])
 unconsJ [] = (J.Null, [])

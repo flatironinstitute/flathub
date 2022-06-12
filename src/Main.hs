@@ -8,6 +8,7 @@ import           Data.Default (Default(def))
 import qualified Data.HashMap.Strict as HM
 import           Data.Maybe (fromMaybe, isNothing, isJust)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import qualified Network.HTTP.Client as HTTP
 import qualified Network.HTTP.Simple as HTTP
 import qualified System.Console.GetOpt as Opt
@@ -119,7 +120,7 @@ main = do
       let pconst c [] = return ([], c)
           pconst c ((n,s):r) = do
             (f, c') <- maybe (fail $ "Unknown field: " ++ show n) return $ takeCatalogField n c
-            v <- maybe (fail $ "Invalid value: " ++ show s) return $ parseFieldValue f s
+            v <- maybe (fail $ "Invalid value: " ++ show s) return $ parseFieldValue f $ TE.encodeUtf8 s
             first (v:) <$> pconst c' r
       (consts, cat) <- pconst (catalogMap catalogs HM.! sim) $ optConstFields opts
       n <- ingest cat consts args

@@ -1,3 +1,5 @@
+-- This is all old deprecated API support
+
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -93,7 +95,7 @@ parseQuery cat req = fill $ foldl' parseQueryItem mempty $ Wai.queryString req w
   parseFilt f a = FilterEQ <$> parseVal' f a
   parseVal _ "" = return Nothing
   parseVal f v = Just <$> parseVal' f v
-  parseVal' f = fmap fieldType . parseFieldValue f . TE.decodeUtf8
+  parseVal' f = fmap fieldType . parseFieldValue f
   eqAgg (QueryStats f) (QueryStats g) = fieldName f == fieldName g
   eqAgg _ _ = False
   mkHist f (t, n) l
