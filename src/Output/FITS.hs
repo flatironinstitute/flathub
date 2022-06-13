@@ -27,6 +27,7 @@ import           Data.Time.Format (formatTime, defaultTimeLocale)
 import qualified Data.Vector as V
 import           Data.Word (Word32, Word64)
 import qualified Network.Wai as Wai
+import           Numeric (showGFloat)
 import           Unsafe.Coerce (unsafeCoerce)
 
 import Type
@@ -85,7 +86,7 @@ renderRecord HeaderRecord{..} =
     ~(f:r) -> f <> foldMap ("CONTINUE  " <>) r
   hv (HeaderLogical b) = commval headerComment $ padR 20 (if b then "T" else "F")
   hv (HeaderInteger i) = commval headerComment $ padR 20 (showBS i)
-  hv (HeaderDouble d) = commval headerComment $ padR 20 (BSC.map toUpper $ showBS d)
+  hv (HeaderDouble d) = commval headerComment $ padR 20 (BSC.pack $ map toUpper $ showGFloat (Just 10) d "")
   commval Nothing s = pad 70 s
   commval (Just c) s
     | BS.length s >= 67 = pad 70 s <> comment c
