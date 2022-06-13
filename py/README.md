@@ -14,7 +14,7 @@ To install the module, you just need Python and numpy.
 
 To install, just clone this repository and run setup.py:
 
-```
+```sh
 git clone git://github.com/flatironinstitute/flathub
 cd flathub/py
 python setup.py install
@@ -23,35 +23,38 @@ python setup.py install
 Once you have successfully installed the module, you can use it as:
 
 ```
-import flathub.client
+import flathub
 ```
 
-## Running the Module
+## Usage
 
-To start off, create a Catalog object based off the simulation you want to query. From there, you can create a Query object and can query based off fields, sample, seed, and sort).
+### Catalog list
 
-```
-gaea = flathub.client.Catalog('gaea')
-q = gaea.query(fields = ['PPos_x', 'PPos_y', 'z'], Mvir = (4700, 4900), sample = 0.01, seed = 0)
-```
+You can get the available catalogs with `getCatalog`:
 
-A dict of available fields is available on the Catalog:
-
-```
-gaea.fields
+```python
+catalogs = flathub.getCatalogs()
 ```
 
-If you want to view some basic statistics about your Query, you can use functions like count(), avg(), or aggs():
-
-```
-q.count()
-q.aggs('z')
+You can also get a single catalog by name:
+```python
+catalog = flathub.Catalog('gaiadr2')
 ```
 
-Finally, you can retrieve the results your query using the numpy() function, which will download the query into a numpy array:
+Once you have a catalog, you can view the metadata and fields, and do queries:
 
-```
-x = q.numpy()
+```python
+catalog.title
+catalog['source_id']
+
+stats = catalog.stats(fields = ['dec'], ra = (120, 130), parallax = (None, 4), phot_g_mean_flux = (100000, None))
+stats['dec']['avg']
+
+histogram = catalog.histogram(fields = ['parallax'], quartiles = 'phot_g_mean_flux', ra = (120, 130))
+histogram.buckets
+
+count = catalog.count(ra = (120, 130), parallax = (3, 4))
+data = catalog.numpy(fields = ['source_id', 'ra', 'dec', 'parallax'], sample = 1000.0/count, ra = (120, 130), parallax = (3, 4))
 ```
 
 ## License
