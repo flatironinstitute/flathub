@@ -911,16 +911,16 @@ function columnVisible(name: string, vis: boolean) {
 function py_text(query: Dict<string>) {
   const cat = Catalog.name;
   let st =
-    "import flathub.client\n" +
+    "import flathub\n" +
     cat +
-    " = flathub.client.Catalog(" +
+    " = flathub.Catalog(" +
     JSON.stringify(cat) +
-    ", host = " +
-    JSON.stringify(location.origin) +
+    ", endpoint = " +
+    JSON.stringify(location.origin+'/api') +
     ")\n" +
-    "q = " +
+    "dat = " +
     cat +
-    ".query(fields = " +
+    ".numpy(fields = " +
     JSON.stringify(query.fields.split(" "));
   for (let i = 0; i < Filters.length; i++) {
     const q = Filters[i].pyQuery();
@@ -931,7 +931,7 @@ function py_text(query: Dict<string>) {
     st += ",\n  sample = " + Sample;
     if (Seed != undefined) st += ", seed = " + Seed;
   }
-  st += ")\ndat = q.numpy()";
+  st += ")";
   (<HTMLPreElement>document.getElementById("code-py")).textContent = st;
 }
 
