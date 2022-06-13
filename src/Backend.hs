@@ -246,19 +246,20 @@ queryData cat args@DataArgs{..} = do
     $ raise400 "count too large"
   httpJSON (parseData dataFields) =<< queryDataRequest cat args Nothing
 
-fstAndLast :: Monad m => C.ConduitT (a, b) a m (Maybe b)
+fstAndLast :: Monad m => C.ConduitT (a, b) (C.Flush a) m (Maybe b)
 fstAndLast = C.await >>= maybe (return Nothing) go where
   loop b = C.await >>= maybe (return $ Just b) go
-  go (a, b) = C.yield a >> loop b
+  go (a, b) = C.yield (C.Chunk a) >> loop b
 
 queryDataStream :: (MonadResource m, MonadIO m, MonadGlobal m, MonadFail m, Foldable f, DataRow (f Field) a) =>
-  Catalog -> DataArgs f -> C.ConduitT i a m ()
+  Catalog -> DataArgs f -> C.ConduitT i (C.Flush a) m ()
 queryDataStream cat args = qds Nothing where
   qds off = do
     req <- lift $ queryDataRequest cat args' off
     off' <- httpStream req
       C..| (mapM_ fail =<< parserConduit (parseDataStream (dataFields args')))
       C..| fstAndLast
+    C.yield C.Flush
     mapM_ (qds . Just) off'
   args' = args{ dataSort = nubBy ((==) `on` fieldName . fst) $ dataSort args ++ [(key,True)] }
   key = fromMaybe idField $ (`HM.lookup` catalogFieldMap cat) =<< catalogKey cat

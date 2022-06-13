@@ -154,7 +154,8 @@ attachmentsFilter args = case V.toList (dataFields args) of
 zipGenerator :: Wai.Request -> Catalog -> DataArgs V.Vector -> M OutputStream
 zipGenerator req cat args = do
   dir <- asks globalDataDir
-  let ents doc = V.mapMaybeM (ent doc) ats
+  let ents (C.Chunk doc) = V.mapMaybeM (ent doc) ats
+      ents C.Flush = return V.empty
       ent doc af@Field{ fieldDesc = FieldDesc{ fieldDescAttachment = ~(Just a) } }
         | any attachmentPresent $ HM.lookup (fieldName af) doc =
           enta $ resolveAttachment doc a
