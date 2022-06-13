@@ -21,7 +21,7 @@ descr: >
   </ul>
 
   <br>
-  gaia_source: This table has an entry for every Gaia observed source as published with this data release. It contains the basic source parameters, in their final state as processed by the Gaia Data Processing and Analysis Consortium from the raw data coming from the spacecraft. The table is complemented with others containing information specific to certain kinds of objects (e.g.~Solar--system objects, non--single stars, variables etc.) and value--added processing (e.g.~astrophysical parameters etc.). Further array data types (spectra, epoch measurements) are presented separately via `Datalink' resources.
+  gaia_source: This table has an entry for every Gaia observed source as published with this data release. It contains the basic source parameters, in their final state as processed by the Gaia Data Processing and Analysis Consortium from the raw data coming from the spacecraft. The table is complemented with others containing information specific to certain kinds of objects (e.g. Solar--system objects, non--single stars, variables etc.) and value--added processing (e.g. astrophysical parameters etc.). Further array data types (spectra, epoch measurements) are presented separately via `Datalink' resources.
 html: |
   <div class="body-copy">
     <h4>Summary</h4>
@@ -998,7 +998,7 @@ fields:
   ingest: _table:AstrophysicalParameters #sorted, 1:1 files
   #count: 1590932717
   descr: |
-    This is the main table containing the 1D astrophysical parameters produced by the Apsis processing chain developed in Gaia DPAC CU8 (see Chapter~\ref{chap:cu8par}). Additional parameters can be found in table {\tt AstrophysicalParametersSupp}.
+    This is the main table containing the 1D astrophysical parameters produced by the Apsis processing chain developed in Gaia DPAC CU8. Additional parameters can be found in table AstrophysicalParametersSupp.
   flag: hidden
   sub:
   - name: _index
@@ -1473,7 +1473,7 @@ fields:
       type: float
       descr: Abundance of neutral iron [Fe/M] from GSP-Spec MatisseGauguin using RVS
         spectra and Monte Carlo realisations, applied to the individual N lines of the
-        element, given in {\tt femGspspecNlines}
+        element, given in femGspspecNlines
     - ingest: AstrophysicalParameters.fem_gspspec_lower
       name: fem_gspspec_lower
       units: '''dex'''
@@ -1499,7 +1499,7 @@ fields:
       flag: hidden
       type: float
       descr: Uncertainty estimation of [Fe/M] abundance using N lines of the element,
-        given in {\tt femGspspecNlines}
+        given in femGspspecNlines
   - name: ''
     title: sife
     descr: Abundance of Silicon
@@ -1512,7 +1512,7 @@ fields:
       type: float
       descr: Abundance of Silicon [Si/Fe] from GSP-Spec MatisseGauguin using RVS spectra
         and Monte Carlo realisations, applied to the individual N lines of the element,
-        given in {\tt sifeGspspecNlines}
+        given in sifeGspspecNlines
     - ingest: AstrophysicalParameters.sife_gspspec_lower
       name: sife_gspspec_lower
       units: '''dex'''
@@ -1538,7 +1538,7 @@ fields:
       flag: hidden
       type: float
       descr: Uncertainty estimation of [Si/Fe] abundance using N lines of the element,
-        given in {\tt sifeGspspecNlines}
+        given in sifeGspspecNlines
   - name: ''
     title: cafe
     descr: Abundance of Calcium
@@ -1551,7 +1551,7 @@ fields:
       type: float
       descr: Abundance of Calcium [Ca/Fe] from GSP-Spec MatisseGauguin using RVS spectra
         and Monte Carlo realisations, applied to the individual N lines of the element,
-        given in {\tt cafeGspspecNlines}
+        given in cafeGspspecNlines
     - ingest: AstrophysicalParameters.cafe_gspspec_lower
       name: cafe_gspspec_lower
       units: '''dex'''
@@ -1577,7 +1577,7 @@ fields:
       flag: hidden
       type: float
       descr: Uncertainty estimation of [Ca/Fe] abundance using N lines of the element,
-        given in {\tt cafeGspspecNlines}
+        given in cafeGspspecNlines
   - name: ''
     title: tife
     descr: Abundance of Titanium
@@ -1590,7 +1590,7 @@ fields:
       type: float
       descr: Abundance of Titanium [Ti/Fe] from GSP-Spec MatisseGauguin using RVS spectra
         and Monte Carlo realisations, applied to the individual N lines of the element,
-        given in {\tt tifeGspspecNlines}
+        given in tifeGspspecNlines
     - ingest: AstrophysicalParameters.tife_gspspec_lower
       name: tife_gspspec_lower
       units: '''dex'''
@@ -1616,7 +1616,7 @@ fields:
       flag: hidden
       type: float
       descr: Uncertainty estimation of [Ti/Fe] abundance using N lines of the element,
-        given in {\tt tifeGspspecNlines}
+        given in tifeGspspecNlines
   - name: ''
     title: mgfe
     descr: Abundance of Magnesium
@@ -1629,7 +1629,7 @@ fields:
       type: float
       descr: Abundance of Magnesium [Mg/Fe] from GSP-Spec MatisseGauguin using RVS spectra
         and Monte Carlo realisations, applied to the individual N lines of the element,
-        given in {\tt mgfeGspspecNlines}
+        given in mgfeGspspecNlines
     - ingest: AstrophysicalParameters.mgfe_gspspec_lower
       name: mgfe_gspspec_lower
       units: '''dex'''
@@ -1655,7 +1655,7 @@ fields:
       flag: hidden
       type: float
       descr: Uncertainty estimation of [Mg/Fe] abundance using N lines of the element,
-        given in {\tt mgfeGspspecNlines}
+        given in mgfeGspspecNlines
   - name: ''
     title: ndfe
     descr: Abundance of Neodymium
@@ -1668,7 +1668,7 @@ fields:
       type: float
       descr: Abundance of neodymium [Nd/Fe] from GSP-Spec MatisseGauguin using RVS spectra
         and Monte Carlo realisations, applied to the individual N lines of the element,
-        given in {\tt ndfeGspspecNlines}
+        given in ndfeGspspecNlines
     - ingest: AstrophysicalParameters.ndfe_gspspec_lower
       name: ndfe_gspspec_lower
       units: '''dex'''
@@ -1694,7 +1694,7 @@ fields:
       flag: hidden
       type: float
       descr: Uncertainty estimation of [Nd/Fe] abundance using N lines of the element,
-        given in {\tt ndfeGspspecNlines}
+        given in ndfeGspspecNlines
   - name: ''
     title: feiim
     descr: Abundance of ionised Iron
@@ -1707,7 +1707,7 @@ fields:
       type: float
       descr: Abundance of ionised iron [FeII/M] from GSP-Spec MatisseGauguin using RVS
         spectra and Monte Carlo realisations, applied to the individual N lines of the
-        element, given in {\tt feiimGspspecNlines}
+        element, given in feiimGspspecNlines
     - ingest: AstrophysicalParameters.feiim_gspspec_lower
       name: feiim_gspspec_lower
       units: '''dex'''
@@ -1733,7 +1733,7 @@ fields:
       flag: hidden
       type: float
       descr: Uncertainty estimation of [FeII/M] abundance using N lines of the element,
-        given in {\tt feiimGspspecNlines}
+        given in feiimGspspecNlines
   - name: ''
     title: sfe
     descr: Abundance of Sulphur
@@ -1746,7 +1746,7 @@ fields:
       type: float
       descr: Abundance of Sulphur [S/Fe] from GSP-Spec MatisseGauguin using RVS spectra
         and Monte Carlo realisations, applied to the individual N lines of the element,
-        given in {\tt sfeGspspecNlines}
+        given in sfeGspspecNlines
     - ingest: AstrophysicalParameters.sfe_gspspec_lower
       name: sfe_gspspec_lower
       units: '''dex'''
@@ -1772,7 +1772,7 @@ fields:
       flag: hidden
       type: float
       descr: Uncertainty estimation of [S/Fe] abundance using N lines of the element,
-        given in {\tt sfeGspspecNlines}
+        given in sfeGspspecNlines
   - name: ''
     title: zrfe
     descr: Abundance of Zirconium
@@ -1785,7 +1785,7 @@ fields:
       type: float
       descr: Abundance of Zirconium [Zr/Fe] from GSP-Spec MatisseGauguin using RVS spectra
         and Monte Carlo realisations, applied to the individual N lines of the element,
-        given in {\tt zrfeGspspecNlines}
+        given in zrfeGspspecNlines
     - ingest: AstrophysicalParameters.zrfe_gspspec_lower
       name: zrfe_gspspec_lower
       units: '''dex'''
@@ -1811,7 +1811,7 @@ fields:
       flag: hidden
       type: float
       descr: Uncertainty estimation of [Zr/Fe] abundance using N lines of the element,
-        given in {\tt zrfeGspspecNlines}
+        given in zrfeGspspecNlines
   - name: ''
     title: nfe
     descr: Abundance of Nitrogen
@@ -1824,7 +1824,7 @@ fields:
       type: float
       descr: Abundance of Nitrogen [N/Fe] from GSP-Spec MatisseGauguin using RVS spectra
         and Monte Carlo realisations, applied to the individual N lines of the element,
-        given in {\tt nfeGspspecNlines}
+        given in nfeGspspecNlines
     - ingest: AstrophysicalParameters.nfe_gspspec_lower
       name: nfe_gspspec_lower
       units: '''dex'''
@@ -1850,7 +1850,7 @@ fields:
       flag: hidden
       type: float
       descr: Uncertainty estimation of [N/Fe] abundance using N lines of the element,
-        given in {\tt nfeGspspecNlines}
+        given in nfeGspspecNlines
   - name: ''
     title: crfe
     descr: Abundance of Chromium
@@ -1863,7 +1863,7 @@ fields:
       type: float
       descr: Abundance of Chromium [Cr/Fe] from GSP-Spec MatisseGauguin using RVS spectra
         and Monte Carlo realisations, applied to the individual N lines of the element,
-        given in {\tt crfeGspspecNlines}
+        given in crfeGspspecNlines
     - ingest: AstrophysicalParameters.crfe_gspspec_lower
       name: crfe_gspspec_lower
       units: '''dex'''
@@ -1889,7 +1889,7 @@ fields:
       flag: hidden
       type: float
       descr: Uncertainty estimation of [Cr/Fe] abundance using N lines of the element,
-        given in {\tt crfeGspspecNlines}
+        given in crfeGspspecNlines
   - name: ''
     title: cefe
     descr: Abundance of Cerium
@@ -1902,7 +1902,7 @@ fields:
       type: float
       descr: Abundance of Cerium [Ce/Fe] from GSP-Spec MatisseGauguin using RVS spectra
         and Monte Carlo realisations, applied to the individual N lines of the element,
-        given in {\tt cefeGspspecNlines}
+        given in cefeGspspecNlines
     - ingest: AstrophysicalParameters.cefe_gspspec_lower
       name: cefe_gspspec_lower
       units: '''dex'''
@@ -1928,7 +1928,7 @@ fields:
       flag: hidden
       type: float
       descr: Uncertainty estimation of [Ce/Fe] abundance using N lines of the element,
-        given in {\tt cefeGspspecNlines}
+        given in cefeGspspecNlines
   - name: ''
     title: nife
     descr: Abundance of Nickel
@@ -1941,7 +1941,7 @@ fields:
       type: float
       descr: Abundance of Nickel [Ni/Fe] from GSP-Spec MatisseGauguin using RVS spectra
         and Monte Carlo realisations, applied to the individual N lines of the element,
-        given in {\tt nifeGspspecNlines}
+        given in nifeGspspecNlines
     - ingest: AstrophysicalParameters.nife_gspspec_lower
       name: nife_gspspec_lower
       units: '''dex'''
@@ -1967,7 +1967,7 @@ fields:
       flag: hidden
       type: float
       descr: Uncertainty estimation of [Ni/Fe] abundance using N lines of the element,
-        given in {\tt nifeGspspecNlines}
+        given in nifeGspspecNlines
   - name: ''
     title: cn0ew
     descr: Equivalent witdh of cyanogen absorption line
@@ -2049,7 +2049,7 @@ fields:
       units: angstrom
       flag: hidden
       type: float
-      descr: Uncertainty on the {\tt dibp2Gspspec} parameter
+      descr: Uncertainty on the dibp2Gspspec parameter
     - ingest: AstrophysicalParameters.dibqf_gspspec
       name: dibqf_gspspec
       flag: hidden
@@ -2296,73 +2296,71 @@ fields:
       name: radius_flame
       units: solRad
       type: float
-      descr: Radius of the star from FLAME using {\tt teffGspphot} and {\tt lumFlame}
+      descr: Radius of the star from FLAME using teffGspphot and lumFlame
     - ingest: AstrophysicalParameters.radius_flame_lower
       name: radius_flame_lower
       units: solRad
       flag: hidden
       type: float
-      descr: Lower confidence level (16%) of {\tt radiusFlame}
+      descr: Lower confidence level (16%) of radiusFlame
     - ingest: AstrophysicalParameters.radius_flame_upper
       name: radius_flame_upper
       units: solRad
       flag: hidden
       type: float
-      descr: Upper confidence level (84%) of {\tt radiusFlame}
+      descr: Upper confidence level (84%) of radiusFlame
     - ingest: AstrophysicalParameters.lum_flame
       name: lum_flame
       units: solLum
       type: float
-      descr: Luminosity of the star from FLAME using G band magnitude, extinction ({\tt
-        agGspphot}),  parallax or distance, and a bolometric correction {\tt bcFlame}
+      descr: Luminosity of the star from FLAME using G band magnitude, extinction (agGspphot),  parallax or distance, and a bolometric correction bcFlame
     - ingest: AstrophysicalParameters.lum_flame_lower
       name: lum_flame_lower
       units: solLum
       flag: hidden
       type: float
-      descr: Lower confidence level (16%) of {\tt lumFlame}
+      descr: Lower confidence level (16%) of lumFlame
     - ingest: AstrophysicalParameters.lum_flame_upper
       name: lum_flame_upper
       units: solLum
       flag: hidden
       type: float
-      descr: Upper confidence level (84%) of {\tt lumFlame}
+      descr: Upper confidence level (84%) of lumFlame
     - ingest: AstrophysicalParameters.mass_flame
       name: mass_flame
       units: solMass
       type: float
-      descr: Mass of the star from FLAME using stellar models, {\tt lumFlame}, and {\tt
-        teffGspphot}
+      descr: Mass of the star from FLAME using stellar models, lumFlame, and teffGspphot
     - ingest: AstrophysicalParameters.mass_flame_lower
       name: mass_flame_lower
       units: solMass
       flag: hidden
       type: float
-      descr: Lower confidence level (16%) of {\tt massFlame}
+      descr: Lower confidence level (16%) of massFlame
     - ingest: AstrophysicalParameters.mass_flame_upper
       name: mass_flame_upper
       units: solMass
       flag: hidden
       type: float
-      descr: Upper confidence level (84%) of {\tt massFlame}
+      descr: Upper confidence level (84%) of massFlame
     - ingest: AstrophysicalParameters.age_flame
       name: age_flame
       units: Gyr
       type: float
-      descr: Age of the star from FLAME using stellar models, see {\tt massFlame} for
+      descr: Age of the star from FLAME using stellar models, see massFlame for
         details
     - ingest: AstrophysicalParameters.age_flame_lower
       name: age_flame_lower
       units: Gyr
       flag: hidden
       type: float
-      descr: Lower confidence level (16%) of {\tt ageFlame}
+      descr: Lower confidence level (16%) of ageFlame
     - ingest: AstrophysicalParameters.age_flame_upper
       name: age_flame_upper
       units: Gyr
       flag: hidden
       type: float
-      descr: Upper confidence level (84%) of {\tt ageFlame}
+      descr: Upper confidence level (84%) of ageFlame
     - ingest: AstrophysicalParameters.flags_flame
       name: flags_flame
       flag: hidden
@@ -2372,31 +2370,30 @@ fields:
       name: evolstage_flame
       flag: hidden
       type: integer
-      descr: Evolutionary stage of the star from FLAME using stellar models, see {\tt
-        massFlame} for details
+      descr: Evolutionary stage of the star from FLAME using stellar models, see massFlame for details
     - ingest: AstrophysicalParameters.gravredshift_flame
       name: gravredshift_flame
       units: km.s**-1
       type: float
-      descr: Gravitational redshift from FLAME using {\tt radiusFlame} and {\tt loggGspphot}
+      descr: Gravitational redshift from FLAME using radiusFlame and loggGspphot
     - ingest: AstrophysicalParameters.gravredshift_flame_lower
       name: gravredshift_flame_lower
       units: km.s**-1
       flag: hidden
       type: float
-      descr: Lower confidence level (16%) of {\tt gravredshiftFlame}
+      descr: Lower confidence level (16%) of gravredshiftFlame
     - ingest: AstrophysicalParameters.gravredshift_flame_upper
       name: gravredshift_flame_upper
       units: km.s**-1
       flag: hidden
       type: float
-      descr: Upper confidence level (84%) of {\tt gravredshiftFlame}
+      descr: Upper confidence level (84%) of gravredshiftFlame
     - ingest: AstrophysicalParameters.bc_flame
       name: bc_flame
       units: mag
       flag: hidden
       type: float
-      descr: Bolometric correction used to derive {\tt lumFlame}
+      descr: Bolometric correction used to derive lumFlame
   - name: ''
     title: msc
     descr: Stellar parameters from the Multiple Star Classifier (MSC)
@@ -2610,7 +2607,7 @@ fields:
   ingest: _table:AstrophysicalParametersSupp #sorted, 1:1 files
   #count: 473020612
   descr: |
-    This table contains additional parameters from the Apsis processing chain, compared to the main table {\tt AstrophysicalParameters} (see Chapter~\ref{chap:cu8par}), from modules that produce more than one result for a parameter. It contains (1) the individual library results from GSP-Phot (see Section~\ref{ssec:cu8par_apsis_gspphot_method}), (2) FLAME results from processing GSP-Spec parameters given in the {\tt AstrophysicalParameters} table (see Section~\ref{ssec:cu8par_apsis_flame}), and (3) results from the GSP-Spec ANN algorithm (see Section~\ref{ssec:cu8par_apsis_gspspec}).
+    This table contains additional parameters from the Apsis processing chain, compared to the main table AstrophysicalParameters, from modules that produce more than one result for a parameter. It contains (1) the individual library results from GSP-Phot, (2) FLAME results from processing GSP-Spec parameters given in the AstrophysicalParameters table, and (3) results from the GSP-Spec ANN algorithm.
   flag: hidden
   sub:
   - name: _index
@@ -3826,72 +3823,71 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Radius of the star from FLAME using {\tt teffGspspec} and {\tt lumFlameSpec}
+#   descr: Radius of the star from FLAME using teffGspspec and lumFlameSpec
 # - ingest: AstrophysicalParametersSupp.radius_flame_spec_lower
 #   name: radius_flame_spec_lower
 #   units: solRad
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Lower confidence level (16%) of {\tt radiusFlameSpec}
+#   descr: Lower confidence level (16%) of radiusFlameSpec
 # - ingest: AstrophysicalParametersSupp.radius_flame_spec_upper
 #   name: radius_flame_spec_upper
 #   units: solRad
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Upper confidence level (84%) of {\tt radiusFlameSpec}
+#   descr: Upper confidence level (84%) of radiusFlameSpec
 # - ingest: AstrophysicalParametersSupp.lum_flame_spec
 #   name: lum_flame_spec
 #   units: solLum
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Luminosity of the star from FLAME using G band magnitude, extinction ({\tt
-#     agGspphot}),  parallax and a bolometric correction {\tt bcFlameSpec}
+#   descr: Luminosity of the star from FLAME using G band magnitude, extinction (agGspphot),  parallax and a bolometric correction bcFlameSpec
 # - ingest: AstrophysicalParametersSupp.lum_flame_spec_lower
 #   name: lum_flame_spec_lower
 #   units: solLum
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Lower confidence level (16%) of {\tt lumFlameSpec}
+#   descr: Lower confidence level (16%) of lumFlameSpec
 # - ingest: AstrophysicalParametersSupp.lum_flame_spec_upper
 #   name: lum_flame_spec_upper
 #   units: solLum
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Upper confidence level (84%) of {\tt lumFlameSpec}
+#   descr: Upper confidence level (84%) of lumFlameSpec
 # - ingest: AstrophysicalParametersSupp.mass_flame_spec
 #   name: mass_flame_spec
 #   units: solMass
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Mass of the star from FLAME using stellar models,  {\tt lumFlameSpec} and
-#     {\tt teffGspspec}
+#   descr: Mass of the star from FLAME using stellar models,  lumFlameSpec and
+#     teffGspspec
 # - ingest: AstrophysicalParametersSupp.mass_flame_spec_lower
 #   name: mass_flame_spec_lower
 #   units: solMass
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Lower confidence level (16%) of {\tt massFlameSpec}
+#   descr: Lower confidence level (16%) of massFlameSpec
 # - ingest: AstrophysicalParametersSupp.mass_flame_spec_upper
 #   name: mass_flame_spec_upper
 #   units: solMass
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Upper confidence level (84%) of {\tt massFlameSpec}
+#   descr: Upper confidence level (84%) of massFlameSpec
 # - ingest: AstrophysicalParametersSupp.age_flame_spec
 #   name: age_flame_spec
 #   units: Gyr
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Age of the star from FLAME using stellar models, see {\tt massFlameSpec}
+#   descr: Age of the star from FLAME using stellar models, see massFlameSpec
 #     for details
 # - ingest: AstrophysicalParametersSupp.age_flame_spec_lower
 #   name: age_flame_spec_lower
@@ -3899,14 +3895,14 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Lower confidence level (16%) of {\tt ageFlameSpec}
+#   descr: Lower confidence level (16%) of ageFlameSpec
 # - ingest: AstrophysicalParametersSupp.age_flame_spec_upper
 #   name: age_flame_spec_upper
 #   units: Gyr
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Upper confidence level (84%) of {\tt ageFlameSpec}
+#   descr: Upper confidence level (84%) of ageFlameSpec
 # - ingest: AstrophysicalParametersSupp.flags_flame_spec
 #   name: flags_flame_spec
 #   flag: hidden
@@ -3918,8 +3914,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: integer
-#   descr: Evolutionary stage of the star from FLAME using stellar models, see {\tt
-#     massFlameSpec} for details
+#   descr: Evolutionary stage of the star from FLAME using stellar models, see massFlameSpec for details
 # - ingest: AstrophysicalParametersSupp.gravredshift_flame_spec
 #   name: gravredshift_flame_spec
 #   units: km.s**-1
@@ -3933,21 +3928,21 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Lower confidence interval of {\tt gravredshiftFlameSpec}
+#   descr: Lower confidence interval of gravredshiftFlameSpec
 # - ingest: AstrophysicalParametersSupp.gravredshift_flame_spec_upper
 #   name: gravredshift_flame_spec_upper
 #   units: km.s**-1
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Upper confidence interval of {\tt gravredshiftFlameSpec}
+#   descr: Upper confidence interval of gravredshiftFlameSpec
 # - ingest: AstrophysicalParametersSupp.bc_flame_spec
 #   name: bc_flame_spec
 #   units: mag
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Bolometric correction applied to derive {\tt lumFlameSpec} using GSP-Spec
+#   descr: Bolometric correction applied to derive lumFlameSpec using GSP-Spec
 #     parameters
 - name: epoch_photometry
   ingest: _table:EpochPhotometry #sorted, 1:1 files
@@ -3957,7 +3952,7 @@ fields:
     RAW data structure option. A flat table (sparse cube), which one photometric point
     per source per row can be obtained using INDIVIDUAL or COMBINED. \nNote this table
     is not available through the main archive TAP interface, but via the Massive Data
-    service, indexed by the VO Datalink protocol, described in \\secref{ssec:cu9arch_product_linking}.\n"
+    service, indexed by the VO Datalink protocol.\n"
   flag: hidden
   sub:
   - name: _index
@@ -4453,10 +4448,7 @@ fields:
     the classification and characterisation of sources considered as galaxy candidates.
     This table has been constructed with the intention to be complete rather than
     pure and, as such, it will contain a large fraction of non-genuine extragalactic
-    sources. Purer samples can be drawn using dedicated flags or queries. Please refer
-    to Chapter~\\ref{chap:cu3qso} of the on-line documentation for details about how
-    this table was built, its content, and for recommendations regarding its exploitation.
-    \n"
+    sources. Purer samples can be drawn using dedicated flags or queries."
   flag: hidden
   sub:
   - name: _index
@@ -4770,14 +4762,14 @@ fields:
 # #count: 914837
 # descr: "This table provides the list of input catalogues that have been used to
 #   select any given source for which morphological analysis parameters are provided
-#   in table {\\tt GalaxyCandidates}.\nEach source may have been cross-matched to
+#   in table GalaxyCandidates.\nEach source may have been cross-matched to
 #   more than one catalogue and therefore can have several entries in the table. \nFor
 #   DR3, the catalogues considered for this selection are mostly external, although
 #   sources identified by DPAC based on the classification performed by other processing
-#   have also been included here.\nEach catalogue is assigned a \\texttt{catalogueId}.
+#   have also been included here.\nEach catalogue is assigned a catalogueId.
 #   For DR3 the only input list corresponds to that published in~\\cite{2022Krone-Martins}.
 #   Further details on these catalogues are given in the chapter on extended object
-#   processing (Section~\\ref{sec:cu4eo_list}).\n"
+#   processing.\n"
 # sub:
 # - name: _index
 #   ingest: GalaxyCatalogueName._index
@@ -4796,8 +4788,7 @@ fields:
   ingest: _table:NssAccelerationAstro #not sorted, single file
   #count: 338215
   descr: |
-    This table contains non-single-star astrometric models for sources having a non-linear proper motion which is compatible with an acceleration solution. Several possible models are hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
-    Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}.
+    This table contains non-single-star astrometric models for sources having a non-linear proper motion which is compatible with an acceleration solution. Several possible models are hosted within the same table and they are indicated by the field nssSolutionType. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field bitIndex, which can also be used to extract the relevant elements of the correlation vector corrVec.
   flag: hidden
   sub:
   - name: _index
@@ -4960,8 +4951,7 @@ fields:
   ingest: _table:NssNonLinearSpectro #not sorted, single file
   #count: 56808
   descr: |
-    This table contains non-single-star orbital models for spectroscopic binaries compatible with a trend. Several possible models are hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
-    Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}.
+    This table contains non-single-star orbital models for spectroscopic binaries compatible with a trend. Several possible models are hosted within the same table and they are indicated by the field nssSolutionType. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field bitIndex, which can also be used to extract the relevant elements of the correlation vector corrVec.
   flag: hidden
   sub:
   - name: _index
@@ -5051,8 +5041,8 @@ fields:
   ingest: _table:NssTwoBodyOrbit #not sorted, single file, dups
   #count: 443205
   descr: |
-    This table contains non-single-star orbital models for sources compatible with an orbital two-body solution. This covers astrometric binaries, spectroscopic binaries, eclipsing binaries and certain combinations thereof. Several possible models are hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
-    Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}. Warning: as a source may receive independent astrometric, spectroscopic or photometric orbits, a query using a given sourceId may return several solutions. This has to be accounted for when doing a crossmatch by sourceId.
+    This table contains non-single-star orbital models for sources compatible with an orbital two-body solution. This covers astrometric binaries, spectroscopic binaries, eclipsing binaries and certain combinations thereof. Several possible models are hosted within the same table and they are indicated by the field nssSolutionType. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field bitIndex, which can also be used to extract the relevant elements of the correlation vector corrVec.
+    Warning: as a source may receive independent astrometric, spectroscopic or photometric orbits, a query using a given sourceId may return several solutions. This has to be accounted for when doing a crossmatch by sourceId.
   flag: hidden
   sub:
   - name: _index
@@ -5579,9 +5569,8 @@ fields:
   ingest: _table:NssVimFl #not sorted, single file
   #count: 870
   descr: |
-    This table contains non-single-star models for sources compatible with an Variability Induced Mover (VIM) solution. Several possible models are in principle hosted within the same table and they are indicated by the field \texttt{nssSolutionType}. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field \texttt{bitIndex}, which can also be used to extract the relevant elements of the correlation vector \texttt{corrVec}.
+    This table contains non-single-star models for sources compatible with an Variability Induced Mover (VIM) solution. Several possible models are in principle hosted within the same table and they are indicated by the field nssSolutionType. The description of this latter lists all possible solution types considered for this release. Only a selection of parameters hosted in this table are provided here, depending on the solution. The details of those is given in the description of field bitIndex, which can also be used to extract the relevant elements of the correlation vector corrVec.
     For DR3, only VIMF solutions are provided here.
-    Details about the formalism used to derive the parameters in this table are given in the on-line documentation, see Chapter~\ref{chap:cu4nss}.
   flag: hidden
   sub:
   - name: _index
@@ -5740,10 +5729,7 @@ fields:
     Together with those, the QSOs used to define the Gaia-CRF3 are also listed in
     this table. This table has been constructed with the intention to be complete
     rather than pure and, as such, it will contain a large fraction of non-genuine
-    extragalactic sources. Purer samples can be drawn using dedicated flags or queries.
-    Please refer to Chapter~\\ref{chap:cu3qso} of the on-line documentation for details
-    about how this table was built, its content, and for recommendations regarding
-    its exploitation. \n"
+    extragalactic sources. Purer samples can be drawn using dedicated flags or queries."
   flag: hidden
   sub:
   - name: _index
@@ -6026,16 +6012,16 @@ fields:
 # #count: 2722093
 # descr: "This table provides the list of input catalogues that have been used to
 #   select any given source for which morphological analysis parameters are provided
-#   in table \\texttt{QsoCandidates}.\nEach source may have been cross-matched to
+#   in table QsoCandidates.\nEach source may have been cross-matched to
 #   more than one catalogue and therefore can have several entries in the table. \nFor
 #   DR3, the catalogues considered for this selection are mostly external, although
 #   sources identified by DPAC based on the classification performed by other processing
-#   have also been included here.\nEach catalogue is assigned a \\texttt{catalogueId}.
+#   have also been included here.\nEach catalogue is assigned a catalogueId.
 #   For DR3 the following applies: \\begin{itemize} \\item 1: GaiaVariQso2018 (internal
 #   DPAC classification based on photometry variability) \\item 2: ICRF2 \t \\item
 #   3: SDSS-DR12Q \t \\item 4: LQAC3 \t \\item 5: Half Million Quasars \t \\item 6:
 #   Secrest+2015 \t \\item 7: Assef+2018\\_C75 \t \\end{itemize}\nFurther details
-#   on these catalogues are given in the chapter on extended object processing (Section~\\ref{sec:cu4eo_list}).\n"
+#   on these catalogues are given in the chapter on extended object processing.\n"
 # sub:
 # - name: _index
 #   ingest: QsoCatalogueName._index
@@ -6055,9 +6041,7 @@ fields:
   #count: 999645
   descr: "This is the RVS mean sampled spectrum table. The spectra are in the rest
     frame, they are normalised and their wavelength grid ranges from 846 to 870 nm
-    in steps of 0.01 nm (2401 elements). \nSee~~\\secref{sssec:cu6spe_meanspe} for
-    a description on how the mean spectra are obtained, and \\citet{DR3-DPACP-154}
-    for a description of the spectra validation.\n"
+    in steps of 0.01 nm (2401 elements)."
   flag: hidden
   sub:
   - name: _index
@@ -6176,7 +6160,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty of the \texttt{pf} period
+#   descr: Uncertainty of the pf period
 # - ingest: VariCepheid.p1_o
 #   name: p1_o
 #   units: d
@@ -6191,7 +6175,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty of the \texttt{p1O} period
+#   descr: Uncertainty of the p1O period
 # - ingest: VariCepheid.epoch_g
 #   name: epoch_g
 #   units: d
@@ -6205,7 +6189,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty on the epoch parameter \texttt{epochG}
+#   descr: Uncertainty on the epoch parameter epochG
 # - ingest: VariCepheid.epoch_bp
 #   name: epoch_bp
 #   units: d
@@ -6219,7 +6203,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty on the epoch parameter \texttt{epochBp}
+#   descr: Uncertainty on the epoch parameter epochBp
 # - ingest: VariCepheid.epoch_rp
 #   name: epoch_rp
 #   units: d
@@ -6233,7 +6217,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty on the epoch parameter \texttt{epochRp}
+#   descr: Uncertainty on the epoch parameter epochRp
 # - ingest: VariCepheid.epoch_rv
 #   name: epoch_rv
 #   units: d
@@ -6247,7 +6231,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty on the epoch parameter \texttt{epochRv}
+#   descr: Uncertainty on the epoch parameter epochRv
 # - ingest: VariCepheid.int_average_g
 #   name: int_average_g
 #   units: mag
@@ -6261,7 +6245,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty on \texttt{intAverageG} parameter
+#   descr: Uncertainty on intAverageG parameter
 # - ingest: VariCepheid.int_average_bp
 #   name: int_average_bp
 #   units: mag
@@ -6275,7 +6259,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty on \texttt{intAverageBp} parameter
+#   descr: Uncertainty on intAverageBp parameter
 # - ingest: VariCepheid.int_average_rp
 #   name: int_average_rp
 #   units: mag
@@ -6289,7 +6273,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty on \texttt{intAverageRp} parameter
+#   descr: Uncertainty on intAverageRp parameter
 # - ingest: VariCepheid.average_rv
 #   name: average_rv
 #   units: km.s**-1
@@ -6303,7 +6287,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty on \texttt{averageRv} parameter
+#   descr: Uncertainty on averageRv parameter
 # - ingest: VariCepheid.peak_to_peak_g
 #   name: peak_to_peak_g
 #   units: mag
@@ -6317,7 +6301,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty on the \texttt{peakToPeakG} parameter
+#   descr: Uncertainty on the peakToPeakG parameter
 # - ingest: VariCepheid.peak_to_peak_bp
 #   name: peak_to_peak_bp
 #   units: mag
@@ -6331,7 +6315,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty on the \texttt{peakToPeakBp} parameter
+#   descr: Uncertainty on the peakToPeakBp parameter
 # - ingest: VariCepheid.peak_to_peak_rp
 #   name: peak_to_peak_rp
 #   units: mag
@@ -6345,7 +6329,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty on the \texttt{peakToPeakRp} parameter
+#   descr: Uncertainty on the peakToPeakRp parameter
 # - ingest: VariCepheid.peak_to_peak_rv
 #   name: peak_to_peak_rv
 #   units: km.s**-1
@@ -6359,7 +6343,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: double
-#   descr: Uncertainty on the \texttt{peakToPeakRv} parameter
+#   descr: Uncertainty on the peakToPeakRv parameter
 # - ingest: VariCepheid.metallicity
 #   name: metallicity
 #   units: '''dex'''
@@ -6373,38 +6357,38 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty of the \texttt{metallicity} parameter
+#   descr: Uncertainty of the metallicity parameter
 # - ingest: VariCepheid.r21_g
 #   name: r21_g
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: 'Fourier decomposition parameter \texttt{r21G}: A2/A1 (for G band)'
+#   descr: 'Fourier decomposition parameter r21G: A2/A1 (for G band)'
 # - ingest: VariCepheid.r21_g_error
 #   name: r21_g_error
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: 'Uncertainty on the \texttt{r21G} parameter: A2/A1 (for G band)'
+#   descr: 'Uncertainty on the r21G parameter: A2/A1 (for G band)'
 # - ingest: VariCepheid.r31_g
 #   name: r31_g
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: 'Fourier decomposition parameter \texttt{r31G}: A3/A1 (for G band)'
+#   descr: 'Fourier decomposition parameter r31G: A3/A1 (for G band)'
 # - ingest: VariCepheid.r31_g_error
 #   name: r31_g_error
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: 'Uncertainty on the \texttt{r31G} parameter: A3/A1 (for G band)'
+#   descr: 'Uncertainty on the r31G parameter: A3/A1 (for G band)'
 # - ingest: VariCepheid.phi21_g
 #   name: phi21_g
 #   units: rad
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: 'Fourier decomposition parameter \texttt{phi21G}: phi2 - 2*phi1 (for G
+#   descr: 'Fourier decomposition parameter phi21G: phi2 - 2*phi1 (for G
 #     band)'
 # - ingest: VariCepheid.phi21_g_error
 #   name: phi21_g_error
@@ -6412,14 +6396,14 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: 'Uncertainty on the \texttt{phi21G} parameter: phi2 - 2*phi1 (for G band)'
+#   descr: 'Uncertainty on the phi21G parameter: phi2 - 2*phi1 (for G band)'
 # - ingest: VariCepheid.phi31_g
 #   name: phi31_g
 #   units: rad
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: 'Fourier decomposition parameter \texttt{phi31G}: phi3 - 3*phi1 (for G
+#   descr: 'Fourier decomposition parameter phi31G: phi3 - 3*phi1 (for G
 #     band)'
 # - ingest: VariCepheid.phi31_g_error
 #   name: phi31_g_error
@@ -6427,7 +6411,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: 'Uncertainty on the \texttt{phi31G} parameter: phi3 - 3*phi1 (for G band)'
+#   descr: 'Uncertainty on the phi31G parameter: phi3 - 3*phi1 (for G band)'
 # - ingest: VariCepheid.num_clean_epochs_g
 #   name: num_clean_epochs_g
 #   flag: hidden
@@ -6730,10 +6714,10 @@ fields:
   ingest: _table:VariClassifierResult #sorted, 1:1 files
   #count: 9976881
   descr: "Table with variability classification results of all classifiers, which
-    are identified by the {\\tt classifierName} column. In DR3, multiple classifiers
-    (depending on class) are combined into a single classifier with {\\tt classifierName}=`nTransits:5+',
-    which is described in {\\tt VariClassifierDefinition} and identifies the classes
-    defined in {\\tt VariClassifierClassDefinition}. \n"
+    are identified by the classifierName column. In DR3, multiple classifiers
+    (depending on class) are combined into a single classifier with classifierName=`nTransits:5+',
+    which is described in VariClassifierDefinition and identifies the classes
+    defined in VariClassifierClassDefinition. \n"
   flag: hidden
   sub:
   - name: _index
@@ -6747,7 +6731,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: byte
-#   descr: Classifier name used to produce this result, use for lookup in \texttt{VariClassifierDefinition}
+#   descr: Classifier name used to produce this result, use for lookup in VariClassifierDefinition
 #     table
 #   enum: ["nTransits:5+"]
 # - ingest: VariClassifierResult.best_class_name
@@ -6755,7 +6739,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: byte
-#   descr: Name of best class, see table \texttt{VariClassifierClassDefinition} for
+#   descr: Name of best class, see table VariClassifierClassDefinition for
 #     details of the class
 #   enum:
 #     - "AGN"                         #"Active Galactic Nuclei (including Quasars)."
@@ -7005,7 +6989,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty of \texttt{frequency}
+#   descr: Uncertainty of frequency
 # - ingest: VariEclipsingBinary.geom_model_reference_level
 #   name: geom_model_reference_level
 #   units: mag
@@ -7019,7 +7003,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty of \texttt{geomModelReferenceLevel}
+#   descr: Uncertainty of geomModelReferenceLevel
 # - ingest: VariEclipsingBinary.geom_model_gaussian1_phase
 #   name: geom_model_gaussian1_phase
 #   flag: hidden
@@ -7031,7 +7015,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty of \texttt{geomModelGaussian1Phase}
+#   descr: Uncertainty of geomModelGaussian1Phase
 # - ingest: VariEclipsingBinary.geom_model_gaussian1_sigma
 #   name: geom_model_gaussian1_sigma
 #   flag: hidden
@@ -7043,7 +7027,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty of \texttt{geomModelGaussian1Sigma}
+#   descr: Uncertainty of geomModelGaussian1Sigma
 # - ingest: VariEclipsingBinary.geom_model_gaussian1_depth
 #   name: geom_model_gaussian1_depth
 #   units: mag
@@ -7057,7 +7041,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty of \texttt{geomModelGaussian1Depth}
+#   descr: Uncertainty of geomModelGaussian1Depth
 # - ingest: VariEclipsingBinary.geom_model_gaussian2_phase
 #   name: geom_model_gaussian2_phase
 #   flag: hidden
@@ -7069,7 +7053,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty of \texttt{geomModelGaussian2Phase}
+#   descr: Uncertainty of geomModelGaussian2Phase
 # - ingest: VariEclipsingBinary.geom_model_gaussian2_sigma
 #   name: geom_model_gaussian2_sigma
 #   flag: hidden
@@ -7081,7 +7065,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty of \texttt{geomModelGaussian2Sigma}
+#   descr: Uncertainty of geomModelGaussian2Sigma
 # - ingest: VariEclipsingBinary.geom_model_gaussian2_depth
 #   name: geom_model_gaussian2_depth
 #   units: mag
@@ -7095,7 +7079,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty of \texttt{geomModelGaussian2Depth}
+#   descr: Uncertainty of geomModelGaussian2Depth
 # - ingest: VariEclipsingBinary.geom_model_cosine_half_period_amplitude
 #   name: geom_model_cosine_half_period_amplitude
 #   units: mag
@@ -7110,7 +7094,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty of \texttt{geomModelCosineHalfPeriodAmplitude}
+#   descr: Uncertainty of geomModelCosineHalfPeriodAmplitude
 # - ingest: VariEclipsingBinary.geom_model_cosine_half_period_phase
 #   name: geom_model_cosine_half_period_phase
 #   flag: hidden
@@ -7123,7 +7107,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty of \texttt{geomModelCosineHalfPeriodPhase}
+#   descr: Uncertainty of geomModelCosineHalfPeriodPhase
 # - ingest: VariEclipsingBinary.model_type
 #   name: model_type
 #   flag: hidden
@@ -7160,7 +7144,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: 'Primary eclipse: uncertainty of \texttt{derivedPrimaryEclPhase}'
+#   descr: 'Primary eclipse: uncertainty of derivedPrimaryEclPhase'
 # - ingest: VariEclipsingBinary.derived_primary_ecl_duration
 #   name: derived_primary_ecl_duration
 #   flag: hidden
@@ -7172,7 +7156,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: 'Primary eclipse: uncertainty of \texttt{derivedPrimaryEclDuration}'
+#   descr: 'Primary eclipse: uncertainty of derivedPrimaryEclDuration'
 # - ingest: VariEclipsingBinary.derived_primary_ecl_depth
 #   name: derived_primary_ecl_depth
 #   units: mag
@@ -7186,7 +7170,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: 'Primary eclipse: uncertainty of \texttt{derivedPrimaryEclDepth}'
+#   descr: 'Primary eclipse: uncertainty of derivedPrimaryEclDepth'
 # - ingest: VariEclipsingBinary.derived_secondary_ecl_phase
 #   name: derived_secondary_ecl_phase
 #   flag: hidden
@@ -7198,7 +7182,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: 'Secondary eclipse: uncertainty of \texttt{derivedSecondaryEclPhase}'
+#   descr: 'Secondary eclipse: uncertainty of derivedSecondaryEclPhase'
 # - ingest: VariEclipsingBinary.derived_secondary_ecl_duration
 #   name: derived_secondary_ecl_duration
 #   flag: hidden
@@ -7210,7 +7194,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: 'Secondary eclipse: uncertainty of \texttt{derivedSecondaryEclDuration}'
+#   descr: 'Secondary eclipse: uncertainty of derivedSecondaryEclDuration'
 # - ingest: VariEclipsingBinary.derived_secondary_ecl_depth
 #   name: derived_secondary_ecl_depth
 #   units: mag
@@ -7224,7 +7208,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: 'Secondary eclipse: uncertainty of \texttt{derivedSecondaryEclDepth}'
+#   descr: 'Secondary eclipse: uncertainty of derivedSecondaryEclDepth'
 - name: vari_long_period_variable
   ingest: _table:VariLongPeriodVariable #sorted, 1:1 files
   #count: 1720588
@@ -7639,7 +7623,7 @@ fields:
   ingest: _table:VariRadVelStatistics #sorted, 1:1 files
   #count: 1898
   descr: |
-    Statistical parameters of radial velocity time series, using only transits not rejected, see {\tt rejectedByVariability} column in {\tt VariEpochRadialVelocity}.
+    Statistical parameters of radial velocity time series, using only transits not rejected, see rejectedByVariability column in VariEpochRadialVelocity.
     Note that NaN will be reported when the parameter value is missing or cannot be calculated.
   flag: hidden
   sub:
@@ -8215,7 +8199,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty of the \texttt{pf} period
+#   descr: Uncertainty of the pf period
 # - ingest: VariRrlyrae.p1_o
 #   name: p1_o
 #   units: d
@@ -8230,7 +8214,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty of the \texttt{p1O} period
+#   descr: Uncertainty of the p1O period
 # - ingest: VariRrlyrae.epoch_g
 #   name: epoch_g
 #   units: d
@@ -8244,7 +8228,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty on the epoch parameter \texttt{epochG}
+#   descr: Uncertainty on the epoch parameter epochG
 # - ingest: VariRrlyrae.epoch_bp
 #   name: epoch_bp
 #   units: d
@@ -8258,7 +8242,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty on the epoch parameter \texttt{epochBp}
+#   descr: Uncertainty on the epoch parameter epochBp
 # - ingest: VariRrlyrae.epoch_rp
 #   name: epoch_rp
 #   units: d
@@ -8272,7 +8256,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty on the epoch parameter \texttt{epochRp}
+#   descr: Uncertainty on the epoch parameter epochRp
 # - ingest: VariRrlyrae.epoch_rv
 #   name: epoch_rv
 #   units: d
@@ -8286,7 +8270,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty on the epoch parameter \texttt{epochRv}
+#   descr: Uncertainty on the epoch parameter epochRv
 # - ingest: VariRrlyrae.int_average_g
 #   name: int_average_g
 #   units: mag
@@ -8300,7 +8284,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty on \texttt{intAverageG} parameter
+#   descr: Uncertainty on intAverageG parameter
 # - ingest: VariRrlyrae.int_average_bp
 #   name: int_average_bp
 #   units: mag
@@ -8314,7 +8298,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty on \texttt{intAverageBp} parameter
+#   descr: Uncertainty on intAverageBp parameter
 # - ingest: VariRrlyrae.int_average_rp
 #   name: int_average_rp
 #   units: mag
@@ -8328,7 +8312,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty on \texttt{intAverageRp} parameter
+#   descr: Uncertainty on intAverageRp parameter
 # - ingest: VariRrlyrae.average_rv
 #   name: average_rv
 #   units: km.s**-1
@@ -8342,7 +8326,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty on \texttt{averageRv} parameter
+#   descr: Uncertainty on averageRv parameter
 # - ingest: VariRrlyrae.peak_to_peak_g
 #   name: peak_to_peak_g
 #   units: mag
@@ -8356,7 +8340,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty on the \texttt{peakToPeakG} parameter
+#   descr: Uncertainty on the peakToPeakG parameter
 # - ingest: VariRrlyrae.peak_to_peak_bp
 #   name: peak_to_peak_bp
 #   units: mag
@@ -8370,7 +8354,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty on the \texttt{peakToPeakBp} parameter
+#   descr: Uncertainty on the peakToPeakBp parameter
 # - ingest: VariRrlyrae.peak_to_peak_rp
 #   name: peak_to_peak_rp
 #   units: mag
@@ -8384,7 +8368,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty on the \texttt{peakToPeakRp} parameter
+#   descr: Uncertainty on the peakToPeakRp parameter
 # - ingest: VariRrlyrae.peak_to_peak_rv
 #   name: peak_to_peak_rv
 #   units: km.s**-1
@@ -8398,7 +8382,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: double
-#   descr: Uncertainty on the \texttt{peakToPeakRv} parameter
+#   descr: Uncertainty on the peakToPeakRv parameter
 # - ingest: VariRrlyrae.metallicity
 #   name: metallicity
 #   units: '''dex'''
@@ -8412,38 +8396,38 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: Uncertainty of the \texttt{metallicity} parameter
+#   descr: Uncertainty of the metallicity parameter
 # - ingest: VariRrlyrae.r21_g
 #   name: r21_g
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: 'Fourier decomposition parameter \texttt{r21G}: A2/A1 (for G band)'
+#   descr: 'Fourier decomposition parameter r21G: A2/A1 (for G band)'
 # - ingest: VariRrlyrae.r21_g_error
 #   name: r21_g_error
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: 'Uncertainty on the \texttt{r21G} parameter: A2/A1 (for G band)'
+#   descr: 'Uncertainty on the r21G parameter: A2/A1 (for G band)'
 # - ingest: VariRrlyrae.r31_g
 #   name: r31_g
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: 'Fourier decomposition parameter \texttt{r31G}: A3/A1 (for G band)'
+#   descr: 'Fourier decomposition parameter r31G: A3/A1 (for G band)'
 # - ingest: VariRrlyrae.r31_g_error
 #   name: r31_g_error
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: 'Uncertainty on the \texttt{r31G} parameter: A3/A1 (for G band)'
+#   descr: 'Uncertainty on the r31G parameter: A3/A1 (for G band)'
 # - ingest: VariRrlyrae.phi21_g
 #   name: phi21_g
 #   units: rad
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: 'Fourier decomposition parameter \texttt{phi21G}: phi2 - 2*phi1 (for G
+#   descr: 'Fourier decomposition parameter phi21G: phi2 - 2*phi1 (for G
 #     band)'
 # - ingest: VariRrlyrae.phi21_g_error
 #   name: phi21_g_error
@@ -8451,14 +8435,14 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: 'Uncertainty on the \texttt{phi21G} parameter: phi2 - 2*phi1 (for G band)'
+#   descr: 'Uncertainty on the phi21G parameter: phi2 - 2*phi1 (for G band)'
 # - ingest: VariRrlyrae.phi31_g
 #   name: phi31_g
 #   units: rad
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: 'Fourier decomposition parameter \texttt{phi31G}: phi3 - 3*phi1 (for G
+#   descr: 'Fourier decomposition parameter phi31G: phi3 - 3*phi1 (for G
 #     band)'
 # - ingest: VariRrlyrae.phi31_g_error
 #   name: phi31_g_error
@@ -8466,7 +8450,7 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: float
-#   descr: 'Uncertainty on the \texttt{phi31G} parameter: phi3 - 3*phi1 (for G band)'
+#   descr: 'Uncertainty on the phi31G parameter: phi3 - 3*phi1 (for G band)'
 # - ingest: VariRrlyrae.num_clean_epochs_g
 #   name: num_clean_epochs_g
 #   flag: hidden
@@ -8792,7 +8776,7 @@ fields:
 #   units: mag**2
 #   flag: hidden
 #   type: array double
-#   descr: Variogram values associated with the {\tt variogramCharTimescales}
+#   descr: Variogram values associated with the variogramCharTimescales
 # - ingest: VariShortTimescale.frequency
 #   name: frequency
 #   units: d**-1
@@ -8804,7 +8788,7 @@ fields:
   ingest: _table:VariSummary #sorted, 1:1 files
   #count: 11754237
   descr: |
-    Summary table that provides the information on where a {\tt sourceId} can be found in the different {\tt Variability} tables and statistical parameters of time series, using only transits not rejected.
+    Summary table that provides the information on where a sourceId can be found in the different Variability tables and statistical parameters of time series, using only transits not rejected.
     Note that NULL is reported when the statistical parameter value is missing or cannot be calculated.
   flag: hidden
   sub:
@@ -9176,78 +9160,78 @@ fields:
 #   flag: hidden
 #   store: true
 #   type: boolean
-#   descr: Source is present in \texttt{VariClassifierResult}
+#   descr: Source is present in VariClassifierResult
 # - ingest: VariSummary.in_vari_rrlyrae
 #   name: in_vari_rrlyrae
 #   flag: hidden
 #   store: true
 #   type: boolean
-#   descr: Source is present in \texttt{VariRrlyrae}
+#   descr: Source is present in VariRrlyrae
 # - ingest: VariSummary.in_vari_cepheid
 #   name: in_vari_cepheid
 #   flag: hidden
 #   store: true
 #   type: boolean
-#   descr: Source is present in \texttt{VariCepheid}
+#   descr: Source is present in VariCepheid
 # - ingest: VariSummary.in_vari_planetary_transit
 #   name: in_vari_planetary_transit
 #   flag: hidden
 #   store: true
 #   type: boolean
-#   descr: Source is present in \texttt{VariPlanetaryTransit}
+#   descr: Source is present in VariPlanetaryTransit
 # - ingest: VariSummary.in_vari_short_timescale
 #   name: in_vari_short_timescale
 #   flag: hidden
 #   store: true
 #   type: boolean
-#   descr: Source is present in \texttt{VariShortTimescale}
+#   descr: Source is present in VariShortTimescale
 # - ingest: VariSummary.in_vari_long_period_variable
 #   name: in_vari_long_period_variable
 #   flag: hidden
 #   store: true
 #   type: boolean
-#   descr: Source is present in \texttt{VariLongPeriodVariable}
+#   descr: Source is present in VariLongPeriodVariable
 # - ingest: VariSummary.in_vari_eclipsing_binary
 #   name: in_vari_eclipsing_binary
 #   flag: hidden
 #   store: true
 #   type: boolean
-#   descr: Source is present in \texttt{VariEclipsingBinary}
+#   descr: Source is present in VariEclipsingBinary
 # - ingest: VariSummary.in_vari_rotation_modulation
 #   name: in_vari_rotation_modulation
 #   flag: hidden
 #   store: true
 #   type: boolean
-#   descr: Source is present in \texttt{VariRotationModulation}
+#   descr: Source is present in VariRotationModulation
 # - ingest: VariSummary.in_vari_ms_oscillator
 #   name: in_vari_ms_oscillator
 #   flag: hidden
 #   store: true
 #   type: boolean
-#   descr: Source is present in \texttt{VariMsOscillator}
+#   descr: Source is present in VariMsOscillator
 # - ingest: VariSummary.in_vari_agn
 #   name: in_vari_agn
 #   flag: hidden
 #   store: true
 #   type: boolean
-#   descr: Source is present in \texttt{VariAgn}
+#   descr: Source is present in VariAgn
 # - ingest: VariSummary.in_vari_microlensing
 #   name: in_vari_microlensing
 #   flag: hidden
 #   store: true
 #   type: boolean
-#   descr: Source is present in \texttt{VariMicrolensing}
+#   descr: Source is present in VariMicrolensing
 # - ingest: VariSummary.in_vari_compact_companion
 #   name: in_vari_compact_companion
 #   flag: hidden
 #   store: true
 #   type: boolean
-#   descr: Source is present in \texttt{VariCompactCompanion}
+#   descr: Source is present in VariCompactCompanion
 - name: xp_continuous_mean_spectrum
   ingest: _table:XpContinuousMeanSpectrum #sorted, 1:1 files
   #count: 219197643
   descr: |
-    Table hosting the mean BP and RP spectra based on the continuous representation in basis functions (see~\secref{cu5pho_ssec:meanSpecGen}).
+    Table hosting the mean BP and RP spectra based on the continuous representation in basis functions.
   flag: hidden
   sub:
   - name: _index
@@ -9395,7 +9379,7 @@ fields:
   ingest: _table:XpSampledMeanSpectrum #sorted, 1:1 files
   #count: 34468373
   descr: |
-    This is the BP/RP externally calibrated sampled mean spectrum. All mean spectra are sampled to the same set of absolute wavelength positions, which can be found in the field \texttt{wavelength} of table \texttt{XpMerge}.
+    This is the BP/RP externally calibrated sampled mean spectrum. All mean spectra are sampled to the same set of absolute wavelength positions, which can be found in the field wavelength of table XpMerge.
   flag: hidden
   sub:
   - name: _index
