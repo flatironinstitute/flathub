@@ -922,14 +922,14 @@ function py_text(query: Dict<string>) {
     cat +
     ".numpy(fields = " +
     JSON.stringify(query.fields.split(" "));
-  for (let i = 0; i < Filters.length; i++) {
-    const q = Filters[i].pyQuery();
-    if (q != null) st += ",\n  " + Filters[i].name + " = " + q;
-  }
-  if (query.sort) st += ",\n  sort = " + JSON.stringify(query.sort.split(" "));
   if (Sample < 1) {
     st += ",\n  sample = " + Sample;
     if (Seed != undefined) st += ", seed = " + Seed;
+  }
+  if (query.sort) st += ",\n  sort = " + JSON.stringify(query.sort.split(" "));
+  for (let i = 0; i < Filters.length; i++) {
+    const q = Filters[i].pyQuery();
+    if (q != null) st += ",\n  " + Filters[i].name + " = " + q;
   }
   st += ")";
   (<HTMLPreElement>document.getElementById("code-py")).textContent = st;
