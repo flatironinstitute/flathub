@@ -82,6 +82,7 @@ initServer conf = do
         [ (hAcceptEncoding, " ") -- disable gzip
         , (hAccept, "application/json")
         ]
+    , HTTP.responseTimeout = HTTP.responseTimeoutNone
     }
 
 class Body a where
