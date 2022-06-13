@@ -1,4 +1,4 @@
-from typing import Any, Optional, List, Dict, Union, Tuple, TypedDict
+from typing import Any, Optional, List, Dict, Union, Tuple, TypedDict, Sequence
 
 import json
 import numpy
@@ -17,6 +17,8 @@ def urljoin(a: str, b: str) -> str:
 def queryValue(a) -> str:
     if type(a) is str:
         return a
+    if a is None:
+        return ''
     return json.dumps(a)
 
 defaultEndpoint = "http://flathub.flatironinstitute.org/api"
@@ -70,8 +72,21 @@ class Filter:
         self.field = fieldName(field)
         self.filter: Any = None
 
+    @classmethod
+    def make(cls, field: FieldRef, arg):
+        if isinstance(arg, cls):
+            return arg
+        if type(arg) == tuple and len(arg) == 2:
+            return RangeFilter(field, *arg)
+        if type(arg) == list:
+            return ValueFilter(field, *arg)
+        return ValueFilter(field, arg)
+
     def json(self):
         return self.filter
+
+    def query(self) -> str:
+        return queryValue(self.filter)
 
 class ValueFilter(Filter):
     """Filter on a field having a specific value, or one of a set of values."""
@@ -81,6 +96,7 @@ class ValueFilter(Filter):
             self.filter = list(values)
         else:
             self.filter = values[0]
+
 
 class RangeFilter(Filter):
     """Filter on a field being in some range: lte <= field <= gte
@@ -93,13 +109,16 @@ class RangeFilter(Filter):
         if lte is not None:
             self.filter['lte'] = lte
 
+    def query(self) -> str:
+        return ','.join(map(queryValue, (self.filter['gte'], self.filter['lte'])))
+
 class WildcardFilter(Filter):
     """Filter on a string field matching a wildcard.  Requires a wildcard field."""
     def __init__(self, field: FieldRef, wildcard: str):
         super().__init__(field)
         self.filter = {'wildcard': wildcard}
 
-class Filters(ArgumentDict):
+class Filters(Argument):
     """A set of row filters.
     In most cases where functions take a filters argument, they can
     alternatively be passed the same arguments as the Filters constructor
@@ -117,26 +136,52 @@ class Filters(ArgumentDict):
                 [value_list] for a ValueFilter list
                 value for a scalar ValueFilter
         """
-        if sample < 1:
-            self['sample'] = sample
-            if seed is not None:
-                self['seed'] = seed
-        for f in filters:
-            self[f.field] = f.filter
-        for n, v in field_filters.items():
-            if type(v) == tuple and len(v) == 2:
-                f = RangeFilter(n, v[0], v[1])
-            elif type(v) == list:
-                f = ValueFilter(n, *v)
-            else:
-                f = ValueFilter(n, v)
-            self[f.field] = f.filter
+        self.sample = sample
+        self.seed = seed
+        self.filters: Dict[str,Filter] = {}
+        self += filters
+        self.update(field_filters)
 
-    def json(self) -> Dict[str,Any]:
+    def __iadd__(self, arg: Union[Filter,Sequence[Filter]]):
+        """Add one or more Filter objects to these Filters."""
+        if isinstance(arg, Filter):
+            arg = [arg]
+        for f in arg:
+            if not isinstance(f, Filter):
+                raise TypeError(f"Filters += expected Filter: {arg}")
+            self.filters[f.field] = f
         return self
 
+    def __setitem__(self, field: FieldRef, filt):
+        """Set a filter for a field."""
+        self += Filter.make(field, filt)
+
+    def update(self, other: Dict[str, Any]):
+        for n, v in other.items():
+            self[n] = v
+
+    def __getitem__(self, field: FieldRef) -> Filter:
+        return self.filters[fieldName(field)]
+
+    def json(self) -> Dict[str,Any]:
+        r = {}
+        if self.sample < 1:
+            r['sample'] = self.sample
+            if self.seed is not None:
+                r['seed'] = self.seed
+        for f in self.filters.values():
+            r[f.field] = f.json()
+        return r
+
     def query(self) -> Dict[str,str]:
-        return {k:queryValue(v) for (k,v) in self.items()}
+        r = {}
+        if self.sample < 1:
+            r['sample'] = str(self.sample)
+            if self.seed is not None:
+                r['seed'] = str(self.seed)
+        for f in self.filters.values():
+            r[f.field] = f.query()
+        return r
 
 class NumericStats(TypedDict):
     """Stats for numeric fields.
@@ -304,26 +349,29 @@ class Catalog:
         """Return a count of rows matching the given Filters."""
         if not filters:
             filters = Filters(*args, **kwargs)
-        return POST(urljoin(self.endpoint, 'count'), filters)
+        body = filters.json()
+        return POST(urljoin(self.endpoint, 'count'), body)
     
     def stats(self, fields: List[FieldRef], filters: Optional[Filters] = None, *args, **kwargs) -> StatsRes:
         """Return stats for the selected fields given some filters."""
         if not filters:
             filters = Filters(*args, **kwargs)
-        filters['fields'] = list(map(fieldName, fields))
-        return StatsRes(POST(urljoin(self.endpoint, 'stats'), filters))
+        body = filters.json()
+        body['fields'] = list(map(fieldName, fields))
+        return StatsRes(POST(urljoin(self.endpoint, 'stats'), body))
 
     def histogram(self, filters: Optional[Filters] = None, fields: List[Union[HistogramField, FieldRef, Tuple[FieldRef, int], Tuple[FieldRef, int, bool]]] = [], quartiles: Optional[FieldRef]=None, *args, **kwargs) -> HistogramRes:
         """Return a histogram for the selected fields given some filters."""
         if not filters:
             filters = Filters(*args, **kwargs)
-        filters['fields'] = [HistogramField.make(h, catalog=self) for h in fields]
+        body = filters.json()
+        body['fields'] = [HistogramField.make(h, catalog=self) for h in fields]
         if quartiles:
-            filters['quartiles'] = fieldName(quartiles)
+            body['quartiles'] = fieldName(quartiles)
         return HistogramRes(
-                filters['fields'],
-                self[filters['quartiles']] if quartiles else None,
-                POST(urljoin(self.endpoint, 'histogram'), filters))
+                body['fields'],
+                self[body['quartiles']] if quartiles else None,
+                POST(urljoin(self.endpoint, 'histogram'), body))
 
     def numpy(self, fields: List[FieldRef], filters: Optional[Filters] = None, sort: List[Union[FieldRef, Tuple[FieldRef, bool], SortField]] = [], destpath = None, *args, **kwargs) -> numpy.ndarray:
         """Returns matching rows in numpy format.
