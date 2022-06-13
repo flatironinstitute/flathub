@@ -81,7 +81,7 @@ spec:
   loadBalancerIP: 132.249.246.21
   externalTrafficPolicy: Local
 ---
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: flathub
@@ -93,16 +93,22 @@ spec:
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: flathub
-          servicePort: 80
+          service:
+            name: flathub
+            port:
+              name: http
   - host: flathub.flatironinstitute.org
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: flathub
-          servicePort: 80
+          service:
+            name: flathub
+            port:
+              name: http
   tls:
     - hosts:
       - astrosims.flatironinstitute.org
