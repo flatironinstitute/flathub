@@ -82,6 +82,7 @@ initServer conf = do
         [ (hAcceptEncoding, " ") -- disable gzip
         , (hAccept, "application/json")
         ]
+    , HTTP.responseTimeout = HTTP.responseTimeoutNone
     }
 
 class Body a where
@@ -306,11 +307,13 @@ queryIndexScroll scroll cat Query{..} = do
   fillhistbnd j = do
     jaggs <- j J..: "aggregations"
     forM histunks $ \(f, t, n) -> do
-      let val a = traverseValue (maybe (fail "bnd value") return) . parseTypeJSONValue (fieldType f)
+      let val a = parseJSONOrStringValue
             =<< (J..: "value") =<< jaggs J..: a
-      lb <- val ("0" <> fieldName f)
-      ub <- val ("1" <> fieldName f)
-      return (liftFilterValue f $ FilterRange (Just lb) (Just ub), t, n)
+      fr <- updateFieldValueM f $ \_ -> do
+        lb <- val ("0" <> fieldName f)
+        ub <- val ("1" <> fieldName f)
+        return $ FilterRange (Just lb) (Just ub)
+      return (fr, t, n)
   -- calculate bucket size from range and count
   histsize :: (FieldSub Filter Proxy, Bool, Word) -> Maybe (T.Text, TypeValue HistogramInterval)
   histsize (f, t, n) = case fieldType f of

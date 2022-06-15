@@ -1,3 +1,4 @@
+{-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
@@ -23,10 +24,11 @@ module Type
   , typeOfValue
   , unTypeValue
   , toDouble
+  , fromInt
+  , readValue
   , renderValue
-  , parseTypeValue
-  , parseJSONTyped
-  , parseTypeJSONValue
+  , parseJSONValue
+  , parseJSONOrStringValue
   , parseStream
   , baseType
   , arrayHead
@@ -40,7 +42,9 @@ module Type
 import           Control.Applicative ((<|>), many, empty)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Types as J
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
+import qualified Data.ByteString.Char8 as BSC
 import           Data.Default (Default(def))
 import           Data.Functor.Classes (Eq1, eq1, Show1, showsPrec1)
 import           Data.Functor.Const (Const(..))
@@ -53,6 +57,7 @@ import qualified Data.OpenApi as OA
 import           Data.Proxy (Proxy(Proxy))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
+import qualified Data.Text.Encoding.Error as TE
 import           Data.Typeable (Typeable)
 import qualified Data.Vector as V
 import           Data.Void (Void, absurd, vacuous)
@@ -104,10 +109,15 @@ scalarTypes =
 class (Eq a, Ord a, Show a, Read a, J.ToJSON a, J.FromJSON a, OA.ToParamSchema a, OA.ToSchema a, Typeable a) => Typed a where
   typeValue :: f a -> TypeValue f
   toDouble :: a -> Double
+  fromInt :: Int -> a
+  default fromInt :: Num a => Int -> a
+  fromInt = fromIntegral
   -- |Certain representations ES uses do not always match what you expect, see we need a more permissive parser in some cases
-  parseJSONTyped :: J.Value -> J.Parser a
-  parseJSONTyped (J.Array v) | V.length v == 1 = J.parseJSON (V.head v)
-  parseJSONTyped j = J.parseJSON j
+  readValue :: BS.ByteString -> Maybe a
+  readValue = readMaybe . BSC.unpack
+  parseJSONValue :: J.Value -> J.Parser a
+  parseJSONValue (J.Array v) | V.length v == 1 = J.parseJSON (V.head v)
+  parseJSONValue j = J.parseJSON j
   parseStream, parseStream1 :: JS.Parser a
   parseStream = parseStream1 <|> 0 JS..! parseStream1
   renderValue :: a -> B.Builder
@@ -160,29 +170,41 @@ instance Typed Bool   where
   typeValue = Boolean
   toDouble False = 0
   toDouble True = 1
-  parseJSONTyped (J.Bool b) = return b
-  parseJSONTyped (J.Number 0) = return False
-  parseJSONTyped (J.Number 1) = return True
-  parseJSONTyped (J.Array v) | V.length v == 1 = parseJSONTyped (V.head v)
-  parseJSONTyped j = J.typeMismatch "Bool" j
+  fromInt = toEnum
+  readValue "0" = Just False
+  readValue "1" = Just True
+  readValue "false" = Just False
+  readValue "true" = Just True
+  readValue "False" = Just False
+  readValue "True" = Just True
+  readValue _ = Nothing
+  parseJSONValue (J.Bool b) = return b
+  parseJSONValue (J.Number 0) = return False
+  parseJSONValue (J.Number 1) = return True
+  parseJSONValue (J.Array v) | V.length v == 1 = parseJSONValue (V.head v)
+  parseJSONValue j = J.typeMismatch "Bool" j
   parseStream1 = JS.bool <|> toEnum <$> JS.integer
   renderValue False = "false"
   renderValue True = "true"
 instance Typed T.Text where
   typeValue = Keyword
   toDouble = read . T.unpack
+  fromInt = T.pack . show
+  readValue = Just . TE.decodeUtf8With TE.lenientDecode
   parseStream1 = JS.string
   renderValue = TE.encodeUtf8Builder
 instance Typed Void   where
   typeValue = Void
   toDouble = absurd
+  fromInt _ = error "fromInt Void"
   parseStream1 = empty
   renderValue = absurd
 instance Typed a => Typed (V.Vector a) where
   typeValue = Array . typeValue . Compose
   toDouble = toDouble . V.head
-  parseJSONTyped (J.Array v) = V.mapM parseJSONTyped v
-  parseJSONTyped j = V.singleton <$> parseJSONTyped j
+  fromInt = V.singleton . fromInt
+  parseJSONValue (J.Array v) = V.mapM parseJSONValue v
+  parseJSONValue j = V.singleton <$> parseJSONValue j
   parseStream1 = V.singleton <$> parseStream1
   parseStream = V.fromList <$> many (JS.arrayOf parseStream1) <|> parseStream1
 
@@ -276,21 +298,13 @@ instance {-# OVERLAPPABLE #-} Show1 f => Show (TypeValue f) where
 instance Show Value where
   showsPrec i = unTypeValue (showsPrec i . runIdentity)
 
-parseTypeValue :: Type -> T.Text -> TypeValue Maybe
-parseTypeValue (Keyword _) s       = Keyword $ Just s
-parseTypeValue (Boolean _) "0"     = Boolean $ Just False
-parseTypeValue (Boolean _) "1"     = Boolean $ Just True
-parseTypeValue (Boolean _) "false" = Boolean $ Just False
-parseTypeValue (Boolean _) "true"  = Boolean $ Just True
-parseTypeValue t s = fmapTypeValue (\Proxy -> readMaybe $ T.unpack s) t
-
 instance {-# OVERLAPPABLE #-} J.ToJSON1 f => J.ToJSON (TypeValue f) where
   toJSON = unTypeValue J.toJSON1
   toEncoding = unTypeValue J.toEncoding1
 
-parseTypeJSONValue :: Type -> J.Value -> TypeValue Maybe
-parseTypeJSONValue t (J.String s) = parseTypeValue t s
-parseTypeJSONValue t j = fmapTypeValue (\Proxy -> J.parseMaybe J.parseJSON j) t
+parseJSONOrStringValue :: Typed a => J.Value -> J.Parser a
+parseJSONOrStringValue j@(J.String s) = parseJSONValue j <|> maybe (fail "parseStringValue") return (readValue $ TE.encodeUtf8 s)
+parseJSONOrStringValue j = parseJSONValue j
 
 arrayHead :: Functor f => TypeValue (Compose f V.Vector) -> TypeValue f
 arrayHead = fmapTypeValue (fmap V.head . getCompose)
@@ -395,7 +409,7 @@ baseType (f,i,b,s,_) t
   where (_,t') = unArrayType t
 baseType (_,_,_,_,v) ~(Void _) = v
 
-numpyTypeSize :: Type -> Word
+numpyTypeSize :: Functor f => TypeValue f -> Word
 numpyTypeSize (Double    _) = 8
 numpyTypeSize (Float     _) = 4
 numpyTypeSize (HalfFloat _) = 2

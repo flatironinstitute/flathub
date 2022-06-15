@@ -541,8 +541,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                     <h6 .right-column-heading>Python Query
                     <p>
                       Example python code to apply the above filters and retrieve data. To use, download and install
-                      <a href="https://github.com/flatironinstitute/flathub/tree/prod/py">this module
-                      .
+                      <a href="https://github.com/flatironinstitute/flathub/tree/prod/py">this module.
                     <div #div-py .python-block>
                       <pre #code-py>
                 <div .tab-pane .fade #Fields role="tabpanel" aria-labelledby="dict-tab">

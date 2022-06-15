@@ -5,9 +5,11 @@ import           Control.Arrow (first, second)
 import           Control.Monad ((<=<), forM_, when, unless)
 import           Control.Monad.IO.Class (liftIO)
 import           Data.Default (Default(def))
+import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
 import           Data.Maybe (fromMaybe, isNothing, isJust)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import qualified Network.HTTP.Client as HTTP
 import qualified Network.HTTP.Simple as HTTP
 import qualified System.Console.GetOpt as Opt
@@ -31,6 +33,7 @@ import Html
 import JSON
 import Backend
 import Api
+import qualified KeyedMap as KM
 
 routes :: R.RouteMap Action
 routes = R.routes (
@@ -77,8 +80,13 @@ createCatalog cat = show <$> ES.createIndex cat
 
 populateStats :: Catalog -> M Catalog
 populateStats cat = do
-  stats <- once $ queryStats cat (StatsArgs mempty $ HM.filter (not . or . fieldStore) $ catalogFieldMap cat)
+  stats <- once $ (,)
+    <$> queryCount cat filts
+    <*> (fold <$> mapM (fmap snd . queryStats cat . StatsArgs filts . KM.singleton) fields)
   return cat{ catalogStats = stats }
+  where
+  fields = HM.filter (not . or . fieldStore) $ catalogFieldMap cat
+  filts = mempty
 
 main :: IO ()
 main = do
@@ -119,7 +127,7 @@ main = do
       let pconst c [] = return ([], c)
           pconst c ((n,s):r) = do
             (f, c') <- maybe (fail $ "Unknown field: " ++ show n) return $ takeCatalogField n c
-            v <- maybe (fail $ "Invalid value: " ++ show s) return $ parseFieldValue f s
+            v <- maybe (fail $ "Invalid value: " ++ show s) return $ parseFieldValue f $ TE.encodeUtf8 s
             first (v:) <$> pconst c' r
       (consts, cat) <- pconst (catalogMap catalogs HM.! sim) $ optConstFields opts
       n <- ingest cat consts args

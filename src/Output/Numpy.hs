@@ -75,7 +75,7 @@ numpyHeader fields count = (B.string8 "\147NUMPY"
   header = "{'descr':["
     <> mintersperseMap (B.char7 ',') field fields 
     <> "],'fortran_order':False,'shape':(" <> B.wordDec count <> ",)}"
-  field f = B.char7 '(' <> jenc (fieldName f) <> B.char7 ',' <> B.char7 '\'' <> B.string7 (numpyDtype f) <> B.char7 '\'' <> array f <> B.char7 ')'
+  field f = B.char7 '(' <> jenc (fieldName f) <> ",'<" <> B.string7 (numpyDtype f) <> B.char7 '\'' <> array f <> B.char7 ')'
   array f@Field{ fieldType = Array _ } = ",(" <> B.wordDec (fieldLength f) <> ",)"
   array _ = mempty
   len = succ $ BSL.length $ B.toLazyByteString header
@@ -85,7 +85,7 @@ numpyHeader fields count = (B.string8 "\147NUMPY"
   jenc = J.fromEncoding . J.toEncoding -- json is similar enough to python for most things
 
 numpyValue :: Field -> J.Value -> B.Builder
-numpyValue f = numpyBuild f . parseTypeJSONValue (fieldType f)
+numpyValue f j = numpyBuild f $ fmapTypeValue (\_ -> J.parseMaybe parseJSONValue j) (fieldType f)
 
 unconsJ :: [J.Value] -> (J.Value, [J.Value])
 unconsJ [] = (J.Null, [])

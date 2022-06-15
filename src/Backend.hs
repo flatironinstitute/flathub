@@ -175,7 +175,7 @@ instance DataRow (HM.HashMap T.Text Field) [FieldValue] where
     pf f = updateFieldValueM f (\Proxy -> Identity <$> parseStream)
 
 parseFieldValue' :: Field -> J.Value -> Value
-parseFieldValue' f v = fmapTypeValue (\Proxy -> either error Identity (J.parseEither parseJSONTyped v)) (fieldType f)
+parseFieldValue' f v = fmapTypeValue (\Proxy -> either error Identity (J.parseEither parseJSONValue v)) (fieldType f)
 
 instance DataRow (HM.HashMap T.Text Field) (HM.HashMap T.Text Value) where
   parseHit fm = return . HM.intersectionWith parseFieldValue' fm . storedFields
@@ -189,7 +189,7 @@ instance DataRow (HM.HashMap T.Text Field) (HM.HashMap T.Text FieldValue) where
 instance DataRow (V.Vector Field) (V.Vector (TypeValue Maybe)) where
   parseHit fields = getf . storedFields where
     getf o = mapM (parsef o) fields
-    parsef o f = traverseTypeValue (\Proxy -> mapM parseJSONTyped $ HM.lookup (fieldName f) o) (fieldType f)
+    parsef o f = traverseTypeValue (\Proxy -> mapM parseJSONValue $ HM.lookup (fieldName f) o) (fieldType f)
   parseHitStream fields = (ev V.//)
     <$> many
       (  "_id" JS..: ps "_id"
@@ -246,19 +246,20 @@ queryData cat args@DataArgs{..} = do
     $ raise400 "count too large"
   httpJSON (parseData dataFields) =<< queryDataRequest cat args Nothing
 
-fstAndLast :: Monad m => C.ConduitT (a, b) a m (Maybe b)
+fstAndLast :: Monad m => C.ConduitT (a, b) (C.Flush a) m (Maybe b)
 fstAndLast = C.await >>= maybe (return Nothing) go where
   loop b = C.await >>= maybe (return $ Just b) go
-  go (a, b) = C.yield a >> loop b
+  go (a, b) = C.yield (C.Chunk a) >> loop b
 
 queryDataStream :: (MonadResource m, MonadIO m, MonadGlobal m, MonadFail m, Foldable f, DataRow (f Field) a) =>
-  Catalog -> DataArgs f -> C.ConduitT i a m ()
+  Catalog -> DataArgs f -> C.ConduitT i (C.Flush a) m ()
 queryDataStream cat args = qds Nothing where
   qds off = do
     req <- lift $ queryDataRequest cat args' off
     off' <- httpStream req
       C..| (mapM_ fail =<< parserConduit (parseDataStream (dataFields args')))
       C..| fstAndLast
+    C.yield C.Flush
     mapM_ (qds . Just) off'
   args' = args{ dataSort = nubBy ((==) `on` fieldName . fst) $ dataSort args ++ [(key,True)] }
   key = fromMaybe idField $ (`HM.lookup` catalogFieldMap cat) =<< catalogKey cat
@@ -299,7 +300,7 @@ parseStats cat = J.withObject "stats res" $ \o -> (,)
     <*> o J..: "sum_other_doc_count"
   pb :: Typed a => Proxy a -> J.Value -> J.Parser (a, Count)
   pb _ = J.withObject "bucket" $ \o -> (,)
-    <$> (parseJSONTyped =<< o J..: "key")
+    <$> (parseJSONValue =<< o J..: "key")
     <*> o J..: "doc_count"
 
 data StatsArgs = StatsArgs
@@ -390,7 +391,9 @@ remainder n d = d * snd (properFraction (n / d) :: (Integer, a))
 
 queryHistogram :: Catalog -> HistogramArgs -> M HistogramResult
 queryHistogram cat hist@HistogramArgs{..} = do
-  unless (length histogramFields + fromEnum (isJust histogramQuartiles) <= fromIntegral maxHistogramDepth
+  unless (depth > 0)
+    $ raise400 "empty histogram"
+  unless (depth <= fromIntegral maxHistogramDepth
       && product (map (fromIntegral . histogramSize) histogramFields) <= maxHistogramSize)
     $ raise400 "histograms too large"
   (_, stats) <- liftIO $ catalogStats cat
@@ -421,6 +424,7 @@ queryHistogram cat hist@HistogramArgs{..} = do
       <> haggs sizes
   return $ HistogramResult (map histogramInterval sizes) dat
   where
+  depth = length histogramFields + fromEnum (isJust histogramQuartiles)
   srng FieldStats{ statsMin = Just x, statsMax = Just y } = Just (toRealFloat x, toRealFloat y)
   srng _ = Nothing
   haggs (hi:l) =
