@@ -6,14 +6,18 @@ import           Control.Monad ((<=<), forM_, when, unless)
 import           Control.Monad.IO.Class (liftIO)
 import           Data.Default (Default(def))
 import qualified Data.HashMap.Strict as HM
+import           Data.Foldable (foldrM)
 import           Data.Maybe (fromMaybe, isNothing, isJust)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
+import qualified Data.Text.IO as TIO
+import qualified Data.Yaml as Y
 import qualified Network.HTTP.Client as HTTP
 import qualified Network.HTTP.Simple as HTTP
 import qualified System.Console.GetOpt as Opt
 import           System.Environment (getProgName, getArgs)
 import           System.Exit (exitFailure)
+import           System.FilePath ((</>))
 import           System.IO (hPutStrLn, stderr)
 import qualified Waimwork.Config as C
 import           Waimwork.Response (response)
@@ -31,6 +35,8 @@ import Ingest
 import Html
 import JSON
 import Api
+import Backend
+import qualified KeyedMap as KM
 
 routes :: R.RouteMap Action
 routes = R.routes (
@@ -77,6 +83,24 @@ optDescr =
 createCatalog :: Catalog -> M String
 createCatalog cat = show <$> ES.createIndex cat
 
+updateStats :: FilePath -> Bool -> Catalog -> M ()
+updateStats file force cat = do
+  j <- liftIO $ Y.decodeFileThrow file
+  let jc = HM.lookupDefault mempty (catalogName cat) j
+  jc' <- addcount =<< foldrM addfield jc fields
+  liftIO $ Y.encodeFile file $ HM.insert (catalogName cat) jc' j
+  where
+  addcount = addval "count" $ queryCount cat filts
+  addfield f = addval (fieldName f) $ fieldValue . (HM.! fieldName f) <$> queryStats cat (StatsArgs filts (KM.singleton f))
+  addval m f j
+    | force || not (HM.member m j) = do
+      liftIO $ TIO.putStrLn $ catalogName cat <> ('.' `T.cons` m)
+      v <- f
+      return $ HM.insert m (Y.toJSON v) j
+    | otherwise = return j
+  filts = mempty
+  fields = HM.filter (\f -> not (or (fieldStore f))) $ catalogFieldMap cat
+
 main :: IO ()
 main = do
   prog <- getProgName
@@ -89,7 +113,8 @@ main = do
       putStrLn $ Opt.usageInfo ("Usage: " ++ prog ++ " [OPTION...]\n       " ++ prog ++ " [OPTION...] -i CAT FILE[@OFFSET] ...") optDescr
       exitFailure
   conf <- C.load $ optConfig opts
-  catalogs <- loadYamlPath (fromMaybe "catalogs" $ conf C.! "catalogs")
+  let catalogpath = fromMaybe "catalogs" $ conf C.! "catalogs"
+  catalogs <- loadYamlPath catalogpath
   httpmgr <- HTTP.newManager HTTP.defaultManagerSettings
     { HTTP.managerResponseTimeout = HTTP.responseTimeoutMicro 300000000
     }
@@ -135,9 +160,13 @@ main = do
       unless (all (n ==) $ catalogCount cat) $ fail $ T.unpack sim ++ ": incorrect document count"
       ES.closeIndex cat
 
+    forM_ (optStats opts) $ let f = catalogpath </> "_stats.yml" in maybe
+      (mapM_ (updateStats f False) $ catalogMap catalogs)
+      (\sim -> updateStats f True $ catalogMap catalogs HM.! sim)
+
     return $ pruneCatalogs errs catalogs
 
-  when (null (optCreate opts ++ optClose opts) && isNothing (optIngest opts)) $
+  when (null (optCreate opts ++ optOpen opts ++ optClose opts) && null (optStats opts) && isNothing (optIngest opts)) $
     runWaimwork conf $
       runGlobalWai global{ globalCatalogs = catalogs' }
       . routeWaiError (\s h _ -> return $ response s h ()) routes
