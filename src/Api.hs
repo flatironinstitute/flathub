@@ -937,14 +937,12 @@ apiStats = APIOp -- /api/{cat}/stats
   , apiAction = \sim req -> do
     cat <- askCatalog sim
     body <- parseJSONBody req (parseStatsJSON cat)
-    (count, stats) <- queryStats cat $ fromMaybe (parseStatsQuery cat req) body
+    stats <- queryStats cat $ fromMaybe (parseStatsQuery cat req) body
     return $ okResponse (apiHeaders req) $ J.pairs
-      $  "count" J..= count
-      <> foldMap (\(FieldValue f v) -> fieldName f J..= v) stats
+      $ foldMap (\(FieldValue f v) -> fieldName f J..= v) stats
   , apiResponse = do
     fs <- fieldStatsSchema
-    return $ jsonContent $ OA.Inline $ objectSchema "stats"
-      [ ("count", OA.Inline $ schemaDescOf statsCount "number of matching rows", True) ]
+    return $ jsonContent $ OA.Inline $ objectSchema "stats" []
       & OA.additionalProperties ?~ OA.AdditionalPropertiesSchema fs
       & OA.title ?~ "stats result"
   }

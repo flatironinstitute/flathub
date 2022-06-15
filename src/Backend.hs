@@ -281,10 +281,10 @@ queryCount cat filt =
 fieldUseTerms :: Field -> Bool
 fieldUseTerms f = fieldTerms f || not (typeIsNumeric $ snd $ unArrayType $ fieldType f)
 
-parseStats :: Catalog -> J.Value -> J.Parser (Count, KM.KeyedMap (FieldTypeValue FieldStats))
-parseStats cat = J.withObject "stats res" $ \o -> (,)
-  <$> (o J..: "hits" >>= (J..: "total") >>= (J..: "value"))
-  <*> (HM.traverseWithKey pf =<< o J..:! "aggregations" J..!= mempty) where
+parseStats :: Catalog -> J.Value -> J.Parser (KM.KeyedMap (FieldTypeValue FieldStats))
+parseStats cat = J.withObject "stats res" $ \o ->
+  HM.traverseWithKey pf =<< o J..:! "aggregations" J..!= mempty
+  where
   pf n a = do
     f <- failErr $ lookupField cat False n
     makeFieldValueM f $ (if fieldUseTerms f then pt else ps) a
@@ -308,10 +308,10 @@ data StatsArgs = StatsArgs
   , statsFields :: KM.KeyedMap Field
   }
 
-queryStats :: Catalog -> StatsArgs -> M (Count, KM.KeyedMap (FieldTypeValue FieldStats))
+queryStats :: Catalog -> StatsArgs -> M (KM.KeyedMap (FieldTypeValue FieldStats))
 queryStats cat StatsArgs{..} =
   searchCatalog cat [] (parseStats cat) $ JE.pairs
-    $  "track_total_hits" J..= True
+    $  "track_total_hits" J..= False
     <> "size" J..= (0 :: Count)
     <> "aggs" .=* foldMap (\f -> fieldName f .=* (if fieldUseTerms f
       then "terms" .=* (field f <> "size" J..= (if fieldTerms f then 32 else 4 :: Int))
