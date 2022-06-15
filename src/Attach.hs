@@ -68,7 +68,7 @@ pathFields = mapMaybe pathField where
   pathField _ = mempty
 
 attachmentFields :: Catalog -> Field -> [Field]
-attachmentFields cat f@Field{ fieldDesc = FieldDesc{ fieldDescAttachment = Just (Attachment p n) } } =
+attachmentFields cat f@Field{ fieldAttachment = Just (Attachment p n) } =
   f : mapMaybe (`HM.lookup` catalogFieldMap cat) (pathFields p ++ pathFields n)
 attachmentFields _ _ = []
 
@@ -114,7 +114,7 @@ attachmentsBulkStream :: BS.ByteString -> [Field] -> IO (Word, V.Vector J.Object
 attachmentsBulkStream info ats next = do
   dir <- asks globalDataDir
   let ents doc = catMaybes <$> mapM (ent doc) ats
-      ent doc af@Field{ fieldDesc = FieldDesc{ fieldDescAttachment = ~(Just a) } } =
+      ent doc af@Field{ fieldAttachment = ~(Just a) } =
         case HM.lookup (fieldName af) doc of
           Just (J.Bool True) -> enta a doc
           Just (J.Number n) | n > 0 -> enta a doc
@@ -145,7 +145,7 @@ attachmentsFilter :: DataArgs V.Vector -> DataArgs V.Vector
 attachmentsFilter args = case V.toList (dataFields args) of
   [f@Field{ fieldType = Boolean _ }] -> args
     { dataFilters = (dataFilters args)
-      { filterFields = KM.insertWith (const id) f{ fieldType = Boolean (FieldEQ [True]) }
+      { filterFields = KM.insertWith (const id) (setFieldValue f (Boolean (FieldEQ [True])))
         $ filterFields $ dataFilters args
       }
     }
@@ -156,7 +156,7 @@ zipGenerator req cat args = do
   dir <- asks globalDataDir
   let ents (C.Chunk doc) = V.mapMaybeM (ent doc) ats
       ents C.Flush = return V.empty
-      ent doc af@Field{ fieldDesc = FieldDesc{ fieldDescAttachment = ~(Just a) } }
+      ent doc af@Field{ fieldAttachment = ~(Just a) }
         | any attachmentPresent $ HM.lookup (fieldName af) doc =
           enta $ resolveAttachment doc a
         | otherwise = return Nothing

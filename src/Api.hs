@@ -50,7 +50,6 @@ import           Data.IORef (newIORef, readIORef, writeIORef)
 import           Data.List (foldl')
 import           Data.Maybe (isJust, isNothing, mapMaybe, fromMaybe, catMaybes)
 import qualified Data.OpenApi as OA
-import           Data.Proxy (Proxy)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Encoding.Error as TE
@@ -225,34 +224,31 @@ apiTop = APIOp -- /api
 
 -------- /api/{catalog}
 
-fieldsJSON :: KM.KeyedMap (FieldSub FieldStats Proxy) -> FieldGroup -> FieldGroups -> J.Encoding
-fieldsJSON stats b = JE.list fieldJSON . V.toList where
-  fieldJSON f@Field{ fieldDesc = FieldDesc{..}, ..} = J.pairs
-    $  "key" J..= fieldDescName
-    <> "name" J..= fieldName bf
-    <> "title" J..= fieldDescTitle
-    <> foldMap ("descr" J..=) fieldDescDescr
+fieldsJSON :: Fields -> J.Encoding
+fieldsJSON = JE.list fieldJSON . V.toList where
+  fieldJSON f@Field{..} = J.pairs
+    $  "name" J..= fieldName
+    <> "title" J..= fieldTitle
+    <> foldMap ("descr" J..=) fieldDescr
     <> "type" J..= fieldType
     <> "base" J..= baseType ('f','i','b','s','v') fieldType
-    <> "dtype" J..= numpyDtype bf
-    <> mwhen (or fieldDescStore) ("store" J..= fieldDescStore)
-    <> foldMap ("enum" J..=) fieldDescEnum
+    <> "dtype" J..= numpyDtype f
+    <> mwhen (or fieldStore) ("store" J..= fieldStore)
+    <> foldMap ("enum" J..=) fieldEnum
     <> mwhen (fieldDisp f) ("disp" J..= True)
-    <> foldMap ("units" J..=) fieldDescUnits
-    <> foldMap ("required" J..=) (case fieldDescFlag of
+    <> foldMap ("units" J..=) fieldUnits
+    <> foldMap ("required" J..=) (case fieldFlag of
         FieldTop -> Just False
         FieldRequired -> Just True
         _ -> Nothing)
-    <> mwhen fieldDescTerms ("terms" J..= fieldDescTerms)
-    <> mwhen fieldDescWildcard ("wildcard" J..= fieldDescWildcard)
-    <> foldMap ("dict" J..=) fieldDescDict
-    <> foldMap ("scale" J..=) fieldDescScale
-    <> mwhen fieldDescReversed ("reversed" J..= fieldDescReversed)
-    <> mwhen (isJust fieldDescAttachment) ("attachment" J..= True)
-    <> foldMap (JE.pair "stats" . fieldStatsJSON) (HM.lookup (fieldName bf) stats)
-    <> foldMap (JE.pair "sub" . fieldsJSON stats bf) fieldDescSub
-    where
-    bf = b <> f
+    <> mwhen fieldTerms ("terms" J..= fieldTerms)
+    <> mwhen fieldWildcard ("wildcard" J..= fieldWildcard)
+    <> foldMap ("dict" J..=) fieldDict
+    <> foldMap ("scale" J..=) fieldScale
+    <> mwhen fieldReversed ("reversed" J..= fieldReversed)
+    <> mwhen (isJust fieldAttachment) ("attachment" J..= True)
+    <> foldMap ("stats" J..=) fieldStats
+    <> foldMap (JE.pair "sub" . fieldsJSON) fieldSub
 
 typeSchema :: OpenApiM (OA.Referenced OA.Schema)
 typeSchema = define "Type" $ mempty
@@ -267,8 +263,7 @@ fieldGroupSchema = do
   ft <- typeSchema
   defineRec "FieldGroup" $ \ref -> objectSchema
     "A single field within a catalog, or a hiearchical group of fields"
-    [ ("key", OA.Inline $ schemaDescOf fieldName "local name of field within this group", True)
-    , ("name", OA.Inline $ schemaDescOf fieldName "global unique (\"variable\") name of field within the catalog", True)
+    [ ("name", OA.Inline $ schemaDescOf fieldName "global unique (\"variable\") name of field within the catalog", True)
     , ("title", OA.Inline $ schemaDescOf fieldTitle "display name of the field within the group", True)
     , ("descr", OA.Inline $ schemaDescOf fieldDescr "description of field within the group", False)
     , ("type", ft, True)
@@ -318,11 +313,10 @@ apiCatalog = APIOp -- /api/{cat}
   , apiAction = \sim req ->
     if T.null sim then apiAction apiTop () req else do -- allow trailing slash
     cat <- askCatalog sim
-    (count, stats) <- liftIO $ catalogStats cat
     return $ okResponse (apiHeaders req) $ J.pairs
       $ catalogJSON cat
-      <> JE.pair "fields" (fieldsJSON stats mempty $ V.cons idField $ catalogFieldGroups cat)
-      <> "count" J..= fromMaybe count (catalogCount cat)
+      <> JE.pair "fields" (fieldsJSON $ V.cons idField $ catalogFieldGroups cat)
+      <> "count" J..= catalogCount cat
       <> mwhen (not $ null $ catalogSort cat)
         ("sort" J..= catalogSort cat)
   , apiResponse = do
@@ -396,7 +390,7 @@ apiSchemaCSV = APIOp -- /api/{cat}/schema.csv
   , apiAction = \sim _ -> do
     let
       populateDict cats = V.map pf $ catalogDict cats where
-        pf f = f{ fieldDesc = (fieldDesc f){ fieldDescDict = Just $ T.intercalate ";" $ md (fieldName f) } }
+        pf f = f{ fieldDict = Just $ T.intercalate ";" $ md (fieldName f) }
         md d =
           [ c <> "." <> fieldName f <> foldMap (T.cons '[' . (`T.snoc` ']')) (fieldUnits f) <> foldMap (T.cons '*' . T.pack . show) (fieldScale f)
           | (c, cf) <- HM.toList (catalogMap cats)
@@ -482,9 +476,7 @@ parseFiltersJSON cat o = Filters
   where
   parsef n j = do
     f <- failErr $ lookupField cat True n
-    updateFieldValueM f (parseff f j)
-  parseff :: Typed a => Field -> J.Value -> Proxy a -> J.Parser (FieldFilter a)
-  parseff f j _ = parseFilterJSON f j
+    makeFieldValueM f (parseFilterJSON f j)
 
 filtersSchema :: OpenApiM (OA.Referenced OA.Schema)
 filtersSchema = do
@@ -514,21 +506,21 @@ parseFiltersQuery cat req = foldl' parseQueryItem mempty $ Wai.queryString req w
   parseQueryItem q (lookupFieldQuery cat True -> Just f, Just (parseFilter f -> Just v)) =
     q{ filterFields = KM.insertWith oreq v $ filterFields q }
   parseQueryItem q _ = q -- just ignore anything we can't parse
-  oreq f@Field{ fieldType = a } Field{ fieldType = b } = 
-    f{ fieldType = fmapTypeValue2 oreqf a b }
+  oreq (FieldValue f a) (FieldValue _ b) = 
+    setFieldValueUnsafe f (fmapTypeValue2 oreqf a b)
   oreqf (FieldEQ a) (FieldEQ b) = FieldEQ (b ++ a)
   oreqf f _ = f
-  parseFilter :: Field -> BS.ByteString -> Maybe (FieldSub FieldFilter Proxy)
-  parseFilter f s = updateFieldValueM f (parseFilt f s)
-  parseFilt :: Typed a => Field -> BS.ByteString -> Proxy a -> Maybe (FieldFilter a)
-  parseFilt _ "" _ = Nothing
-  parseFilt f s _
+  parseFilter :: Field -> BS.ByteString -> Maybe (FieldTypeValue FieldFilter)
+  parseFilter f s = makeFieldValueM f (parseFilt f s)
+  parseFilt :: Typed a => Field -> BS.ByteString -> Maybe (FieldFilter a)
+  parseFilt _ "" = Nothing
+  parseFilt f s
     | BSC.head s `elem` ('"' : "[{") = J.parseMaybe (parseFilterJSON f) =<< J.decodeStrict s
-  parseFilt f (splitBS isDelim -> Just (a, b)) _
+  parseFilt f (splitBS isDelim -> Just (a, b))
     | typeIsNumeric (fieldType f) = FieldRange <$> parseVal f a <*> parseVal f b
-  parseFilt f a _
+  parseFilt f a
     | fieldWildcard f && BSC.elem '*' a = return $ FieldWildcard (decodeUtf8' a)
-  parseFilt f a _ = FieldEQ . return <$> parseVal' f a
+  parseFilt f a = FieldEQ . return <$> parseVal' f a
   parseVal :: Typed a => Field -> BS.ByteString -> Maybe (Maybe a)
   parseVal _ "" = return Nothing
   parseVal f v = Just <$> parseVal' f v
@@ -896,19 +888,6 @@ parseStatsJSON cat = J.withObject "stats request" $ \o -> StatsArgs
   <$> parseFiltersJSON cat (HM.delete "fields" o)
   <*> (maybe (return KM.empty) (fmap KM.fromList . parseFieldsJSON cat True) =<< o J..:? "fields")
 
-fieldStatsJSON :: FieldSub FieldStats m -> J.Encoding
-fieldStatsJSON = unTypeValue fsj . fieldType
-  where
-  fsj :: J.ToJSON a => FieldStats a -> J.Encoding
-  fsj FieldStats{..} = J.pairs
-    $  "count" J..= statsCount
-    <> "min" J..= statsMin
-    <> "max" J..= statsMax
-    <> "avg" J..= statsAvg
-  fsj FieldTerms{..} = J.pairs
-    $  "terms" `JE.pair` JE.list (\(v,c) -> J.pairs $ "value" J..= v <> "count" J..= c) termsBuckets
-    <> "others" J..= termsCount
-
 fieldStatsSchema :: OpenApiM (OA.Referenced OA.Schema)
 fieldStatsSchema = do
   fv <- fieldValueSchema
@@ -961,7 +940,7 @@ apiStats = APIOp -- /api/{cat}/stats
     (count, stats) <- queryStats cat $ fromMaybe (parseStatsQuery cat req) body
     return $ okResponse (apiHeaders req) $ J.pairs
       $  "count" J..= count
-      <> foldMap (\f -> fieldName f `JE.pair` fieldStatsJSON f) stats
+      <> foldMap (\(FieldValue f v) -> fieldName f J..= v) stats
   , apiResponse = do
     fs <- fieldStatsSchema
     return $ jsonContent $ OA.Inline $ objectSchema "stats"
@@ -1143,8 +1122,9 @@ apiAttachment = APIOp
     atf <- lookupField cat False atn
     att <- maybe (raise404 "Not attachment field") return $ fieldAttachment atf
     dat <- queryData cat DataArgs
-      { dataFilters = mempty{ filterFields = KM.singleton $
-        idField{ fieldType = Keyword (FieldEQ [rid]) } }
+      { dataFilters = mempty
+        { filterFields = KM.singleton $ setFieldValue idField (Keyword (FieldEQ [rid]))
+        }
       , dataCount = 1
       , dataFields = KM.fromList $ attachmentFields cat atf
       , dataSort = []

@@ -5,7 +5,6 @@ import           Control.Arrow (first, second)
 import           Control.Monad ((<=<), forM_, when, unless)
 import           Control.Monad.IO.Class (liftIO)
 import           Data.Default (Default(def))
-import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
 import           Data.Maybe (fromMaybe, isNothing, isJust)
 import qualified Data.Text as T
@@ -31,9 +30,7 @@ import Query
 import Ingest
 import Html
 import JSON
-import Backend
 import Api
-import qualified KeyedMap as KM
 
 routes :: R.RouteMap Action
 routes = R.routes (
@@ -60,33 +57,25 @@ data Opts = Opts
   , optOpen :: [Simulation]
   , optIngest :: Maybe Simulation
   , optConstFields :: [(T.Text, T.Text)]
+  , optStats :: [Maybe Simulation]
   }
 
 instance Default Opts where
-  def = Opts "config" [] [] [] Nothing []
+  def = Opts "config" [] [] [] Nothing [] []
 
 optDescr :: [Opt.OptDescr (Opts -> Opts)]
 optDescr =
   [ Opt.Option "f" ["config"] (Opt.ReqArg (\c o -> o{ optConfig = c }) "FILE") "Configuration file [config]"
-  , Opt.Option "s" ["create"] (Opt.ReqArg (\i o -> o{ optCreate = T.pack i : optCreate o }) "SIM") "Create storage schema for the simulation"
-  , Opt.Option "e" ["close" ] (Opt.ReqArg (\i o -> o{ optClose  = T.pack i : optClose o  }) "SIM") "Finalize (flush and make read-only) simulation storage"
-  , Opt.Option "o" ["open"  ] (Opt.ReqArg (\i o -> o{ optOpen  = T.pack i : optClose o  }) "SIM") "Re-open simulation storage"
-  , Opt.Option "i" ["ingest"] (Opt.ReqArg (\i o -> o{ optIngest = Just (T.pack i) }) "SIM") "Ingest file(s) into the simulation store"
-  , Opt.Option "c" ["const"] (Opt.ReqArg (\f o -> o{ optConstFields = (second T.tail $ T.break ('=' ==) $ T.pack f) : optConstFields o }) "FIELD=VALUE") "Field value to add to every ingested record"
+  , Opt.Option "s" ["create"] (Opt.ReqArg (\i o -> o{ optCreate = T.pack i : optCreate o }) "CAT") "Create storage schema for the catalog"
+  , Opt.Option "e" ["close" ] (Opt.ReqArg (\i o -> o{ optClose  = T.pack i : optClose o  }) "CAT") "Finalize (flush and make read-only) catalog storage"
+  , Opt.Option "o" ["open"  ] (Opt.ReqArg (\i o -> o{ optOpen   = T.pack i : optOpen o   }) "CAT") "Re-open catalog storage"
+  , Opt.Option "i" ["ingest"] (Opt.ReqArg (\i o -> o{ optIngest = Just (T.pack i) }) "CAT") "Ingest file(s) into the catalog store"
+  , Opt.Option "c" ["const" ] (Opt.ReqArg (\f o -> o{ optConstFields = (second T.tail $ T.break ('=' ==) $ T.pack f) : optConstFields o }) "FIELD=VALUE") "Field value to add to every ingested record"
+  , Opt.Option "u" ["stats" ] (Opt.OptArg (\i o -> o{ optStats = (T.pack <$> i) : optStats o }) "CAT") "Update catalog/_stats.yml for CAT [or all missing]"
   ]
 
 createCatalog :: Catalog -> M String
 createCatalog cat = show <$> ES.createIndex cat
-
-populateStats :: Catalog -> M Catalog
-populateStats cat = do
-  stats <- once $ (,)
-    <$> queryCount cat filts
-    <*> (fold <$> mapM (fmap snd . queryStats cat . StatsArgs filts . KM.singleton) fields)
-  return cat{ catalogStats = stats }
-  where
-  fields = HM.filter (not . or . fieldStore) $ catalogFieldMap cat
-  filts = mempty
 
 main :: IO ()
 main = do
@@ -97,7 +86,7 @@ main = do
       | null a || isJust (optIngest o) -> return (o, a)
     (_, _, e) -> do
       mapM_ (hPutStrLn stderr) e
-      putStrLn $ Opt.usageInfo ("Usage: " ++ prog ++ " [OPTION...]\n       " ++ prog ++ " [OPTION...] -i SIM FILE[@OFFSET] ...") optDescr
+      putStrLn $ Opt.usageInfo ("Usage: " ++ prog ++ " [OPTION...]\n       " ++ prog ++ " [OPTION...] -i CAT FILE[@OFFSET] ...") optDescr
       exitFailure
   conf <- C.load $ optConfig opts
   catalogs <- loadYamlPath (fromMaybe "catalogs" $ conf C.! "catalogs")
@@ -146,9 +135,7 @@ main = do
       unless (all (n ==) $ catalogCount cat) $ fail $ T.unpack sim ++ ": incorrect document count"
       ES.closeIndex cat
 
-    let catalogs' = pruneCatalogs errs catalogs
-    cats <- mapM populateStats (catalogMap catalogs')
-    return $ catalogs'{ catalogMap = cats }
+    return $ pruneCatalogs errs catalogs
 
   when (null (optCreate opts ++ optClose opts) && isNothing (optIngest opts)) $
     runWaimwork conf $

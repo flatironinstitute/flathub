@@ -19,6 +19,7 @@ module Type
   , fmapValue
   , traverseTypeValue, traverseTypeValue2
   , fmapTypeValue, fmapTypeValue1, fmapTypeValue2
+  , makeTypeValue, makeTypeValueM
   , coerceTypeValue
   , TypeTraversable(..)
   , typeOfValue
@@ -265,16 +266,22 @@ fmapTypeValue2 f = (fromMaybe (error "fmapTypeValue2: type mismatch") .) . trave
 coerceTypeValue :: (Functor f, Functor g) => TypeValue f -> TypeValue g -> TypeValue g
 coerceTypeValue = fmapTypeValue2 (\_ -> id)
 
+makeTypeValue :: Type -> (forall a . Typed a => f a) -> TypeValue f
+makeTypeValue f t = fmapTypeValue (\Proxy -> t) f
+
+makeTypeValueM :: Functor m => Type -> (forall a . Typed a => m (f a)) -> m (TypeValue f)
+makeTypeValueM f t = traverseTypeValue (\Proxy -> t) f
+
 class Traversable f => TypeTraversable f where
   sequenceTypeValue :: f Value -> TypeValue f
 
 instance TypeTraversable [] where
-  sequenceTypeValue [] = Void [] -- hrm
+  sequenceTypeValue [] = Void [] -- hrm, usually fixed by coerce
   sequenceTypeValue [v] = fmapTypeValue ((:[]) . runIdentity) v
   sequenceTypeValue (v:l) = fmapTypeValue2 ((:) . runIdentity) v (sequenceTypeValue l)
 
 instance TypeTraversable Maybe where
-  sequenceTypeValue Nothing = Void Nothing -- hrm
+  sequenceTypeValue Nothing = Void Nothing -- hrm, usually fixed by coerce
   sequenceTypeValue (Just v) = fmapTypeValue (Just . runIdentity) v
 
 traverseValue :: Functor g => (forall a . Typed a => f a -> g a) -> TypeValue f -> g Value

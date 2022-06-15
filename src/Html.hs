@@ -258,38 +258,38 @@ catalogPage = getPath R.parameter $ \sim req -> do
         ("sort" J..= catalogSort cat)
     query = parseQuery cat req
     fielddisps = KM.fromList $ queryFields query
-    fielddisp :: FieldSub t s -> Bool
+    fielddisp :: Field -> Bool
     fielddisp = (`KM.member` fielddisps)
     fields = catalogFieldGroups cat
-    toprow = row (fieldsDepth fields) ((id ,) <$> V.toList fields)
-    fielddesc :: FieldGroup -> FieldGroup -> Int -> H.Html
-    fielddesc f g d = do
+    toprow = row (fieldsDepth fields) fields
+    fielddesc :: Field -> Int -> H.Html
+    fielddesc f d = do
       hamlet [Hamlet.hamlet|
         <tr>
           <td .depth-#{d}>
             <input type="checkbox"
-                :isNothing (fieldSub g):id="#{key f}"
+                :isNothing (fieldSub f):id="#{key f}"
                 class="colvis #{T.unwords $ map key $ V.toList fs}"
                 :fielddisp f:checked=checked
                 onclick="colvisSet(event)">
-            #{fieldTitle g}
+            #{fieldTitle f}
           <td>
-            $if isNothing (fieldSub g)
+            $if isNothing (fieldSub f)
               #{fieldName f}
-          <td>#{show $ fieldType g}
+          <td>#{show $ fieldType f}
           <td .units>
-            $forall u <- fieldUnits g
+            $forall u <- fieldUnits f
               #{u}
           <td>
-            $forall d <- fieldDescr g
+            $forall d <- fieldDescr f
               #{d}
         |]
-      forM_ (fold (fieldSub g)) $ \sf ->
-        fielddesc (f <> sf) sf (d+1)
+      forM_ (fold (fieldSub f)) $ \sf ->
+        fielddesc sf (d+1)
       where
       fs = expandField f
       key = ("colvis-" <>) . fieldName
-    fieldBody :: Word -> FieldGroup -> H.Html
+    fieldBody :: Word -> Field -> H.Html
     fieldBody d f = hamlet [Hamlet.hamlet|
       <span>
         <!-- Writes the title to the span -->
@@ -302,28 +302,28 @@ catalogPage = getPath R.parameter $ \sim req -> do
         $forall d <- fieldDescr f
           <span class="tooltiptext">#{d}
       |]
-    field :: Word -> FieldGroup -> FieldGroup -> H.Html
-    field d f' f@Field{ fieldDesc = FieldDesc{ fieldDescSub = Nothing } } = hamlet [Hamlet.hamlet|
+    field :: Word -> Field -> H.Html
+    field d f@Field{ fieldSub = Nothing } = hamlet [Hamlet.hamlet|
       <th .tooltip-dt
         rowspan=#{d}
-        data-data=#{fieldName f'}
-        data-name=#{fieldName f'}
+        data-data=#{fieldName f}
+        data-name=#{fieldName f}
         data-type=#{baseType (asTypeOf "num" T.empty,"num","string","string","string") $ fieldType f}
         data-class-name="dt-body-#{ifs (typeIsNumeric (fieldType f)) "right" "left"}"
-        :not (fielddisp f'):data-visible="false"
+        :not (fielddisp f):data-visible="false"
         :or (fieldStore f):data-orderable="false"
         data-default-content="">
         #{fieldBody d f}
       |]
-    field _ _ f@Field{ fieldDesc = FieldDesc{ fieldDescSub = Just s } } = hamlet [Hamlet.hamlet|
+    field _ f@Field{ fieldSub = Just s } = hamlet [Hamlet.hamlet|
       <th .tooltip-dt
         colspan=#{V.length $ expandFields s}>
         #{fieldBody 1 f}
       |]
-    row :: Word -> [(FieldGroup -> FieldGroup, FieldGroup)] -> H.Html
+    row :: Word -> Fields -> H.Html
     row d l = do
-      H.tr $ mapM_ (\(p, f) -> field d (p f) f) l
-      when (d > 1) $ row (pred d) $ foldMap (\(p, f) -> foldMap (fmap (p . mappend f, ) . V.toList) $ fieldSub f) l
+      H.tr $ mapM_ (field d) l
+      when (d > 1) $ row (pred d) $ foldMap (fold . fieldSub) l
 
   case acceptable ["application/json", "text/html"] req of
     Just "application/json" ->
@@ -558,7 +558,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                             <th>Description
                         <tbody>
                           $forall f <- catalogFieldGroups cat
-                            #{fielddesc f f 0}
+                            #{fielddesc f 0}
                 <div .tab-pane .fade #About role="tabpanel" aria-labelledby="about-tab">
                   <div .right-column-group>
                     <h6 .right-column-heading>About Catalog

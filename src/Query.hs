@@ -77,7 +77,7 @@ parseQuery cat req = fill $ foldl' parseQueryItem mempty $ Wai.queryString req w
   parseQueryItem q ("hist",   Just (parseHist . spld -> Just h)) =
     q{ queryAggs = queryAggs q <> h }
   parseQueryItem q (lookf -> Just f, Just (parseFilt f -> Just v)) =
-    q{ queryFilter = queryFilter q <> [liftFilterValue f v] }
+    q{ queryFilter = queryFilter q <> [setFieldValue f $ sequenceTypeValue v] }
   parseQueryItem q _ = q -- just ignore anything we can't parse
   parseSort (BSC.uncons -> Just ('+', lookf -> Just f)) = return (f, True)
   parseSort (BSC.uncons -> Just ('-', lookf -> Just f)) = return (f, False)
@@ -90,12 +90,13 @@ parseQuery cat req = fill $ foldl' parseQueryItem mempty $ Wai.queryString req w
   parseHist _ = fail "invalid hist"
   histn s = (t, ) <$> rmbs r where
     (t, r) = maybe (False, s) (True ,) $ BS.stripPrefix "log" s
+  parseFilt :: Field -> BS.ByteString -> Maybe (Filter Value)
   parseFilt f (spl delim -> Just (a, b))
     | not (typeIsString (fieldType f)) = FilterRange <$> parseVal f a <*> parseVal f b
   parseFilt f a = FilterEQ <$> parseVal' f a
   parseVal _ "" = return Nothing
   parseVal f v = Just <$> parseVal' f v
-  parseVal' f = fmap fieldType . parseFieldValue f
+  parseVal' f = fmap fieldValue . parseFieldValue f
   eqAgg (QueryStats f) (QueryStats g) = fieldName f == fieldName g
   eqAgg _ _ = False
   mkHist f (t, n) l
@@ -256,7 +257,7 @@ attachmentQuery :: Catalog -> Maybe [T.Text] -> Query -> Query
 attachmentQuery cat atn query = query
   { queryFields = ats
   , queryFilter = (case ats of
-    [x@Field{ fieldType = Boolean _ }] -> (x{ fieldType = Boolean (FilterEQ True) } :)
+    [x@Field{ fieldType = Boolean _ }] -> (setFieldValue x (Boolean (FilterEQ True)) :)
     -- TODO could do better with OR filters
     _ -> id) $ queryFilter query
   } where
