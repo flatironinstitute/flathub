@@ -378,10 +378,10 @@ instance Functor FieldStats where
 
 instance J.ToJSON1 FieldStats where
   liftToJSON _ _ FieldStats{..} = J.object
-    [ "min" J..= statsMin
+    [ "count" J..= statsCount
+    , "min" J..= statsMin
     , "max" J..= statsMax
     , "avg" J..= statsAvg
-    , "count" J..= statsCount
     ]
   liftToJSON tj _ FieldTerms{..} = J.object
     [ "terms" J..= map (\(v, c) -> J.object
@@ -391,10 +391,10 @@ instance J.ToJSON1 FieldStats where
     , "others" J..= termsCount
     ]
   liftToEncoding _ _ FieldStats{..} = J.pairs
-    $  "min" J..= statsMin
+    $  "count" J..= statsCount
+    <> "min" J..= statsMin
     <> "max" J..= statsMax
     <> "avg" J..= statsAvg
-    <> "count" J..= statsCount
   liftToEncoding te _ FieldTerms{..} = J.pairs
     $  "terms" `JE.pair` JE.list (\(v, c) -> J.pairs
       $  "value" `JE.pair` te v

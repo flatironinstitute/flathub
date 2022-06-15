@@ -1,0 +1,7757 @@
+ananke:
+  A0:
+    avg: 0.49041536215813125
+    count: 450548439
+    max: 21.82048225402832
+    min: 1.5769625605344118e-09
+  a_g_val:
+    avg: 0.3772501466908004
+    count: 450548439
+    max: 14.145279884338379
+    min: 9.568119629932426e-10
+  age:
+    avg: 9.432328106179916
+    count: 450548439
+    max: 10.134500503540039
+    min: 3.697340965270996
+  alpha:
+    avg: 0.2625587774735762
+    count: 450548439
+    max: 0.643116295337677
+    min: -1.7374305725097656
+  b:
+    avg: 0.36300810604673883
+    count: 450548439
+    max: 89.99666125845512
+    min: -89.99135704514975
+  b_true:
+    avg: 0.3630081060490421
+    count: 450548439
+    max: 89.99666127902312
+    min: -89.99135730605734
+  bp_g:
+    avg: 1.1056381022503925
+    count: 450548439
+    max: 39.53060531616211
+    min: -1.5026603937149048
+  bp_g_int:
+    avg: 0.6015278048179802
+    count: 450548439
+    max: 6.794000625610352
+    min: -2.091916084289551
+  bp_g_true:
+    avg: 0.7283340928769385
+    count: 450548439
+    max: 35.234580993652344
+    min: -8.17537784576416
+  bp_rp:
+    avg: 1.7105013441560462
+    count: 450548439
+    max: 80.1983642578125
+    min: -8.818812370300293
+  bp_rp_int:
+    avg: 1.2666035263527589
+    count: 450548439
+    max: 8.807499885559082
+    min: -3.334059715270996
+  bp_rp_true:
+    avg: 1.4885517907536956
+    count: 450548439
+    max: 44.02268600463867
+    min: -6.0778889656066895
+  calcium:
+    avg: -0.24371673548329956
+    count: 450548439
+    max: 1.1498699188232422
+    min: -3.803239345550537
+  carbon:
+    avg: 0.12225243878107203
+    count: 450548439
+    max: 1.0187971591949463
+    min: -3.8610055446624756
+  count: 450548439
+  dec:
+    avg: -10.129911911667259
+    count: 450548439
+    max: 89.99529957844499
+    min: -89.99272531115683
+  dec_error:
+    avg: 1.555131409789637e-07
+    count: 450548439
+    max: 5.552230838156982e-07
+    min: 1.183411297455796e-08
+  dec_true:
+    avg: -10.129911911667254
+    count: 450548439
+    max: 89.9952997164936
+    min: -89.9927253064083
+  dmod_true:
+    avg: 12.006203950016374
+    count: 450548439
+    max: 21.925364789692896
+    min: -3.751583264925442
+  e_bp_min_rp_val:
+    avg: 0.2219482645837794
+    count: 450548439
+    max: 35.971580505371094
+    min: -2.7438290119171143
+  ebv:
+    avg: 0.15819850392146323
+    count: 450548439
+    max: 7.038865089416504
+    min: 5.086975840562502e-10
+  feh:
+    avg: -0.20568309309390662
+    count: 450548439
+    max: 1.6323046684265137
+    min: -3.873608350753784
+  g_rp:
+    avg: 0.38291497732428875
+    count: 450548439
+    max: 4.696178913116455
+    min: -11.106545448303223
+  g_rp_int:
+    avg: 0.6650757215348332
+    count: 450548439
+    max: 2.0850000381469727
+    min: -1.2421436309814453
+  g_rp_true:
+    avg: 0.7602176978479337
+    count: 450548439
+    max: 8.788106918334961
+    min: -0.6587817668914795
+  galaxy:
+    others: 0
+    terms:
+    - count: 346544320
+      value: 0
+    - count: 56972027
+      value: 2
+    - count: 47032092
+      value: 1
+  helium:
+    avg: 0.04748457657357785
+    count: 450548439
+    max: 0.17964719235897064
+    min: -0.0020993961952626705
+  l:
+    avg: 1.0941752158944629
+    count: 450548439
+    max: 179.99999777366054
+    min: -179.99999647845686
+  l_true:
+    avg: 1.0941752158738647
+    count: 450548439
+    max: 179.99999777102653
+    min: -179.9999963514158
+  logg:
+    avg: 4.506918382092614
+    count: 450548439
+    max: 5.496876239776611
+    min: -1.9038647413253784
+  lognh:
+    avg: 20.420172247980993
+    count: 450548439
+    max: 23.24544334411621
+    min: 13.104399681091309
+  lsr:
+    others: 0
+    terms:
+    - count: 374223485
+      value: 0
+    - count: 47032092
+      value: 1
+    - count: 29292862
+      value: 2
+  lum_val:
+    avg: 9.464245273512796
+    count: 450548439
+    max: 1296472.75
+    min: 0.00036493182415142655
+  mact:
+    avg: 0.8175716635465882
+    count: 450548439
+    max: 12.00376033782959
+    min: 0.09000000357627869
+  magnesium:
+    avg: 0.05687568436929409
+    count: 450548439
+    max: 1.0745823383331299
+    min: -3.8814005851745605
+  mini:
+    avg: 0.8187047293877768
+    count: 450548439
+    max: 61.9049186706543
+    min: 0.09000007808208466
+  mtip:
+    avg: 1.6580966531452759
+    count: 450548439
+    max: 67.0182876586914
+    min: 0.09000000357627869
+  neon:
+    avg: 0.2992946400092971
+    count: 450548439
+    max: 1.3174539804458618
+    min: -3.753216505050659
+  nitrogen:
+    avg: 0.015650596863045572
+    count: 450548439
+    max: 0.9856520295143127
+    min: -3.720513343811035
+  oxygen:
+    avg: 0.2671973301571214
+    count: 450548439
+    max: 1.2539334297180176
+    min: -3.8226873874664307
+  parallax:
+    avg: 0.5296353938311813
+    count: 450548439
+    max: 562.7358656863582
+    min: -10.031717530974884
+  parallax_error:
+    avg: 0.5598473070763915
+    count: 450548439
+    max: 1.998803100137471
+    min: 0.042602806674326414
+  parallax_over_error:
+    avg: 4.266868655549226
+    count: 450548439
+    max: 13208.3564453125
+    min: -5.417603015899658
+  parallax_true:
+    avg: 0.5296675245104654
+    count: 450548439
+    max: 562.7514892578872
+    min: 0.0041202829588248965
+  parentid:
+    avg: 8765749.719865907
+    count: 450548439
+    max: 25343576
+    min: 7.0
+  partid:
+    avg: 0.9705080212252162
+    count: 450548439
+    max: 1.0
+    min: 0.0
+  phot_bp_mean_mag:
+    avg: 19.339869720285726
+    count: 450548439
+    max: 56.340457916259766
+    min: 2.7598776817321777
+  phot_bp_mean_mag_error:
+    avg: 0.14626052475059945
+    count: 450548439
+    max: 0.4403524398803711
+    min: 0.001627563964575529
+  phot_bp_mean_mag_int:
+    avg: 18.83581898817614
+    count: 450548439
+    max: 24.420915603637695
+    min: 1.7662358283996582
+  phot_bp_mean_mag_true:
+    avg: 19.339875422962
+    count: 450548439
+    max: 56.186073303222656
+    min: 2.7606260776519775
+  phot_g_mean_mag:
+    avg: 18.61148176471346
+    count: 450548439
+    max: 21.0
+    min: 3.001840829849243
+  phot_g_mean_mag_error:
+    avg: 0.007268945638206207
+    count: 450548439
+    max: 0.017538659274578094
+    min: 0.0002147398772649467
+  phot_g_mean_mag_int:
+    avg: 18.234291183369635
+    count: 450548439
+    max: 21.0
+    min: 3.0020322799682617
+  phot_g_mean_mag_true:
+    avg: 18.611541330066114
+    count: 450548439
+    max: 21.0
+    min: 3.0020322799682617
+  phot_rp_mean_mag:
+    avg: 17.851316640682022
+    count: 450548439
+    max: 22.461706161499023
+    min: 1.8742637634277344
+  phot_rp_mean_mag_error:
+    avg: 0.14626052475059945
+    count: 450548439
+    max: 0.4403524398803711
+    min: 0.001627563964575529
+  phot_rp_mean_mag_int:
+    avg: 17.569215461805673
+    count: 450548439
+    max: 20.891870498657227
+    min: 1.873945951461792
+  phot_rp_mean_mag_true:
+    avg: 17.85132363205693
+    count: 450548439
+    max: 21.052207946777344
+    min: 1.873945951461792
+  pmdec:
+    avg: -3.0849465747406746
+    count: 450548439
+    max: 3948.3502283757903
+    min: -18589.3295196367
+  pmdec_error:
+    avg: 0.9318778285450251
+    count: 450548439
+    max: 2.9972181693193005
+    min: 0.0861853058245699
+  pmdec_true:
+    avg: -3.085022674053492
+    count: 450548439
+    max: 3948.321860140063
+    min: -18589.430553824874
+  pmra:
+    avg: -1.7699984754045672
+    count: 450548439
+    max: 5298.095801105098
+    min: -18649.63458943473
+  pmra_error:
+    avg: 0.9318778285450251
+    count: 450548439
+    max: 2.9972181693193005
+    min: 0.0861853058245699
+  pmra_true:
+    avg: -1.7700625533523566
+    count: 450548439
+    max: 5298.1048229388325
+    min: -18649.695849482043
+  px_true:
+    avg: 1.7038508562706054
+    count: 450548439
+    max: 201.25322574187402
+    min: -174.2548950195313
+  py_true:
+    avg: 0.04286861953228991
+    count: 450548439
+    max: 197.88565063476562
+    min: -139.1170688119142
+  pz_true:
+    avg: 0.0030807087221819763
+    count: 450548439
+    max: 118.21446228027344
+    min: -149.34788513183594
+  ra:
+    avg: 219.96283915072894
+    count: 450548439
+    max: 359.9999977071194
+    min: 6.84403778948799e-07
+  ra_error:
+    avg: 1.555131409789637e-07
+    count: 450548439
+    max: 5.552230838156982e-07
+    min: 1.183411297455796e-08
+  ra_true:
+    avg: 219.96283915073673
+    count: 450548439
+    max: 359.99999774973486
+    min: 6.891742419318677e-07
+  radial_velocity:
+    avg: -3.222855109415576
+    count: 15651538
+    max: 682.8559829328522
+    min: -680.8761450047846
+  radial_velocity_error:
+    avg: 5.62594066231114
+    count: 15651538
+    max: 12.010919185603905
+    min: 0.2999596922512918
+  radial_velocity_true:
+    avg: -2.3536735508984172
+    count: 450548439
+    max: 816.1374613956409
+    min: -767.239237107277
+  random_index:
+    avg: 344361.5639998011
+    count: 450548439
+    max: 918001.0
+    min: 0.0
+  silicon:
+    avg: 0.08277762823258339
+    count: 450548439
+    max: 1.2586947679519653
+    min: -3.789713144302368
+  slice:
+    others: 0
+    terms:
+    - count: 337075448
+      value: 0
+    - count: 16040789
+      value: 2
+    - count: 15587119
+      value: 6
+    - count: 15146642
+      value: 9
+    - count: 14213091
+      value: 3
+    - count: 13922733
+      value: 1
+    - count: 11582082
+      value: 4
+    - count: 10864122
+      value: 7
+    - count: 9086093
+      value: 8
+    - count: 7030320
+      value: 5
+  source_id:
+    avg: 154903907.26110733
+    count: 450548439
+    max: 399974621
+    min: 0.0
+  sulphur:
+    avg: 0.03192221502133165
+    count: 450548439
+    max: 1.3312734365463257
+    min: -3.681800127029419
+  teff_val:
+    avg: 4994.8507721875885
+    count: 450548439
+    max: 122402.6875
+    min: 2190.28125
+  vx_true:
+    avg: -2.8268906300584904
+    count: 450548439
+    max: 751.0315375229559
+    min: -727.2947599720035
+  vy_true:
+    avg: -66.49760611254675
+    count: 450548439
+    max: 667.4649021779443
+    min: -1007.1095820487024
+  vz_true:
+    avg: -4.054470864258531
+    count: 450548439
+    max: 717.0646920902163
+    min: -726.5377393753084
+camels:
+  Group_BHMass:
+    avg: 0.003113453601764619
+    count: 2927443277
+    max: 668.3634643554688
+    min: 0.0
+  Group_BHMdot:
+    avg: 0.0002950673504452093
+    count: 2927443277
+    max: 136.48866271972656
+    min: 0.0
+  Group_CM_x:
+    avg: 12515.394998724836
+    count: 2927443277
+    max: 25000.0
+    min: 1.6777667042333633e-06
+  Group_CM_y:
+    avg: 12487.961329940228
+    count: 2927443277
+    max: 25000.0
+    min: 1.6826234059408307e-06
+  Group_CM_z:
+    avg: 12421.981995405975
+    count: 2927443277
+    max: 25000.0
+    min: 3.4249911550432444e-05
+  Group_FirstSub:
+    avg: 9404.823345297904
+    count: 2927443277
+    max: 45742.0
+    min: -1.0
+  Group_GasMetalFractions_C:
+    avg: 5.1233857402982437e-05
+    count: 2927443277
+    max: 0.06838486343622208
+    min: 0.0
+  Group_GasMetalFractions_Fe:
+    avg: 1.4598359530706611e-05
+    count: 2927443277
+    max: 0.006381593644618988
+    min: 0.0
+  Group_GasMetalFractions_H:
+    avg: 0.74423468149156
+    count: 2927443277
+    max: 0.7600002288818359
+    min: 0.0
+  Group_GasMetalFractions_He:
+    avg: 0.24264171474333712
+    count: 2927443277
+    max: 0.5052123069763184
+    min: 0.0
+  Group_GasMetalFractions_Mg:
+    avg: 1.7815422437326237e-05
+    count: 2927443277
+    max: 0.009547799825668335
+    min: 0.0
+  Group_GasMetalFractions_N:
+    avg: 2.05862562061086e-05
+    count: 2927443277
+    max: 0.005012088920921087
+    min: 0.0
+  Group_GasMetalFractions_Ne:
+    avg: 6.202701215349102e-05
+    count: 2927443277
+    max: 0.017960814759135246
+    min: 0.0
+  Group_GasMetalFractions_O:
+    avg: 0.0002194038829909914
+    count: 2927443277
+    max: 0.10233386605978012
+    min: 0.0
+  Group_GasMetalFractions_Si:
+    avg: 1.978683632228197e-05
+    count: 2927443277
+    max: 0.009334606118500233
+    min: 0.0
+  Group_GasMetalFractions_total:
+    avg: 6.398335140232197e-06
+    count: 2927443277
+    max: 0.003084697760641575
+    min: 0.0
+  Group_GasMetallicity:
+    avg: 0.0004247188242615721
+    count: 2927443277
+    max: 0.18822941184043884
+    min: 0.0
+  Group_Len:
+    avg: 8488.9874127047
+    count: 2927443277
+    max: 9341777.0
+    min: 32.0
+  Group_LenType_bh:
+    avg: 0.42508312245600516
+    count: 2927443277
+    max: 2915.0
+    min: 0.0
+  Group_LenType_dm:
+    avg: 5259.5770514879905
+    count: 2927443277
+    max: 5144912.0
+    min: 0.0
+  Group_LenType_gas:
+    avg: 2528.5534906219123
+    count: 2927443277
+    max: 3554216.0
+    min: 0.0
+  Group_LenType_stars:
+    avg: 700.4317874723419
+    count: 2927443277
+    max: 798519.0
+    min: 0.0
+  Group_LenType_tracers:
+    avg: 0.0
+    count: 2927443277
+    max: 0.0
+    min: 0.0
+  Group_LenType_unused:
+    avg: 0.0
+    count: 2927443277
+    max: 0.0
+    min: 0.0
+  Group_M_Crit200:
+    avg: 33.72666127172558
+    count: 2927443277
+    max: 62885.33984375
+    min: 0.0
+  Group_M_Crit500:
+    avg: 23.45298151451905
+    count: 2927443277
+    max: 48976.328125
+    min: 0.0
+  Group_M_Mean200:
+    avg: 40.612057397417615
+    count: 2927443277
+    max: 73376.8359375
+    min: 0.0
+  Group_M_TopHat200:
+    avg: 38.37880259098318
+    count: 2927443277
+    max: 69487.1640625
+    min: 0.0
+  Group_Mass:
+    avg: 42.34544942787806
+    count: 2927443277
+    max: 64577.6875
+    min: 0.025469474494457245
+  Group_MassType_bh:
+    avg: 0.009319736995711028
+    count: 2927443277
+    max: 668.4237060546875
+    min: 0.0
+  Group_MassType_dm:
+    avg: 38.31551939693721
+    count: 2927443277
+    max: 59366.77734375
+    min: 0.0
+  Group_MassType_gas:
+    avg: 3.366371115084324
+    count: 2927443277
+    max: 4706.85888671875
+    min: 0.0
+  Group_MassType_stars:
+    avg: 0.654239177087477
+    count: 2927443277
+    max: 700.8744506835938
+    min: 0.0
+  Group_MassType_tracers:
+    avg: 0.0
+    count: 2927443277
+    max: 0.0
+    min: 0.0
+  Group_MassType_unused:
+    avg: 0.0
+    count: 2927443277
+    max: 0.0
+    min: 0.0
+  Group_Nsubs:
+    avg: 3.1151832951467293
+    count: 2927443277
+    max: 1601.0
+    min: 0.0
+  Group_Pos_x:
+    avg: 12515.369877813087
+    count: 2927443277
+    max: 25001.732421875
+    min: -0.7704257965087891
+  Group_Pos_y:
+    avg: 12487.91610513727
+    count: 2927443277
+    max: 25001.0078125
+    min: -1.4310829639434814
+  Group_Pos_z:
+    avg: 12421.913853562872
+    count: 2927443277
+    max: 25000.9921875
+    min: -1.4448883533477783
+  Group_R_Crit200:
+    avg: 41.38148826262945
+    count: 2927443277
+    max: 1460.663330078125
+    min: 0.0
+  Group_R_Crit500:
+    avg: 25.08529312496507
+    count: 2927443277
+    max: 1009.1337280273438
+    min: 0.0
+  Group_R_Mean200:
+    avg: 49.643520190999325
+    count: 2927443277
+    max: 1853.8609619140625
+    min: 0.0
+  Group_R_TopHat200:
+    avg: 47.69945681355346
+    count: 2927443277
+    max: 1717.074951171875
+    min: 0.0
+  Group_SFR:
+    avg: 0.8084125700199614
+    count: 2927443277
+    max: 5357.49267578125
+    min: 0.0
+  Group_StarMetalFractions_C:
+    avg: 6.951963399367034e-05
+    count: 2927443277
+    max: 0.02983877621591091
+    min: 0.0
+  Group_StarMetalFractions_Fe:
+    avg: 2.2021270148106547e-05
+    count: 2927443277
+    max: 0.008305400609970093
+    min: 0.0
+  Group_StarMetalFractions_H:
+    avg: 0.13375963467701704
+    count: 2927443277
+    max: 0.7600004076957703
+    min: 0.0
+  Group_StarMetalFractions_He:
+    avg: 0.04489741384423684
+    count: 2927443277
+    max: 0.5226137638092041
+    min: 0.0
+  Group_StarMetalFractions_Mg:
+    avg: 2.9963100814437013e-05
+    count: 2927443277
+    max: 0.009886677376925945
+    min: 0.0
+  Group_StarMetalFractions_N:
+    avg: 2.3469681119656605e-05
+    count: 2927443277
+    max: 0.0052659823559224606
+    min: 0.0
+  Group_StarMetalFractions_Ne:
+    avg: 9.887216918775868e-05
+    count: 2927443277
+    max: 0.022479942068457603
+    min: 0.0
+  Group_StarMetalFractions_O:
+    avg: 0.00036312012287595456
+    count: 2927443277
+    max: 0.08891788125038147
+    min: 0.0
+  Group_StarMetalFractions_Si:
+    avg: 3.1569586804037275e-05
+    count: 2927443277
+    max: 0.008752570487558842
+    min: 0.0
+  Group_StarMetalFractions_total:
+    avg: 1.0662219254988459e-05
+    count: 2927443277
+    max: 0.004087911918759346
+    min: 0.0
+  Group_StarMetallicity:
+    avg: 0.0006624482309302499
+    count: 2927443277
+    max: 0.16865073144435883
+    min: 0.0
+  Group_Vel_x:
+    avg: -0.03594112069664459
+    count: 2927443277
+    max: 26472.392578125
+    min: -14718.869140625
+  Group_Vel_y:
+    avg: 0.015414464992457803
+    count: 2927443277
+    max: 26822.83203125
+    min: -34353.265625
+  Group_Vel_z:
+    avg: 0.05216634777357368
+    count: 2927443277
+    max: 21107.423828125
+    min: -16215.775390625
+  Group_WindMass:
+    avg: 0.0022952135990534843
+    count: 2926138735
+    max: 26.41272735595703
+    min: 0.0
+  Subhalo_BHMass:
+    avg: 7.186461074198151e-05
+    count: 1395422855
+    max: 668.3529663085938
+    min: 0.0
+  Subhalo_BHMdot:
+    avg: 2.1444748636198077e-05
+    count: 1395422855
+    max: 134.8695068359375
+    min: 0.0
+  Subhalo_BfldDisk:
+    avg: -213513092089.6077
+    count: 1395038836
+    max: 5776328316986327000
+    min: -157477632053054800000
+  Subhalo_BfldHalo:
+    avg: -648046436479339400000000000000
+    count: 1393371605
+    max: 18837206789753074000000000000000000000
+    min: -320164954719412500000000000000000000000
+  Subhalo_CM_x:
+    avg: 12519.956803031082
+    count: 1395422855
+    max: 25000.0
+    min: 6.630983989452943e-06
+  Subhalo_CM_y:
+    avg: 12491.38005166866
+    count: 1395422855
+    max: 25000.0
+    min: 2.6588364562485367e-05
+  Subhalo_CM_z:
+    avg: 12432.527855036082
+    count: 1395422855
+    max: 25000.0
+    min: 4.862806235905737e-05
+  Subhalo_GasMetalFractionsHalfRad_C:
+    avg: 4.692922097863221e-05
+    count: 1395422855
+    max: 0.027053887024521828
+    min: 0.0
+  Subhalo_GasMetalFractionsHalfRad_Fe:
+    avg: 1.417160707268642e-05
+    count: 1395422855
+    max: 0.011480951681733131
+    min: 0.0
+  Subhalo_GasMetalFractionsHalfRad_H:
+    avg: 0.08453450196525429
+    count: 1395422855
+    max: 0.7599999904632568
+    min: 0.0
+  Subhalo_GasMetalFractionsHalfRad_He:
+    avg: 0.028723569023678806
+    count: 1395422855
+    max: 0.504435122013092
+    min: 0.0
+  Subhalo_GasMetalFractionsHalfRad_Mg:
+    avg: 1.6965618937509146e-05
+    count: 1395422855
+    max: 0.009973456151783466
+    min: 0.0
+  Subhalo_GasMetalFractionsHalfRad_N:
+    avg: 2.0804143596915252e-05
+    count: 1395422855
+    max: 0.005328688770532608
+    min: 0.0
+  Subhalo_GasMetalFractionsHalfRad_Ne:
+    avg: 6.172994271304976e-05
+    count: 1395422855
+    max: 0.028427038341760635
+    min: 0.0
+  Subhalo_GasMetalFractionsHalfRad_O:
+    avg: 0.00020227015868571195
+    count: 1395422855
+    max: 0.08243026584386826
+    min: 0.0
+  Subhalo_GasMetalFractionsHalfRad_Si:
+    avg: 1.757683809157944e-05
+    count: 1395422855
+    max: 0.009435614570975304
+    min: 0.0
+  Subhalo_GasMetalFractionsHalfRad_total:
+    avg: 7.289808613096794e-06
+    count: 1395422855
+    max: 0.005514637567102909
+    min: 0.0
+  Subhalo_GasMetalFractionsMaxRad_C:
+    avg: 3.932906268891729e-05
+    count: 1395422855
+    max: 0.026010392233729362
+    min: 0.0
+  Subhalo_GasMetalFractionsMaxRad_Fe:
+    avg: 1.2005520462684207e-05
+    count: 1395422855
+    max: 0.011133517138659954
+    min: 0.0
+  Subhalo_GasMetalFractionsMaxRad_H:
+    avg: 0.46879122985935423
+    count: 1395422855
+    max: 0.7600008249282837
+    min: 0.0
+  Subhalo_GasMetalFractionsMaxRad_He:
+    avg: 0.1530067292864851
+    count: 1395422855
+    max: 0.47716712951660156
+    min: 0.0
+  Subhalo_GasMetalFractionsMaxRad_Mg:
+    avg: 1.4740728638640786e-05
+    count: 1395422855
+    max: 0.007834790274500847
+    min: 0.0
+  Subhalo_GasMetalFractionsMaxRad_N:
+    avg: 1.7934871175300333e-05
+    count: 1395422855
+    max: 0.005171238910406828
+    min: 0.0
+  Subhalo_GasMetalFractionsMaxRad_Ne:
+    avg: 5.338257400809186e-05
+    count: 1395422855
+    max: 0.02759539894759655
+    min: 0.0
+  Subhalo_GasMetalFractionsMaxRad_O:
+    avg: 0.00017558717678248996
+    count: 1395422855
+    max: 0.08006194978952408
+    min: 0.0
+  Subhalo_GasMetalFractionsMaxRad_Si:
+    avg: 1.528314536415739e-05
+    count: 1395422855
+    max: 0.007494094781577587
+    min: 0.0
+  Subhalo_GasMetalFractionsMaxRad_total:
+    avg: 6.301745141339137e-06
+    count: 1395422855
+    max: 0.005351687781512737
+    min: 0.0
+  Subhalo_GasMetalFractionsSfrWeighted_C:
+    avg: 4.881264589101268e-05
+    count: 1395422855
+    max: 0.04147301986813545
+    min: 0.0
+  Subhalo_GasMetalFractionsSfrWeighted_Fe:
+    avg: 1.3942361970369974e-05
+    count: 1395422855
+    max: 0.010687945410609245
+    min: 0.0
+  Subhalo_GasMetalFractionsSfrWeighted_H:
+    avg: 0.12292553952962937
+    count: 1395422855
+    max: 0.7600008249282837
+    min: 0.0
+  Subhalo_GasMetalFractionsSfrWeighted_He:
+    avg: 0.04142361657228529
+    count: 1395422855
+    max: 0.5105653405189514
+    min: 0.0
+  Subhalo_GasMetalFractionsSfrWeighted_Mg:
+    avg: 1.7497394952096278e-05
+    count: 1395422855
+    max: 0.007935157045722008
+    min: 0.0
+  Subhalo_GasMetalFractionsSfrWeighted_N:
+    avg: 2.1271249474721815e-05
+    count: 1395422855
+    max: 0.005723244044929743
+    min: 0.0
+  Subhalo_GasMetalFractionsSfrWeighted_Ne:
+    avg: 6.543728522997964e-05
+    count: 1395422855
+    max: 0.02666621468961239
+    min: 0.0
+  Subhalo_GasMetalFractionsSfrWeighted_O:
+    avg: 0.00022600911439811012
+    count: 1395422855
+    max: 0.07645203918218613
+    min: 0.0
+  Subhalo_GasMetalFractionsSfrWeighted_Si:
+    avg: 1.943275292473175e-05
+    count: 1395422855
+    max: 0.007906446233391762
+    min: 0.0
+  Subhalo_GasMetalFractionsSfrWeighted_total:
+    avg: 6.721341084725162e-06
+    count: 1395422855
+    max: 0.0050891186110675335
+    min: 0.0
+  Subhalo_GasMetalFractionsSfr_C:
+    avg: 4.5069392096231316e-05
+    count: 1395422855
+    max: 0.04147301986813545
+    min: 0.0
+  Subhalo_GasMetalFractionsSfr_Fe:
+    avg: 1.2866294909661833e-05
+    count: 1395422855
+    max: 0.010313685052096844
+    min: 0.0
+  Subhalo_GasMetalFractionsSfr_H:
+    avg: 0.12305231643576364
+    count: 1395422855
+    max: 0.7600008249282837
+    min: 0.0
+  Subhalo_GasMetalFractionsSfr_He:
+    avg: 0.0413330980797063
+    count: 1395422855
+    max: 0.5105653405189514
+    min: 0.0
+  Subhalo_GasMetalFractionsSfr_Mg:
+    avg: 1.6129456944456513e-05
+    count: 1395422855
+    max: 0.008158192038536072
+    min: 0.0
+  Subhalo_GasMetalFractionsSfr_N:
+    avg: 1.947389340691118e-05
+    count: 1395422855
+    max: 0.005723244044929743
+    min: 0.0
+  Subhalo_GasMetalFractionsSfr_Ne:
+    avg: 5.93511264731828e-05
+    count: 1395422855
+    max: 0.025780295953154564
+    min: 0.0
+  Subhalo_GasMetalFractionsSfr_O:
+    avg: 0.0002070257420326209
+    count: 1395422855
+    max: 0.07396401464939117
+    min: 0.0
+  Subhalo_GasMetalFractionsSfr_Si:
+    avg: 1.7762896759845194e-05
+    count: 1395422855
+    max: 0.008116942830383778
+    min: 0.0
+  Subhalo_GasMetalFractionsSfr_total:
+    avg: 6.335931943836079e-06
+    count: 1395422855
+    max: 0.004916429053992033
+    min: 0.0
+  Subhalo_GasMetalFractions_C:
+    avg: 4.084300717374029e-05
+    count: 1395422855
+    max: 0.029854105785489082
+    min: 0.0
+  Subhalo_GasMetalFractions_Fe:
+    avg: 1.2562488074916648e-05
+    count: 1395422855
+    max: 0.009729431942105293
+    min: 0.0
+  Subhalo_GasMetalFractions_H:
+    avg: 0.08655360733897849
+    count: 1395422855
+    max: 0.7599999904632568
+    min: 0.0
+  Subhalo_GasMetalFractions_He:
+    avg: 0.029238416777918552
+    count: 1395422855
+    max: 0.4870387613773346
+    min: 0.0
+  Subhalo_GasMetalFractions_Mg:
+    avg: 1.4881055569817738e-05
+    count: 1395422855
+    max: 0.008562746457755566
+    min: 0.0
+  Subhalo_GasMetalFractions_N:
+    avg: 1.796672687615553e-05
+    count: 1395422855
+    max: 0.005031399428844452
+    min: 0.0
+  Subhalo_GasMetalFractions_Ne:
+    avg: 5.358935245238747e-05
+    count: 1395422855
+    max: 0.02418379858136177
+    min: 0.0
+  Subhalo_GasMetalFractions_O:
+    avg: 0.00017661896066974443
+    count: 1395422855
+    max: 0.07029829919338226
+    min: 0.0
+  Subhalo_GasMetalFractions_Si:
+    avg: 1.5389393185885707e-05
+    count: 1395422855
+    max: 0.00815678108483553
+    min: 0.0
+  Subhalo_GasMetalFractions_total:
+    avg: 6.4832785223410985e-06
+    count: 1395422855
+    max: 0.004687843844294548
+    min: 0.0
+  Subhalo_GasMetallicity:
+    avg: 0.00034521229089625745
+    count: 1395422855
+    max: 0.14235270023345947
+    min: 0.0
+  Subhalo_GasMetallicityHalfRad:
+    avg: 0.0003956028289019529
+    count: 1395422855
+    max: 0.16726566851139069
+    min: 0.0
+  Subhalo_GasMetallicityMaxRad:
+    avg: 0.00034168418047697503
+    count: 1395422855
+    max: 0.16237910091876984
+    min: 0.0
+  Subhalo_GasMetallicitySfr:
+    avg: 0.00039293129081561227
+    count: 1395422855
+    max: 0.15051838755607605
+    min: 0.0
+  Subhalo_GasMetallicitySfrWeighted:
+    avg: 0.0004291897037168593
+    count: 1395422855
+    max: 0.15569685399532318
+    min: 0.0
+  Subhalo_GrNr:
+    avg: 8231.311389585919
+    count: 1395422855
+    max: 42684.0
+    min: 0.0
+  Subhalo_HalfmassRad:
+    avg: 22.884751679710398
+    count: 1395422855
+    max: 1658.580322265625
+    min: 0.0
+  Subhalo_HalfmassRadType_bh:
+    avg: 0.0004781982999893482
+    count: 1395422855
+    max: 2012.3482666015625
+    min: 0.0
+  Subhalo_HalfmassRadType_dm:
+    avg: 22.862492512377536
+    count: 1395422855
+    max: 1659.06005859375
+    min: 0.0
+  Subhalo_HalfmassRadType_gas:
+    avg: 16.346087725683287
+    count: 1395422855
+    max: 1705.7205810546875
+    min: 0.0
+  Subhalo_HalfmassRadType_stars:
+    avg: 0.6022133441164813
+    count: 1395422855
+    max: 1269.363037109375
+    min: 0.0
+  Subhalo_HalfmassRadType_tracers:
+    avg: 0.0
+    count: 1395422855
+    max: 0.0
+    min: 0.0
+  Subhalo_HalfmassRadType_unused:
+    avg: 0.0
+    count: 1395422855
+    max: 0.0
+    min: 0.0
+  Subhalo_IDMostbound:
+    avg: 19210657.54337337
+    count: 1395422855
+    max: 99694016
+    min: 1.0
+  Subhalo_Len:
+    avg: 381.92523188320575
+    count: 1395422855
+    max: 8149530.0
+    min: 20.0
+  Subhalo_LenType_bh:
+    avg: 0.03461537828975863
+    count: 1395422855
+    max: 2756.0
+    min: 0.0
+  Subhalo_LenType_dm:
+    avg: 255.6833733298714
+    count: 1395422855
+    max: 4330184.0
+    min: 0.0
+  Subhalo_LenType_gas:
+    avg: 103.17293557729495
+    count: 1395422855
+    max: 3550752.0
+    min: 0.0
+  Subhalo_LenType_stars:
+    avg: 23.034307597749645
+    count: 1395422855
+    max: 452628.0
+    min: 0.0
+  Subhalo_LenType_tracers:
+    avg: 0.0
+    count: 1395422855
+    max: 0.0
+    min: 0.0
+  Subhalo_LenType_unused:
+    avg: 0.0
+    count: 1395422855
+    max: 0.0
+    min: 0.0
+  Subhalo_Mass:
+    avg: 1.9308231639157862
+    count: 1395422855
+    max: 54872.28515625
+    min: 0.01037660613656044
+  Subhalo_MassInHalfRad:
+    avg: 0.09181606203482405
+    count: 1395422855
+    max: 3348.91455078125
+    min: 0.0
+  Subhalo_MassInHalfRadType_bh:
+    avg: 0.00024389079331752666
+    count: 1395422855
+    max: 668.352783203125
+    min: 0.0
+  Subhalo_MassInHalfRadType_dm:
+    avg: 0.0735480652330734
+    count: 1395422855
+    max: 3163.85205078125
+    min: 0.0
+  Subhalo_MassInHalfRadType_gas:
+    avg: 0.007105932815274552
+    count: 1395422855
+    max: 130.1024932861328
+    min: 0.0
+  Subhalo_MassInHalfRadType_stars:
+    avg: 0.010918173199440644
+    count: 1395422855
+    max: 224.86622619628906
+    min: 0.0
+  Subhalo_MassInHalfRadType_tracers:
+    avg: 0.0
+    count: 1395422855
+    max: 0.0
+    min: 0.0
+  Subhalo_MassInHalfRadType_unused:
+    avg: 0.0
+    count: 1395422855
+    max: 0.0
+    min: 0.0
+  Subhalo_MassInMaxRad:
+    avg: 0.5757864189786976
+    count: 1395422855
+    max: 32539.41796875
+    min: 0.0
+  Subhalo_MassInMaxRadType_bh:
+    avg: 0.00024406174989858489
+    count: 1395422855
+    max: 668.352783203125
+    min: 0.0
+  Subhalo_MassInMaxRadType_dm:
+    avg: 0.5195961200540952
+    count: 1395422855
+    max: 29854.5234375
+    min: 0.0
+  Subhalo_MassInMaxRadType_gas:
+    avg: 0.043669833810979934
+    count: 1395422855
+    max: 2639.408935546875
+    min: 0.0
+  Subhalo_MassInMaxRadType_stars:
+    avg: 0.012276403391379148
+    count: 1395422855
+    max: 426.1529846191406
+    min: 0.0
+  Subhalo_MassInMaxRadType_tracers:
+    avg: 0.0
+    count: 1395422855
+    max: 0.0
+    min: 0.0
+  Subhalo_MassInMaxRadType_unused:
+    avg: 0.0
+    count: 1395422855
+    max: 0.0
+    min: 0.0
+  Subhalo_MassInRad:
+    avg: 0.17503425617148569
+    count: 1395422855
+    max: 8042.6455078125
+    min: 0.0
+  Subhalo_MassInRadType_bh:
+    avg: 0.0002444330792084421
+    count: 1395422855
+    max: 668.352783203125
+    min: 0.0
+  Subhalo_MassInRadType_dm:
+    avg: 0.14253848911289543
+    count: 1395422855
+    max: 7551.43115234375
+    min: 0.0
+  Subhalo_MassInRadType_gas:
+    avg: 0.015528710491056596
+    count: 1395422855
+    max: 467.7605285644531
+    min: 0.0
+  Subhalo_MassInRadType_stars:
+    avg: 0.016722623490262323
+    count: 1395422855
+    max: 380.5936584472656
+    min: 0.0
+  Subhalo_MassInRadType_tracers:
+    avg: 0.0
+    count: 1395422855
+    max: 0.0
+    min: 0.0
+  Subhalo_MassInRadType_unused:
+    avg: 0.0
+    count: 1395422855
+    max: 0.0
+    min: 0.0
+  Subhalo_MassType_bh:
+    avg: 0.0002559015022496616
+    count: 1395422855
+    max: 668.3567504882812
+    min: 0.0
+  Subhalo_MassType_dm:
+    avg: 1.7708289103054144
+    count: 1395422855
+    max: 49965.6875
+    min: 0.0
+  Subhalo_MassType_gas:
+    avg: 0.1377060852454024
+    count: 1395422855
+    max: 4701.6845703125
+    min: 0.0
+  Subhalo_MassType_stars:
+    avg: 0.022032266841099074
+    count: 1395422855
+    max: 449.73291015625
+    min: 0.0
+  Subhalo_MassType_tracers:
+    avg: 0.0
+    count: 1395422855
+    max: 0.0
+    min: 0.0
+  Subhalo_MassType_unused:
+    avg: 0.0
+    count: 1395422855
+    max: 0.0
+    min: 0.0
+  Subhalo_Parent:
+    avg: 0.14437890298134753
+    count: 1395422855
+    max: 1534.0
+    min: 0.0
+  Subhalo_Pos_x:
+    avg: 12519.970246031413
+    count: 1395422855
+    max: 25001.732421875
+    min: -1.1047289371490479
+  Subhalo_Pos_y:
+    avg: 12491.377460777552
+    count: 1395422855
+    max: 25002.0078125
+    min: -1.4310829639434814
+  Subhalo_Pos_z:
+    avg: 12432.49417562425
+    count: 1395422855
+    max: 25001.171875
+    min: -1.4448883533477783
+  Subhalo_SFR:
+    avg: 0.08733269265550589
+    count: 1395422855
+    max: 5032.18603515625
+    min: 0.0
+  Subhalo_SFRinHalfRad:
+    avg: 0.05524293314445139
+    count: 1395422855
+    max: 5030.4794921875
+    min: 0.0
+  Subhalo_SFRinMaxRad:
+    avg: 0.06911820696177444
+    count: 1395422855
+    max: 4278.39892578125
+    min: 0.0
+  Subhalo_SFRinRad:
+    avg: 0.07565394459423706
+    count: 1395422855
+    max: 5031.81298828125
+    min: 0.0
+  Subhalo_Spin_x:
+    avg: 0.010417844926143657
+    count: 1395422855
+    max: 75791.390625
+    min: -73309.9453125
+  Subhalo_Spin_y:
+    avg: 0.02675807622964366
+    count: 1395422855
+    max: 71818.1328125
+    min: -84425.15625
+  Subhalo_Spin_z:
+    avg: 0.006186397471214365
+    count: 1395422855
+    max: 62713.40234375
+    min: -76825.875
+  Subhalo_StarMetalFractionsHalfRad_C:
+    avg: 4.4321079028270674e-05
+    count: 1395422855
+    max: 0.028712429106235504
+    min: 0.0
+  Subhalo_StarMetalFractionsHalfRad_Fe:
+    avg: 1.3174493431897322e-05
+    count: 1395422855
+    max: 0.006734141148626804
+    min: 0.0
+  Subhalo_StarMetalFractionsHalfRad_H:
+    avg: 0.0973920348849908
+    count: 1395422855
+    max: 0.7600007653236389
+    min: 0.0
+  Subhalo_StarMetalFractionsHalfRad_He:
+    avg: 0.03283252041996442
+    count: 1395422855
+    max: 0.5346778631210327
+    min: 0.0
+  Subhalo_StarMetalFractionsHalfRad_Mg:
+    avg: 1.8080555894970355e-05
+    count: 1395422855
+    max: 0.010451640002429485
+    min: 0.0
+  Subhalo_StarMetalFractionsHalfRad_N:
+    avg: 1.5397487056603943e-05
+    count: 1395422855
+    max: 0.005211763549596071
+    min: 0.0
+  Subhalo_StarMetalFractionsHalfRad_Ne:
+    avg: 5.919244579485921e-05
+    count: 1395422855
+    max: 0.020625831559300423
+    min: 0.0
+  Subhalo_StarMetalFractionsHalfRad_O:
+    avg: 0.00023438871295468108
+    count: 1395422855
+    max: 0.09731425344944
+    min: 0.0
+  Subhalo_StarMetalFractionsHalfRad_Si:
+    avg: 2.0575505474884733e-05
+    count: 1395422855
+    max: 0.009299458004534245
+    min: 0.0
+  Subhalo_StarMetalFractionsHalfRad_total:
+    avg: 6.294943454856204e-06
+    count: 1395422855
+    max: 0.0033279622439295053
+    min: 0.0
+  Subhalo_StarMetalFractionsMaxRad_C:
+    avg: 4.3053182438554575e-05
+    count: 1395422855
+    max: 0.023064658045768738
+    min: 0.0
+  Subhalo_StarMetalFractionsMaxRad_Fe:
+    avg: 1.2554080146103401e-05
+    count: 1395422855
+    max: 0.0067198621109128
+    min: 0.0
+  Subhalo_StarMetalFractionsMaxRad_H:
+    avg: 0.12818116270901853
+    count: 1395422855
+    max: 0.7600007057189941
+    min: 0.0
+  Subhalo_StarMetalFractionsMaxRad_He:
+    avg: 0.04278993696556291
+    count: 1395422855
+    max: 0.5475546717643738
+    min: 0.0
+  Subhalo_StarMetalFractionsMaxRad_Mg:
+    avg: 1.7455040993909867e-05
+    count: 1395422855
+    max: 0.010016650892794132
+    min: 0.0
+  Subhalo_StarMetalFractionsMaxRad_N:
+    avg: 1.4960523322211789e-05
+    count: 1395422855
+    max: 0.005665876902639866
+    min: 0.0
+  Subhalo_StarMetalFractionsMaxRad_Ne:
+    avg: 5.7017335845378403e-05
+    count: 1395422855
+    max: 0.021805809810757637
+    min: 0.0
+  Subhalo_StarMetalFractionsMaxRad_O:
+    avg: 0.00023063413190748996
+    count: 1395422855
+    max: 0.09606130421161652
+    min: 0.0
+  Subhalo_StarMetalFractionsMaxRad_Si:
+    avg: 2.0408436141241637e-05
+    count: 1395422855
+    max: 0.009299458004534245
+    min: 0.0
+  Subhalo_StarMetalFractionsMaxRad_total:
+    avg: 5.750733879139942e-06
+    count: 1395422855
+    max: 0.003318893490359187
+    min: 0.0
+  Subhalo_StarMetalFractions_C:
+    avg: 4.0252016631062176e-05
+    count: 1395422855
+    max: 0.023064658045768738
+    min: 0.0
+  Subhalo_StarMetalFractions_Fe:
+    avg: 1.1975330681488207e-05
+    count: 1395422855
+    max: 0.007365208584815264
+    min: 0.0
+  Subhalo_StarMetalFractions_H:
+    avg: 0.09746253524531218
+    count: 1395422855
+    max: 0.7600004076957703
+    min: 0.0
+  Subhalo_StarMetalFractions_He:
+    avg: 0.032795003607060044
+    count: 1395422855
+    max: 0.47271060943603516
+    min: 0.0
+  Subhalo_StarMetalFractions_Mg:
+    avg: 1.6524095212466275e-05
+    count: 1395422855
+    max: 0.008125602267682552
+    min: 0.0
+  Subhalo_StarMetalFractions_N:
+    avg: 1.4062409367699961e-05
+    count: 1395422855
+    max: 0.0047937058843672276
+    min: 0.0
+  Subhalo_StarMetalFractions_Ne:
+    avg: 5.4091286499600195e-05
+    count: 1395422855
+    max: 0.020025834441184998
+    min: 0.0
+  Subhalo_StarMetalFractions_O:
+    avg: 0.0002172558265052104
+    count: 1395422855
+    max: 0.07038262486457825
+    min: 0.0
+  Subhalo_StarMetalFractions_Si:
+    avg: 1.9111701524065347e-05
+    count: 1395422855
+    max: 0.007183311507105827
+    min: 0.0
+  Subhalo_StarMetalFractions_total:
+    avg: 5.663589335558831e-06
+    count: 1395422855
+    max: 0.003578886156901717
+    min: 0.0
+  Subhalo_StarMetallicity:
+    avg: 0.0003877392740961918
+    count: 1395422855
+    max: 0.13084040582180023
+    min: 0.0
+  Subhalo_StarMetallicityHalfRad:
+    avg: 0.0004207199096876609
+    count: 1395422855
+    max: 0.1754615604877472
+    min: 0.0
+  Subhalo_StarMetallicityMaxRad:
+    avg: 0.00041183045353014727
+    count: 1395422855
+    max: 0.16708983480930328
+    min: 0.0
+  Subhalo_StellarPhotometricsMassInRad:
+    avg: 0.007642961020018147
+    count: 1395422855
+    max: 249.9235382080078
+    min: 0.0
+  Subhalo_StellarPhotometricsRad:
+    avg: 0.3302069403442851
+    count: 1395422855
+    max: 45.3049201965332
+    min: 0.0
+  Subhalo_StellarPhotometrics_B:
+    avg: 9193541125634720000000000000000000000
+    count: 1395422855
+    max: 9999999933815813000000000000000000000
+    min: -27.182552337646484
+  Subhalo_StellarPhotometrics_K:
+    avg: 9193541125634720000000000000000000000
+    count: 1395422855
+    max: 9999999933815813000000000000000000000
+    min: -29.301925659179688
+  Subhalo_StellarPhotometrics_U:
+    avg: 9193541125634720000000000000000000000
+    count: 1395422855
+    max: 9999999933815813000000000000000000000
+    min: -27.705739974975586
+  Subhalo_StellarPhotometrics_V:
+    avg: 9193541125634720000000000000000000000
+    count: 1395422855
+    max: 9999999933815813000000000000000000000
+    min: -27.293655395507812
+  Subhalo_StellarPhotometrics_g:
+    avg: 9193541125634720000000000000000000000
+    count: 1395422855
+    max: 9999999933815813000000000000000000000
+    min: -27.363494873046875
+  Subhalo_StellarPhotometrics_i:
+    avg: 9193541125634720000000000000000000000
+    count: 1395422855
+    max: 9999999933815813000000000000000000000
+    min: -27.457250595092773
+  Subhalo_StellarPhotometrics_r:
+    avg: 9193541125634720000000000000000000000
+    count: 1395422855
+    max: 9999999933815813000000000000000000000
+    min: -27.373104095458984
+  Subhalo_StellarPhotometrics_z:
+    avg: 9193541125634720000000000000000000000
+    count: 1395422855
+    max: 9999999933815813000000000000000000000
+    min: -27.560983657836914
+  Subhalo_VelDisp:
+    avg: 22.100133261259533
+    count: 1395422855
+    max: 1011.5060424804688
+    min: 1.7364968061447144
+  Subhalo_Vel_x:
+    avg: -0.06855211231248055
+    count: 1395422855
+    max: 3213.364013671875
+    min: -3860.35107421875
+  Subhalo_Vel_y:
+    avg: -0.0036085538396936775
+    count: 1395422855
+    max: 3704.46484375
+    min: -4167.27587890625
+  Subhalo_Vel_z:
+    avg: 0.09128313081042017
+    count: 1395422855
+    max: 3684.78076171875
+    min: -3685.649658203125
+  Subhalo_Vmax:
+    avg: 42.92528232939427
+    count: 1395422852
+    max: 18918.54296875
+    min: 2.753089189529419
+  Subhalo_VmaxRad:
+    avg: 22.11250066874898
+    count: 1395422855
+    max: 957.8892211914062
+    min: 0.0
+  Subhalo_WindMass:
+    avg: 0.00021553398965040444
+    count: 1394771643
+    max: 16.675745010375977
+    min: 0.0
+  Subhalo_id:
+    avg: 10011.894560797487
+    count: 1395422855
+    max: 45742.0
+    min: 0.0
+  count: 2927443277
+  id:
+    avg: 9574.327120585913
+    count: 2927443277
+    max: 42684.0
+    min: 0.0
+  params_A_AGN1:
+    avg: 1.371703309415195
+    count: 2927443277
+    max: 100.0
+    min: 0.0
+  params_A_AGN2:
+    avg: 1.0743088294246568
+    count: 2927443277
+    max: 2.0
+    min: 0.0
+  params_A_SN1:
+    avg: 1.3725702988254178
+    count: 2927443277
+    max: 100.0
+    min: 0.0
+  params_A_SN2:
+    avg: 1.0771861526976463
+    count: 2927443277
+    max: 2.0
+    min: 0.0
+  params_Omega_m:
+    avg: 0.31823809798841735
+    count: 2927443277
+    max: 0.5
+    min: 0.10000000149011612
+  params_sigma_8:
+    avg: 0.8030757205001744
+    count: 2927443277
+    max: 1.0
+    min: 0.6000000238418579
+  redshift:
+    avg: 1.5143638188266237
+    count: 2927443277
+    max: 6.0
+    min: 0.0
+  simulation_set:
+    others: 0
+    terms:
+    - count: 2647552745
+      value: 0
+    - count: 195163573
+      value: 1
+    - count: 79213880
+      value: 2
+    - count: 5513079
+      value: 3
+  simulation_set_id:
+    avg: 455.2185233749962
+    count: 2927443277
+    max: 999.0
+    min: 0.0
+  simulation_suite:
+    others: 0
+    terms:
+    - count: 1477011526
+      value: 0
+    - count: 1450431751
+      value: 1
+  snapshot:
+    avg: 16.555176538780124
+    count: 2927443277
+    max: 33.0
+    min: 0.0
+  type:
+    others: 0
+    terms:
+    - count: 1532020422
+      value: false
+    - count: 1395422855
+      value: true
+candels:
+  ACS_F435_abmag:
+    avg: 27.146983335998094
+    count: 62752
+    max: 39.064998626708984
+    min: 17.56599998474121
+  ACS_F435_eabmag:
+    avg: 0.5934443871156908
+    count: 61667
+    max: 49.7760009765625
+    min: 0.0010000000474974513
+  ACS_F606_abmag:
+    avg: 26.45732493644419
+    count: 152098
+    max: 38.577999114990234
+    min: 16.363000869750977
+  ACS_F606_eabmag:
+    avg: 0.33023677732201134
+    count: 151480
+    max: 49.59000015258789
+    min: 0.0
+  ACS_F775_abmag:
+    avg: 26.223945099353667
+    count: 66609
+    max: 37.9119987487793
+    min: 15.961999893188477
+  ACS_F775_eabmag:
+    avg: 0.25712924713983887
+    count: 66044
+    max: 49.04999923706055
+    min: 0.0
+  ACS_F814_abmag:
+    avg: 26.027187003619904
+    count: 152522
+    max: 36.90299987792969
+    min: 15.784000396728516
+  ACS_F814_eabmag:
+    avg: 0.2939052729909369
+    count: 152174
+    max: 49.76599884033203
+    min: 0.0
+  ACS_F850_abmag:
+    avg: 26.021954033154756
+    count: 67290
+    max: 36.38600158691406
+    min: 15.62600040435791
+  ACS_F850_eabmag:
+    avg: 0.2407282092473692
+    count: 66886
+    max: 48.237998962402344
+    min: 0.0
+  AFUV_P12_16:
+    avg: 0.9279411091894341
+    count: 161762
+    max: 5.989999771118164
+    min: 0.0
+  AFUV_P12_50:
+    avg: 1.3800477620065086
+    count: 161762
+    max: 6.0
+    min: 0.0
+  AFUV_P12_84:
+    avg: 1.9218706762228457
+    count: 161762
+    max: 6.010000228881836
+    min: 0.0
+  ANUV_P12_16:
+    avg: 0.7802598500885845
+    count: 161762
+    max: 5.989999771118164
+    min: 0.0
+  ANUV_P12_50:
+    avg: 1.1668470160781308
+    count: 161762
+    max: 6.0
+    min: 0.0
+  ANUV_P12_84:
+    avg: 1.6454181216571584
+    count: 161762
+    max: 6.010000228881836
+    min: 0.0
+  AV_P12_16:
+    avg: 0.30289496272884037
+    count: 161762
+    max: 2.994999885559082
+    min: 0.0
+  AV_P12_50:
+    avg: 0.46605625547285534
+    count: 161762
+    max: 3.0
+    min: 0.0
+  AV_P12_84:
+    avg: 0.6959641637099272
+    count: 161762
+    max: 3.005000114440918
+    min: 0.0
+  B_zPhot:
+    avg: -17.871349851704363
+    count: 167137
+    max: 8.619000434875488
+    min: -49.400001525878906
+  DEC:
+    avg: 17.97733859824663
+    count: 167137
+    max: 62.38700485229492
+    min: -27.95966148376465
+  E_BminusV_zPhot:
+    avg: 0.12593483302117686
+    count: 167137
+    max: 1.100000023841858
+    min: 0.0
+  FLAGS_P12:
+    others: 0
+    terms:
+    - count: 148436
+      value: false
+    - count: 18672
+      value: true
+  FLAGS_galactic:
+    avg: 0.6815367034229405
+    count: 167137
+    max: 3.0
+    min: 0.0
+  H_rest_eazy:
+    avg: -18.950203600358655
+    count: 164573
+    max: -0.711355447769165
+    min: -44.310791015625
+  ID:
+    avg: 17926.900506769896
+    count: 167137
+    max: 41456.0
+    min: 1.0
+  IRAC_CH1_abmag:
+    avg: 24.76050633388396
+    count: 139408
+    max: 34.01300048828125
+    min: 16.516000747680664
+  IRAC_CH1_eabmag:
+    avg: 0.7965658281302483
+    count: 139097
+    max: 49.90299987792969
+    min: 0.0
+  IRAC_CH2_abmag:
+    avg: 24.895128677674997
+    count: 118009
+    max: 33.724998474121094
+    min: 16.885000228881836
+  IRAC_CH2_eabmag:
+    avg: 0.9522313444163054
+    count: 117660
+    max: 49.94599914550781
+    min: 0.0
+  IRAC_CH3_abmag:
+    avg: 24.023726020846084
+    count: 57403
+    max: 34.83700180053711
+    min: 17.68400001525879
+  IRAC_CH3_eabmag:
+    avg: 2.7281084202417722
+    count: 56659
+    max: 49.87300109863281
+    min: 0.003000000026077032
+  IRAC_CH4_abmag:
+    avg: 24.1105756913462
+    count: 23808
+    max: 33.987998962402344
+    min: 17.527000427246094
+  IRAC_CH4_eabmag:
+    avg: 2.661835578069897
+    count: 23519
+    max: 49.94300079345703
+    min: 0.0020000000949949026
+  I_rest_eazy:
+    avg: -18.494809519650047
+    count: 164573
+    max: -0.14549434185028076
+    min: -43.656803131103516
+  I_zPhot:
+    avg: -18.881911696404675
+    count: 167137
+    max: 4.2210001945495605
+    min: -51.349998474121094
+  J_rest_eazy:
+    avg: -18.769232212669586
+    count: 164573
+    max: -0.33130377531051636
+    min: -44.128265380859375
+  J_zPhot:
+    avg: -19.55972886124168
+    count: 167137
+    max: 1.6119999885559082
+    min: -52.04999923706055
+  K_abmag:
+    avg: 24.976293155824784
+    count: 144501
+    max: 35.86899948120117
+    min: 14.84000015258789
+  K_eabmag:
+    avg: 0.9214824797101763
+    count: 144060
+    max: 49.81399917602539
+    min: 0.0
+  K_rest_eazy:
+    avg: -18.752371031880564
+    count: 164573
+    max: 0.007720325607806444
+    min: -43.96538543701172
+  K_zPhot:
+    avg: -20.330715904581613
+    count: 167137
+    max: -0.4088999927043915
+    min: -52.779998779296875
+  LIMMAG_F160W:
+    avg: 28.192828046226328
+    count: 166450
+    max: 30.268131256103516
+    min: 21.497562408447266
+  Log_mass_zPhot:
+    avg: 6.861456630361057
+    count: 167087
+    max: 22.336259841918945
+    min: -5.7318902015686035
+  RA:
+    avg: 131.53585714021372
+    count: 167137
+    max: 215.29916381835938
+    min: 34.22163391113281
+  RMS:
+    avg: 0.008056778235165287
+    count: 166450
+    max: 0.6146907806396484
+    min: 0.0011302883503958583
+  R_rest_eazy:
+    avg: -18.447106517588274
+    count: 164573
+    max: 0.7870378494262695
+    min: -43.28880310058594
+  R_zPhot:
+    avg: -18.622935362606295
+    count: 167137
+    max: 5.498000144958496
+    min: -50.79999923706055
+  SFRTOTf:
+    avg: -55165703479022.984
+    count: 167137
+    max: 2602850.0
+    min: -9220230182378405900
+  SFR_zPhot:
+    avg: 90642411.37590969
+    count: 167137
+    max: 41849999360
+    min: 0.0
+  UV1500_rest_eazy:
+    avg: -16.521232746888522
+    count: 164573
+    max: 11.441658020019531
+    min: -24.857284545898438
+  UV2300_rest_eazy:
+    avg: -16.860395493424587
+    count: 164573
+    max: 4.614271640777588
+    min: -35.48584747314453
+  UV2800_rest_eazy:
+    avg: -17.044038639756668
+    count: 164573
+    max: 4.452540874481201
+    min: -38.35614013671875
+  UV_P12_16:
+    avg: 0.5902136954928792
+    count: 162198
+    max: 2.752000093460083
+    min: -0.5429999828338623
+  UV_P12_50:
+    avg: 0.6971174366753069
+    count: 162198
+    max: 2.759000062942505
+    min: -0.5329999923706055
+  UV_P12_84:
+    avg: 0.7862104587432523
+    count: 162198
+    max: 2.7660000324249268
+    min: -0.515999972820282
+  U_abmag:
+    avg: 27.05933286218884
+    count: 150302
+    max: 38.77399826049805
+    min: 17.809999465942383
+  U_eabmag:
+    avg: 0.6023671914060148
+    count: 150028
+    max: 49.78900146484375
+    min: 0.0
+  U_rest_eazy:
+    avg: -17.419327137607645
+    count: 164573
+    max: 3.018951654434204
+    min: -40.3611946105957
+  U_zPhot:
+    avg: -18.366550690051405
+    count: 167137
+    max: 8.88700008392334
+    min: -49.380001068115234
+  VJ_P12_16:
+    avg: 0.3064889579578478
+    count: 162198
+    max: 2.6110000610351562
+    min: -1.0
+  VJ_P12_50:
+    avg: 0.4357245465943102
+    count: 162198
+    max: 2.618000030517578
+    min: -1.0
+  VJ_P12_84:
+    avg: 0.5436241383841278
+    count: 162198
+    max: 2.625
+    min: -1.0
+  V_rest_eazy:
+    avg: -18.28097437215845
+    count: 164573
+    max: 0.7845029234886169
+    min: -42.930702209472656
+  V_zPhot:
+    avg: -18.343540251291234
+    count: 167137
+    max: 6.754000186920166
+    min: -50.29999923706055
+  WFC3_F098_abmag:
+    avg: 25.955039599417333
+    count: 9471
+    max: 33.5369987487793
+    min: 16.304000854492188
+  WFC3_F098_eabmag:
+    avg: 0.2788229830352001
+    count: 9468
+    max: 49.316001892089844
+    min: 0.0
+  WFC3_F105_abmag:
+    avg: 26.176453199949094
+    count: 53389
+    max: 36.388999938964844
+    min: 14.496000289916992
+  WFC3_F105_eabmag:
+    avg: 0.214437161093269
+    count: 51242
+    max: 37.41600036621094
+    min: 0.0
+  WFC3_F125_abmag:
+    avg: 25.506848989076165
+    count: 165795
+    max: 37.555999755859375
+    min: 15.13599967956543
+  WFC3_F125_eabmag:
+    avg: 0.17943649313746413
+    count: 165659
+    max: 49.03499984741211
+    min: 0.0
+  WFC3_F140_abmag:
+    avg: 26.144446851516946
+    count: 51232
+    max: 37.28900146484375
+    min: 15.137999534606934
+  WFC3_F140_eabmag:
+    avg: 0.3635912931707225
+    count: 47227
+    max: 49.722999572753906
+    min: 0.0
+  WFC3_F160_abmag:
+    avg: 25.21548835739453
+    count: 166973
+    max: 32.54199981689453
+    min: 14.881999969482422
+  WFC3_F160_eabmag:
+    avg: 0.12106404828981565
+    count: 166968
+    max: 47.75
+    min: 0.0
+  WFC3_F275_abmag:
+    avg: 26.890998042287546
+    count: 5129
+    max: 36.33700180053711
+    min: 20.381000518798828
+  WFC3_F275_eabmag:
+    avg: 1.199901154593751
+    count: 5109
+    max: 49.448001861572266
+    min: 0.004000000189989805
+  age_zPhot:
+    avg: 1.3301131120965914
+    count: 167137
+    max: 13.180000305175781
+    min: 0.0
+  count: 167137
+  dn:
+    avg: 1.4707514257901388
+    count: 166541
+    max: 6826.43017578125
+    min: 0.0
+  dpa:
+    avg: 23.904121751328276
+    count: 166541
+    max: 421272.0
+    min: 0.0
+  dq:
+    avg: 0.18289758189998342
+    count: 166541
+    max: 2424.320068359375
+    min: 0.0
+  dre:
+    avg: 0.1960551931665453
+    count: 166541
+    max: 278.5090026855469
+    min: 0.0
+  field:
+    others: 0
+    terms:
+    - count: 35064
+      value: 1
+    - count: 34693
+      value: 2
+    - count: 33739
+      value: 0
+    - count: 33548
+      value: 3
+    - count: 30093
+      value: 4
+  logAGE_P12_16:
+    avg: 8.374868598874675
+    count: 162198
+    max: 9.96500015258789
+    min: 7.0
+  logAGE_P12_50:
+    avg: 8.550840694928816
+    count: 162198
+    max: 9.970999717712402
+    min: 7.0
+  logAGE_P12_84:
+    avg: 8.701175711443307
+    count: 162198
+    max: 10.0
+    min: 7.0
+  logM_P12_16:
+    avg: 8.735780243997128
+    count: 162198
+    max: 11.993000030517578
+    min: 8.0
+  logM_P12_50:
+    avg: 8.825320194387238
+    count: 162198
+    max: 12.0
+    min: 8.0
+  logM_P12_84:
+    avg: 8.918746735614878
+    count: 162198
+    max: 12.006999969482422
+    min: 8.0
+  logMt_P12_16:
+    avg: 8.859922720082718
+    count: 161762
+    max: 11.993000030517578
+    min: 8.0
+  logMt_P12_50:
+    avg: 8.965191726239103
+    count: 161762
+    max: 12.0
+    min: 8.0
+  logMt_P12_84:
+    avg: 9.070535279568988
+    count: 161762
+    max: 12.006999969482422
+    min: 8.0
+  logSFR_P12_16:
+    avg: -0.7419475888140712
+    count: 162198
+    max: 3.98799991607666
+    min: -3.0
+  logSFR_P12_50:
+    avg: -0.22910672141029328
+    count: 162198
+    max: 4.0
+    min: -3.0
+  logSFR_P12_84:
+    avg: 0.14512999556282824
+    count: 162198
+    max: 4.01200008392334
+    min: -3.0
+  logha_P12_16:
+    avg: -17.657790767068914
+    count: 162198
+    max: -15.008999824523926
+    min: -20.0
+  logha_P12_50:
+    avg: -17.119970969209295
+    count: 162198
+    max: -15.0
+    min: -20.0
+  logha_P12_84:
+    avg: -16.75791409935857
+    count: 162198
+    max: -14.991000175476074
+    min: -20.0
+  n:
+    avg: 2.1791018987981126
+    count: 166541
+    max: 8.0
+    min: 0.20000000298023224
+  nbands_P12:
+    avg: 15.523223463386325
+    count: 167137
+    max: 22.0
+    min: -99.0
+  pa:
+    avg: -0.008959128270269848
+    count: 166541
+    max: 360.0
+    min: -360.0
+  q:
+    avg: 0.42886211994998874
+    count: 166541
+    max: 1.0
+    min: 9.999999747378752e-05
+  re:
+    avg: 0.4419594523399035
+    count: 166541
+    max: 24.0
+    min: 0.017999999225139618
+  red_chi_P12:
+    avg: 6370.797245959746
+    count: 167108
+    max: 774000000
+    min: 3.6200001329866893e-10
+  sn:
+    avg: 58.62088710826324
+    count: 167050
+    max: 71034.703125
+    min: 0.0
+  zbest:
+    avg: 1.621738542011442
+    count: 167137
+    max: 9.97700023651123
+    min: 0.003000000026077032
+  zhigh:
+    avg: 2.0077268827373724
+    count: 167137
+    max: 9.996000289916992
+    min: 0.012000000104308128
+  zlow:
+    avg: 1.310701741674278
+    count: 167137
+    max: 9.946999549865723
+    min: 0.0010000000474974513
+  zmed:
+    avg: 1.6206993663814029
+    count: 167137
+    max: 9.97700023651123
+    min: 0.003000000026077032
+  ztype:
+    others: 0
+    terms:
+    - count: 155118
+      value: 2
+    - count: 9465
+      value: 0
+    - count: 2554
+      value: 1
+gaea:
+  CentralMvir:
+    avg: 1834.475932486188
+    count: 201238824
+    max: 237181.578125
+    min: 0.5163999795913696
+  ColdGas:
+    avg: 0.46863831036143816
+    count: 201238824
+    max: 111.24690246582031
+    min: 0.00039999998989515007
+  GalID:
+    avg: 285847448090155.75
+    count: 201238824
+    max: 4600333426802165800
+    min: 5.0
+  GasDiskRadius:
+    avg: 0.006429498700556369
+    count: 201238824
+    max: 0.740759015083313
+    min: 2.5999999706982635e-05
+  GasSpin_x:
+    avg: 8.739175083895817e-06
+    count: 201238824
+    max: 144.1074981689453
+    min: -144.1074981689453
+  GasSpin_y:
+    avg: -3.2769782829935e-05
+    count: 201238824
+    max: 144.1074981689453
+    min: -144.05340576171875
+  GasSpin_z:
+    avg: 5.931185651337136e-05
+    count: 201238824
+    max: 144.1074981689453
+    min: -144.1074981689453
+  HI:
+    avg: 0.18423161440385938
+    count: 201238824
+    max: 28.38764762878418
+    min: 0.0
+  MMSubID:
+    avg: 51565365863647.305
+    count: 201238824
+    max: 63029400004239
+    min: 20028400005376
+  Mvir:
+    avg: 51.29943478791553
+    count: 201238824
+    max: 237181.578125
+    min: 0.5163999795913696
+  PPos_x:
+    avg: 3.1410789563337125
+    count: 201238824
+    max: 6.283185259491404
+    min: 0.0
+  PPos_y:
+    avg: 0.571034754155652
+    count: 201238824
+    max: 1.5707850456237793
+    min: 7.638973897883261e-10
+  Pos_x:
+    avg: 0.0020228880392373617
+    count: 201238824
+    max: 1281.7747802734375
+    min: -1281.72998046875
+  Pos_y:
+    avg: 0.7436804074318978
+    count: 201238824
+    max: 1281.4827880859375
+    min: -1281.560791015625
+  Pos_z:
+    avg: 476.5032841779252
+    count: 201238824
+    max: 1281.85302734375
+    min: 5.993425133965502e-07
+  Rvir:
+    avg: 0.08159152122305276
+    count: 201238824
+    max: 2.0776870250701904
+    min: 0.007938000373542309
+  StellarDiskRadius:
+    avg: 0.005599118471236143
+    count: 201238824
+    max: 0.740759015083313
+    min: 0.0
+  StellarMass:
+    avg: 1.29141582811565
+    count: 201238824
+    max: 256.3080139160156
+    min: 0.0731000006198883
+  Type:
+    avg: 0.6025421118541221
+    count: 201238824
+    max: 2.0
+    min: 0.0
+  Vel_x:
+    avg: 0.653220571228325
+    count: 201238824
+    max: 5208.4892578125
+    min: -5208.4892578125
+  Vel_y:
+    avg: -3.245958744547769
+    count: 201238824
+    max: 5092.97265625
+    min: -5117.26220703125
+  Vel_z:
+    avg: -2.9888271227510614
+    count: 201238824
+    max: 5054.59326171875
+    min: -4984.88623046875
+  Vmax:
+    avg: 119.18755760885237
+    count: 201238824
+    max: 2318.990478515625
+    min: 22.27090072631836
+  Vvir:
+    avg: 98.83074533750573
+    count: 201238824
+    max: 2266.74072265625
+    min: 28.17970085144043
+  count: 201238825
+  z:
+    avg: 0.34864101980309326
+    count: 201238824
+    max: 0.4947310667527601
+    min: 0.0006609802954483102
+  z_pos:
+    avg: 0.3486365803768689
+    count: 201238824
+    max: 0.4825836304027462
+    min: 0.0017403648013479267
+gaiadr2:
+  a_g_percentile_lower:
+    avg: 0.6682760266633038
+    count: 87733672
+    max: 3.207900047302246
+    min: 0.0
+  a_g_percentile_upper:
+    avg: 1.1618009186051819
+    count: 87733672
+    max: 3.5959999561309814
+    min: 0.014100000262260437
+  a_g_val:
+    avg: 0.8724849900143793
+    count: 87733672
+    max: 3.365000009536743
+    min: 0.0
+  astrometric_chi2_al:
+    avg: 511.05137836701675
+    count: 1692919135
+    max: 35243956
+    min: 1.385483980178833
+  astrometric_excess_noise:
+    avg: 1.04928696693938
+    count: 1692919135
+    max: 19.99999772812315
+    min: 0.0
+  astrometric_excess_noise_sig:
+    avg: 12.078386204095464
+    count: 1692919135
+    max: 302224.8507758734
+    min: 0.0
+  astrometric_gof_al:
+    avg: 2.7809677165259283
+    count: 1692919135
+    max: 1970.0064697265625
+    min: -16.524717330932617
+  astrometric_matched_observations:
+    avg: 20.952078041223157
+    count: 1692919135
+    max: 137.0
+    min: 5.0
+  astrometric_n_bad_obs_al:
+    avg: 1.1126385685279645
+    count: 1692919135
+    max: 246.0
+    min: 0.0
+  astrometric_n_good_obs_al:
+    avg: 181.02781315777378
+    count: 1692919135
+    max: 1190.0
+    min: 9.0
+  astrometric_n_obs_ac:
+    avg: 1.0503180029328454
+    count: 1692919135
+    max: 1178.0
+    min: 0.0
+  astrometric_n_obs_al:
+    avg: 182.14045172630173
+    count: 1692919135
+    max: 1202.0
+    min: 10.0
+  astrometric_params_solved:
+    avg: 25.029092580373014
+    count: 1692919135
+    max: 31.0
+    min: 3.0
+  astrometric_primary_flag:
+    others: 0
+    terms:
+    - count: 1676945325
+      value: false
+    - count: 15973810
+      value: true
+  astrometric_pseudo_colour:
+    avg: 1.454270173942782
+    count: 1328179984
+    max: 5.942627775616197
+    min: -2.142791175637945
+  astrometric_pseudo_colour_error:
+    avg: 0.10027420059537612
+    count: 1328179984
+    max: 0.893613613726695
+    min: 0.001435271419399794
+  astrometric_sigma5d_max:
+    avg: 9239.31080511444
+    count: 1692919135
+    max: 4460992512
+    min: 0.02070738933980465
+  astrometric_weight_al:
+    avg: 2.565855610527244
+    count: 1692919135
+    max: 754.8065795898438
+    min: 0.0009269039146602154
+  b:
+    avg: -1.2850671987499216
+    count: 1692919135
+    max: 89.98796525950677
+    min: -89.99366468657728
+  bp_g:
+    avg: 0.513034511710621
+    count: 1381964755
+    max: 7.795892715454102
+    min: -2.0739002227783203
+  bp_rp:
+    avg: 1.5122020917619337
+    count: 1379288649
+    max: 9.800094604492188
+    min: -5.489192962646484
+  count: 1692919135
+  dec:
+    avg: -18.094547518790403
+    count: 1692919135
+    max: 89.99005334781131
+    min: -89.9928778477184
+  dec_error:
+    avg: 1.4075638061006044
+    count: 1692919135
+    max: 99.93717832154928
+    min: 0.00611640275123778
+  dec_parallax_corr:
+    avg: -0.08561797014819263
+    count: 1331909727
+    max: 0.9980549812316895
+    min: -0.9992082118988037
+  dec_pmdec_corr:
+    avg: -0.25914541138828445
+    count: 1331909727
+    max: 0.9972543120384216
+    min: -0.9981552958488464
+  dec_pmra_corr:
+    avg: -0.07197116544582471
+    count: 1331909727
+    max: 0.9941740036010742
+    min: -0.9952747225761414
+  duplicated_source:
+    others: 0
+    terms:
+    - count: 1645116698
+      value: false
+    - count: 47802437
+      value: true
+  e_bp_min_rp_percentile_lower:
+    avg: 0.3320644920497361
+    count: 87733672
+    max: 1.6367000341415405
+    min: 0.0
+  e_bp_min_rp_percentile_upper:
+    avg: 0.5817898407514913
+    count: 87733672
+    max: 1.8421000242233276
+    min: 0.006599999964237213
+  e_bp_min_rp_val:
+    avg: 0.43506308657480486
+    count: 87733672
+    max: 1.7209999561309814
+    min: 0.0
+  ecl_lat:
+    avg: -6.33634944615347
+    count: 1692919135
+    max: 89.99007873353257
+    min: -89.9995464841093
+  ecl_lon:
+    avg: 232.49775481177062
+    count: 1692919135
+    max: 359.9999996501427
+    min: 5.366973265939891e-07
+  flame_flags:
+    avg: 9095.698383727584
+    count: 1692919135
+    max: 200111.0
+    min: -1.0
+  frame_rotator_object_type:
+    avg: 0.0008701980912986727
+    count: 1692919135
+    max: 3.0
+    min: 0.0
+  g_rp:
+    avg: 0.9989942664156918
+    count: 1383551713
+    max: 3.6509056091308594
+    min: -4.157661437988281
+  l:
+    avg: 185.70483581606814
+    count: 1692919135
+    max: 359.99999998089817
+    min: 9.15417176438317e-09
+  lum_percentile_lower:
+    avg: 5.907270006305263
+    count: 76956778
+    max: 70501.71875
+    min: 0.021387282758951187
+  lum_percentile_upper:
+    avg: 8.20805053990212
+    count: 76956778
+    max: 122711.546875
+    min: 0.027182118967175484
+  lum_val:
+    avg: 7.057660273225207
+    count: 76956778
+    max: 96606.6328125
+    min: 0.026841752231121063
+  matched_observations:
+    avg: 23.00024225551683
+    count: 1692919135
+    max: 361.0
+    min: 5.0
+  mean_varpi_factor_al:
+    avg: 0.05818931304094813
+    count: 1692919135
+    max: 0.7190048694610596
+    min: -0.7208072543144226
+  parallax:
+    avg: 0.3692184002722142
+    count: 1331909727
+    max: 1851.8821404624455
+    min: -1856.5755515129292
+  parallax_error:
+    avg: 0.5292530656642077
+    count: 1331909727
+    max: 6.183982684919207
+    min: 0.009142011980513565
+  parallax_over_error:
+    avg: 2.7025122606429206
+    count: 1331909727
+    max: 11292.6376953125
+    min: -1697.535888671875
+  parallax_pmdec_corr:
+    avg: 0.08650996783084414
+    count: 1331909727
+    max: 0.9919213652610779
+    min: -0.9968973398208618
+  parallax_pmra_corr:
+    avg: -0.06533938085336964
+    count: 1331909727
+    max: 0.9946703314781189
+    min: -0.9964179396629333
+  phot_bp_mean_flux:
+    avg: 3225.407343955708
+    count: 1381964755
+    max: 883743136.1526593
+    min: 1.023381970414607
+  phot_bp_mean_flux_error:
+    avg: 24.73908792285656
+    count: 1381964755
+    max: 147536656.60190564
+    min: 4.984986449275455e-07
+  phot_bp_mean_flux_over_error:
+    avg: 54.43780195042639
+    count: 1381964755
+    max: 74753552
+    min: 0.0005775457830168307
+  phot_bp_mean_mag:
+    avg: 19.54683404176043
+    count: 1381964755
+    max: 25.3262939453125
+    min: 2.9855730533599854
+  phot_bp_n_obs:
+    avg: 15.67318803800986
+    count: 1692919135
+    max: 322.0
+    min: 0.0
+  phot_bp_rp_excess_factor:
+    avg: 1.6297465181605102
+    count: 1379288649
+    max: 5.0
+    min: 0.015835978090763092
+  phot_g_mean_flux:
+    avg: 5882.416025496361
+    count: 1692919135
+    max: 3911039555.3979454
+    min: 8.036644778738776
+  phot_g_mean_flux_error:
+    avg: 8.466072521357807
+    count: 1692919135
+    max: 94503851.23040693
+    min: 0.2746815578024307
+  phot_g_mean_flux_over_error:
+    avg: 425.50345128884226
+    count: 1692919135
+    max: 16087.6259765625
+    min: 0.1234278529882431
+  phot_g_mean_mag:
+    avg: 19.255898608772426
+    count: 1692919135
+    max: 23.425678253173828
+    min: 1.7076351642608643
+  phot_g_n_obs:
+    avg: 194.77385311673495
+    count: 1692919135
+    max: 2311.0
+    min: 10.0
+  phot_proc_mode:
+    others: 0
+    terms:
+    - count: 1404099442
+      value: 0
+    - count: 218379919
+      value: 2
+    - count: 70439774
+      value: 1
+  phot_rp_mean_flux:
+    avg: 5681.966249801897
+    count: 1383551713
+    max: 1444134724.0162575
+    min: 1.1264535573890733
+  phot_rp_mean_flux_error:
+    avg: 33.51090316304942
+    count: 1383551713
+    max: 119489697.47196405
+    min: 3.814356888345481e-06
+  phot_rp_mean_flux_over_error:
+    avg: 101.7104977671871
+    count: 1383551713
+    max: 73425904
+    min: 0.007686486002057791
+  phot_rp_mean_mag:
+    avg: 18.036555736441457
+    count: 1383551713
+    max: 24.63263702392578
+    min: 1.862900733947754
+  phot_rp_n_obs:
+    avg: 16.589253201984747
+    count: 1692919135
+    max: 296.0
+    min: 0.0
+  phot_variable_flag:
+    others: 0
+    terms:
+    - count: 1692368398
+      value: -1
+    - count: 550737
+      value: 1
+  pmdec:
+    avg: -2.9875964580902794
+    count: 1331909727
+    max: 10362.542163273869
+    min: -5817.855974885071
+  pmdec_error:
+    avg: 0.837802886511472
+    count: 1331909727
+    max: 5.421493872128323
+    min: 0.01136112287078184
+  pmra:
+    avg: -2.55420345779171
+    count: 1331909727
+    max: 6765.994656157758
+    min: -4339.890561649546
+  pmra_error:
+    avg: 0.9179947126847827
+    count: 1331909727
+    max: 5.43242544126819
+    min: 0.010975395525535005
+  pmra_pmdec_corr:
+    avg: 0.1099191810254295
+    count: 1331909727
+    max: 0.9979729056358337
+    min: -0.996502697467804
+  priam_flags:
+    avg: 9621.893904504186
+    count: 1692919135
+    max: 132212.0
+    min: -1.0
+  ra:
+    avg: 227.7908064677057
+    count: 1692919135
+    max: 359.99999805124315
+    min: 3.8206218899556496e-07
+  ra_dec_corr:
+    avg: 0.16153216144665253
+    count: 1692919135
+    max: 0.9999995827674866
+    min: -0.9999992847442627
+  ra_error:
+    avg: 1.6185092261134786
+    count: 1692919135
+    max: 99.97262265494622
+    min: 0.005617057653933322
+  ra_parallax_corr:
+    avg: -0.036195714379529745
+    count: 1331909727
+    max: 0.9992461204528809
+    min: -0.9993757009506226
+  ra_pmdec_corr:
+    avg: -0.10416948384227666
+    count: 1331909727
+    max: 0.9967480301856995
+    min: -0.9965782761573792
+  ra_pmra_corr:
+    avg: -0.21795293038286992
+    count: 1331909727
+    max: 0.9956439733505249
+    min: -0.9977500438690186
+  radial_velocity:
+    avg: -3.138098684158706
+    count: 7224631
+    max: 970.5776249138216
+    min: -999.2826155718803
+  radial_velocity_error:
+    avg: 1.8726137402774718
+    count: 7224631
+    max: 19.99984058813723
+    min: 0.11000000004671748
+  radius_percentile_lower:
+    avg: 2.112891359723005
+    count: 76956778
+    max: 617.0156860351562
+    min: 0.2678685784339905
+  radius_percentile_upper:
+    avg: 2.508679605771299
+    count: 76956778
+    max: 793.19677734375
+    min: 0.5010706782341003
+  radius_val:
+    avg: 2.3357890548100566
+    count: 76956778
+    max: 711.0824584960938
+    min: 0.5000000596046448
+  random_index:
+    avg: 846459567
+    count: 1692919135
+    max: 1692919134
+    min: 0.0
+  ref_epoch:
+    avg: 2015.5
+    count: 1692919135
+    max: 2015.5
+    min: 2015.5
+  rv_nb_transits:
+    avg: 0.035678860112831084
+    count: 1692919135
+    max: 201.0
+    min: 0.0
+  rv_template_fe_h:
+    avg: -0.0886668813950498
+    count: 7224631
+    max: 1.0
+    min: -5.0
+  rv_template_logg:
+    avg: 3.4709587936048223
+    count: 7224631
+    max: 5.0
+    min: -0.5
+  rv_template_teff:
+    avg: 5146.11643141359
+    count: 7224631
+    max: 6750.0
+    min: 3600.0
+  source_id:
+    avg: 4354326381757832700
+    count: 1692919135
+    max: 6917528997577383900
+    min: 4295806720
+  teff_percentile_lower:
+    avg: 4619.237237769472
+    count: 161497595
+    max: 9669.75
+    min: 3098.0
+  teff_percentile_upper:
+    avg: 5111.951276893973
+    count: 161497595
+    max: 9985.0
+    min: 3287.0
+  teff_val:
+    avg: 4815.715168413583
+    count: 161497595
+    max: 9803.0
+    min: 3229.0
+  visibility_periods_used:
+    avg: 10.846873918168573
+    count: 1692919135
+    max: 22.0
+    min: 1.0
+gaiadr3:
+  astrometric_excess_noise:
+    avg: 1.447248137219584
+    count: 1811709771
+    max: 1131.5845947265625
+    min: 0.0
+  astrometric_excess_noise_sig:
+    avg: 97.68733425635905
+    count: 1811709771
+    max: 194326672
+    min: 0.0
+  astrometric_params_solved:
+    avg: 56.85291587081693
+    count: 1811709771
+    max: 95.0
+    min: 3.0
+  astrometric_primary_flag:
+    others: 0
+    terms:
+    - count: 1797403448
+      value: false
+    - count: 14306323
+      value: true
+  astrophysical_parameters_abp_gspphot:
+    avg: 0.8100425494505371
+    count: 470759263
+    max: 9.932100296020508
+    min: 0.0
+  astrophysical_parameters_abp_gspphot_lower:
+    avg: 0.7657343536992449
+    count: 470759263
+    max: 9.930399894714355
+    min: 0.0
+  astrophysical_parameters_abp_gspphot_upper:
+    avg: 0.8684476449449667
+    count: 470759263
+    max: 9.93280029296875
+    min: 9.999999747378752e-05
+  astrophysical_parameters_activityindex_espcs:
+    avg: 0.007240724142739028
+    count: 2141643
+    max: 0.9796186685562134
+    min: -0.11483338475227356
+  astrophysical_parameters_activityindex_espcs_input:
+    others: 0
+    terms:
+    - count: 20838528
+      value: 1
+    - count: 1169697
+      value: 0
+  astrophysical_parameters_activityindex_espcs_uncertainty:
+    avg: 0.0013201611914963457
+    count: 2141643
+    max: 0.01303730346262455
+    min: 2.139744537998922e-05
+  astrophysical_parameters_ag_esphs:
+    avg: 1.184480025981862
+    count: 2382015
+    max: 7.256908893585205
+    min: 3.974913453941298e-10
+  astrophysical_parameters_ag_esphs_uncertainty:
+    avg: 0.09111492775296558
+    count: 2382015
+    max: 0.8144766688346863
+    min: 0.0030504888854920864
+  astrophysical_parameters_ag_gspphot:
+    avg: 0.6053006120070349
+    count: 470759263
+    max: 7.410600185394287
+    min: 0.0
+  astrophysical_parameters_ag_gspphot_lower:
+    avg: 0.5712980608164067
+    count: 470759263
+    max: 7.409999847412109
+    min: 0.0
+  astrophysical_parameters_ag_gspphot_upper:
+    avg: 0.6503136532521232
+    count: 470759263
+    max: 7.411099910736084
+    min: 9.999999747378752e-05
+  astrophysical_parameters_ag_msc:
+    avg: 0.4500214207304436
+    count: 348711151
+    max: 3.8512582778930664
+    min: 9.5367431640625e-07
+  astrophysical_parameters_ag_msc_lower:
+    avg: 0.18517420760156406
+    count: 348711151
+    max: 3.782464027404785
+    min: 0.0
+  astrophysical_parameters_ag_msc_upper:
+    avg: 1.1013507323077347
+    count: 348711151
+    max: 5.0
+    min: 2.002716064453125e-05
+  astrophysical_parameters_age_flame:
+    avg: 5.621990104072328
+    count: 128611111
+    max: 13.5
+    min: 0.20000016689300537
+  astrophysical_parameters_age_flame_lower:
+    avg: 3.4599341568251347
+    count: 128611111
+    max: 12.413797378540039
+    min: 0.20000000298023224
+  astrophysical_parameters_age_flame_upper:
+    avg: 8.101846690251977
+    count: 128611111
+    max: 13.5
+    min: 0.21744078397750854
+  astrophysical_parameters_alphafe_gspspec:
+    avg: 0.06951265491838554
+    count: 4957718
+    max: 3.759999990463257
+    min: -2.0199999809265137
+  astrophysical_parameters_alphafe_gspspec_lower:
+    avg: 0.0032969241797530745
+    count: 4957718
+    max: 1.2400000095367432
+    min: -3.049999952316284
+  astrophysical_parameters_alphafe_gspspec_upper:
+    avg: 0.1457085680205372
+    count: 4957718
+    max: 4.989999771118164
+    min: -0.7900000214576721
+  astrophysical_parameters_arp_gspphot:
+    avg: 0.4763453054619479
+    count: 470759263
+    max: 5.711400032043457
+    min: 0.0
+  astrophysical_parameters_arp_gspphot_lower:
+    avg: 0.45061609910806416
+    count: 470759263
+    max: 5.710999965667725
+    min: 0.0
+  astrophysical_parameters_arp_gspphot_upper:
+    avg: 0.5102258378949636
+    count: 470759263
+    max: 5.711599826812744
+    min: 9.999999747378752e-05
+  astrophysical_parameters_azero_esphs:
+    avg: 1.3334469493603087
+    count: 2382015
+    max: 9.999996185302734
+    min: 4.3569164942525163e-10
+  astrophysical_parameters_azero_esphs_uncertainty:
+    avg: 0.11002740056006477
+    count: 2382015
+    max: 1.3072108030319214
+    min: 0.00400940515100956
+  astrophysical_parameters_azero_gspphot:
+    avg: 0.8293835697274247
+    count: 470759263
+    max: 10.0
+    min: 0.0
+  astrophysical_parameters_azero_gspphot_lower:
+    avg: 0.785500096880921
+    count: 470759263
+    max: 9.999899864196777
+    min: 0.0
+  astrophysical_parameters_azero_gspphot_upper:
+    avg: 0.8869867712007575
+    count: 470759263
+    max: 10.0
+    min: 9.999999747378752e-05
+  astrophysical_parameters_azero_msc:
+    avg: 0.6194037938328988
+    count: 348711151
+    max: 4.999965667724609
+    min: 1.2280618193472037e-06
+  astrophysical_parameters_azero_msc_lower:
+    avg: 0.2631658782654052
+    count: 348711151
+    max: 4.999703407287598
+    min: 0.0
+  astrophysical_parameters_azero_msc_upper:
+    avg: 1.45821426212049
+    count: 348711151
+    max: 5.0
+    min: 2.7618903914117254e-05
+  astrophysical_parameters_bc_flame:
+    avg: -0.09425621202203656
+    count: 280689464
+    max: 0.20089638233184814
+    min: -3.2706565856933594
+  astrophysical_parameters_cafe_gspspec:
+    avg: 0.06611791758599662
+    count: 2505632
+    max: 1.3799999952316284
+    min: -0.7799999713897705
+  astrophysical_parameters_cafe_gspspec_linescatter:
+    avg: 0.040208085834495456
+    count: 2505632
+    max: 0.7799999713897705
+    min: 0.0
+  astrophysical_parameters_cafe_gspspec_lower:
+    avg: 0.01892509357328669
+    count: 2505632
+    max: 1.350000023841858
+    min: -0.8399999737739563
+  astrophysical_parameters_cafe_gspspec_nlines:
+    avg: 6.002876719326701
+    count: 2505632
+    max: 7.0
+    min: 1.0
+  astrophysical_parameters_cafe_gspspec_upper:
+    avg: 0.1187849891692227
+    count: 2505632
+    max: 1.399999976158142
+    min: -0.7599999904632568
+  astrophysical_parameters_cefe_gspspec:
+    avg: 0.4146122094074251
+    count: 103948
+    max: 2.0
+    min: -0.5299999713897705
+  astrophysical_parameters_cefe_gspspec_linescatter:
+    avg: 0.0
+    count: 103948
+    max: 0.0
+    min: 0.0
+  astrophysical_parameters_cefe_gspspec_lower:
+    avg: 0.25635221423356536
+    count: 103948
+    max: 2.0
+    min: -0.7699999809265137
+  astrophysical_parameters_cefe_gspspec_nlines:
+    avg: 1.0
+    count: 103948
+    max: 1.0
+    min: 1.0
+  astrophysical_parameters_cefe_gspspec_upper:
+    avg: 0.5500462725179052
+    count: 103948
+    max: 2.0
+    min: -0.36000001430511475
+  astrophysical_parameters_classlabel_espels:
+    others: 0
+    terms:
+    - count: 35157
+      value: 3
+    - count: 16951
+      value: 4
+    - count: 3904
+      value: 0
+    - count: 661
+      value: 2
+    - count: 429
+      value: 5
+    - count: 418
+      value: 7
+    - count: 273
+      value: 1
+    - count: 136
+      value: 6
+    - count: 10
+      value: 8
+  astrophysical_parameters_classlabel_espels_flag:
+    avg: 13.699528814787966
+    count: 57939
+    max: 24.0
+    min: 0.0
+  astrophysical_parameters_classprob_dsc_allosmod_galaxy:
+    avg: 0.0008181714727879961
+    count: 1370759105
+    max: 1.0
+    min: 0.0
+  astrophysical_parameters_classprob_dsc_allosmod_quasar:
+    avg: 0.0016847604741922892
+    count: 1370759105
+    max: 1.0
+    min: 0.0
+  astrophysical_parameters_classprob_dsc_allosmod_star:
+    avg: 0.9974970696710037
+    count: 1370759105
+    max: 1.0
+    min: 0.0
+  astrophysical_parameters_classprob_dsc_combmod_binarystar:
+    avg: 0.0005741633434344915
+    count: 1590760469
+    max: 1.0
+    min: 0.0
+  astrophysical_parameters_classprob_dsc_combmod_galaxy:
+    avg: 0.002335763212580875
+    count: 1590760469
+    max: 1.0
+    min: 0.0
+  astrophysical_parameters_classprob_dsc_combmod_quasar:
+    avg: 0.0036399908804796545
+    count: 1590760469
+    max: 1.0
+    min: 0.0
+  astrophysical_parameters_classprob_dsc_combmod_star:
+    avg: 0.993086211370666
+    count: 1590760469
+    max: 1.0
+    min: 0.0
+  astrophysical_parameters_classprob_dsc_combmod_whitedwarf:
+    avg: 0.0003638749911694626
+    count: 1590760469
+    max: 1.0
+    min: 0.0
+  astrophysical_parameters_classprob_dsc_specmod_binarystar:
+    avg: 0.002452831404390576
+    count: 1590760469
+    max: 1.0
+    min: 0.0
+  astrophysical_parameters_classprob_dsc_specmod_galaxy:
+    avg: 0.0017895482733885951
+    count: 1590760469
+    max: 1.0
+    min: 0.0
+  astrophysical_parameters_classprob_dsc_specmod_quasar:
+    avg: 0.001832824437015559
+    count: 1590760469
+    max: 1.0
+    min: 0.0
+  astrophysical_parameters_classprob_dsc_specmod_star:
+    avg: 0.9930971006224044
+    count: 1590760469
+    max: 1.0
+    min: 0.0
+  astrophysical_parameters_classprob_dsc_specmod_whitedwarf:
+    avg: 0.0008276945169924442
+    count: 1590760469
+    max: 1.0
+    min: 0.0
+  astrophysical_parameters_classprob_espels_bestar:
+    avg: 0.2841161724029809
+    count: 57939
+    max: 1.0
+    min: 0.0
+  astrophysical_parameters_classprob_espels_dmestar:
+    avg: 0.04917508175502132
+    count: 57939
+    max: 0.8199999928474426
+    min: 0.0
+  astrophysical_parameters_classprob_espels_herbigstar:
+    avg: 0.157942475267277
+    count: 57939
+    max: 1.0
+    min: 0.0
+  astrophysical_parameters_classprob_espels_pne:
+    avg: 0.017395656378190853
+    count: 57939
+    max: 0.9693877696990967
+    min: 0.0
+  astrophysical_parameters_classprob_espels_ttauristar:
+    avg: 0.46267543586968496
+    count: 57939
+    max: 1.0
+    min: 0.0
+  astrophysical_parameters_classprob_espels_wcstar:
+    avg: 0.004026907003046339
+    count: 57939
+    max: 1.0
+    min: 0.0
+  astrophysical_parameters_classprob_espels_wnstar:
+    avg: 0.017281192425632586
+    count: 57939
+    max: 1.0
+    min: 0.0
+  astrophysical_parameters_cn0_gspspec_centralline:
+    avg: 862.8753538856872
+    count: 484795
+    max: 862.9299926757812
+    min: 862.8300170898438
+  astrophysical_parameters_cn0_gspspec_width:
+    avg: 0.22154083573001845
+    count: 484795
+    max: 0.25
+    min: 0.029999999329447746
+  astrophysical_parameters_cn0ew_gspspec:
+    avg: 0.009504388240834202
+    count: 484795
+    max: 0.05999999865889549
+    min: -0.029999999329447746
+  astrophysical_parameters_cn0ew_gspspec_uncertainty:
+    avg: 0.010013964441647608
+    count: 484795
+    max: 0.019999999552965164
+    min: 0.009999999776482582
+  astrophysical_parameters_crfe_gspspec:
+    avg: 0.19275695581742366
+    count: 219746
+    max: 1.7699999809265137
+    min: -0.5199999809265137
+  astrophysical_parameters_crfe_gspspec_linescatter:
+    avg: 0.029264175370114977
+    count: 219746
+    max: 0.5600000023841858
+    min: 0.0
+  astrophysical_parameters_crfe_gspspec_lower:
+    avg: 0.0431146414336768
+    count: 219746
+    max: 1.5700000524520874
+    min: -0.7900000214576721
+  astrophysical_parameters_crfe_gspspec_nlines:
+    avg: 1.4561994302512902
+    count: 219746
+    max: 2.0
+    min: 1.0
+  astrophysical_parameters_crfe_gspspec_upper:
+    avg: 0.32478006395913356
+    count: 219746
+    max: 1.9500000476837158
+    min: -0.3100000023841858
+  astrophysical_parameters_dib_gspspec_lambda:
+    avg: 862.2913965215502
+    count: 472584
+    max: 863.1827392578125
+    min: 860.7420654296875
+  astrophysical_parameters_dib_gspspec_lambda_uncertainty:
+    avg: 0.042469565292391376
+    count: 472584
+    max: 0.9468389749526978
+    min: 0.0
+  astrophysical_parameters_dibew_gspspec:
+    avg: 3446521.606847435
+    count: 472584
+    max: 1628770926592
+    min: 0.0
+  astrophysical_parameters_dibew_gspspec_uncertainty:
+    avg: 3446521.5641118423
+    count: 472584
+    max: 1628770926592
+    min: 0.0
+  astrophysical_parameters_dibewnoise_gspspec_uncertainty:
+    avg: -0.040027036447215954
+    count: 472584
+    max: 1374.1807861328125
+    min: -1.0
+  astrophysical_parameters_dibp0_gspspec:
+    avg: -6436376.200215891
+    count: 472584
+    max: -0.00019999999494757503
+    min: -3041728397312
+  astrophysical_parameters_dibp2_gspspec:
+    avg: 1.3276113573537571
+    count: 472584
+    max: 8.5423002243042
+    min: 0.15139999985694885
+  astrophysical_parameters_dibp2_gspspec_uncertainty:
+    avg: 0.4414848691054384
+    count: 472584
+    max: 190.44960021972656
+    min: 0.0
+  astrophysical_parameters_dibqf_gspspec:
+    avg: 0.39200895602659186
+    count: 1230903
+    max: 5.0
+    min: -2.0
+  astrophysical_parameters_distance_gspphot:
+    avg: 1427.4362745597746
+    count: 470759263
+    max: 36165.08984375
+    min: 1.3011000156402588
+  astrophysical_parameters_distance_gspphot_lower:
+    avg: 1353.7872992424893
+    count: 470759263
+    max: 35664.41796875
+    min: 1.3006000518798828
+  astrophysical_parameters_distance_gspphot_upper:
+    avg: 1528.306301193664
+    count: 470759263
+    max: 36337.79296875
+    min: 1.301300048828125
+  astrophysical_parameters_distance_msc:
+    avg: 1808.5999912917355
+    count: 348711151
+    max: 9999.478515625
+    min: 10.001253128051758
+  astrophysical_parameters_distance_msc_lower:
+    avg: 1171.333792023915
+    count: 348711151
+    max: 9993.2109375
+    min: 10.0
+  astrophysical_parameters_distance_msc_upper:
+    avg: 2513.9359798599226
+    count: 348711151
+    max: 10000.0
+    min: 10.011309623718262
+  astrophysical_parameters_ebpminrp_esphs:
+    avg: 0.6407894441870586
+    count: 2382015
+    max: 4.151615619659424
+    min: 2.116603142754414e-10
+  astrophysical_parameters_ebpminrp_esphs_uncertainty:
+    avg: 0.04982073817467469
+    count: 2382015
+    max: 0.44633448123931885
+    min: 0.0016258092364296317
+  astrophysical_parameters_ebpminrp_gspphot:
+    avg: 0.33369471917645427
+    count: 470759263
+    max: 4.2256999015808105
+    min: 0.0
+  astrophysical_parameters_ebpminrp_gspphot_lower:
+    avg: 0.31505291750527575
+    count: 470759263
+    max: 4.2245001792907715
+    min: 0.0
+  astrophysical_parameters_ebpminrp_gspphot_upper:
+    avg: 0.35828728865392473
+    count: 470759263
+    max: 4.226200103759766
+    min: 9.999999747378752e-05
+  astrophysical_parameters_evolstage_flame:
+    avg: 365.56826576387914
+    count: 170185776
+    max: 1799.0
+    min: 100.0
+  astrophysical_parameters_ew_espels_halpha:
+    avg: 0.07739885509151702
+    count: 235384119
+    max: 8.755948066711426
+    min: -25.972843170166016
+  astrophysical_parameters_ew_espels_halpha_flag:
+    avg: 0.40854244777589416
+    count: 235384547
+    max: 9.0
+    min: 0.0
+  astrophysical_parameters_ew_espels_halpha_model:
+    avg: 0.07823794230632576
+    count: 235384547
+    max: 0.6436780095100403
+    min: -2.678611993789673
+  astrophysical_parameters_ew_espels_halpha_uncertainty:
+    avg: 0.10243650442851979
+    count: 235384119
+    max: 11.9229097366333
+    min: 0.0034559511113911867
+  astrophysical_parameters_feiim_gspspec:
+    avg: 0.19303424095277685
+    count: 49940
+    max: 1.9900000095367432
+    min: -1.6100000143051147
+  astrophysical_parameters_feiim_gspspec_linescatter:
+    avg: 0.0
+    count: 49940
+    max: 0.0
+    min: 0.0
+  astrophysical_parameters_feiim_gspspec_lower:
+    avg: 0.01073408085430652
+    count: 49940
+    max: 1.659999966621399
+    min: -1.7200000286102295
+  astrophysical_parameters_feiim_gspspec_nlines:
+    avg: 1.0
+    count: 49940
+    max: 1.0
+    min: 1.0
+  astrophysical_parameters_feiim_gspspec_upper:
+    avg: 0.3801760107436593
+    count: 49940
+    max: 2.0
+    min: -1.5299999713897705
+  astrophysical_parameters_fem_gspspec:
+    avg: -0.0864216841685065
+    count: 1774698
+    max: 2.0
+    min: -0.9800000190734863
+  astrophysical_parameters_fem_gspspec_linescatter:
+    avg: 0.14037500512791698
+    count: 1774698
+    max: 1.0499999523162842
+    min: 0.0
+  astrophysical_parameters_fem_gspspec_lower:
+    avg: -0.218970805371298
+    count: 1774698
+    max: 1.7599999904632568
+    min: -1.1699999570846558
+  astrophysical_parameters_fem_gspspec_nlines:
+    avg: 4.509366100598524
+    count: 1774698
+    max: 8.0
+    min: 1.0
+  astrophysical_parameters_fem_gspspec_upper:
+    avg: 0.0402077029558753
+    count: 1774698
+    max: 2.0
+    min: -0.9200000166893005
+  astrophysical_parameters_flags_espucd:
+    avg: 8.525032392361775
+    count: 94158
+    max: 21.0
+    min: 0.0
+  astrophysical_parameters_flags_flame:
+    avg: 11.625161886748243
+    count: 280842938
+    max: 22.0
+    min: 0.0
+  astrophysical_parameters_flags_oa:
+    avg: 1382.6365579417034
+    count: 56416360
+    max: 2256.0
+    min: 0.0
+  astrophysical_parameters_gravredshift_flame:
+    avg: 0.5651627912445398
+    count: 280842938
+    max: 2.8095576763153076
+    min: 0.0001907085970742628
+  astrophysical_parameters_gravredshift_flame_lower:
+    avg: 0.5482544368104906
+    count: 280842938
+    max: 2.7587521076202393
+    min: 5.705570856662234e-06
+  astrophysical_parameters_gravredshift_flame_upper:
+    avg: 0.5798014135684415
+    count: 280842938
+    max: 3.4995999336242676
+    min: 0.0002412573667243123
+  astrophysical_parameters_logg_esphs:
+    avg: 4.0406332764498725
+    count: 2382015
+    max: 4.699982643127441
+    min: 2.250000238418579
+  astrophysical_parameters_logg_esphs_uncertainty:
+    avg: 0.40633903778726893
+    count: 2382015
+    max: 2.3389341831207275
+    min: 0.005975689273327589
+  astrophysical_parameters_logg_gspphot:
+    avg: 4.5185372017470105
+    count: 470759263
+    max: 5.495699882507324
+    min: -0.5
+  astrophysical_parameters_logg_gspphot_lower:
+    avg: 4.469182373129961
+    count: 470759263
+    max: 5.486999988555908
+    min: -0.5
+  astrophysical_parameters_logg_gspphot_upper:
+    avg: 4.558774062300496
+    count: 470759263
+    max: 5.499199867248535
+    min: -0.4999000132083893
+  astrophysical_parameters_logg_gspspec:
+    avg: 2.8093745135489216
+    count: 5589105
+    max: 7.760000228881836
+    min: -0.9900000095367432
+  astrophysical_parameters_logg_gspspec_lower:
+    avg: 2.536627371814114
+    count: 5589105
+    max: 6.050000190734863
+    min: -1.0
+  astrophysical_parameters_logg_gspspec_upper:
+    avg: 3.0676879328995175
+    count: 5589105
+    max: 8.930000305175781
+    min: -0.9800000190734863
+  astrophysical_parameters_logg_msc1:
+    avg: 4.631232450521314
+    count: 348711151
+    max: 5.199988842010498
+    min: 2.000270366668701
+  astrophysical_parameters_logg_msc1_lower:
+    avg: 4.1256739071190935
+    count: 348711151
+    max: 5.1998982429504395
+    min: 2.0
+  astrophysical_parameters_logg_msc1_upper:
+    avg: 4.964954054052317
+    count: 348711151
+    max: 5.199999809265137
+    min: 2.002854347229004
+  astrophysical_parameters_logg_msc2:
+    avg: 4.666380222489945
+    count: 348711151
+    max: 5.199997901916504
+    min: 2.0104904174804688
+  astrophysical_parameters_logg_msc2_lower:
+    avg: 4.015996084138212
+    count: 348711151
+    max: 5.199978828430176
+    min: 2.0
+  astrophysical_parameters_logg_msc2_upper:
+    avg: 5.048484722848232
+    count: 348711151
+    max: 5.199999809265137
+    min: 2.0763840675354004
+  astrophysical_parameters_logposterior_msc:
+    avg: -1256429.8320700251
+    count: 348711084
+    max: 962.1605224609375
+    min: -126486619095040
+  astrophysical_parameters_lum_flame:
+    avg: 13.616147834933821
+    count: 280842938
+    max: 3499.979248046875
+    min: 0.00028402142925187945
+  astrophysical_parameters_lum_flame_lower:
+    avg: 10.605023543423442
+    count: 280842938
+    max: 3493.622314453125
+    min: 3.6163257277621597e-07
+  astrophysical_parameters_lum_flame_upper:
+    avg: 20.161355718994887
+    count: 280842938
+    max: 47827.39453125
+    min: 0.0002840498345904052
+  astrophysical_parameters_mass_flame:
+    avg: 1.2053038797129876
+    count: 139716106
+    max: 9.86809253692627
+    min: 0.5000025033950806
+  astrophysical_parameters_mass_flame_lower:
+    avg: 1.1495898896764059
+    count: 139716106
+    max: 9.828092575073242
+    min: 0.46000251173973083
+  astrophysical_parameters_mass_flame_upper:
+    avg: 1.2625651395845723
+    count: 139716106
+    max: 9.908092498779297
+    min: 0.5400054454803467
+  astrophysical_parameters_mg_gspphot:
+    avg: 6.490114715493348
+    count: 470759263
+    max: 14.28279972076416
+    min: -9.608499526977539
+  astrophysical_parameters_mg_gspphot_lower:
+    avg: 6.300438972326436
+    count: 470759263
+    max: 14.190299987792969
+    min: -9.623900413513184
+  astrophysical_parameters_mg_gspphot_upper:
+    avg: 6.635723680383249
+    count: 470759263
+    max: 14.45680046081543
+    min: -9.585399627685547
+  astrophysical_parameters_mgfe_gspspec:
+    avg: 0.2578307280034879
+    count: 489662
+    max: 2.3399999141693115
+    min: -1.4700000286102295
+  astrophysical_parameters_mgfe_gspspec_linescatter:
+    avg: 0.0
+    count: 489662
+    max: 0.0
+    min: 0.0
+  astrophysical_parameters_mgfe_gspspec_lower:
+    avg: 0.12125615219155779
+    count: 489662
+    max: 2.2899999618530273
+    min: -1.7000000476837158
+  astrophysical_parameters_mgfe_gspspec_nlines:
+    avg: 1.0
+    count: 489662
+    max: 1.0
+    min: 1.0
+  astrophysical_parameters_mgfe_gspspec_upper:
+    avg: 0.4130094222738459
+    count: 489662
+    max: 2.4000000953674316
+    min: -1.25
+  astrophysical_parameters_mh_gspphot:
+    avg: -1.1660777907565594
+    count: 470759263
+    max: 0.800000011920929
+    min: -4.150300025939941
+  astrophysical_parameters_mh_gspphot_lower:
+    avg: -1.3030716644544595
+    count: 470759263
+    max: 0.7998999953269958
+    min: -4.1504998207092285
+  astrophysical_parameters_mh_gspphot_upper:
+    avg: -1.012193424981667
+    count: 470759263
+    max: 0.8001000285148621
+    min: -4.149799823760986
+  astrophysical_parameters_mh_gspspec:
+    avg: -0.20435012964361096
+    count: 5546177
+    max: 1.4900000095367432
+    min: -6.0
+  astrophysical_parameters_mh_gspspec_lower:
+    avg: -0.32592706806365074
+    count: 5546177
+    max: 1.4500000476837158
+    min: -9.329999923706055
+  astrophysical_parameters_mh_gspspec_upper:
+    avg: -0.07058870999501629
+    count: 5546177
+    max: 3.75
+    min: -5.949999809265137
+  astrophysical_parameters_mh_msc:
+    avg: -0.03448884009115556
+    count: 348711151
+    max: 0.49999916553497314
+    min: -0.999954879283905
+  astrophysical_parameters_mh_msc_lower:
+    avg: -0.44578097088607344
+    count: 348711151
+    max: 0.49998965859413147
+    min: -1.0
+  astrophysical_parameters_mh_msc_upper:
+    avg: 0.31248732033873994
+    count: 348711151
+    max: 0.5
+    min: -0.9997766613960266
+  astrophysical_parameters_ndfe_gspspec:
+    avg: 1.5626779370605777
+    count: 55722
+    max: 2.0
+    min: -2.0
+  astrophysical_parameters_ndfe_gspspec_linescatter:
+    avg: 0.0
+    count: 55722
+    max: 0.0
+    min: 0.0
+  astrophysical_parameters_ndfe_gspspec_lower:
+    avg: 1.3767091987651492
+    count: 55722
+    max: 2.0
+    min: -2.0
+  astrophysical_parameters_ndfe_gspspec_nlines:
+    avg: 1.0
+    count: 55722
+    max: 1.0
+    min: 1.0
+  astrophysical_parameters_ndfe_gspspec_upper:
+    avg: 1.6927726936357554
+    count: 55722
+    max: 2.0
+    min: -1.5099999904632568
+  astrophysical_parameters_neuron_oa_dist:
+    avg: 0.0011018460394776686
+    count: 56416360
+    max: 0.5370712280273438
+    min: 3.087350819441781e-07
+  astrophysical_parameters_neuron_oa_dist_percentile_rank:
+    avg: 39.76029784622759
+    count: 56416360
+    max: 95.0
+    min: 0.0
+  astrophysical_parameters_neuron_oa_id:
+    avg: 202105281205440448
+    count: 56416360
+    max: 202105281205440896
+    min: 202105281205440000
+  astrophysical_parameters_nfe_gspspec:
+    avg: 0.01064932257719794
+    count: 448529
+    max: 2.0
+    min: -1.1299999952316284
+  astrophysical_parameters_nfe_gspspec_linescatter:
+    avg: 0.01697812240954116
+    count: 448529
+    max: 0.7699999809265137
+    min: 0.0
+  astrophysical_parameters_nfe_gspspec_lower:
+    avg: -0.10888731838596685
+    count: 448529
+    max: 1.899999976158142
+    min: -1.2899999618530273
+  astrophysical_parameters_nfe_gspspec_nlines:
+    avg: 1.3226145912527396
+    count: 448529
+    max: 2.0
+    min: 1.0
+  astrophysical_parameters_nfe_gspspec_upper:
+    avg: 0.11092092147899796
+    count: 448529
+    max: 2.0
+    min: -1.0499999523162842
+  astrophysical_parameters_nife_gspspec:
+    avg: 0.009467461817822162
+    count: 351618
+    max: 1.149999976158142
+    min: -0.9100000262260437
+  astrophysical_parameters_nife_gspspec_linescatter:
+    avg: 0.0
+    count: 351618
+    max: 0.0
+    min: 0.0
+  astrophysical_parameters_nife_gspspec_lower:
+    avg: -0.17186384102967275
+    count: 351618
+    max: 1.0
+    min: -1.149999976158142
+  astrophysical_parameters_nife_gspspec_nlines:
+    avg: 1.0
+    count: 351618
+    max: 1.0
+    min: 1.0
+  astrophysical_parameters_nife_gspspec_upper:
+    avg: 0.16284803388899083
+    count: 351618
+    max: 1.2999999523162842
+    min: -0.7699999809265137
+  astrophysical_parameters_radius_flame:
+    avg: 1.8472473510285836
+    count: 280842938
+    max: 204.49571228027344
+    min: 0.014329097233712673
+  astrophysical_parameters_radius_flame_lower:
+    avg: 1.6840647262923305
+    count: 280842938
+    max: 176.9712677001953
+    min: 0.0006788106984458864
+  astrophysical_parameters_radius_flame_upper:
+    avg: 2.1323023615488745
+    count: 280842938
+    max: 612.2864990234375
+    min: 0.016163334250450134
+  astrophysical_parameters_radius_gspphot:
+    avg: 1.3820786554737499
+    count: 470759263
+    max: 1426.4892578125
+    min: 0.09539999812841415
+  astrophysical_parameters_radius_gspphot_lower:
+    avg: 1.3035655544726998
+    count: 470759263
+    max: 1415.2762451171875
+    min: 0.09179999679327011
+  astrophysical_parameters_radius_gspphot_upper:
+    avg: 1.47250905485306
+    count: 470759263
+    max: 1471.456787109375
+    min: 0.10080000013113022
+  astrophysical_parameters_sfe_gspspec:
+    avg: 0.08706323987068812
+    count: 142252
+    max: 1.4900000095367432
+    min: -1.2100000381469727
+  astrophysical_parameters_sfe_gspspec_linescatter:
+    avg: 0.017512587477483896
+    count: 142252
+    max: 0.4399999976158142
+    min: 0.0
+  astrophysical_parameters_sfe_gspspec_lower:
+    avg: -0.07922777892171431
+    count: 142252
+    max: 1.309999942779541
+    min: -1.4500000476837158
+  astrophysical_parameters_sfe_gspspec_nlines:
+    avg: 1.2462812473638332
+    count: 142252
+    max: 2.0
+    min: 1.0
+  astrophysical_parameters_sfe_gspspec_upper:
+    avg: 0.23322708991575938
+    count: 142252
+    max: 1.6399999856948853
+    min: -1.159999966621399
+  astrophysical_parameters_sife_gspspec:
+    avg: -0.012416729586264443
+    count: 618377
+    max: 1.6200000047683716
+    min: -2.0
+  astrophysical_parameters_sife_gspspec_linescatter:
+    avg: 0.10271503562262566
+    count: 618377
+    max: 0.8500000238418579
+    min: 0.0
+  astrophysical_parameters_sife_gspspec_lower:
+    avg: -0.15900680336111556
+    count: 618377
+    max: 1.5
+    min: -2.0
+  astrophysical_parameters_sife_gspspec_nlines:
+    avg: 2.525591993233901
+    count: 618377
+    max: 3.0
+    min: 1.0
+  astrophysical_parameters_sife_gspspec_upper:
+    avg: 0.11890877250054618
+    count: 618377
+    max: 1.7599999904632568
+    min: -1.9900000095367432
+  astrophysical_parameters_spectraltype_esphs:
+    others: 0
+    terms:
+    - count: 84453771
+      value: 6
+    - count: 61148297
+      value: 4
+    - count: 43844553
+      value: 5
+    - count: 17401710
+      value: 0
+    - count: 12454333
+      value: 7
+    - count: 8192019
+      value: 3
+    - count: 4846240
+      value: 2
+    - count: 2656688
+      value: 1
+    - count: 386936
+      value: 8
+  astrophysical_parameters_teff_esphs:
+    avg: 10078.591368559926
+    count: 2382015
+    max: 54922.78125
+    min: 7500.0
+  astrophysical_parameters_teff_esphs_uncertainty:
+    avg: 595.5179961065032
+    count: 2382015
+    max: 18924.0625
+    min: 0.00039640854811295867
+  astrophysical_parameters_teff_espucd:
+    avg: 2582.217329134129
+    count: 94158
+    max: 2699.999267578125
+    min: 1132.051513671875
+  astrophysical_parameters_teff_espucd_uncertainty:
+    avg: 81.61839924929421
+    count: 94158
+    max: 743.6680297851562
+    min: 2.9796252250671387
+  astrophysical_parameters_teff_gspphot:
+    avg: 4869.8017509405145
+    count: 470759263
+    max: 41504.01953125
+    min: 2501.181396484375
+  astrophysical_parameters_teff_gspphot_lower:
+    avg: 4825.372508682691
+    count: 470759263
+    max: 41460.203125
+    min: 2500.302734375
+  astrophysical_parameters_teff_gspphot_upper:
+    avg: 4927.6950735757255
+    count: 470759263
+    max: 41532.0078125
+    min: 2503.566162109375
+  astrophysical_parameters_teff_gspspec:
+    avg: 5088.200228771974
+    count: 5591594
+    max: 10720.0
+    min: 909.0
+  astrophysical_parameters_teff_gspspec_lower:
+    avg: 4938.552515973084
+    count: 5591594
+    max: 9068.0
+    min: -1072.0
+  astrophysical_parameters_teff_gspspec_upper:
+    avg: 5233.005933370699
+    count: 5591594
+    max: 11795.0
+    min: 2562.0
+  astrophysical_parameters_teff_msc1:
+    avg: 4752.125059533874
+    count: 348711151
+    max: 7999.7392578125
+    min: 3000.361328125
+  astrophysical_parameters_teff_msc1_lower:
+    avg: 4342.968272052813
+    count: 348711151
+    max: 7995.6279296875
+    min: 3000.0
+  astrophysical_parameters_teff_msc1_upper:
+    avg: 5188.187190325878
+    count: 348711151
+    max: 8000.0
+    min: 3003.24609375
+  astrophysical_parameters_teff_msc2:
+    avg: 4186.807895098896
+    count: 348711151
+    max: 7999.60498046875
+    min: 3000.07470703125
+  astrophysical_parameters_teff_msc2_lower:
+    avg: 3565.4646528941903
+    count: 348711151
+    max: 7994.43359375
+    min: 3000.0
+  astrophysical_parameters_teff_msc2_upper:
+    avg: 5033.591678998768
+    count: 348711151
+    max: 8000.0
+    min: 3002.6865234375
+  astrophysical_parameters_tife_gspspec:
+    avg: 0.033343275604734254
+    count: 705072
+    max: 1.4800000190734863
+    min: -1.159999966621399
+  astrophysical_parameters_tife_gspspec_linescatter:
+    avg: 0.057427447985238085
+    count: 705072
+    max: 0.7099999785423279
+    min: 0.0
+  astrophysical_parameters_tife_gspspec_lower:
+    avg: -0.1043258703078602
+    count: 705072
+    max: 1.409999966621399
+    min: -1.2100000381469727
+  astrophysical_parameters_tife_gspspec_nlines:
+    avg: 2.0702523997549185
+    count: 705072
+    max: 3.0
+    min: 1.0
+  astrophysical_parameters_tife_gspspec_upper:
+    avg: 0.169965762352186
+    count: 705072
+    max: 1.5199999809265137
+    min: -1.059999942779541
+  astrophysical_parameters_vsini_esphs:
+    avg: 98.8022094870323
+    count: 780461
+    max: 599.1824951171875
+    min: 0.0
+  astrophysical_parameters_vsini_esphs_uncertainty:
+    avg: 14.610778849119603
+    count: 780461
+    max: 2240.8740234375
+    min: 0.5048320889472961
+  astrophysical_parameters_zrfe_gspspec:
+    avg: 1.181664192995337
+    count: 12132
+    max: 2.0
+    min: -1.0299999713897705
+  astrophysical_parameters_zrfe_gspspec_linescatter:
+    avg: 0.0
+    count: 12132
+    max: 0.0
+    min: 0.0
+  astrophysical_parameters_zrfe_gspspec_lower:
+    avg: 0.9644493889703823
+    count: 12132
+    max: 1.9800000190734863
+    min: -1.2300000190734863
+  astrophysical_parameters_zrfe_gspspec_nlines:
+    avg: 1.0
+    count: 12132
+    max: 1.0
+    min: 1.0
+  astrophysical_parameters_zrfe_gspspec_upper:
+    avg: 1.3518653151544195
+    count: 12132
+    max: 2.0
+    min: -0.8299999833106995
+  b:
+    avg: -1.2821889788601908
+    count: 1811709771
+    max: 89.98796453163729
+    min: -89.99366530605397
+  bp_g:
+    avg: 0.6902523584506178
+    count: 1542028163
+    max: 7.015130996704102
+    min: -8.431044578552246
+  bp_rp:
+    avg: 1.6106277596904397
+    count: 1540770489
+    max: 10.193148612976074
+    min: -7.347530364990234
+  count: 1811709771
+  dec:
+    avg: -18.374270531226532
+    count: 1811709771
+    max: 89.99005196682685
+    min: -89.99287859590359
+  dec_error:
+    avg: 1.3781491253975617
+    count: 1811709771
+    max: 99.979736328125
+    min: 0.004295164253562689
+  duplicated_source:
+    others: 0
+    terms:
+    - count: 1797698309
+      value: false
+    - count: 14011462
+      value: true
+  ecl_lat:
+    avg: -6.235536703085726
+    count: 1811709771
+    max: 89.99008000608518
+    min: -89.99954651413846
+  ecl_lon:
+    avg: 233.7212202939383
+    count: 1811709771
+    max: 359.99999810830957
+    min: 5.21887866629631e-07
+  g_rp:
+    avg: 0.9215681437841661
+    count: 1551149811
+    max: 11.52041244506836
+    min: -4.874617576599121
+  grvs_mag:
+    avg: 12.700603740834762
+    count: 32232187
+    max: 14.099998474121094
+    min: 2.7579872608184814
+  grvs_mag_error:
+    avg: 0.07415243372064055
+    count: 32232187
+    max: 2.0071909427642822
+    min: 0.004000002983957529
+  grvs_mag_nb_transits:
+    avg: 14.239720686653996
+    count: 32232187
+    max: 219.0
+    min: 2.0
+  has_epoch_photometry:
+    others: 0
+    terms:
+    - count: 1799955534
+      value: false
+    - count: 11754237
+      value: true
+  has_epoch_rv:
+    others: 0
+    terms:
+    - count: 1811707873
+      value: false
+    - count: 1898
+      value: true
+  has_mcmc_gspphot:
+    others: 0
+    terms:
+    - count: 1362412055
+      value: false
+    - count: 449297716
+      value: true
+  has_mcmc_msc:
+    others: 0
+    terms:
+    - count: 1462998620
+      value: false
+    - count: 348711151
+      value: true
+  has_rvs:
+    others: 0
+    terms:
+    - count: 1810710126
+      value: false
+    - count: 999645
+      value: true
+  has_xp_continuous:
+    others: 0
+    terms:
+    - count: 1592512128
+      value: false
+    - count: 219197643
+      value: true
+  has_xp_sampled:
+    others: 0
+    terms:
+    - count: 1777241398
+      value: false
+    - count: 34468373
+      value: true
+  in_andromeda_survey:
+    others: 0
+    terms:
+    - count: 1810452452
+      value: false
+    - count: 1257319
+      value: true
+  in_galaxy_candidates:
+    others: 0
+    terms:
+    - count: 1806867429
+      value: false
+    - count: 4842342
+      value: true
+  in_qso_candidates:
+    others: 0
+    terms:
+    - count: 1805060609
+      value: false
+    - count: 6649162
+      value: true
+  l:
+    avg: 184.44091575791154
+    count: 1811709771
+    max: 359.9999999850258
+    min: 1.0606335061246415e-07
+  non_single_star:
+    avg: 0.0007789194619296448
+    count: 1811709771
+    max: 7.0
+    min: 0.0
+  nss_acceleration_astro_accel_dec:
+    avg: 0.003903332006895342
+    count: 338215
+    max: 42.905610338527644
+    min: -32.094561935512885
+  nss_acceleration_astro_accel_dec_error:
+    avg: 0.06137225947657981
+    count: 338215
+    max: 1.3726874589920044
+    min: 0.019680583849549294
+  nss_acceleration_astro_accel_ra:
+    avg: 0.0012711766847308384
+    count: 338215
+    max: 34.26981473029065
+    min: -38.98566904828925
+  nss_acceleration_astro_accel_ra_error:
+    avg: 0.06795991013871872
+    count: 338215
+    max: 1.7362525463104248
+    min: 0.014728302136063576
+  nss_acceleration_astro_astrometric_n_obs_al:
+    avg: 438.652709075588
+    count: 338215
+    max: 2322.0
+    min: 121.0
+  nss_acceleration_astro_bit_index:
+    avg: 462.24634921573556
+    count: 338215
+    max: 1023.0
+    min: 255.0
+  nss_acceleration_astro_deriv_accel_dec:
+    avg: -0.0057675546243147755
+    count: 91268
+    max: 70.8910303078988
+    min: -126.18659203545654
+  nss_acceleration_astro_deriv_accel_dec_error:
+    avg: 0.2946396568899386
+    count: 91268
+    max: 4.8168182373046875
+    min: 0.09280209988355637
+  nss_acceleration_astro_deriv_accel_ra:
+    avg: -0.019165128049301667
+    count: 91268
+    max: 167.13524579944885
+    min: -115.77592428742386
+  nss_acceleration_astro_deriv_accel_ra_error:
+    avg: 0.35370074819810826
+    count: 91268
+    max: 5.79265022277832
+    min: 0.08225163072347641
+  nss_acceleration_astro_flags:
+    avg: 67.82488062327218
+    count: 338215
+    max: 192.0
+    min: 0.0
+  nss_acceleration_astro_goodness_of_fit:
+    avg: 6.808080577263512
+    count: 338215
+    max: 24.99822425842285
+    min: -15.104880332946777
+  nss_acceleration_astro_nss_solution_type:
+    others: 0
+    terms:
+    - count: 246947
+      value: 0
+    - count: 91268
+      value: 1
+  nss_acceleration_astro_obj_func:
+    avg: 679.2165651602397
+    count: 338215
+    max: 3382.7783203125
+    min: 104.62191772460938
+  nss_acceleration_astro_significance:
+    avg: 29.54601425930646
+    count: 338215
+    max: 232.05516052246094
+    min: 20.00004768371582
+  nss_non_linear_spectro_bit_index:
+    avg: 11.60850584424729
+    count: 56808
+    max: 15.0
+    min: 7.0
+  nss_non_linear_spectro_first_deriv_velocity:
+    avg: 5.6324741233098864e-05
+    count: 56808
+    max: 0.2656925200982029
+    min: -0.3341484678983447
+  nss_non_linear_spectro_first_deriv_velocity_error:
+    avg: 0.004076246181587697
+    count: 56808
+    max: 0.047907475382089615
+    min: 0.002262001857161522
+  nss_non_linear_spectro_flags:
+    avg: 4606.197436980707
+    count: 56808
+    max: 4210688.0
+    min: 0.0
+  nss_non_linear_spectro_goodness_of_fit:
+    avg: 0.9817823250529365
+    count: 56808
+    max: 2.999974250793457
+    min: -5.345586776733398
+  nss_non_linear_spectro_mean_velocity:
+    avg: -2.3596829289401207
+    count: 56808
+    max: 403.06341187762007
+    min: -412.12683948222156
+  nss_non_linear_spectro_mean_velocity_error:
+    avg: 1.1317556994622098
+    count: 56808
+    max: 13.010181427001953
+    min: 1.0
+  nss_non_linear_spectro_nss_solution_type:
+    others: 0
+    terms:
+    - count: 32725
+      value: 1
+    - count: 24083
+      value: 0
+  nss_non_linear_spectro_obj_func:
+    avg: 26.3761676837369
+    count: 56808
+    max: 164.7353973388672
+    min: 0.4615074396133423
+  nss_non_linear_spectro_rv_n_good_obs_primary:
+    avg: 22.042317983382624
+    count: 56808
+    max: 124.0
+    min: 10.0
+  nss_non_linear_spectro_rv_n_obs_primary:
+    avg: 22.04881354738769
+    count: 56808
+    max: 124.0
+    min: 10.0
+  nss_non_linear_spectro_second_deriv_velocity:
+    avg: 2.1008534595300556e-07
+    count: 32725
+    max: 0.0027378392812066957
+    min: -0.002109993103228578
+  nss_non_linear_spectro_second_deriv_velocity_error:
+    avg: 3.198249327572297e-05
+    count: 32725
+    max: 0.00018802982231136411
+    min: 1.797566619643476e-05
+  nss_vim_fl_astrometric_n_good_obs_al:
+    avg: 446.9022988505747
+    count: 870
+    max: 991.0
+    min: 177.0
+  nss_vim_fl_astrometric_n_obs_al:
+    avg: 447.9459770114943
+    count: 870
+    max: 992.0
+    min: 177.0
+  nss_vim_fl_bit_index:
+    avg: 255.0
+    count: 870
+    max: 255.0
+    min: 255.0
+  nss_vim_fl_flags:
+    avg: 60.39540229885058
+    count: 870
+    max: 192.0
+    min: 0.0
+  nss_vim_fl_nss_solution_type:
+    others: 0
+    terms:
+    - count: 870
+      value: 0
+  nss_vim_fl_ref_flux_g:
+    avg: 103234.24741996678
+    count: 870
+    max: 2094328.25
+    min: 7208.48876953125
+  nss_vim_fl_vim_d_dec:
+    avg: -0.16678791448633348
+    count: 870
+    max: 31.176550583734205
+    min: -46.38358502768109
+  nss_vim_fl_vim_d_dec_error:
+    avg: 0.3481936844408341
+    count: 870
+    max: 11.158740043640137
+    min: 0.02852056734263897
+  nss_vim_fl_vim_d_ra:
+    avg: 0.15765625475054176
+    count: 870
+    max: 90.0510615406209
+    min: -45.6284257350259
+  nss_vim_fl_vim_d_ra_error:
+    avg: 0.41590260212877017
+    count: 870
+    max: 15.207623481750488
+    min: 0.02169101871550083
+  parallax:
+    avg: 0.3663611304767709
+    count: 1467744818
+    max: 768.0665391873573
+    min: -187.02939637423492
+  parallax_error:
+    avg: 0.46354015810114857
+    count: 1467744818
+    max: 5.802274227142334
+    min: 0.007189957424998283
+  parallax_over_error:
+    avg: 3.630423032721275
+    count: 1467744818
+    max: 15400.4765625
+    min: -161.38796997070312
+  phot_bp_mean_flux:
+    avg: 2969.6400646185384
+    count: 1542033472
+    max: 1500432409.3837109
+    min: 1.0050400371436263
+  phot_bp_mean_flux_error:
+    avg: 17.588682627164566
+    count: 1542033472
+    max: 71123240
+    min: 0.0
+  phot_bp_mean_flux_over_error:
+    avg: 70.34929186661871
+    count: 1542033469
+    max: 94195456
+    min: 0.05343190208077431
+  phot_bp_mean_mag:
+    avg: 19.865036778836362
+    count: 1542033472
+    max: 25.333084106445312
+    min: 2.398001194000244
+  phot_bp_n_obs:
+    avg: 24.7227810529924
+    count: 1811709771
+    max: 268.0
+    min: 0.0
+  phot_bp_rp_excess_factor:
+    avg: 1.4994942528389175
+    count: 1540770340
+    max: 17088.953125
+    min: 0.03900270536541939
+  phot_g_mean_flux:
+    avg: 5548.127967779211
+    count: 1806254432
+    max: 3822116782.6336956
+    min: 12.370194398444749
+  phot_g_mean_flux_error:
+    avg: 5.493560563967323
+    count: 1806254432
+    max: 61207728
+    min: 0.27475064992904663
+  phot_g_mean_flux_over_error:
+    avg: 521.4785612013495
+    count: 1806254432
+    max: 22926.802734375
+    min: 1.082367181777954
+  phot_g_mean_mag:
+    avg: 19.311171766120804
+    count: 1806254432
+    max: 22.956424713134766
+    min: 1.7316069602966309
+  phot_g_n_obs:
+    avg: 289.10125945829543
+    count: 1811709771
+    max: 2395.0
+    min: 0.0
+  phot_proc_mode:
+    others: 0
+    terms:
+    - count: 1492734670
+      value: 0
+    - count: 201856994
+      value: 2
+    - count: 115516056
+      value: 1
+  phot_rp_mean_flux:
+    avg: 5130.683470226967
+    count: 1554997939
+    max: 1591127209.4126902
+    min: 1.0489614290056928
+  phot_rp_mean_flux_error:
+    avg: 26.085965987348995
+    count: 1554997939
+    max: 89607720
+    min: 0.0
+  phot_rp_mean_flux_over_error:
+    avg: 126.78112760878054
+    count: 1554997936
+    max: 81374416
+    min: 0.05457835644483566
+  phot_rp_mean_mag:
+    avg: 18.26444647224896
+    count: 1554997939
+    max: 24.69599723815918
+    min: 1.7436332702636719
+  phot_rp_n_obs:
+    avg: 25.700200290524347
+    count: 1811709771
+    max: 263.0
+    min: 0.0
+  phot_variable_flag:
+    others: 0
+    terms:
+    - count: 10509536
+      value: 1
+  pm:
+    avg: 6.5300357767188135
+    count: 1467744818
+    max: 10393.3486328125
+    min: 0.00019370936206541955
+  pmdec:
+    avg: -3.115878202127652
+    count: 1467744818
+    max: 10362.394206546573
+    min: -5817.8001940492695
+  pmdec_error:
+    avg: 0.44937543274398956
+    count: 1467744818
+    max: 3.444960355758667
+    min: 0.005292726680636406
+  pmra:
+    avg: -2.559096059140122
+    count: 1467744818
+    max: 6765.995136250774
+    min: -4406.469178827325
+  pmra_error:
+    avg: 0.5054975200357122
+    count: 1467744818
+    max: 3.4473679065704346
+    min: 0.003959663677960634
+  qso_candidates_astrometric_selection_flag:
+    others: 0
+    terms:
+    - count: 4751408
+      value: false
+    - count: 1897754
+      value: true
+  qso_candidates_ccfratio_qsoc:
+    avg: 0.8829684617114779
+    count: 6375063
+    max: 1.0
+    min: 0.12304672598838806
+  qso_candidates_classlabel_dsc:
+    others: 0
+    terms:
+    - count: 5243012
+      value: 2
+    - count: 1089026
+      value: 3
+    - count: 156970
+      value: 0
+    - count: 92040
+      value: 1
+    - count: 51132
+      value: 5
+    - count: 15331
+      value: 4
+  qso_candidates_classlabel_dsc_joint:
+    others: 0
+    terms:
+    - count: 6088008
+      value: 4
+    - count: 547201
+      value: 2
+    - count: 12302
+      value: 0
+  qso_candidates_classlabel_oa:
+    others: 0
+    terms:
+    - count: 555800
+      value: 22
+    - count: 445722
+      value: 8
+    - count: 311102
+      value: 10
+    - count: 250053
+      value: 16
+    - count: 233062
+      value: 15
+    - count: 166535
+      value: 14
+    - count: 150417
+      value: 17
+    - count: 132299
+      value: 18
+    - count: 125173
+      value: 12
+    - count: 122280
+      value: 11
+    - count: 87046
+      value: 9
+    - count: 71156
+      value: 19
+    - count: 58718
+      value: 5
+    - count: 43551
+      value: 4
+    - count: 12310
+      value: 2
+    - count: 11197
+      value: 1
+    - count: 6481
+      value: 20
+    - count: 6434
+      value: 13
+    - count: 5921
+      value: 21
+    - count: 3176
+      value: 7
+    - count: 1996
+      value: 3
+    - count: 1919
+      value: 0
+    - count: 877
+      value: 6
+  qso_candidates_classprob_dsc_combmod_galaxy:
+    avg: 0.02690857284186998
+    count: 6647511
+    max: 1.0
+    min: 0.0
+  qso_candidates_classprob_dsc_combmod_quasar:
+    avg: 0.7431334088978155
+    count: 6647511
+    max: 1.0
+    min: 0.0
+  qso_candidates_ellipticity_hostgalaxy:
+    avg: 0.346779707386048
+    count: 11532
+    max: 0.789478685812224
+    min: 0.010000000000002007
+  qso_candidates_ellipticity_hostgalaxy_error:
+    avg: 0.0021913227321810826
+    count: 11532
+    max: 0.06032448048597855
+    min: 3.448689916086187e-10
+  qso_candidates_flags_qsoc:
+    avg: 21.114247341555682
+    count: 6375063
+    max: 31.0
+    min: 0.0
+  qso_candidates_fractional_variability_g:
+    avg: 0.10036771715163503
+    count: 872228
+    max: 1.0794883966445923
+    min: 4.487342812353745e-05
+  qso_candidates_gaia_crf_source:
+    others: 0
+    terms:
+    - count: 5034989
+      value: false
+    - count: 1614173
+      value: true
+  qso_candidates_host_galaxy_detected:
+    others: 0
+    terms:
+    - count: 6584664
+      value: false
+    - count: 64498
+      value: true
+  qso_candidates_host_galaxy_flag:
+    avg: 3.513884277397791
+    count: 1084248
+    max: 6.0
+    min: 1.0
+  qso_candidates_intensity_hostgalaxy:
+    avg: 0.30264068626162755
+    count: 13936
+    max: 17.149138251800355
+    min: 0.016679488906318058
+  qso_candidates_intensity_hostgalaxy_error:
+    avg: 0.0015759684690500458
+    count: 13936
+    max: 0.5055379457697038
+    min: 9.986941761421635e-11
+  qso_candidates_intensity_quasar:
+    avg: 45.969972421270484
+    count: 15867
+    max: 1313.2290403118946
+    min: 2.381097387053362
+  qso_candidates_intensity_quasar_error:
+    avg: 0.06765172400966203
+    count: 15863
+    max: 6.8302742584150025
+    min: 5.615303194668079e-13
+  qso_candidates_n_transits:
+    avg: 0.11761602439525462
+    count: 6649162
+    max: 256.0
+    min: 0.0
+  qso_candidates_non_qso_variability:
+    avg: 0.6636831685878047
+    count: 872228
+    max: 2.1915061473846436
+    min: -0.026786845177412033
+  qso_candidates_posangle_hostgalaxy:
+    avg: 89.53973628592243
+    count: 11532
+    max: 179.9999999999572
+    min: 0.005729578009304204
+  qso_candidates_posangle_hostgalaxy_error:
+    avg: 0.3362382158619064
+    count: 11531
+    max: 55.11552910320529
+    min: 4.081956662031103e-08
+  qso_candidates_qso_variability:
+    avg: -0.27921593481225326
+    count: 872228
+    max: 3.1061248779296875
+    min: -1.407985806465149
+  qso_candidates_radius_hostgalaxy:
+    avg: 889.5380485942978
+    count: 13936
+    max: 2498.47146838968
+    min: 132.53921834634642
+  qso_candidates_radius_hostgalaxy_error:
+    avg: 5.9433067805033994
+    count: 13936
+    max: 235.770242184703
+    min: 8.20416227765762e-08
+  qso_candidates_redshift_qsoc:
+    avg: 1.9854843351964222
+    count: 6375063
+    max: 6.129453659057617
+    min: 0.0826638787984848
+  qso_candidates_redshift_qsoc_lower:
+    avg: 1.956763836618151
+    count: 6375063
+    max: 6.127383232116699
+    min: -0.05414338409900665
+  qso_candidates_redshift_qsoc_upper:
+    avg: 2.0145360818314364
+    count: 6375063
+    max: 6.849971771240234
+    min: 0.08311783522367477
+  qso_candidates_sersic_index:
+    avg: 1.8962773488391829
+    count: 13936
+    max: 5.995746612548828
+    min: 0.5002723336219788
+  qso_candidates_sersic_index_error:
+    avg: 0.00870484426995513
+    count: 13936
+    max: 0.22149546444416046
+    min: 1.3574525947745997e-09
+  qso_candidates_source_selection_flags:
+    avg: 96.28668138932395
+    count: 6649162
+    max: 247.0
+    min: 1.0
+  qso_candidates_structure_function_index:
+    avg: 0.7916202776836416
+    count: 872228
+    max: 5.328978538513184
+    min: -0.26984256505966187
+  qso_candidates_structure_function_index_scatter:
+    avg: 0.32070960136677007
+    count: 872228
+    max: 8.489488276652363
+    min: 0.0
+  qso_candidates_vari_agn_membership_score:
+    avg: 0.7680927641914572
+    count: 872228
+    max: 0.9986791214365577
+    min: 1.8031149425352757e-16
+  qso_candidates_vari_best_class_name:
+    others: 0
+    terms:
+    - count: 1035207
+      value: 0
+    - count: 59054
+      value: 21
+    - count: 10937
+      value: 15
+    - count: 6224
+      value: 1
+    - count: 4688
+      value: 24
+    - count: 2443
+      value: 19
+    - count: 2235
+      value: 7
+    - count: 403
+      value: 5
+    - count: 299
+      value: 13
+    - count: 279
+      value: 3
+    - count: 208
+      value: 12
+    - count: 152
+      value: 8
+    - count: 91
+      value: 9
+    - count: 51
+      value: 23
+    - count: 33
+      value: 4
+    - count: 23
+      value: 2
+    - count: 16
+      value: 10
+    - count: 9
+      value: 11
+    - count: 6
+      value: 17
+    - count: 1
+      value: 6
+    - count: 1
+      value: 18
+    - count: 1
+      value: 20
+  qso_candidates_vari_best_class_score:
+    avg: 0.5491537115415495
+    count: 1122361
+    max: 1.0
+    min: 1.2224265901750186e-06
+  qso_candidates_zscore_qsoc:
+    avg: 0.821112574060288
+    count: 6375063
+    max: 1.0
+    min: 0.0
+  ra:
+    avg: 229.12434364249677
+    count: 1811709771
+    max: 359.999999939548
+    min: 3.4096239126626443e-07
+  ra_error:
+    avg: 1.6613386894637572
+    count: 1811709771
+    max: 99.99763488769531
+    min: 0.0035371691919863224
+  radial_velocity:
+    avg: -3.298622192534023
+    count: 33812183
+    max: 914.70068359375
+    min: -906.6071166992188
+  radial_velocity_error:
+    avg: 3.959098216603655
+    count: 33812183
+    max: 39.99959182739258
+    min: 0.1130000427365303
+  random_index:
+    avg: 905854885
+    count: 1811709771
+    max: 1811709770
+    min: 0.0
+  ruwe:
+    avg: 1.0973414513193889
+    count: 1467744818
+    max: 116.01636505126953
+    min: 0.19239865243434906
+  rv_amplitude_robust:
+    avg: 16.602395564868857
+    count: 6981248
+    max: 1293.102294921875
+    min: 0.002056121826171875
+  rv_chisq_pvalue:
+    avg: 0.3586637798523792
+    count: 6981248
+    max: 1.0
+    min: 0.0
+  rv_method_used:
+    avg: 1.7926970583354527
+    count: 33812183
+    max: 2.0
+    min: 1.0
+  rv_nb_deblended_transits:
+    avg: 5.316119577372452
+    count: 33812183
+    max: 152.0
+    min: 0.0
+  rv_nb_transits:
+    avg: 18.672678957167598
+    count: 33812183
+    max: 227.0
+    min: 2.0
+  rv_renormalised_gof:
+    avg: 2.960375574059709
+    count: 6993005
+    max: 809.984375
+    min: -9.411506652832031
+  rv_time_duration:
+    avg: 868.2485846630381
+    count: 33812183
+    max: 1037.7318115234375
+    min: 0.07400370389223099
+  rv_visibility_periods_used:
+    avg: 12.644843428180902
+    count: 33812183
+    max: 33.0
+    min: 1.0
+  rvs_mean_spectrum_combined_ccds:
+    avg: 59.965520759869754
+    count: 999645
+    max: 644.0
+    min: 5.0
+  rvs_mean_spectrum_combined_transits:
+    avg: 21.586086060551494
+    count: 999645
+    max: 220.0
+    min: 3.0
+  rvs_mean_spectrum_deblended_ccds:
+    avg: 11.52578465355201
+    count: 999645
+    max: 260.0
+    min: 0.0
+  rvs_mean_spectrum_dec:
+    avg: -16.38333351458602
+    count: 999645
+    max: 89.58105540564819
+    min: -89.71177925918501
+  rvs_mean_spectrum_ra:
+    avg: 189.1341376707169
+    count: 999645
+    max: 359.9998074183512
+    min: 0.0002052024238820092
+  rvs_spec_sig_to_noise:
+    avg: 53.51777541722292
+    count: 999645
+    max: 2008.38671875
+    min: 15.000005722045898
+  source_id:
+    avg: 4351561059309949400
+    count: 1811709771
+    max: 6917528997577383900
+    min: 4295806720
+  vbroad:
+    avg: 20.497256043234252
+    count: 3524677
+    max: 497.6112976074219
+    min: 5.000001907348633
+  vbroad_error:
+    avg: 10.016070599992924
+    count: 3524677
+    max: 303.69775390625
+    min: 0.06419285386800766
+  vbroad_nb_transits:
+    avg: 13.352501519997436
+    count: 3524677
+    max: 91.0
+    min: 6.0
+  xp_continuous_mean_spectrum_bp_basis_function_id:
+    avg: 56.0
+    count: 219197642
+    max: 56.0
+    min: 56.0
+  xp_continuous_mean_spectrum_bp_chi_squared:
+    avg: 2000.5694469744228
+    count: 219197642
+    max: 8382808.0
+    min: 1.9446375370025635
+  xp_continuous_mean_spectrum_bp_degrees_of_freedom:
+    avg: 1860.5924202460171
+    count: 219197642
+    max: 7833.0
+    min: 213.0
+  xp_continuous_mean_spectrum_bp_n_measurements:
+    avg: 1915.5924202460171
+    count: 219197642
+    max: 7888.0
+    min: 268.0
+  xp_continuous_mean_spectrum_bp_n_parameters:
+    avg: 55.0
+    count: 219197642
+    max: 55.0
+    min: 55.0
+  xp_continuous_mean_spectrum_bp_n_rejected_measurements:
+    avg: 17.388212857691233
+    count: 219197642
+    max: 1266.0
+    min: 0.0
+  xp_continuous_mean_spectrum_bp_n_relevant_bases:
+    avg: 14.400795009464563
+    count: 219197642
+    max: 55.0
+    min: 1.0
+  xp_continuous_mean_spectrum_bp_relative_shrinking:
+    avg: 0.9996530212681599
+    count: 219197642
+    max: 1.0
+    min: 0.0733991265296936
+  xp_continuous_mean_spectrum_bp_standard_deviation:
+    avg: 1.0367945656232815
+    count: 219197642
+    max: 169.7259521484375
+    min: 0.05154230073094368
+  xp_continuous_mean_spectrum_rp_basis_function_id:
+    avg: 57.0
+    count: 219197643
+    max: 57.0
+    min: 57.0
+  xp_continuous_mean_spectrum_rp_chi_squared:
+    avg: 2798.2921868578205
+    count: 219197643
+    max: 19925892
+    min: 12.518315315246582
+  xp_continuous_mean_spectrum_rp_degrees_of_freedom:
+    avg: 2533.46238467993
+    count: 219197643
+    max: 15611.0
+    min: 211.0
+  xp_continuous_mean_spectrum_rp_n_measurements:
+    avg: 2588.46238467993
+    count: 219197643
+    max: 15666.0
+    min: 266.0
+  xp_continuous_mean_spectrum_rp_n_parameters:
+    avg: 55.0
+    count: 219197643
+    max: 55.0
+    min: 55.0
+  xp_continuous_mean_spectrum_rp_n_rejected_measurements:
+    avg: 20.93547685181998
+    count: 219197643
+    max: 1717.0
+    min: 0.0
+  xp_continuous_mean_spectrum_rp_n_relevant_bases:
+    avg: 13.164228987626478
+    count: 219197643
+    max: 55.0
+    min: 1.0
+  xp_continuous_mean_spectrum_rp_relative_shrinking:
+    avg: 0.9999323782451786
+    count: 219197643
+    max: 1.0
+    min: 0.6494078636169434
+  xp_continuous_mean_spectrum_rp_standard_deviation:
+    avg: 1.044652151340579
+    count: 219197643
+    max: 96.17877960205078
+    min: 0.1185920238494873
+  xp_sampled_mean_spectrum_dec:
+    avg: -9.764746227077655
+    count: 34468373
+    max: 89.96296648033682
+    min: -89.96995036753759
+  xp_sampled_mean_spectrum_ra:
+    avg: 204.69595178279693
+    count: 34468373
+    max: 359.9999991731361
+    min: 1.5207137117992139e-06
+gr8:
+  2mass:
+    others: 2779
+    terms:
+    - count: 1
+      value: 00004167+6210331
+    - count: 1
+      value: 00011015-0004338
+    - count: 1
+      value: 00014974+6527200
+    - count: 1
+      value: 00021014+2704570
+  bp_rp:
+    avg: 0.7677297293097094
+    count: 2858
+    max: 2.4610579013824463
+    min: 0.577351987361908
+  count: 2858
+  dec:
+    avg: 24.00733556673765
+    count: 2858
+    max: 86.43577575683594
+    min: -14.999675750732422
+  dec_error:
+    avg: 0.045455108502289274
+    count: 2858
+    max: 0.6488999724388123
+    min: 0.007899999618530273
+  dec_j2000:
+    avg: 24.007624124792684
+    count: 2858
+    max: 86.43582153320312
+    min: -14.998661994934082
+  gaia_lum:
+    avg: 2.3034724740507886
+    count: 2817
+    max: 45.90388107299805
+    min: 0.0630476325750351
+  gaia_lum_lower:
+    avg: 2.286005781082067
+    count: 2817
+    max: 40.875160217285156
+    min: 0.06299243867397308
+  gaia_lum_upper:
+    avg: 2.320939167252258
+    count: 2817
+    max: 50.93260192871094
+    min: 0.0631028264760971
+  gaia_radius:
+    avg: 1.3302607477917332
+    count: 2817
+    max: 5.581541061401367
+    min: 0.5542305707931519
+  gaia_radius_lower:
+    avg: 1.2802583211527083
+    count: 2817
+    max: 5.307552814483643
+    min: 0.4531572759151459
+  gaia_radius_upper:
+    avg: 1.3749380894150767
+    count: 2817
+    max: 5.674553394317627
+    min: 0.5794293284416199
+  gaia_teff:
+    avg: 5943.103322724822
+    count: 2854
+    max: 7799.25
+    min: 3756.666748046875
+  gaia_teff_lower:
+    avg: 5843.581651437676
+    count: 2854
+    max: 7502.66650390625
+    min: 3565.0
+  gaia_teff_upper:
+    avg: 6073.262808315221
+    count: 2854
+    max: 9438.0
+    min: 3923.85009765625
+  gaiadr2_source_id:
+    avg: 2335860646651128800
+    count: 2858
+    max: 6916960034670493700
+    min: -1.0
+  gaiaedr3_source_id:
+    avg: 2337849151884744700
+    count: 2858
+    max: 6916960034670493700
+    min: 6478258087046528
+  gmag:
+    avg: 7.300388889015764
+    count: 2858
+    max: 7.999982833862305
+    min: 3.0879220962524414
+  hd:
+    others: 2832
+    terms:
+    - count: 1
+      value: '100067'
+    - count: 1
+      value: '100069'
+    - count: 1
+      value: '10008'
+    - count: 1
+      value: '10009'
+  hip:
+    avg: 57756.92727972297
+    count: 2599
+    max: 120005.0
+    min: 58.0
+  parallax:
+    avg: 26.530882977872064
+    count: 2858
+    max: 392.7528991699219
+    min: 9.723099708557129
+  parallax_error:
+    avg: 0.06370997203004326
+    count: 2858
+    max: 0.9004999995231628
+    min: 0.013100000098347664
+  pmdec:
+    avg: -64.92731664345833
+    count: 2858
+    max: 3249.614013671875
+    min: -5817.7998046875
+  pmdec_error:
+    avg: 0.057955213475378034
+    count: 2858
+    max: 0.796999990940094
+    min: 0.009999999776482582
+  pmra:
+    avg: 5.656713371331288
+    count: 2858
+    max: 4164.208984375
+    min: -4406.46923828125
+  pmra_error:
+    avg: 0.06576067186954598
+    count: 2858
+    max: 0.8529999852180481
+    min: 0.00800000037997961
+  primary_name:
+    others: 2854
+    terms:
+    - count: 1
+      value: 1 Her
+    - count: 1
+      value: 1 Hya
+    - count: 1
+      value: 10 CVn
+    - count: 1
+      value: 10 Tau
+  ra:
+    avg: 176.94023388076215
+    count: 2858
+    max: 359.8717041015625
+    min: 0.17307160794734955
+  ra_error:
+    avg: 0.05082606727568898
+    count: 2858
+    max: 0.7226999998092651
+    min: 0.007799999788403511
+  ra_j2000:
+    avg: 176.9402037920069
+    count: 2858
+    max: 359.8720397949219
+    min: 0.17351871728897095
+  radial_velocity:
+    avg: -4.066483892488259
+    count: 2608
+    max: 143.25
+    min: -170.3699951171875
+  radial_velocity_error:
+    avg: 0.5872354294127711
+    count: 2608
+    max: 19.15999984741211
+    min: 0.11999999731779099
+  ref_epoch:
+    others: 0
+    terms:
+    - count: 2858
+      value: J2016.0
+  spectrum_harps_1d:
+    others: 0
+    terms:
+    - count: 350
+      value: true
+  spectrum_harps_2d:
+    others: 0
+    terms:
+    - count: 350
+      value: true
+  spectrum_harps_nobs:
+    avg: 35.13428571428572
+    count: 350
+    max: 300.0
+    min: 1.0
+  spectrum_harps_snr:
+    avg: 365.8991433116368
+    count: 350
+    max: 2485.800048828125
+    min: 17.100000381469727
+  spectrum_hires_1d:
+    others: 0
+    terms:
+    - count: 490
+      value: true
+  spectrum_hires_2d:
+    others: 0
+    terms:
+    - count: 490
+      value: true
+  spectrum_hires_nobs:
+    avg: 2.975510204081633
+    count: 490
+    max: 47.0
+    min: 1.0
+  spectrum_hires_resolution:
+    avg: 75418.77551020408
+    count: 490
+    max: 229700.0
+    min: 71600.0
+  spectrum_hires_snr:
+    avg: 145.09387720409705
+    count: 490
+    max: 775.0999755859375
+    min: 2.799999952316284
+  spectrum_sophie_1d:
+    others: 0
+    terms:
+    - count: 1270
+      value: true
+  spectrum_sophie_2d:
+    others: 0
+    terms:
+    - count: 1270
+      value: true
+  spectrum_sophie_nobs:
+    avg: 17.841732283464566
+    count: 1270
+    max: 300.0
+    min: 1.0
+  spectrum_sophie_snr:
+    avg: 203.0470864465856
+    count: 1270
+    max: 1245.300048828125
+    min: 1.399999976158142
+  tic:
+    avg: 286584971.84009796
+    count: 2858
+    max: 2054321412
+    min: 619444.0
+  wisea:
+    others: 2545
+    terms:
+    - count: 1
+      value: J000041.58+621032.9
+    - count: 1
+      value: J000110.18-000434.6
+    - count: 1
+      value: J000149.74+652720.6
+    - count: 1
+      value: J000210.87+270444.6
+illustris_fof:
+  BHMass:
+    avg: 1.0506348766508513e-05
+    count: 732220961
+    max: 2.1200737953186035
+    min: 0.0
+  BHMdot:
+    avg: 2.426144136025273e-06
+    count: 732220961
+    max: 4.5987138748168945
+    min: 0.0
+  CM_x:
+    avg: 35926.77849131344
+    count: 12239976
+    max: 74999.9921875
+    min: 0.008002948947250843
+  CM_y:
+    avg: 37215.049243482914
+    count: 12239976
+    max: 74999.984375
+    min: 0.016792766749858856
+  CM_z:
+    avg: 38052.1987224534
+    count: 12239976
+    max: 74999.9921875
+    min: 0.0012148115783929825
+  FirstSub:
+    avg: 486065160.49953467
+    count: 1259309875
+    max: 2147483647
+    min: 0.0
+  FuzzByType_bh:
+    avg: 1.0200613691527467
+    count: 732220961
+    max: 34722.0
+    min: 0.0
+  FuzzByType_dm:
+    avg: 2328583051.697011
+    count: 732220961
+    max: 6028567935
+    min: 0.0
+  FuzzByType_gas:
+    avg: 1864429674.6699471
+    count: 732220961
+    max: 5996671711
+    min: 0.0
+  FuzzByType_stars:
+    avg: 6116829.138932357
+    count: 732220961
+    max: 606875891
+    min: 0.0
+  FuzzByType_tracers:
+    avg: 0.0
+    count: 732220961
+    max: 0.0
+    min: 0.0
+  FuzzByType_unused:
+    avg: 0.0
+    count: 732220961
+    max: 0.0
+    min: 0.0
+  GasMetallicity:
+    avg: 0.0009590055332069417
+    count: 732220961
+    max: 0.1271098107099533
+    min: 0.0
+  Len:
+    avg: 507.4284418066681
+    count: 1259309875
+    max: 103122165
+    min: 32.0
+  LenType_bh:
+    avg: 0.005875244963039776
+    count: 1259309875
+    max: 214.0
+    min: 0.0
+  LenType_dm:
+    avg: 386.53336399113044
+    count: 1259309875
+    max: 66731995
+    min: 1.0
+  LenType_gas:
+    avg: 91.89992968887026
+    count: 1259309875
+    max: 22161687
+    min: 0.0
+  LenType_stars:
+    avg: 28.989272881704355
+    count: 1259309875
+    max: 14431903
+    min: 0.0
+  LenType_tracers:
+    avg: 0.0
+    count: 1259309875
+    max: 0.0
+    min: 0.0
+  LenType_unused:
+    avg: 0.0
+    count: 1259309875
+    max: 0.0
+    min: 0.0
+  M_Crit200:
+    avg: 0.37172543118083184
+    count: 1259309875
+    max: 26524.3671875
+    min: 0.0
+  M_Crit500:
+    avg: 0.26545056192947875
+    count: 1259309875
+    max: 20361.310546875
+    min: 0.0
+  M_Mean200:
+    avg: 0.44053256400849955
+    count: 1259309875
+    max: 32081.130859375
+    min: 0.0
+  M_TopHat200:
+    avg: 0.41923224877837406
+    count: 1259309875
+    max: 30203.265625
+    min: 0.0
+  Mass:
+    avg: 0.47371993231316495
+    count: 1259309875
+    max: 36021.46484375
+    min: 0.0020380050409585238
+  MassType_bh:
+    avg: 3.378969731618204e-05
+    count: 1259309875
+    max: 11.438307762145996
+    min: 0.0
+  MassType_dm:
+    avg: 0.4457362104296293
+    count: 1259309875
+    max: 36021.46484375
+    min: 0.0004408965178299695
+  MassType_gas:
+    avg: 0.02446231783751965
+    count: 1259309875
+    max: 3311.268310546875
+    min: 0.0
+  MassType_stars:
+    avg: 0.0034846223715151075
+    count: 1259309875
+    max: 826.2573852539062
+    min: 0.0
+  MassType_tracers:
+    avg: 0.0
+    count: 1259309875
+    max: 0.0
+    min: 0.0
+  MassType_unused:
+    avg: 0.0
+    count: 1259309875
+    max: 0.0
+    min: 0.0
+  Nsubs:
+    avg: 0.933346236167647
+    count: 1259309875
+    max: 21802.0
+    min: 0.0
+  Pos_x:
+    avg: 35991.97372416977
+    count: 1259309875
+    max: 75000.0
+    min: 0.0
+  Pos_y:
+    avg: 37350.751663275165
+    count: 1259309875
+    max: 75000.0
+    min: 0.0
+  Pos_z:
+    avg: 38112.38073239852
+    count: 1259309875
+    max: 75000.0
+    min: 0.0
+  R_Crit200:
+    avg: 14.78992987611617
+    count: 1259309875
+    max: 1103.5836181640625
+    min: 0.0
+  R_Crit500:
+    avg: 9.403406931384659
+    count: 1259309875
+    max: 755.3135986328125
+    min: 0.0
+  R_Mean200:
+    avg: 17.541484182748928
+    count: 1259309875
+    max: 1717.0870361328125
+    min: 0.0
+  R_TopHat200:
+    avg: 16.90479355548474
+    count: 1259309875
+    max: 1408.0452880859375
+    min: 0.0
+  SFR:
+    avg: 0.020287474883931667
+    count: 732220961
+    max: 2515.283935546875
+    min: 0.0
+  SnapByType_bh:
+    avg: 14582.905595650158
+    count: 1259309875
+    max: 34458.0
+    min: 0.0
+  SnapByType_dm:
+    avg: 1861948847.7984257
+    count: 1259309875
+    max: 3328997624
+    min: 0.0
+  SnapByType_gas:
+    avg: 494489945.54000956
+    count: 1259309875
+    max: 1344676135
+    min: 0.0
+  SnapByType_stars:
+    avg: 179870400.35912147
+    count: 1259309875
+    max: 606001799
+    min: 0.0
+  SnapByType_tracers:
+    avg: 0.0
+    count: 1259309875
+    max: 0.0
+    min: 0.0
+  SnapByType_unused:
+    avg: 0.0
+    count: 1259309875
+    max: 0.0
+    min: 0.0
+  StarMetallicity:
+    avg: 5.898093936227995e-05
+    count: 732220961
+    max: 0.08525741845369339
+    min: 0.0
+  Vel_x:
+    avg: -0.011627436767420212
+    count: 1259309875
+    max: 2783.266845703125
+    min: -1897.4146728515625
+  Vel_y:
+    avg: 0.023102227131309078
+    count: 1259309875
+    max: 1985.8482666015625
+    min: -2197.109375
+  Vel_z:
+    avg: -0.1917275404338118
+    count: 1259309875
+    max: 3306.859130859375
+    min: -2768.646484375
+  WindMass:
+    avg: 0.0008892227845031157
+    count: 732220961
+    max: 12.4690580368042
+    min: 0.0
+  count: 1259309875
+  id:
+    avg: 2505064.5396802556
+    count: 1259309875
+    max: 7713600.0
+    min: 0.0
+  redshift:
+    avg: 1.8120508941196607
+    count: 1259309875
+    max: 25.172157287597656
+    min: 2.220446049250313e-16
+  simulation:
+    others: 0
+    terms:
+    - count: 636845190
+      value: 0
+    - count: 456974235
+      value: 1
+    - count: 83135795
+      value: 2
+    - count: 61724462
+      value: 3
+    - count: 12239976
+      value: 4
+    - count: 8390217
+      value: 5
+  snapshot:
+    avg: 87.65241939677476
+    count: 1259309875
+    max: 135.0
+    min: 13.0
+  time:
+    avg: 0.5283346416671304
+    count: 1259309875
+    max: 1.0
+    min: 0.03820854425430298
+illustris_sub:
+  BHMass:
+    avg: 1.3232354174369824e-05
+    count: 581288114
+    max: 1.4895638227462769
+    min: 0.0
+  BHMdot:
+    avg: 3.0559666539073943e-06
+    count: 581288114
+    max: 4.596288681030273
+    min: 0.0
+  CM_x:
+    avg: 36180.36542593773
+    count: 1175372132
+    max: 75000.0
+    min: 1.2843767763115466e-05
+  CM_y:
+    avg: 37215.727182890325
+    count: 1175372132
+    max: 75000.0
+    min: 2.4068904167506844e-05
+  CM_z:
+    avg: 37900.74408298879
+    count: 1175372132
+    max: 75000.0
+    min: 5.363010131986812e-05
+  GasMetallicity:
+    avg: 0.000139264157224985
+    count: 581288114
+    max: 0.12431003153324127
+    min: 0.0
+  GasMetallicityHalfRad:
+    avg: 0.00017825281773000944
+    count: 581288114
+    max: 0.12884417176246643
+    min: 0.0
+  GasMetallicityMaxRad:
+    avg: 0.0001334273979765999
+    count: 581288114
+    max: 0.1255492866039276
+    min: 0.0
+  GasMetallicitySfr:
+    avg: 0.0001609981496273339
+    count: 581288114
+    max: 0.13802975416183472
+    min: 0.0
+  GasMetallicitySfrWeighted:
+    avg: 0.00016474433748920873
+    count: 581288114
+    max: 0.1420109122991562
+    min: 0.0
+  GrNr:
+    avg: 1739255.58827715
+    count: 1175372132
+    max: 7713599.0
+    min: 0.0
+  HalfmassRad:
+    avg: 10.103629260883146
+    count: 1175372132
+    max: 1136.5894775390625
+    min: 7.672327046748251e-05
+  HalfmassRadType_bh:
+    avg: 0.00014344762849602546
+    count: 1175372132
+    max: 1161.0546875
+    min: 0.0
+  HalfmassRadType_dm:
+    avg: 10.107834382899346
+    count: 1175372132
+    max: 1139.0335693359375
+    min: 0.0
+  HalfmassRadType_gas:
+    avg: 2.450308279242125
+    count: 1175372132
+    max: 1485.3433837890625
+    min: 0.0
+  HalfmassRadType_stars:
+    avg: 0.180983945658877
+    count: 1175372132
+    max: 680.706787109375
+    min: 0.0
+  HalfmassRadType_tracers:
+    avg: 0.0
+    count: 1175372132
+    max: 0.0
+    min: 0.0
+  HalfmassRadType_unused:
+    avg: 0.0
+    count: 1175372132
+    max: 0.0
+    min: 0.0
+  IDMostbound:
+    avg: 4617370220265483300
+    count: 1175372132
+    max: 9223372036854776000
+    min: 0.0
+  Len:
+    avg: 495.35837673238285
+    count: 1175372132
+    max: 68882471
+    min: 20.0
+  LenType_bh:
+    avg: 0.006278596198671826
+    count: 1175372132
+    max: 111.0
+    min: 0.0
+  LenType_dm:
+    avg: 383.3913529251517
+    count: 1175372132
+    max: 46056847
+    min: 0.0
+  LenType_gas:
+    avg: 82.35552868884933
+    count: 1175372132
+    max: 19176755
+    min: 0.0
+  LenType_stars:
+    avg: 29.60521652218312
+    count: 1175372132
+    max: 4121303.0
+    min: 0.0
+  LenType_tracers:
+    avg: 0.0
+    count: 1175372132
+    max: 0.0
+    min: 0.0
+  LenType_unused:
+    avg: 0.0
+    count: 1175372132
+    max: 0.0
+    min: 0.0
+  Mass:
+    avg: 0.47084906370319807
+    count: 1175372132
+    max: 26229.576171875
+    min: 0.000978941796347499
+  MassInHalfRad:
+    avg: 0.012756772523677818
+    count: 1175372132
+    max: 4692.59716796875
+    min: 0.0
+  MassInHalfRadType_bh:
+    avg: 3.1361023430296196e-05
+    count: 1175372132
+    max: 5.3163299560546875
+    min: 0.0
+  MassInHalfRadType_dm:
+    avg: 0.009017042343490418
+    count: 1175372132
+    max: 4286.32568359375
+    min: 0.0
+  MassInHalfRadType_gas:
+    avg: 0.001856806950027691
+    count: 1175372132
+    max: 332.15460205078125
+    min: 0.0
+  MassInHalfRadType_stars:
+    avg: 0.0018515622093692174
+    count: 1175372132
+    max: 128.58038330078125
+    min: 0.0
+  MassInHalfRadType_tracers:
+    avg: 0.0
+    count: 1175372132
+    max: 0.0
+    min: 0.0
+  MassInHalfRadType_unused:
+    avg: 0.0
+    count: 1175372132
+    max: 0.0
+    min: 0.0
+  MassInMaxRad:
+    avg: 0.1893587649823951
+    count: 1175372132
+    max: 18580.994140625
+    min: 0.0002683773054741323
+  MassInMaxRadType_bh:
+    avg: 3.5693963438860455e-05
+    count: 1175372132
+    max: 5.493185043334961
+    min: 0.0
+  MassInMaxRadType_dm:
+    avg: 0.17580176449285798
+    count: 1175372132
+    max: 18580.994140625
+    min: 0.0
+  MassInMaxRadType_gas:
+    avg: 0.010526280074116344
+    count: 1175372132
+    max: 1808.9727783203125
+    min: 0.0
+  MassInMaxRadType_stars:
+    avg: 0.002995026464781801
+    count: 1175372132
+    max: 231.05374145507812
+    min: 0.0
+  MassInMaxRadType_tracers:
+    avg: 0.0
+    count: 1175372132
+    max: 0.0
+    min: 0.0
+  MassInMaxRadType_unused:
+    avg: 0.0
+    count: 1175372132
+    max: 0.0
+    min: 0.0
+  MassInRad:
+    avg: 0.03054934230669915
+    count: 1175372132
+    max: 13528.7587890625
+    min: 0.0
+  MassInRadType_bh:
+    avg: 3.159351968460825e-05
+    count: 1175372132
+    max: 5.567878723144531
+    min: 0.0
+  MassInRadType_dm:
+    avg: 0.022426381647527978
+    count: 1175372132
+    max: 12048.9052734375
+    min: 0.0
+  MassInRadType_gas:
+    avg: 0.0052048074473507264
+    count: 1175372132
+    max: 1350.072998046875
+    min: 0.0
+  MassInRadType_stars:
+    avg: 0.002886559695959698
+    count: 1175372132
+    max: 163.12872314453125
+    min: 0.0
+  MassInRadType_tracers:
+    avg: 0.0
+    count: 1175372132
+    max: 0.0
+    min: 0.0
+  MassInRadType_unused:
+    avg: 0.0
+    count: 1175372132
+    max: 0.0
+    min: 0.0
+  MassType_bh:
+    avg: 3.614361554385428e-05
+    count: 1175372132
+    max: 6.0407938957214355
+    min: 0.0
+  MassType_dm:
+    avg: 0.4447777028682157
+    count: 1175372132
+    max: 26229.576171875
+    min: 0.0
+  MassType_gas:
+    avg: 0.022306375565496483
+    count: 1175372132
+    max: 3067.290283203125
+    min: 0.0
+  MassType_stars:
+    avg: 0.0037288416611723305
+    count: 1175372132
+    max: 257.1609802246094
+    min: 0.0
+  MassType_tracers:
+    avg: 0.0
+    count: 1175372132
+    max: 0.0
+    min: 0.0
+  MassType_unused:
+    avg: 0.0
+    count: 1175372132
+    max: 0.0
+    min: 0.0
+  Parent:
+    avg: 3.2275426451917952
+    count: 1175372132
+    max: 21791.0
+    min: 0.0
+  Pos_x:
+    avg: 36180.35875317378
+    count: 1175372132
+    max: 75000.0
+    min: 0.0
+  Pos_y:
+    avg: 37215.71538817928
+    count: 1175372132
+    max: 75000.0
+    min: 0.0
+  Pos_z:
+    avg: 37900.7207111792
+    count: 1175372132
+    max: 75000.0
+    min: 0.0
+  SFR:
+    avg: 0.02554144843398185
+    count: 581288114
+    max: 1944.306640625
+    min: 0.0
+  SFRinHalfRad:
+    avg: 0.014334716968254698
+    count: 581288114
+    max: 1893.560546875
+    min: 0.0
+  SFRinMaxRad:
+    avg: 0.023957812350501005
+    count: 581288114
+    max: 1943.4500732421875
+    min: 0.0
+  SFRinRad:
+    avg: 0.022125367465842604
+    count: 581288114
+    max: 1935.302001953125
+    min: 0.0
+  SnapByType_bh:
+    avg: 10884.628147929408
+    count: 1175372132
+    max: 34458.0
+    min: 0.0
+  SnapByType_dm:
+    avg: 1618366905.8801186
+    count: 1175372132
+    max: 3328997624
+    min: 0.0
+  SnapByType_gas:
+    avg: 370087772.28651595
+    count: 1175372132
+    max: 1344676135
+    min: 0.0
+  SnapByType_stars:
+    avg: 129054462.11981383
+    count: 1175372132
+    max: 606001799
+    min: 0.0
+  SnapByType_tracers:
+    avg: 0.0
+    count: 1175372132
+    max: 0.0
+    min: 0.0
+  SnapByType_unused:
+    avg: 0.0
+    count: 1175372132
+    max: 0.0
+    min: 0.0
+  Spin_x:
+    avg: 0.014452287915437142
+    count: 1175372132
+    max: 33605.76953125
+    min: -57138.71484375
+  Spin_y:
+    avg: 0.03920912725114039
+    count: 1175372132
+    max: 59366.875
+    min: -52107.390625
+  Spin_z:
+    avg: -0.009605484913954397
+    count: 1175372132
+    max: 50842.6640625
+    min: -63337.8203125
+  StarMetallicity:
+    avg: 0.00011235704505978859
+    count: 581288114
+    max: 0.1139153465628624
+    min: 0.0
+  StarMetallicityHalfRad:
+    avg: 0.00012417431925395143
+    count: 581288114
+    max: 0.11767719686031342
+    min: 0.0
+  StarMetallicityMaxRad:
+    avg: 0.0001122237252509786
+    count: 581288114
+    max: 0.11510170251131058
+    min: 0.0
+  StellarPhotometricsMassInRad:
+    avg: 0.0034126027352420736
+    count: 581288114
+    max: 135.3041534423828
+    min: 0.0
+  StellarPhotometricsRad:
+    avg: 0.12617510656400072
+    count: 581288114
+    max: 38.522727966308594
+    min: 0.0
+  StellarPhotometrics_B:
+    avg: 9021681157739473000000000000000000000
+    count: 581288114
+    max: 9999999933815813000000000000000000000
+    min: -27.1148681640625
+  StellarPhotometrics_K:
+    avg: 9021681157739473000000000000000000000
+    count: 581288114
+    max: 9999999933815813000000000000000000000
+    min: -29.17131805419922
+  StellarPhotometrics_U:
+    avg: 9021681157739473000000000000000000000
+    count: 581288114
+    max: 9999999933815813000000000000000000000
+    min: -27.521631240844727
+  StellarPhotometrics_V:
+    avg: 9021681157739473000000000000000000000
+    count: 581288114
+    max: 9999999933815813000000000000000000000
+    min: -27.23714256286621
+  StellarPhotometrics_g:
+    avg: 9021681157739473000000000000000000000
+    count: 581288114
+    max: 9999999933815813000000000000000000000
+    min: -27.30307388305664
+  StellarPhotometrics_i:
+    avg: 9021681157739473000000000000000000000
+    count: 581288114
+    max: 9999999933815813000000000000000000000
+    min: -27.374902725219727
+  StellarPhotometrics_r:
+    avg: 9021681157739473000000000000000000000
+    count: 581288114
+    max: 9999999933815813000000000000000000000
+    min: -27.31097412109375
+  StellarPhotometrics_z:
+    avg: 9021681157739473000000000000000000000
+    count: 581288114
+    max: 9999999933815813000000000000000000000
+    min: -27.46876335144043
+  VelDisp:
+    avg: 11.768649955687716
+    count: 1175372132
+    max: 743.9366455078125
+    min: 0.8112476468086243
+  Vel_x:
+    avg: -0.09530651204331338
+    count: 1175372132
+    max: 2759.2705078125
+    min: -2647.269287109375
+  Vel_y:
+    avg: 0.27152385616696995
+    count: 1175372132
+    max: 2429.5048828125
+    min: -2369.3349609375
+  Vel_z:
+    avg: -0.7504268278972233
+    count: 1175372132
+    max: 2311.99755859375
+    min: -2346.4599609375
+  Vmax:
+    avg: 21.492646617941965
+    count: 1175372132
+    max: 1745.0855712890625
+    min: 2.24275541305542
+  VmaxRad:
+    avg: 9.461464303835893
+    count: 1175372132
+    max: 1234.639892578125
+    min: 0.020874202251434326
+  WindMass:
+    avg: 0.0005884581207565668
+    count: 581288114
+    max: 8.561744689941406
+    min: 0.0
+  count: 1175372132
+  id:
+    avg: 2220937.8497794415
+    count: 1175372132
+    max: 6025080.0
+    min: 0.0
+  redshift:
+    avg: 1.9120341953970499
+    count: 1175372132
+    max: 25.172157287597656
+    min: 2.220446049250313e-16
+  simulation:
+    others: 0
+    terms:
+    - count: 513882986
+      value: 1
+    - count: 493463190
+      value: 0
+    - count: 75614755
+      value: 2
+    - count: 70570301
+      value: 3
+    - count: 12210169
+      value: 4
+    - count: 9630731
+      value: 5
+  snapshot:
+    avg: 85.62809466882953
+    count: 1175372132
+    max: 135.0
+    min: 13.0
+  time:
+    avg: 0.5089251843945799
+    count: 1175372132
+    max: 1.0
+    min: 0.03820854425430298
+lusam:
+  B_rest:
+    avg: -18.723745745695393
+    count: 12380047
+    max: 0.0
+    min: -40.33742904663086
+  B_rest_bulge:
+    avg: 59.236638445495004
+    count: 12380047
+    max: 99.0
+    min: -40.33740997314453
+  B_rest_dust:
+    avg: -18.068472306658183
+    count: 12380047
+    max: 99.9000015258789
+    min: -27.915569305419922
+  CFHTLS_u:
+    avg: 27.955730999870298
+    count: 12380047
+    max: 58.317100524902344
+    min: 2.788330078125
+  CFHTLS_u_bulge:
+    avg: 77.34840505574208
+    count: 12380047
+    max: 99.9000015258789
+    min: 2.788367986679077
+  CFHTLS_u_dust:
+    avg: 29.751050124771037
+    count: 12380047
+    max: 99.9000015258789
+    min: 7.29276704788208
+  H_rest:
+    avg: -18.80661519352756
+    count: 12380047
+    max: 0.0
+    min: -40.41872024536133
+  H_rest_bulge:
+    avg: 58.96120046206834
+    count: 12380047
+    max: 99.0
+    min: -40.41870880126953
+  H_rest_dust:
+    avg: -18.360160626346744
+    count: 12380047
+    max: 99.9000015258789
+    min: -32.515201568603516
+  I_rest:
+    avg: -18.90969955113048
+    count: 12380047
+    max: 0.0
+    min: -40.45293045043945
+  I_rest_bulge:
+    avg: 58.96937673321683
+    count: 12380047
+    max: 99.0
+    min: -40.452919006347656
+  I_rest_dust:
+    avg: -18.38365658863369
+    count: 12380047
+    max: 99.9000015258789
+    min: -28.285350799560547
+  J_rest:
+    avg: -18.833382908376727
+    count: 12380047
+    max: 0.0
+    min: -40.42308044433594
+  J_rest_bulge:
+    avg: 58.96680005759861
+    count: 12380047
+    max: 99.0
+    min: -40.42306900024414
+  J_rest_dust:
+    avg: -18.365755693505136
+    count: 12380047
+    max: 99.9000015258789
+    min: -31.239709854125977
+  K_rest:
+    avg: -18.433138726264765
+    count: 12380047
+    max: 0.0
+    min: -40.06060028076172
+  K_rest_bulge:
+    avg: 59.09584231442189
+    count: 12380047
+    max: 99.0
+    min: -40.06058883666992
+  K_rest_dust:
+    avg: -18.001022275368285
+    count: 12380047
+    max: 99.9000015258789
+    min: -32.95814895629883
+  R_rest:
+    avg: -18.86629732879686
+    count: 12380047
+    max: 0.0
+    min: -40.419921875
+  R_rest_bulge:
+    avg: 59.02700397104632
+    count: 12380047
+    max: 99.0
+    min: -40.419898986816406
+  R_rest_dust:
+    avg: -18.30342567223602
+    count: 12380047
+    max: 99.9000015258789
+    min: -28.04796028137207
+  UKIRT_H:
+    avg: 25.891757127474943
+    count: 12380047
+    max: 47.704689025878906
+    min: 1.9396480321884155
+  UKIRT_H_bulge:
+    avg: 75.48702790387821
+    count: 12380047
+    max: 99.9000015258789
+    min: 1.939663052558899
+  UKIRT_H_dust:
+    avg: 26.45345332111529
+    count: 12380047
+    max: 99.9000015258789
+    min: 11.004289627075195
+  UKIRT_J:
+    avg: 26.08307644367639
+    count: 12380047
+    max: 45.91130065917969
+    min: 1.9554409980773926
+  UKIRT_J_bulge:
+    avg: 75.64904182992893
+    count: 12380047
+    max: 99.9000015258789
+    min: 1.955456018447876
+  UKIRT_J_dust:
+    avg: 26.71610804469063
+    count: 12380047
+    max: 99.9000015258789
+    min: 11.412520408630371
+  UKIRT_K:
+    avg: 25.79855140623575
+    count: 12380047
+    max: 47.704689025878906
+    min: 1.9749410152435303
+  UKIRT_K_bulge:
+    avg: 75.39736938877884
+    count: 12380047
+    max: 99.9000015258789
+    min: 1.97495698928833
+  UKIRT_K_dust:
+    avg: 26.2879685551829
+    count: 12380047
+    max: 99.9000015258789
+    min: 10.156450271606445
+  UV1500_rest:
+    avg: -17.591635447881934
+    count: 12380047
+    max: 0.5234739780426025
+    min: -39.70795822143555
+  UV1500_rest_bulge:
+    avg: 60.77152364238244
+    count: 12380047
+    max: 99.0
+    min: -39.70792007446289
+  UV1500_rest_dust:
+    avg: -16.64124952319117
+    count: 12380047
+    max: 99.9000015258789
+    min: -26.625530242919922
+  UV2300_rest:
+    avg: -17.77879164567471
+    count: 12380047
+    max: 0.0
+    min: -39.64609146118164
+  UV2300_rest_bulge:
+    avg: 60.1228378833026
+    count: 12380047
+    max: 99.0
+    min: -39.64604949951172
+  UV2300_rest_dust:
+    avg: -16.946264749258265
+    count: 12380047
+    max: 99.9000015258789
+    min: -26.727479934692383
+  UV2800_rest:
+    avg: -17.86360322645123
+    count: 12380047
+    max: 0.0
+    min: -39.61565017700195
+  UV2800_rest_bulge:
+    avg: 59.87256978886397
+    count: 12380047
+    max: 99.0
+    min: -39.61561965942383
+  UV2800_rest_dust:
+    avg: -17.08429125664471
+    count: 12380047
+    max: 99.9000015258789
+    min: -26.842620849609375
+  U_rest:
+    avg: -18.10169424618029
+    count: 12380047
+    max: 0.0
+    min: -39.740478515625
+  U_rest_bulge:
+    avg: 59.57444276450552
+    count: 12380047
+    max: 99.0
+    min: -39.74045944213867
+  U_rest_dust:
+    avg: -17.38364846860363
+    count: 12380047
+    max: 99.9000015258789
+    min: -27.172340393066406
+  V_rest:
+    avg: -18.81599064522772
+    count: 12380047
+    max: 0.0
+    min: -40.39448165893555
+  V_rest_bulge:
+    avg: 59.09061318036199
+    count: 12380047
+    max: 99.0
+    min: -40.39445877075195
+  V_rest_dust:
+    avg: -18.21917904488629
+    count: 12380047
+    max: 99.9000015258789
+    min: -27.93277931213379
+  V_vir:
+    avg: 128.91112860609474
+    count: 12380047
+    max: 1398.571044921875
+    min: 27.700349807739258
+  Z_hot_halo:
+    avg: 0.09712435400166121
+    count: 12380047
+    max: 7.031479835510254
+    min: 0.0
+  Zcold:
+    avg: 18923760586374110000000000000
+    count: 12380047
+    max: 234228000496783200000000000000000000
+    min: 0.0
+  Zstar:
+    avg: 0.21890877343383638
+    count: 12380047
+    max: 85.65686798095703
+    min: 3.3116859867732273e-06
+  acsf435w:
+    avg: 27.53858448606932
+    count: 12380047
+    max: 55.671669006347656
+    min: 2.788727045059204
+  acsf435w_bulge:
+    avg: 77.04473171724348
+    count: 12380047
+    max: 99.9000015258789
+    min: 2.7887649536132812
+  acsf435w_dust:
+    avg: 28.941990989098162
+    count: 12380047
+    max: 99.9000015258789
+    min: 12.369990348815918
+  acsf606w:
+    avg: 26.84065636913219
+    count: 12380047
+    max: 53.55744171142578
+    min: 2.4410738945007324
+  acsf606w_bulge:
+    avg: 76.42468205246472
+    count: 12380047
+    max: 99.9000015258789
+    min: 2.44110107421875
+  acsf606w_dust:
+    avg: 27.77456187159468
+    count: 12380047
+    max: 99.9000015258789
+    min: 11.866959571838379
+  acsf775w:
+    avg: 26.519532771156815
+    count: 12380047
+    max: 52.472049713134766
+    min: 2.1095199584960938
+  acsf775w_bulge:
+    avg: 76.10156651655694
+    count: 12380047
+    max: 99.9000015258789
+    min: 2.109539031982422
+  acsf775w_dust:
+    avg: 27.304703511612935
+    count: 12380047
+    max: 99.9000015258789
+    min: 11.58512020111084
+  acsf814w:
+    avg: 26.473114246509958
+    count: 12380047
+    max: 48.43852996826172
+    min: 2.0784718990325928
+  acsf814w_bulge:
+    avg: 76.05015821371015
+    count: 12380047
+    max: 99.9000015258789
+    min: 2.078490972518921
+  acsf814w_dust:
+    avg: 27.240231531804067
+    count: 12380047
+    max: 99.9000015258789
+    min: 11.551010131835938
+  acsf850lp:
+    avg: 26.368178182958157
+    count: 12380047
+    max: 46.41501998901367
+    min: 2.0094640254974365
+  acsf850lp_bulge:
+    avg: 75.93394965736191
+    count: 12380047
+    max: 99.9000015258789
+    min: 2.0094799995422363
+  acsf850lp_dust:
+    avg: 27.095853197111488
+    count: 12380047
+    max: 99.9000015258789
+    min: 11.46897029876709
+  c_NFW:
+    avg: 5.818638480175502
+    count: 12380047
+    max: 1879.6209716796875
+    min: 1.0003869533538818
+  count: 12380047
+  ctio_U:
+    avg: 28.045940163405483
+    count: 12380047
+    max: 62.244468688964844
+    min: 2.797179937362671
+  ctio_U_bulge:
+    avg: 77.4534146527131
+    count: 12380047
+    max: 99.9000015258789
+    min: 2.7972218990325928
+  ctio_U_dust:
+    avg: 29.915040993725412
+    count: 12380047
+    max: 99.9000015258789
+    min: 4.261806011199951
+  dec:
+    avg: 7.4057785655135575
+    count: 12380047
+    max: 62.49644088745117
+    min: -28.156709671020508
+  field:
+    others: 0
+    terms:
+    - count: 3941516
+      value: 3
+    - count: 3114491
+      value: 4
+    - count: 2534395
+      value: 2
+    - count: 1734141
+      value: 0
+    - count: 1055504
+      value: 1
+  gal_id:
+    avg: 671348.9962892709
+    count: 12380047
+    max: 2020885.0
+    min: 0.0
+  gal_type:
+    avg: 0.22313194772200784
+    count: 12380047
+    max: 2.0
+    min: 0.0
+  galex_FUV:
+    avg: 36.434307952825385
+    count: 12380047
+    max: 99.9000015258789
+    min: 4.199195861816406
+  galex_FUV_bulge:
+    avg: 78.98656928108814
+    count: 12380047
+    max: 99.9000015258789
+    min: 4.199265003204346
+  galex_FUV_dust:
+    avg: 48.770415151890994
+    count: 12368370
+    max: 99.9000015258789
+    min: -18.819860458374023
+  galex_NUV:
+    avg: 30.151777893603185
+    count: 12380047
+    max: 74.05473327636719
+    min: 2.7648160457611084
+  galex_NUV_bulge:
+    avg: 78.37086813439691
+    count: 12380047
+    max: 99.9000015258789
+    min: 2.764862060546875
+  galex_NUV_dust:
+    avg: 36.10002600072723
+    count: 12379836
+    max: 99.9000015258789
+    min: -52.578208923339844
+  halo_id_nbody:
+    avg: 940953918.7503301
+    count: 12380047
+    max: 2806878160
+    min: 4244298.0
+  irac_ch1:
+    avg: -99.9000015258789
+    count: 12380047
+    max: -99.9000015258789
+    min: -99.9000015258789
+  irac_ch1_bulge:
+    avg: -99.9000015258789
+    count: 12380047
+    max: -99.9000015258789
+    min: -99.9000015258789
+  irac_ch1_dust:
+    avg: -99.9000015258789
+    count: 12380047
+    max: -99.9000015258789
+    min: -99.9000015258789
+  irac_ch2:
+    avg: -99.9000015258789
+    count: 12380047
+    max: -99.9000015258789
+    min: -99.9000015258789
+  irac_ch2_bulge:
+    avg: -99.9000015258789
+    count: 12380047
+    max: -99.9000015258789
+    min: -99.9000015258789
+  irac_ch2_dust:
+    avg: -99.9000015258789
+    count: 12380047
+    max: -99.9000015258789
+    min: -99.9000015258789
+  mBH:
+    avg: -99.9000015258789
+    count: 12380047
+    max: -99.9000015258789
+    min: -99.9000015258789
+  m_hot_halo:
+    avg: -11.36266796782406
+    count: 12380047
+    max: 8098.09814453125
+    min: -82519920
+  m_vir:
+    avg: 138.96107655791255
+    count: 12380047
+    max: 56293.58984375
+    min: 1.0021899938583374
+  maccdot:
+    avg: -99.9000015258789
+    count: 12380047
+    max: -99.9000015258789
+    min: -99.9000015258789
+  maccdot_radio:
+    avg: -99.9000015258789
+    count: 12380047
+    max: -99.9000015258789
+    min: -99.9000015258789
+  mbulge:
+    avg: 2.3145498265060875
+    count: 12380047
+    max: 13478100
+    min: 0.0
+  mcold:
+    avg: 16.19501862116899
+    count: 12380047
+    max: 100129296
+    min: 0.0
+  meanage:
+    avg: -99.9000015258789
+    count: 12380047
+    max: -99.9000015258789
+    min: -99.9000015258789
+  mhalo:
+    avg: 21.17052512075175
+    count: 12380047
+    max: 56293.58984375
+    min: 0.04625372961163521
+  mstar:
+    avg: 2.5476350366609553
+    count: 12380047
+    max: 13478120
+    min: 2.283547928527696e-08
+  mstar_diffuse:
+    avg: -99.9000015258789
+    count: 12380047
+    max: -99.9000015258789
+    min: -99.9000015258789
+  mstardot:
+    avg: -99.9000015258789
+    count: 12380047
+    max: -99.9000015258789
+    min: -99.9000015258789
+  musyc_u38:
+    avg: 28.130052859391
+    count: 12380047
+    max: 62.81058883666992
+    min: 2.79351806640625
+  musyc_u38_bulge:
+    avg: 77.53166437032705
+    count: 12380047
+    max: 99.9000015258789
+    min: 2.793555974960327
+  musyc_u38_dust:
+    avg: 30.286330448758264
+    count: 12380047
+    max: 99.9000015258789
+    min: -7.628440856933594
+  r_bulge:
+    avg: -99.9000015258789
+    count: 12380047
+    max: -99.9000015258789
+    min: -99.9000015258789
+  r_disk:
+    avg: 1.8107226376059893
+    count: 12380047
+    max: 54.385520935058594
+    min: 0.05929936096072197
+  r_vir:
+    avg: 0.07538538626872106
+    count: 12380047
+    max: 1.553871989250183
+    min: 0.004016980063170195
+  ra:
+    avg: 103.65619169748868
+    count: 12380047
+    max: 215.24569702148438
+    min: 34.06555938720703
+  realization:
+    avg: 3.4924755132189724
+    count: 12380047
+    max: 7.0
+    min: 0.0
+  redshift:
+    avg: 2.4504454434060166
+    count: 12380047
+    max: 10.007430076599121
+    min: 0.0035019870847463608
+  sdss_g:
+    avg: 27.258991787357235
+    count: 12380047
+    max: 55.633628845214844
+    min: 2.7848010063171387
+  sdss_g_bulge:
+    avg: 76.79225806214949
+    count: 12380047
+    max: 99.9000015258789
+    min: 2.7848360538482666
+  sdss_g_dust:
+    avg: 28.440575524608054
+    count: 12380047
+    max: 99.9000015258789
+    min: 12.162019729614258
+  sdss_i:
+    avg: 26.52702758904061
+    count: 12380047
+    max: 52.47357177734375
+    min: 2.114922046661377
+  sdss_i_bulge:
+    avg: 76.10911187758569
+    count: 12380047
+    max: 99.9000015258789
+    min: 2.114940881729126
+  sdss_i_dust:
+    avg: 27.3149126459719
+    count: 12380047
+    max: 99.9000015258789
+    min: 11.591039657592773
+  sdss_r:
+    avg: 26.761502497129207
+    count: 12380047
+    max: 53.58052062988281
+    min: 2.3014140129089355
+  sdss_r_bulge:
+    avg: 76.35542541838679
+    count: 12380047
+    max: 99.9000015258789
+    min: 2.3014369010925293
+  sdss_r_dust:
+    avg: 27.654574349992007
+    count: 12380047
+    max: 99.9000015258789
+    min: 11.787790298461914
+  sdss_u:
+    avg: 28.209092788360696
+    count: 12380047
+    max: 63.202781677246094
+    min: 2.775336980819702
+  sdss_u_bulge:
+    avg: 77.57004543875638
+    count: 12380047
+    max: 99.9000015258789
+    min: 2.7753748893737793
+  sdss_u_dust:
+    avg: 30.291998901448096
+    count: 12380047
+    max: 99.9000015258789
+    min: -4.594546794891357
+  sdss_z:
+    avg: 26.352615665440954
+    count: 12380047
+    max: 46.3862190246582
+    min: 2.0074310302734375
+  sdss_z_bulge:
+    avg: 75.91786538552998
+    count: 12380047
+    max: 99.9000015258789
+    min: 2.007446050643921
+  sdss_z_dust:
+    avg: 27.075259590672072
+    count: 12380047
+    max: 99.9000015258789
+    min: 11.462300300598145
+  sfr_ave:
+    avg: 43.03126887011412
+    count: 12380047
+    max: 253120992
+    min: 0.0
+  sigma_bulge:
+    avg: -99.9000015258789
+    count: 12380047
+    max: -99.9000015258789
+    min: -99.9000015258789
+  spin:
+    avg: -99.9000015258789
+    count: 12380047
+    max: -99.9000015258789
+    min: -99.9000015258789
+  tmajmerge:
+    avg: 99.75364863143835
+    count: 12380047
+    max: 99.9000015258789
+    min: 0.09471725672483444
+  tmerge:
+    avg: 66.99116470207552
+    count: 12380047
+    max: 99.9000015258789
+    min: 0.005502939224243164
+  v_disk:
+    avg: -99.9000015258789
+    count: 12380047
+    max: -99.9000015258789
+    min: -99.9000015258789
+  wfc3f105w:
+    avg: 26.22151011781433
+    count: 12380047
+    max: 46.139400482177734
+    min: 1.9859119653701782
+  wfc3f105w_bulge:
+    avg: 75.78478645147148
+    count: 12380047
+    max: 99.9000015258789
+    min: 1.9859280586242676
+  wfc3f105w_dust:
+    avg: 26.902066489715086
+    count: 12380047
+    max: 99.9000015258789
+    min: 11.425649642944336
+  wfc3f125w:
+    avg: 26.076118434028373
+    count: 12380047
+    max: 45.91255187988281
+    min: 1.94964599609375
+  wfc3f125w_bulge:
+    avg: 75.6477686014773
+    count: 12380047
+    max: 99.9000015258789
+    min: 1.9496610164642334
+  wfc3f125w_dust:
+    avg: 26.709453940896214
+    count: 12380047
+    max: 99.9000015258789
+    min: 11.40835952758789
+  wfc3f160w:
+    avg: 25.925207884466925
+    count: 12380047
+    max: 45.56058883666992
+    min: 1.9267619848251343
+  wfc3f160w_bulge:
+    avg: 75.51703569531608
+    count: 12380047
+    max: 99.9000015258789
+    min: 1.9267770051956177
+  wfc3f160w_dust:
+    avg: 26.50304097587969
+    count: 12380047
+    max: 99.9000015258789
+    min: 11.214280128479004
+  wfc3f275w:
+    avg: 29.400295606154508
+    count: 12380047
+    max: 70.57565307617188
+    min: 2.7131309509277344
+  wfc3f275w_bulge:
+    avg: 78.17725822089469
+    count: 12380047
+    max: 99.9000015258789
+    min: 2.7131729125976562
+  wfc3f275w_dust:
+    avg: 33.407416072261604
+    count: 12380028
+    max: 99.9000015258789
+    min: -41.50440979003906
+  wfc3f336w:
+    avg: 28.46866886093428
+    count: 12380047
+    max: 64.7716064453125
+    min: 2.7487449645996094
+  wfc3f336w_bulge:
+    avg: 77.71977810459467
+    count: 12380047
+    max: 99.9000015258789
+    min: 2.7487831115722656
+  wfc3f336w_dust:
+    avg: 30.848960576280437
+    count: 12380047
+    max: 99.9000015258789
+    min: -17.167949676513672
+  z_nopec:
+    avg: 2.450437645109446
+    count: 12380047
+    max: 9.999589920043945
+    min: 0.0036039999686181545
+sapfire:
+  count: 594409
+  index:
+    others: 0
+    terms:
+    - count: 154390
+      value: 0
+    - count: 112272
+      value: 1
+    - count: 106362
+      value: 6
+    - count: 52346
+      value: 5
+    - count: 49744
+      value: 2
+    - count: 45497
+      value: 3
+    - count: 15529
+      value: 4
+    - count: 14734
+      value: 14
+    - count: 7544
+      value: 10
+    - count: 6664
+      value: 9
+    - count: 5217
+      value: 15
+    - count: 4980
+      value: 8
+    - count: 4211
+      value: 12
+    - count: 3032
+      value: 7
+    - count: 3029
+      value: 11
+    - count: 2179
+      value: 23
+    - count: 1773
+      value: 16
+    - count: 1551
+      value: 21
+    - count: 1368
+      value: 17
+    - count: 1132
+      value: 13
+    - count: 214
+      value: 19
+    - count: 203
+      value: 22
+    - count: 183
+      value: 24
+    - count: 135
+      value: 18
+    - count: 120
+      value: 20
+  mass_infall:
+    avg: 17323527089.63776
+    count: 594409
+    max: 39760683008
+    min: 1218309.875
+  metallicity_alpha:
+    avg: -1.6050333469618137
+    count: 594409
+    max: 0.8097853660583496
+    min: -3.9000699520111084
+  metallicity_iron:
+    avg: -1.6050333469618137
+    count: 594409
+    max: 0.8097853660583496
+    min: -3.9000699520111084
+  particle_mass_z0:
+    avg: 4421.226438024668
+    count: 594409
+    max: 23427.830078125
+    min: 1904.872314453125
+  position_x:
+    avg: 15.9699920978339
+    count: 594409
+    max: 489.6809387207031
+    min: -602.2538452148438
+  position_y:
+    avg: 29.084919389459746
+    count: 594409
+    max: 1043.407470703125
+    min: -972.3346557617188
+  position_z:
+    avg: -22.67269141577469
+    count: 594409
+    max: 665.2648315429688
+    min: -587.63427734375
+  simname:
+    others: 0
+    terms:
+    - count: 96590
+      value: 0
+    - count: 91097
+      value: 3
+    - count: 81717
+      value: 6
+    - count: 72094
+      value: 2
+    - count: 71800
+      value: 9
+    - count: 54613
+      value: 1
+    - count: 47705
+      value: 8
+    - count: 39169
+      value: 4
+    - count: 33574
+      value: 7
+    - count: 6050
+      value: 5
+  st_index:
+    avg: 12934869.626257341
+    count: 594409
+    max: 56340701
+    min: 3970.0
+  stellar_mass_infall:
+    avg: 137349062.50970617
+    count: 594409
+    max: 270981152
+    min: -1.0
+  stellar_mass_peak:
+    avg: 219087570.87132654
+    count: 594409
+    max: 438216288
+    min: 299982.75
+  stellar_mass_z0:
+    avg: 226223177.73010603
+    count: 594409
+    max: 457677568
+    min: 290795.375
+  t_infall:
+    avg: 6.679230961915837
+    count: 594409
+    max: 12.062024116516113
+    min: 2.491640090942383
+  t_peak:
+    avg: 4.040540772927989
+    count: 594409
+    max: 11.927688598632812
+    min: 0.29930543899536133
+  t_stream:
+    avg: 3.9853080717644573
+    count: 594409
+    max: 11.267454147338867
+    min: 0.31256115436553955
+  velocity_x:
+    avg: -12.01872449275959
+    count: 594409
+    max: 626.7008056640625
+    min: -480.21246337890625
+  velocity_y:
+    avg: -15.982639767804649
+    count: 594409
+    max: 458.02435302734375
+    min: -594.99853515625
+  velocity_z:
+    avg: 0.37750135340459856
+    count: 594409
+    max: 589.276123046875
+    min: -459.95989990234375
+scsam:
+  B_rest:
+    avg: -17.50354247982523
+    count: 34312506
+    max: -11.475235939025879
+    min: -26.304611206054688
+  B_rest_bulge:
+    avg: 3.7942769625701103
+    count: 34312506
+    max: 99.9000015258789
+    min: -25.510726928710938
+  B_rest_dust:
+    avg: -17.287232875651235
+    count: 34312506
+    max: -10.742215156555176
+    min: -25.49715232849121
+  CFHTLS_u:
+    avg: 30.307241862840506
+    count: 34312506
+    max: 65.7907943725586
+    min: 13.027050971984863
+  CFHTLS_u_bulge:
+    avg: 45.68198193442878
+    count: 34312506
+    max: 99.9000015258789
+    min: 15.605817794799805
+  CFHTLS_u_dust:
+    avg: 31.0304500656241
+    count: 34312506
+    max: 132.5479736328125
+    min: 13.790473937988281
+  H_rest:
+    avg: -17.729587952089474
+    count: 34312506
+    max: -12.541720390319824
+    min: -27.026676177978516
+  H_rest_bulge:
+    avg: 3.313812708961603
+    count: 34312506
+    max: 99.9000015258789
+    min: -25.784574508666992
+  H_rest_dust:
+    avg: -17.695319178326244
+    count: 34312506
+    max: -12.541720390319824
+    min: -26.88269805908203
+  I_rest:
+    avg: -17.770464984769657
+    count: 34312506
+    max: -12.486886978149414
+    min: -26.58820915222168
+  I_rest_bulge:
+    avg: 3.3269962276645955
+    count: 34312506
+    max: 99.9000015258789
+    min: -25.287200927734375
+  I_rest_dust:
+    avg: -17.65815526158112
+    count: 34312506
+    max: -12.257065773010254
+    min: -26.11494255065918
+  J_rest:
+    avg: -17.73407959284188
+    count: 34312506
+    max: -12.526829719543457
+    min: -26.882843017578125
+  J_rest_bulge:
+    avg: 3.326984127349275
+    count: 34312506
+    max: 99.9000015258789
+    min: -25.65305519104004
+  J_rest_dust:
+    avg: -17.67573511522379
+    count: 34312506
+    max: -12.526829719543457
+    min: -26.63747215270996
+  K_rest:
+    avg: -17.373147306873598
+    count: 34312506
+    max: -12.148200988769531
+    min: -26.800371170043945
+  K_rest_bulge:
+    avg: 3.607800349014801
+    count: 34312506
+    max: 99.9000015258789
+    min: -25.5802001953125
+  K_rest_dust:
+    avg: -17.35699233700771
+    count: 34312506
+    max: -12.148200988769531
+    min: -26.732311248779297
+  R_rest:
+    avg: -17.707973314528807
+    count: 34312506
+    max: -12.261656761169434
+    min: -26.470800399780273
+  R_rest_bulge:
+    avg: 3.4304414489478177
+    count: 34312506
+    max: 99.9000015258789
+    min: -25.194244384765625
+  R_rest_dust:
+    avg: -17.561613290987044
+    count: 34312506
+    max: -11.80182933807373
+    min: -25.85436248779297
+  UKIRT_H:
+    avg: 26.933142176474234
+    count: 34312506
+    max: 29.045692443847656
+    min: 11.237992286682129
+  UKIRT_H_bulge:
+    avg: 41.02584204575521
+    count: 34312506
+    max: 99.9000015258789
+    min: 12.36046314239502
+  UKIRT_H_dust:
+    avg: 27.140534346849766
+    count: 34312506
+    max: 29.0797119140625
+    min: 11.347131729125977
+  UKIRT_J:
+    avg: 27.143733694776323
+    count: 34312506
+    max: 34.134483337402344
+    min: 11.369576454162598
+  UKIRT_J_bulge:
+    avg: 41.41203189741134
+    count: 34312506
+    max: 99.9000015258789
+    min: 12.563801765441895
+  UKIRT_J_dust:
+    avg: 27.402873980190147
+    count: 34312506
+    max: 34.30289840698242
+    min: 11.54808521270752
+  UKIRT_K:
+    avg: 26.827836769260298
+    count: 34312506
+    max: 29.393905639648438
+    min: 11.535063743591309
+  UKIRT_K_bulge:
+    avg: 40.77296179491387
+    count: 34312506
+    max: 99.9000015258789
+    min: 12.569540977478027
+  UKIRT_K_dust:
+    avg: 26.982143431237695
+    count: 34312506
+    max: 29.428926467895508
+    min: 11.585895538330078
+  UV1500_rest:
+    avg: -16.368035439775788
+    count: 34312506
+    max: -5.548689365386963
+    min: -26.152496337890625
+  UV1500_rest_bulge:
+    avg: 6.351758295905977
+    count: 34312506
+    max: 99.9000015258789
+    min: -25.88637924194336
+  UV1500_rest_dust:
+    avg: -15.926662439810498
+    count: 34312506
+    max: -5.548689365386963
+    min: -24.82285499572754
+  UV2300_rest:
+    avg: -16.4533033203734
+    count: 34312506
+    max: -8.368142127990723
+    min: -26.111408233642578
+  UV2300_rest_bulge:
+    avg: 5.543173206886515
+    count: 34312506
+    max: 99.9000015258789
+    min: -25.835649490356445
+  UV2300_rest_dust:
+    avg: -16.102777308452616
+    count: 34312506
+    max: -8.368142127990723
+    min: -24.97441291809082
+  UV2800_rest:
+    avg: -16.549927789244812
+    count: 34312506
+    max: -9.414748191833496
+    min: -25.95033073425293
+  UV2800_rest_bulge:
+    avg: 5.143128166398754
+    count: 34312506
+    max: 99.9000015258789
+    min: -25.657209396362305
+  UV2800_rest_dust:
+    avg: -16.24014529036207
+    count: 34312506
+    max: -8.968144416809082
+    min: -24.95162582397461
+  U_rest:
+    avg: -16.835325965318034
+    count: 34312506
+    max: -10.485456466674805
+    min: -25.795047760009766
+  U_rest_bulge:
+    avg: 4.5635985155362135
+    count: 34312506
+    max: 99.9000015258789
+    min: -25.46786117553711
+  U_rest_dust:
+    avg: -16.572709721377652
+    count: 34312506
+    max: -9.661640167236328
+    min: -25.007274627685547
+  V_rest:
+    avg: -17.638036705380802
+    count: 34312506
+    max: -12.019998550415039
+    min: -26.40752410888672
+  V_rest_bulge:
+    avg: 3.5460953487675018
+    count: 34312506
+    max: 99.9000015258789
+    min: -25.306028366088867
+  V_rest_dust:
+    avg: -17.465554586021625
+    count: 34312506
+    max: -11.404806137084961
+    min: -25.68062400817871
+  V_vir:
+    avg: 132.7148061464003
+    count: 34312506
+    max: 1397.78466796875
+    min: 28.438817977905273
+  Z_hot_halo:
+    avg: 0.14869427822429698
+    count: 34312506
+    max: 5.814774036407471
+    min: 0.001000002957880497
+  Zcold:
+    avg: 3.537385555144968
+    count: 34312506
+    max: 3794.619873046875
+    min: 0.0
+  Zstar:
+    avg: 0.13414670377377536
+    count: 34312506
+    max: 3.004767894744873
+    min: 0.0036403078120201826
+  acsf435w:
+    avg: 29.68257698119097
+    count: 34312506
+    max: 66.20630645751953
+    min: 12.520867347717285
+  acsf435w_bulge:
+    avg: 44.87483863099485
+    count: 34312506
+    max: 99.9000015258789
+    min: 14.882798194885254
+  acsf435w_dust:
+    avg: 30.222484562500423
+    count: 34312506
+    max: 67.36783599853516
+    min: 13.205717086791992
+  acsf606w:
+    avg: 28.41684837319915
+    count: 34312506
+    max: 67.0611343383789
+    min: 11.97351360321045
+  acsf606w_bulge:
+    avg: 43.211350316902
+    count: 34312506
+    max: 99.9000015258789
+    min: 13.754087448120117
+  acsf606w_dust:
+    avg: 28.84495844097303
+    count: 34312506
+    max: 68.17304992675781
+    min: 12.478900909423828
+  acsf775w:
+    avg: 27.855022840869825
+    count: 34312506
+    max: 66.36935424804688
+    min: 11.645051956176758
+  acsf775w_bulge:
+    avg: 42.43196528551461
+    count: 34312506
+    max: 99.9000015258789
+    min: 13.21717357635498
+  acsf775w_dust:
+    avg: 28.217455560809412
+    count: 34312506
+    max: 67.58551788330078
+    min: 12.009345054626465
+  acsf814w:
+    avg: 27.750317113619914
+    count: 34312506
+    max: 64.8248519897461
+    min: 11.601763725280762
+  acsf814w_bulge:
+    avg: 42.30944850128581
+    count: 34312506
+    max: 99.9000015258789
+    min: 13.141718864440918
+  acsf814w_dust:
+    avg: 28.102102605049453
+    count: 34312506
+    max: 66.00808715820312
+    min: 11.946451187133789
+  acsf850lp:
+    avg: 27.560956042880832
+    count: 34312506
+    max: 49.38285446166992
+    min: 11.483602523803711
+  acsf850lp_bulge:
+    avg: 42.04477584935828
+    count: 34312506
+    max: 99.9000015258789
+    min: 12.92267894744873
+  acsf850lp_dust:
+    avg: 27.887183629175244
+    count: 34312506
+    max: 50.39195251464844
+    min: 11.776971817016602
+  c_NFW:
+    avg: 4.792204513180266
+    count: 34312506
+    max: 15.73041820526123
+    min: 1.0721830129623413
+  cosi:
+    avg: 0.7908873394700318
+    count: 34312506
+    max: 1.0
+    min: 0.009999999776482582
+  count: 34312506
+  ctio_U:
+    avg: 30.62446589148926
+    count: 34312506
+    max: 66.31903076171875
+    min: 13.128270149230957
+  ctio_U_bulge:
+    avg: 46.05771488788321
+    count: 34312506
+    max: 99.9000015258789
+    min: 15.719719886779785
+  ctio_U_dust:
+    avg: 31.517001610392228
+    count: 34312506
+    max: 185.34507751464844
+    min: 13.907492637634277
+  dec:
+    avg: 10.365576163068832
+    count: 34312506
+    max: 62.590789794921875
+    min: -28.237558364868164
+  field:
+    others: 0
+    terms:
+    - count: 10226598
+      value: 3
+    - count: 8059363
+      value: 4
+    - count: 6547109
+      value: 2
+    - count: 4995405
+      value: 1
+    - count: 4484031
+      value: 0
+  gal_id:
+    avg: 29.241707935876207
+    count: 34312506
+    max: 9193.0
+    min: 1.0
+  gal_type:
+    avg: 0.5736378450469342
+    count: 34312506
+    max: 2.0
+    min: 0.0
+  galex_FUV:
+    avg: 33.80661102287179
+    count: 34312506
+    max: 50.49751663208008
+    min: 13.814650535583496
+  galex_FUV_bulge:
+    avg: 49.202399055956654
+    count: 34312506
+    max: 99.9000015258789
+    min: 17.271455764770508
+  galex_FUV_dust:
+    avg: 43.796342307118074
+    count: 34312163
+    max: 759.66552734375
+    min: 15.199054718017578
+  galex_NUV:
+    avg: 32.49543932798248
+    count: 34312506
+    max: 51.84549331665039
+    min: 13.845902442932129
+  galex_NUV_bulge:
+    avg: 48.30133692188139
+    count: 34312506
+    max: 99.9000015258789
+    min: 17.18222427368164
+  galex_NUV_dust:
+    avg: 35.28633931159936
+    count: 34312506
+    max: 464.1626892089844
+    min: 14.958285331726074
+  halo_id_nbody:
+    avg: 987246140.0572464
+    count: 34312506
+    max: 2806878160
+    min: 4243646.0
+  irac_ch1:
+    avg: 26.873039849776617
+    count: 34312506
+    max: 29.814882278442383
+    min: 12.312700271606445
+  irac_ch1_bulge:
+    avg: 40.7032923619327
+    count: 34312506
+    max: 99.9000015258789
+    min: 13.325563430786133
+  irac_ch1_dust:
+    avg: 26.959548629765244
+    count: 34312506
+    max: 29.858545303344727
+    min: 12.312700271606445
+  irac_ch2:
+    avg: 26.998637623202807
+    count: 34312506
+    max: 30.008235931396484
+    min: 12.774675369262695
+  irac_ch2_bulge:
+    avg: 40.78627870752707
+    count: 34312506
+    max: 99.9000015258789
+    min: 13.731742858886719
+  irac_ch2_dust:
+    avg: 27.05959693571396
+    count: 34312506
+    max: 30.024206161499023
+    min: 12.774675369262695
+  m_hot_halo:
+    avg: 25.911645632039118
+    count: 34312506
+    max: 7841.76806640625
+    min: 1.2837367280305045e-10
+  m_vir:
+    avg: 210.006505310632
+    count: 34312506
+    max: 55501.4765625
+    min: 1.0057522058486938
+  maccdot:
+    avg: 0.0019193810510065668
+    count: 34312506
+    max: 176.284912109375
+    min: 0.0
+  maccdot_radio:
+    avg: 0.00015978086977787266
+    count: 34312506
+    max: 31.353092193603516
+    min: 0.0
+  mbh:
+    avg: 0.0004108800274278468
+    count: 34312506
+    max: 7.5667033195495605
+    min: 1.0001001555792755e-06
+  mbulge:
+    avg: 0.07470282468775347
+    count: 34312506
+    max: 55.674312591552734
+    min: 0.0
+  mcold:
+    avg: 0.20941606295064272
+    count: 34312506
+    max: 117.06318664550781
+    min: -67.7582778930664
+  meanage:
+    avg: 1.435633045362547
+    count: 34312506
+    max: 11.394265174865723
+    min: 0.013541866093873978
+  mhalo:
+    avg: 12.611038745662443
+    count: 34312506
+    max: 55501.4765625
+    min: 0.8324587345123291
+  mstar:
+    avg: 0.1660133013274489
+    count: 34312506
+    max: 120.01336669921875
+    min: 0.0010000012116506696
+  mstar_diffuse:
+    avg: 0.8640708819158234
+    count: 34312506
+    max: 301.9010009765625
+    min: 0.0
+  mstardot:
+    avg: 1.7951644852257722
+    count: 34312506
+    max: 3411.162841796875
+    min: 0.0
+  musyc_u38:
+    avg: 30.720459317520667
+    count: 34312506
+    max: 65.58953857421875
+    min: 13.231877326965332
+  musyc_u38_bulge:
+    avg: 46.19577010109467
+    count: 34312506
+    max: 99.9000015258789
+    min: 15.812453269958496
+  musyc_u38_dust:
+    avg: 31.660391874825667
+    count: 34312506
+    max: 201.66262817382812
+    min: 14.025777816772461
+  r_disk:
+    avg: 0.9839287841492182
+    count: 34312506
+    max: 57.47951889038086
+    min: 0.10381218045949936
+  r_vir:
+    avg: 0.08380900294085818
+    count: 34312506
+    max: 1.5337233543395996
+    min: 0.0071807075291872025
+  ra:
+    avg: 110.9294214178931
+    count: 34312506
+    max: 215.6332244873047
+    min: 34.00066375732422
+  rbulge:
+    avg: 0.08622728543497865
+    count: 34312506
+    max: 29.781173706054688
+    min: 0.0
+  realization:
+    avg: 3.4786024664010258
+    count: 34312506
+    max: 7.0
+    min: 0.0
+  redshift:
+    avg: 2.265207301071658
+    count: 34312506
+    max: 10.008848190307617
+    min: 0.003703000023961067
+  sdss_g:
+    avg: 29.399319343971346
+    count: 34312506
+    max: 74.57049560546875
+    min: 12.286225318908691
+  sdss_g_bulge:
+    avg: 44.34911009513786
+    count: 34312506
+    max: 99.9000015258789
+    min: 14.374810218811035
+  sdss_g_dust:
+    avg: 29.948912580670417
+    count: 34312506
+    max: 126.43421173095703
+    min: 12.908453941345215
+  sdss_i:
+    avg: 27.883548810988643
+    count: 34312506
+    max: 99.01026153564453
+    min: 11.653909683227539
+  sdss_i_bulge:
+    avg: 42.45235164869883
+    count: 34312506
+    max: 106.94747924804688
+    min: 13.232224464416504
+  sdss_i_dust:
+    avg: 28.247711080739247
+    count: 34312506
+    max: 101.77526092529297
+    min: 12.02155590057373
+  sdss_r:
+    avg: 28.440122813775364
+    count: 34312506
+    max: 94.87345123291016
+    min: 11.877866744995117
+  sdss_r_bulge:
+    avg: 43.099933590384204
+    count: 34312506
+    max: 104.79039001464844
+    min: 13.58535099029541
+  sdss_r_dust:
+    avg: 28.85908822303756
+    count: 34312506
+    max: 112.47953033447266
+    min: 12.349891662597656
+  sdss_u:
+    avg: 30.8003433868113
+    count: 34312506
+    max: 63.49117660522461
+    min: 13.316024780273438
+  sdss_u_bulge:
+    avg: 46.322412196380114
+    count: 34312506
+    max: 99.9000015258789
+    min: 15.955642700195312
+  sdss_u_dust:
+    avg: 31.788818983393632
+    count: 34312506
+    max: 198.73927307128906
+    min: 14.127572059631348
+  sdss_z:
+    avg: 27.53357697325921
+    count: 34312506
+    max: 44.350101470947266
+    min: 11.473382949829102
+  sdss_z_bulge:
+    avg: 42.00994214927041
+    count: 34312506
+    max: 99.9000015258789
+    min: 12.899177551269531
+  sdss_z_dust:
+    avg: 27.85653430734584
+    count: 34312506
+    max: 45.019710540771484
+    min: 11.761087417602539
+  sfr_ave:
+    avg: 1.6895936478396356
+    count: 34312506
+    max: 655.7974853515625
+    min: 0.0
+  sigma_bulge:
+    avg: 86.20483519022011
+    count: 34312506
+    max: 6022.87451171875
+    min: 8.55447006225586
+  spin:
+    avg: 0.03640569954174862
+    count: 34312506
+    max: 0.16482475399971008
+    min: 0.02000000700354576
+  tmajmerge:
+    avg: 2.0295978791573006
+    count: 18938922
+    max: 12.870736122131348
+    min: 0.0
+  tmerge:
+    avg: 1.2023425541637651
+    count: 28657653
+    max: 12.105171203613281
+    min: 0.0
+  v_disk:
+    avg: 89.6092407557112
+    count: 34312506
+    max: 1399.008544921875
+    min: 29.34376335144043
+  wfc3f105w:
+    avg: 27.342879606800658
+    count: 34312506
+    max: 40.126033782958984
+    min: 11.404458045959473
+  wfc3f105w_bulge:
+    avg: 41.72775641368316
+    count: 34312506
+    max: 99.9000015258789
+    min: 12.694465637207031
+  wfc3f105w_dust:
+    avg: 27.637420518614828
+    count: 34312506
+    max: 40.67185974121094
+    min: 11.64157772064209
+  wfc3f125w:
+    avg: 27.148487795141406
+    count: 34312506
+    max: 30.81387710571289
+    min: 11.369303703308105
+  wfc3f125w_bulge:
+    avg: 41.418895693903806
+    count: 34312506
+    max: 99.9000015258789
+    min: 12.571388244628906
+  wfc3f125w_dust:
+    avg: 27.4085873088748
+    count: 34312506
+    max: 30.95016098022461
+    min: 11.55025577545166
+  wfc3f160w:
+    avg: 26.970576778264082
+    count: 34312506
+    max: 28.999996185302734
+    min: 11.27203369140625
+  wfc3f160w_bulge:
+    avg: 41.10161324657474
+    count: 34312506
+    max: 99.9000015258789
+    min: 12.443769454956055
+  wfc3f160w_dust:
+    avg: 27.189745842655714
+    count: 34312506
+    max: 29.0
+    min: 11.395471572875977
+  wfc3f275w:
+    avg: 31.954787370677877
+    count: 34312506
+    max: 55.27204513549805
+    min: 13.824233055114746
+  wfc3f275w_bulge:
+    avg: 47.7809681462634
+    count: 34312506
+    max: 99.9000015258789
+    min: 17.135107040405273
+  wfc3f275w_dust:
+    avg: 33.92996682709484
+    count: 34312506
+    max: 368.2400207519531
+    min: 14.81710433959961
+  wfc3f336w:
+    avg: 31.06238270414053
+    count: 34312506
+    max: 61.60350799560547
+    min: 13.478875160217285
+  wfc3f336w_bulge:
+    avg: 46.68370578130239
+    count: 34312506
+    max: 99.9000015258789
+    min: 16.25918960571289
+  wfc3f336w_dust:
+    avg: 32.20403743475346
+    count: 34312506
+    max: 237.88075256347656
+    min: 14.330680847167969
+  z_nopec:
+    avg: 2.2652052607018414
+    count: 34312506
+    max: 9.999592781066895
+    min: 0.0036039999686181545
+unimach:
+  A_UV:
+    avg: 0.353092357758341
+    count: 250614266
+    max: 28.024999618530273
+    min: 0.0
+  Dec:
+    avg: 10.310137767639228
+    count: 250614266
+    max: 62.496673583984375
+    min: -28.159330368041992
+  DescID:
+    avg: 211728476286279.03
+    count: 250614266
+    max: 141000000093944336
+    min: 5841729.0
+  ICL:
+    avg: 0.000150697342088153
+    count: 250614266
+    max: 49.84000015258789
+    min: -8545.0
+  ID:
+    avg: 198581934979963.28
+    count: 250614266
+    max: 140000000093944336
+    min: 4232382.0
+  M:
+    avg: 2.1513385138008547
+    count: 250614266
+    max: 72500.0
+    min: 0.007548000197857618
+  MP:
+    avg: 2.3930604504419635
+    count: 250614266
+    max: 72500.0
+    min: 0.045570001006126404
+  R:
+    avg: 0.018506102110963377
+    count: 250614266
+    max: 1.8007760047912598
+    min: 0.0022295962553471327
+  RA:
+    avg: 110.78316000045062
+    count: 250614266
+    max: 215.63821411132812
+    min: 34.06352233886719
+  Rank1:
+    avg: 0.013423161350566157
+    count: 250614266
+    max: 19.79899024963379
+    min: -5.637294769287109
+  SFR:
+    avg: 0.11927239038614357
+    count: 250614266
+    max: 2039.0
+    min: 0.0
+  SM:
+    avg: 0.013503720377145983
+    count: 250614266
+    max: 101.30000305175781
+    min: 1.697000005795868e-11
+  SM/HM:
+    avg: 0.0005025976958064356
+    count: 250614266
+    max: 0.2759999930858612
+    min: 3.7239999972626947e-10
+  SSFR:
+    avg: 9.475070540652133e-09
+    count: 250614266
+    max: 1.4390000160346972e-06
+    min: 0.0
+  Scale:
+    avg: 0.26770052353418766
+    count: 250614266
+    max: 0.994717001914978
+    min: 0.08937299996614456
+  UPID:
+    avg: 86702737.75864491
+    count: 250614266
+    max: 2793582574
+    min: -1.0
+  V:
+    avg: 53.50595530033412
+    count: 250614266
+    max: 1585.6600341796875
+    min: 10.100000381469727
+  VMP:
+    avg: 55.71793454804886
+    count: 250614266
+    max: 1585.6600341796875
+    min: 10.100000381469727
+  VX:
+    avg: 0.012329825436059257
+    count: 250614266
+    max: 2915.25
+    min: -3110.012451171875
+  VY:
+    avg: 0.46486628283731124
+    count: 250614266
+    max: 3212.072998046875
+    min: -2952.58935546875
+  VZ:
+    avg: 0.7391519269254752
+    count: 250614266
+    max: 2784.71240234375
+    min: -3565.58642578125
+  X:
+    avg: 4378.640718209738
+    count: 250614266
+    max: 6552.7197265625
+    min: 13.436010360717773
+  Y:
+    avg: -0.0038620427856927582
+    count: 250614266
+    max: 37.12408447265625
+    min: -37.15690612792969
+  Z:
+    avg: 0.022887968767863136
+    count: 250614266
+    max: 43.815185546875
+    min: -43.807861328125
+  Z(cosmo):
+    avg: 3.4633282291846887
+    count: 250614266
+    max: 9.999999046325684
+    min: 0.004486000165343285
+  Z(los):
+    avg: 3.4633321919383224
+    count: 250614266
+    max: 10.010534286499023
+    min: 0.0044639999978244305
+  count: 250614266
+  field:
+    others: 0
+    terms:
+    - count: 74745712
+      value: 3
+    - count: 59134932
+      value: 4
+    - count: 47490847
+      value: 2
+    - count: 36673486
+      value: 1
+    - count: 32569289
+      value: 0
+  obs_SFR:
+    avg: 0.17939595997003158
+    count: 250614266
+    max: 1975.0
+    min: 0.0
+  obs_SM:
+    avg: 0.014512811508541692
+    count: 250614266
+    max: 166.0
+    min: 1.6479999656593414e-11
+  obs_UV:
+    avg: -6.86121252640558
+    count: 250614266
+    max: 0.0
+    min: -23.091999053955078
+  realization:
+    avg: 3.510300491034297
+    count: 250614266
+    max: 7.0
+    min: 0.0
