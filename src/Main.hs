@@ -160,13 +160,16 @@ main = do
       unless (all (n ==) $ catalogCount cat) $ fail $ T.unpack sim ++ ": incorrect document count"
       ES.closeIndex cat
 
-    forM_ (optStats opts) $ let f = catalogpath </> "_stats.yml" in maybe
-      (mapM_ (updateStats f False) $ catalogMap catalogs)
-      (\sim -> updateStats f True $ catalogMap catalogs HM.! sim)
-
     return $ pruneCatalogs errs catalogs
+
+  let global' = global{ globalCatalogs = catalogs' }
+
+  runGlobal global' $
+    forM_ (optStats opts) $ let f = catalogpath </> "_stats.yml" in maybe
+      (mapM_ (updateStats f False) $ catalogMap catalogs')
+      (\sim -> updateStats f True $ catalogMap catalogs' HM.! sim)
 
   when (null (optCreate opts ++ optOpen opts ++ optClose opts) && null (optStats opts) && isNothing (optIngest opts)) $
     runWaimwork conf $
-      runGlobalWai global{ globalCatalogs = catalogs' }
+      runGlobalWai global'
       . routeWaiError (\s h _ -> return $ response s h ()) routes

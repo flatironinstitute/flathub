@@ -1,5 +1,6 @@
 title: Gaia DR3 SSO
 index: gaiadr3sso
+enabled: false
 fields:
 - name: sso_observation
   ingest: _table:SsoObservation # weird source_ids, dups

@@ -1,5 +1,6 @@
 title: IllustrisTNG Subfind Subhalos
 index: tng_sub
+enabled: false
 count: 4597293249
 descr: >
   <a href='https://www.tng-project.org/'>IllustrisTNG</a> <a href='https://www.tng-project.org/data/docs/specifications/#sec2b'>Subfind Subhalo catalog</a> derived with the Subfind algorithm.
