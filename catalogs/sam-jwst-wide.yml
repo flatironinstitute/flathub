@@ -1,0 +1,1265 @@
+title: SC-SAM JWST wide-field
+synopsis: Santa Cruz semi-analytic model JWST wide-field
+descr:
+order: 'candels2-1'
+# /mnt/ceph/users/rsomerville/lyung_drives_2021Dec/PAPER_VI/JWST_CANDELS/run_20210607 
+count: 79582714
+fields:
+  - name: field
+    dict: candels_field
+    flag: top
+  - name: realization
+    dict: candels_realization
+    flag: top
+
+  - name: halo_id_nbody
+    dict: bolshoi_halo_id
+    type: long
+    descr: halo id from Bolshoi halo catalog
+  - name: gal_id
+    dict: candels_gal_id
+    type: long
+    descr: galaxy id
+  - name: gal_type
+    type: int
+    descr: 0=central, 1=satellite, 2=orphan
+  - name: z_nopec
+    dict: true_redshift
+    type: float
+    descr: redshift (without peculiar velocity)
+  - name: redshift
+    dict: redshift
+    type: float
+    descr: redshift (with peculiar velocity)
+  - name: ra
+    dict: ppos_x
+    type: float
+    units: 'deg'
+  - name: dec
+    dict: ppos_y
+    type: float
+    units: 'deg'
+  - name: m_vir
+    dict: halo_mass
+    type: float
+  - name: V_vir
+    dict: V_vir
+    type: float
+    descr: host halo virial velocity
+    units: 'km/s'
+  - name: r_vir
+    dict: R
+    title: r_vir
+    type: float
+    descr: host halo virial radius (physical coordinates)
+    units: 'Mpc'
+  - name: c_NFW
+    dict: c_NFW
+    type: float
+    descr: NFW concentration (host halo)
+  - name: spin
+    dict: spin
+    type: float
+    descr: dimensionless spin parameter (host halo)
+  - name: mstar_diffuse
+    dict: M_star_diffuse
+    type: float
+    descr: mass of stars in a 'diffuse stellar halo'
+    units: '\(10^{10}M_\odot\)'
+  - name: m_hot_halo
+    dict: M_hot_halo
+    type: float
+    descr: mass of hot gas in host halo
+    units: '\(10^{10}M_\odot\)'
+  - name: Z_hot_halo
+    dict: Z_hot_halo
+    type: float
+    descr: metallicity of hot gas in host halo
+    units: '\(Z_\odot\)'
+    missing: '-99.9'
+  - name: v_disk
+    dict: v_disk
+    type: float
+    descr: maximum rotation velocity of disk
+    units: 'km/s'
+  - name: r_disk
+    dict: r_disk
+    type: float
+    descr: scale length of disk
+    units: 'kpc'
+  - name: sigma_bulge
+    dict: sigma_bulge
+    type: float
+    descr: line-of-sight velocity dispersion of bulge
+    units: 'km/s'
+  - name: rbulge
+    dict: r_bulge
+    type: float
+    descr: effective radius of bulge (projected)
+    units: 'kpc'
+  - name: mhalo
+    dict: M
+    type: float
+    descr: mass of sub-halo (at the time it became a sub)
+    units: '\(10^{10}M_\odot\)'
+  - name: mstar
+    dict: M_stellar
+    type: float
+    descr: stellar mass
+    units: '\(10^{10}M_\odot\)'
+  - name: mcold
+    dict: M_cold
+    type: float
+    descr: mass of cold gas
+    units: '\(10^{10}M_\odot\)'
+  - name: mbulge
+    dict: M_bulge
+    type: float
+    descr: stellar mass of bulge component
+    units: '\(10^{10}M_\odot\)'
+  - name: mbh #mbh in SU SAM
+    dict: M_BH
+    type: float
+    descr: mass of black hole
+    units: '\(10^{10}M_\odot\)'
+  - name: maccdot
+    dict: BHAR
+    type: float
+    descr: total accretion rate onto black hole
+    units: '\(M_\odot\)/yr'
+  - name: maccdot_radio
+    dict: BHAR_radio
+    type: float
+    descr: BHAR associated with 'radio mode'
+    units: '\(M_\odot\)/yr'
+  - name: Zstar
+    dict: Z_star
+    type: float
+    descr: mass weighted metallicity of stars
+    units: '\(Z_\odot\)'
+  - name: Zcold
+    dict: Z_cold
+    type: float
+    descr: mass weighted metallicity of cold gas
+    units: '\(Z_\odot\)'
+  - name: mstardot
+    dict: SFR_inst
+    type: float
+    descr: instantaneous star formation rate
+    units: '\(M_\odot/yr\)'
+  - name: sfr_ave
+    dict: SFR
+    type: float
+    descr: star formation rate averaged over past 1E8 yr
+    units: '\(M_\odot/yr\)'
+    missing: '-99.9'
+  - name: meanage
+    dict: age_mean
+    type: float
+    descr: mean stellar mass weighted age of stars
+    units: 'Gyr'
+  - name: tmerge
+    dict: t_merge
+    type: float
+    descr: time since last merger greater than 1:10
+    units: 'Gyr'
+    missing: '-99.9'
+  - name: tmajmerge
+    dict: t_major_merge
+    type: float
+    descr: time since last merger greater than 1:4
+    units: 'Gyr'
+    missing: '-99.9'
+  - name: cosi
+    dict: cosi
+    type: float
+    descr: cosine of disk inclination angle
+  - name: UV1500_rest
+    type: float
+    descr: CANDELS/TOPHAT/UV1500top.dat
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+      dict: UV1500_rest
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: UV2300_rest
+    type: float
+    descr: CANDELS/TOPHAT/UV2300top.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: UV2800_rest
+    type: float
+    descr: CANDELS/TOPHAT/UV2800top.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: U_rest
+    type: float
+    descr: CANDELS/Johnson/Johnson_U.dat
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: B_rest
+    type: float
+    descr: CANDELS/Johnson/Johnson_B.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: V_rest
+    type: float
+    descr: CANDELS/Johnson/Johnson_V.dat
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: R_rest
+    type: float
+    descr: CANDELS/Johnson/Cousins_R.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: I_rest
+    type: float
+    descr: CANDELS/Johnson/Cousins_I.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: J_rest
+    type: float
+    descr: CANDELS/Johnson/Bessell_J.dat
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: H_rest
+    type: float
+    descr: CANDELS/Johnson/Bessell_H.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: K_rest
+    type: float
+    descr: CANDELS/Johnson/Bessell_K.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: galex_FUV
+    type: float
+    descr: CANDELS/GALEX/galex_FUV.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: galex_NUV
+    type: float
+    descr: CANDELS/GALEX/galex_NUV.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: sdss_u
+    type: float
+    descr: CANDELS/SDSS/sdss_u.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: sdss_g
+    type: float
+    descr: CANDELS/SDSS/sdss_g.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: sdss_r
+    type: float
+    descr: CANDELS/SDSS/sdss_r.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: sdss_i
+    type: float
+    descr: CANDELS/SDSS/sdss_i.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: sdss_z
+    type: float
+    descr: CANDELS/SDSS/sdss_z.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: acsf435w
+    type: float
+    descr: CANDELS/ACS/f435w.WFC1.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: acsf606w
+    type: float
+    descr: CANDELS/ACS/f606w.WFC1.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: acsf775w
+    type: float
+    descr: CANDELS/ACS/f775w.WFC1.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: acsf814w
+    type: float
+    descr: CANDELS/ACS/f814w.WFC1.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: acsf850lp
+    type: float
+    descr: CANDELS/ACS/f850lp.WFC1.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: wfc3f275w
+    type: float
+    descr: CANDELS/WFC3/f275w.UVIS1.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: wfc3f336w
+    type: float
+    descr: CANDELS/WFC3/f336w.UVIS1.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: wfc3f105w
+    type: float
+    descr: CANDELS/WFC3/f105w.IR.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: wfc3f125w
+    type: float
+    descr: CANDELS/WFC3/f125w.IR.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: wfc3f160w
+    type: float
+    descr: CANDELS/WFC3/f160w.IR.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: ctio_U
+    type: float
+    descr: CANDELS/CTIO/U_ctio_mosaic_tot.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: CFHTLS_u
+    type: float
+    descr: CANDELS/CFHTLS/uMega.fil
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: musyc_u38
+    type: float
+    descr: CANDELS/MUSYC/ecdfs.U38.filt.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: UKIRT_J
+    type: float
+    descr: CANDELS/UKIRT/J_filter.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: UKIRT_H
+    type: float
+    descr: CANDELS/UKIRT/H_filter.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: UKIRT_K
+    type: float
+    descr: CANDELS/UKIRT/K_filter.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: irac_ch1
+    type: float
+    descr: CANDELS/IRAC/irac_ch1.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: irac_ch2
+    type: float
+    descr: CANDELS/IRAC/irac_ch2.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: NIRCam_F070W
+    type: float
+    descr: JWST/NIRCam_broad/F070W.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: NIRCam_F090W
+    type: float
+    descr: JWST/NIRCam_broad/F090W.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: NIRCam_F115W
+    type: float
+    descr: JWST/NIRCam_broad/F115W.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: NIRCam_F150W
+    type: float
+    descr: JWST/NIRCam_broad/F150W.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: NIRCam_F200W
+    type: float
+    descr: JWST/NIRCam_broad/F200W.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: NIRCam_F277W
+    type: float
+    descr: JWST/NIRCam_broad/F277W.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: NIRCam_F356W
+    type: float
+    descr: JWST/NIRCam_broad/F356W.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: NIRCam_F444W
+    type: float
+    descr: JWST/NIRCam_broad/F444W.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: NIRCam_F140M
+    type: float
+    descr: JWST/NIRCam_medium/F140M.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: NIRCam_F162M
+    type: float
+    descr: JWST/NIRCam_medium/F162M.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: NIRCam_F182M
+    type: float
+    descr: JWST/NIRCam_medium/F182M.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: NIRCam_F210M
+    type: float
+    descr: JWST/NIRCam_medium/F210M.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: NIRCam_F250M
+    type: float
+    descr: JWST/NIRCam_medium/F250M.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: NIRCam_F335M
+    type: float
+    descr: JWST/NIRCam_medium/F335M.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: NIRCam_F360M
+    type: float
+    descr: JWST/NIRCam_medium/F360M.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: NIRCam_F410M
+    type: float
+    descr: JWST/NIRCam_medium/F410M.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: NIRCam_F430M
+    type: float
+    descr: JWST/NIRCam_medium/F430M.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: NIRCam_F460M
+    type: float
+    descr: JWST/NIRCam_medium/F460M.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: NIRCam_F480M
+    type: float
+    descr: JWST/NIRCam_medium/F480M.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: Euclid_VIS
+    type: float
+    descr: Euclid/VIS.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: Euclid_Y
+    type: float
+    descr: Euclid/Y.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: Euclid_J
+    type: float
+    descr: Euclid/J.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: Euclid_H
+    type: float
+    descr: Euclid/H.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: Roman_F062
+    type: float
+    descr: RST/F062.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: Roman_F087
+    type: float
+    descr: RST/F087.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: Roman_F106
+    type: float
+    descr: RST/F106.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: Roman_F129
+    type: float
+    descr: RST/F129.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: Roman_F146
+    type: float
+    descr: RST/F146.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: Roman_F158
+    type: float
+    descr: RST/F158.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: Roman_F184
+    type: float
+    descr: RST/F184.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: LSST_u
+    type: float
+    descr: LSST/u.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: LSST_g
+    type: float
+    descr: LSST/g.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: LSST_r
+    type: float
+    descr: LSST/r.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: LSST_i
+    type: float
+    descr: LSST/i.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: LSST_z
+    type: float
+    descr: LSST/z.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: LSST_y
+    type: float
+    descr: LSST/y.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: DECam_u
+    type: float
+    descr: SHELA/DECam_u.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: DECam_g
+    type: float
+    descr: SHELA/DECam_g.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: DECam_r
+    type: float
+    descr: SHELA/DECam_r.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: DECam_i
+    type: float
+    descr: SHELA/DECam_i.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: DECam_z
+    type: float
+    descr: SHELA/DECam_z.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: DECam_Y
+    type: float
+    descr: SHELA/DECam_y.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: NEWFIRM_K_atm
+    type: float
+    descr: SHELA/NEWFIRM_K_atm.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: VISTA_z
+    type: float
+    descr: SHELA/VISTA_z.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: VISTA_Y
+    type: float
+    descr: SHELA/VISTA_Y.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: VISTA_J
+    type: float
+    descr: SHELA/VISTA_J.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: VISTA_H
+    type: float
+    descr: SHELA/VISTA_H.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
+  - name: VISTA_Ks
+    type: float
+    descr: SHELA/VISTA_Ks.dat
+    flag: hidden
+    units: 'mag'
+    missing: '99.9'
+    sub:
+    - name: ""
+      descr: total galaxy magnitude, without extinction
+    - name: "bulge"
+      descr: magnitude of bulge only, without extinction
+    - name: "dust"
+      descr: galaxy magnitude, including extinction by dust
