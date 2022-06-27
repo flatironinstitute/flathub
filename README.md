@@ -30,7 +30,7 @@ There is also a [docker-compose](docker-compose.yml) definition for installing e
 Notes: 
 - For macOS installations:
    - Install hdf5 with `brew install hdf5@1.10` 
-   - Run `stack install` with the ` --extra-include-dirs=/usr/local/opt/hdf5@1.10/include` `--extra-lib-dirs=/usr/local/opt/hdf5@1.10/lib`
+   - Run `stack install --extra-include-dirs=/usr/local/opt/hdf5@1.10/include --extra-lib-dirs=/usr/local/opt/hdf5@1.10/lib`
    - If brew is not installed in the default location use the appropriate path for the above flags.
 - For internal FI use: 
    elasticsearch {
