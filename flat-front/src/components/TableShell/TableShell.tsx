@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { ResponseCatalog } from '../../types/Response';
 import { Service } from '../../types/Service';
-import useSingleCatalogService from '../../useSingleCatalogService';
+import useGaiaService from '../../useGaiaService';
 
 const TableShell: React.FC<{}> = () => {
-  const service: any = useSingleCatalogService();
+  const service: {
+    status: string;
+    payload?: any;
+  } = useGaiaService();
 
-  console.log('🪨🪨🪨', service);
+  console.log('🪨', service);
 
   return (
     <div className="h-full flex">

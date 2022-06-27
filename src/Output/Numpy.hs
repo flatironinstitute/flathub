@@ -42,18 +42,19 @@ numpyBuild :: Field -> TypeValue Maybe -> B.Builder
 numpyBuild _ (Double    x) = B.doubleLE $ fromMaybe (unsafeCoerce (0x7ff80000ffffffff::Word64)) x
 numpyBuild _ (Float     x) = B.floatLE  $ fromMaybe (unsafeCoerce (0x7fc0ffff::Word32)) x
 numpyBuild _ (HalfFloat x) = B.word16LE $ maybe 0x7cff getHalf' x
-numpyBuild _ (Long      x) = B.int64LE  $ fromMaybe (-1) x
+numpyBuild _ (Long      x) = B.int64LE  $ fromMaybe minBound x
 numpyBuild _ (ULong     x) = B.word64LE $ fromMaybe maxBound x
-numpyBuild _ (Integer   x) = B.int32LE  $ fromMaybe (-1) x
-numpyBuild _ (Short     x) = B.int16LE  $ fromMaybe (-1) x
-numpyBuild _ (Byte      x) = B.int8     $ fromMaybe (-1) x
+numpyBuild _ (Integer   x) = B.int32LE  $ fromMaybe minBound x
+numpyBuild _ (Short     x) = B.int16LE  $ fromMaybe minBound x
+numpyBuild _ (Byte      x) = B.int8     $ fromMaybe minBound x
 numpyBuild _ (Boolean Nothing) = B.int8 0
 numpyBuild _ (Boolean (Just False)) = B.int8 0
 numpyBuild _ (Boolean (Just True)) = B.int8 1
 numpyBuild f (Keyword   x) = numpyString (fieldSize f) x
 numpyBuild _ (Void      _) = mempty
 numpyBuild f (Array     x) = V.foldMap (numpyBuild f) $ traverseTypeValue (pad . fromMaybe V.empty . getCompose) x where
-   pad v = V.map Just v V.++ V.replicate (fromIntegral (fieldLength f) - V.length v) Nothing
+   pad v = V.map Just (V.take l' v) V.++ V.replicate (l' - V.length v) Nothing
+   l' = fromIntegral (fieldLength f)
 
 numpyRowSize :: [Field] -> Word
 numpyRowSize = sum . map nfs where
@@ -74,7 +75,7 @@ numpyHeader fields count = (B.string8 "\147NUMPY"
   header = "{'descr':["
     <> mintersperseMap (B.char7 ',') field fields 
     <> "],'fortran_order':False,'shape':(" <> B.wordDec count <> ",)}"
-  field f = B.char7 '(' <> jenc (fieldName f) <> B.char7 ',' <> B.char7 '\'' <> B.string7 (numpyDtype f) <> B.char7 '\'' <> array f <> B.char7 ')'
+  field f = B.char7 '(' <> jenc (fieldName f) <> ",'<" <> B.string7 (numpyDtype f) <> B.char7 '\'' <> array f <> B.char7 ')'
   array f@Field{ fieldType = Array _ } = ",(" <> B.wordDec (fieldLength f) <> ",)"
   array _ = mempty
   len = succ $ BSL.length $ B.toLazyByteString header
@@ -84,7 +85,7 @@ numpyHeader fields count = (B.string8 "\147NUMPY"
   jenc = J.fromEncoding . J.toEncoding -- json is similar enough to python for most things
 
 numpyValue :: Field -> J.Value -> B.Builder
-numpyValue f = numpyBuild f . parseTypeJSONValue (fieldType f)
+numpyValue f j = numpyBuild f $ fmapTypeValue (\_ -> J.parseMaybe parseJSONValue j) (fieldType f)
 
 unconsJ :: [J.Value] -> (J.Value, [J.Value])
 unconsJ [] = (J.Null, [])
@@ -99,7 +100,7 @@ numpyValueRow f v = fold $ V.zipWith numpyBuild f v
 
 numpyGenerator :: Catalog -> DataArgs V.Vector -> M OutputStream
 numpyGenerator cat args = do
-  (count, _) <- queryStats cat (StatsArgs (dataFilters args) mempty)
+  count <- queryCount cat (dataFilters args)
   let (header, size) = numpyHeader (V.toList $ dataFields args) count
   outputStreamRows
     (Just size)
@@ -112,6 +113,6 @@ numpyOutput :: OutputFormat
 numpyOutput = OutputFormat
   { outputMimeType = "application/x-npy"
   , outputExtension = "npy"
-  , outputDescription = "Numpy binary array file containing a 1-d array of structured data types representing the fields in each row"
+  , outputDescription = "Numpy binary array file containing a 1-d array of structured data types representing the fields in each row; missing values are generally represented by NaN or extreme values"
   , outputGenerator = \_ -> numpyGenerator
   }

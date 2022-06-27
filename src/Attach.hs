@@ -68,7 +68,7 @@ pathFields = mapMaybe pathField where
   pathField _ = mempty
 
 attachmentFields :: Catalog -> Field -> [Field]
-attachmentFields cat f@Field{ fieldDesc = FieldDesc{ fieldDescAttachment = Just (Attachment p n) } } =
+attachmentFields cat f@Field{ fieldAttachment = Just (Attachment p n) } =
   f : mapMaybe (`HM.lookup` catalogFieldMap cat) (pathFields p ++ pathFields n)
 attachmentFields _ _ = []
 
@@ -114,7 +114,7 @@ attachmentsBulkStream :: BS.ByteString -> [Field] -> IO (Word, V.Vector J.Object
 attachmentsBulkStream info ats next = do
   dir <- asks globalDataDir
   let ents doc = catMaybes <$> mapM (ent doc) ats
-      ent doc af@Field{ fieldDesc = FieldDesc{ fieldDescAttachment = ~(Just a) } } =
+      ent doc af@Field{ fieldAttachment = ~(Just a) } =
         case HM.lookup (fieldName af) doc of
           Just (J.Bool True) -> enta a doc
           Just (J.Number n) | n > 0 -> enta a doc
@@ -145,7 +145,7 @@ attachmentsFilter :: DataArgs V.Vector -> DataArgs V.Vector
 attachmentsFilter args = case V.toList (dataFields args) of
   [f@Field{ fieldType = Boolean _ }] -> args
     { dataFilters = (dataFilters args)
-      { filterFields = KM.insertWith (const id) f{ fieldType = Boolean (FieldEQ [True]) }
+      { filterFields = KM.insertWith (const id) (setFieldValue f (Boolean (FieldEQ [True])))
         $ filterFields $ dataFilters args
       }
     }
@@ -154,8 +154,9 @@ attachmentsFilter args = case V.toList (dataFields args) of
 zipGenerator :: Wai.Request -> Catalog -> DataArgs V.Vector -> M OutputStream
 zipGenerator req cat args = do
   dir <- asks globalDataDir
-  let ents doc = V.mapMaybeM (ent doc) ats
-      ent doc af@Field{ fieldDesc = FieldDesc{ fieldDescAttachment = ~(Just a) } }
+  let ents (C.Chunk doc) = V.mapMaybeM (ent doc) ats
+      ents C.Flush = return V.empty
+      ent doc af@Field{ fieldAttachment = ~(Just a) }
         | any attachmentPresent $ HM.lookup (fieldName af) doc =
           enta $ resolveAttachment doc a
         | otherwise = return Nothing
@@ -177,7 +178,7 @@ zipGenerator req cat args = do
       C..| void (Zip.zipStream Zip.ZipOptions
           { Zip.zipOpt64 = False
           , Zip.zipOptCompressLevel = 1
-          , Zip.zipOptInfo = Zip.ZipInfo $ TE.encodeUtf8 (catalogTitle cat <> (foldMap (T.cons ' ' . fieldName) ats)) <> " downloaded from " <> Wai.rawPathInfo req
+          , Zip.zipOptInfo = Zip.ZipInfo $ BSL.toStrict $ B.toLazyByteString $ sourceComment req cat args
           })
       C..| C.map B.byteString
   where
@@ -220,9 +221,15 @@ attachmentsStreamUrls api hd line ft req cat args =
     { dataFields = KM.fromList $ idField : V.toList ats
     }
 
+sourceComment :: Wai.Request -> Catalog -> DataArgs V.Vector -> B.Builder
+sourceComment req cat args =
+  TE.encodeUtf8Builder (catalogTitle cat)
+    <> " attachments " <> mintersperseMap "," (TE.encodeUtf8Builder . fieldName) (V.toList $ dataFields args)
+    <> " downloaded from " <> requestUrl req
+
 listGenerator :: AttachmentApi -> Wai.Request -> Catalog -> DataArgs V.Vector -> M OutputStream
 listGenerator api req cat args = attachmentsStreamUrls api
-  ("# " <> TE.encodeUtf8Builder (catalogTitle cat) <> " attachments " <> mintersperseMap "," (TE.encodeUtf8Builder . fieldName) (V.toList $ dataFields args) <> "\n")
+  ("# " <> sourceComment req cat args <> "\n")
   (<> "\n")
   mempty
   req cat args
@@ -237,7 +244,7 @@ listAttachments api = OutputFormat
 
 curlGenerator :: AttachmentApi -> Wai.Request -> Catalog -> DataArgs V.Vector -> M OutputStream
 curlGenerator api req cat args = attachmentsStreamUrls api
-  ("#!/bin/sh\n# " <> TE.encodeUtf8Builder (catalogTitle cat) <> " attachments " <> mintersperseMap "," (TE.encodeUtf8Builder . fieldName) (V.toList $ dataFields args) <> "\n")
+  ("#!/bin/sh\n# " <> sourceComment req cat args <> "\n")
   (("curl -JO " <>) . (<> "\n"))
   mempty
   req cat args

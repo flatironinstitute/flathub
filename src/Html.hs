@@ -43,7 +43,7 @@ import qualified Waimwork.Blaze as H (text, preEscapedBuilder)
 import           Waimwork.HTTP (parseHTTPDate, formatHTTPDate)
 import           Waimwork.Response (okResponse, response)
 import qualified Web.Route.Invertible as R
-import           Web.Route.Invertible ((!:?))
+import           Web.Route.Invertible (BoundRoute((:?)), (!:?))
 import qualified Web.Route.Invertible.Internal as R (requestRoute')
 import qualified Web.Route.Invertible.Render as R
 import qualified Web.Route.Invertible.Wai as R
@@ -58,6 +58,7 @@ import Query
 import Monoid
 import Static
 import Api
+import qualified KeyedMap as KM
 
 locationHeader :: Wai.Request -> R.Route a -> a -> U.Query -> Header
 locationHeader req r a q = (hLocation, BSL.toStrict $ B.toLazyByteString $
@@ -256,8 +257,73 @@ catalogPage = getPath R.parameter $ \sim req -> do
       <> mwhen (not $ null $ catalogSort cat)
         ("sort" J..= catalogSort cat)
     query = parseQuery cat req
+    fielddisps = KM.fromList $ queryFields query
+    fielddisp :: Field -> Bool
+    fielddisp = (`KM.member` fielddisps)
     fields = catalogFieldGroups cat
-    toprow = row (fieldsDepth fields) ((id ,) <$> V.toList fields)
+    toprow = row (fieldsDepth fields) fields
+    fielddesc :: Field -> Int -> H.Html
+    fielddesc f d = do
+      hamlet [Hamlet.hamlet|
+        <tr>
+          <td .depth-#{d}>
+            <input type="checkbox"
+                :isNothing (fieldSub f):id="#{key f}"
+                class="colvis #{T.unwords $ map key $ V.toList fs}"
+                :fielddisp f:checked=checked
+                onclick="colvisSet(event)">
+            #{fieldTitle f}
+          <td>
+            $if isNothing (fieldSub f)
+              #{fieldName f}
+          <td>#{show $ fieldType f}
+          <td .units>
+            $forall u <- fieldUnits f
+              #{u}
+          <td>
+            $forall d <- fieldDescr f
+              #{d}
+        |]
+      forM_ (fold (fieldSub f)) $ \sf ->
+        fielddesc sf (d+1)
+      where
+      fs = expandField f
+      key = ("colvis-" <>) . fieldName
+    fieldBody :: Word -> Field -> H.Html
+    fieldBody d f = hamlet [Hamlet.hamlet|
+      <span>
+        <!-- Writes the title to the span -->
+        #{fieldTitle f}
+        <!-- Writes the unit to the span -->
+        $forall u <- fieldUnits f
+          $if d > 1
+            <br>
+          <span class="units">#{H.preEscapedText u}
+        $forall d <- fieldDescr f
+          <span class="tooltiptext">#{d}
+      |]
+    field :: Word -> Field -> H.Html
+    field d f@Field{ fieldSub = Nothing } = hamlet [Hamlet.hamlet|
+      <th .tooltip-dt
+        rowspan=#{d}
+        data-data=#{fieldName f}
+        data-name=#{fieldName f}
+        data-type=#{baseType (asTypeOf "num" T.empty,"num","string","string","string") $ fieldType f}
+        data-class-name="dt-body-#{ifs (typeIsNumeric (fieldType f)) "right" "left"}"
+        :not (fielddisp f):data-visible="false"
+        :or (fieldStore f):data-orderable="false"
+        data-default-content="">
+        #{fieldBody d f}
+      |]
+    field _ f@Field{ fieldSub = Just s } = hamlet [Hamlet.hamlet|
+      <th .tooltip-dt
+        colspan=#{V.length $ expandFields s}>
+        #{fieldBody 1 f}
+      |]
+    row :: Word -> Fields -> H.Html
+    row d l = do
+      H.tr $ mapM_ (field d) l
+      when (d > 1) $ row (pred d) $ foldMap (fold . fieldSub) l
 
   case acceptable ["application/json", "text/html"] req of
     Just "application/json" ->
@@ -304,7 +370,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                               $if typeIsFloating (fieldType f) && not (or (fieldStore f))
                                 <option
                                   .sel-#{fieldName f}
-                                  :not (fieldDisp f):style="display:none"
+                                  :not (fielddisp f):style="display:none"
                                   value="#{fieldName f}">
                                   #{fieldTitle f}
                           <div .tooltip-container v-if="filter.#{axis}">
@@ -330,7 +396,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                             $if (fieldTerms f || not (typeIsString (fieldType f))) && not (or (fieldStore f))
                               <option
                                 .sel-#{fieldName f}
-                                :not (fieldDisp f):style="display:none"
+                                :not (fielddisp f):style="display:none"
                                 value="#{fieldName f}">
                                 #{fieldTitle f}
                         <div .tooltip-container>
@@ -445,7 +511,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                                 <option #addfilt-#{fieldName f}
                                   .sel-#{fieldName f}
                                   value="#{fieldName f}"
-                                  :not (fieldDisp f):style="display:none">
+                                  :not (fielddisp f):style="display:none">
                                   #{fieldTitle f}
                   <div .right-column-group>
                     <h6 .right-column-heading-leader>Random Sample
@@ -475,8 +541,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                     <h6 .right-column-heading>Python Query
                     <p>
                       Example python code to apply the above filters and retrieve data. To use, download and install
-                      <a href="https://github.com/flatironinstitute/flathub/tree/prod/py">this module
-                      .
+                      <a href="https://github.com/flatironinstitute/flathub/tree/prod/py">this module.
                     <div #div-py .python-block>
                       <pre #code-py>
                 <div .tab-pane .fade #Fields role="tabpanel" aria-labelledby="dict-tab">
@@ -493,7 +558,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
                             <th>Description
                         <tbody>
                           $forall f <- catalogFieldGroups cat
-                            #{fielddesc f f 0}
+                            #{fielddesc f 0}
                 <div .tab-pane .fade #About role="tabpanel" aria-labelledby="about-tab">
                   <div .right-column-group>
                     <h6 .right-column-heading>About Catalog
@@ -534,17 +599,26 @@ catalogPage = getPath R.parameter $ \sim req -> do
               <select v-model="bulk">
                 <option value="">Choose format...
                 <optgroup label="raw data">
-                  $forall b <- [BulkCSV Nothing, BulkCSV (Just CompressionGZip), BulkECSV Nothing, BulkECSV (Just CompressionGZip), BulkNumpy Nothing, BulkNumpy (Just CompressionGZip)]
-                    #{bulklink sim b}
-                $forall (l, a) <- [("" ++ "files", BulkAttachments), ("download script", BulkAttachmentScript Nothing)]
+                  $forall (n, f) <- HM.toList downloadFormats
+                    <option #download.#{n} .download-option
+                      value="@{apiRoute apiDownload :? (sim, f, Nothing)}">
+                      #{n}
+                    <option #download.#{n}.gz .download-option
+                      value="@{apiRoute apiDownload :? (sim, f, Just CompressionGZip)}">
+                      #{n}.gz
+                $forall (l, f) <- [("" ++ "files", "zip"), ("download script", "sh")]
                   <optgroup label="attachment #{l}">
-                    $with att <- HM.filter (isJust . fieldAttachment) $ catalogFieldMap cat
-                      $forall f <- att
-                        #{bulklink sim (a (Just (fieldName f)))}
-                      $if not $ HM.null att
-                        #{bulklink sim (a Nothing)}
+                    $with att <- HM.keys $ HM.filter (isJust . fieldAttachment) $ catalogFieldMap cat
+                      $forall a <- att
+                        <option #download.attachment.#{a}.#{f} .download-option
+                          value="@{apiRoute apiAttachmentsField :? (sim, attachmentsFormats ! f, a)}">
+                          #{a}.#{f}
+                      $if not $ null att
+                        <option #download.attachments.#{f} .download-option
+                          value="@{apiRoute apiAttachments :? (sim, attachmentsFormats ! f)}">
+                          all selected.#{f}
               <a .button .button-secondary #download-btn
-                v-bind:href="link">
+                v-bind:href="link" download>
                 Download
 
         <div .container-fluid .catalog-summary .raw-data #rawdata>
@@ -554,75 +628,6 @@ catalogPage = getPath R.parameter $ \sim req -> do
             <thead>
               #{toprow}
       |]
-  where
-  bulklink :: Simulation -> BulkFormat -> H.Html
-  bulklink sim b = hamlet [Hamlet.hamlet|
-      <option #download.#{n} .download-option
-        value="@{catalogBulk !:? (sim, b)}">
-        #{n}
-    |]
-    where n = R.renderParameter b :: T.Text
-  fielddesc :: FieldGroup -> FieldGroup -> Int -> H.Html
-  fielddesc f g d = do
-    hamlet [Hamlet.hamlet|
-      <tr>
-        <td .depth-#{d}>
-          <input type="checkbox"
-              :isNothing (fieldSub g):id="#{key f}"
-              class="colvis #{T.unwords $ map key $ V.toList fs}"
-              :fieldDisp g:checked=checked
-              onclick="colvisSet(event)">
-          #{fieldTitle g}
-        <td>
-          $if isNothing (fieldSub g)
-            #{fieldName f}
-        <td>#{show $ fieldType g}
-        <td .units>
-          $forall u <- fieldUnits g
-            #{u}
-        <td>
-          $forall d <- fieldDescr g
-            #{d}
-      |]
-    forM_ (fold (fieldSub g)) $ \sf ->
-      fielddesc (f <> sf) sf (d+1)
-    where
-    fs = expandField f
-    key = ("colvis-" <>) . fieldName
-  fieldBody :: Word -> FieldGroup -> H.Html
-  fieldBody d f = hamlet [Hamlet.hamlet|
-    <span>
-      <!-- Writes the title to the span -->
-      #{fieldTitle f}
-      <!-- Writes the unit to the span -->
-      $forall u <- fieldUnits f
-        $if d > 1
-          <br>
-        <span class="units">#{H.preEscapedText u}
-      $forall d <- fieldDescr f
-        <span class="tooltiptext">#{d}
-    |]
-  field :: Word -> FieldGroup -> FieldGroup -> H.Html
-  field d f' f@Field{ fieldDesc = FieldDesc{ fieldDescSub = Nothing } } = hamlet [Hamlet.hamlet|
-    <th .tooltip-dt
-      rowspan=#{d}
-      data-data=#{fieldName f'}
-      data-name=#{fieldName f'}
-      data-type=#{baseType (asTypeOf "num" T.empty,"num","string","string","string") $ fieldType f}
-      data-class-name="dt-body-#{ifs (typeIsNumeric (fieldType f)) "right" "left"}"
-      :not (fieldDisp f):data-visible="false"
-      data-default-content="">
-      #{fieldBody d f}
-    |]
-  field _ _ f@Field{ fieldDesc = FieldDesc{ fieldDescSub = Just s } } = hamlet [Hamlet.hamlet|
-    <th .tooltip-dt
-      colspan=#{V.length $ expandFields s}>
-      #{fieldBody 1 f}
-    |]
-  row :: Word -> [(FieldGroup -> FieldGroup, FieldGroup)] -> H.Html
-  row d l = do
-    H.tr $ mapM_ (\(p, f) -> field d (p f) f) l
-    when (d > 1) $ row (pred d) $ foldMap (\(p, f) -> foldMap (fmap (p . mappend f, ) . V.toList) $ fieldSub f) l
 
 
 groupPage :: Route [T.Text]

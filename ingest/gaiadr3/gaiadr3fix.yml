@@ -443,3 +443,35 @@ XpSampledMeanSpectrum:
     length: 343
   flux_error:
     length: 343
+OaNeuronInformation:
+  class_label:
+    length: 11
+  template_name:
+    length: 14
+ScienceAlerts:
+  name:
+    length: 9
+aux: #XpSampling:
+  band:
+    enum: [BP,RP]
+McmcSamplesGspPhot: {}
+  # variable-length arrays
+McmcSamplesMsc:
+  teff1:
+    length: 100
+  teff2:
+    length: 100
+  logg1:
+    length: 100
+  logg2:
+    length: 100
+  azero:
+    length: 100
+  mh:
+    length: 100
+  distancepc:
+    length: 100
+  log_pos:
+    length: 100
+  log_lik:
+    length: 100

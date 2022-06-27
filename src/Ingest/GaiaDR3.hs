@@ -190,8 +190,8 @@ ingestGaiaDR3 ing@Ingest{ ingestCatalog = cat } = do
   addf f
     | fieldName f == fileUpper = id
     | otherwise = uncurry (HM.insertWith (++)) $ second return $ split f
-  split f@Field{ fieldDesc = fd@FieldDesc{ fieldDescIngest = Just i } } =
-    second (\n -> f{ fieldDesc = fd{ fieldDescIngest = snd <$> T.uncons n } })
+  split f@Field{ fieldIngest = Just i } =
+    second (\n -> f{ fieldIngest = snd <$> T.uncons n })
       $ T.breakOn "." i
   split f = error $ "field missing ingest: " ++ T.unpack (fieldName f)
   fileUpper = "_file_upper"

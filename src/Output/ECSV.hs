@@ -12,6 +12,7 @@ import qualified Data.Aeson.Types as J
 import qualified Data.ByteString.Builder as B
 import qualified Data.Conduit as C
 import           Data.Maybe (maybeToList)
+import qualified Data.Text.Lazy.Encoding as TLE
 import qualified Data.Vector as V
 import qualified Network.Wai as Wai
 
@@ -50,13 +51,14 @@ ecsvField f = ECSVColumn
     maybeToList (("enum" J..=) <$> fieldEnum f)
   }
 
-ecsvHeader :: Catalog -> V.Vector Field -> [J.Pair] -> B.Builder
-ecsvHeader cat fields meta = renderECSVHeader $ ECSVHeader
+ecsvHeader :: Wai.Request -> Catalog -> V.Vector Field -> [J.Pair] -> B.Builder
+ecsvHeader req cat fields meta = renderECSVHeader $ ECSVHeader
   { ecsvDelimiter = ','
   , ecsvDatatype = V.map ecsvField fields
   , ecsvMeta = Just $ J.object $
     [ "name" J..= catalogTitle cat
     , "description" J..= catalogDescr cat
+    , "source" J..= TLE.decodeLatin1 (B.toLazyByteString $ requestUrl req)
     ] ++ meta
   , ecsvSchema = Nothing
   }
@@ -65,7 +67,7 @@ ecsvGenerator :: Wai.Request -> Catalog -> DataArgs V.Vector -> M OutputStream
 ecsvGenerator req cat args = do
   csv <- outputGenerator csvOutput req cat args
   return $ OutputStream Nothing $ do
-    C.yield $ ecsvHeader cat (dataFields args)
+    C.yield $ ecsvHeader req cat (dataFields args)
       [ "filters" J..= dataFilters args
       , "sort" J..= map (\(f, a) -> J.object ["field" J..= fieldName f, "order" J..= if a then "asc" :: String else "desc"]) (dataSort args)
       ]

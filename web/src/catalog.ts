@@ -911,27 +911,27 @@ function columnVisible(name: string, vis: boolean) {
 function py_text(query: Dict<string>) {
   const cat = Catalog.name;
   let st =
-    "import flathub.client\n" +
+    "import flathub\n" +
     cat +
-    " = flathub.client.Catalog(" +
+    " = flathub.Catalog(" +
     JSON.stringify(cat) +
-    ", host = " +
-    JSON.stringify(location.origin) +
+    ", endpoint = " +
+    JSON.stringify(location.origin+'/api') +
     ")\n" +
-    "q = " +
+    "dat = " +
     cat +
-    ".query(fields = " +
+    ".numpy(fields = " +
     JSON.stringify(query.fields.split(" "));
-  for (let i = 0; i < Filters.length; i++) {
-    const q = Filters[i].pyQuery();
-    if (q != null) st += ",\n  " + Filters[i].name + " = " + q;
-  }
-  if (query.sort) st += ",\n  sort = " + JSON.stringify(query.sort.split(" "));
   if (Sample < 1) {
     st += ",\n  sample = " + Sample;
     if (Seed != undefined) st += ", seed = " + Seed;
   }
-  st += ")\ndat = q.numpy()";
+  if (query.sort) st += ",\n  sort = " + JSON.stringify(query.sort.split(" "));
+  for (let i = 0; i < Filters.length; i++) {
+    const q = Filters[i].pyQuery();
+    if (q != null) st += ",\n  " + Filters[i].name + " = " + q;
+  }
+  st += ")";
   (<HTMLPreElement>document.getElementById("code-py")).textContent = st;
 }
 
@@ -952,10 +952,27 @@ function toggleShowData(show?: boolean) {
 }
 (<any>window).toggleShowData = toggleShowData;
 
+function array_render(rf: (x: any) => string, data: any): string {
+  if (!data)
+    return "";
+  if (!Array.isArray(data))
+    return rf(data);
+  let ext = "";
+  if (data.length > 3) {
+    /* TODO: make this click to expand */
+    ext = ",...[" + data.length + "]";
+    data = data.slice(0,3);
+  }
+  return data.map(rf).toString() + ext;
+}
+
 function cell_render(field: Field): (data: any, type: string, row: any) => string {
   if (field.attachment)
-    return (data, type, row) => (data ? "<a href='/" + Catalog.name + "/attachment/" + field.name + "/" + encodeURIComponent(row._id) + "'><img class='download-icon' src='/web/download.svg'></a>" : "");
-  return render_funct(field);
+    return (data, type, row) => (data ? "<a href='/api/" + Catalog.name + "/attachment/" + field.name + "/" + encodeURIComponent(row._id) + "'><img class='download-icon' src='/web/download.svg'></a>" : "");
+  const rf = render_funct(field);
+  if (field.type.startsWith("array "))
+    return (data, type, row) => array_render(rf, data);
+  return rf;
 }
 
 export function initCatalog(table: JQuery<HTMLTableElement>) {
@@ -986,11 +1003,6 @@ export function initCatalog(table: JQuery<HTMLTableElement>) {
       topts.order = Query.sort.map((o) => {
         return [Fields_idx[o.field], o.asc ? "asc" : "desc"];
       });
-    if (Query.fields && Query.fields.length) {
-      for (let f of Catalog.fields) {
-        f.disp = Query.fields.indexOf(<string>f.name) >= 0;
-      }
-    }
   }
   topts.columns = [];
   topts.columns.push.apply(topts.columns, Catalog.fields.map((c) => {

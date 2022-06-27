@@ -11,8 +11,10 @@ module ES
   , HTTP.Request
   , httpJSON
   , httpStream
+  , elasticRequest
   , searchCatalogRequest
   , searchCatalog
+  , catalogURL
   , createIndex
   , checkIndices
   , storedFieldsArgs
@@ -46,7 +48,6 @@ import qualified Data.HashMap.Strict as HM
 import           Data.IORef (newIORef, readIORef, writeIORef)
 import           Data.List (find, partition)
 import           Data.Maybe (mapMaybe, fromMaybe, maybeToList, isJust)
-import           Data.Proxy (Proxy)
 import           Data.String (IsString)
 import qualified Data.Text as T
 import           Data.Typeable (cast)
@@ -80,6 +81,7 @@ initServer conf = do
         [ (hAcceptEncoding, " ") -- disable gzip
         , (hAccept, "application/json")
         ]
+    , HTTP.responseTimeout = HTTP.responseTimeoutNone
     }
 
 class Body a where
@@ -282,7 +284,7 @@ queryIndexScroll scroll cat Query{..} = do
   -- this could be easily fixed, but would require more complex histsize results
   (histunks, histbnds) = partitionEithers $ map (\h@(f, t, n) ->
       maybe (Left h) (Right . (, t, n)) $
-        find (\q -> fieldName f == fieldName q && unTypeValue isbnd (fieldType q)) queryFilter)
+        find (\q -> fieldName f == fieldName (fieldDesc q) && unTypeValue isbnd (fieldValue q)) queryFilter)
     $ foldMap histFields queryAggs
   isbnd (FilterRange (Just _) (Just _)) = True
   isbnd _ = False
@@ -304,14 +306,16 @@ queryIndexScroll scroll cat Query{..} = do
   fillhistbnd j = do
     jaggs <- j J..: "aggregations"
     forM histunks $ \(f, t, n) -> do
-      let val a = traverseValue (maybe (fail "bnd value") return) . parseTypeJSONValue (fieldType f)
+      let val a = parseJSONOrStringValue
             =<< (J..: "value") =<< jaggs J..: a
-      lb <- val ("0" <> fieldName f)
-      ub <- val ("1" <> fieldName f)
-      return (liftFilterValue f $ FilterRange (Just lb) (Just ub), t, n)
+      fr <- makeFieldValueM f $ do
+        lb <- val ("0" <> fieldName f)
+        ub <- val ("1" <> fieldName f)
+        return $ FilterRange (Just lb) (Just ub)
+      return (fr, t, n)
   -- calculate bucket size from range and count
-  histsize :: (FieldSub Filter Proxy, Bool, Word) -> Maybe (T.Text, TypeValue HistogramInterval)
-  histsize (f, t, n) = case fieldType f of
+  histsize :: (FieldTypeValue Filter, Bool, Word) -> Maybe (T.Text, TypeValue HistogramInterval)
+  histsize (f, t, n) = case fieldValue f of
     Double    (FilterRange (Just l) (Just u)) -> q Double    l u
     Float     (FilterRange (Just l) (Just u)) -> q Float     l u
     HalfFloat (FilterRange (Just l) (Just u)) -> q HalfFloat l u
@@ -322,7 +326,7 @@ queryIndexScroll scroll cat Query{..} = do
     _ -> fail "invalid hist"
     where
     r :: (Num t, Ord t) => (forall f . f t -> TypeValue f) -> (t -> [(t, t)]) -> t -> Maybe (T.Text, TypeValue HistogramInterval)
-    r c l s = return (fieldName f, c $ HistogramInterval s' (l s')) where
+    r c l s = return (fieldName (fieldDesc f), c $ HistogramInterval s' (l s')) where
       s' | s > 0 = s
          | otherwise = 1
     q :: (Floating t, Ord t, Enum t) => (forall f . f t -> TypeValue f) -> t -> t -> Maybe (T.Text, TypeValue HistogramInterval)
@@ -343,7 +347,7 @@ queryIndexScroll scroll cat Query{..} = do
     h' = HM.map (fmapTypeValue1 histogramInterval) h
   amend _ j = j
 
-  filts = "bool" .=* ("filter" `JE.pair` JE.list (\f -> JE.pairs $ unTypeValue (term f) $ fieldType f) queryFilter)
+  filts = "bool" .=* ("filter" `JE.pair` JE.list (\f -> JE.pairs $ unTypeValue (term $ fieldDesc f) $ fieldValue f) queryFilter)
   term f (FilterEQ v)
     | fieldWildcard f && any (T.any ('*' ==)) (cast v) = "wildcard" .=* (fieldName f J..= v)
     | otherwise = "term" .=* (fieldName f J..= v)

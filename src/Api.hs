@@ -17,14 +17,18 @@ module Api
   , apiSchemaSQL
   , apiSchemaCSV
   , apiData
+  , apiDownload
+  , downloadFormats
   , apiStats
   , apiHistogram
   , apiAttachment
+  , apiAttachments
+  , apiAttachmentsField
+  , attachmentsFormats
   , apiRoutes
   , openApi
   ) where
 
-import           Control.Applicative ((<|>))
 import           Control.Lens ((&), (&~), (.~), (?~), (%~), (.=))
 import           Control.Monad (mfilter, unless, when, join, guard)
 import           Control.Monad.IO.Class (liftIO)
@@ -44,9 +48,8 @@ import qualified Data.HashMap.Strict as HM
 import qualified Data.HashMap.Strict.InsOrd as HMI
 import           Data.IORef (newIORef, readIORef, writeIORef)
 import           Data.List (foldl')
-import           Data.Maybe (isJust, isNothing, mapMaybe, fromMaybe, listToMaybe, catMaybes)
+import           Data.Maybe (isJust, isNothing, mapMaybe, fromMaybe, catMaybes)
 import qualified Data.OpenApi as OA
-import           Data.Proxy (Proxy)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Encoding.Error as TE
@@ -78,6 +81,7 @@ import Backend
 import Output.Types
 import Output.CSV
 import Output.ECSV
+import Output.FITS
 import Output.Numpy
 import Attach
 import Compression
@@ -182,8 +186,8 @@ catalogJSON Catalog{..} =
      "name" J..= catalogName
   <> "order" J..= catalogOrder
   <> "title" J..= catalogTitle
-  <> "synopsis" J..= catalogSynopsis
-  <> "descr" J..= catalogDescr
+  <> foldMap ("synopsis" J..=) catalogSynopsis
+  <> foldMap ("descr" J..=) catalogDescr
 
 catalogSchema :: OpenApiM (OA.Referenced OA.Schema)
 catalogSchema = define "CatalogMeta" $ objectSchema
@@ -191,10 +195,11 @@ catalogSchema = define "CatalogMeta" $ objectSchema
   [ ("name", OA.Inline $ schemaDescOf catalogName "globally unique catalog name used in urls", True)
   , ("order", OA.Inline $ schemaDescOf catalogOrder "sort key for display order", True)
   , ("title", OA.Inline $ schemaDescOf catalogTitle "display name", True)
-  , ("synopsis", OA.Inline $ schemaDescOf catalogSynopsis "short description in plain text", True)
-  , ("descr", OA.Inline $ schemaDescOf catalogDescr "long description in html", True)
+  , ("synopsis", OA.Inline $ schemaDescOf catalogSynopsis "short description in plain text", False)
+  , ("descr", OA.Inline $ schemaDescOf catalogDescr "long description in html", False)
   ]
   & OA.title ?~ "catalog metadata"
+  & OA.additionalProperties .~ Nothing
 
 apiTop :: APIOp ()
 apiTop = APIOp -- /api
@@ -219,33 +224,31 @@ apiTop = APIOp -- /api
 
 -------- /api/{catalog}
 
-fieldsJSON :: KM.KeyedMap (FieldSub FieldStats Proxy) -> FieldGroup -> FieldGroups -> J.Encoding
-fieldsJSON stats b = JE.list fieldJSON . V.toList where
-  fieldJSON f@Field{ fieldDesc = FieldDesc{..}, ..} = J.pairs
-    $  "key" J..= fieldDescName
-    <> "name" J..= fieldName bf
-    <> "title" J..= fieldDescTitle
-    <> "descr" J..= fieldDescDescr
+fieldsJSON :: Fields -> J.Encoding
+fieldsJSON = JE.list fieldJSON . V.toList where
+  fieldJSON f@Field{..} = J.pairs
+    $  "name" J..= fieldName
+    <> "title" J..= fieldTitle
+    <> foldMap ("descr" J..=) fieldDescr
     <> "type" J..= fieldType
     <> "base" J..= baseType ('f','i','b','s','v') fieldType
-    <> mwhen (or fieldDescStore) ("store" J..= fieldDescStore)
-    <> foldMap ("enum" J..=) fieldDescEnum
+    <> "dtype" J..= numpyDtype f
+    <> mwhen (or fieldStore) ("store" J..= fieldStore)
+    <> foldMap ("enum" J..=) fieldEnum
     <> mwhen (fieldDisp f) ("disp" J..= True)
-    <> foldMap ("units" J..=) fieldDescUnits
-    <> foldMap ("required" J..=) (case fieldDescFlag of
+    <> foldMap ("units" J..=) fieldUnits
+    <> foldMap ("required" J..=) (case fieldFlag of
         FieldTop -> Just False
         FieldRequired -> Just True
         _ -> Nothing)
-    <> mwhen fieldDescTerms ("terms" J..= fieldDescTerms)
-    <> mwhen fieldDescWildcard ("wildcard" J..= fieldDescWildcard)
-    <> foldMap ("dict" J..=) fieldDescDict
-    <> foldMap ("scale" J..=) fieldDescScale
-    <> mwhen fieldDescReversed ("reversed" J..= fieldDescReversed)
-    <> mwhen (isJust fieldDescAttachment) ("attachment" J..= True)
-    <> foldMap (JE.pair "stats" . fieldStatsJSON) (HM.lookup (fieldName bf) stats)
-    <> foldMap (JE.pair "sub" . fieldsJSON stats bf) fieldDescSub
-    where
-    bf = b <> f
+    <> mwhen fieldTerms ("terms" J..= fieldTerms)
+    <> mwhen fieldWildcard ("wildcard" J..= fieldWildcard)
+    <> foldMap ("dict" J..=) fieldDict
+    <> foldMap ("scale" J..=) fieldScale
+    <> mwhen fieldReversed ("reversed" J..= fieldReversed)
+    <> mwhen (isJust fieldAttachment) ("attachment" J..= True)
+    <> foldMap ("stats" J..=) fieldStats
+    <> foldMap (JE.pair "sub" . fieldsJSON) fieldSub
 
 typeSchema :: OpenApiM (OA.Referenced OA.Schema)
 typeSchema = define "Type" $ mempty
@@ -260,16 +263,16 @@ fieldGroupSchema = do
   ft <- typeSchema
   defineRec "FieldGroup" $ \ref -> objectSchema
     "A single field within a catalog, or a hiearchical group of fields"
-    [ ("key", OA.Inline $ schemaDescOf fieldName "local name of field within this group", True)
-    , ("name", OA.Inline $ schemaDescOf fieldName "global unique (\"variable\") name of field within the catalog", True)
+    [ ("name", OA.Inline $ schemaDescOf fieldName "global unique (\"variable\") name of field within the catalog", True)
     , ("title", OA.Inline $ schemaDescOf fieldTitle "display name of the field within the group", True)
     , ("descr", OA.Inline $ schemaDescOf fieldDescr "description of field within the group", False)
     , ("type", ft, True)
     , ("base", OA.Inline $ mempty
-        & OA.description ?~ "base storage type (floating, integral, boolean, string, void)"
+        & OA.description ?~ "base storage type (floating, integral, boolean, string, void) for base scalar values of this field"
         & OA.type_ ?~ OA.OpenApiString
         & OA.enum_ ?~ map J.toJSON "fibsv"
         , True)
+    , ("dtype", OA.Inline $ schemaDescOf T.unpack "numpy dtype for base scalar values of this field", True)
     , ("store", OA.Inline $ schemaDescOf fieldStore "true if this field is stored but not indexed, so not permitted for filtering or aggregations", False)
     , ("enum", OA.Inline $ schemaDescOf fieldEnum "if present, display values as these keywords instead (integral or boolean: enum[<int>value])", False)
     , ("disp", OA.Inline $ schemaDescOf fieldDisp "include field in data display by default", False)
@@ -310,11 +313,10 @@ apiCatalog = APIOp -- /api/{cat}
   , apiAction = \sim req ->
     if T.null sim then apiAction apiTop () req else do -- allow trailing slash
     cat <- askCatalog sim
-    (count, stats) <- liftIO $ catalogStats cat
     return $ okResponse (apiHeaders req) $ J.pairs
       $ catalogJSON cat
-      <> JE.pair "fields" (fieldsJSON stats mempty $ V.cons idField $ catalogFieldGroups cat)
-      <> "count" J..= fromMaybe count (catalogCount cat)
+      <> JE.pair "fields" (fieldsJSON $ V.cons idField $ catalogFieldGroups cat)
+      <> "count" J..= catalogCount cat
       <> mwhen (not $ null $ catalogSort cat)
         ("sort" J..= catalogSort cat)
   , apiResponse = do
@@ -331,6 +333,7 @@ apiCatalog = APIOp -- /api/{cat}
         , ("sort", OA.Inline $ schemaDescOf catalogSort "default sort fields", False)
         ]
         & OA.title ?~ "catalog info"
+        & OA.additionalProperties .~ Nothing
       ]
       & OA.title ?~ "catalog result"
   }
@@ -387,7 +390,7 @@ apiSchemaCSV = APIOp -- /api/{cat}/schema.csv
   , apiAction = \sim _ -> do
     let
       populateDict cats = V.map pf $ catalogDict cats where
-        pf f = f{ fieldDesc = (fieldDesc f){ fieldDescDict = Just $ T.intercalate ";" $ md (fieldName f) } }
+        pf f = f{ fieldDict = Just $ T.intercalate ";" $ md (fieldName f) }
         md d =
           [ c <> "." <> fieldName f <> foldMap (T.cons '[' . (`T.snoc` ']')) (fieldUnits f) <> foldMap (T.cons '*' . T.pack . show) (fieldScale f)
           | (c, cf) <- HM.toList (catalogMap cats)
@@ -473,9 +476,7 @@ parseFiltersJSON cat o = Filters
   where
   parsef n j = do
     f <- failErr $ lookupField cat True n
-    updateFieldValueM f (parseff f j)
-  parseff :: Typed a => Field -> J.Value -> Proxy a -> J.Parser (FieldFilter a)
-  parseff f j _ = parseFilterJSON f j
+    makeFieldValueM f (parseFilterJSON f j)
 
 filtersSchema :: OpenApiM (OA.Referenced OA.Schema)
 filtersSchema = do
@@ -500,17 +501,31 @@ parseFiltersQuery cat req = foldl' parseQueryItem mempty $ Wai.queryString req w
     q{ filterSample = filterSample q * p }
   parseQueryItem q ("sample", Just (splitBS ('@' ==) -> Just (readBS -> Just p, readBS -> Just s))) =
     q{ filterSample = filterSample q * p, filterSeed = filterSeed q `xor` s }
-  parseQueryItem q (lookupFieldQuery cat True -> Just f, Just (parseFilt f -> Just v)) =
-    q{ filterFields = filterFields q <> KM.fromList [setFieldValue f $ sequenceTypeValue v] }
+  parseQueryItem q ("seed", Just (readBS -> Just s)) =
+    q{ filterSeed = filterSeed q `xor` s }
+  parseQueryItem q (lookupFieldQuery cat True -> Just f, Just (parseFilter f -> Just v)) =
+    q{ filterFields = KM.insertWith oreq v $ filterFields q }
   parseQueryItem q _ = q -- just ignore anything we can't parse
+  oreq (FieldValue f a) (FieldValue _ b) = 
+    setFieldValueUnsafe f (fmapTypeValue2 oreqf a b)
+  oreqf (FieldEQ a) (FieldEQ b) = FieldEQ (b ++ a)
+  oreqf f _ = f
+  parseFilter :: Field -> BS.ByteString -> Maybe (FieldTypeValue FieldFilter)
+  parseFilter f s = makeFieldValueM f (parseFilt f s)
+  parseFilt :: Typed a => Field -> BS.ByteString -> Maybe (FieldFilter a)
+  parseFilt _ "" = Nothing
+  parseFilt f s
+    | BSC.head s `elem` ('"' : "[{") = J.parseMaybe (parseFilterJSON f) =<< J.decodeStrict s
   parseFilt f (splitBS isDelim -> Just (a, b))
     | typeIsNumeric (fieldType f) = FieldRange <$> parseVal f a <*> parseVal f b
   parseFilt f a
     | fieldWildcard f && BSC.elem '*' a = return $ FieldWildcard (decodeUtf8' a)
   parseFilt f a = FieldEQ . return <$> parseVal' f a
+  parseVal :: Typed a => Field -> BS.ByteString -> Maybe (Maybe a)
   parseVal _ "" = return Nothing
   parseVal f v = Just <$> parseVal' f v
-  parseVal' f = fmap fieldType . parseFieldValue f . decodeUtf8'
+  parseVal' :: Typed a => Field -> BS.ByteString -> Maybe a
+  parseVal' = parseValueForField
 
 filtersQueryParam :: OpenApiM (OA.Referenced OA.Param)
 filtersQueryParam = do
@@ -532,19 +547,28 @@ fieldsQueryParam = do
     & OA.description ?~ "list of fields to return"
     & OA.style ?~ OA.StyleForm
     & OA.explode ?~ False
+    & OA.required ?~ True
     & OA.schema ?~ fl
 
-parseFieldsQuery :: Catalog -> Wai.Request -> BS.ByteString -> [Field]
-parseFieldsQuery cat req param =
-  mapMaybe (lookupFieldQuery cat False) $ parseListQuery req param
+parseFieldsQuery :: Catalog -> Bool -> Wai.Request -> BS.ByteString -> [Field]
+parseFieldsQuery _ _ _ "" = []
+parseFieldsQuery cat ind _ s
+  | BSC.head s == '['
+  , Just r <- J.parseMaybe (parseFieldsJSON cat ind) =<< J.decodeStrict s = r
+parseFieldsQuery cat ind req param =
+  mapMaybe (lookupFieldQuery cat ind) $ parseListQuery req param
 
-parseFieldsJSON :: Catalog -> J.Value -> J.Parser [Field]
-parseFieldsJSON cat = J.withArray "field list" $
-  mapM (J.withText "field name" $ failErr . lookupField cat False) . V.toList
+parseFieldsJSON :: Catalog -> Bool -> J.Value -> J.Parser [Field]
+parseFieldsJSON cat ind = J.withArray "field list" $
+  mapM (J.withText "field name" $ failErr . lookupField cat ind) . V.toList
 
 -------- /api/{catalog}/data
 
 parseSortQuery :: Catalog -> Wai.Request -> BS.ByteString -> [(Field, Bool)]
+parseSortQuery _ _ "" = []
+parseSortQuery cat _ s
+  | BSC.head s == '['
+  , Just r <- J.parseMaybe (parseSortJSON cat) =<< J.decodeStrict s = r
 parseSortQuery cat req param =
   mapMaybe parseSort $ parseListQuery req param
   where
@@ -606,7 +630,7 @@ sortParam = do
 parseDataQuery :: Catalog -> Wai.Request -> DataArgs V.Vector
 parseDataQuery cat req = DataArgs
   { dataFilters = parseFiltersQuery cat req
-  , dataFields = V.fromList $ parseFieldsQuery cat req "fields"
+  , dataFields = V.fromList $ parseFieldsQuery cat False req "fields"
   , dataSort = parseSortQuery cat req "sort"
   , dataCount = fromMaybe 0 $ parseReadQuery req "count"
   , dataOffset = fromMaybe 0 $ parseReadQuery req "offset"
@@ -615,7 +639,7 @@ parseDataQuery cat req = DataArgs
 parseDataJSON :: Catalog -> J.Value -> J.Parser (DataArgs V.Vector, Bool)
 parseDataJSON cat = J.withObject "data request" $ \o -> (,) <$> (DataArgs
   <$> parseFiltersJSON cat (foldl' (flip HM.delete) o fields)
-  <*> (fmap V.fromList . parseFieldsJSON cat =<< o J..: "fields")
+  <*> (fmap V.fromList . parseFieldsJSON cat False =<< o J..: "fields")
   <*> (parseSortJSON cat =<< o J..:? "sort")
   <*> o J..: "count"
   <*> o J..:? "offset" J..!= 0)
@@ -674,6 +698,7 @@ apiData = APIOp -- /api/{cat}/data
         , ("offset", offsetSchema, False)
         , ("object", jobjectSchema, False)
         ]
+        & OA.additionalProperties .~ Nothing
       ]
   , apiAction = \sim req -> do
     cat <- askCatalog sim
@@ -740,6 +765,7 @@ downloadFormats = KM.fromList $ map DownloadFormat
   [ csvOutput
   , ecsvOutput
   , numpyOutput
+  , fitsOutput
   , jsonOutput
   , ndjsonOutput
   ]
@@ -748,33 +774,33 @@ instance R.Parameter R.PathString DownloadFormat where
   renderParameter = KM.key
   parseParameter s = HM.lookup s downloadFormats
 
-outputAction :: Simulation -> OutputFormat -> Maybe CompressionFormat -> (DataArgs V.Vector -> M ()) -> Action
+outputAction :: Simulation -> OutputFormat -> Maybe CompressionFormat -> (DataArgs V.Vector -> M (DataArgs V.Vector)) -> Action
 outputAction sim fmt comp check req = do
   cat <- askCatalog sim
   body <- parseJSONBody req (parseDataJSON cat)
   let args = (maybe (parseDataQuery cat req) fst body){ dataCount = maxDataCount }
-      enc = comp <|> listToMaybe (acceptCompressionEncoding req)
-  check args
-  out <- outputGenerator fmt req cat args
+      enc = comp -- <|> listToMaybe (acceptCompressionEncoding req) -- transfer-encoding breaks content-length/progress
+  args' <- check args
+  out <- outputGenerator fmt req cat args'
   g <- ask
   return $ Wai.responseStream ok200 (apiHeaders req ++
     [ (hContentType, maybe (MT.renderHeader $ outputMimeType fmt) compressionMimeType comp)
     , (hContentDisposition, "attachment; filename=" <> quoteHTTP (TE.encodeUtf8 sim
       <> BSC.pack ('.' : outputExtension fmt ++ foldMap (('.' :) . compressionExtension) comp)))
     ] ++ catMaybes
-    [ (,) hContentLength . BSC.pack . show <$> (guard (isNothing comp) >> outputSize out)
+    [ (,) hContentLength . BSC.pack . show <$> (guard (isNothing enc) >> outputSize out)
     , compressionEncodingHeader <$> (guard (enc /= comp) >> enc)
     ])
     $ compressStream enc $ \chunk _ ->
       runReaderT (C.runConduitRes $ outputStream out
         C..| C.mapM_ (liftIO . chunk)) g
 
-apiDownload :: APIOp (Simulation, (DownloadFormat, Maybe CompressionFormat))
+apiDownload :: APIOp (Simulation, DownloadFormat, Maybe CompressionFormat)
 apiDownload = APIOp
   { apiName = "download"
   , apiSummary = "Download raw data in bulk"
-  , apiPath = catalogBase R.>* "data" R.>*< R.parameter
-  , apiExampleArg = ("catalog", (head $ KM.toList downloadFormats, Nothing))
+  , apiPath = catalogBase R.>* "data" R.>*<< R.parameter
+  , apiExampleArg = ("catalog", head $ KM.toList downloadFormats, Nothing)
   , apiPathParams = return [catalogParam
     , mempty
       & OA.name .~ "format"
@@ -799,9 +825,9 @@ apiDownload = APIOp
         [ ("fields", list, True)
         , ("sort", sort, False)
         ]
+        & OA.additionalProperties .~ Nothing
       ]
-  , apiAction = \(sim, (DownloadFormat fmt, comp)) -> outputAction sim fmt comp $ \_ -> do
-    return ()
+  , apiAction = \(sim, DownloadFormat fmt, comp) -> outputAction sim fmt comp $ return
   , apiResponse = do
     ds <- dataSchema
     return $ mempty
@@ -817,31 +843,50 @@ apiDownload = APIOp
           & OA.oneOf ?~ [ds]))) encodingCompressions)
   }
 
+-------- /api/{catalog}/count
+
+parseCountQuery :: Catalog -> Wai.Request -> CountArgs
+parseCountQuery = parseFiltersQuery
+
+parseCountJSON :: Catalog -> J.Value -> J.Parser CountArgs
+parseCountJSON cat = J.withObject "count request" $
+  parseFiltersJSON cat
+
+apiCount :: APIOp Simulation
+apiCount = APIOp -- /api/{cat}/count
+  { apiName = "count"
+  , apiSummary = "Get count of matching rows (given some filters)"
+  , apiPath = catalogBase R.>* "count"
+  , apiExampleArg = "catalog"
+  , apiPathParams = return [catalogParam]
+  , apiQueryParams = [filtersQueryParam]
+  , apiRequestSchema = Just $ do
+    filt <- filtersSchema
+    return $ mempty & OA.allOf ?~
+      [ filt
+      ]
+  , apiAction = \sim req -> do
+    cat <- askCatalog sim
+    body <- parseJSONBody req (parseCountJSON cat)
+    count <- queryCount cat $ fromMaybe (parseCountQuery cat req) body
+    return $ okResponse (apiHeaders req) $ J.toEncoding count
+  , apiResponse = do
+    return $ jsonContent $ OA.Inline $ schemaDescOf statsCount "number of matching rows"
+      & OA.title ?~ "stats result"
+  }
+
 -------- /api/{catalog}/stats
 
 parseStatsQuery :: Catalog -> Wai.Request -> StatsArgs
 parseStatsQuery cat req = StatsArgs
   { statsFilters = parseFiltersQuery cat req
-  , statsFields = KM.fromList $ parseFieldsQuery cat req "fields"
+  , statsFields = KM.fromList $ parseFieldsQuery cat True req "fields"
   }
 
 parseStatsJSON :: Catalog -> J.Value -> J.Parser StatsArgs
 parseStatsJSON cat = J.withObject "stats request" $ \o -> StatsArgs
   <$> parseFiltersJSON cat (HM.delete "fields" o)
-  <*> (maybe (return KM.empty) (fmap KM.fromList . parseFieldsJSON cat) =<< o J..:? "fields")
-
-fieldStatsJSON :: FieldSub FieldStats m -> J.Encoding
-fieldStatsJSON = unTypeValue fsj . fieldType
-  where
-  fsj :: J.ToJSON a => FieldStats a -> J.Encoding
-  fsj FieldStats{..} = J.pairs
-    $  "count" J..= statsCount
-    <> "min" J..= statsMin
-    <> "max" J..= statsMax
-    <> "avg" J..= statsAvg
-  fsj FieldTerms{..} = J.pairs
-    $  "terms" `JE.pair` JE.list (\(v,c) -> J.pairs $ "value" J..= v <> "count" J..= c) termsBuckets
-    <> "others" J..= termsCount
+  <*> (maybe (return KM.empty) (fmap KM.fromList . parseFieldsJSON cat True) =<< o J..:? "fields")
 
 fieldStatsSchema :: OpenApiM (OA.Referenced OA.Schema)
 fieldStatsSchema = do
@@ -887,18 +932,17 @@ apiStats = APIOp -- /api/{cat}/stats
         [ ("fields", list, False)
         ]
         & OA.title ?~ "stats fields"
+        & OA.additionalProperties .~ Nothing
       ]
   , apiAction = \sim req -> do
     cat <- askCatalog sim
     body <- parseJSONBody req (parseStatsJSON cat)
-    (count, stats) <- queryStats cat $ fromMaybe (parseStatsQuery cat req) body
+    stats <- queryStats cat $ fromMaybe (parseStatsQuery cat req) body
     return $ okResponse (apiHeaders req) $ J.pairs
-      $  "count" J..= count
-      <> foldMap (\f -> fieldName f `JE.pair` fieldStatsJSON f) stats
+      $ foldMap (\(FieldValue f v) -> fieldName f J..= v) stats
   , apiResponse = do
     fs <- fieldStatsSchema
-    return $ jsonContent $ OA.Inline $ objectSchema "stats"
-      [ ("count", OA.Inline $ schemaDescOf statsCount "number of matching rows", True) ]
+    return $ jsonContent $ OA.Inline $ objectSchema "stats" []
       & OA.additionalProperties ?~ OA.AdditionalPropertiesSchema fs
       & OA.title ?~ "stats result"
   }
@@ -941,6 +985,10 @@ histogramListSchema = do
     & OA.title ?~ "histogram fields"
 
 parseHistogramsQuery :: Catalog -> Wai.Request -> BS.ByteString -> [Histogram]
+parseHistogramsQuery _ _ "" = []
+parseHistogramsQuery cat _ s
+  | BSC.head s == '['
+  , Just r <- J.parseMaybe (mapM (parseHistogramsJSON cat)) =<< J.decodeStrict s = r
 parseHistogramsQuery cat req param =
   mapMaybe parseHist $ parseListQuery req param
   where
@@ -1011,6 +1059,7 @@ apiHistogram = APIOp -- /api/{cat}/histogram
         , ("quartiles", fn, False)
         ]
         & OA.title ?~ "histogram parameters"
+        & OA.additionalProperties .~ Nothing
       ]
   , apiAction = \sim req -> do
     cat <- askCatalog sim
@@ -1071,8 +1120,9 @@ apiAttachment = APIOp
     atf <- lookupField cat False atn
     att <- maybe (raise404 "Not attachment field") return $ fieldAttachment atf
     dat <- queryData cat DataArgs
-      { dataFilters = mempty{ filterFields = KM.singleton $
-        idField{ fieldType = Keyword (FieldEQ [rid]) } }
+      { dataFilters = mempty
+        { filterFields = KM.singleton $ setFieldValue idField (Keyword (FieldEQ [rid]))
+        }
       , dataCount = 1
       , dataFields = KM.fromList $ attachmentFields cat atf
       , dataSort = []
@@ -1102,10 +1152,19 @@ instance R.Parameter R.PathString AttachmentsFormat where
   renderParameter = KM.key
   parseParameter s = HM.lookup s attachmentsFormats
 
+attachmentsResponse :: OA.Response
+attachmentsResponse = mempty
+  & OA.description .~ "file containing all matching attachments in the selected format"
+  & OA.content .~ HMI.fromList
+    (map (\(AttachmentsFormat f) -> (outputMimeType f, mempty & OA.schema ?~ OA.Inline (mempty
+      & OA.title ?~ (T.pack (outputExtension f) <> " attachments")
+      & OA.description ?~ outputDescription f)))
+      (KM.toList attachmentsFormats))
+
 apiAttachments :: APIOp (Simulation, AttachmentsFormat)
 apiAttachments = APIOp
   { apiName = "attachments"
-  , apiSummary = "Download attachments in bulk from matching rows"
+  , apiSummary = "Download attachments in bulk from matching rows for multiple fields"
   , apiPath = catalogBase R.>* "attachments" R.>*< R.parameter
   , apiExampleArg = ("catalog", head $ KM.toList attachmentsFormats)
   , apiPathParams = return [catalogParam
@@ -1126,20 +1185,48 @@ apiAttachments = APIOp
         "attachments to return; use fields parameter to specify which attachments to include, and filter to select which rows"
         [ ("fields", list, True)
         ]
+        & OA.additionalProperties .~ Nothing
       ]
-  , apiAction = \(sim, AttachmentsFormat fmt) -> outputAction sim fmt Nothing $ \args ->
-    unless (all (isJust . fieldAttachment) (dataFields args)) $
-      raise400 "Selected fields must be attachments"
-  , apiResponse = do
-    return $ mempty
-      & OA.description .~ "file containing all matching attachments in the selected format"
-      & OA.content .~ HMI.fromList
-        (map (\(AttachmentsFormat f) -> (outputMimeType f, mempty & OA.schema ?~ OA.Inline (mempty
-          & OA.title ?~ (T.pack (outputExtension f) <> " attachments")
-          & OA.description ?~ outputDescription f)))
-          (KM.toList attachmentsFormats))
+  , apiAction = \(sim, AttachmentsFormat fmt) -> outputAction sim fmt Nothing $ \args -> do
+    return args
+      { dataFields = V.filter (isJust . fieldAttachment) (dataFields args)
+      }
+  , apiResponse = return attachmentsResponse
   }
 
+apiAttachmentsField :: APIOp (Simulation, AttachmentsFormat, T.Text)
+apiAttachmentsField = APIOp
+  { apiName = "attachments1"
+  , apiSummary = "Download attachments in bulk from matching rows for single field"
+  , apiPath = catalogBase R.>* "attachments" R.>*< R.parameter R.>>*< R.parameter
+  , apiExampleArg = ("catalog", head $ KM.toList attachmentsFormats, "field")
+  , apiPathParams = do
+    fn <- fieldNameSchema
+    return
+      [ catalogParam
+      , mempty
+        & OA.name .~ "format"
+        & OA.schema ?~ OA.Inline (mempty
+          & OA.type_ ?~ OA.OpenApiString
+          & OA.enum_ ?~ map (J.toJSON . KM.key) (KM.toList attachmentsFormats))
+      , mempty
+        & OA.name .~ "field"
+        & OA.schema ?~ fn
+      ]
+  , apiQueryParams = [filtersQueryParam]
+  , apiRequestSchema = Just $ do
+    filt <- filtersSchema
+    return $ mempty & OA.allOf ?~
+      [ filt
+      ]
+  , apiAction = \(sim, AttachmentsFormat fmt, atn) -> outputAction sim fmt Nothing $ \args -> do
+    cat <- askCatalog sim
+    atf <- lookupField cat False atn
+    unless (isJust (fieldAttachment atf)) $
+      raise404 "Not attachment field"
+    return args{ dataFields = V.singleton atf }
+  , apiResponse = return attachmentsResponse
+  }
 
 -------- global
 
@@ -1162,10 +1249,12 @@ apiOps =
   , AnyAPIOp apiSchemaCSV
   , AnyAPIOp apiData
   , AnyAPIOp apiDownload
+  , AnyAPIOp apiCount
   , AnyAPIOp apiStats
   , AnyAPIOp apiHistogram
   , AnyAPIOp apiAttachment
   , AnyAPIOp apiAttachments
+  , AnyAPIOp apiAttachmentsField
   ]
 
 apiRoutes :: [R.RouteCase Action]
@@ -1176,9 +1265,9 @@ openApiBase = mempty &~ do
   OA.info .= (mempty
     & OA.title .~ "FlatHUB API"
     & OA.version .~ T.pack (showVersion Paths.version)
-    & OA.description ?~ "Most operations support GET and POST, either of which accepts JSON request bodies or query parameters.  In most cases, query parameters are ignored when there is a request body.")
+    & OA.description ?~ "API to FlatHUB data repository.  Most operations support GET and POST, either of which accepts JSON request bodies or query parameters.  In most cases, query parameters are ignored when there is a request body.  Structured query values have simplified representations described in the schema, or most support JSON- (and uri-)encoded values (e.g., field={\"gte\":0}&fields=[\"field\"]).")
   OA.servers .=
-    [ OA.Server (requestUrl $ baseApiRequest mempty{ R.requestSecure = True, R.requestHost = RI.splitHost "flathub.flatironinstitute.org" }) (Just "production") mempty
+    [ OA.Server (routeRequestUrl $ baseApiRequest mempty{ R.requestSecure = True, R.requestHost = RI.splitHost "flathub.flatironinstitute.org" }) (Just "production") mempty
     ]
 
   mapM_ (\(AnyAPIOp APIOp{..}) -> do
@@ -1203,7 +1292,7 @@ openApiBase = mempty &~ do
 openApi :: Route ()
 openApi = getPath "openapi.json" $ \() req ->
   return $ okResponse (apiHeaders req) $ J.toEncoding $ openApiBase
-    & OA.servers %~ (OA.Server (requestUrl $ baseApiRequest $ R.waiRequest req) Nothing mempty :)
+    & OA.servers %~ (OA.Server (routeRequestUrl $ baseApiRequest $ R.waiRequest req) Nothing mempty :)
 
 baseApiRequest :: R.Request -> R.Request
 baseApiRequest = RI.requestRoute' (R.routePath apiBase) ()
