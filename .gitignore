@@ -20,3 +20,6 @@
 *.dyn_hi
 *.o
 *.dyn_o
+/flatfront/node_modules/
+/flatfront/package-lock.json
+/flatfront/build/
