@@ -1,0 +1,1 @@
+{"version":3,"file":"static/js/419.fac5c1c4.chunk.js","mappings":"0JAGA,UAHe,WACb,OAAO","sources":["components/Topics.tsx"],"sourcesContent":["const Topics = () => {\n  return <p>Topics</p>;\n};\nexport default Topics;\n"],"names":[],"sourceRoot":""}
