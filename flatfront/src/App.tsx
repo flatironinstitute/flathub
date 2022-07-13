@@ -2,10 +2,12 @@ import * as React from 'react';
 import { Link } from 'react-router-dom';
 import logo from './assets/logo.svg';
 import Main from './Main';
+import Header from './components/Header/Header';
 
 function App() {
   return (
     <div className="App">
+      <Header />
       <img src={logo} alt="logo" />
       <ul>
         <li>

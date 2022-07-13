@@ -1,14 +1,8 @@
-export interface ResponseCatalog {
-  name: 'string';
-  title: 'string';
-  synopsis: 'string';
-  order: 'string';
-}
-
 export type Catalog = {
+  descr: string;
   name: string;
-  city: string;
-  logo: string;
+  order: string;
+  title: string;
 };
 
 export type CatalogsProps = {
