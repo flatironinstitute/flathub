@@ -19,9 +19,8 @@ import {
   XIcon,
 } from '@heroicons/react/outline';
 import { ChevronDownIcon } from '@heroicons/react/solid';
-import icon from './icon.svg';
+import icon from '../../assets/icon.png';
 import logo from '../../assets/logo.svg';
-import { Button } from '../Buttons/Button';
 
 const collections = [
   {
@@ -375,11 +374,7 @@ export default function Header() {
             <div className="pt-5 pb-6 px-5 sm:pb-8">
               <div className="flex items-center justify-between">
                 <div>
-                  <img
-                    className="h-8 w-auto"
-                    src="https://tailwindui.com/img/logos/workflow-mark-blue-600.svg"
-                    alt="Workflow"
-                  />
+                  <img className="h-8 w-auto" src={icon} alt="Workflow" />
                 </div>
                 <div className="-mr-2">
                   <Popover.Button className="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500">
@@ -424,55 +419,38 @@ export default function Header() {
                   href="#"
                   className="rounded-md text-base font-medium text-gray-900 hover:text-gray-700"
                 >
-                  Pricing
+                  About FlatHUB
                 </a>
 
                 <a
                   href="#"
                   className="rounded-md text-base font-medium text-gray-900 hover:text-gray-700"
                 >
-                  Docs
+                  API
                 </a>
 
                 <a
                   href="#"
                   className="rounded-md text-base font-medium text-gray-900 hover:text-gray-700"
                 >
-                  Company
+                  Github
                 </a>
 
                 <a
                   href="#"
                   className="rounded-md text-base font-medium text-gray-900 hover:text-gray-700"
                 >
-                  Resources
-                </a>
-
-                <a
-                  href="#"
-                  className="rounded-md text-base font-medium text-gray-900 hover:text-gray-700"
-                >
-                  Blog
-                </a>
-
-                <a
-                  href="#"
-                  className="rounded-md text-base font-medium text-gray-900 hover:text-gray-700"
-                >
-                  Contact Sales
+                  Contact
                 </a>
               </div>
               <div className="mt-6">
-                <a
-                  href="#"
-                  className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700"
-                >
-                  Sign up
-                </a>
                 <p className="mt-6 text-center text-base font-medium text-gray-500">
-                  Existing customer?{' '}
-                  <a href="#" className="text-blue-600 hover:text-blue-500">
-                    Sign in
+                  Project of{' '}
+                  <a
+                    href="http://flatironinstitute.org"
+                    className="text-blue-600 hover:text-blue-500"
+                  >
+                    Flatiron Institute
                   </a>
                 </p>
               </div>
