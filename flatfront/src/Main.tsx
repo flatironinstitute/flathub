@@ -1,14 +1,14 @@
 import * as React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import useAllCatalogsService from './services/useAllCatalogsService';
+import About from './pages/About';
 const Home = React.lazy(() => import('./pages/Home'));
 const Catalogs = React.lazy(() => import('./pages/Catalogs'));
 const Collections = React.lazy(() => import('./pages/Collections'));
-const About = React.lazy(() => import('./pages/About'));
 const Loading = () => <p>Loading ...</p>;
 
 const Main = () => {
-  const service: {
+  const catalogs: {
     status: string;
     payload?: any;
   } = useAllCatalogsService();
@@ -19,7 +19,7 @@ const Main = () => {
         <Route path="/" element={<Home />} />
         <Route
           path="/catalogs"
-          element={<Catalogs catalogs={service.payload} />}
+          element={<Catalogs catalogs={catalogs.payload} />}
         />
         <Route path="/collections" element={<Collections />} />
         <Route path="/about" element={<About />} />

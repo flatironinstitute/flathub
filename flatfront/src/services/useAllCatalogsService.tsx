@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Service } from '../types/Service';
+import { CatalogsProps } from '../types/Catalog';
 
 const useAllCatalogsService = () => {
   const [result, setResult] = useState<Service<Object>>({

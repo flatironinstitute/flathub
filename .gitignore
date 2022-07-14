@@ -22,4 +22,4 @@
 *.dyn_o
 /flatfront/node_modules/
 /flatfront/package-lock.json
-/flatfront/build/
+/flatfront/build/*
