@@ -1,4 +1,6 @@
-# Simple tabular data query interface
+# FlatHUB 
+
+## Simple tabular data query interface
 
 This is a web-based interface for querying large numeric tabular datasets, designed primarily for halo object catalogs from astrophysical simulations.
 It is built on Elasticsearch to allow efficient filtering and aggregation of datasets with billions of objects.
