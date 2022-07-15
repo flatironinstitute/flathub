@@ -42,6 +42,7 @@ routes :: R.RouteMap Action
 routes = R.routes (
   [ R.routeNormCase topPage
   , R.routeNormCase static
+  , R.routeNormCase staticFront
   , R.routeNormCase staticHtml
   , R.routeNormCase agoraPage
   , R.routeNormCase firePage
