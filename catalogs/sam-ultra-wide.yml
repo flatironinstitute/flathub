@@ -3,8 +3,13 @@ synopsis: Santa Cruz semi-analytic model ultra-wide
 descr:
 order: 'candels2-3'
 count: 67422048
-# /mnt/ceph/users/rsomerville/lyung_drives_2021Dec/ROMAN/Roman_Wide/run_20211025
+key: _key
+pipeline: |
+  ctx['_key'] = (((long)ctx['field']) << 57L) | (((long)ctx['realization']) << 54L) | ((long)ctx['halo_id_nbody'] << 12L) | (long)ctx['gal_id'];
 fields:
+  - name: _index
+    type: int
+    flag: hidden
   - name: realization
     dict: candels_realization
     flag: top
@@ -15,10 +20,10 @@ fields:
     descr: halo id from Bolshoi halo catalog
   - name: gal_id
     dict: candels_gal_id
-    type: long
+    type: short
     descr: galaxy id
   - name: gal_type
-    type: int
+    type: byte
     descr: 0=central, 1=satellite, 2=orphan
   - name: z_nopec
     dict: true_redshift

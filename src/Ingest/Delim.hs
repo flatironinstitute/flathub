@@ -11,8 +11,8 @@ import           Control.Monad (unless)
 import           Control.Monad.IO.Class (liftIO)
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy.Char8 as BSLC
-import qualified Data.HashMap.Strict as HM
 import           Data.List (mapAccumL, findIndex, genericDrop, genericSplitAt)
+import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import           Data.Word (Word64)
 import           Text.Read (readMaybe)
@@ -80,7 +80,7 @@ ingestDelim delim info@Ingest{ ingestCatalog = cat, ingestOffset = off } = do
             o d
       ES.createBulk cat block
       loop o' s'
-  unless (HM.null $ catalogFieldMap missing) $ fail $ "missing fields: " ++ show (fieldName <$> catalogFieldMap missing)
+  unless (all (T.isPrefixOf "_" . fieldName) $ catalogFieldMap missing) $ fail $ "missing fields: " ++ show (fieldName <$> catalogFieldMap missing)
   loop off rows'
 
 ingestDat :: Ingest -> M Word64

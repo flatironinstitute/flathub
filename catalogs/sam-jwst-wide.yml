@@ -2,9 +2,14 @@ title: SC-SAM JWST wide-field
 synopsis: Santa Cruz semi-analytic model JWST wide-field
 descr:
 order: 'candels2-1'
-# /mnt/ceph/users/rsomerville/lyung_drives_2021Dec/PAPER_VI/JWST_CANDELS/run_20210607 
 count: 79582714
+key: _key
+pipeline: |
+  ctx['_key'] = (((long)ctx['field']) << 57L) | (((long)ctx['realization']) << 54L) | ((long)ctx['halo_id_nbody'] << 12L) | (long)ctx['gal_id'];
 fields:
+  - name: _key
+    type: long
+    flag: hidden
   - name: field
     dict: candels_field
     flag: top
@@ -18,10 +23,10 @@ fields:
     descr: halo id from Bolshoi halo catalog
   - name: gal_id
     dict: candels_gal_id
-    type: long
+    type: short
     descr: galaxy id
   - name: gal_type
-    type: int
+    type: byte
     descr: 0=central, 1=satellite, 2=orphan
   - name: z_nopec
     dict: true_redshift

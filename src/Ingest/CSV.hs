@@ -10,6 +10,7 @@ module Ingest.CSV
 
 import           Control.Arrow (first)
 import           Control.Monad.IO.Class (liftIO)
+import qualified Data.Aeson as J
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Csv.Streaming as CSV
@@ -48,9 +49,11 @@ takeCSV n r = do
 
 ingestCSVFrom :: Ingest -> V.Vector BS.ByteString -> CSV.Records (V.Vector BS.ByteString) -> M Word64
 ingestCSVFrom info@Ingest{ ingestCatalog = cat, ingestOffset = off } header rows = do
-  cols <- mapM (\f ->
-      maybe (raise400 $ "csv header field missing: " ++ T.unpack (fieldName f)) (return . (,) f)
-        $ V.elemIndex (TE.encodeUtf8 $ fieldSource f) header)
+  cols <- mapM (\f -> (,) f <$>
+      maybe (if fieldSource f == "_index" then return (-1) else
+        raise400 $ "csv header field missing: " ++ T.unpack (fieldName f))
+        return
+        (V.elemIndex (TE.encodeUtf8 $ fieldSource f) header))
     $ catalogFields cat
   let
     (del, rows') = dropCSV off rows
@@ -58,14 +61,15 @@ ingestCSVFrom info@Ingest{ ingestCatalog = cat, ingestOffset = off } header rows
     key
       | Just (_, k) <- (\n -> V.find ((n ==) . fieldName . fst) cols) =<< catalogKey cat = const $ BSC.unpack . (V.! k)
       | otherwise = const . (ingestPrefix info ++) . show
-    val r (f, i) = ingestFieldBS f (r V.! i)
+    val o _ (f, -1) = fieldName f J..= o
+    val _ r (f, i) = ingestFieldBS f (r V.! i)
     loop o cs = do
       liftIO $ putStr (show o ++ "\r") >> hFlush stdout
       (rs, cs') <- runErr $ takeCSV (ingestBlockSize info) cs
       if null rs
         then return o
         else do
-          let (o', block) = mapAccumL (\i r -> (succ i, (key i r, ingestJConsts info <> foldMap (val r) cols))) o rs
+          let (o', block) = mapAccumL (\i r -> (succ i, (key i r, ingestJConsts info <> foldMap (val i r) cols))) o rs
           ES.createBulk cat block
           loop o' cs'
   loop off' rows'
