@@ -5,9 +5,9 @@ order: 'candels2-3'
 count: 67422048
 key: _key
 pipeline: |
-  ctx['_key'] = (((long)ctx['field']) << 57L) | (((long)ctx['realization']) << 54L) | ((long)ctx['halo_id_nbody'] << 12L) | (long)ctx['gal_id'];
+  ctx['_key'] = (((long)ctx['realization']) << 54L) | ((long)ctx['halo_id_nbody'] << 12L) | (long)ctx['gal_id'];
 fields:
-  - name: _index
+  - name: _key
     type: int
     flag: hidden
   - name: realization
