@@ -33,7 +33,7 @@ spec:
           - name: processors
             valueFrom:
               resourceFieldRef:
-                resource: requests.cpu
+                resource: limits.cpu
           - name: TAKE_FILE_OWNERSHIP
             value: "true"
           - name: xpack.security.enabled
@@ -108,7 +108,7 @@ spec:
           - name: processors
             valueFrom:
               resourceFieldRef:
-                resource: requests.cpu
+                resource: limits.cpu
           - name: TAKE_FILE_OWNERSHIP
             value: "true"
           - name: xpack.security.enabled
