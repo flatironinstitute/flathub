@@ -9,6 +9,7 @@ module Static
   , cacheControl
   , static
   , staticURI
+  , staticFront
   ) where
 
 import           Control.Exception (handleJust)
@@ -24,7 +25,7 @@ import           Network.HTTP.Types.Header (Header, hContentType, hCacheControl)
 import           Network.HTTP.Types.Status (ok200)
 import qualified Network.Mime as Mime
 import qualified Network.Wai as Wai
-import           System.Directory (getModificationTime)
+import           System.Directory (getModificationTime, doesFileExist)
 import qualified System.FilePath as FP
 import           System.IO.Error (isDoesNotExistError)
 import qualified Text.Blaze.Html5 as H hiding (text, textValue)
@@ -35,7 +36,7 @@ import Global
 import Compression
 
 newtype FilePathComponent = FilePathComponent{ componentFilePath :: String }
-  deriving (IsString)
+  deriving (IsString, Eq, Ord)
 
 instance R.Parameter R.PathString FilePathComponent where
   parseParameter p = do
@@ -64,11 +65,10 @@ cacheControl :: Global -> Wai.Request -> Header
 cacheControl glob q = (hCacheControl, "public, max-age=" <> (if isdev then "10, must-revalidate" else "86400")) where
   isdev = globalDevMode glob && length (Wai.pathInfo q) <= 2 -- only un-cache "top-level" web/html files
 
-static :: Route [FilePathComponent]
-static = getPath ("web" R.*< R.manyI R.parameter) $ \paths q -> do
+staticPath :: FilePath -> Wai.Request -> M Wai.Response
+staticPath path q = do
   glob <- ask
-  let path = FP.joinPath ("web" : map componentFilePath paths)
-      encs = acceptCompressionEncoding q
+  let encs = acceptCompressionEncoding q
   fmod <- liftIO $ getModificationTime' path
   enc <- liftIO $ findM (\e -> do
     zmod <- getModificationTime' (compressionFilename (Just e) path)
@@ -79,6 +79,18 @@ static = getPath ("web" R.*< R.manyI R.parameter) $ \paths q -> do
     ] ++ maybeToList (compressionEncodingHeader <$> enc))
     (compressionFilename enc path) Nothing
 
+static :: Route [FilePathComponent]
+static = getPath ("web" R.*< R.manyI R.parameter) $ \paths ->
+  staticPath (FP.joinPath ("web" : map componentFilePath paths))
+
 staticURI :: [FilePathComponent] -> H.AttributeValue
 staticURI p = WH.routeActionValue static p mempty
 
+staticFront :: Route [FilePathComponent]
+staticFront = getPath ("v" R.*< R.manyI R.parameter) $ \paths q -> do
+  let path = FP.joinPath ("flatfront/build" : map componentFilePath paths)
+  case paths of
+    "static" : _ -> staticPath path q
+    _ -> do
+      s <- liftIO $ doesFileExist path
+      staticPath (if s then path else "flatfront/build/index.html") q

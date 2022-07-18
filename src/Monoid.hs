@@ -3,7 +3,10 @@ module Monoid
   , mintersperse
   , mintersperseMap
   , joinMaybeWith
+  , guarded
   ) where
+
+import           Control.Applicative (Alternative, empty)
 
 mwhen :: Monoid m => Bool -> m -> m
 mwhen True v = v
@@ -21,3 +24,8 @@ joinMaybeWith :: (a -> a -> a) -> Maybe a -> Maybe a -> Maybe a
 joinMaybeWith _ Nothing x = x
 joinMaybeWith _ x Nothing = x
 joinMaybeWith f (Just x) (Just y) = Just $ f x y
+
+-- Not really Monoid but close enough
+guarded :: Alternative m => Bool -> a -> m a
+guarded True v = pure v
+guarded False _ = empty

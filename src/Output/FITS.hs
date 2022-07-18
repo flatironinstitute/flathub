@@ -170,8 +170,8 @@ typeInfo (Keyword   _) = cField 'A' -- count set by size below
 typeInfo (Void      _) = (cField 'P'){ tfCount = 0 }
 typeInfo (Array     t) = typeInfo (arrayHead t) -- count set by length below
 
-tField :: FieldSub FieldFilter Proxy -> TField
-tField f@Field{ fieldType = ft } = ti
+tField :: FieldTypeValue FieldFilter -> TField
+tField (FieldValue f ft) = ti
   { tfCount = tfCount ti
       * (if typeIsString ft         then fieldSize f   else 1)
       * (if isJust (typeIsArray ft) then fieldLength f else 1)
@@ -228,7 +228,7 @@ fitsHeaders date req cat args count =
   , datasize, BS.replicate (blockPadding $ fromIntegral datasize) 0)
   where
   tfields = V.map (\f -> tField (KM.lookupDefault
-      (runIdentity $ updateFieldValueM f (\_ -> Identity $ FieldEQ []))
+      (runIdentity $ makeFieldValueM f (Identity $ FieldEQ []))
       $ filterFields $ dataFilters args))
     $ dataFields args
   Sum rowsize = V.foldMap (Sum . tfBytes) tfields

@@ -120,6 +120,12 @@
         </div>
       </div>
     </div>
+- name: sam-forecasts
+  title: Semi-Analytic Forecasts
+  children:
+    - sam-jwst-wide
+    - sam-jwst-deep
+    - sam-ultra-wide
 - name: galaxy-iso
   title: Isolated Galaxy Simulations
   visible: false

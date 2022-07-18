@@ -28,7 +28,7 @@ module Backend
 
 import           Control.Applicative (many)
 import           Control.Monad (unless)
-import           Control.Monad.IO.Class (MonadIO, liftIO)
+import           Control.Monad.IO.Class (MonadIO)
 import           Control.Monad.Trans.Class (lift)
 import           Control.Monad.Trans.Resource (MonadResource)
 import qualified Data.Aeson as J
@@ -104,7 +104,7 @@ instance J.ToJSON1 FieldFilter where
 data Filters = Filters
   { filterSample :: Double
   , filterSeed :: Word
-  , filterFields :: KM.KeyedMap (FieldSub FieldFilter Proxy)
+  , filterFields :: KM.KeyedMap (FieldTypeValue FieldFilter)
   }
 
 instance Semigroup Filters where
@@ -124,13 +124,13 @@ instance J.ToJSON Filters where
       , "seed" J..= filterSeed
       ]
     ++
-    map (\f -> fieldName f J..= fieldType f) (HM.elems filterFields)
+    map (\(FieldValue f v) -> fieldName f J..= v) (HM.elems filterFields)
   toEncoding Filters{..} = J.pairs $
     mwhen (filterSample < 1)
       ("sample" J..= filterSample
       <> "seed" J..= filterSeed)
     <>
-    foldMap (\f -> fieldName f J..= fieldType f) filterFields
+    foldMap (\(FieldValue f v) -> fieldName f J..= v) filterFields
 
 filterQuery :: Filters -> J.Series
 filterQuery Filters{..} = "query" .=*
@@ -141,7 +141,7 @@ filterQuery Filters{..} = "query" .=*
       <> "min_score" J..= (1 - filterSample)))
     else id)
   ("bool" .=* ("filter" `JE.pair` JE.list
-    (\f -> JE.pairs $ unTypeValue (term f) $ fieldType f)
+    (\(FieldValue f v) -> JE.pairs $ unTypeValue (term f) v)
     (KM.toList filterFields)))
   where
   term f (FieldEQ [v]) = "term" .=* (fieldName f J..= v)
@@ -172,14 +172,14 @@ instance DataRow (HM.HashMap T.Text Field) [FieldValue] where
     <*> "fields" JS..: many (JS.objectKeyValues ps)
     where
     ps fn = foldMap pf $ HM.lookup fn fields
-    pf f = updateFieldValueM f (\Proxy -> Identity <$> parseStream)
+    pf f = makeFieldValueM f (Identity <$> parseStream)
 
 parseFieldValue' :: Field -> J.Value -> Value
 parseFieldValue' f v = fmapTypeValue (\Proxy -> either error Identity (J.parseEither parseJSONValue v)) (fieldType f)
 
 instance DataRow (HM.HashMap T.Text Field) (HM.HashMap T.Text Value) where
   parseHit fm = return . HM.intersectionWith parseFieldValue' fm . storedFields
-  parseHitStream fm = fmap (fieldType :: FieldValue -> Value) <$> parseHitStream fm
+  parseHitStream fm = fmap (fieldValue :: FieldValue -> Value) <$> parseHitStream fm
 
 instance DataRow (HM.HashMap T.Text Field) (HM.HashMap T.Text FieldValue) where
   parseHit fm = return . HM.intersectionWith pfv fm . storedFields where
@@ -247,8 +247,8 @@ queryData cat args@DataArgs{..} = do
   httpJSON (parseData dataFields) =<< queryDataRequest cat args Nothing
 
 fstAndLast :: Monad m => C.ConduitT (a, b) (C.Flush a) m (Maybe b)
-fstAndLast = C.await >>= maybe (return Nothing) go where
-  loop b = C.await >>= maybe (return $ Just b) go
+fstAndLast = C.await >>= traverse go where
+  loop b = C.await >>= maybe (return b) go
   go (a, b) = C.yield (C.Chunk a) >> loop b
 
 queryDataStream :: (MonadResource m, MonadIO m, MonadGlobal m, MonadFail m, Foldable f, DataRow (f Field) a) =>
@@ -281,25 +281,25 @@ queryCount cat filt =
 fieldUseTerms :: Field -> Bool
 fieldUseTerms f = fieldTerms f || not (typeIsNumeric $ snd $ unArrayType $ fieldType f)
 
-parseStats :: Catalog -> J.Value -> J.Parser (Count, KM.KeyedMap (FieldSub FieldStats Proxy))
-parseStats cat = J.withObject "stats res" $ \o -> (,)
-  <$> (o J..: "hits" >>= (J..: "total") >>= (J..: "value"))
-  <*> (HM.traverseWithKey pf =<< o J..:! "aggregations" J..!= mempty) where
+parseStats :: Catalog -> J.Value -> J.Parser (KM.KeyedMap (FieldTypeValue FieldStats))
+parseStats cat = J.withObject "stats res" $ \o ->
+  HM.traverseWithKey pf =<< o J..:! "aggregations" J..!= mempty
+  where
   pf n a = do
     f <- failErr $ lookupField cat False n
-    updateFieldValueM f (flip (if fieldUseTerms f then pt else ps) a)
-  ps :: Proxy a -> J.Value -> J.Parser (FieldStats a)
-  ps _ = J.withObject "stats" $ \o -> FieldStats
+    makeFieldValueM f $ (if fieldUseTerms f then pt else ps) a
+  ps :: J.Value -> J.Parser (FieldStats a)
+  ps = J.withObject "stats" $ \o -> FieldStats
     <$> o J..: "min"
     <*> o J..: "max"
     <*> o J..: "avg"
     <*> o J..: "count"
-  pt :: Typed a => Proxy a -> J.Value -> J.Parser (FieldStats a)
-  pt p = J.withObject "terms" $ \o -> FieldTerms
-    <$> (mapM (pb p) =<< o J..: "buckets")
+  pt :: Typed a => J.Value -> J.Parser (FieldStats a)
+  pt = J.withObject "terms" $ \o -> FieldTerms
+    <$> (mapM pb =<< o J..: "buckets")
     <*> o J..: "sum_other_doc_count"
-  pb :: Typed a => Proxy a -> J.Value -> J.Parser (a, Count)
-  pb _ = J.withObject "bucket" $ \o -> (,)
+  pb :: Typed a => J.Value -> J.Parser (a, Count)
+  pb = J.withObject "bucket" $ \o -> (,)
     <$> (parseJSONValue =<< o J..: "key")
     <*> o J..: "doc_count"
 
@@ -308,10 +308,10 @@ data StatsArgs = StatsArgs
   , statsFields :: KM.KeyedMap Field
   }
 
-queryStats :: Catalog -> StatsArgs -> M (Count, KM.KeyedMap (FieldSub FieldStats Proxy))
+queryStats :: Catalog -> StatsArgs -> M (KM.KeyedMap (FieldTypeValue FieldStats))
 queryStats cat StatsArgs{..} =
   searchCatalog cat [] (parseStats cat) $ JE.pairs
-    $  "track_total_hits" J..= True
+    $  "track_total_hits" J..= False
     <> "size" J..= (0 :: Count)
     <> "aggs" .=* foldMap (\f -> fieldName f .=* (if fieldUseTerms f
       then "terms" .=* (field f <> "size" J..= (if fieldTerms f then 32 else 4 :: Int))
@@ -396,7 +396,6 @@ queryHistogram cat hist@HistogramArgs{..} = do
   unless (depth <= fromIntegral maxHistogramDepth
       && product (map (fromIntegral . histogramSize) histogramFields) <= maxHistogramSize)
     $ raise400 "histograms too large"
-  (_, stats) <- liftIO $ catalogStats cat
   -- calculate the bucket sizes (or explicit ranges for log)
   let size Histogram{..} = histint where
         histint
@@ -415,8 +414,8 @@ queryHistogram cat hist@HistogramArgs{..} = do
         (fmin, fmax) = maybe stat (unTypeValue frng) $ look (filterFields histogramFilters)
         frng (FieldRange a b) = (maybe smin toDouble a, maybe smax toDouble b)
         frng _ = stat
-        stat@(smin, smax) = fromMaybe (0, 1) $ unTypeValue srng =<< look stats
-        look = fmap fieldType . HM.lookup (fieldName histogramField)
+        stat@(smin, smax) = fromMaybe (1, 10) $ unTypeValue srng =<< fieldStats histogramField
+        look = fmap fieldValue . HM.lookup (fieldName histogramField)
   sizes <- runErr $ mapM size histogramFields
   dat <- searchCatalog cat [] (parseHistogram hist) $ JE.pairs
       $  "size" J..= (0 :: Count)

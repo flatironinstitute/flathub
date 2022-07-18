@@ -40,12 +40,20 @@ fields:
   type: float
   units: kpc
   descr: positions of star particles (x,y,z) in principal axes cartesian coordinates with respect to the center of the host galaxy. The z-direction is perpendicular to the disk.
+  sub:
+  - name: 'x'
+  - name: 'y'
+  - name: 'z'
 - name: velocity
   title: velocity
   type: float
   units: km/s
   dict: vel
   descr: velocities of star particles (vx, vy, vz) in principal axes cartesian coordinates with respect to the center of the host galaxy. The z-direction is perpendicular to the disk.
+  sub:
+  - name: 'x'
+  - name: 'y'
+  - name: 'z'
 - name: particle_mass_z0
   title: mass
   type: float

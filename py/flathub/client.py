@@ -212,13 +212,7 @@ class TermsStats(TypedDict):
 class StatsRes:
     """Result of a Catalog.stats call."""
     def __init__(self, res):
-        self._count: int = res.pop('count')
         self.json = res
-
-    @property
-    def count(self) -> int:
-        """Total count of matching rows."""
-        return self._count
 
     def __getitem__(self, field: FieldRef) -> Union[NumericStats, TermsStats]:
         """Get stats for a particular field."""

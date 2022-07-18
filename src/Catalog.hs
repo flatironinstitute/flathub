@@ -22,11 +22,11 @@ module Catalog
   , catalogGrouping
   , groupedCatalogs
   , Filter(..)
-  , liftFilterValue
   , QueryAgg(..)
   , Query(..)
   ) where
 
+import           Control.Applicative ((<|>))
 import           Control.Arrow ((&&&))
 import           Control.Monad (guard, unless, mfilter)
 import qualified Data.Aeson as J
@@ -38,7 +38,6 @@ import           Data.Functor.Identity (Identity(runIdentity))
 import qualified Data.HashMap.Strict as HM
 import qualified Data.HashSet as HS
 import           Data.Maybe (catMaybes, maybeToList)
-import           Data.Proxy (Proxy(Proxy))
 import qualified Data.Text as T
 import qualified Data.Vector as V
 
@@ -64,24 +63,23 @@ data Catalog = Catalog
   , catalogSynopsis :: Maybe T.Text
   , catalogDescr :: Maybe T.Text
   , catalogHtml :: Maybe T.Text
-  , catalogFieldGroups :: FieldGroups
+  , catalogFieldGroups :: Fields
   , catalogFields :: Fields
   , catalogFieldMap :: KM.KeyedMap Field
-  , catalogStats :: IO (Count, KM.KeyedMap (FieldSub FieldStats Proxy)) -- ^deferred cached calculation of global stats (which we assume never change)
   , catalogKey :: Maybe T.Text -- ^primary key
   , catalogSort :: [T.Text] -- ^sort field(s) for index
-  , catalogCount :: Maybe Count -- ^intended number of rows
+  , catalogCount :: Maybe Count -- ^(intended) number of rows
   }
 
 instance KM.Keyed Catalog where
   type Key Catalog = Simulation
   key = catalogName
 
-parseCatalog :: HM.HashMap T.Text FieldGroup -> T.Text -> J.Value -> J.Parser Catalog
-parseCatalog dict catalogName = J.withObject "catalog" $ \c -> do
+parseCatalog :: HM.HashMap T.Text Field -> T.Text -> J.Object -> J.Value -> J.Parser Catalog
+parseCatalog dict catalogName stats = J.withObject "catalog" $ \c -> do
   catalogEnabled <- c J..:! "enabled" J..!= True
   catalogVisible <- c J..:! "visible" J..!= True
-  catalogFieldGroups <- parseJSONField "fields" (J.withArray "fields" $ mapM (parseFieldGroup dict)) c
+  catalogFieldGroups <- parseJSONField "fields" (J.withArray "fields" $ mapM (parseField dict stats)) c
   catalogTitle <- c J..: "title"
   catalogSynopsis <- c J..:? "synopsis"
   catalogDescr <- c J..:? "descr"
@@ -92,14 +90,14 @@ parseCatalog dict catalogName = J.withObject "catalog" $ \c -> do
     Just J.Null -> return []
     Just (J.String s) -> return [s]
     Just s -> J.parseJSON s
-  catalogCount <- c J..:? "count"
+  statsCount <- stats J..:? "count"
+  catalogCount <- (<|> statsCount) <$> c J..:? "count"
   catalogIndex <- c J..:? "index" J..!= catalogName
   catalogIndexSettings <- c J..:? "settings" J..!= HM.empty
   catalogIngestPipeline <- c J..:? "pipeline"
   catalogOrder <- c J..:? "order" J..!= catalogName
   let catalogFields = expandFields catalogFieldGroups
       catalogFieldMap = KM.fromList $ V.toList catalogFields
-      catalogStats = fail "catalogStats" -- filled in later
   mapM_ (\k -> unless (HM.member k catalogFieldMap) $ fail "key field not found in catalog") catalogKey
   mapM_ (\k -> unless (HM.member k catalogFieldMap) $ fail "sort field not found in catalog") catalogSort
   return Catalog{..}
@@ -251,7 +249,10 @@ instance J.FromJSON Catalogs where
   parseJSON = J.withObject "top" $ \o -> do
     dict <- o J..:? "_dict" J..!= mempty
     groups <- o J..:? "_group" J..!= mempty
-    cats <- HM.traverseWithKey (parseCatalog $ expandAllFields dict) (HM.delete "_dict" $ HM.delete "_group" o)
+    stats <- o J..:? "_stats" J..!= mempty
+    cats <- HM.traverseWithKey (\n ->
+        parseCatalog (expandAllFields dict) n (HM.lookupDefault mempty n stats))
+      (HM.delete "_stats" $ HM.delete "_dict" $ HM.delete "_group" o)
     mapM_ (\c -> unless (HM.member c cats) $ fail $ "Group catalog " ++ show c ++ " not found") $ groupingsCatalogs groups
     return $ Catalogs (expandFields dict) cats groups
 
@@ -293,17 +294,29 @@ instance J.ToJSON1 Filter where
   liftToEncoding f _ (FilterRange l u) = J.pairs $
     foldMap (JE.pair "lb" . f) l <> foldMap (JE.pair "ub" . f) u
 
-liftFilterValue :: Field -> Filter Value -> FieldSub Filter Proxy
-liftFilterValue f (FilterEQ v) =
-  f{ fieldType = fmapTypeValue (FilterEQ . runIdentity) v }
-liftFilterValue f (FilterRange (Just l) (Just u)) =
-  f{ fieldType = fmapTypeValue2 (\x y -> FilterRange (Just $ runIdentity x) (Just $ runIdentity y)) l u }
-liftFilterValue f (FilterRange (Just l) Nothing) =
-  f{ fieldType = fmapTypeValue (\x -> FilterRange (Just $ runIdentity x) Nothing) l }
-liftFilterValue f (FilterRange Nothing (Just u)) =
-  f{ fieldType = fmapTypeValue (\x -> FilterRange Nothing (Just $ runIdentity x)) u }
-liftFilterValue f (FilterRange Nothing Nothing) =
-  f{ fieldType = fmapTypeValue (\Proxy -> FilterRange Nothing Nothing) (fieldType f) }
+instance Functor Filter where
+  fmap f (FilterEQ l) = FilterEQ (f l)
+  fmap f (FilterRange g l) = FilterRange (fmap f g) (fmap f l)
+
+instance Foldable Filter where
+  foldMap f (FilterEQ l) = f l
+  foldMap f (FilterRange g l) = foldMap f g <> foldMap f l
+
+instance Traversable Filter where
+  traverse f (FilterEQ l) = FilterEQ <$> f l
+  traverse f (FilterRange g l) = FilterRange <$> traverse f g <*> traverse f l
+
+instance TypeTraversable Filter where
+  sequenceTypeValue (FilterEQ v) =
+    fmapTypeValue (FilterEQ . runIdentity) v
+  sequenceTypeValue (FilterRange (Just l) (Just u)) =
+    fmapTypeValue2 (\x y -> FilterRange (Just $ runIdentity x) (Just $ runIdentity y)) l u
+  sequenceTypeValue (FilterRange (Just l) Nothing) =
+     fmapTypeValue (\x -> FilterRange (Just $ runIdentity x) Nothing) l
+  sequenceTypeValue (FilterRange Nothing (Just u)) =
+     fmapTypeValue (\x -> FilterRange Nothing (Just $ runIdentity x)) u
+  sequenceTypeValue (FilterRange Nothing Nothing) =
+     Void $ FilterRange Nothing Nothing
 
 data QueryAgg
   = QueryStats
@@ -325,7 +338,7 @@ data Query = Query
   , queryLimit :: Word
   , querySort :: [(Field, Bool)]
   , queryFields :: [Field]
-  , queryFilter :: [FieldSub Filter Proxy]
+  , queryFilter :: [FieldTypeValue Filter]
   , querySample :: Double
   , querySeed :: Maybe Word
   , queryAggs :: [QueryAgg]
@@ -366,8 +379,8 @@ instance J.ToJSON Query where
       ] | (f,a) <- querySort ]
     , "fields" J..= map fieldName queryFields
     , "filter" J..= [ J.object
-      [ "field" J..= fieldName f
-      , "value" J..= fieldType f
+      [ "field" J..= fieldName (fieldDesc f)
+      , "value" J..= fieldValue f
       ] | f <- queryFilter ]
     , "seed"   J..= querySeed
     , "sample" J..= querySample

@@ -1,0 +1,19 @@
+#!/bin/bash -eu
+run() {
+	echo "$*"
+	"$@"
+}
+
+sim=`basename $0`
+
+base="${1:-/mnt/ceph/users/rsomerville/lyung_drives_2021Dec/ROMAN/Roman_Wide/run_20211025}"
+field=wide
+file=lightcone_nc.dat
+for real in `seq 0 4` ; do
+  for part in $base/$field.$real/part_z*_z* ; do
+    pz=$(basename $part)
+    pz=${pz#part_z}
+    pz=${pz%_z*}
+    run ~/.local/bin/flathub -i $sim -c realization=$real $real-$pz=$part/$file
+  done
+done

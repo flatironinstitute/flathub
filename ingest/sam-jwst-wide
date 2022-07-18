@@ -1,0 +1,17 @@
+#!/bin/bash -eu
+run() {
+	echo "$*"
+	"$@"
+}
+
+sim=`basename $0`
+declare -A fields=([cosmos]=COSMOS [egs]=EGS [goodsn]=GOODS-N [goodss]=GOODS-S [uds]=UDS)
+
+base="${1:-/mnt/ceph/users/rsomerville/lyung_drives_2021Dec/PAPER_VI/JWST_CANDELS/run_20210607}"
+file=lightcone_nc.dat
+for field in "${!fields[@]}" ; do
+  fieldn="${fields[$field]}"
+  for real in `seq 0 7` ; do
+    run ~/.local/bin/flathub -i $sim -c field=$fieldn -c realization=$real $field.$real=$base/$field.$real/$file
+  done
+done
