@@ -181,9 +181,9 @@ createIndex :: Catalog -> M ()
 createIndex cat@Catalog{..} = do
   mapM_ (\src ->
     httpPrint =<< elasticRequest PUT ["_ingest","pipeline",T.unpack catalogIndex] [] (JE.pairs
-      $ "processors" .=*
-        ("script" .=*
-          ("source" J..= src))
+      $ JE.pair "processors" $ JE.list id
+        [JE.pairs $ "script" .=*
+          ("source" J..= src)]
       )) catalogIngestPipeline
   httpPrint =<< elasticRequest PUT [T.unpack catalogIndex] [] (JE.pairs
     $  "settings" J..= mergeJSONObject catalogIndexSettings (defaultSettings cat)
