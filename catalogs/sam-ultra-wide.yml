@@ -8,7 +8,7 @@ pipeline: |
   ctx['_key'] = (((long)ctx['realization']) << 54L) | ((long)ctx['halo_id_nbody'] << 12L) | (long)ctx['gal_id'];
 fields:
   - name: _key
-    type: int
+    type: long
     flag: hidden
   - name: realization
     dict: candels_realization
