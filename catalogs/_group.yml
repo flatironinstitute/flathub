@@ -126,6 +126,52 @@
     - sam-jwst-wide
     - sam-jwst-deep
     - sam-ultra-wide
+  html: |
+    <div class="section">
+      <div class="container">
+        <div class="row">
+          <div class="col-md">
+            <div class="body-copy">
+              <h4>Project summary</h4>
+              <p>
+                <em><a class="underline" href="https://www.simonsfoundation.org/semi-analytic-forecasts">Semi-analytic forecasts for the Universe</a></em> is an ongoing project that provides physically motivated predictions for the properties and demographics of galaxies and quasars forming across cosmic time in the Universe. We provide a wide variety of scientific predictions and simulated data products that are designed to be useful for optimizing observing strategies, physically interpreting observational results, and ultimately maximizing the scientific output of galaxy surveys.
+              </p>
+              <p>
+              These predictions are made with the well-established Santa Cruz semi-analytic model (SAM) for galaxy formation. Taking advantage of the physically motivated and yet computationally efficient model, we provide predictions for tens of millions of galaxies across wide ranges of mass and redshift. Over the course of 7 publications, we stringently examined the model outputs against a wide variety of observational constraints available to date, including distribution functions for rest-frame UV magnitude, stellar mass, star formation rate, and a variety of scaling relations. We showed that the model reproduces constraints well up to z ~ 10. In the series of Forecasts papers, we use NASA’s flagship observatories <a href="https://www.jwst.nasa.gov">James Webb Space Telescope (JWST)</a> and <a href="https://roman.gsfc.nasa.gov">Nancy Grace Roman Space Telescope (Roman)</a> as practical examples to demonstrate how these predictions can be used.
+              </p>
+              <p>
+                We provide three sets of simulated lightcones: 1) a set of 40 wide-field lightcones, each spanning ~1,000 sq. arcmin with footprints overlapping the five <a href="https://ui.adsabs.harvard.edu/abs/2021MNRAS.508.2706Y/abstract">CANDELS</a> legacy fields, resolving galaxies down to M*~10^7 Msun; 2) a set of 8 deep-field lightcones, each spanning 132 sq. arcmin with footprints overlapping the HUDF, resolving galaxies down to M*~5.7x10^7 Msun; and 3) a set of 5 ultra-wide lightcones, each spanning 2 sq degrees, with resolution matching the wide-field lightcones. For all three sets of catalogs, we provide observed-frame photometry for JWST (NIRCam), Roman (WFI), Hubble (WFC3/ACS), Spitzer, Euclid, Rubin, GALEX, SDSS, UKIRT, VISTA, and DECam, as well as rest-frame luminosity for NUV, FUV, and Johnson/Bessel/Cousins bands, and a wide variety of predicted physical properties for halos and galaxies.
+              </p>
+              <h5>See these references for lightcones:</h5>
+              <p>
+                JWST wide-/deep-field lightcones:    <a class="underline" href="https://doi.org/10.1093/mnras/stac2139">Yung et al. 2022a</a>, <a class="underline" href="https://ui.adsabs.harvard.edu/abs/2021MNRAS.502.4858S/abstract">Somerville et al. 2021</a>
+                <br>
+                Ultra-wide lightcones:            Yung et al. 2022b, <a class="underline" href="https://ui.adsabs.harvard.edu/abs/2021MNRAS.502.4858S/abstract">Somerville et al. 2021</a>
+              </p>
+              <h5>See these references for the galaxy formation model:</h5>
+              <p>
+                Santa Cruz semi-analytic model:        <a class="underline" href="https://ui.adsabs.harvard.edu/abs/2015MNRAS.453.4337S/metrics">Somerville et al. 2015</a>, <a class="underline" href="https://ui.adsabs.harvard.edu/abs/2015MNRAS.453.4337S/metrics">Yung et al. 2019a</a>
+              </p>
+              <h5>See these references for predicted properties:</h5>
+              <p>
+                Rest-frame luminosity and JWST photometry:    <a class="underline" href="https://ui.adsabs.harvard.edu/abs/2015MNRAS.453.4337S/metrics">Yung et al. 2019a</a>
+                <br>
+                Physical properties and scaling relations:        <a class="underline" href="https://ui.adsabs.harvard.edu/abs/2019MNRAS.490.2855Y/abstract">Yung et al. 2019b</a>
+              </p>
+              <h5>These works are part of the series and concerns 
+                the role of galaxies and AGN in cosmic reionization:</h5>
+              <p>
+                LyC production rate:        <a class="underline" href="https://ui.adsabs.harvard.edu/abs/2019MNRAS.490.2855Y/abstract">Yung et al. 2020a</a>
+                <br>
+                Galaxy & H reionization:        <a class="underline" href="https://ui.adsabs.harvard.edu/abs/2020MNRAS.496.4574Y/abstract">Yung et al. 2020b</a>
+                <br>
+                AGN & He reionization:        <a class="underline" href="https://ui.adsabs.harvard.edu/abs/2021MNRAS.508.2706Y/abstract">Yung et al. 2021</a></a></a></a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 - name: galaxy-iso
   title: Isolated Galaxy Simulations
   visible: false
