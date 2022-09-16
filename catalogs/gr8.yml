@@ -9,8 +9,25 @@ descr: >
       <li>Cool: Gaia B-R color >= 0.6 </li>
       <li>Main-sequence: based on isochronal cuts in Gaia color-magnitude space </li>
     </ul>
-  The resulting catalog of nearly 3,000 targets encompasses a prime sample for Northern-hemisphere radial velocity exoplanet surveys, precision stellar abundances, future direct imaging surveys, and more. Publications are currently in preparation.<br></br>
-  The gr8stars team is led by Annelies Mortier (University of Cambridge) and Megan Bedell (Flatiron Institute) and includes the following scientists from institutions worldwide: Vardan Adibekyan (Universidade do Porto), John Brewer (San Francisco State University), Lars Buchhave (DTU Space), Ernst De Mooij (Queen’s University Belfast), Elisa Delgado Mena (Universidade do Porto), Jonay González Hernández (Instituto de Astrofísica de Canarias), Raphaelle Haywood (University of Exeter), David Jackson (Queen's University Belfast), Baptiste Klein (University of Oxford), Suvrath Mahadevan (Penn State University), Sam Morrell (University of Exeter), Tim Naylor (University of Exeter), Belinda Nicholson (University of Oxford), Nikolai Piskunov (Uppsala University), Andreas Quirrenbach (University of Heidelberg), Ansgar Reiners (University of Göttingen), Arpita Roy (Space Telescope Science Institute), Nuno Santos (Universidade do Porto), Sérgio Sousa (Universidade do Porto), Alejandro Suárez Mascareño (Instituto de Astrofísica de Canarias), Sam Thompson (University of Cambridge), Maria Tsantaki (Arcetri Observatory), Chris Watson (Queen's University Belfast), Lily Zhao (Flatiron Institute).
+  The resulting catalog of nearly 3,000 targets encompasses a prime sample for Northern-hemisphere radial velocity exoplanet surveys, precision stellar abundances, future direct imaging surveys, and more. Publications are currently in preparation.<br>
+  The gr8stars team is led by Annelies Mortier (University of Birmingham) and
+  Megan Bedell (Flatiron Institute) and includes the following scientists
+  from institutions worldwide: Vardan Adibekyan (Universidade do Porto), John
+  Brewer (San Francisco State University), Lars Buchhave (DTU Space), Ernst
+  De Mooij (Queen’s University Belfast), Elisa Delgado Mena (Universidade do
+  Porto), Alix Freckelton (University of Birmingham), Jonay González
+  Hernández (Instituto de Astrofísica de Canarias), Raphaelle Haywood
+  (University of Exeter), David Jackson (Queen's University Belfast),
+  Baptiste Klein (University of Oxford), Suvrath Mahadevan (Penn State
+  University), Sam Morrell (University of Exeter), Tim Naylor (University of
+  Exeter), Belinda Nicholson (University of Oxford), Nikolai Piskunov
+  (Uppsala University), Andreas Quirrenbach (University of Heidelberg),
+  Ansgar Reiners (University of Göttingen), Arpita Roy (Space Telescope
+  Science Institute), Nuno Santos (Universidade do Porto), Sérgio Sousa
+  (Universidade do Porto), Alejandro Suárez Mascareño (Instituto de
+  Astrofísica de Canarias), Sam Thompson (University of Cambridge), Maria
+  Tsantaki (Arcetri Observatory), Chris Watson (Queen's University Belfast),
+  Lily Zhao (Flatiron Institute).
 count: 2858
 fields:
   - name: ''
