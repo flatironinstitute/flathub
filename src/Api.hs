@@ -36,6 +36,8 @@ import           Control.Monad.Reader (runReaderT, ask, asks)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
+import qualified Data.Aeson.Key as JK
+import qualified Data.Aeson.KeyMap as JM
 import qualified Data.Attoparsec.ByteString as AP
 import           Data.Bits (xor)
 import qualified Data.ByteString as BS
@@ -472,10 +474,10 @@ parseFiltersJSON :: Catalog -> J.Object -> J.Parser Filters
 parseFiltersJSON cat o = Filters
   <$> mfilter (\x -> x > 0 && x <= 1) (o J..:? "sample" J..!= 1)
   <*> o J..:? "seed" J..!= 0
-  <*> HM.traverseWithKey parsef (HM.delete "sample" $ HM.delete "seed" o)
+  <*> (JM.toHashMapText <$> JM.traverseWithKey parsef (JM.delete "sample" $ JM.delete "seed" o))
   where
   parsef n j = do
-    f <- failErr $ lookupField cat True n
+    f <- failErr $ lookupField cat True (JK.toText n)
     makeFieldValueM f (parseFilterJSON f j)
 
 filtersSchema :: OpenApiM (OA.Referenced OA.Schema)
@@ -638,7 +640,7 @@ parseDataQuery cat req = DataArgs
 
 parseDataJSON :: Catalog -> J.Value -> J.Parser (DataArgs V.Vector, Bool)
 parseDataJSON cat = J.withObject "data request" $ \o -> (,) <$> (DataArgs
-  <$> parseFiltersJSON cat (foldl' (flip HM.delete) o fields)
+  <$> parseFiltersJSON cat (foldl' (flip JM.delete) o fields)
   <*> (fmap V.fromList . parseFieldsJSON cat False =<< o J..: "fields")
   <*> (parseSortJSON cat =<< o J..:? "sort")
   <*> o J..: "count"
@@ -885,7 +887,7 @@ parseStatsQuery cat req = StatsArgs
 
 parseStatsJSON :: Catalog -> J.Value -> J.Parser StatsArgs
 parseStatsJSON cat = J.withObject "stats request" $ \o -> StatsArgs
-  <$> parseFiltersJSON cat (HM.delete "fields" o)
+  <$> parseFiltersJSON cat (JM.delete "fields" o)
   <*> (maybe (return KM.empty) (fmap KM.fromList . parseFieldsJSON cat True) =<< o J..:? "fields")
 
 fieldStatsSchema :: OpenApiM (OA.Referenced OA.Schema)
@@ -939,7 +941,7 @@ apiStats = APIOp -- /api/{cat}/stats
     body <- parseJSONBody req (parseStatsJSON cat)
     stats <- queryStats cat $ fromMaybe (parseStatsQuery cat req) body
     return $ okResponse (apiHeaders req) $ J.pairs
-      $ foldMap (\(FieldValue f v) -> fieldName f J..= v) stats
+      $ foldMap (\(FieldValue f v) -> JK.fromText (fieldName f) J..= v) stats
   , apiResponse = do
     fs <- fieldStatsSchema
     return $ jsonContent $ OA.Inline $ objectSchema "stats" []
@@ -1021,7 +1023,7 @@ parseHistogramQuery cat req = HistogramArgs
 
 parseHistogramJSON :: Catalog -> J.Value -> J.Parser HistogramArgs
 parseHistogramJSON cat = J.withObject "histogram request" $ \o -> HistogramArgs
-  <$> parseFiltersJSON cat (HM.delete "fields" $ HM.delete "quartiles" o)
+  <$> parseFiltersJSON cat (JM.delete "fields" $ JM.delete "quartiles" o)
   <*> (mapM (parseHistogramsJSON cat) =<< o J..: "fields")
   <*> (mapM (failErr . lookupField cat True) =<< o J..:? "quartiles")
 

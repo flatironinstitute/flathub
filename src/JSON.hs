@@ -13,6 +13,8 @@ module JSON
 
 import qualified Data.Aeson.Types as J
 import qualified Data.Aeson.Encoding as JE
+import qualified Data.Aeson.Key as JK
+import qualified Data.Aeson.KeyMap as JM
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Builder.Prim as BP
@@ -20,10 +22,8 @@ import           Data.ByteString.Internal (c2w)
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.Conduit as C
 import qualified Data.Conduit.Internal as CI
-import qualified Data.HashMap.Strict as HM
 import qualified Data.JsonStream.Parser as JS
 import           Data.Maybe (fromMaybe)
-import qualified Data.Text as T
 import qualified Data.Vector as V
 import           Data.Word (Word8)
 import qualified Data.Yaml as Y
@@ -33,11 +33,11 @@ import           System.Directory (doesDirectoryExist, listDirectory)
 import           System.FilePath (stripExtension, (</>))
 import           System.IO (hPutStrLn, stderr)
 
-parseJSONField :: T.Text -> (J.Value -> J.Parser a) -> J.Object -> J.Parser a
+parseJSONField :: J.Key -> (J.Value -> J.Parser a) -> J.Object -> J.Parser a
 parseJSONField f p o = J.explicitParseField p o f
 
 infixr 8 .=*
-(.=*) :: T.Text -> J.Series -> J.Series
+(.=*) :: J.Key -> J.Series -> J.Series
 (.=*) f = JE.pair f . JE.pairs
 
 data EmptyJSON = EmptyJSON
@@ -48,7 +48,7 @@ instance J.ToJSON EmptyJSON where
 
 instance J.FromJSON EmptyJSON where
   parseJSON J.Null = return EmptyJSON
-  parseJSON (J.Object o) | HM.null o = return EmptyJSON
+  parseJSON (J.Object o) | JM.null o = return EmptyJSON
   parseJSON (J.Array o) | V.null o = return EmptyJSON
   parseJSON v = J.typeMismatch "EmptyJSON" v
 
@@ -58,7 +58,7 @@ mergeJSON (J.Object a) (J.Object b) = J.Object (mergeJSONObject a b)
 mergeJSON x _ = x
 
 mergeJSONObject :: J.Object -> J.Object -> J.Object
-mergeJSONObject = HM.unionWith mergeJSON
+mergeJSONObject = JM.unionWith mergeJSON
 
 unsingletonJSON :: J.Value -> J.Value
 unsingletonJSON (J.Array v) | V.length v == 1 = V.head v
@@ -89,13 +89,13 @@ loadYamlPath :: J.FromJSON a => FilePath -> IO a
 loadYamlPath f = do
   d <- doesDirectoryExist f
   either (fail . p) return . J.parseEither J.parseJSON =<< if d then
-      J.Object . HM.fromList <$> (mapM ent . filter (not . ('.' ==) . head) =<< listDirectory f)
+      J.Object . JM.fromList <$> (mapM ent . filter (not . ('.' ==) . head) =<< listDirectory f)
     else do
       (w, r) <- either (fail . p . Y.prettyPrintParseException) return =<< Y.decodeFileWithWarnings f
       mapM_ (hPutStrLn stderr . p . show) w
       return r
   where
-  ent e = (T.pack (fromMaybe (fromMaybe e $ stripExtension "yml" e) $ stripExtension "yaml" e) ,) <$> loadYamlPath (f </> e)
+  ent e = (JK.fromString (fromMaybe (fromMaybe e $ stripExtension "yml" e) $ stripExtension "yaml" e) ,) <$> loadYamlPath (f </> e)
   p = (++) (f ++ ": ")
 
 -- |Convert a 'JS.Parser' to a conduit from 'BS.ByteString' input chunks to results, finally returning any parse error or 'Nothing' on success.

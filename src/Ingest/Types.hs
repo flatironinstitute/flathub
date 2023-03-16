@@ -5,6 +5,7 @@ module Ingest.Types
 import           Control.Monad (guard)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
+import qualified Data.Aeson.Key as JK
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Char8 as BSC
@@ -90,4 +91,4 @@ ingestValueBS f v
     where s' = BSC.dropWhile ('0' ==) s
 
 ingestFieldBS :: Field -> BS.ByteString -> J.Series
-ingestFieldBS f v = foldMap (fieldName f `JE.pair`) $ ingestValueBS f v
+ingestFieldBS f v = foldMap (JK.fromText (fieldName f) `JE.pair`) $ ingestValueBS f v

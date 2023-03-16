@@ -11,6 +11,7 @@ module Ingest.CSV
 import           Control.Arrow (first)
 import           Control.Monad.IO.Class (liftIO)
 import qualified Data.Aeson as J
+import qualified Data.Aeson.Key as JK
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Csv.Streaming as CSV
@@ -61,7 +62,7 @@ ingestCSVFrom info@Ingest{ ingestCatalog = cat, ingestOffset = off } header rows
     key
       | Just (_, k) <- (\n -> V.find ((n ==) . fieldName . fst) cols) =<< catalogKey cat = const $ BSC.unpack . (V.! k)
       | otherwise = const . (ingestPrefix info ++) . show
-    val o _ (f, -1) = fieldName f J..= o
+    val o _ (f, -1) = JK.fromText (fieldName f) J..= o
     val _ r (f, i) = ingestFieldBS f (r V.! i)
     loop o cs = do
       liftIO $ putStr (show o ++ "\r") >> hFlush stdout

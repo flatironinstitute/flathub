@@ -32,6 +32,8 @@ import           Control.Monad (guard, unless, mfilter)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
+import qualified Data.Aeson.Key as JK
+import qualified Data.Aeson.KeyMap as JM
 import           Data.Bits (xor)
 import           Data.Functor.Classes (Show1(liftShowsPrec))
 import           Data.Functor.Identity (Identity(runIdentity))
@@ -85,7 +87,7 @@ parseCatalog dict catalogName stats = J.withObject "catalog" $ \c -> do
   catalogDescr <- c J..:? "descr"
   catalogHtml <- c J..:? "html"
   catalogKey <- c J..:? "key"
-  catalogSort <- case HM.lookup "sort" c of
+  catalogSort <- case JM.lookup "sort" c of
     Nothing -> return []
     Just J.Null -> return []
     Just (J.String s) -> return [s]
@@ -93,7 +95,7 @@ parseCatalog dict catalogName stats = J.withObject "catalog" $ \c -> do
   statsCount <- stats J..:? "count"
   catalogCount <- (<|> statsCount) <$> c J..:? "count"
   catalogIndex <- c J..:? "index" J..!= catalogName
-  catalogIndexSettings <- c J..:? "settings" J..!= HM.empty
+  catalogIndexSettings <- c J..:? "settings" J..!= JM.empty
   catalogIngestPipeline <- c J..:? "pipeline"
   catalogOrder <- c J..:? "order" J..!= catalogName
   let catalogFields = expandFields catalogFieldGroups
@@ -250,9 +252,9 @@ instance J.FromJSON Catalogs where
     dict <- o J..:? "_dict" J..!= mempty
     groups <- o J..:? "_group" J..!= mempty
     stats <- o J..:? "_stats" J..!= mempty
-    cats <- HM.traverseWithKey (\n ->
-        parseCatalog (expandAllFields dict) n (HM.lookupDefault mempty n stats))
-      (HM.delete "_stats" $ HM.delete "_dict" $ HM.delete "_group" o)
+    cats <- JM.toHashMapText <$> JM.traverseWithKey (\n ->
+        parseCatalog (expandAllFields dict) (JK.toText n) (HM.lookupDefault mempty n stats))
+      (JM.delete "_stats" $ JM.delete "_dict" $ JM.delete "_group" o)
     mapM_ (\c -> unless (HM.member c cats) $ fail $ "Group catalog " ++ show c ++ " not found") $ groupingsCatalogs groups
     return $ Catalogs (expandFields dict) cats groups
 

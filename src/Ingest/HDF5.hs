@@ -17,6 +17,7 @@ import qualified Bindings.HDF5 as H5
 import qualified Bindings.HDF5.Error as H5E
 import qualified Bindings.HDF5.ErrorCodes as H5E
 import qualified Data.Aeson as J
+import qualified Data.Aeson.Key as JK
 import qualified Data.ByteString.Char8 as BSC
 import           Data.Char (toLower)
 import           Data.Foldable (fold)
@@ -131,7 +132,7 @@ loadBlock info@Ingest{ ingestCatalog = Catalog{ catalogFieldGroups = cat }, inge
     [(fieldName f, Long (V.generate (fromIntegral $ maybe id (min . subtract off) (ingestSize info) $ ingestBlockSize info) ((+) (fromIntegral $ ingestStart info + off) . fromIntegral)))]
 
 blockJson :: DataBlock -> Int -> J.Series
-blockJson d i = foldMap (\(k, v) -> k J..= fmapTypeValue1 (V.! i) v) d
+blockJson d i = foldMap (\(k, v) -> JK.fromText k J..= fmapTypeValue1 (V.! i) v) d
 
 blockDoc :: Ingest -> J.Series -> DataBlock -> Int -> (String, J.Series)
 blockDoc info e d i =

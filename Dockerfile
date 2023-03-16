@@ -1,4 +1,4 @@
-FROM fpco/stack-build-small:lts-18.28 AS base
+FROM fpco/stack-build-small:lts-19.33 AS base
 RUN useradd -u 999 -m flathub
 COPY --chown=flathub stack.yaml *.cabal Setup.hs COPYING /home/flathub/flathub/
 WORKDIR /home/flathub/flathub
@@ -28,7 +28,7 @@ RUN apt-key add /tmp/nodesource.gpg.key && \
 EXPOSE 8092
 ENTRYPOINT ["/home/flathub/.local/bin/flathub"]
 CMD []
-ENV LD_LIBRARY_PATH=/home/stackage/.stack/programs/x86_64-linux/ghc-8.10.7/lib/ghc-8.10.7/rts
+ENV LD_LIBRARY_PATH=/home/stackage/.stack/programs/x86_64-linux/ghc-9.0.2/lib/ghc-9.0.2/rts
 USER flathub
 
 COPY --chown=flathub web ./web

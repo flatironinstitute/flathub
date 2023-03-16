@@ -37,6 +37,8 @@ import           Control.Monad.Trans.Resource (MonadResource)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J (Parser, parseEither, parseMaybe, typeMismatch)
+import qualified Data.Aeson.Key as JK
+import qualified Data.Aeson.KeyMap as JM
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Char8 as BSC
@@ -47,7 +49,7 @@ import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
 import           Data.IORef (newIORef, readIORef, writeIORef)
 import           Data.List (find, partition)
-import           Data.Maybe (mapMaybe, fromMaybe, maybeToList, isJust)
+import           Data.Maybe (mapMaybe, maybeToList, isJust)
 import           Data.String (IsString)
 import qualified Data.Text as T
 import           Data.Typeable (cast)
@@ -154,7 +156,7 @@ searchCatalog :: (MonadMIO m, Body b) => Catalog -> HTTP.Query -> (J.Value -> J.
 searchCatalog cat q p b = httpJSON p =<< searchCatalogRequest cat q b
 
 defaultSettings :: Catalog -> J.Object
-defaultSettings cat = HM.fromList
+defaultSettings cat = JM.fromList
   [ "index" J..= J.object (
     [ "number_of_shards" J..= (clusterSize * min 100 (maybe 2 (succ . (`div` (clusterSize * docsPerShard))) (catalogCount cat)))
     , "number_of_replicas" J..= J.Number 2
@@ -192,7 +194,7 @@ createIndex cat@Catalog{..} = do
       <> "_source" .=* ("enabled" J..= False)
       <> "properties" .=* HM.foldMapWithKey field catalogFieldMap))
   where
-  field n f = n .=*
+  field n f = JK.fromText n .=*
     (  "type" J..= t
     <> "store" J..= and (fieldStore f)
     <> "index" J..= not (or $ fieldStore f)
@@ -207,7 +209,7 @@ checkIndices = do
     <$> asks (catalogMap . globalCatalogs)
   where
   catalog isdev cat@Catalog{ catalogIndex = idxn } =
-    parseJSONField idxn (idx isdev cat)
+    parseJSONField (JK.fromText idxn) (idx isdev cat)
   idx :: Bool -> Catalog -> J.Value -> J.Parser ()
   idx isdev cat = J.withObject "index" $ \i -> do
     sets <- i J..: "settings" >>= (J..: "index")
@@ -216,12 +218,12 @@ checkIndices = do
     parseJSONField "mappings" (mapping $ catalogFields cat) i
   mapping :: Fields -> J.Value -> J.Parser ()
   mapping fields = J.withObject "mapping" $ parseJSONField "properties" $ J.withObject "properties" $ \ps ->
-    forM_ fields $ \field -> parseJSONField (fieldName field) (prop field) ps
+    forM_ fields $ \field -> parseJSONField (JK.fromText $ fieldName field) (prop field) ps
   prop :: Field -> J.Value -> J.Parser ()
   prop field = J.withObject "property" $ \p -> do
     let (fa, ft) = unArrayType (fieldType field)
     t <- p J..: "type"
-    m <- p J..:? "meta" J..!= HM.empty
+    m <- p J..:? "meta" J..!= JM.empty
     a <- m J..:? "array"
     unless (t == ft && a == arrayMeta fa) $
       fail $ "incorrect field type; should be " ++ show (fieldType field)
@@ -241,8 +243,8 @@ storedFieldsArgs fields =
   (store, docvalue) = partition (and . fieldStore) fields
 
 storedFields :: J.Object -> J.Object
-storedFields o = maybe id (HM.insert "_id") (HM.lookup "_id" o) $
-  foldMap obj (HM.lookup "fields" o)
+storedFields o = maybe id (JM.insert "_id") (JM.lookup "_id" o) $
+  foldMap obj (JM.lookup "fields" o)
   where
   obj (J.Object x) = x
   obj _ = error "stored fields" -- HM.empty
@@ -268,7 +270,7 @@ queryIndexScroll scroll cat Query{..} = do
     (JE.pairs $
        (mwhen (queryOffset > 0) $ "from" J..= queryOffset)
     <> ("size" J..= if scroll && queryLimit == 0 then maxResultWindow else queryLimit)
-    <> "sort" `JE.pair` JE.list (\(f, a) -> JE.pairs (fieldName f J..= if a then "asc" else "desc" :: String)) (querySort ++ [(docField,True)])
+    <> "sort" `JE.pair` JE.list (\(f, a) -> JE.pairs (JK.fromText (fieldName f) J..= if a then "asc" else "desc" :: String)) (querySort ++ [(docField,True)])
     <> storedFieldsArgs queryFields
     <> "query" .=* (if querySample < 1
       then \q -> ("function_score" .=* ("query" .=* q
@@ -299,8 +301,8 @@ queryIndexScroll scroll cat Query{..} = do
       $  "size" J..= J.Number 0
       <> "query" .=* filts
       <> "aggs" .=* foldMap (\(f, _, _) ->
-           ("0" <> fieldName f) .=* ("min" .=* field f)
-        <> ("1" <> fieldName f) .=* ("max" .=* field f))
+           ("0" <> JK.fromText (fieldName f)) .=* ("min" .=* field f)
+        <> ("1" <> JK.fromText (fieldName f)) .=* ("max" .=* field f))
         histunks)
   -- resolve bounds in pre-query result
   fillhistbnd j = do
@@ -309,8 +311,8 @@ queryIndexScroll scroll cat Query{..} = do
       let val a = parseJSONOrStringValue
             =<< (J..: "value") =<< jaggs J..: a
       fr <- makeFieldValueM f $ do
-        lb <- val ("0" <> fieldName f)
-        ub <- val ("1" <> fieldName f)
+        lb <- val ("0" <> JK.fromText (fieldName f))
+        ub <- val ("1" <> JK.fromText (fieldName f))
         return $ FilterRange (Just lb) (Just ub)
       return (fr, t, n)
   -- calculate bucket size from range and count
@@ -343,18 +345,18 @@ queryIndexScroll scroll cat Query{..} = do
 
   -- add hist field sizes (widths) to final result
   amend :: HM.HashMap T.Text (TypeValue HistogramInterval) -> J.Value -> J.Value
-  amend h (J.Object o) | not (HM.null h') = J.Object $ HM.insert "histsize" (J.toJSON h') o where
+  amend h (J.Object o) | not (HM.null h') = J.Object $ JM.insert "histsize" (J.toJSON h') o where
     h' = HM.map (fmapTypeValue1 histogramInterval) h
   amend _ j = j
 
   filts = "bool" .=* ("filter" `JE.pair` JE.list (\f -> JE.pairs $ unTypeValue (term $ fieldDesc f) $ fieldValue f) queryFilter)
   term f (FilterEQ v)
-    | fieldWildcard f && any (T.any ('*' ==)) (cast v) = "wildcard" .=* (fieldName f J..= v)
-    | otherwise = "term" .=* (fieldName f J..= v)
-  term f (FilterRange l u) = "range" .=* (fieldName f .=* (bound "gte" l <> bound "lte" u)) where
+    | fieldWildcard f && any (T.any ('*' ==)) (cast v) = "wildcard" .=* (JK.fromText (fieldName f) J..= v)
+    | otherwise = "term" .=* (JK.fromText (fieldName f) J..= v)
+  term f (FilterRange l u) = "range" .=* (JK.fromText (fieldName f) .=* (bound "gte" l <> bound "lte" u)) where
     bound t = foldMap (t J..=)
   agg :: HM.HashMap T.Text (TypeValue HistogramInterval) -> QueryAgg -> J.Series
-  agg _ (QueryStats f) = fieldName f .=* (if fieldTerms f || typeIsString (fieldType f)
+  agg _ (QueryStats f) = JK.fromText (fieldName f) .=* (if fieldTerms f || typeIsString (fieldType f)
     then "terms" .=* (field f <> "size" J..= (if fieldTerms f then 32 else 4 :: Int))
     else "stats" .=* field f)
   agg _ (QueryPercentiles f p) = "pct" .=* ("percentiles" .=* (field f <> "percents" J..= p))
@@ -406,12 +408,12 @@ queryBulk cat query@Query{..} = do
         V.mapM (J.withObject "hit" (return . row)))
       hits)
     q
-  row = HM.map unsingletonJSON . storedFields
+  row = JM.map unsingletonJSON . storedFields
 
 createBulk :: Foldable f => Catalog -> f (String, J.Series) -> M ()
 createBulk cat docs = do
   conf <- asks globalConfig
-  let act = fromMaybe "create" $ conf C.! "ingest_action"
+  let act = maybe "create" JK.fromText $ conf C.! "ingest_action"
       body = foldMap doc docs
       doc (i, d) = J.fromEncoding (J.pairs $ act .=* ("_id" J..= i))
         <> nl <> J.fromEncoding (J.pairs d) <> nl
@@ -424,7 +426,7 @@ createBulk cat docs = do
   nl = B.char7 '\n'
   filterr (J.Array v) = V.filter (isJust . (getelem "error" <=< getelem "create")) v
   filterr j = V.singleton j
-  getelem k (J.Object o) = HM.lookup k o
+  getelem k (J.Object o) = JM.lookup k o
   getelem _ _ = Nothing
 
 flushIndex :: Catalog -> M ()

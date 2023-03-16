@@ -34,6 +34,8 @@ import           Control.Monad.Trans.Resource (MonadResource)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
+import qualified Data.Aeson.Key as JK
+import qualified Data.Aeson.KeyMap as JM
 import           Data.Bits (xor)
 import qualified Data.Conduit as C
 import           Data.Foldable (toList)
@@ -124,13 +126,13 @@ instance J.ToJSON Filters where
       , "seed" J..= filterSeed
       ]
     ++
-    map (\(FieldValue f v) -> fieldName f J..= v) (HM.elems filterFields)
+    map (\(FieldValue f v) -> JK.fromText (fieldName f) J..= v) (HM.elems filterFields)
   toEncoding Filters{..} = J.pairs $
     mwhen (filterSample < 1)
       ("sample" J..= filterSample
       <> "seed" J..= filterSeed)
     <>
-    foldMap (\(FieldValue f v) -> fieldName f J..= v) filterFields
+    foldMap (\(FieldValue f v) -> JK.fromText (fieldName f) J..= v) filterFields
 
 filterQuery :: Filters -> J.Series
 filterQuery Filters{..} = "query" .=*
@@ -144,11 +146,11 @@ filterQuery Filters{..} = "query" .=*
     (\(FieldValue f v) -> JE.pairs $ unTypeValue (term f) v)
     (KM.toList filterFields)))
   where
-  term f (FieldEQ [v]) = "term" .=* (fieldName f J..= v)
-  term f (FieldEQ v@(_:_)) = "terms" .=* (fieldName f J..= v)
-  term f (FieldRange g l) | typeIsNumeric (fieldType f) && all (\g' -> all (g' <=) l) g = "range" .=* (fieldName f .=* (bound "gte" g <> bound "lte" l))
+  term f (FieldEQ [v]) = "term" .=* (JK.fromText (fieldName f) J..= v)
+  term f (FieldEQ v@(_:_)) = "terms" .=* (JK.fromText (fieldName f) J..= v)
+  term f (FieldRange g l) | typeIsNumeric (fieldType f) && all (\g' -> all (g' <=) l) g = "range" .=* (JK.fromText (fieldName f ).=* (bound "gte" g <> bound "lte" l))
     where bound t = foldMap (t J..=)
-  term f (FieldWildcard w) | fieldWildcard f = "wildcard" .=* (fieldName f J..= w)
+  term f (FieldWildcard w) | fieldWildcard f = "wildcard" .=* (JK.fromText (fieldName f) J..= w)
   term _ _ = error "invalid FieldFilder"
 
 class DataRow f r where
@@ -162,7 +164,7 @@ instance DataRow a [(T.Text, J.Value)] where
     <*> "fields" JS..: many (JS.objectItems JS.value)
 
 instance DataRow a (HM.HashMap T.Text J.Value) where
-  parseHit _ = return . storedFields
+  parseHit _ = return . JM.toHashMapText . storedFields
   parseHitStream = fmap HM.fromList . parseHitStream
 
 instance DataRow (HM.HashMap T.Text Field) [FieldValue] where
@@ -178,18 +180,18 @@ parseFieldValue' :: Field -> J.Value -> Value
 parseFieldValue' f v = fmapTypeValue (\Proxy -> either error Identity (J.parseEither parseJSONValue v)) (fieldType f)
 
 instance DataRow (HM.HashMap T.Text Field) (HM.HashMap T.Text Value) where
-  parseHit fm = return . HM.intersectionWith parseFieldValue' fm . storedFields
+  parseHit fm = return . HM.intersectionWith parseFieldValue' fm . JM.toHashMapText . storedFields
   parseHitStream fm = fmap (fieldValue :: FieldValue -> Value) <$> parseHitStream fm
 
 instance DataRow (HM.HashMap T.Text Field) (HM.HashMap T.Text FieldValue) where
-  parseHit fm = return . HM.intersectionWith pfv fm . storedFields where
+  parseHit fm = return . HM.intersectionWith pfv fm . JM.toHashMapText . storedFields where
     pfv f = setFieldValueUnsafe f . parseFieldValue' f
   parseHitStream fm = KM.fromList <$> parseHitStream fm
 
 instance DataRow (V.Vector Field) (V.Vector (TypeValue Maybe)) where
   parseHit fields = getf . storedFields where
     getf o = mapM (parsef o) fields
-    parsef o f = traverseTypeValue (\Proxy -> mapM parseJSONValue $ HM.lookup (fieldName f) o) (fieldType f)
+    parsef o f = traverseTypeValue (\Proxy -> mapM parseJSONValue $ JM.lookup (JK.fromText $ fieldName f) o) (fieldType f)
   parseHitStream fields = (ev V.//)
     <$> many
       (  "_id" JS..: ps "_id"
@@ -231,7 +233,7 @@ queryDataRequest cat DataArgs{..} off =
     $  "track_total_hits" J..= False
     <> "size" J..= dataCount
     <> "sort" `JE.pair` JE.list (\(f, a) ->
-        JE.pairs (fieldName f J..= if a then "asc" else "desc" :: String))
+        JE.pairs (JK.fromText (fieldName f) J..= if a then "asc" else "desc" :: String))
       dataSort
     <> maybe
       (mwhen (dataOffset > 0) $ "from" J..= dataOffset)
@@ -313,7 +315,7 @@ queryStats cat StatsArgs{..} =
   searchCatalog cat [] (parseStats cat) $ JE.pairs
     $  "track_total_hits" J..= False
     <> "size" J..= (0 :: Count)
-    <> "aggs" .=* foldMap (\f -> fieldName f .=* (if fieldUseTerms f
+    <> "aggs" .=* foldMap (\f -> JK.fromText (fieldName f) .=* (if fieldUseTerms f
       then "terms" .=* (field f <> "size" J..= (if fieldTerms f then 32 else 4 :: Int))
       else "stats" .=* field f)) statsFields
     <> filterQuery statsFilters
@@ -368,7 +370,7 @@ parseHistogram :: HistogramArgs -> J.Value -> J.Parser [HistogramBucket]
 parseHistogram HistogramArgs{..} = J.withObject "histogram res" $ \o ->
   o J..: "aggregations" >>= phist [] histogramFields where
   phist k (h:l) o =
-    o J..: fieldName (histogramField h) >>= (J..: "buckets") >>= concatMapM pbuc where
+    o J..: JK.fromText (fieldName (histogramField h)) >>= (J..: "buckets") >>= concatMapM pbuc where
     pbuc = J.withObject "hist bucket" $ \b -> do
       j <- b J..: (if histogramLog h then "from" else "key")
       v <- traverseTypeValue (\Proxy -> Identity <$> J.parseJSON j) (fieldType $ histogramField h)
@@ -378,7 +380,7 @@ parseHistogram HistogramArgs{..} = J.withObject "histogram res" $ \o ->
     q <- mapM (pquart b) histogramQuartiles
     return [HistogramBucket (Reverse k) c q]
   pquart o f = do
-    q <- o J..: fieldName f >>= (J..: "values") >>= mapM (J..: "value")
+    q <- o J..: JK.fromText (fieldName f) >>= (J..: "values") >>= mapM (J..: "value")
     traverseTypeValue (\Proxy -> mapM J.parseJSON q) (fieldType f)
 
 scaleFromByTo :: Real a => a -> a -> a -> [a]
@@ -427,7 +429,7 @@ queryHistogram cat hist@HistogramArgs{..} = do
   srng FieldStats{ statsMin = Just x, statsMax = Just y } = Just (toRealFloat x, toRealFloat y)
   srng _ = Nothing
   haggs (hi:l) =
-    "aggs" .=* n .=* (hagg hi <> haggs l)
+    "aggs" .=* JK.fromText n .=* (hagg hi <> haggs l)
     where
     n = fieldName $ histogramIntervalField hi
     hagg HistogramInterval{ histogramInterval = i, histogramOffset = o } = "histogram" .=*
@@ -438,7 +440,7 @@ queryHistogram cat hist@HistogramArgs{..} = do
     hagg HistogramRanges{ histogramRanges = r } = "range" .=*
       (  "field" J..= n
       <> "ranges" `JE.pair` JE.list id (range (0 :: Int) r))
-  haggs [] = foldMap (\f -> "aggs" .=* fieldName f .=*
+  haggs [] = foldMap (\f -> "aggs" .=* JK.fromText (fieldName f) .=*
     "percentiles" .=* ("field" J..= fieldName f <> "percents" J..= [0::Int,25..100] <> "keyed" J..= False)) histogramQuartiles
   range i (x:r@(y:_)) = JE.pairs ("from" J..= x <> "to" J..= y <> "key" J..= i) : range (succ i) r
   range _ _ = []

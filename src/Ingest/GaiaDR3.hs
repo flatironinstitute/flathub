@@ -11,6 +11,7 @@ import           Control.Monad (mfilter, unless)
 import           Control.Monad.IO.Class (liftIO)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
+import qualified Data.Aeson.Key as JK
 import           Data.Bits (shiftL, shiftR)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
@@ -21,6 +22,7 @@ import qualified Data.HashMap.Strict as HM
 import           Data.Int (Int64)
 import           Data.List (stripPrefix, mapAccumL, genericDrop, sortOn, groupBy)
 import           Data.Maybe (fromMaybe)
+import           Data.String (IsString)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V
@@ -83,7 +85,7 @@ parseRows TableInfo{..} = rows 0 where
 parseTableDups :: TableInfo -> [Row (V.Vector BS.ByteString)] -> Table
 parseTableDups ti@TableInfo{..} = Table ti . map row . groupBy ((==) `on` rowKey) where
   row ~l@(r:_) =
-    r{ rowData = V.foldMap (\(f, i) -> fieldName f `JE.pair` JE.list (cell f i) l) tableFields } where
+    r{ rowData = V.foldMap (\(f, i) -> JK.fromText (fieldName f) `JE.pair` JE.list (cell f i) l) tableFields } where
     cell _ (-1) Row{ rowIndex = idx } = J.toEncoding idx
     cell f i Row{ rowData = d } = fromMaybe (J.toEncoding J.Null) $ ingestValueBS f (d V.! i)
 
@@ -91,7 +93,7 @@ parseTable :: TableInfo -> [Row (V.Vector BS.ByteString)] -> Table
 parseTable ti@TableInfo{..} = Table ti . map row where
   row r@(Row idx _ d) =
     r{ rowData = V.foldMap cell tableFields } where
-    cell (f,-1) = fieldName f J..= idx
+    cell (f,-1) = JK.fromText (fieldName f) J..= idx
     cell (f,i) = ingestFieldBS f (d V.! i)
 
 sortFilterTable :: (Key -> Bool) -> [Row a] -> [Row a]
@@ -194,4 +196,5 @@ ingestGaiaDR3 ing@Ingest{ ingestCatalog = cat } = do
     second (\n -> f{ fieldIngest = snd <$> T.uncons n })
       $ T.breakOn "." i
   split f = error $ "field missing ingest: " ++ T.unpack (fieldName f)
+  fileUpper :: IsString s => s
   fileUpper = "_file_upper"
