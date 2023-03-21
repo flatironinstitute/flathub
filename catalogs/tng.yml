@@ -8,8 +8,8 @@ descr: >
 sort:
 - simulation
 - snapshot
-- fof_id
-- subhalo_id
+- id
+- Subhalo_id
 fields:
   - name: simulation
     type: byte
@@ -51,19 +51,19 @@ fields:
     dict: redshift
     ingest: _attribute:Header/Redshift
   - name: type
-    type: byte
+    type: boolean
     enum:
       - FoF halo
       - Subhalo
-    flag: top
-  - name: fof
+    flag: required
+  - name: id
+    type: int
+    descr: "Group index number"
+    ingest: _illustris:Group
+  - name: Group
     descr: 'FoF halos'
+    ingest: ''
     sub:
-    - name: id
-      type: int
-      descr: "Group index number"
-      ingest: _illustris:Group
-
     - name: BHMass
       ingest: Group/GroupBHMass
       type: float
@@ -269,18 +269,19 @@ fields:
       units: 'ckpc/h'
       descr: 'Comoving Radius of a sphere centered at the GroupPos of this Group whose mean density is \(\Delta_c\) times the critical density of the Universe, at the time the halo is considered.'
       flag: hidden
-  - name: subhalo
+  - name: Subhalo
     descr: 'Subfind Subhalos'
+    ingest: _subhalo:type Group_FirstSub Group_Nsubs Subhalo_GrNr
     sub:
     - name: id
       type: int
       descr: "Subgroup index number"
       ingest: _illustris:Subhalo
 
-    - name: Flag
-      ingest: Subhalo/SubhaloFlag
-      type: boolean
-      descr: "Flag field indicating suitability of this subhalo for certain types of analysis. If zero, this subhalo should generally be excluded, and is not thought to be of cosmological origin. That is, it may have formed within an existing halo, or is possibly a baryonic fragment of a disk or other galactic structure identified by Subfind. If one, this subhalo should be considered a 'galaxy' or 'satellite' of cosmological origin. (Note: always true for centrals)."
+   #- name: Flag
+   #  ingest: Subhalo/SubhaloFlag
+   #  type: boolean
+   #  descr: "Flag field indicating suitability of this subhalo for certain types of analysis. If zero, this subhalo should generally be excluded, and is not thought to be of cosmological origin. That is, it may have formed within an existing halo, or is possibly a baryonic fragment of a disk or other galactic structure identified by Subfind. If one, this subhalo should be considered a 'galaxy' or 'satellite' of cosmological origin. (Note: always true for centrals)."
     - name: BHMass
       ingest: Subhalo/SubhaloBHMass
       type: float
@@ -327,23 +328,23 @@ fields:
       - name: "Fi"
       - name: "total"
         descr: "The 'total' of all other (i.e. untracked) metals."
-    - name: GasMetalFractionsHalfRed
-      ingest: Subhalo/SubhaloGasMetalFractionsHalfRed
-      type: float
-      descr: "Same as GasMetalFractions, but restricted to cells within the stellar half mass radius."
-      flag: hidden
-      sub:
-      - name: "H"
-      - name: "He"
-      - name: "C"
-      - name: "N"
-      - name: "O"
-      - name: "Ne"
-      - name: "Mg"
-      - name: "Si"
-      - name: "Fi"
-      - name: "total"
-        descr: "The 'total' of all other (i.e. untracked) metals."
+   #- name: GasMetalFractionsHalfRed
+   #  ingest: Subhalo/SubhaloGasMetalFractionsHalfRed
+   #  type: float
+   #  descr: "Same as GasMetalFractions, but restricted to cells within the stellar half mass radius."
+   #  flag: hidden
+   #  sub:
+   #  - name: "H"
+   #  - name: "He"
+   #  - name: "C"
+   #  - name: "N"
+   #  - name: "O"
+   #  - name: "Ne"
+   #  - name: "Mg"
+   #  - name: "Si"
+   #  - name: "Fi"
+   #  - name: "total"
+   #    descr: "The 'total' of all other (i.e. untracked) metals."
     - name: GasMetalFractionsMaxRad
       ingest: Subhalo/SubhaloGasMetalFractionsMaxRad
       type: float
@@ -588,23 +589,23 @@ fields:
       - name: "Fi"
       - name: "total"
         descr: "The 'total' of all other (i.e. untracked) metals."
-    - name: StarMetalFractionsHalfRed
-      ingest: Subhalo/SubhaloStarMetalFractionsHalfRed
-      type: float
-      descr: "Same as StarMetalFractions, but restricted to cells within the stellar half mass radius."
-      flag: hidden
-      sub:
-      - name: "H"
-      - name: "He"
-      - name: "C"
-      - name: "N"
-      - name: "O"
-      - name: "Ne"
-      - name: "Mg"
-      - name: "Si"
-      - name: "Fi"
-      - name: "total"
-        descr: "The 'total' of all other (i.e. untracked) metals."
+   #- name: StarMetalFractionsHalfRed
+   #  ingest: Subhalo/SubhaloStarMetalFractionsHalfRed
+   #  type: float
+   #  descr: "Same as StarMetalFractions, but restricted to cells within the stellar half mass radius."
+   #  flag: hidden
+   #  sub:
+   #  - name: "H"
+   #  - name: "He"
+   #  - name: "C"
+   #  - name: "N"
+   #  - name: "O"
+   #  - name: "Ne"
+   #  - name: "Mg"
+   #  - name: "Si"
+   #  - name: "Fi"
+   #  - name: "total"
+   #    descr: "The 'total' of all other (i.e. untracked) metals."
     - name: StarMetalFractionsMaxRad
       ingest: Subhalo/SubhaloStarMetalFractionsMaxRad
       type: float
