@@ -339,8 +339,8 @@ fields:
       - name: "Fi"
       - name: "total"
         descr: "The 'total' of all other (i.e. untracked) metals."
-    - name: GasMetalFractionsHalfRed
-      ingest: Subhalo/SubhaloGasMetalFractionsHalfRed
+    - name: GasMetalFractionsHalfRad
+      ingest: Subhalo/SubhaloGasMetalFractionsHalfRad
       type: float
       descr: "Same as GasMetalFractions, but restricted to cells within the stellar half mass radius."
       flag: hidden
@@ -600,8 +600,8 @@ fields:
       - name: "Fi"
       - name: "total"
         descr: "The 'total' of all other (i.e. untracked) metals."
-    - name: StarMetalFractionsHalfRed
-      ingest: Subhalo/SubhaloStarMetalFractionsHalfRed
+    - name: StarMetalFractionsHalfRad
+      ingest: Subhalo/SubhaloStarMetalFractionsHalfRad
       type: float
       descr: "Same as StarMetalFractions, but restricted to cells within the stellar half mass radius."
       flag: hidden
