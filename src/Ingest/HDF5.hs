@@ -6,6 +6,7 @@
 
 module Ingest.HDF5
   ( ingestHDF5
+  , ingestTNG
   ) where
 
 import           Control.Arrow ((&&&))
@@ -31,7 +32,9 @@ import qualified Data.Vector as V
 import qualified Data.Vector.Storable as VS
 import qualified Data.Vector.Storable.Mutable as VSM
 import           Data.Word (Word64, Word8)
+import           System.FilePath ((</>))
 import           System.IO (hFlush, stdout)
+import           Text.Printf (printf)
 
 import Type
 import Field
@@ -49,6 +52,7 @@ data IngestFlag
   | IngestIllustris
   | IngestCamels
   | IngestSubhalo
+  | IngestSupplemental -- TNG/EAGLE
   deriving (Eq, Enum, Bounded, Show)
 
 ingestFlags :: [(T.Text, IngestFlag)]
@@ -82,7 +86,7 @@ hdf5ReadVector label d o l = do
   let nt = H5.nativeTypeOf1 v
   ntc <- H5.getTypeClass nt
   nts <- H5.getTypeSize nt
-  unless (tc == ntc && ts >= nts) $ fail $ "HDF5 type mismatch: " ++ T.unpack label ++ " " ++ show ((tc, ts), (ntc, nts))
+  unless ((tc == ntc || tc == H5.Enum && ntc == H5.Integer) && ts >= nts) $ fail $ "HDF5 type mismatch: " ++ T.unpack label ++ " " ++ show ((tc, ts), (ntc, nts))
   return v
   where
   pad s [] = s
@@ -206,13 +210,14 @@ ingestDone :: MonadFail m => Ingest -> m ()
 ingestDone i =
   unless (all (ingestOffset i ==) $ ingestSize i) $ fail $ "size mismatch: expected " ++ show (ingestSize i) ++ " rows, got " ++ show (ingestOffset i)
 
-ingestHFile :: Ingest -> H5.File -> M Word64
-ingestHFile info hf = do
-  info' <- foldM infof info (catalogFieldGroups $ ingestCatalog info)
-  if ingestSize info' == Just 0 -- for illustris, if there's no data, don't try reading (since datasets are missing)
-    then return 0
-    else loop info'
+constField :: MonadFail m => T.Text -> Ingest -> m FieldValue
+constField f = maybe (fail $ "const field " ++ show f ++ " not found")
+  return . find ((f ==) . fieldName . fieldDesc) . ingestConsts
+
+prepareIngest :: Ingest -> H5.File -> M Ingest
+prepareIngest info hf = infofs info (catalogFieldGroups $ ingestCatalog info)
   where
+  infofs = foldM infof
   infof i f = case parseIngest f of
     (Just IngestAttribute, n) -> do
       v <- liftIO $ readScalarAttribute hf n (fieldType f)
@@ -225,12 +230,12 @@ ingestHFile info hf = do
       si <- constv "simulation" i
       sn <- constv "snapshot" i
       return i
-        { ingestPrefix = si ++ '_' : sn ++ "_"
+        { ingestPrefix = si ++ '_' : sn ++ [T.head ill]
         , ingestSize = Just (fromIntegral sz) }
     (Just IngestCamels, ill) -> do
       sz <- getIllustrisSize ill
       ssuite <- constv "simulation_suite" i
-      FieldValue Field{ fieldEnum = Just ssete } (Byte ssetv) <- constf "simulation_set" i
+      FieldValue Field{ fieldEnum = Just ssete } (Byte ssetv) <- constField "simulation_set" i
       sid <- constv "simulation_set_id" i
       sn <- constv "snapshot" i
       return i
@@ -241,10 +246,10 @@ ingestHFile info hf = do
       unless (all (`HM.member` catalogFieldMap (ingestCatalog i)) fl) $ fail "missing join fields"
       let tfv x = addIngestConsts $ setFieldValue tf (Boolean (Identity x))
           fg = fold $ fieldSub f
-      si <- foldM infof (tfv True i)
+          ijt = maybe i{ ingestSize = Nothing, ingestStart = 0 }
+            joinIngest $ ingestJoin i
+      si <- infofs (tfv True ijt)
         { ingestCatalog = cat'{ catalogFieldGroups = fg }
-        , ingestSize = Nothing
-        , ingestStart = 0
         } fg
       return $ tfv False i
         { ingestCatalog = cat'
@@ -260,9 +265,14 @@ ingestHFile info hf = do
         let si = fromIntegral (ids V.! fromIntegral fi)
         unless (si == ingestStart info) $ fail "start offset mismatch"
     return sz
-  constv f i = show . fieldValue <$> constf f i
-  constf f = maybe (fail $ "const field " ++ show f ++ " not found")
-    return . find ((f ==) . fieldName . fieldDesc) . ingestConsts
+  constv f i = show . fieldValue <$> constField f i
+
+loadHFile :: Ingest -> H5.File -> M Word64
+loadHFile info hf =
+  if ingestSize info == Just 0 -- for illustris, if there's no data, don't try reading (since datasets are missing)
+    then return 0
+    else loop info
+  where
   loop i = do
     b <- liftIO (loadBlock i hf)
     n <- ingestBlock i b
@@ -279,5 +289,45 @@ ingestHFile info hf = do
         return $ ingestOffset i'
       else loop i'
 
+ingestHFile :: Ingest -> H5.File -> M Word64
+ingestHFile info hf = do
+  info' <- prepareIngest info hf
+  loadHFile info' hf
+
 ingestHDF5 :: Ingest -> M Word64
 ingestHDF5 info = liftBaseOp (withHDF5 $ ingestFile info) $ ingestHFile info
+
+ingestTNG :: Ingest -> M Word64
+ingestTNG inginfo = do
+  FieldValue Field{ fieldEnum = Just sime } (Byte sim) <- constField "simulation" inginfo
+  FieldValue _ (Short (Identity snap)) <- constField "snapshot" inginfo
+  let simn = sime V.! fromIntegral sim
+      dir = ingestFile inginfo </> T.unpack simn
+      gdir = dir </> "groups"
+      isdm = "-Dark" `T.isSuffixOf` simn
+      snap3 = printf "%03d" snap
+      next Ingest{ ingestStart = s, ingestSize = Just z, ingestOffset = o, ingestJoin = j } = inginfo
+        { ingestStart = s + z
+        , ingestSize = Nothing
+        , ingestOffset = if o > z then o - z else 0
+        , ingestJoin = fmap nextj j
+        }
+      nextj ij = ij{ joinIngest = next (joinIngest ij) }
+      load suphf info ghf = do
+        Integer (Identity nf) <- liftIO $ readScalarAttribute ghf "Header/NumFiles" (Integer Proxy)
+        info' <- prepareIngest info ghf
+        loadHFile info' ghf
+        return (nf, info')
+      loop nf fi info suphf = do
+        (nf', info') <- liftBaseOp (withHDF5 $ gdir </> ("groups_" ++ snap3) </> ("fof_subhalo_tab_" ++ snap3 ++ "." ++ show fi ++ ".hdf5")) $ load suphf info
+        when (fi /= 0 && nf /= nf') $ fail "NumFiles mismatch"
+        let fi' = succ fi
+        if fi' < nf'
+          then loop nf' fi' (next info') suphf
+          else return 0
+      start = loop 0 0 inginfo
+  if isdm
+    then start Nothing
+    else liftBaseOp (withHDF5 $ dir </> "supplemental" </> ("Snapshot_" ++ show snap ++ ".hdf5")) $ start . Just
+  -- aperture: preload? join on subhalo id
+  -- ingestStart: accumulate for both halo and subhalo: use ingestSize
