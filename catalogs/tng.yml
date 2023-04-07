@@ -712,11 +712,11 @@ fields:
       type: float
       units: pkpc km s-1
       sub:
-      - name: x
+      - name: 'x'
         ingest: _supplemental:Subhalo/Gas_Spin_x
-      - name: y
+      - name: 'y'
         ingest: _supplemental:Subhalo/Gas_Spin_y
-      - name: z
+      - name: 'z'
         ingest: _supplemental:Subhalo/Gas_Spin_z
     - name: HalfMassProjRad
       descr: Projected physical radius enclosing half of the mass (averaged over three orthogonal projections).
@@ -747,11 +747,11 @@ fields:
       units: pkpc km s-1
       type: float
       sub:
-      - name: x
+      - name: 'x'
         ingest: _supplemental:Subhalo/Stars_Spin_x
-      - name: y
+      - name: 'y'
         ingest: _supplemental:Subhalo/Stars_Spin_y
-      - name: z
+      - name: 'z'
         ingest: _supplemental:Subhalo/Stars_Spin_z
     - name: StellarInitialMass
       descr: Sum of birth masses of all stars.
@@ -769,7 +769,7 @@ fields:
       type: float
       ingest: _supplemental:Subhalo/ThermalEnergy
     - name: Aperture
-      descr: Measurements within a given aperture from the center of potential, available aperture sizes are: 1, 3, 5, 10, 20, 30, 40, 50, 70 and 100 pkpc.
+      descr: 'Measurements within a given aperture from the center of potential, available aperture sizes are: 1, 3, 5, 10, 20, 30, 40, 50, 70 and 100 pkpc.'
       ingest: ''
       sub:
       - name: Mass_BH
