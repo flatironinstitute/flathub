@@ -60,7 +60,7 @@ ingestCSVFrom info@Ingest{ ingestCatalog = cat, ingestOffset = off } header rows
     (del, rows') = dropCSV off rows
     off' = off - del
     key
-      | Just (_, k) <- (\n -> V.find ((n ==) . fieldName . fst) cols) =<< catalogKey cat = const $ BSC.unpack . (V.! k)
+      | [(\n -> V.find ((n ==) . fieldName . fst) cols) -> Just (_, k)] <- catalogKey cat = const $ BSC.unpack . (V.! k)
       | otherwise = const . (ingestPrefix info ++) . show
     val o _ (f, -1) = JK.fromText (fieldName f) J..= o
     val _ r (f, i) = ingestFieldBS f (r V.! i)

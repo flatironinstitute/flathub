@@ -68,7 +68,7 @@ data Catalog = Catalog
   , catalogFieldGroups :: Fields
   , catalogFields :: Fields
   , catalogFieldMap :: KM.KeyedMap Field
-  , catalogKey :: Maybe T.Text -- ^primary key
+  , catalogKey :: [T.Text] -- ^unique key
   , catalogSort :: [T.Text] -- ^sort field(s) for index
   , catalogCount :: Maybe Count -- ^(intended) number of rows
   }
@@ -86,7 +86,11 @@ parseCatalog dict catalogName stats = J.withObject "catalog" $ \c -> do
   catalogSynopsis <- c J..:? "synopsis"
   catalogDescr <- c J..:? "descr"
   catalogHtml <- c J..:? "html"
-  catalogKey <- c J..:? "key"
+  catalogKey <- case JM.lookup "key" c of
+    Nothing -> return []
+    Just J.Null -> return []
+    Just (J.String s) -> return [s]
+    Just s -> J.parseJSON s
   catalogSort <- case JM.lookup "sort" c of
     Nothing -> return []
     Just J.Null -> return []
