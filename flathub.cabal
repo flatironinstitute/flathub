@@ -11,7 +11,7 @@ cabal-version:  >= 1.10
 
 source-repository head
   type:     git
-  location: git://github.com/flatironinstitute/flathub
+  location: https://github.com/flatironinstitute/flathub
 
 executable flathub
   main-is: Main.hs
