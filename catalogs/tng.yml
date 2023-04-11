@@ -711,27 +711,29 @@ fields:
       descr: Total angular momentum per unit mass of all gas relative to the CentreOfMass.
       type: float
       units: pkpc km s-1
+      ingest: _supplemental:Subhalo
       sub:
       - name: 'x'
-        ingest: _supplemental:Subhalo/Gas_Spin_x
+        ingest: Subhalo/Gas_Spin_x
       - name: 'y'
-        ingest: _supplemental:Subhalo/Gas_Spin_y
+        ingest: Subhalo/Gas_Spin_y
       - name: 'z'
-        ingest: _supplemental:Subhalo/Gas_Spin_z
+        ingest: Subhalo/Gas_Spin_z
     - name: HalfMassProjRad
       descr: Projected physical radius enclosing half of the mass (averaged over three orthogonal projections).
       type: float
       units: pkpc
+      ingest: _supplemental:Subhalo
       sub:
       - name: BH
         descr: Projected physical radius enclosing half of the black hole mass (averaged over three orthogonal projections). This is constructed from the particle masses and not from the subgrid masses.
-        ingest: _supplemental:Subhalo/HalfMassProjRad_BH
+        ingest: Subhalo/HalfMassProjRad_BH
       - name: Gas
         descr: Projected physical radius enclosing half of the gas mass (averaged over three orthogonal projections).
-        ingest: _supplemental:Subhalo/HalfMassProjRad_Gas
+        ingest: Subhalo/HalfMassProjRad_Gas
       - name: Star
         descr: Projected physical radius enclosing half of the stellar mass (averaged over three orthogonal projections). 
-        ingest: _supplemental:Subhalo/HalfMassProjRad_Star
+        ingest: Subhalo/HalfMassProjRad_Star
     - name: InitialMassWeightedBirthZ
       type: float
       descr: Mean redshift of formation of stars, weighted by birth mass.
@@ -746,13 +748,14 @@ fields:
       descr: Total angular momentum per unit mass relative to the CentreOfMass.
       units: pkpc km s-1
       type: float
+      ingest: _supplemental:Subhalo
       sub:
       - name: 'x'
-        ingest: _supplemental:Subhalo/Stars_Spin_x
+        ingest: Subhalo/Stars_Spin_x
       - name: 'y'
-        ingest: _supplemental:Subhalo/Stars_Spin_y
+        ingest: Subhalo/Stars_Spin_y
       - name: 'z'
-        ingest: _supplemental:Subhalo/Stars_Spin_z
+        ingest: Subhalo/Stars_Spin_z
     - name: StellarInitialMass
       descr: Sum of birth masses of all stars.
       units: Msun
@@ -770,7 +773,7 @@ fields:
       ingest: _supplemental:Subhalo/ThermalEnergy
     - name: Aperture
       descr: 'Measurements within a given aperture from the center of potential, available aperture sizes are: 1, 3, 5, 10, 20, 30, 40, 50, 70 and 100 pkpc.'
-      ingest: ''
+      ingest: _supplemental:Aperture
       sub:
       - name: Mass_BH
         type: float
@@ -778,116 +781,116 @@ fields:
         descr: Total (particle) mass of all black holes within the aperture.
         ingest: ''
         sub:
-          - { name: "1", ingest: _supplemental:Aperture/1/Mass_BH }
-          - { name: "3", ingest: _supplemental:Aperture/3/Mass_BH }
-          - { name: "5", ingest: _supplemental:Aperture/5/Mass_BH }
-          - { name: "10", ingest: _supplemental:Aperture/10/Mass_BH }
-          - { name: "20", ingest: _supplemental:Aperture/20/Mass_BH }
-          - { name: "30", ingest: _supplemental:Aperture/30/Mass_BH }
-          - { name: "40", ingest: _supplemental:Aperture/40/Mass_BH }
-          - { name: "50", ingest: _supplemental:Aperture/50/Mass_BH }
-          - { name: "70", ingest: _supplemental:Aperture/70/Mass_BH }
-          - { name: "100", ingest: _supplemental:Aperture/100/Mass_BH }
+          - { name: "1", ingest: Aperture/1/Mass_BH }
+          - { name: "3", ingest: Aperture/3/Mass_BH }
+          - { name: "5", ingest: Aperture/5/Mass_BH }
+          - { name: "10", ingest: Aperture/10/Mass_BH }
+          - { name: "20", ingest: Aperture/20/Mass_BH }
+          - { name: "30", ingest: Aperture/30/Mass_BH }
+          - { name: "40", ingest: Aperture/40/Mass_BH }
+          - { name: "50", ingest: Aperture/50/Mass_BH }
+          - { name: "70", ingest: Aperture/70/Mass_BH }
+          - { name: "100", ingest: Aperture/100/Mass_BH }
       - name: Mass_DM
         type: float
         units: Msun
         descr: Total dark matter mass within the aperture.
         ingest: ''
         sub:
-          - { name: "1", ingest: _supplemental:Aperture/1/Mass_DM }
-          - { name: "3", ingest: _supplemental:Aperture/3/Mass_DM }
-          - { name: "5", ingest: _supplemental:Aperture/5/Mass_DM }
-          - { name: "10", ingest: _supplemental:Aperture/10/Mass_DM }
-          - { name: "20", ingest: _supplemental:Aperture/20/Mass_DM }
-          - { name: "30", ingest: _supplemental:Aperture/30/Mass_DM }
-          - { name: "40", ingest: _supplemental:Aperture/40/Mass_DM }
-          - { name: "50", ingest: _supplemental:Aperture/50/Mass_DM }
-          - { name: "70", ingest: _supplemental:Aperture/70/Mass_DM }
-          - { name: "100", ingest: _supplemental:Aperture/100/Mass_DM }
+          - { name: "1", ingest: Aperture/1/Mass_DM }
+          - { name: "3", ingest: Aperture/3/Mass_DM }
+          - { name: "5", ingest: Aperture/5/Mass_DM }
+          - { name: "10", ingest: Aperture/10/Mass_DM }
+          - { name: "20", ingest: Aperture/20/Mass_DM }
+          - { name: "30", ingest: Aperture/30/Mass_DM }
+          - { name: "40", ingest: Aperture/40/Mass_DM }
+          - { name: "50", ingest: Aperture/50/Mass_DM }
+          - { name: "70", ingest: Aperture/70/Mass_DM }
+          - { name: "100", ingest: Aperture/100/Mass_DM }
       - name: Mass_Gas
         type: float
         units: Msun
         descr: Total gas mass within the aperture.
         ingest: ''
         sub:
-          - { name: "1", ingest: _supplemental:Aperture/1/Mass_Gas }
-          - { name: "3", ingest: _supplemental:Aperture/3/Mass_Gas }
-          - { name: "5", ingest: _supplemental:Aperture/5/Mass_Gas }
-          - { name: "10", ingest: _supplemental:Aperture/10/Mass_Gas }
-          - { name: "20", ingest: _supplemental:Aperture/20/Mass_Gas }
-          - { name: "30", ingest: _supplemental:Aperture/30/Mass_Gas }
-          - { name: "40", ingest: _supplemental:Aperture/40/Mass_Gas }
-          - { name: "50", ingest: _supplemental:Aperture/50/Mass_Gas }
-          - { name: "70", ingest: _supplemental:Aperture/70/Mass_Gas }
-          - { name: "100", ingest: _supplemental:Aperture/100/Mass_Gas }
+          - { name: "1", ingest: Aperture/1/Mass_Gas }
+          - { name: "3", ingest: Aperture/3/Mass_Gas }
+          - { name: "5", ingest: Aperture/5/Mass_Gas }
+          - { name: "10", ingest: Aperture/10/Mass_Gas }
+          - { name: "20", ingest: Aperture/20/Mass_Gas }
+          - { name: "30", ingest: Aperture/30/Mass_Gas }
+          - { name: "40", ingest: Aperture/40/Mass_Gas }
+          - { name: "50", ingest: Aperture/50/Mass_Gas }
+          - { name: "70", ingest: Aperture/70/Mass_Gas }
+          - { name: "100", ingest: Aperture/100/Mass_Gas }
       - name: Mass_Star
         type: float
         units: Msun
         descr: Total stellar mass within the aperture.
         ingest: ''
         sub:
-          - { name: "1", ingest: _supplemental:Aperture/1/Mass_Star }
-          - { name: "3", ingest: _supplemental:Aperture/3/Mass_Star }
-          - { name: "5", ingest: _supplemental:Aperture/5/Mass_Star }
-          - { name: "10", ingest: _supplemental:Aperture/10/Mass_Star }
-          - { name: "20", ingest: _supplemental:Aperture/20/Mass_Star }
-          - { name: "30", ingest: _supplemental:Aperture/30/Mass_Star }
-          - { name: "40", ingest: _supplemental:Aperture/40/Mass_Star }
-          - { name: "50", ingest: _supplemental:Aperture/50/Mass_Star }
-          - { name: "70", ingest: _supplemental:Aperture/70/Mass_Star }
-          - { name: "100", ingest: _supplemental:Aperture/100/Mass_Star }
+          - { name: "1", ingest: Aperture/1/Mass_Star }
+          - { name: "3", ingest: Aperture/3/Mass_Star }
+          - { name: "5", ingest: Aperture/5/Mass_Star }
+          - { name: "10", ingest: Aperture/10/Mass_Star }
+          - { name: "20", ingest: Aperture/20/Mass_Star }
+          - { name: "30", ingest: Aperture/30/Mass_Star }
+          - { name: "40", ingest: Aperture/40/Mass_Star }
+          - { name: "50", ingest: Aperture/50/Mass_Star }
+          - { name: "70", ingest: Aperture/70/Mass_Star }
+          - { name: "100", ingest: Aperture/100/Mass_Star }
       - name: SFR
         type: float
         units: yr-1
         descr: Star formation rate within the aperture.
         ingest: ''
         sub:
-          - { name: "1", ingest: _supplemental:Aperture/1/SFR }
-          - { name: "3", ingest: _supplemental:Aperture/3/SFR }
-          - { name: "5", ingest: _supplemental:Aperture/5/SFR }
-          - { name: "10", ingest: _supplemental:Aperture/10/SFR }
-          - { name: "20", ingest: _supplemental:Aperture/20/SFR }
-          - { name: "30", ingest: _supplemental:Aperture/30/SFR }
-          - { name: "40", ingest: _supplemental:Aperture/40/SFR }
-          - { name: "50", ingest: _supplemental:Aperture/50/SFR }
-          - { name: "70", ingest: _supplemental:Aperture/70/SFR }
-          - { name: "100", ingest: _supplemental:Aperture/100/SFR }
+          - { name: "1", ingest: Aperture/1/SFR }
+          - { name: "3", ingest: Aperture/3/SFR }
+          - { name: "5", ingest: Aperture/5/SFR }
+          - { name: "10", ingest: Aperture/10/SFR }
+          - { name: "20", ingest: Aperture/20/SFR }
+          - { name: "30", ingest: Aperture/30/SFR }
+          - { name: "40", ingest: Aperture/40/SFR }
+          - { name: "50", ingest: Aperture/50/SFR }
+          - { name: "70", ingest: Aperture/70/SFR }
+          - { name: "100", ingest: Aperture/100/SFR }
       - name: VelDisp
         type: float
         units: km s-1
         descr: Stellar velocity dispersion within the aperture, with respect to the centre of mass of the galaxy.
         ingest: ''
         sub:
-          - { name: "1", ingest: _supplemental:Aperture/1/VelDisp }
-          - { name: "3", ingest: _supplemental:Aperture/3/VelDisp }
-          - { name: "5", ingest: _supplemental:Aperture/5/VelDisp }
-          - { name: "10", ingest: _supplemental:Aperture/10/VelDisp }
-          - { name: "20", ingest: _supplemental:Aperture/20/VelDisp }
-          - { name: "30", ingest: _supplemental:Aperture/30/VelDisp }
-          - { name: "40", ingest: _supplemental:Aperture/40/VelDisp }
-          - { name: "50", ingest: _supplemental:Aperture/50/VelDisp }
-          - { name: "70", ingest: _supplemental:Aperture/70/VelDisp }
-          - { name: "100", ingest: _supplemental:Aperture/100/VelDisp }
-      - name: Sizes
-        ingest: ''
-        sub:
-          - name: R_halfmass100
-            type: float
-            units: pkpc
-            descr: Half mass radius computed for mass within a spherical 100 pkpc aperture.
-            ingest: _supplemental:Sizes/R_halfmass100
-          - name: R_halfmass100_projected
-            type: float
-            units: pkpc
-            descr: Projected half mass radius computed for mass within a 100 pkpc aperture (averaged over three orthogonal projections).
-            ingest: _supplemental:Sizes/R_halfmass100_projected
-          - name: R_halfmass30
-            type: float
-            units: pkpc
-            descr: Half mass radius computed for mass within a spherical 30 pkpc aperture.
-            ingest: _supplemental:Sizes/R_halfmass30
-          - name: R_halfmass30_projected
-            type: float
-            units: pkpc
-            descr: Projected half mass radius computed for mass within a 30 pkpc aperture (averaged over three orthogonal projections).
-            ingest: _supplemental:Sizes/R_halfmass100_projected
+          - { name: "1", ingest: Aperture/1/VelDisp }
+          - { name: "3", ingest: Aperture/3/VelDisp }
+          - { name: "5", ingest: Aperture/5/VelDisp }
+          - { name: "10", ingest: Aperture/10/VelDisp }
+          - { name: "20", ingest: Aperture/20/VelDisp }
+          - { name: "30", ingest: Aperture/30/VelDisp }
+          - { name: "40", ingest: Aperture/40/VelDisp }
+          - { name: "50", ingest: Aperture/50/VelDisp }
+          - { name: "70", ingest: Aperture/70/VelDisp }
+          - { name: "100", ingest: Aperture/100/VelDisp }
+    - name: Sizes
+      ingest: _supplemental:Sizes
+      sub:
+        - name: R_halfmass100
+          type: float
+          units: pkpc
+          descr: Half mass radius computed for mass within a spherical 100 pkpc aperture.
+          ingest: Sizes/R_halfmass100
+        - name: R_halfmass100_projected
+          type: float
+          units: pkpc
+          descr: Projected half mass radius computed for mass within a 100 pkpc aperture (averaged over three orthogonal projections).
+          ingest: Sizes/R_halfmass100_projected
+        - name: R_halfmass30
+          type: float
+          units: pkpc
+          descr: Half mass radius computed for mass within a spherical 30 pkpc aperture.
+          ingest: Sizes/R_halfmass30
+        - name: R_halfmass30_projected
+          type: float
+          units: pkpc
+          descr: Projected half mass radius computed for mass within a 30 pkpc aperture (averaged over three orthogonal projections).
+          ingest: Sizes/R_halfmass100_projected

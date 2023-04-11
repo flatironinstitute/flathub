@@ -125,6 +125,7 @@ loadBlock info@Ingest{ ingestCatalog = Catalog{ catalogFieldGroups = cat }, inge
     (Just IngestIllustris, _) -> indexf f
     (Just IngestCamels, _) -> indexf f
     (Just IngestSubhalo, _) -> return []
+    (Just IngestSupplemental, _) -> return []
     (Nothing, n) -> withDataset hf n $ \hd -> do
       let
         loop _ [] = return []
@@ -162,12 +163,12 @@ ingestSubBlocks info hf pb IngestHaloJoin{..} = do
     let (off, _) = V.head fcl'
         (lo, lc) = V.last fcl'
         n = lo + lc - off
-    unless (fromIntegral off == ingestOffset joinIngest) $ fail $ "suboffset missmatch: " ++ show off ++ " /= " ++ show (ingestOffset joinIngest)
+    unless (fromIntegral off == ingestOffset joinIngest + ingestStart joinIngest) $ fail $ "suboffset missmatch: " ++ show off ++ " /= " ++ show (ingestOffset joinIngest) ++ " + " ++ show (ingestStart joinIngest)
     sb <- liftIO $ loadBlock joinIngest{ ingestBlockSize = fromIntegral n } hf
     sn <- blockSize sb
     unless (sn == fromIntegral n) $ fail $ "Incorrect subblock length: " ++ show sn ++ "/" ++ show n
     pbi <- getcol joinParent sb
-    let doc i = blockDoc joinIngest (blockJson pb (fromIntegral (fromIntegral (pbi V.! i) - ingestOffset info))) sb i
+    let doc i = blockDoc joinIngest (blockJson pb (fromIntegral (fromIntegral (pbi V.! i) - ingestOffset info - ingestStart info))) sb i
     ingestWith info doc sn
   where
   getcol f b = case lookup f b of
@@ -214,6 +215,15 @@ constField :: MonadFail m => T.Text -> Ingest -> m FieldValue
 constField f = maybe (fail $ "const field " ++ show f ++ " not found")
   return . find ((f ==) . fieldName . fieldDesc) . ingestConsts
 
+joinField :: Catalog -> T.Text
+joinField _ = "GalaxyID" -- TODO
+
+addSupplemental :: T.Text -> Field -> Maybe IngestJoin -> Maybe IngestJoin
+addSupplemental k f Nothing = addSupplemental k f $ Just (IngestJoin HM.empty)
+addSupplemental k f (Just (IngestJoin m)) =
+  Just $ IngestJoin $ HM.insertWith (\_ v -> V.snoc v f) k (V.singleton f) m
+addSupplemental _ _ _ = fail $ "addSupplemental: incompatible join"
+
 prepareIngest :: Ingest -> H5.File -> M Ingest
 prepareIngest info hf = infofs info (catalogFieldGroups $ ingestCatalog info)
   where
@@ -254,6 +264,15 @@ prepareIngest info hf = infofs info (catalogFieldGroups $ ingestCatalog info)
       return $ tfv False i
         { ingestCatalog = cat'
         , ingestJoin = Just $ IngestHaloJoin si ff fc fp
+        }
+    (Just IngestSupplemental, gf) -> do
+      let (g, fn) = T.breakOn "/" gf
+          gfk = g <> "/" <> joinField (ingestCatalog i)
+          fi | T.compareLength fn 1 == GT = gf
+             | otherwise = ""
+      return i
+        { ingestJoin = addSupplemental gfk
+          f{ fieldIngest = Just fi } $ ingestJoin i
         }
     _ -> return i -- XXX only top-level ingest flags processed here
   getIllustrisSize ill = liftIO $ do
@@ -312,13 +331,15 @@ ingestTNG inginfo = do
         , ingestOffset = if o > z then o - z else 0
         , ingestJoin = fmap nextj j
         }
-      nextj ij = ij{ joinIngest = next (joinIngest ij) }
+      nextj ij@IngestHaloJoin{ joinIngest = i } = ij{ joinIngest = next i }
+      nextj ij = ij
       load suphf info ghf = do
         Integer (Identity nf) <- liftIO $ readScalarAttribute ghf "Header/NumFiles" (Integer Proxy)
         info' <- prepareIngest info ghf
         loadHFile info' ghf
         return (nf, info')
       loop nf fi info suphf = do
+        liftIO $ print fi
         (nf', info') <- liftBaseOp (withHDF5 $ gdir </> ("groups_" ++ snap3) </> ("fof_subhalo_tab_" ++ snap3 ++ "." ++ show fi ++ ".hdf5")) $ load suphf info
         when (fi /= 0 && nf /= nf') $ fail "NumFiles mismatch"
         let fi' = succ fi
