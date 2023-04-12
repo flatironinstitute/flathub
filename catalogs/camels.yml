@@ -18,6 +18,13 @@ descr: >
   </p>
   <p>For more information on CAMELS, please consult the <a class='underline' target='_blank' rel='noopener' href='https://camels.readthedocs.io/'>documentation</a> and the <a class='underline' target='_blank' rel='noopener' href='https://www.camel-simulations.org/'>project website</a>.</p>
 count: 2927443277
+key:
+- simulation_suite
+- simulation_set
+- simulation_set_id
+- snapshot
+- id
+- Subhalo_id
 sort:
 - simulation_suite
 - simulation_set

@@ -29,6 +29,7 @@ descr: >
   Tsantaki (Arcetri Observatory), Chris Watson (Queen's University Belfast),
   Lily Zhao (Flatiron Institute).
 count: 2858
+key: gaiaedr3_source_id
 fields:
   - name: ''
     title: pos

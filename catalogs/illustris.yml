@@ -10,6 +10,11 @@ sort:
 - snapshot
 - fof_id
 - subhalo_id
+key:
+- simulation
+- snapshot
+- fof_id
+- subhalo_id
 fields:
   - name: simulation
     type: byte

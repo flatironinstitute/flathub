@@ -5,6 +5,9 @@ descr: >
   The Cosmic Assembly Near-infrared Deep Extragalactic Survey (CANDELS) "theory friendly" observational catalog. <br></br> Data Release: 2019-12-13.
 count: 167137
 order: 'candels-0'
+key:
+  - field
+  - ID
 fields:
 - name: field
   dict: candels_field

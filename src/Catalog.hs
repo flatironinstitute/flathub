@@ -104,8 +104,8 @@ parseCatalog dict catalogName stats = J.withObject "catalog" $ \c -> do
   catalogOrder <- c J..:? "order" J..!= catalogName
   let catalogFields = expandFields catalogFieldGroups
       catalogFieldMap = KM.fromList $ V.toList catalogFields
-  mapM_ (\k -> unless (HM.member k catalogFieldMap) $ fail "key field not found in catalog") catalogKey
-  mapM_ (\k -> unless (HM.member k catalogFieldMap) $ fail "sort field not found in catalog") catalogSort
+  mapM_ (\k -> unless (HM.member k catalogFieldMap) $ fail $ "key field " <> show k <> " not found in catalog " <> T.unpack catalogName) catalogKey
+  mapM_ (\k -> unless (HM.member k catalogFieldMap) $ fail $ "sort field " <> show k <> " not found in catalog " <> T.unpack catalogName) catalogSort
   return Catalog{..}
 
 instance J.ToJSON Catalog where

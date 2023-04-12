@@ -9,6 +9,10 @@ sort:
 - simulation
 - snapshot
 - id
+key:
+- simulation
+- snapshot
+- id
 fields:
   - name: simulation
     type: byte
