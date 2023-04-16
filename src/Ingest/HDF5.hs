@@ -9,7 +9,7 @@ module Ingest.HDF5
   , ingestTNG
   ) where
 
-import           Control.Arrow ((&&&))
+import           Control.Arrow ((&&&), first)
 import           Control.Exception (bracket, handleJust)
 import           Control.Monad (foldM, guard, when, unless)
 import           Control.Monad.IO.Class (liftIO)
@@ -25,6 +25,7 @@ import           Data.Foldable (fold)
 import           Data.Functor.Identity (Identity(Identity))
 import qualified Data.HashMap.Strict as HM
 import           Data.List (find, nub)
+import           Data.Maybe (fromJust, isNothing)
 import           Data.Proxy (Proxy(Proxy))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -136,6 +137,13 @@ loadBlock info@Ingest{ ingestCatalog = Catalog{ catalogFieldGroups = cat }, inge
   indexf f = return
     [(fieldName f, Long (V.generate (fromIntegral $ maybe id (min . subtract off) (ingestSize info) $ ingestBlockSize info) ((+) (fromIntegral $ ingestStart info + off) . fromIntegral)))]
 
+joinDataBlocks :: DataBlock -> DataBlock -> DataBlock
+joinDataBlocks [] x = x
+joinDataBlocks x [] = x
+joinDataBlocks ((k1,v1):l1) ((k2,v2):l2)
+  | k1 == k2 = (k1, fmapTypeValue2 (<>) v1 v2) : joinDataBlocks l1 l2
+  | otherwise = error $ "joinDataBlock: field mismatch"
+
 blockJson :: DataBlock -> Int -> J.Series
 blockJson d i = foldMap (\(k, v) -> JK.fromText k J..= fmapTypeValue1 (V.! i) v) d
 
@@ -151,29 +159,53 @@ ingestWith Ingest{ ingestCatalog = cat } doc n = do
   where
   docs = map doc [0..pred n]
 
-ingestBlock :: Ingest -> DataBlock -> M Int
-ingestBlock info dat =
-  ingestWith info (blockDoc info mempty dat) =<< blockSize dat
+ingestBlock :: Ingest -> DataBlock -> M Ingest
+ingestBlock info dat = do
+  n <- ingestWith info (blockDoc info mempty dat) =<< blockSize dat
+  let i = ingestIncr n info
+  if n < fromIntegral (ingestBlockSize i) && isNothing (ingestSize i)
+    then return i{ ingestSize = Just (ingestOffset i) }
+    else return i
 
-ingestSubBlocks :: Ingest -> H5.File -> DataBlock -> IngestJoin -> M Int
-ingestSubBlocks info hf pb IngestHaloJoin{..} = do
+type FileStack = [(Ingest, H5.File)]
+
+loadStackBlock :: FileStack -> Word64 -> IO (DataBlock, FileStack)
+loadStackBlock ((i@Ingest{ ingestSize = Just z }, f):r) n = do
+  b <- loadBlock i{ ingestBlockSize = n } f
+  if l < n
+    then
+      first (joinDataBlocks b) <$> loadStackBlock r (n - l)
+    else
+      return (b, (ingestIncr (fromIntegral n) i,f):r)
+  where l = z - ingestOffset i -- how many left in this file (should be size of b)
+
+ingestSubStackBlocks :: Ingest -> DataBlock -> FileStack -> M FileStack
+ingestSubStackBlocks info@Ingest{ ingestJoin = Just IngestHaloJoin{..} } pb hf@((jinfo, _):_) = do
   fcl <- V.zip <$> getcol joinFirst pb <*> getcol joinCount pb
   let fcl' = V.filter ((-1 /=) . fst) fcl
-  if V.null fcl' then return 0 else do
+  if V.null fcl' then return hf else do
     let (off, _) = V.head fcl'
         (lo, lc) = V.last fcl'
         n = lo + lc - off
-    unless (fromIntegral off == ingestOffset joinIngest + ingestStart joinIngest) $ fail $ "suboffset missmatch: " ++ show off ++ " /= " ++ show (ingestOffset joinIngest) ++ " + " ++ show (ingestStart joinIngest)
-    sb <- liftIO $ loadBlock joinIngest{ ingestBlockSize = fromIntegral n } hf
+    unless (n >= 0 && fromIntegral off == ingestOffset jinfo + ingestStart jinfo)
+      $ fail $ "suboffset missmatch: " ++ show off ++ " /= " ++ show (ingestOffset jinfo) ++ " + " ++ show (ingestStart jinfo)
+    (sb, hf') <- liftIO $ loadStackBlock hf (fromIntegral n)
     sn <- blockSize sb
     unless (sn == fromIntegral n) $ fail $ "Incorrect subblock length: " ++ show sn ++ "/" ++ show n
     pbi <- getcol joinParent sb
-    let doc i = blockDoc joinIngest (blockJson pb (fromIntegral (fromIntegral (pbi V.! i) - ingestOffset info - ingestStart info))) sb i
+    let doc i = blockDoc jinfo (blockJson pb (fromIntegral (fromIntegral (pbi V.! i) - ingestOffset info - ingestStart info))) sb i
     ingestWith info doc sn
+    return hf'
   where
   getcol f b = case lookup f b of
     Just (Integer v) -> return v
     _ -> fail $ "ingest join data not found for " ++ show f
+ingestSubStackBlocks _ _ _ = fail "ingestSubStackBlocks: unsupported join"
+
+ingestSubBlocks :: Ingest -> DataBlock -> H5.File -> M (Maybe IngestJoin)
+ingestSubBlocks info pb hf = mapM (\ij -> do
+  [(i, _)] <- ingestSubStackBlocks info pb [(joinIngest ij, hf)]
+  return ij{ joinIngest = i }) $ ingestJoin info
 
 withHDF5 :: FilePath -> (H5.File -> IO a) -> IO a
 withHDF5 fn = bracket (H5.openFile (BSC.pack fn) [H5.ReadOnly] Nothing) H5.closeFile
@@ -252,7 +284,7 @@ prepareIngest info hf = infofs info (catalogFieldGroups $ ingestCatalog info)
         { ingestPrefix = ssuite ++ T.unpack (ssete V.! fromIntegral ssetv) ++ sid ++ '_' : sn ++ [T.head ill]
         , ingestSize = Just (fromIntegral sz) }
     (Just IngestSubhalo, T.words -> ft : fl@[ff, fc, fp]) -> do
-      (tf, cat') <- maybe (fail "missing join type field") return $ takeCatalogField ft (ingestCatalog i)
+      (tf, cat') <- maybe (fail $ "missing join type field: " <> show ft) return $ takeCatalogField ft (ingestCatalog i)
       unless (all (`HM.member` catalogFieldMap (ingestCatalog i)) fl) $ fail "missing join fields"
       let tfv x = addIngestConsts $ setFieldValue tf (Boolean (Identity x))
           fg = fold $ fieldSub f
@@ -260,6 +292,7 @@ prepareIngest info hf = infofs info (catalogFieldGroups $ ingestCatalog info)
             joinIngest $ ingestJoin i
       si <- infofs (tfv True ijt)
         { ingestCatalog = cat'{ catalogFieldGroups = fg }
+        , ingestFile = ingestFile i
         } fg
       return $ tfv False i
         { ingestCatalog = cat'
@@ -294,19 +327,16 @@ loadHFile info hf =
   where
   loop i = do
     b <- liftIO (loadBlock i hf)
-    n <- ingestBlock i b
-    ij <- mapM (\ij -> do
-      nj <- if n == 0 then return 0 else ingestSubBlocks i hf b ij
-      return $ ij{ joinIngest = ingestIncr nj (joinIngest ij) })
-      $ ingestJoin i
-    let i' = ingestIncr n i{ ingestJoin = ij }
-    liftIO $ putStr (show (ingestOffset i') ++ ' ' : foldMap (show . ingestOffset . joinIngest) ij ++ "\r") >> hFlush stdout
-    if n < fromIntegral (ingestBlockSize i)
-      then do
-        ingestDone i'
+    i' <- ingestBlock i b
+    ij <- ingestSubBlocks i b hf
+    let i'' = i'{ ingestJoin = ij }
+    liftIO $ putStr (show (ingestOffset i'') ++ ' ' : foldMap (show . ingestOffset . joinIngest) ij ++ "\r") >> hFlush stdout
+    if (ingestOffset i'' <) `all` ingestSize i''
+      then loop i''
+      else do
+        ingestDone i''
         mapM_ (ingestDone . joinIngest) ij
-        return $ ingestOffset i'
-      else loop i'
+        return $ ingestOffset i''
 
 ingestHFile :: Ingest -> H5.File -> M Word64
 ingestHFile info hf = do
@@ -333,20 +363,27 @@ ingestTNG inginfo = do
         }
       nextj ij@IngestHaloJoin{ joinIngest = i } = ij{ joinIngest = next i }
       nextj ij = ij
-      load suphf info ghf = do
-        Integer (Identity nf) <- liftIO $ readScalarAttribute ghf "Header/NumFiles" (Integer Proxy)
-        info' <- prepareIngest info ghf
-        loadHFile info' ghf
-        return (nf, info')
-      loop nf fi info suphf = do
-        liftIO $ print fi
-        (nf', info') <- liftBaseOp (withHDF5 $ gdir </> ("groups_" ++ snap3) </> ("fof_subhalo_tab_" ++ snap3 ++ "." ++ show fi ++ ".hdf5")) $ load suphf info
-        when (fi /= 0 && nf /= nf') $ fail "NumFiles mismatch"
-        let fi' = succ fi
-        if fi' < nf'
-          then loop nf' fi' (next info') suphf
-          else return 0
-      start = loop 0 0 inginfo
+      showing i = ingestFile i <> "@" <> show (ingestStart i) <> ":" <> show (ingestOffset i) <> "/" <> show (ingestSize i)
+      -- open all files and pass FileStack to act
+      open nf fi info act
+        | fi == nf = act []
+        | otherwise = liftBaseOp (withHDF5 fn) $ \ghf -> do
+          Integer (Identity nf') <- liftIO $ readScalarAttribute ghf "Header/NumFiles" (Integer Proxy)
+          info' <- prepareIngest info{ ingestFile = fn } ghf
+          when (fi /= 0 && nf /= nf') $ fail "NumFiles mismatch"
+          open nf' (succ fi) (next info') $ act . ((info', ghf) :)
+          where fn = gdir </> ("groups_" ++ snap3) </> ("fof_subhalo_tab_" ++ snap3 ++ "." ++ show fi ++ ".hdf5")
+      load [] _ _ = return 0
+      load ((ginfo, ghf) : ghfs) subhfs suphf = do
+        liftIO $ putStrLn $ showing ginfo <> " " <> showing (fst $ head subhfs)
+        gb <- liftIO $ loadBlock ginfo ghf
+        ginfo' <- ingestBlock ginfo gb
+        subhfs' <- ingestSubStackBlocks ginfo gb subhfs
+        load (if (ingestOffset ginfo' <) `all` ingestSize ginfo'
+          then (ginfo', ghf) : ghfs
+          else ghfs) subhfs' suphf
+      start suphf = open (-1) 0 inginfo $ \ghfs ->
+        load ghfs (map (first $ joinIngest . fromJust . ingestJoin) ghfs) suphf
   if isdm
     then start Nothing
     else liftBaseOp (withHDF5 $ dir </> "supplemental" </> ("Snapshot_" ++ show snap ++ ".hdf5")) $ start . Just
