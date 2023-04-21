@@ -63,7 +63,9 @@ ingestDelim delim info@Ingest{ ingestCatalog = cat, ingestOffset = off } = do
     rows' = genericDrop off $ filter (not . commentLine) rows
     key
       | Just i <- do
-          n <- catalogKey cat 
+          n <- case catalogKey cat of
+            [n] -> Just n
+            _ -> Nothing
           findIndex (any ((n ==) . fieldName)) fields
         = \_ x -> BSC.unpack $ x !! i
       | otherwise = \i _ -> ingestPrefix info ++ show i

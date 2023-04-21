@@ -32,6 +32,8 @@ import           Control.Monad (guard, unless, mfilter)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
+import qualified Data.Aeson.Key as JK
+import qualified Data.Aeson.KeyMap as JM
 import           Data.Bits (xor)
 import           Data.Functor.Classes (Show1(liftShowsPrec))
 import           Data.Functor.Identity (Identity(runIdentity))
@@ -66,7 +68,7 @@ data Catalog = Catalog
   , catalogFieldGroups :: Fields
   , catalogFields :: Fields
   , catalogFieldMap :: KM.KeyedMap Field
-  , catalogKey :: Maybe T.Text -- ^primary key
+  , catalogKey :: [T.Text] -- ^unique key
   , catalogSort :: [T.Text] -- ^sort field(s) for index
   , catalogCount :: Maybe Count -- ^(intended) number of rows
   }
@@ -84,8 +86,12 @@ parseCatalog dict catalogName stats = J.withObject "catalog" $ \c -> do
   catalogSynopsis <- c J..:? "synopsis"
   catalogDescr <- c J..:? "descr"
   catalogHtml <- c J..:? "html"
-  catalogKey <- c J..:? "key"
-  catalogSort <- case HM.lookup "sort" c of
+  catalogKey <- case JM.lookup "key" c of
+    Nothing -> return []
+    Just J.Null -> return []
+    Just (J.String s) -> return [s]
+    Just s -> J.parseJSON s
+  catalogSort <- case JM.lookup "sort" c of
     Nothing -> return []
     Just J.Null -> return []
     Just (J.String s) -> return [s]
@@ -93,13 +99,13 @@ parseCatalog dict catalogName stats = J.withObject "catalog" $ \c -> do
   statsCount <- stats J..:? "count"
   catalogCount <- (<|> statsCount) <$> c J..:? "count"
   catalogIndex <- c J..:? "index" J..!= catalogName
-  catalogIndexSettings <- c J..:? "settings" J..!= HM.empty
+  catalogIndexSettings <- c J..:? "settings" J..!= JM.empty
   catalogIngestPipeline <- c J..:? "pipeline"
   catalogOrder <- c J..:? "order" J..!= catalogName
   let catalogFields = expandFields catalogFieldGroups
       catalogFieldMap = KM.fromList $ V.toList catalogFields
-  mapM_ (\k -> unless (HM.member k catalogFieldMap) $ fail "key field not found in catalog") catalogKey
-  mapM_ (\k -> unless (HM.member k catalogFieldMap) $ fail "sort field not found in catalog") catalogSort
+  mapM_ (\k -> unless (HM.member k catalogFieldMap) $ fail $ "key field " <> show k <> " not found in catalog " <> T.unpack catalogName) catalogKey
+  mapM_ (\k -> unless (HM.member k catalogFieldMap) $ fail $ "sort field " <> show k <> " not found in catalog " <> T.unpack catalogName) catalogSort
   return Catalog{..}
 
 instance J.ToJSON Catalog where
@@ -250,9 +256,9 @@ instance J.FromJSON Catalogs where
     dict <- o J..:? "_dict" J..!= mempty
     groups <- o J..:? "_group" J..!= mempty
     stats <- o J..:? "_stats" J..!= mempty
-    cats <- HM.traverseWithKey (\n ->
-        parseCatalog (expandAllFields dict) n (HM.lookupDefault mempty n stats))
-      (HM.delete "_stats" $ HM.delete "_dict" $ HM.delete "_group" o)
+    cats <- JM.toHashMapText <$> JM.traverseWithKey (\n ->
+        parseCatalog (expandAllFields dict) (JK.toText n) (HM.lookupDefault mempty n stats))
+      (JM.delete "_stats" $ JM.delete "_dict" $ JM.delete "_group" o)
     mapM_ (\c -> unless (HM.member c cats) $ fail $ "Group catalog " ++ show c ++ " not found") $ groupingsCatalogs groups
     return $ Catalogs (expandFields dict) cats groups
 

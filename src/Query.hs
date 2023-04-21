@@ -19,6 +19,8 @@ import           Control.Applicative ((<|>), liftA2)
 import           Control.Monad (guard, unless, mfilter)
 import           Control.Monad.IO.Class (liftIO)
 import qualified Data.Aeson as J
+import qualified Data.Aeson.Key as JK
+import qualified Data.Aeson.KeyMap as JM
 import           Data.Bits (xor)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
@@ -27,7 +29,7 @@ import           Data.Foldable (fold)
 import           Data.Function (on)
 import qualified Data.HashMap.Strict as HM
 import           Data.List (foldl', unionBy, nubBy)
-import           Data.Maybe (listToMaybe, maybeToList, isJust, mapMaybe)
+import           Data.Maybe (listToMaybe, maybeToList, isJust, mapMaybe, fromMaybe)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V
@@ -130,16 +132,16 @@ catalog = getPath (R.parameter R.>* "catalog") $ \sim req -> do
   histSize (QueryHist _ n _ l) = n * histsSize l
   histSize _ = 1
   histsSize = product . map histSize
-  clean = mapObject $ HM.mapMaybeWithKey cleanTop
+  clean = mapObject $ JM.mapMaybeWithKey cleanTop
   cleanTop "aggregations" = Just
   cleanTop "histsize" = Just
-  cleanTop "hits" = Just . mapObject (HM.mapMaybeWithKey cleanHits)
+  cleanTop "hits" = Just . mapObject (JM.mapMaybeWithKey cleanHits)
   cleanTop _ = const Nothing
-  cleanHits "total" (J.Object o) = HM.lookup "value" o
+  cleanHits "total" (J.Object o) = JM.lookup "value" o
   cleanHits "total" v = Just v
   cleanHits "hits" a = Just $ mapArray (V.map cleanHit) a
   cleanHits _ _ = Nothing
-  cleanHit (J.Object o) = J.Object $ HM.map unsingletonJSON $ ES.storedFields o
+  cleanHit (J.Object o) = J.Object $ JM.map unsingletonJSON $ ES.storedFields o
   cleanHit v = v
   mapObject :: (J.Object -> J.Object) -> J.Value -> J.Value
   mapObject f (J.Object o) = J.Object (f o)
@@ -221,13 +223,13 @@ bulkBlockGenerator :: Query -> (Word -> BulkBlockStream [J.Value]) -> BulkGenera
 bulkBlockGenerator query bbs next = do
   (count, block1) <- liftIO next
   let BulkBlockStream{..} = bbs count
-      fields = map fieldName $ queryFields query
+      fields = map (JK.fromText . fieldName) $ queryFields query
   return BulkStream
     { bulkSize = bbsSize
     , bulkStream = \chunk -> do
       chunk bbsHeader
       let loop block = unless (V.null block) $ do
-            chunk $ foldMap (\o -> bbsRow $ map (\f -> HM.lookupDefault J.Null f o) fields) block
+            chunk $ foldMap (\o -> bbsRow $ map (\f -> fromMaybe J.Null $ JM.lookup f o) fields) block
             loop . snd =<< next
       loop block1
       chunk bbsFooter

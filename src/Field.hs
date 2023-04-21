@@ -47,6 +47,8 @@ import           Control.Monad (guard, join, when, msum, mfilter)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
+import qualified Data.Aeson.Key as JK
+import qualified Data.Aeson.KeyMap as JM
 import qualified Data.ByteString as BS
 import           Data.Char (isAlphaNum)
 import           Data.Default (Default(def))
@@ -227,9 +229,9 @@ parseField dict stats = parseFieldDefs def where
     df <- mapM
       (\n -> maybe (fail $ "Unknown dict key: " ++ show n) return $ HM.lookup n dict)
       fieldDict
-    let dv :: J.FromJSON a => (Field -> a) -> T.Text -> J.Parser a
+    let dv :: J.FromJSON a => (Field -> a) -> JK.Key -> J.Parser a
         dv a n = f J..:! n J..!= maybe (a pf) a df
-        mvd :: J.FromJSON a => (Field -> Maybe a) -> T.Text -> Maybe a -> J.Parser (Maybe a)
+        mvd :: J.FromJSON a => (Field -> Maybe a) -> JK.Key -> Maybe a -> J.Parser (Maybe a)
         mvd a n d = maybe ((a =<< df) <|> a pf <|> d) join <$> f J..:! n
         mv a n = mvd a n Nothing
     name <- f J..: "name"
@@ -245,7 +247,7 @@ parseField dict stats = parseFieldDefs def where
     fieldScale <- f J..:? "scale"
     fieldReversed <- dv fieldReversed "reversed"
     fieldIngest <- f J..:? "ingest"
-    fieldMissing <- map TE.encodeUtf8 <$> case HM.lookup "missing" f of
+    fieldMissing <- map TE.encodeUtf8 <$> case JM.lookup "missing" f of
       Nothing -> return []
       Just J.Null -> return []
       Just (J.String s) -> return [s]
@@ -257,7 +259,7 @@ parseField dict stats = parseFieldDefs def where
     fieldSize <- dv fieldSize "size"
     fieldLength <- dv fieldLength "length"
     fieldStats <- traverse (\j -> traverseTypeValue (\Proxy -> J.parseJSON1 j) fieldType)
-      $ HM.lookup fieldName stats 
+      $ JM.lookup (JK.fromText fieldName) stats 
     let rf = Field{ fieldSub = Nothing, .. }
     fieldSub <- J.explicitParseFieldMaybe' (J.withArray "subfields" $ V.mapM $
         parseFieldDefs rf -- don't inherit title/descr (see subField)
@@ -361,7 +363,7 @@ parseFieldValue :: Field -> BS.ByteString -> Maybe FieldValue
 parseFieldValue f s = makeFieldValueM f (Identity <$> parseValueForField f s)
 
 fieldJValue :: J.KeyValue j => FieldValue -> j
-fieldJValue (FieldValue f v) = fieldName f J..= v
+fieldJValue (FieldValue f v) = JK.fromText (fieldName f) J..= v
 
 fieldJValues :: [FieldValue] -> J.Series
 fieldJValues = foldMap fieldJValue

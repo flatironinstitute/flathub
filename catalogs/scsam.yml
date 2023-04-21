@@ -6,6 +6,10 @@ descr: >
 index: scsam
 order: 'candels-1'
 count: 34312506
+key:
+  - field
+  - realization
+  - halo_id_nbody
 fields:
   - name: field
     dict: candels_field

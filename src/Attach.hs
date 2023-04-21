@@ -18,6 +18,8 @@ import           Control.Monad (void, guard)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader (asks)
 import qualified Data.Aeson as J
+import qualified Data.Aeson.Key as JK
+import qualified Data.Aeson.KeyMap as JM
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Lazy as BSL
@@ -75,8 +77,8 @@ attachmentFields _ _ = []
 pathStr :: DynamicPath -> J.Object -> String
 pathStr path doc = foldMap ps path where
   ps (DynamicPathLiteral s) = s
-  ps (DynamicPathField f) = rf $ HM.lookup f doc
-  ps (DynamicPathSubstitute f a b) = case HM.lookup f doc of
+  ps (DynamicPathField f) = rf $ JM.lookup (JK.fromText f) doc
+  ps (DynamicPathSubstitute f a b) = case JM.lookup (JK.fromText f) doc of
     Just (J.String s) -> T.unpack $ T.replace a b s
     x -> rf x
   rf (Just (J.String s)) = T.unpack s
@@ -115,7 +117,7 @@ attachmentsBulkStream info ats next = do
   dir <- asks globalDataDir
   let ents doc = catMaybes <$> mapM (ent doc) ats
       ent doc af@Field{ fieldAttachment = ~(Just a) } =
-        case HM.lookup (fieldName af) doc of
+        case JM.lookup (JK.fromText $ fieldName af) doc of
           Just (J.Bool True) -> enta a doc
           Just (J.Number n) | n > 0 -> enta a doc
           _ -> return Nothing

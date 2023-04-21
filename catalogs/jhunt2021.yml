@@ -14,6 +14,10 @@ count: 4686066326
 settings:
   index:
     number_of_shards: 32
+key:
+  - model
+  - ID # bug in D1-stellar
+  - z # iffy
 fields:
   - name: model
     type: byte
