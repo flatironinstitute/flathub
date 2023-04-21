@@ -1,4 +1,5 @@
 import "./globals.css";
+import Nav from "./Nav";
 
 export const metadata = {
   title: "Flatfront (next)",
@@ -11,7 +12,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <Nav />
+        {children}
+      </body>
     </html>
   );
 }
