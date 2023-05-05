@@ -21,7 +21,7 @@ spec:
           - name: discovery.seed_hosts
             value: "flathub-es-trans"
           - name: cluster.initial_master_nodes
-            value: "popeye-k8s-1,popeye-k8s-2,popeye-k8s-4"
+            value: "popeye-k8s-1,popeye-k8s-2,popeye-k8s-5"
           - name: node.attr.host
             valueFrom:
               fieldRef:
@@ -70,7 +70,11 @@ spec:
       - name: esdata
         hostPath:
           path: /nvme/esdata
-          type: DirectoryOrCreate
+          type: Directory
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -147,7 +151,11 @@ spec:
       - name: esdata
         hostPath:
           path: /nvme2/esdata
-          type: DirectoryOrCreate
+          type: Directory
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
 ---
 apiVersion: v1
 kind: Service
