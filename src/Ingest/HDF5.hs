@@ -419,4 +419,4 @@ ingestTNG inginfo = do
           Integer (Identity nsub) <- liftIO $ readScalarAttribute shf "Header/Nsubgroups_Total" (Integer Proxy)
           supji <- liftIO $ makeJoinIndex (fromIntegral nsub) suphf "Subhalo/GalaxyID"
           start $ Just (supji, supf, suphf)
-      Nothing -> start Nothing
+      _ -> start Nothing
