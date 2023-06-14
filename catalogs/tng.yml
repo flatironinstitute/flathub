@@ -1,7 +1,4 @@
 title: IllustrisTNG FoF Halos
-settings:
-  index:
-    number_of_shards: 8 # dev only
 index: tng
 enabled: false
 count: 9249422159
