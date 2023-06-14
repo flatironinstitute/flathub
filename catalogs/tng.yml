@@ -1,6 +1,6 @@
 title: IllustrisTNG FoF Halos
 index: tng
-enabled: false
+visible: false
 count: 9249422159
 descr: >
   <a href='https://www.tng-project.org/'>IllustrisTNG</a> <a href='https://www.tng-project.org/data/docs/specifications/#sec2a'>FoF Halo catalog</a> derived with a standard friends-of-friends (FoF) algorithm.
