@@ -13,7 +13,7 @@
       children:
         - illustris_fof
         - illustris_sub
-        - tng
+    - tng
     #- simba
     - camels
     - gaea
@@ -22,6 +22,7 @@
   children:
     - quijote
     - *illustris
+    - tng
 - name: candels
   title: CANDELS
   children:

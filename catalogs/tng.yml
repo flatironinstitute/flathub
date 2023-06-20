@@ -4,7 +4,7 @@ visible: false
 count: 9249422159
 descr: >
   <a href='https://www.tng-project.org/'>IllustrisTNG</a> <a href='https://www.tng-project.org/data/docs/specifications/#sec2a'>FoF Halo catalog</a> derived with a standard friends-of-friends (FoF) algorithm.
-  Any publication using these data should cite <a href="https://ui.adsabs.harvard.edu/abs/2014Natur.509..177V/abstract">Vogelsberger+ (2014)</a> and <a href="https://ui.adsabs.harvard.edu/abs/2015A%26C....13...12N/abstract">Nelson+ (2015)</a>.
+  Any publication using data from TNG100 or TNG300 should cite <a href="https://ui.adsabs.harvard.edu/abs/2018MNRAS.475..648P/abstract">Pillepich+ (2018)</a>, <a href="https://ui.adsabs.harvard.edu/abs/2018MNRAS.475..676S/abstract">Springel+ (2018)</a>, <a href="https://ui.adsabs.harvard.edu/abs/2018MNRAS.475..624N/abstract">Nelson+ (2018)</a>, <a href="https://ui.adsabs.harvard.edu/abs/2018MNRAS.477.1206N/abstract">Naiman+ (2018)</a>, and <a href="https://ui.adsabs.harvard.edu/abs/2018MNRAS.480.5113M/abstract">Marinacci+ (2018)</a>. Any publication using data from TNG50 should cite <a href="https://ui.adsabs.harvard.edu/abs/2019MNRAS.490.3196P/abstract">Pillepich+ (2019)</a> and <a href="https://ui.adsabs.harvard.edu/abs/2019MNRAS.490.3234N/abstract">Nelson+ (2019)</a>. Extensive details about these simulations and the data available here are available at <a href="https://www.tng-project.org/">tng-project.org</a>.
 key:
 - simulation
 - snapshot
@@ -95,6 +95,7 @@ fields:
       type: float
       units: 'ckpc/h'
       descr: 'Center of mass of the group, computed as the sum of the mass weighted relative coordinates of all particles/cells in the group, of all types. Comoving coordinate. (Available only for the Illustris-3 run)'
+      flag: hidden
       sub:
       - name: "x"
         title: '\({\rm CM}_x\)'
@@ -223,6 +224,7 @@ fields:
       dict: vel
       units: 'km/s/a'
       descr: 'Velocity of the group, computed as the sum of the mass weighted velocities of all particles/cells in this group, of all types. The peculiar velocity is obtained by multiplying this value by \(1/a.\)'
+      flag: hidden
       sub:
       - name: "x"
         title: '\(v_x\)'
@@ -238,6 +240,7 @@ fields:
       type: float
       units: '\(10^{10}M_\odot/h\)'
       descr: 'Sum of the individual masses of all wind phase gas cells (type 4, BirthTime <= 0) in this group.'
+      flag: hidden
     - name: M_Crit200
       ingest: Group/Group_M_Crit200
       type: float
@@ -314,16 +317,19 @@ fields:
       type: float
       units: '\((h/a^2)(\rm{UnitPressure})^{1/2}\)'
       descr: "The square root of the volume weighted value of $B^{2}$ for all gas cells within the canonical two times the stellar half mass radius. This value gives a magnetic field strength which would have the same amount of mean magnetic energy as the galaxy cells."
+      flag: hidden
     - name: BfldHalo
       ingest: _optional:Subhalo/SubhaloBfldHalo
       type: float
       units: '\((h/a^2)(\rm{UnitPressure})^{1/2}\)'
       descr: "The square root of the volume weighted value of $B^{2}$ for all gas cells in the subhalo. This value gives a magnetic field strength which would have the same amount of mean magnetic energy as the subhalo cells."
+      flag: hidden
     - name: CM
       ingest: Subhalo/SubhaloCM
       type: float
       units: 'ckpc/h'
       descr: 'Comoving center of mass of the Subhalo, computed as the sum of the mass weighted relative coordinates of all particles/cells in the Subhalo, of all types.'
+      flag: hidden
       sub:
       - name: "x"
       - name: "y"
@@ -437,7 +443,6 @@ fields:
       ingest: _optional:Subhalo/SubhaloGasMetallicitySfrWeighted
       type: float
       descr: 'Same as SubhaloGasMetallicitySfr, but weighted by the cell star-formation rate rather than the cell mass.'
-      flag: hidden
     - name: GrNr
       ingest: Subhalo/SubhaloGrNr
       type: integer
@@ -454,7 +459,6 @@ fields:
       type: float
       units: 'ckpc/h'
       descr: 'Comoving radius containing half of the mass of this Subhalo split by Type (SubhaloMassType).'
-      flag: hidden
       sub:
       - name: gas
       - name: dm
@@ -557,7 +561,6 @@ fields:
       type: float
       units: '\(10^{10}M_\odot/h\)'
       descr: 'Total mass of all member particle/cells which are bound to this Subhalo, separated by type. Particle/cells bound to subhaloes of this Subhalo are NOT accounted for. Note: Wind phase cells are counted as gas (type 0) for SubhaloMassType.'
-      flag: hidden
       sub:
       - name: gas
       - name: dm
@@ -576,7 +579,6 @@ fields:
       type: float
       units: 'ckpc/h'
       descr: 'Spatial position within the periodic box of the maximum bound particle. Comoving coordinate.'
-      flag: hidden
       sub:
       - name: "x"
       - name: "y"
@@ -586,7 +588,6 @@ fields:
       type: float
       units: '\(M_\odot/yr\)'
       descr: 'Sum of the individual star formation rates of all gas cells in this subhalo.'
-      flag: hidden
     - name: SFRinHalfRad
       ingest: _optional:Subhalo/SubhaloSFRinHalfRad
       type: float
@@ -671,7 +672,6 @@ fields:
       type: float
       units: '-'
       descr: 'Mass-weighted average metallicity (Mz/Mtot, where Z = any element above He) of the star particles bound to this Subhalo, but restricted to stars within twice the stellar half mass radius.'
-      flag: hidden
     - name: StarMetallicityHalfRad
       ingest: _optional:Subhalo/SubhaloStarMetallicityHalfRad
       type: float
@@ -731,7 +731,6 @@ fields:
       type: float
       units: 'km/s'
       descr: 'Maximum value of the spherically-averaged rotation curve.'
-      flag: hidden
     - name: VmaxRad
       ingest: Subhalo/SubhaloVmaxRad
       type: float
