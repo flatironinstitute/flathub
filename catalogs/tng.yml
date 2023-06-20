@@ -1,9 +1,9 @@
-title: IllustrisTNG FoF Halos
+title: IllustrisTNG
 index: tng
 visible: false
 count: 9249422159
 descr: >
-  <a href='https://www.tng-project.org/'>IllustrisTNG</a> <a href='https://www.tng-project.org/data/docs/specifications/#sec2a'>FoF Halo catalog</a> derived with a standard friends-of-friends (FoF) algorithm.
+  <a href='https://www.tng-project.org/'>IllustrisTNG</a> combined <a href='https://www.tng-project.org/data/docs/specifications/#sec2a'>FoF Halo</a> and <a href="https://www.tng-project.org/data/docs/specifications/#sec2b">Subfind Subhalo (Galaxies)</a> catalogs.
   Any publication using data from TNG100 or TNG300 should cite <a href="https://ui.adsabs.harvard.edu/abs/2018MNRAS.475..648P/abstract">Pillepich+ (2018)</a>, <a href="https://ui.adsabs.harvard.edu/abs/2018MNRAS.475..676S/abstract">Springel+ (2018)</a>, <a href="https://ui.adsabs.harvard.edu/abs/2018MNRAS.475..624N/abstract">Nelson+ (2018)</a>, <a href="https://ui.adsabs.harvard.edu/abs/2018MNRAS.477.1206N/abstract">Naiman+ (2018)</a>, and <a href="https://ui.adsabs.harvard.edu/abs/2018MNRAS.480.5113M/abstract">Marinacci+ (2018)</a>. Any publication using data from TNG50 should cite <a href="https://ui.adsabs.harvard.edu/abs/2019MNRAS.490.3196P/abstract">Pillepich+ (2019)</a> and <a href="https://ui.adsabs.harvard.edu/abs/2019MNRAS.490.3234N/abstract">Nelson+ (2019)</a>. Extensive details about these simulations and the data available here are available at <a href="https://www.tng-project.org/">tng-project.org</a>.
 key:
 - simulation
