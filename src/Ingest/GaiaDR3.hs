@@ -187,7 +187,7 @@ ingestGaiaDR3 ing@Ingest{ ingestCatalog = cat } = do
     $ genericDrop (ingestOffset ing) $ zipTables maintab tabs
   where
   (basedir, maintabn, range) = splitFile (ingestFile ing)
-  Just keyn = catalogKey cat
+  [keyn] = catalogKey cat
   tabfs = HM.map V.fromList $ V.foldr addf HM.empty $ catalogFields cat
   addf f
     | fieldName f == fileUpper = id

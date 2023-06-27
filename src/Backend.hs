@@ -5,6 +5,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TupleSections #-}
 
 module Backend
   ( FieldFilter(..)
@@ -45,7 +46,7 @@ import           Data.Functor.Reverse (Reverse(Reverse))
 import qualified Data.HashMap.Strict as HM
 import qualified Data.JsonStream.Parser as JS
 import           Data.List (genericTake, nubBy)
-import           Data.Maybe (fromMaybe, isJust, catMaybes)
+import           Data.Maybe (fromMaybe, isJust, catMaybes, mapMaybe)
 import           Data.Proxy (Proxy(Proxy))
 import           Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
 import qualified Data.Text as T
@@ -263,8 +264,10 @@ queryDataStream cat args = qds Nothing where
       C..| fstAndLast
     C.yield C.Flush
     mapM_ (qds . Just) off'
-  args' = args{ dataSort = nubBy ((==) `on` fieldName . fst) $ dataSort args ++ [(key,True)] }
-  key = fromMaybe idField $ (`HM.lookup` catalogFieldMap cat) =<< catalogKey cat
+  args' = args{ dataSort = nubBy ((==) `on` fieldName . fst) $ dataSort args ++ map (, True) key }
+  key = case mapMaybe (`HM.lookup` catalogFieldMap cat) $ catalogKey cat of
+    [] -> [idField] -- XXX this is very bad for performance
+    l -> l
 
 -------- count
 

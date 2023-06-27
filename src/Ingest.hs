@@ -59,6 +59,7 @@ ingest cat consts fs = do
     ".ecsv" -> Just ingestECSV
     ".dat" -> Just ingestDat
     ".txt" -> Just ingestTxt
+    "" | catalogName cat == "tng" -> Just ingestTNG
     _ -> Nothing
   splitoff [] = ([], 0)
   splitoff ('@':(readMaybe -> Just i)) = ([], i)

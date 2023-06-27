@@ -21,11 +21,14 @@ import Field
 import Catalog
 
 data IngestJoin
-  = IngestHaloJoin -- ^Indicates a (left, 1:many) join of the main data to child data
+  = IngestHaloJoin -- ^Indicates a left, 1:many, union join of the main data to child data
     { joinIngest :: Ingest
     , joinFirst -- ^parent field of first index
     , joinCount -- ^parent field of count
     , joinParent :: T.Text -- ^child field referencing parent
+    }
+  | IngestJoin -- ^Indicates a left, 1:0-or-1 join with additional dataset(s)
+    { joinFields :: Fields -- ^child ingest
     }
 
 data Ingest = Ingest
@@ -40,6 +43,9 @@ data Ingest = Ingest
   , ingestStart :: Word64  -- ^base offset of this file (so first record is @'ingestStart' + 'ingestOffset'@)
   , ingestJoin :: Maybe IngestJoin
   }
+
+ingestPos :: Ingest -> Word64
+ingestPos i = ingestStart i + ingestOffset i
 
 addIngestConsts :: FieldValue -> Ingest -> Ingest
 addIngestConsts v i = i{ ingestConsts = v : ingestConsts i, ingestJConsts = fieldJValue v <> ingestJConsts i }

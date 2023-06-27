@@ -9,6 +9,9 @@ descr: >
 index: gaea
 count: 201238825
 sort: z
+key:
+  - GalID # not really unique?
+  - z # iffy
 fields:
   - name: PPos
     type: double

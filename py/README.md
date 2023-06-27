@@ -15,7 +15,7 @@ To install the module, you just need Python and numpy.
 To install, just clone this repository and run setup.py:
 
 ```sh
-git clone git://github.com/flatironinstitute/flathub
+git clone https://github.com/flatironinstitute/flathub
 cd flathub/py
 python setup.py install
 ```

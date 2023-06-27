@@ -17,6 +17,7 @@ pipeline: |
   ctx['SM'] = 1.0e-10*ctx['SM'];
   ctx['ICL'] = 1.0e-10*ctx['ICL'];
   ctx['obs_SM'] = 1.0e-10*ctx['obs_SM'];
+key: ID # i think? maybe need field?
 fields:
   - name: field
     dict: candels_field

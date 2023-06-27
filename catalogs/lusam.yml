@@ -7,6 +7,10 @@ descr: >
 index: lusam
 count: 12380047
 order: 'candels-3'
+key:
+  - field
+  - realization
+  - halo_id_nbody
 fields:
   - name: field
     dict: candels_field
