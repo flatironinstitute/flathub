@@ -279,7 +279,7 @@ fieldGroupSchema = do
     , ("enum", OA.Inline $ schemaDescOf fieldEnum "if present, display values as these keywords instead (integral or boolean: enum[<int>value])", False)
     , ("disp", OA.Inline $ schemaDescOf fieldDisp "include field in data display by default", False)
     , ("units", OA.Inline $ schemaDescOf fieldUnits "display units", False)
-    , ("required", OA.Inline $ schemaDescOf (True ==) "true = required filter; false = top-level (default) optional filter; missing = normal", False)
+    , ("required", OA.Inline $ schemaDescOf (True ==) "true = required field (field you should filter on first to select data sub-set); false = top-level optional field (field that you likely want to filter on by default); missing = normal", False)
     , ("terms", OA.Inline $ schemaDescOf fieldTerms "display dynamically as a dropdown of values", False)
     , ("dict", OA.Inline $ schemaDescOf fieldDict "unique key index to global field dictionary (for compare)", False)
     , ("scale", OA.Inline $ schemaDescOf fieldScale "scale factor to dict-comparable units, display  value*scale (for compare)", False)
