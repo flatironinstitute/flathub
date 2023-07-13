@@ -6,22 +6,30 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "generate-types": "npx openapi-typescript https://flathub.flatironinstitute.org/openapi.json --output src/lib/flathub-schema.d.ts"
   },
   "dependencies": {
-    "@headlessui/react": "1",
-    "@headlessui/tailwindcss": "0.1",
-    "@heroicons/react": "2",
-    "d3": "^7.8.4",
+    "@headlessui/react": "latest",
+    "@headlessui/tailwindcss": "latest",
+    "@heroicons/react": "latest",
+    "d3": "latest",
+    "fast-memoize": "latest",
+    "immer": "latest",
+    "katex": "latest",
     "next": "13",
     "react": "18",
     "react-dom": "18",
-    "typescript": "5"
+    "typescript": "5",
+    "uuid": "latest"
   },
   "devDependencies": {
+    "@types/d3": "latest",
+    "@types/katex": "latest",
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "@types/uuid": "latest",
     "autoprefixer": "latest",
     "postcss": "latest",
     "tailwindcss": "latest"

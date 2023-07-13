@@ -1,16 +1,10 @@
-import CatalogSelect from "./CatalogSelect";
+import React from "react";
+import App from "src/lib/App";
 
-export default async function Home() {
-  const catalogs_response = await fetch(
-    `https://flathub.flatironinstitute.org/api`
-  );
-
-  const catalogs = await catalogs_response.json();
-
+export default function Home(): React.JSX.Element {
   return (
-    <main>
-      <CatalogSelect catalogs={catalogs} />
-      <pre>{JSON.stringify(catalogs, null, 2)}</pre>
-    </main>
+    <>
+      <App />
+    </>
   );
 }

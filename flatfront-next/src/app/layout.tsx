@@ -1,5 +1,4 @@
 import "./globals.css";
-import Nav from "./Nav";
 
 export const metadata = {
   title: "Flatfront (next)",
@@ -11,9 +10,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>
-        <Nav />
+    <html lang="en" className="dark">
+      <body className="dark:bg-slate-800 dark:text-white">
         {children}
       </body>
     </html>
