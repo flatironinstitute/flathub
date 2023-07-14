@@ -51,7 +51,9 @@ ingest cat consts fs = do
       , ingestJoin = Nothing
       }
   proc f = case takeExtension $ fst $ decompressExtension f of
-    ".hdf5" -> Just ingestHDF5
+    ".hdf5"
+      | catalogName cat == "eagle" -> Just ingestEagle
+      | otherwise -> Just ingestHDF5
     ".h5" -> Just ingestHDF5
     ".csv"
       | catalogName cat == "gaiadr3" -> Just ingestGaiaDR3
