@@ -10,7 +10,7 @@ module Ingest.HDF5
   , ingestEagle
   ) where
 
-import           Control.Arrow ((&&&), first)
+import           Control.Arrow ((&&&), first, second)
 import           Control.Exception (bracket, handleJust)
 import           Control.Monad (foldM, guard, when, unless)
 import           Control.Monad.IO.Class (liftIO)
@@ -76,7 +76,9 @@ fmapStorableValue1 _ (Keyword   _) = error "fmapStorableValue Keyword"
 fmapStorableValue1 _ (Array     _) = error "fmapStorableValue Array"
 fmapStorableValue1 _ (Void      _) = error "fmapStorableValue Void"
 
-type DataBlock = [(T.Text, TypeValue VS.Vector)]
+type DataOf f = [(T.Text, TypeValue f)]
+type DataValues = DataOf Identity
+type DataBlock = DataOf VS.Vector
 
 data IngestFlag
   = IngestAttribute
@@ -182,8 +184,14 @@ loadBlock i hf = do
       then i'{ ingestSize = Just (ingestOffset i') }
       else i')
 
+blockJsonWith :: (TypeValue f -> Value) -> DataOf f -> J.Series
+blockJsonWith f d = foldMap (\(k, v) -> JK.fromText k J..= f v) d
+
+blockIndex :: Int -> TypeValue VS.Vector -> Value
+blockIndex i = fmapStorableValue1 (VS.! i)
+
 blockJson :: DataBlock -> Int -> J.Series
-blockJson d i = foldMap (\(k, v) -> JK.fromText k J..= fmapStorableValue1 (VS.! i) v) d
+blockJson d i = blockJsonWith (blockIndex i) d
 
 blockDoc :: Ingest -> J.Series -> DataBlock -> Int -> (String, J.Series)
 blockDoc info e d i =
@@ -469,44 +477,83 @@ ingestTNG inginfo = do
       _ -> start Nothing
 
 data EagleSub = EagleSub
-  { eagleGroup :: H5.Group
+  { eagleName :: T.Text
+  , eagleGroup :: H5.Group
   , eagleIngest :: Ingest
   , eagleBlock :: DataBlock
   , eagleOff, eagleLen :: Int
   , eagleKey :: VS.Vector Int32
+  , eagleTake :: Int32 -> EagleSub -> IO (Maybe DataValues, EagleSub)
   }
 
-eagleKeyField :: T.Text
+eagleKeyField, eagleApertureField :: T.Text
 eagleKeyField = "GalaxyID"
+eagleApertureField = "ApertureSize"
 
-eagleNew :: Ingest -> H5.Group -> EagleSub
-eagleNew info@Ingest{ ingestCatalog = cat } hg = EagleSub
-  { eagleGroup = hg
-  , eagleIngest = info{ ingestCatalog = cat{ catalogFieldGroups = def{ fieldName = eagleKeyField, fieldType = Integer Proxy } `V.cons` catalogFieldGroups cat } }
+eagleNew :: T.Text -> Ingest -> H5.Group -> EagleSub
+eagleNew name info@Ingest{ ingestCatalog = cat } hg = EagleSub
+  { eagleName = name
+  , eagleGroup = hg
+  , eagleIngest = info{ ingestCatalog = cat
+    { catalogFieldGroups = def
+      { fieldName = eagleKeyField
+      , fieldType = Integer Proxy
+      } `V.cons` (if isap then unap else id) (catalogFieldGroups cat)
+    } }
   , eagleBlock = []
   , eagleOff = 0
   , eagleLen = 0
   , eagleKey = VS.empty
-  }
+  , eagleTake = if isap then eagleAperture else eagleTake1
+  } where
+  isap = name == "Aperture"
+  unap f = def
+    { fieldName = eagleApertureField
+    , fieldType = Integer Proxy
+    } `V.cons` V.map unsub f
+  unsub f = f{ fieldSub = Nothing }
 
-eagleTake :: Int32 -> EagleSub -> IO (J.Series, EagleSub)
-eagleTake k e | eagleOff e == eagleLen e =
-  if ingestEOF (eagleIngest e) then return (mempty, e) else do
+eagleTake1 :: Int32 -> EagleSub -> IO (Maybe DataValues, EagleSub)
+eagleTake1 k e | eagleOff e == eagleLen e =
+  if ingestEOF (eagleIngest e) then return (Nothing, e) else do
   (n, (kn,Integer kb):b, i) <- loadBlock (eagleIngest e) (eagleGroup e)
   unless (kn == eagleKeyField) $ fail $ "eagleLoad " <> T.unpack kn
-  eagleTake k e
+  eagleTake1 k e
     { eagleIngest = i
     , eagleBlock = b
     , eagleOff = 0
     , eagleLen = n
     , eagleKey = kb
     }
-eagleTake k e@EagleSub{..} = case compare k k1 of
-  LT -> return (mempty, e)
-  EQ -> return (blockJson eagleBlock eagleOff, e{ eagleOff = succ eagleOff })
+eagleTake1 k e@EagleSub{..} = case compare k k1 of
+  LT -> return (Nothing, e)
+  EQ -> return (Just $ map (second $ blockIndex eagleOff) eagleBlock, e{ eagleOff = succ eagleOff })
   GT -> fail $ "eagleTake out of order " <> show k <> " > " <> show k1
   where
   k1 = eagleKey VS.! eagleOff
+
+eagleTakeAll :: Int32 -> EagleSub -> IO ([DataValues], EagleSub)
+eagleTakeAll k e = do
+  (r, e') <- eagleTake1 k e
+  maybe
+    (return ([], e'))
+    (\x -> first (x:) <$> eagleTakeAll k e')
+    r
+
+eagleAperture :: Int32 -> EagleSub -> IO (Maybe DataValues, EagleSub)
+eagleAperture k e = do
+  (r, e') <- eagleTakeAll k e
+  return . (, e') $ if null r
+    then Nothing
+    else Just $ foldMap apv r
+  where
+  apv ((kn,Integer (Identity kv)):vs) | kn == eagleApertureField =
+    map (first (<> ks)) vs
+    where ks = T.pack ('_' : show kv)
+  apv _ = error "eagleAperture"
+
+eagleNext :: Int32 -> EagleSub -> IO (J.Series, EagleSub)
+eagleNext k e = first (foldMap (blockJsonWith id)) <$> eagleTake e k e
 
 ingestEagle :: Ingest -> M Word64
 ingestEagle inginfo = do
@@ -525,7 +572,7 @@ ingestEagle inginfo = do
       liftIO $ putStr "fof load\r" >> hFlush stdout
       (n, b, info') <- liftIO $ loadBlock info{ ingestBlockSize = maxfof } hg
       when (fromIntegral n >= maxfof) $ fail "exeeded maxfof"
-      -- ingfof b info n 0
+      ingfof b info n 0
       return (n, b)
     nsub <- case ingestJoin info of
       Just IngestHaloJoin
@@ -540,7 +587,7 @@ ingestEagle inginfo = do
               } sups
             loadsups (f:r) sups =
               liftBaseOp (withGroupMaybe hf (simn <> "_" <> fieldSource f)) $ \hg ->
-                loadsups r $ maybe id ((:) . eagleNew subinfo
+                loadsups r $ maybe id ((:) . eagleNew (fieldSource f) subinfo
                   { ingestCatalog = (ingestCatalog subinfo){ catalogFieldGroups = fold (fieldSub f) }
                   }) hg sups
             loop info sups = do
@@ -555,7 +602,7 @@ ingestEagle inginfo = do
               let doc s r i
                     | i == n = return (s, r)
                     | otherwise = do
-                      (sd, s') <- unzip <$> mapM (eagleTake $ sid VS.! i) s
+                      (sd, s') <- unzip <$> mapM (eagleNext $ sid VS.! i) s
                       let d = blockDoc info
                             (foldMap (blockJson fof) (IM.lookup (fromIntegral $ gid VS.! i) fofmap) <> fold sd)
                             sb i
@@ -570,4 +617,4 @@ ingestEagle inginfo = do
     return (fromIntegral nfof+nsub)
   where
   maxfof = 100000000
-  -- TODO: sup joins; aperture; convert; missing
+  -- TODO: convert; missing

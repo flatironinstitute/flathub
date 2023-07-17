@@ -36,14 +36,14 @@ fields:
       - TNG50-3-Dark # L35n540TNG_DM
       - TNG50-4 # L35n270TNG
       - TNG50-4-Dark # L35n270TNG_DM
-      - TNG100-1 # L75n1820TNG          # done: 0..54 79..99
-      - TNG100-1-Dark # L75n1820TNG_DM  # done: 0..54 79..99
+      - TNG100-1 # L75n1820TNG          # done: 0..62 79..99
+      - TNG100-1-Dark # L75n1820TNG_DM  # done: 0..62 79..99
       - TNG100-2 # L75n910TNG
       - TNG100-2-Dark # L75n910TNG_DM
       - TNG100-3 # L75n455TNG
       - TNG100-3-Dark # L75n455TNG_DM
-      - TNG300-1 # L205n2500TNG         # done: 0..54 79..99; failed: 31 36 44 54
-      - TNG300-1-Dark # L205n2500TNG_DM # done: 0..54 79..99
+      - TNG300-1 # L205n2500TNG         # done: 0..62 79..99; failed: 31 36 44 54 58 62 
+      - TNG300-1-Dark # L205n2500TNG_DM # done: 0..62 79..99
       - TNG300-2 # L205n1250TNG
       - TNG300-2-Dark # L205n1250TNG_DM
       - TNG300-3 # L205n625TNG
