@@ -4,7 +4,7 @@ import type { components } from "./flathub-schema";
 import type { Context, Dispatch, SetStateAction } from "react";
 import React from "react";
 import * as uuid from "uuid";
-import { Listbox } from "@headlessui/react";
+import { Listbox, Switch } from "@headlessui/react";
 import { ChevronUpDownIcon } from "@heroicons/react/20/solid";
 import * as d3 from "d3";
 import KaTeX from "katex";
@@ -28,7 +28,7 @@ export default function App() {
       >
         <div className="h-10" />
         <Cells />
-        <AddCatalogButton />
+        <GlobalControls />
         <div className="h-10" />
       </main>
     </AppControllerContext.Provider>
@@ -106,7 +106,10 @@ function CatalogFieldsSection({
       );
     }
     return (
-      <div className="rounded-md bg-slate-600 p-4" key={field_node.data.name}>
+      <div
+        className="rounded-md bg-white dark:bg-slate-600 p-4"
+        key={field_node.data.name}
+      >
         <FieldTitle node={field_node}></FieldTitle>
         {add_remove_switch}
       </div>
@@ -116,12 +119,12 @@ function CatalogFieldsSection({
     <div>
       <div className="h-4"></div>
       <input
-        className="w-full bg-slate-900 rounded-lg text-lg leading-5 py-2 px-3 focus:ring-2 focus:ring-white focus:outline-none"
+        className="w-full dark:bg-slate-900 rounded-lg text-lg leading-5 py-2 px-3 focus:ring-2 focus:ring-white focus:outline-none"
         type="text"
         placeholder="search"
       />
       <div className="h-4"></div>
-      <div className="h-[400px] overflow-y-scroll flex flex-col gap-y-4 ps-1 pe-1">
+      <div className="h-[600px] overflow-y-scroll overflow-x-visible flex flex-col gap-y-4">
         {field_list}
       </div>
     </div>
@@ -160,7 +163,10 @@ function CatalogFilterSection({
       <FilterControls cell_id={cell_id} field_name={field_name} />
     );
     return (
-      <div className="rounded-md bg-slate-600 p-4" key={field_node.data.name}>
+      <div
+        className="rounded-md bg-white dark:bg-slate-600 p-4"
+        key={field_node.data.name}
+      >
         <FieldTitle node={field_node}></FieldTitle>
         {filter_controls}
         {remove_button}
@@ -273,7 +279,9 @@ function CellSectionLabel({
   children: React.ReactNode;
 }): React.JSX.Element {
   return (
-    <div className="dark:text-slate-500 uppercase text-sm">{children}</div>
+    <div className="text-slate-400 dark:text-slate-500 uppercase text-sm">
+      {children}
+    </div>
   );
 }
 
@@ -283,22 +291,21 @@ function CellWrapper({
   children: React.ReactNode;
 }): React.JSX.Element {
   return (
-    <div className="rounded font-mono dark:bg-slate-700 p-6 shadow-lg dark:shadow-black w-full transition-all flex flex-col gap-y-10">
+    <div className="rounded font-mono bg-slate-200 dark:bg-slate-700 p-6 shadow-lg shadow-black dark:shadow-lg dark:shadow-black w-full transition-all flex flex-col gap-y-10">
       {children}
     </div>
   );
 }
 
-function AddCatalogButton(): React.JSX.Element {
+function GlobalControls(): React.JSX.Element {
   const controller = useAppController();
   return (
-    <>
-      <div className="rounded-2xl font-mono dark:bg-slate-700 p-6 text-start shadow-lg dark:shadow-black transition-all w-full">
+    <CellWrapper>
+      <div className="grid grid-cols-10 auto-rows-[40px] gap-x-4 gap-y-4 items-center">
         <CatalogSelect />
-        <div>{controller.temp.value}</div>
-        <button onClick={() => controller.temp.set((t) => t + 1)}>temp</button>
+        <DarkModeToggle />
       </div>
-    </>
+    </CellWrapper>
   );
 }
 
@@ -313,11 +320,12 @@ function CatalogSelect() {
   const catalog_list = d3.sort(catalog_list_unsorted, (d) => d.order);
 
   return (
-    <div className="grid grid-cols-10 gap-x-4">
-      <div className="col-span-8">
+    <>
+      <div className="col-span-2">Add Catalog</div>
+      <div className="col-span-6">
         <Listbox value={selected} onChange={set_selected} disabled={loading}>
           <div className="relative">
-            <Listbox.Button className="relative w-full cursor-pointer rounded-md dark:bg-slate-900 py-2 pl-3 pr-10 text-left shadow-md disabled:opacity-50 disabled:cursor-wait">
+            <Listbox.Button className="relative w-full cursor-pointer rounded-md bg-white dark:bg-slate-900 py-2 pl-3 pr-10 text-left shadow-md disabled:opacity-50 disabled:cursor-wait">
               <span className="block truncate">
                 {loading ? `Loading...` : selected?.title ?? `Select a Catalog`}
               </span>
@@ -328,7 +336,7 @@ function CatalogSelect() {
                 />
               </span>
             </Listbox.Button>
-            <Listbox.Options className="absolute mt-1 w-full overflow-auto rounded-md dark:bg-slate-900 py-1 shadow-lg">
+            <Listbox.Options className="absolute mt-1 w-full overflow-auto rounded-md bg-white dark:bg-slate-900 py-1 shadow-lg">
               {catalog_list.map((catalog_list_item) => (
                 <Listbox.Option
                   key={catalog_list_item.name}
@@ -347,7 +355,7 @@ function CatalogSelect() {
         </Listbox>
       </div>
       <button
-        className="col-span-2 dark:bg-slate-900 rounded-md disabled:opacity-50"
+        className="col-span-2 py-2 bg-white dark:bg-slate-900 rounded-md disabled:opacity-50"
         disabled={!selected}
         onClick={() => {
           if (selected) {
@@ -357,7 +365,39 @@ function CatalogSelect() {
       >
         Add
       </button>
-    </div>
+    </>
+  );
+}
+
+function DarkModeToggle() {
+  const [dark_mode, set_dark_mode] = React.useState(true);
+
+  React.useEffect(() => {
+    if (dark_mode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [dark_mode]);
+
+  return (
+    <>
+      <div className="col-span-2">Dark Mode</div>
+      <div className="col-span-8">
+        <Switch
+          checked={dark_mode}
+          onChange={set_dark_mode}
+          className={`bg-white dark:bg-slate-900 relative inline-flex h-8 w-14 items-center rounded-full`}
+        >
+          <span className="sr-only">Enable notifications</span>
+          <span
+            className={`${
+              dark_mode ? "translate-x-7" : "translate-x-1"
+            } inline-block h-6 w-6 transform rounded-full bg-slate-500 dark:bg-white transition`}
+          />
+        </Switch>
+      </div>
+    </>
   );
 }
 
