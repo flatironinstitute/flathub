@@ -409,7 +409,7 @@ loadHFile info hf =
     ingestBlock i b n
     ij <- ingestSubBlocks i b hf
     let i'' = i'{ ingestJoin = ij }
-    liftIO $ putStr (show (ingestOffset i'') ++ ' ' : foldMap (show . ingestOffset . joinIngest) ij ++ "\r") >> hFlush stdout
+    liftIO $ putStr (show (ingestOffset i'') ++ ' ' : foldMap (show . ingestOffset . joinIngest) ij ++ "\ESC[K\r") >> hFlush stdout
     if ingestEOF i''
       then maybe
         (return $ ingestOffset i'')
@@ -483,6 +483,7 @@ data EagleSub = EagleSub
   , eagleBlock :: DataBlock
   , eagleOff, eagleLen :: Int
   , eagleKey :: VS.Vector Int32
+  , eagleMap :: IM.IntMap Int
   , eagleTake :: Int32 -> EagleSub -> IO (Maybe DataValues, EagleSub)
   }
 
@@ -504,33 +505,57 @@ eagleNew name info@Ingest{ ingestCatalog = cat } hg = EagleSub
   , eagleOff = 0
   , eagleLen = 0
   , eagleKey = VS.empty
-  , eagleTake = if isap then eagleAperture else eagleTake1
+  , eagleMap = IM.empty
+  , eagleTake = if isap then eagleAperture else if ismap then eagleInitMap else eagleTake1
   } where
   isap = name == "Aperture"
+  ismap = name == "Magnitudes"
   unap f = def
     { fieldName = eagleApertureField
     , fieldType = Integer Proxy
     } `V.cons` V.map unsub f
   unsub f = f{ fieldSub = Nothing }
 
-eagleTake1 :: Int32 -> EagleSub -> IO (Maybe DataValues, EagleSub)
-eagleTake1 k e | eagleOff e == eagleLen e =
-  if ingestEOF (eagleIngest e) then return (Nothing, e) else do
+eagleLoad :: EagleSub -> IO EagleSub
+eagleLoad e
+  | eagleOff e < eagleLen e || ingestEOF (eagleIngest e) = return e
+  | otherwise = do
   (n, (kn,Integer kb):b, i) <- loadBlock (eagleIngest e) (eagleGroup e)
   unless (kn == eagleKeyField) $ fail $ "eagleLoad " <> T.unpack kn
-  eagleTake1 k e
+  return e
     { eagleIngest = i
     , eagleBlock = b
     , eagleOff = 0
     , eagleLen = n
     , eagleKey = kb
     }
-eagleTake1 k e@EagleSub{..} = case compare k k1 of
-  LT -> return (Nothing, e)
-  EQ -> return (Just $ map (second $ blockIndex eagleOff) eagleBlock, e{ eagleOff = succ eagleOff })
-  GT -> fail $ "eagleTake out of order " <> show k <> " > " <> show k1
+
+eagleInitMap :: Int32 -> EagleSub -> IO (Maybe DataValues, EagleSub)
+eagleInitMap k ei = do
+  putStr (T.unpack (eagleName ei) <> " load\ESC[K\r") >> hFlush stdout
+  e@EagleSub{..} <- eagleLoad ei{ eagleIngest = (eagleIngest ei){ ingestBlockSize = maxmap } }
+  when (fromIntegral eagleLen >= maxmap) $ fail "exeeded maxmap"
+  eagleTakeMap k e
+    { eagleMap = IM.fromList $ zip (map fromIntegral $ VS.toList eagleKey) [0..]
+    , eagleTake = eagleTakeMap
+    }
   where
-  k1 = eagleKey VS.! eagleOff
+  maxmap = 100000000
+  
+eagleTakeMap :: Int32 -> EagleSub -> IO (Maybe DataValues, EagleSub)
+eagleTakeMap k e = return (get <$> IM.lookup (fromIntegral k) (eagleMap e), e) where
+  get i = map (second $ blockIndex i) (eagleBlock e)
+
+eagleTake1 :: Int32 -> EagleSub -> IO (Maybe DataValues, EagleSub)
+eagleTake1 k ei = do
+  e@EagleSub{..} <- eagleLoad ei
+  if ingestEOF eagleIngest then return (Nothing, e)
+  else do
+    let k1 = eagleKey VS.! eagleOff
+    case compare k k1 of
+      LT -> return (Nothing, e)
+      EQ -> return (Just $ map (second $ blockIndex eagleOff) eagleBlock, e{ eagleOff = succ eagleOff })
+      GT -> fail $ "eagleTake out of order " <> T.unpack eagleName <> " " <> show k <> " > " <> show k1
 
 eagleTakeAll :: Int32 -> EagleSub -> IO ([DataValues], EagleSub)
 eagleTakeAll k e = do
@@ -560,7 +585,7 @@ ingestEagle inginfo = do
   FieldValue Field{ fieldEnum = Just sime } (Byte (Identity sim)) <- constField "simulation" inginfo
   let simn = sime V.! fromIntegral sim
       ingfof b i l o = do
-        liftIO $ putStr ("fof " ++ show o ++ "/" ++ show l ++ "\r") >> hFlush stdout
+        liftIO $ putStr ("fof " ++ show o ++ "/" ++ show l ++ "\ESC[K\r") >> hFlush stdout
         let n = min (fromIntegral $ ingestBlockSize i) l
         ingestWith i (blockDoc i mempty b . (o +)) n
         when (l > n) $ ingfof b i (l - n) (o + n)
@@ -569,10 +594,11 @@ ingestEagle inginfo = do
       { ingestPrefix = show sim ++ "F"
       } hf
     (nfof, fof) <- liftBaseOp (withGroup hf (simn <> "_FoF")) $ \hg -> do
-      liftIO $ putStr "fof load\r" >> hFlush stdout
+      liftIO $ putStr "fof load\ESC[K\r" >> hFlush stdout
       (n, b, info') <- liftIO $ loadBlock info{ ingestBlockSize = maxfof } hg
       when (fromIntegral n >= maxfof) $ fail "exeeded maxfof"
       ingfof b info n 0
+      liftIO $ putStrLn ""
       return (n, b)
     nsub <- case ingestJoin info of
       Just IngestHaloJoin
@@ -591,7 +617,7 @@ ingestEagle inginfo = do
                   { ingestCatalog = (ingestCatalog subinfo){ catalogFieldGroups = fold (fieldSub f) }
                   }) hg sups
             loop info sups = do
-              liftIO $ putStr ("subhalo " <> show (ingestOffset info) <> "\r") >> hFlush stdout
+              liftIO $ putStr ("subhalo " <> show (ingestOffset info) <> "\ESC[K\r") >> hFlush stdout
               (n, sb, info') <- liftIO $ loadBlock info hs
               gid <- case lookup subgf sb of
                 Just (Long gid) -> return gid
@@ -610,11 +636,10 @@ ingestEagle inginfo = do
               (sups', docs) <- liftIO $ doc sups [] 0
               ES.createBulk (ingestCatalog info') docs
               if ingestEOF info'
-                then return (ingestOffset info')
+                then ingestOffset info' <$ liftIO (putStrLn "")
                 else loop info' sups'
         loadsups (V.toList supfs) []
       _ -> fail "missing join"
     return (fromIntegral nfof+nsub)
   where
   maxfof = 100000000
-  -- TODO: convert; missing
