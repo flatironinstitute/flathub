@@ -8,12 +8,17 @@ import { Listbox, Switch } from "@headlessui/react";
 import { ChevronUpDownIcon } from "@heroicons/react/20/solid";
 import * as d3 from "d3";
 import KaTeX from "katex";
+import renderMathInElement from "katex/contrib/auto-render";
 import { produce } from "immer";
 import memoize from "fast-memoize";
 
 const GLYPH = {
   EM_DASH: `—`,
 };
+
+const CellIDContext: Context<CellID> = React.createContext(
+  null as any as CellID
+);
 
 const AppControllerContext: Context<AppController> = React.createContext(
   {} as AppController
@@ -45,13 +50,18 @@ function Cells(): React.JSX.Element {
 
   const rendered = controller.cells_list.map((cell) => {
     const Component = cell_components[cell.type];
-    return <Component key={cell.id} id={cell.id} />;
+    return (
+      <CellIDContext.Provider key={cell.id} value={cell.id}>
+        <Component key={cell.id} />
+      </CellIDContext.Provider>
+    );
   });
 
   return <>{rendered}</>;
 }
 
-function CatalogCell({ id: cell_id }: { id: CellID }): React.JSX.Element {
+function CatalogCell(): React.JSX.Element {
+  const cell_id = useCellID();
   const controller = useAppController();
   const cell_data = controller.catalog_cells[cell_id];
   const catalog_response =
@@ -64,82 +74,27 @@ function CatalogCell({ id: cell_id }: { id: CellID }): React.JSX.Element {
         <div className="text-2xl">{catalog_response?.title}</div>
       </CellSection>
       <CellSection label="fields">
-        <CatalogFieldsSection id={cell_id} />
+        <CatalogFieldsSection />
       </CellSection>
-      {/* <CellSection label="filters">
-        <CatalogFilterSection id={cell_id} />
-      </CellSection> */}
+      <CellSection label="filters">
+        <CatalogFilterSection />
+      </CellSection>
     </CellWrapper>
   );
 }
 
-function CatalogFieldsSection({
-  id: cell_id,
-}: {
-  id: CellID;
-}): React.JSX.Element {
+function CatalogFieldsSection(): React.JSX.Element {
+  const cell_id = useCellID();
   const controller = useAppController();
   const fields = controller.get_cell_fields(cell_id)?.nodes_depth_first;
-  console.log(`fields`, fields);
-  const active_filter_names = controller.get_cell_active_filter_names(cell_id);
-  const field_list = fields.map((field_node, index) => {
-    const is_leaf = field_node.children === undefined;
-    let filter_toggle = null;
-    let query_toggle = null;
-    if (is_leaf) {
-      const is_active_filter = active_filter_names.has(field_node.data.name);
-      const is_required = field_node.data.required;
-      filter_toggle = (
-        <button
-          className="block disabled:opacity-50 border-b border-slate-600 dark:border-slate-50 border-dashed whitespace-nowrap"
-          onClick={() => {
-            is_active_filter
-              ? controller.remove_filter(cell_id, field_node.data.name)
-              : controller.add_filter(cell_id, field_node.data.name);
-          }}
-          disabled={is_required}
-        >
-          {is_required
-            ? `Filter`
-            : is_active_filter
-            ? `Filter`
-            : `Filter`}
-        </button>
-      );
-      query_toggle = (
-        <button
-          className="block disabled:opacity-50 border-b border-slate-600 dark:border-slate-50 border-dashed whitespace-nowrap"
-          onClick={() => {}}
-          disabled={is_required}
-        >
-          {`Query`}
-        </button>
-      );
-    }
-    let description = null;
-    if (field_node.data.descr) {
-      description = (
-        <>
-          <div className="h-4"></div>
-          <div className="text-sm text-slate-500 dark:text-slate-300 overflow-hidden">
-            {field_node.data.descr}
-          </div>
-        </>
-      );
-    }
-    return (
-      <FieldWrapper key={field_node.data.name}>
-        <div data-type="field-header" className="grid grid-cols-10">
-          <div className="col-span-10">
-            <FieldTitles node={field_node}></FieldTitles>
-          </div>
-          {/* <div className="col-span-2 justify-self-end">{filter_toggle}</div> */}
-          {/* <div className="col-span-2 justify-self-end">{query_toggle}</div> */}
-        </div>
-        {description}
-      </FieldWrapper>
-    );
-  });
+  log(`fields`, fields);
+  const field_list = fields.map((field_node) => (
+    <FieldCard
+      cell_id={cell_id}
+      field_node={field_node}
+      key={field_node.data.name}
+    ></FieldCard>
+  ));
   return (
     <div>
       <div className="h-4"></div>
@@ -149,7 +104,6 @@ function CatalogFieldsSection({
         placeholder="search"
       />
       <div className="h-4"></div>
-      {/* <div className="h-[600px] overflow-y-scroll overflow-x-visible flex flex-col gap-y-4"> */}
       <div className="h-[600px] overflow-y-scroll overflow-x-visible grid grid-cols-1 gap-4">
         {field_list}
       </div>
@@ -157,11 +111,8 @@ function CatalogFieldsSection({
   );
 }
 
-function CatalogFilterSection({
-  id: cell_id,
-}: {
-  id: CellID;
-}): React.JSX.Element {
+function CatalogFilterSection(): React.JSX.Element {
+  const cell_id = useCellID();
   const controller = useAppController();
   const active_filter_names = controller.get_cell_active_filter_names(cell_id);
   const all_fields = controller.get_cell_fields(cell_id);
@@ -170,39 +121,181 @@ function CatalogFilterSection({
   );
   log(`filters`, active_filter_names);
 
-  const filter_list = active_filters.map((field_node) => {
-    // log(`active filter`, field_node);
-    const is_required = field_node.data.required;
-    const field_name = field_node.data.name;
-    let remove_button = null;
-    if (!is_required) {
-      remove_button = (
-        <button
-          className="text-red-500 hover:text-red-700"
-          onClick={() => controller.remove_filter(cell_id, field_name)}
-        >
-          remove
-        </button>
-      );
-    }
-    const filter_controls = (
-      <FilterControls cell_id={cell_id} field_name={field_name} />
-    );
-    return (
-      <FieldWrapper key={field_node.data.name}>
-        <FieldTitles node={field_node}></FieldTitles>
-        {filter_controls}
-        {remove_button}
-      </FieldWrapper>
-    );
-  });
+  // const filter_list = active_filters.map((field_node) => {
+  //   // log(`active filter`, field_node);
+  //   const is_required = field_node.data.required;
+  //   const field_name = field_node.data.name;
+  //   let remove_button = null;
+  //   if (!is_required) {
+  //     remove_button = (
+  //       <button
+  //         className="text-red-500 hover:text-red-700"
+  //         onClick={() => controller.remove_filter(cell_id, field_name)}
+  //       >
+  //         remove
+  //       </button>
+  //     );
+  //   }
+  //   const filter_controls = (
+  //     <FilterControls cell_id={cell_id} field_name={field_name} />
+  //   );
+  //   return (
+  //     <FieldWrapper key={field_node.data.name}>
+  //       <FieldTitles node={field_node}></FieldTitles>
+  //       {filter_controls}
+  //       {remove_button}
+  //     </FieldWrapper>
+  //   );
+  // });
+
+  const filter_list = active_filters.map((field_node) => (
+    <FieldCard
+      cell_id={cell_id}
+      field_node={field_node}
+      key={field_node.data.name}
+    ></FieldCard>
+  ));
 
   return (
     <div>
       <div className="h-4"></div>
       {/* <div className="flex flex-col gap-y-4 ps-1 pe-1">{filter_list}</div> */}
-      <div className="grid grid-cols-2 gap-4 ps-1 pe-1">{filter_list}</div>
+      <div className="grid gap-4 ps-1 pe-1">{filter_list}</div>
     </div>
+  );
+}
+
+function FieldCard({
+  cell_id,
+  field_node,
+}: {
+  cell_id: CellID;
+  field_node: FieldNode;
+}): React.JSX.Element {
+  const controller = useAppController();
+  const is_leaf = field_node.children === undefined;
+
+  let description = null;
+  if (field_node.data.descr) {
+    description = (
+      <div className="text-sm text-slate-500 dark:text-slate-300 overflow-hidden">
+        <Katex2 source={field_node.data.descr} />
+      </div>
+    );
+  }
+
+  let units = null;
+  if (field_node.data.units) {
+    units = (
+      <div className="text-sm text-slate-500 dark:text-slate-300">
+        <Katex2 source={field_node.data.units} />
+      </div>
+    );
+  }
+
+  let stats = null;
+  const stats_keys = [`min`, `avg`, `max`] as Array<keyof FieldStats>;
+  const stats_values = stats_keys.map((key) => field_node.data.stats?.[key]);
+  const has_stats =
+    is_leaf &&
+    stats_values.some((value) => Number.isFinite(value) && value !== 0);
+  if (has_stats) {
+    const items = stats_keys.map((key, index) => {
+      let value: any = stats_values[index];
+      if (!Number.isFinite(value)) value = `—`;
+      return (
+        <div key={key}>
+          <div>{key}</div>
+          <div>{value}</div>
+        </div>
+      );
+    });
+    stats = <div className="grid grid-cols-3">{items}</div>;
+  }
+
+  const debug = (
+    <pre>
+      base: {field_node.data.base} dtype: {field_node.data.dtype} type:{" "}
+      {field_node.data.type}
+    </pre>
+  );
+
+  let query_column_toggle = null;
+  if (is_leaf) {
+    const query_toggle_id = `query-${field_node.data.name}`;
+    const query_column_active = controller.is_query_column_active(
+      cell_id,
+      field_node.data.name
+    );
+    const on_change = (event: React.ChangeEvent<HTMLInputElement>) => {
+      log(`filter toggle`, event.target.checked);
+      if (event.target.checked) {
+        controller.add_query_column(cell_id, field_node.data.name);
+      } else {
+        controller.remove_query_column(cell_id, field_node.data.name);
+      }
+    };
+    query_column_toggle = (
+      <div>
+        <input
+          className="cursor-pointer"
+          type="checkbox"
+          id={query_toggle_id}
+          checked={query_column_active}
+          onChange={on_change}
+        />
+        <label htmlFor={query_toggle_id}>Query</label>
+      </div>
+    );
+  }
+
+  let filter_toggle = null;
+  if (is_leaf) {
+    const filter_toggle_id = `filter-${field_node.data.name}`;
+    const filter_active = controller.is_filter_active(
+      cell_id,
+      field_node.data.name
+    );
+    const is_required = field_node.data.required;
+    const on_change = (event: React.ChangeEvent<HTMLInputElement>) => {
+      log(`filter toggle`, event.target.checked);
+      if (event.target.checked) {
+        controller.add_filter(cell_id, field_node.data.name);
+      } else {
+        controller.remove_filter(cell_id, field_node.data.name);
+      }
+    };
+    filter_toggle = (
+      <div>
+        <input
+          className="cursor-pointer"
+          type="checkbox"
+          id={filter_toggle_id}
+          checked={filter_active}
+          disabled={is_required}
+          onChange={on_change}
+        />
+        <label htmlFor={filter_toggle_id} className="cursor-pointer">
+          Filter
+        </label>
+      </div>
+    );
+  }
+
+  return (
+    <FieldWrapper key={field_node.data.name}>
+      <div data-type="field-header" className="grid grid-cols-10">
+        <div className="col-span-6">
+          <FieldTitles node={field_node}></FieldTitles>
+        </div>
+        <div className="col-span-2 justify-self-end">{filter_toggle}</div>
+        <div className="col-span-2 justify-self-end">{query_column_toggle}</div>
+      </div>
+      {units}
+      {description}
+      {stats}
+      {debug}
+    </FieldWrapper>
   );
 }
 
@@ -212,7 +305,7 @@ function FieldWrapper({
   children: React.ReactNode;
 }): React.JSX.Element {
   return (
-    <div className="rounded-md bg-slate-50 dark:bg-slate-600 p-4">
+    <div className="rounded-md bg-slate-50 dark:bg-slate-600 p-4 flex flex-col gap-y-4">
       {children}
     </div>
   );
@@ -249,13 +342,38 @@ function FilterControls({
 function FieldTitles({ node }: { node: FieldNode }): React.JSX.Element {
   const title_strings = get_field_titles(node);
   const titles = title_strings.map((title, i, arr) => {
+    const is_last = i === arr.length - 1;
+    return (
+      <React.Fragment key={title}>
+        {i > 0 ? <span>:</span> : ``}
+        <Katex2
+          source={title}
+          className={is_last ? `opacity-100` : `opacity-40`}
+        />
+      </React.Fragment>
+    );
+  });
+  return (
+    <div data-type="field-titles" className="text-lg flex gap-x-2">
+      {titles}
+    </div>
+  );
+}
+
+function FieldTitlesStaggered({
+  node,
+}: {
+  node: FieldNode;
+}): React.JSX.Element {
+  const title_strings = get_field_titles(node);
+  const titles = title_strings.map((title, i, arr) => {
     // Add em spaces based on index
     const spaces = String.fromCharCode(8195).repeat(i);
     const is_last = i === arr.length - 1;
     return (
       <div key={title} className={is_last ? `opacity-100` : `opacity-40`}>
         <span>{spaces}</span>
-        <Katex source={title} />
+        <Katex2 source={title} />
       </div>
     );
   });
@@ -280,7 +398,42 @@ function get_field_titles<T extends { title?: string }>(
   return titles.reverse();
 }
 
-function Katex({ source }: { source: string }): React.JSX.Element {
+function Katex2({
+  source,
+  className,
+}: {
+  source: string;
+  className?: string;
+}): React.JSX.Element {
+  const ref = React.useRef<HTMLSpanElement>(null);
+  React.useEffect(() => {
+    if (ref.current !== null) {
+      renderMathInElement(ref.current, {
+        output: "mathml",
+        throwOnError: false,
+        trust: true,
+        delimiters: [
+          { left: "$$", right: "$$", display: false },
+          { left: "$", right: "$", display: false },
+          { left: "\\(", right: "\\)", display: false },
+        ],
+      });
+    }
+  }, [ref]);
+  return (
+    <span ref={ref} className={className}>
+      {source}
+    </span>
+  );
+}
+
+function Katex({
+  source,
+  className,
+}: {
+  source: string;
+  className?: string;
+}): React.JSX.Element {
   let html = source;
   let is_math = false;
   if (source.charCodeAt(0) === 92) {
@@ -294,13 +447,14 @@ function Katex({ source }: { source: string }): React.JSX.Element {
   }
   return (
     <span
-      className={is_math ? `text-[1.2rem] leading-[1.1]` : ``}
+      className={is_math ? `text-[1.2rem] leading-[1.1]` : className}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );
 }
 
-function PlotCell({ id: cell_id }: { id: CellID }): React.JSX.Element {
+function PlotCell(): React.JSX.Element {
+  const cell_id = useCellID();
   const cell_data = useAppController().plot_cells[cell_id];
   return (
     <CellWrapper>
@@ -453,6 +607,10 @@ function DarkModeToggle() {
   );
 }
 
+function useCellID(): CellID {
+  return React.useContext(CellIDContext);
+}
+
 function useAppController(): AppController {
   return React.useContext(AppControllerContext);
 }
@@ -569,6 +727,18 @@ function useAppControllerFactory() {
     [get_catalog_fields]
   );
 
+  const get_catalog_initial_query_columns = useMemoized(
+    (catalog_name: CatalogName) => {
+      console.count(`get_catalog_initial_columns: ${catalog_name}`);
+      const { nodes_depth_first } = get_catalog_fields(catalog_name);
+      const initial_columns: FieldName[] = nodes_depth_first
+        .filter((node) => node.data.disp === true)
+        .map((d) => d.data.name);
+      return initial_columns;
+    },
+    [get_catalog_fields]
+  );
+
   const get_catalog_name = (cell_id: CellID) =>
     app_state.catalog_cells[cell_id]?.catalog_name;
 
@@ -581,7 +751,7 @@ function useAppControllerFactory() {
   const get_cell_active_filter_names = useMemoized(
     (cell_id: CellID) => {
       console.count(`get_cell_filters ${cell_id}`);
-      const catalog_name = app_state.catalog_cells[cell_id].catalog_name;
+      const catalog_name = get_catalog_name(cell_id);
       let active_filter_names: string[] = get_catalog_initial_filters(
         catalog_name
       ).map((d) => d.data.name);
@@ -599,14 +769,43 @@ function useAppControllerFactory() {
           active_filter_names.push(field_name);
         }
       }
-      return new Set(active_filter_names);
+      return new Set(active_filter_names) as Set<FieldName>;
     },
-    [
-      get_catalog_initial_filters,
-      app_state.catalog_cells,
-      app_state.filter_actions,
-    ]
+    [get_catalog_initial_filters, app_state.filter_actions]
   );
+
+  const get_cell_active_query_columns = useMemoized(
+    (cell_id: CellID) => {
+      console.count(`get_cell_active_columns ${cell_id}`);
+      const catalog_name = get_catalog_name(cell_id);
+      let active_query_columns: FieldName[] =
+        get_catalog_initial_query_columns(catalog_name);
+      for (const action of app_state.query_column_actions) {
+        if (!(`cell_id` in action)) continue;
+        if (action.cell_id !== cell_id) continue;
+        if (action.type === `remove_query_column`) {
+          const field_name = action.field_name;
+          active_query_columns = active_query_columns.filter(
+            (name) => name !== field_name
+          );
+        }
+        if (action.type === `add_query_column`) {
+          const field_name = action.field_name;
+          active_query_columns.push(field_name);
+        }
+      }
+      return new Set(active_query_columns) as Set<FieldName>;
+    },
+    [get_catalog_initial_query_columns, app_state.query_column_actions]
+  );
+
+  const is_query_column_active = (cell_id: CellID, field_name: FieldName) => {
+    return get_cell_active_query_columns(cell_id).has(field_name);
+  };
+
+  const is_filter_active = (cell_id: CellID, field_name: FieldName) => {
+    return get_cell_active_filter_names(cell_id).has(field_name);
+  };
 
   const get_filter_value = (cell_id: CellID, field_name: FieldName) => {
     return app_state.filter_values[cell_id]?.[field_name] ?? null;
@@ -628,6 +827,14 @@ function useAppControllerFactory() {
     dispatch({ type: `remove_filter`, cell_id, field_name });
   };
 
+  const add_query_column = (cell_id: CellID, field_name: FieldName) => {
+    dispatch({ type: `add_query_column`, cell_id, field_name });
+  };
+
+  const remove_query_column = (cell_id: CellID, field_name: FieldName) => {
+    dispatch({ type: `remove_query_column`, cell_id, field_name });
+  };
+
   const temp = useStateObject<number>(0);
 
   return {
@@ -639,6 +846,10 @@ function useAppControllerFactory() {
     set_filter_value,
     add_filter,
     remove_filter,
+    add_query_column,
+    remove_query_column,
+    is_query_column_active,
+    is_filter_active,
     temp,
     ...app_state,
   };
@@ -651,6 +862,7 @@ function app_reducer(app_state: AppState, action: Action) {
     plot_cells,
     filter_values,
     filter_actions,
+    query_column_actions,
   } = app_state;
   if (action.type === "add_catalog_cell") {
     const num_catalog_cells = Object.keys(catalog_cells).length;
@@ -668,6 +880,11 @@ function app_reducer(app_state: AppState, action: Action) {
     filter_values[cell_id][field_name] = value;
   } else if (action.type === `remove_filter` || action.type === `add_filter`) {
     filter_actions.push(action);
+  } else if (
+    action.type === `add_query_column` ||
+    action.type === `remove_query_column`
+  ) {
+    query_column_actions.push(action);
   } else {
     throw new Error(`unknown action type: ${(action as any).type}`);
   }
@@ -679,6 +896,7 @@ function get_initial_app_state(initial_actions: Action[]) {
   const plot_cells: Record<CellID, PlotCellData> = {};
   const filter_values: Record<CellID, Record<FieldName, FieldValue>> = {};
   const filter_actions: Action[] = [];
+  const query_column_actions: Action[] = [];
 
   const initial_state = {
     cells_list,
@@ -686,6 +904,7 @@ function get_initial_app_state(initial_actions: Action[]) {
     plot_cells,
     filter_values,
     filter_actions,
+    query_column_actions,
   };
 
   initial_actions.forEach((action: Action) => {
@@ -766,15 +985,15 @@ type CellType = "catalog" | "plot";
 
 // type StateHandler = ReturnType<typeof create_state_handler>;
 
+// prettier-ignore
 type Action =
   | ActionBase<`add_catalog_cell`, CatalogCellData>
   | ActionBase<`add_plot_cell`, PlotCellData>
-  | ActionBase<
-      `set_filter_value`,
-      { cell_id: CellID; field_name: FieldName; value: FieldValue }
-    >
+  | ActionBase<`set_filter_value`, { cell_id: CellID; field_name: FieldName; value: FieldValue }>
   | ActionBase<`add_filter`, { cell_id: CellID; field_name: FieldName }>
-  | ActionBase<`remove_filter`, { cell_id: CellID; field_name: FieldName }>;
+  | ActionBase<`remove_filter`, { cell_id: CellID; field_name: FieldName }>
+  | ActionBase<`add_query_column`, { cell_id: CellID; field_name: FieldName }>
+  | ActionBase<`remove_query_column`, { cell_id: CellID; field_name: FieldName }>;
 
 type ActionBase<T extends string, U> = U & {
   type: T;
@@ -795,6 +1014,8 @@ type TopResponse =
 
 type CatalogResponse =
   components["responses"]["catalog"]["content"]["application/json"];
+
+type FieldStats = components["schemas"]["FieldStats"];
 
 type FieldNode = d3.HierarchyNode<Field>;
 
