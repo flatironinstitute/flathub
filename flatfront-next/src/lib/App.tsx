@@ -66,9 +66,9 @@ function CatalogCell({ id: cell_id }: { id: CellID }): React.JSX.Element {
       <CellSection label="fields">
         <CatalogFieldsSection id={cell_id} />
       </CellSection>
-      <CellSection label="filters">
+      {/* <CellSection label="filters">
         <CatalogFilterSection id={cell_id} />
-      </CellSection>
+      </CellSection> */}
     </CellWrapper>
   );
 }
@@ -83,48 +83,74 @@ function CatalogFieldsSection({
   console.log(`fields`, fields);
   const active_filter_names = controller.get_cell_active_filter_names(cell_id);
   const field_list = fields.map((field_node, index) => {
-    const is_active = active_filter_names.has(field_node.data.name);
     const is_leaf = field_node.children === undefined;
-    const is_required = field_node.data.required;
-    let add_remove_switch = null;
+    let filter_toggle = null;
+    let query_toggle = null;
     if (is_leaf) {
-      const on_click = is_active
-        ? () => controller.remove_filter(cell_id, field_node.data.name)
-        : () => controller.add_filter(cell_id, field_node.data.name);
-      add_remove_switch = (
+      const is_active_filter = active_filter_names.has(field_node.data.name);
+      const is_required = field_node.data.required;
+      filter_toggle = (
         <button
-          className="disabled:opacity-50"
-          onClick={on_click}
+          className="block disabled:opacity-50 border-b border-slate-600 dark:border-slate-50 border-dashed whitespace-nowrap"
+          onClick={() => {
+            is_active_filter
+              ? controller.remove_filter(cell_id, field_node.data.name)
+              : controller.add_filter(cell_id, field_node.data.name);
+          }}
           disabled={is_required}
         >
           {is_required
-            ? `Filter is Required`
-            : is_active
-            ? `Remove Filter`
-            : `Add Filter`}
+            ? `Filter`
+            : is_active_filter
+            ? `Filter`
+            : `Filter`}
+        </button>
+      );
+      query_toggle = (
+        <button
+          className="block disabled:opacity-50 border-b border-slate-600 dark:border-slate-50 border-dashed whitespace-nowrap"
+          onClick={() => {}}
+          disabled={is_required}
+        >
+          {`Query`}
         </button>
       );
     }
+    let description = null;
+    if (field_node.data.descr) {
+      description = (
+        <>
+          <div className="h-4"></div>
+          <div className="text-sm text-slate-500 dark:text-slate-300 overflow-hidden">
+            {field_node.data.descr}
+          </div>
+        </>
+      );
+    }
     return (
-      <div
-        className="rounded-md bg-white dark:bg-slate-600 p-4"
-        key={field_node.data.name}
-      >
-        <FieldTitle node={field_node}></FieldTitle>
-        {add_remove_switch}
-      </div>
+      <FieldWrapper key={field_node.data.name}>
+        <div data-type="field-header" className="grid grid-cols-10">
+          <div className="col-span-10">
+            <FieldTitles node={field_node}></FieldTitles>
+          </div>
+          {/* <div className="col-span-2 justify-self-end">{filter_toggle}</div> */}
+          {/* <div className="col-span-2 justify-self-end">{query_toggle}</div> */}
+        </div>
+        {description}
+      </FieldWrapper>
     );
   });
   return (
     <div>
       <div className="h-4"></div>
       <input
-        className="w-full dark:bg-slate-900 rounded-lg text-lg leading-5 py-2 px-3 focus:ring-2 focus:ring-white focus:outline-none"
+        className="w-full dark:bg-slate-900 rounded-lg text-lg leading-5 py-2 px-3 focus:ring-2 focus:ring-slate-50 focus:outline-none"
         type="text"
         placeholder="search"
       />
       <div className="h-4"></div>
-      <div className="h-[600px] overflow-y-scroll overflow-x-visible flex flex-col gap-y-4">
+      {/* <div className="h-[600px] overflow-y-scroll overflow-x-visible flex flex-col gap-y-4"> */}
+      <div className="h-[600px] overflow-y-scroll overflow-x-visible grid grid-cols-1 gap-4">
         {field_list}
       </div>
     </div>
@@ -163,21 +189,31 @@ function CatalogFilterSection({
       <FilterControls cell_id={cell_id} field_name={field_name} />
     );
     return (
-      <div
-        className="rounded-md bg-white dark:bg-slate-600 p-4"
-        key={field_node.data.name}
-      >
-        <FieldTitle node={field_node}></FieldTitle>
+      <FieldWrapper key={field_node.data.name}>
+        <FieldTitles node={field_node}></FieldTitles>
         {filter_controls}
         {remove_button}
-      </div>
+      </FieldWrapper>
     );
   });
 
   return (
     <div>
       <div className="h-4"></div>
-      <div className="flex flex-col gap-y-4 ps-1 pe-1">{filter_list}</div>
+      {/* <div className="flex flex-col gap-y-4 ps-1 pe-1">{filter_list}</div> */}
+      <div className="grid grid-cols-2 gap-4 ps-1 pe-1">{filter_list}</div>
+    </div>
+  );
+}
+
+function FieldWrapper({
+  children,
+}: {
+  children: React.ReactNode;
+}): React.JSX.Element {
+  return (
+    <div className="rounded-md bg-slate-50 dark:bg-slate-600 p-4">
+      {children}
     </div>
   );
 }
@@ -210,15 +246,24 @@ function FilterControls({
   );
 }
 
-function FieldTitle({ node }: { node: FieldNode }): React.JSX.Element {
+function FieldTitles({ node }: { node: FieldNode }): React.JSX.Element {
   const title_strings = get_field_titles(node);
-  const titles = title_strings.map((title, i) => (
-    <React.Fragment key={title}>
-      {i > 0 ? <span>:</span> : ``}
-      <Katex source={title} />
-    </React.Fragment>
-  ));
-  return <div className="flex gap-x-2">{titles}</div>;
+  const titles = title_strings.map((title, i, arr) => {
+    // Add em spaces based on index
+    const spaces = String.fromCharCode(8195).repeat(i);
+    const is_last = i === arr.length - 1;
+    return (
+      <div key={title} className={is_last ? `opacity-100` : `opacity-40`}>
+        <span>{spaces}</span>
+        <Katex source={title} />
+      </div>
+    );
+  });
+  return (
+    <div data-type="field-titles" className="text-lg">
+      {titles}
+    </div>
+  );
 }
 
 function get_field_titles<T extends { title?: string }>(
@@ -237,7 +282,9 @@ function get_field_titles<T extends { title?: string }>(
 
 function Katex({ source }: { source: string }): React.JSX.Element {
   let html = source;
+  let is_math = false;
   if (source.charCodeAt(0) === 92) {
+    is_math = true;
     const fixed = source.replace(/^\\\(/, ``).replace(/\\\)$/, ``);
     html = KaTeX.renderToString(fixed, {
       output: "mathml",
@@ -245,7 +292,12 @@ function Katex({ source }: { source: string }): React.JSX.Element {
       trust: true,
     });
   }
-  return <span dangerouslySetInnerHTML={{ __html: html }} />;
+  return (
+    <span
+      className={is_math ? `text-[1.2rem] leading-[1.1]` : ``}
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  );
 }
 
 function PlotCell({ id: cell_id }: { id: CellID }): React.JSX.Element {
@@ -325,7 +377,7 @@ function CatalogSelect() {
       <div className="col-span-6">
         <Listbox value={selected} onChange={set_selected} disabled={loading}>
           <div className="relative">
-            <Listbox.Button className="relative w-full cursor-pointer rounded-md bg-white dark:bg-slate-900 py-2 pl-3 pr-10 text-left shadow-md disabled:opacity-50 disabled:cursor-wait">
+            <Listbox.Button className="relative w-full cursor-pointer rounded-md bg-slate-50 dark:bg-slate-900 py-2 pl-3 pr-10 text-left shadow-md disabled:opacity-50 disabled:cursor-wait">
               <span className="block truncate">
                 {loading ? `Loading...` : selected?.title ?? `Select a Catalog`}
               </span>
@@ -336,7 +388,7 @@ function CatalogSelect() {
                 />
               </span>
             </Listbox.Button>
-            <Listbox.Options className="absolute mt-1 w-full overflow-auto rounded-md bg-white dark:bg-slate-900 py-1 shadow-lg">
+            <Listbox.Options className="absolute mt-1 w-full overflow-auto rounded-md bg-slate-50 dark:bg-slate-900 py-1 shadow-lg">
               {catalog_list.map((catalog_list_item) => (
                 <Listbox.Option
                   key={catalog_list_item.name}
@@ -355,7 +407,7 @@ function CatalogSelect() {
         </Listbox>
       </div>
       <button
-        className="col-span-2 py-2 bg-white dark:bg-slate-900 rounded-md disabled:opacity-50"
+        className="col-span-2 py-2 bg-slate-50 dark:bg-slate-900 rounded-md disabled:opacity-50"
         disabled={!selected}
         onClick={() => {
           if (selected) {
@@ -387,13 +439,13 @@ function DarkModeToggle() {
         <Switch
           checked={dark_mode}
           onChange={set_dark_mode}
-          className={`bg-white dark:bg-slate-900 relative inline-flex h-8 w-14 items-center rounded-full`}
+          className={`bg-slate-50 dark:bg-slate-900 relative inline-flex h-8 w-14 items-center rounded-full`}
         >
           <span className="sr-only">Enable notifications</span>
           <span
             className={`${
               dark_mode ? "translate-x-7" : "translate-x-1"
-            } inline-block h-6 w-6 transform rounded-full bg-slate-500 dark:bg-white transition`}
+            } inline-block h-6 w-6 transform rounded-full bg-slate-500 dark:bg-slate-50 transition`}
           />
         </Switch>
       </div>
@@ -486,7 +538,6 @@ function useAppControllerFactory() {
   const get_catalog_fields = useMemoized(
     (catalog_name: CatalogName) => {
       console.count(`get_catalog_fields ${catalog_name}`);
-      window.performance.mark(`get_catalog_fields`);
       const fields =
         catalog_responses.value[catalog_name]?.response?.fields ?? [];
       const root = { sub: fields } as Field;
@@ -509,7 +560,6 @@ function useAppControllerFactory() {
   const get_catalog_initial_filters = useMemoized(
     (catalog_name: CatalogName) => {
       console.count(`get_catalog_initial_filters: ${catalog_name}`);
-      window.performance.mark(`get_catalog_initial_filters`);
       const { nodes_depth_first } = get_catalog_fields(catalog_name);
       const initial_filters = nodes_depth_first.filter(
         (node) => `required` in node.data && node.height === 0
@@ -524,7 +574,6 @@ function useAppControllerFactory() {
 
   const get_cell_fields = (cell_id: CellID) => {
     console.count(`get_cell_fields ${cell_id}`);
-    window.performance.mark(`get_cell_fields`);
     const catalog_name = get_catalog_name(cell_id);
     return get_catalog_fields(catalog_name);
   };
@@ -532,7 +581,6 @@ function useAppControllerFactory() {
   const get_cell_active_filter_names = useMemoized(
     (cell_id: CellID) => {
       console.count(`get_cell_filters ${cell_id}`);
-      window.performance.mark(`get_cell_filters`);
       const catalog_name = app_state.catalog_cells[cell_id].catalog_name;
       let active_filter_names: string[] = get_catalog_initial_filters(
         catalog_name
