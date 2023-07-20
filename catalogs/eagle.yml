@@ -1,0 +1,2053 @@
+title: EAGLE
+index: eagle
+visible: false
+count: 345660049 # 160490098 fof + 185169951 subhalo
+descr: >
+key:
+- simulation
+- GroupID
+- Subhalo_GalaxyID
+sort:
+- simulation
+- snapshot
+- GroupID
+- Subhalo_GalaxyID
+pipeline: |
+  ctx['FoF_GroupCentreOfPotential_x'] = ctx['FoF_GroupCentreOfPotential_x']*1e3*0.6777;
+  ctx['FoF_GroupCentreOfPotential_y'] = ctx['FoF_GroupCentreOfPotential_y']*1e3*0.6777;
+  ctx['FoF_GroupCentreOfPotential_z'] = ctx['FoF_GroupCentreOfPotential_z']*1e3*0.6777;
+  ctx['FoF_GroupMass'] = ctx['FoF_GroupMass']*1e-10*0.6777;
+  ctx['FoF_Group_M_Crit200'] = ctx['FoF_Group_M_Crit200']*1e-10*0.6777;
+  ctx['FoF_Group_M_Crit500'] = ctx['FoF_Group_M_Crit500']*1e-10*0.6777;
+  ctx['FoF_Group_M_Mean200'] = ctx['FoF_Group_M_Mean200']*1e-10*0.6777;
+  ctx['FoF_Group_M_TopHat200'] = ctx['FoF_Group_M_TopHat200']*1e-10*0.6777;
+  ctx['FoF_Group_R_Crit200'] = ctx['FoF_Group_R_Crit200']*(1+ctx['Redshift'])*0.6777;
+  ctx['FoF_Group_R_Crit500'] = ctx['FoF_Group_R_Crit500']*(1+ctx['Redshift'])*0.6777;
+  ctx['FoF_Group_R_Mean200'] = ctx['FoF_Group_R_Mean200']*(1+ctx['Redshift'])*0.6777;
+  ctx['FoF_Group_R_TopHat200'] = ctx['FoF_Group_R_TopHat200']*(1+ctx['Redshift'])*0.6777;
+  if (ctx['type']) {
+    ctx['Subhalo_CentreOfMass_x'] = ctx['Subhalo_CentreOfMass_x']*1e3*0.6777;
+    ctx['Subhalo_CentreOfMass_y'] = ctx['Subhalo_CentreOfMass_y']*1e3*0.6777;
+    ctx['Subhalo_CentreOfMass_z'] = ctx['Subhalo_CentreOfMass_z']*1e3*0.6777;
+    ctx['Subhalo_CentreOfPotential_x'] = ctx['Subhalo_CentreOfPotential_x']*1e3*0.6777;
+    ctx['Subhalo_CentreOfPotential_y'] = ctx['Subhalo_CentreOfPotential_y']*1e3*0.6777;
+    ctx['Subhalo_CentreOfPotential_z'] = ctx['Subhalo_CentreOfPotential_z']*1e3*0.6777;
+    ctx['Subhalo_HalfMassRad_DM'] = ctx['Subhalo_HalfMassRad_DM']*(1+ctx['Redshift'])*0.6777;
+    ctx['Subhalo_Mass'] = ctx['Subhalo_Mass']*1e-10*0.6777;
+    ctx['Subhalo_MassType_DM'] = ctx['Subhalo_MassType_DM']*1e-10*0.6777;
+    ctx['Subhalo_VmaxRadius'] = ctx['Subhalo_VmaxRadius']*(1+ctx['Redshift'])*0.6777;
+    if (ctx.containsKey('Subhalo_BlackHoleMass')) ctx['Subhalo_BlackHoleMass'] = ctx['Subhalo_BlackHoleMass']*1e-10*0.6777;
+    if (ctx.containsKey('Subhalo_BlackHoleMassAccretionRate')) ctx['Subhalo_BlackHoleMassAccretionRate'] = ctx['Subhalo_BlackHoleMassAccretionRate']*0.1*0.978;
+    if (ctx.containsKey('Subhalo_HalfMassRad_BH')) ctx['Subhalo_HalfMassRad_BH'] = ctx['Subhalo_HalfMassRad_BH']*(1+ctx['Redshift'])*0.6777;
+    if (ctx.containsKey('Subhalo_HalfMassRad_Gas')) ctx['Subhalo_HalfMassRad_Gas'] = ctx['Subhalo_HalfMassRad_Gas']*(1+ctx['Redshift'])*0.6777;
+    if (ctx.containsKey('Subhalo_HalfMassRad_Star')) ctx['Subhalo_HalfMassRad_Star'] = ctx['Subhalo_HalfMassRad_Star']*(1+ctx['Redshift'])*0.6777;
+    if (ctx.containsKey('Subhalo_MassType_BH')) ctx['Subhalo_MassType_BH'] = ctx['Subhalo_MassType_BH']*1e-10*0.6777;
+    if (ctx.containsKey('Subhalo_MassType_Gas')) ctx['Subhalo_MassType_Gas'] = ctx['Subhalo_MassType_Gas']*1e-10*0.6777;
+    if (ctx.containsKey('Subhalo_MassType_Star')) ctx['Subhalo_MassType_Star'] = ctx['Subhalo_MassType_Star']*1e-10*0.6777;
+    if (ctx.containsKey('Subhalo_Spurious')) ctx['Subhalo_Spurious'] = !ctx['Subhalo_Spurious'];
+    if (ctx.containsKey('Subhalo_Stars_Mass')) ctx['Subhalo_Stars_Mass'] = ctx['Subhalo_Stars_Mass']*1e-10*0.6777;
+    if (ctx['Subhalo_DescendantID'] == -1) ctx['Subhalo_DescendantID'] = null;
+    if (ctx['Subhalo_ImageID'] == -1) ctx['Subhalo_ImageID'] = null;
+  }
+fields:
+  - name: simulation
+    type: byte
+    flag: required
+    enum:
+      # DMONLY (include)
+      - L0025N0376
+      - L0025N0752
+      - L0100N1504
+      # Fiducial_models (include)
+      - AGNdT9L0050N0752
+      - RecalL0025N0752
+      - RefL0012N0188
+      - RefL0025N0376
+      - RefL0025N0752
+      - RefL0050N0752
+      - RefL0100N1504
+      # Physics_vars (exclude)
+      - C15AGNdT8L0050N0752
+      - C15AGNdT9L0050N0752
+      - FBZL0050N0752
+      - FBconstL0050N0752
+      - FBsigmaL0050N0752
+      - FixedSfThreshL0025N0376
+      - HiML0050N0752
+      - LoML0050N0752
+      - NoAGNL0025N0376
+      - NoAGNL0050N0752
+      - StrongFBL0025N0376
+      - ViscHiL0050N0752
+      - ViscLoL0050N0752
+      - WeakFBL0025N0376
+      - eos1L0025N0376
+      - eos53L0025N0376
+  - descr: Snapshot number containing that halo.
+    ingest: SnapNum
+    name: snapshot
+    type: short
+    flag: top
+  - descr: Redshift at which these properties are computed.
+    ingest: Redshift
+    name: Redshift
+    type: float
+  - name: type
+    type: boolean
+    enum:
+      - FoF
+      - Subhalo
+    flag: required
+  - descr: "Unique identifier of this FoF group. This connects with the associated GroupID\
+      \ from the SubHalo table allowing a link between a galaxy\u2019s SubHalo table\
+      \ and FOF table properties."
+    ingest: GroupID
+    name: GroupID
+    type: long
+
+  - name: FoF
+    descr: 'FoF halos'
+    ingest: ''
+    sub:
+    - title: CenterOfPotential
+      name: GroupCentreOfPotential
+      ingest: ''
+      type: float
+      units: ckpc/h
+      descr: Co-moving position of the minumum of the gravitational potential of the halo.
+      sub:
+      - descr: x component
+        ingest: GroupCentreOfPotential_x
+        name: 'x'
+      - descr: y component
+        ingest: GroupCentreOfPotential_y
+        name: 'y'
+      - descr: z component
+        ingest: GroupCentreOfPotential_z
+        name: 'z'
+    - descr: Total Friends-of-Friends mass of this halo.
+      ingest: GroupMass
+      name: GroupMass
+      type: float
+      units: 10^10 Msun/h
+    - descr: Total mass within radius ...
+      ingest: ''
+      name: Group_M
+      type: float
+      units: 10^10 Msun/h
+      flag: hidden
+      sub:
+      - descr: Total mass within radius Group_R_Crit200.
+        ingest: Group_M_Crit200
+        name: Crit200
+      - descr: Total mass within radius Group_R_Crit2500.
+        ingest: Group_M_Crit2500
+        name: Crit2500
+      - descr: Total mass within radius Group_R_Crit500.
+        ingest: Group_M_Crit500
+        name: Crit500
+      - descr: Total mass within radius Group_R_Mean200.
+        ingest: Group_M_Mean200
+        name: Mean200
+      - descr: Total mass within radius Group_R_Mean2500.
+        ingest: Group_M_Mean2500
+        name: Mean2500
+      - descr: Total mass within radius Group_R_Mean500.
+        ingest: Group_M_Mean500
+        name: Mean500
+      - descr: Total mass within radius Group_R_Tophat200.
+        ingest: Group_M_TopHat200
+        name: TopHat200
+    - descr: Physical radius within which density is ...
+      ingest: ''
+      name: Group_R
+      type: float
+      units: ckpc/h
+      flag: hidden
+      sub:
+      - descr: Physical radius within which density is 200 times the critical density of
+          the Universe.
+        ingest: Group_R_Crit200
+        name: Crit200
+      - descr: Physical radius within which density is 2500 times the critical density of
+          the Universe.
+        ingest: Group_R_Crit2500
+        name: Crit2500
+      - descr: Physical radius within which density is 500 times the critical density of
+          the Universe.
+        ingest: Group_R_Crit500
+        name: Crit500
+      - descr: Physical radius within which density is 200 times the mean density of the
+          Universe.
+        ingest: Group_R_Mean200
+        name: Mean200
+      - descr: Physical radius within which density is 2500 times the mean density of the
+          Universe.
+        ingest: Group_R_Mean2500
+        name: Mean2500
+      - descr: Physical radius within which density is 500 times the mean density of the
+          Universe.
+        ingest: Group_R_Mean500
+        name: Mean500
+      - descr: "Physical radius within which density is 18\u03C02+82(\u03A9m(z)-1)-39(\u03A9\
+          m(z)-1)2"
+        ingest: Group_R_TopHat200
+        name: TopHat200
+    - descr: Number of subhaloes (galaxies) identified as belonging to this halo.
+      ingest: NumOfSubhalos
+      name: NumOfSubhalos
+      type: int
+    - descr: Random number uniform in the range [0, 1).
+      ingest: RandomNumber
+      name: RandomNumber
+      type: float
+      flag: hidden
+  - ingest: _subhalo:type GroupID FoF_NumOfSubhalos Subhalo_GroupID
+    name: Subhalo
+    sub:
+    - descr: Co-moving position of the centre of mass.
+      name: CentreOfMass
+      ingest: ''
+      type: float
+      units: ckpc/h
+      sub:
+      - descr: x component
+        ingest: CentreOfMass_x
+        name: 'x'
+      - descr: y component
+        ingest: CentreOfMass_y
+        name: 'y'
+      - descr: z component
+        ingest: CentreOfMass_z
+        name: 'z'
+    - descr: Co-moving position of the minimum of the gravitational potential defined
+        by the position of the most bound particle.
+      type: float
+      ingest: ''
+      units: ckpc/h
+      name: CentreOfPotential
+      sub:
+      - descr: x component
+        ingest: CentreOfPotential_x
+        name: 'x'
+      - descr: y component
+        ingest: CentreOfPotential_y
+        name: 'y'
+      - descr: z component
+        ingest: CentreOfPotential_z
+        name: 'z'
+    - descr: GalaxyID of the descendant of this galaxy.
+      ingest: DescendantID
+      name: DescendantID
+      missing: '-1'
+      type: int
+    - descr: Index of the subfind output file this group is in
+      ingest: _optional:Subhalo/FileNum
+      name: FileNum
+      type: short
+      flag: hidden
+    - descr: Unique identifier of each galaxy. This index is used to connect the SubHalo
+        table to the Aperture, Magnitudes and Sizes tables.
+      ingest: GalaxyID
+      name: GalaxyID
+      type: int
+    - descr: Unique identifier of the FoF halo containing this galaxy. This index is used
+        to connect the SubHalo to the parent FoF group
+      ingest: GroupID
+      name: GroupID
+      type: long
+      flag: hidden
+    - descr: Integer number to identify FoF halo. Note that this number is only unique
+        to a given snapshot and should not be used to identify the same halo across multiple
+        outputs.
+      ingest: GroupNumber
+      name: GroupNumber
+      type: int
+      flag: hidden
+    - descr: Projected physical radius enclosing half of the dark matter mass (averaged
+        over three orthogonal projections).
+      ingest: HalfMassProjRad_DM
+      name: HalfMassProjRad_DM
+      type: float
+      units: pkpc
+      flag: hidden
+    - descr: Physical radius enclosing half of the dark matter mass.
+      ingest: HalfMassRad_DM
+      name: HalfMassRad_DM
+      type: float
+      units: ckpc/h
+      flag: hidden
+    - descr: Index of the image of this object
+      ingest: Image_ID
+      name: Image_ID
+      type: int
+      missing: '-1'
+      flag: hidden
+    - descr: Total kinetic energy calculated.
+      ingest: KineticEnergy
+      name: KineticEnergy
+      type: float
+      units: Msun (km/s)2
+    - descr: GalaxyID of the last progenitor of this galaxy. Used for merger tree traversal.
+      ingest: LastProgID
+      name: LastProgID
+      type: int
+      flag: hidden
+    - descr: Total current mass of all particles.
+      ingest: Mass
+      name: Mass
+      type: float
+      units: 10^10 Msun/h
+    - descr: Total dark matter mass.
+      ingest: MassType_DM
+      name: MassType_DM
+      type: float
+      units: 10^10 Msun/h
+    - descr: Total mechanical energy calculated.
+      ingest: MechanicalEnergy
+      name: MechanicalEnergy
+      type: float
+      units: Msun (km/s)2
+    - descr: Index of this subfind group in the output file
+      ingest: _optional:Subhalo/PosInFile
+      name: PosInFile
+      type: short
+      flag: hidden
+    - descr: Random number uniform in the range [0, 1).
+      ingest: RandomNumber
+      name: RandomNumber
+      type: float
+      flag: hidden
+    # descr: Redshift at which these properties are computed.
+    # ingest: Redshift
+    # name: Redshift
+    # type: float
+    - descr: "Integer number of this galaxy within its FoF halo. Note that this number\
+        \ is only unique to a given snapshot and should not be used to identify the same\
+        \ galaxy across multiple outputs. The condition \u201CSubGroupNumber  =  0\u201D\
+        \ can be used to select central galaxies only."
+      ingest: SubGroupNumber
+      name: SubGroupNumber
+      type: int
+      flag: hidden
+    - descr: GalaxyID of the last progenitor in the main progenitor branch. Used for merger
+        tree traversal.
+      ingest: TopLeafID
+      name: TopLeafID
+      type: int
+      flag: hidden
+    - descr: Total energy of the galaxy.
+      ingest: TotalEnergy
+      name: TotalEnergy
+      type: float
+      units: Msun (km/s)2
+    - descr: Peculiar velocity.
+      ingest: ''
+      name: Velocity
+      type: float
+      units: km/s
+      sub:
+      - descr: x component
+        ingest: Velocity_x
+        name: 'x'
+      - descr: y component
+        ingest: Velocity_y
+        name: 'y'
+      - descr: z component
+        ingest: Velocity_z
+        name: 'z'
+    - descr: Maximum of the circular velocity rotation curve.
+      ingest: Vmax
+      name: Vmax
+      type: float
+      units: km/s
+    - descr: Physical distance relative to the CentreOfPotential at which the circular
+        velocity equals Vmax.
+      ingest: VmaxRadius
+      name: VmaxRadius
+      type: float
+      units: ckpc/h
+    - descr: DHalo merger tree identifier for this object
+      ingest: _optional:Subhalo/nodeIndex
+      name: nodeIndex
+      type: long
+      flag: hidden
+    - descr: Total black hole (subgrid) mass. As black holes are seeded in a subgrid fashion
+        they contain both a subgrid and a particle mass, full details of this process
+        can be found in Schaye et al. 2015.
+      ingest: _optional:BlackHoleMass
+      name: BlackHoleMass
+      type: float
+      units: 10^10 Msun/h
+    - descr: Total instantanious accretion rate of all black holes.
+      ingest: _optional:BlackHoleMassAccretionRate
+      name: BlackHoleMassAccretionRate
+      type: float
+      units: 10^10 Msun/h/(0.978Gyr/h)
+    - descr: Total angular momentum per unit mass of all gas relative to the CentreOfMass.
+      ingest: ''
+      name: GasSpin
+      type: float
+      units: pkpc km s-1
+      flag: hidden
+      sub:
+      - descr: x component
+        ingest: _optional:GasSpin_x
+        name: 'x'
+      - descr: y component
+        ingest: _optional:GasSpin_y
+        name: 'y'
+      - descr: z component
+        ingest: _optional:GasSpin_z
+        name: 'z'
+    - descr: Projected physical radius enclosing half of the ... (averaged
+        over three orthogonal projections)
+      ingest: ''
+      name: HalfMassProjRad
+      type: float
+      units: pkpc
+      flag: hidden
+      sub:
+      - descr: Projected physical radius enclosing half of the black hole mass (averaged
+          over three orthogonal projections). This is constructed from the particle masses
+          and not from the subgrid masses.
+        ingest: _optional:HalfMassProjRad_BH
+        name: BH
+      - descr: Projected physical radius enclosing half of the gas mass (averaged over three
+          orthogonal projections).
+        ingest: _optional:HalfMassProjRad_Gas
+        name: Gas
+      - descr: Projected physical radius enclosing half of the stellar mass (averaged over
+          three orthogonal projections).
+        ingest: _optional:HalfMassProjRad_Star
+        name: Star
+    - descr: Physical radius enclosing half of the ...
+      ingest: ''
+      name: HalfMassRad
+      type: float
+      units: ckpc/h
+      sub:
+      - descr: Physical radius enclosing half of the black hole mass. This is constructed
+          from the particle masses and not from the subgrid masses.
+        ingest: _optional:HalfMassRad_BH
+        name: BH
+      - descr: Physical radius enclosing half of the gas mass.
+        ingest: _optional:HalfMassRad_Gas
+        name: Gas
+      - descr: Physical radius enclosing half of the stellar mass.
+        ingest: _optional:HalfMassRad_Star
+        name: Star
+    - descr: Mean redshift of formation of stars, weighted by birth mass.
+      ingest: _optional:InitialMassWeightedBirthZ
+      name: InitialMassWeightedBirthZ
+      type: float
+      units: z
+    - descr: Mean age of stars, weighted by birth mass.
+      ingest: _optional:InitialMassWeightedStellarAge
+      name: InitialMassWeightedStellarAge
+      type: float
+      units: Gyr
+    - descr: Total mass of type...
+      ingest: ''
+      name: MassType
+      type: float
+      units: 10^10 Msun/h
+      sub:
+      - descr: Total black hole mass. Note that this is the sum of the particle masses,
+          not of the subgrid black hole masses.
+        ingest: _optional:MassType_BH
+        name: BH
+      - descr: Total gas mass.
+        ingest: _optional:MassType_Gas
+        name: Gas
+      - descr: Total stellar mass.
+        ingest: _optional:MassType_Star
+        name: Star
+    - ingest: ''
+      name: NSF
+      flag: hidden
+      sub:
+      - descr: ''
+        ingest: _optional:NSF_Carbon
+        name: Carbon
+        type: float
+      - descr: ''
+        ingest: _optional:NSF_Helium
+        name: Helium
+        type: float
+      - descr: ''
+        ingest: _optional:NSF_Hydrogen
+        name: Hydrogen
+        type: float
+      - descr: Mass fraction of this element. Note that these are absolute metallicites
+          and do not depend on a solar calibration Z_sun.
+        ingest: _optional:NSF_Iron
+        name: Iron
+        type: float
+      - descr: Fraction of the total mass in Iron coming from SNIa ejecta.
+        ingest: _optional:NSF_IronFromSNIa
+        name: IronFromSNIa
+        type: float
+      - descr: Total kinetic energy.
+        ingest: _optional:NSF_KineticEnergy
+        name: KineticEnergy
+        type: float
+        units: Msun (km/s)2
+      - descr: ''
+        ingest: _optional:NSF_Magnesium
+        name: Magnesium
+        type: float
+      - descr: Total mass.
+        ingest: _optional:NSF_Mass
+        name: Mass
+        type: float
+        units: Msun
+      - descr: Total mass from AGB ejecta.
+        ingest: _optional:NSF_MassFromAGB
+        name: MassFromAGB
+        type: float
+        units: Msun
+      - descr: Total mass from massive star and type II SN ejecta.
+        ingest: _optional:NSF_MassFromSNII
+        name: MassFromSNII
+        type: float
+        units: Msun
+      - descr: Total mass from type Ia SN ejecta.
+        ingest: _optional:NSF_MassFromSNIa
+        name: MassFromSNIa
+        type: float
+        units: Msun
+      - descr: Mass weighted pseudo entropy.
+        ingest: _optional:NSF_MassWeightedEntropy
+        name: MassWeightedEntropy
+        type: float
+      - descr: Mass weighted temperature.
+        ingest: _optional:NSF_MassWeightedTemperature
+        name: MassWeightedTemperature
+        type: float
+        units: K
+      - descr: Metal mass fraction.
+        ingest: _optional:NSF_Metallicity
+        name: Metallicity
+        type: float
+      - descr: Total metal mass originating from AGB ejecta.
+        ingest: _optional:NSF_MetalsFromAGB
+        name: MetalsFromAGB
+        type: float
+        units: Msun
+      - descr: Total metal mass originating from massive stars and SN Type II ejecta.
+        ingest: _optional:NSF_MetalsFromSNII
+        name: MetalsFromSNII
+        type: float
+        units: Msun
+      - descr: Total metal mass originating from SN Type I ejecta.
+        ingest: _optional:NSF_MetalsFromSNIa
+        name: MetalsFromSNIa
+        type: float
+        units: Msun
+      - descr: ''
+        ingest: _optional:NSF_Neon
+        name: Neon
+        type: float
+      - descr: ''
+        ingest: _optional:NSF_Nitrogen
+        name: Nitrogen
+        type: float
+      - descr: ''
+        ingest: _optional:NSF_Oxygen
+        name: Oxygen
+        type: float
+      - descr: ''
+        ingest: _optional:NSF_Silicon
+        name: Silicon
+        type: float
+      - descr: Total angular momentum per unit mass relative to the CentreOfMass.
+        ingest: ''
+        name: Spin
+        type: float
+        units: pkpc km s-1
+        sub:
+        - descr: x component
+          ingest: _optional:NSF_Spin_x
+          name: 'x'
+        - descr: y component
+          ingest: _optional:NSF_Spin_y
+          name: 'y'
+        - descr: z component
+          ingest: _optional:NSF_Spin_z
+          name: 'z'
+      - descr: Total thermal energy. This does not exist for Stars.
+        ingest: _optional:NSF_ThermalEnergy
+        name: ThermalEnergy
+        type: float
+        units: Msun (km/s)2
+      - descr: Total energy.
+        ingest: _optional:NSF_TotalEnergy
+        name: TotalEnergy
+        type: float
+        units: Msun (km/s)2
+    - ingest: ''
+      name: SF
+      flag: hidden
+      sub:
+      - descr: ''
+        ingest: _optional:SF_Carbon
+        name: Carbon
+        type: float
+      - descr: ''
+        ingest: _optional:SF_Helium
+        name: Helium
+        type: float
+      - descr: ''
+        ingest: _optional:SF_Hydrogen
+        name: Hydrogen
+        type: float
+      - descr: Mass fraction of this element. Note that these are absolute metallicites
+          and do not depend on a solar calibration Z_sun.
+        ingest: _optional:SF_Iron
+        name: Iron
+        type: float
+      - descr: Fraction of the total mass in Iron coming from SNIa ejecta.
+        ingest: _optional:SF_IronFromSNIa
+        name: IronFromSNIa
+        type: float
+      - descr: Total kinetic energy.
+        ingest: _optional:SF_KineticEnergy
+        name: KineticEnergy
+        type: float
+        units: Msun (km/s)2
+      - descr: ''
+        ingest: _optional:SF_Magnesium
+        name: Magnesium
+        type: float
+      - descr: Total mass.
+        ingest: _optional:SF_Mass
+        name: Mass
+        type: float
+        units: Msun
+      - descr: Total mass from AGB ejecta.
+        ingest: _optional:SF_MassFromAGB
+        name: MassFromAGB
+        type: float
+        units: Msun
+      - descr: Total mass from massive star and type II SN ejecta.
+        ingest: _optional:SF_MassFromSNII
+        name: MassFromSNII
+        type: float
+        units: Msun
+      - descr: Total mass from type Ia SN ejecta.
+        ingest: _optional:SF_MassFromSNIa
+        name: MassFromSNIa
+        type: float
+        units: Msun
+      - descr: Mass weighted pseudo entropy.
+        ingest: _optional:SF_MassWeightedEntropy
+        name: MassWeightedEntropy
+        type: float
+      - descr: Mass weighted temperature.
+        ingest: _optional:SF_MassWeightedTemperature
+        name: MassWeightedTemperature
+        type: float
+        units: K
+      - descr: Metal mass fraction.
+        ingest: _optional:SF_Metallicity
+        name: Metallicity
+        type: float
+      - descr: Total metal mass originating from AGB ejecta.
+        ingest: _optional:SF_MetalsFromAGB
+        name: MetalsFromAGB
+        type: float
+        units: Msun
+      - descr: Total metal mass originating from massive stars and SN Type II ejecta.
+        ingest: _optional:SF_MetalsFromSNII
+        name: MetalsFromSNII
+        type: float
+        units: Msun
+      - descr: Total metal mass originating from SN Type I ejecta.
+        ingest: _optional:SF_MetalsFromSNIa
+        name: MetalsFromSNIa
+        type: float
+        units: Msun
+      - descr: ''
+        ingest: _optional:SF_Neon
+        name: Neon
+        type: float
+      - descr: ''
+        ingest: _optional:SF_Nitrogen
+        name: Nitrogen
+        type: float
+      - descr: ''
+        ingest: _optional:SF_Oxygen
+        name: Oxygen
+        type: float
+      - descr: ''
+        ingest: _optional:SF_Silicon
+        name: Silicon
+        type: float
+      - descr: Total angular momentum per unit mass relative to the CentreOfMass.
+        ingest: ''
+        name: Spin
+        type: float
+        units: pkpc km s-1
+        sub:
+        - descr: x component
+          ingest: _optional:SF_Spin_x
+          name: 'x'
+        - descr: y component
+          ingest: _optional:SF_Spin_y
+          name: 'y'
+        - descr: z component
+          ingest: _optional:SF_Spin_z
+          name: 'z'
+      - descr: Total thermal energy. This does not exist for Stars.
+        ingest: _optional:SF_ThermalEnergy
+        name: ThermalEnergy
+        type: float
+        units: Msun (km/s)2
+      - descr: Total energy.
+        ingest: _optional:SF_TotalEnergy
+        name: TotalEnergy
+        type: float
+        units: Msun (km/s)2
+    - descr: Value is 1 if the galaxy is an artefact of the subfind algorithm and 0 if
+        the galaxy is a genuine object.
+      ingest: _optional:Spurious
+      name: Spurious
+      type: bool
+    - descr: Total star formation rate. This is the mass of stars formed per unit time
+        before any mass loss due to winds and supernovae.
+      ingest: _optional:StarFormationRate
+      name: StarFormationRate
+      type: float
+      units: Msun/yr
+    - ingest: ''
+      name: Stars
+      flag: hidden
+      sub:
+      - descr: ''
+        ingest: _optional:Stars_Carbon
+        name: Carbon
+        type: float
+      - descr: ''
+        ingest: _optional:Stars_Helium
+        name: Helium
+        type: float
+      - descr: ''
+        ingest: _optional:Stars_Hydrogen
+        name: Hydrogen
+        type: float
+      - descr: Mass fraction of this element. Note that these are absolute metallicites
+          and do not depend on a solar calibration Z_sun.
+        ingest: _optional:Stars_Iron
+        name: Iron
+        type: float
+      - descr: Fraction of the total mass in Iron coming from SNIa ejecta.
+        ingest: _optional:Stars_IronFromSNIa
+        name: IronFromSNIa
+        type: float
+      - descr: Total kinetic energy.
+        ingest: _optional:Stars_KineticEnergy
+        name: KineticEnergy
+        type: float
+        units: Msun (km/s)2
+      - descr: ''
+        ingest: _optional:Stars_Magnesium
+        name: Magnesium
+        type: float
+      - descr: Total mass.
+        ingest: _optional:Stars_Mass
+        name: Mass
+        type: float
+        units: 10^10 Msun/h
+      - descr: Total mass from AGB ejecta.
+        ingest: _optional:Stars_MassFromAGB
+        name: MassFromAGB
+        type: float
+        units: Msun
+      - descr: Total mass from massive star and type II SN ejecta.
+        ingest: _optional:Stars_MassFromSNII
+        name: MassFromSNII
+        type: float
+        units: Msun
+      - descr: Total mass from type Ia SN ejecta.
+        ingest: _optional:Stars_MassFromSNIa
+        name: MassFromSNIa
+        type: float
+        units: Msun
+      - descr: Metal mass fraction.
+        ingest: _optional:Stars_Metallicity
+        name: Metallicity
+        type: float
+      - descr: Total metal mass originating from AGB ejecta.
+        ingest: _optional:Stars_MetalsFromAGB
+        name: MetalsFromAGB
+        type: float
+        units: Msun
+      - descr: Total metal mass originating from massive stars and SN Type II ejecta.
+        ingest: _optional:Stars_MetalsFromSNII
+        name: MetalsFromSNII
+        type: float
+        units: Msun
+      - descr: Total metal mass originating from SN Type I ejecta.
+        ingest: _optional:Stars_MetalsFromSNIa
+        name: MetalsFromSNIa
+        type: float
+        units: Msun
+      - descr: ''
+        ingest: _optional:Stars_Neon
+        name: Neon
+        type: float
+      - descr: ''
+        ingest: _optional:Stars_Nitrogen
+        name: Nitrogen
+        type: float
+      - descr: ''
+        ingest: _optional:Stars_Oxygen
+        name: Oxygen
+        type: float
+      - descr: ''
+        ingest: _optional:Stars_Silicon
+        name: Silicon
+        type: float
+      - descr: Total angular momentum per unit mass relative to the CentreOfMass.
+        ingest: ''
+        name: Spin
+        type: float
+        units: pkpc km s-1
+        sub:
+        - descr: x component
+          ingest: _optional:Stars_Spin_x
+          name: 'x'
+        - descr: y component
+          ingest: _optional:Stars_Spin_y
+          name: 'y'
+        - descr: z component
+          ingest: _optional:Stars_Spin_z
+          name: 'z'
+      - descr: Total energy.
+        ingest: _optional:Stars_TotalEnergy
+        name: TotalEnergy
+        type: float
+        units: Msun (km/s)2
+    - descr: Sum of birth masses of all stars.
+      ingest: _optional:StellarInitialMass
+      name: StellarInitialMass
+      type: float
+      units: Msun
+    - descr: Average one dimensional velocity dispersion of stars.
+      ingest: _optional:StellarVelDisp
+      name: StellarVelDisp
+      type: float
+      units: km s-1
+    - descr: Total thermal energy of the gas particles.
+      ingest: _optional:ThermalEnergy
+      name: ThermalEnergy
+      type: float
+      units: Msun (km/s)2
+    - ingest: _supplemental:Aperture
+      flag: hidden
+      name: Aperture
+      descr: 'Measurements with a certain radius of the aperture from the center of potential,
+        available aperture sizes are: 1, 3, 5, 10, 20, 30, 40, 50, 70 and 100 pkpc.'
+      sub:
+      # FIXME expand
+      # descr: 'Radius of the aperture used for this measurement from the center of potential,
+      #   available aperture sizes are: 1, 3, 5, 10, 20, 30, 40, 50, 70 and 100 pkpc.'
+      # ingest: ApertureSize
+      # name: ApertureSize
+      # type: int64
+      # units: pkpc
+      # descr: Unique ID of this galaxy, corresponding to the GalaxyID in the SubHalo table.
+      # ingest: GalaxyID
+      # name: GalaxyID
+      # type: int
+      - descr: Total (particle) mass of all black holes within the aperture.
+        ingest: Mass_BH
+        name: Mass_BH
+        type: float
+        units: Msun
+        sub:
+          - { name: "1" }
+          - { name: "3" }
+          - { name: "5" }
+          - { name: "10" }
+          - { name: "20" }
+          - { name: "30" }
+          - { name: "40" }
+          - { name: "50" }
+          - { name: "70" }
+          - { name: "100" }
+      - descr: Total dark matter mass within the aperture.
+        ingest: Mass_DM
+        name: Mass_DM
+        type: float
+        units: Msun
+        sub:
+          - { name: "1" }
+          - { name: "3" }
+          - { name: "5" }
+          - { name: "10" }
+          - { name: "20" }
+          - { name: "30" }
+          - { name: "40" }
+          - { name: "50" }
+          - { name: "70" }
+          - { name: "100" }
+      - descr: Total gas mass within the aperture.
+        ingest: Mass_Gas
+        name: Mass_Gas
+        type: float
+        units: Msun
+        sub:
+          - { name: "1" }
+          - { name: "3" }
+          - { name: "5" }
+          - { name: "10" }
+          - { name: "20" }
+          - { name: "30" }
+          - { name: "40" }
+          - { name: "50" }
+          - { name: "70" }
+          - { name: "100" }
+      - descr: Total stellar mass within the aperture.
+        ingest: Mass_Star
+        name: Mass_Star
+        type: float
+        units: Msun
+        sub:
+          - { name: "1" }
+          - { name: "3" }
+          - { name: "5" }
+          - { name: "10" }
+          - { name: "20" }
+          - { name: "30" }
+          - { name: "40" }
+          - { name: "50" }
+          - { name: "70" }
+          - { name: "100" }
+      - descr: Star formation rate within the aperture.
+        ingest: SFR
+        name: SFR
+        type: float
+        units: Msun yr-1
+        sub:
+          - { name: "1" }
+          - { name: "3" }
+          - { name: "5" }
+          - { name: "10" }
+          - { name: "20" }
+          - { name: "30" }
+          - { name: "40" }
+          - { name: "50" }
+          - { name: "70" }
+          - { name: "100" }
+      - descr: Stellar velocity dispersion within the aperture, with respect to the centre
+          of mass of the galaxy.
+        ingest: _optional:VelDisp
+        name: VelDisp
+        type: float
+        units: km s-1
+        sub:
+          - { name: "1" }
+          - { name: "3" }
+          - { name: "5" }
+          - { name: "10" }
+          - { name: "20" }
+          - { name: "30" }
+          - { name: "40" }
+          - { name: "50" }
+          - { name: "70" }
+          - { name: "100" }
+    - name: DustFit
+      flag: hidden
+      ingest: _supplemental:DustFit
+      sub:
+      # descr: Unique identifier of each galaxy.
+      # ingest: GalaxyID
+      # name: GalaxyID
+      # type: int
+      - descr: Estimated dust mass Mdust.
+        ingest: Mass_Dust
+        name: Mass_Dust
+        type: float
+        units: "M\u2609"
+      - descr: Estimated representative dust temperature Tdust.
+        ingest: Temp_Dust
+        name: Temp_Dust
+        type: float
+        units: K
+    - name: DustyFluxes
+      ingest: _supplemental:DustyFluxes
+      flag: hidden
+      sub:
+      - descr: ALMA_10 band flux
+        ingest: ALMA_10
+        name: ALMA_10
+        type: float
+        units: Jy
+      - descr: ALMA_6  band flux
+        ingest: ALMA_6
+        name: ALMA_6
+        type: float
+        units: Jy
+      - descr: ALMA_7  band flux
+        ingest: ALMA_7
+        name: ALMA_7
+        type: float
+        units: Jy
+      - descr: ALMA_8  band flux
+        ingest: ALMA_8
+        name: ALMA_8
+        type: float
+        units: Jy
+      - descr: ALMA_9  band flux
+        ingest: ALMA_9
+        name: ALMA_9
+        type: float
+        units: Jy
+      - descr: GALEX_FUV band flux
+        ingest: GALEX_FUV
+        name: GALEX_FUV
+        type: float
+        units: Jy
+      - descr: GALEX_FUV band edge-on flux
+        ingest: GALEX_FUV_e
+        name: GALEX_FUV_e
+        type: float
+        units: Jy
+      - descr: GALEX_FUV band face-on flux
+        ingest: GALEX_FUV_f
+        name: GALEX_FUV_f
+        type: float
+        units: Jy
+      - descr: GALEX_NUV band flux
+        ingest: GALEX_NUV
+        name: GALEX_NUV
+        type: float
+        units: Jy
+      - descr: GALEX_NUV band edge-on flux
+        ingest: GALEX_NUV_e
+        name: GALEX_NUV_e
+        type: float
+        units: Jy
+      - descr: GALEX_NUV band face-on flux
+        ingest: GALEX_NUV_f
+        name: GALEX_NUV_f
+        type: float
+        units: Jy
+      # descr: Unique identifier of each galaxy.
+      # ingest: GalaxyID
+      # name: GalaxyID
+      # type: int
+      - descr: IRAC_I1 band flux
+        ingest: IRAC_I1
+        name: IRAC_I1
+        type: float
+        units: Jy
+      - descr: IRAC_I2 band flux
+        ingest: IRAC_I2
+        name: IRAC_I2
+        type: float
+        units: Jy
+      - descr: IRAC_I3 band flux
+        ingest: IRAC_I3
+        name: IRAC_I3
+        type: float
+        units: Jy
+      - descr: IRAC_I4 band flux
+        ingest: IRAC_I4
+        name: IRAC_I4
+        type: float
+        units: Jy
+      - descr: IRAS_100 band flux
+        ingest: IRAS_100
+        name: IRAS_100
+        type: float
+        units: Jy
+      - descr: IRAS_12 band flux
+        ingest: IRAS_12
+        name: IRAS_12
+        type: float
+        units: Jy
+      - descr: IRAS_25 band flux
+        ingest: IRAS_25
+        name: IRAS_25
+        type: float
+        units: Jy
+      - descr: IRAS_60 band flux
+        ingest: IRAS_60
+        name: IRAS_60
+        type: float
+        units: Jy
+      - descr: Johnson_B band flux
+        ingest: Johnson_B
+        name: Johnson_B
+        type: float
+        units: Jy
+      - descr: Johnson_B band edge-on flux
+        ingest: Johnson_B_e
+        name: Johnson_B_e
+        type: float
+        units: Jy
+      - descr: Johnson_B band face-on flux
+        ingest: Johnson_B_f
+        name: Johnson_B_f
+        type: float
+        units: Jy
+      - descr: Johnson_I band flux
+        ingest: Johnson_I
+        name: Johnson_I
+        type: float
+        units: Jy
+      - descr: Johnson_I band edge-on flux
+        ingest: Johnson_I_e
+        name: Johnson_I_e
+        type: float
+        units: Jy
+      - descr: Johnson_I band face-on flux
+        ingest: Johnson_I_f
+        name: Johnson_I_f
+        type: float
+        units: Jy
+      - descr: Johnson_J band flux
+        ingest: Johnson_J
+        name: Johnson_J
+        type: float
+        units: Jy
+      - descr: Johnson_J band edge-on flux
+        ingest: Johnson_J_e
+        name: Johnson_J_e
+        type: float
+        units: Jy
+      - descr: Johnson_J band face-on flux
+        ingest: Johnson_J_f
+        name: Johnson_J_f
+        type: float
+        units: Jy
+      - descr: Johnson_M band flux
+        ingest: Johnson_M
+        name: Johnson_M
+        type: float
+        units: Jy
+      - descr: Johnson_R band flux
+        ingest: Johnson_R
+        name: Johnson_R
+        type: float
+        units: Jy
+      - descr: Johnson_R band edge-on flux
+        ingest: Johnson_R_e
+        name: Johnson_R_e
+        type: float
+        units: Jy
+      - descr: Johnson_R band face-on flux
+        ingest: Johnson_R_f
+        name: Johnson_R_f
+        type: float
+        units: Jy
+      - descr: Johnson_U band flux
+        ingest: Johnson_U
+        name: Johnson_U
+        type: float
+        units: Jy
+      - descr: Johnson_U band edge-on flux
+        ingest: Johnson_U_e
+        name: Johnson_U_e
+        type: float
+        units: Jy
+      - descr: Johnson_U band face-on flux
+        ingest: Johnson_U_f
+        name: Johnson_U_f
+        type: float
+        units: Jy
+      - descr: Johnson_V band flux
+        ingest: Johnson_V
+        name: Johnson_V
+        type: float
+        units: Jy
+      - descr: Johnson_V band edge-on flux
+        ingest: Johnson_V_e
+        name: Johnson_V_e
+        type: float
+        units: Jy
+      - descr: Johnson_V band face-on flux
+        ingest: Johnson_V_f
+        name: Johnson_V_f
+        type: float
+        units: Jy
+      - descr: MIPS_160 band flux
+        ingest: MIPS_160
+        name: MIPS_160
+        type: float
+        units: Jy
+      - descr: MIPS_24 band flux
+        ingest: MIPS_24
+        name: MIPS_24
+        type: float
+        units: Jy
+      - descr: MIPS_70 band flux
+        ingest: MIPS_70
+        name: MIPS_70
+        type: float
+        units: Jy
+      - descr: PACS_100 band flux
+        ingest: PACS_100
+        name: PACS_100
+        type: float
+        units: Jy
+      - descr: PACS_160 band flux
+        ingest: PACS_160
+        name: PACS_160
+        type: float
+        units: Jy
+      - descr: PACS_70 band flux
+        ingest: PACS_70
+        name: PACS_70
+        type: float
+        units: Jy
+      - descr: SCUBA2_450 band flux
+        ingest: SCUBA2_450
+        name: SCUBA2_450
+        type: float
+        units: Jy
+      - descr: SCUBA2_850 band flux
+        ingest: SCUBA2_850
+        name: SCUBA2_850
+        type: float
+        units: Jy
+      - descr: SDSS_g band flux
+        ingest: SDSS_g
+        name: SDSS_g
+        type: float
+        units: Jy
+      - descr: SDSS_g band edge-on flux
+        ingest: SDSS_g_e
+        name: SDSS_g_e
+        type: float
+        units: Jy
+      - descr: SDSS_g band face-on flux
+        ingest: SDSS_g_f
+        name: SDSS_g_f
+        type: float
+        units: Jy
+      - descr: SDSS_i band flux
+        ingest: SDSS_i
+        name: SDSS_i
+        type: float
+        units: Jy
+      - descr: SDSS_i band edge-on flux
+        ingest: SDSS_i_e
+        name: SDSS_i_e
+        type: float
+        units: Jy
+      - descr: SDSS_i band face-on flux
+        ingest: SDSS_i_f
+        name: SDSS_i_f
+        type: float
+        units: Jy
+      - descr: SDSS_r band flux
+        ingest: SDSS_r
+        name: SDSS_r
+        type: float
+        units: Jy
+      - descr: SDSS_r band edge-on flux
+        ingest: SDSS_r_e
+        name: SDSS_r_e
+        type: float
+        units: Jy
+      - descr: SDSS_r band face-on flux
+        ingest: SDSS_r_f
+        name: SDSS_r_f
+        type: float
+        units: Jy
+      - descr: SDSS_u band flux
+        ingest: SDSS_u
+        name: SDSS_u
+        type: float
+        units: Jy
+      - descr: SDSS_u band edge-on flux
+        ingest: SDSS_u_e
+        name: SDSS_u_e
+        type: float
+        units: Jy
+      - descr: SDSS_u band face-on flux
+        ingest: SDSS_u_f
+        name: SDSS_u_f
+        type: float
+        units: Jy
+      - descr: SDSS_z band flux
+        ingest: SDSS_z
+        name: SDSS_z
+        type: float
+        units: Jy
+      - descr: SDSS_z band edge-on flux
+        ingest: SDSS_z_e
+        name: SDSS_z_e
+        type: float
+        units: Jy
+      - descr: SDSS_z band face-on flux
+        ingest: SDSS_z_f
+        name: SDSS_z_f
+        type: float
+        units: Jy
+      - descr: SPIRE_250 band flux
+        ingest: SPIRE_250
+        name: SPIRE_250
+        type: float
+        units: Jy
+      - descr: SPIRE_350 band flux
+        ingest: SPIRE_350
+        name: SPIRE_350
+        type: float
+        units: Jy
+      - descr: SPIRE_500 band flux
+        ingest: SPIRE_500
+        name: SPIRE_500
+        type: float
+        units: Jy
+      - descr: TwoMASS_H band flux
+        ingest: TwoMASS_H
+        name: TwoMASS_H
+        type: float
+        units: Jy
+      - descr: TwoMASS_H band edge-on flux
+        ingest: TwoMASS_H_e
+        name: TwoMASS_H_e
+        type: float
+        units: Jy
+      - descr: TwoMASS_H band face-on flux
+        ingest: TwoMASS_H_f
+        name: TwoMASS_H_f
+        type: float
+        units: Jy
+      - descr: TwoMASS_J band flux
+        ingest: TwoMASS_J
+        name: TwoMASS_J
+        type: float
+        units: Jy
+      - descr: TwoMASS_J band edge-on flux
+        ingest: TwoMASS_J_e
+        name: TwoMASS_J_e
+        type: float
+        units: Jy
+      - descr: TwoMASS_J band face-on flux
+        ingest: TwoMASS_J_f
+        name: TwoMASS_J_f
+        type: float
+        units: Jy
+      - descr: TwoMASS_Ks band flux
+        ingest: TwoMASS_Ks
+        name: TwoMASS_Ks
+        type: float
+        units: Jy
+      - descr: TwoMASS_Ks band edge-on flux
+        ingest: TwoMASS_Ks_e
+        name: TwoMASS_Ks_e
+        type: float
+        units: Jy
+      - descr: TwoMASS_Ks band face-on flux
+        ingest: TwoMASS_Ks_f
+        name: TwoMASS_Ks_f
+        type: float
+        units: Jy
+      - descr: UKIDSS_H band flux
+        ingest: UKIDSS_H
+        name: UKIDSS_H
+        type: float
+        units: Jy
+      - descr: UKIDSS_H band edge-on flux
+        ingest: UKIDSS_H_e
+        name: UKIDSS_H_e
+        type: float
+        units: Jy
+      - descr: UKIDSS_H band face-on flux
+        ingest: UKIDSS_H_f
+        name: UKIDSS_H_f
+        type: float
+        units: Jy
+      - descr: UKIDSS_J band flux
+        ingest: UKIDSS_J
+        name: UKIDSS_J
+        type: float
+        units: Jy
+      - descr: UKIDSS_J band edge-on flux
+        ingest: UKIDSS_J_e
+        name: UKIDSS_J_e
+        type: float
+        units: Jy
+      - descr: UKIDSS_J band face-on flux
+        ingest: UKIDSS_J_f
+        name: UKIDSS_J_f
+        type: float
+        units: Jy
+      - descr: UKIDSS_K band flux
+        ingest: UKIDSS_K
+        name: UKIDSS_K
+        type: float
+        units: Jy
+      - descr: UKIDSS_K band edge-on flux
+        ingest: UKIDSS_K_e
+        name: UKIDSS_K_e
+        type: float
+        units: Jy
+      - descr: UKIDSS_K band face-on flux
+        ingest: UKIDSS_K_f
+        name: UKIDSS_K_f
+        type: float
+        units: Jy
+      - descr: UKIDSS_Y band flux
+        ingest: UKIDSS_Y
+        name: UKIDSS_Y
+        type: float
+        units: Jy
+      - descr: UKIDSS_Y band edge-on flux
+        ingest: UKIDSS_Y_e
+        name: UKIDSS_Y_e
+        type: float
+        units: Jy
+      - descr: UKIDSS_Y band face-on flux
+        ingest: UKIDSS_Y_f
+        name: UKIDSS_Y_f
+        type: float
+        units: Jy
+      - descr: UKIDSS_Z band flux
+        ingest: UKIDSS_Z
+        name: UKIDSS_Z
+        type: float
+        units: Jy
+      - descr: UKIDSS_Z band edge-on flux
+        ingest: UKIDSS_Z_e
+        name: UKIDSS_Z_e
+        type: float
+        units: Jy
+      - descr: UKIDSS_Z band face-on flux
+        ingest: UKIDSS_Z_f
+        name: UKIDSS_Z_f
+        type: float
+        units: Jy
+      - descr: WISE_W1 band flux
+        ingest: WISE_W1
+        name: WISE_W1
+        type: float
+        units: Jy
+      - descr: WISE_W2 band flux
+        ingest: WISE_W2
+        name: WISE_W2
+        type: float
+        units: Jy
+      - descr: WISE_W3 band flux
+        ingest: WISE_W3
+        name: WISE_W3
+        type: float
+        units: Jy
+      - descr: WISE_W4 band flux
+        ingest: WISE_W4
+        name: WISE_W4
+        type: float
+        units: Jy
+    - ingest: _supplemental:DustyMagnitudes
+      flag: hidden
+      name: DustyMagnitudes
+      sub:
+      - descr: ALMA_10 band absolute rest frame AB magnitude
+        ingest: ALMA_10
+        name: ALMA_10
+        type: float
+        units: Jy
+      - descr: ALMA_6  band absolute rest frame AB magnitude
+        ingest: ALMA_6
+        name: ALMA_6
+        type: float
+        units: Jy
+      - descr: ALMA_7  band absolute rest frame AB magnitude
+        ingest: ALMA_7
+        name: ALMA_7
+        type: float
+        units: Jy
+      - descr: ALMA_8  band absolute rest frame AB magnitude
+        ingest: ALMA_8
+        name: ALMA_8
+        type: float
+        units: Jy
+      - descr: ALMA_9  band absolute rest frame AB magnitude
+        ingest: ALMA_9
+        name: ALMA_9
+        type: float
+        units: Jy
+      - descr: GALEX_FUV band absolute rest frame AB magnitude
+        ingest: GALEX_FUV
+        name: GALEX_FUV
+        type: float
+        units: Jy
+      - descr: GALEX_FUV band edge-on absolute rest frame AB magnitude
+        ingest: GALEX_FUV_e
+        name: GALEX_FUV_e
+        type: float
+        units: Jy
+      - descr: GALEX_FUV band face-on absolute rest frame AB magnitude
+        ingest: GALEX_FUV_f
+        name: GALEX_FUV_f
+        type: float
+        units: Jy
+      - descr: GALEX_NUV band absolute rest frame AB magnitude
+        ingest: GALEX_NUV
+        name: GALEX_NUV
+        type: float
+        units: Jy
+      - descr: GALEX_NUV band edge-on absolute rest frame AB magnitude
+        ingest: GALEX_NUV_e
+        name: GALEX_NUV_e
+        type: float
+        units: Jy
+      - descr: GALEX_NUV band face-on absolute rest frame AB magnitude
+        ingest: GALEX_NUV_f
+        name: GALEX_NUV_f
+        type: float
+        units: Jy
+      # descr: Unique identifier of each galaxy.
+      # ingest: GalaxyID
+      # name: GalaxyID
+      # type: int
+      - descr: IRAC_I1 band absolute rest frame AB magnitude
+        ingest: IRAC_I1
+        name: IRAC_I1
+        type: float
+        units: Jy
+      - descr: IRAC_I2 band absolute rest frame AB magnitude
+        ingest: IRAC_I2
+        name: IRAC_I2
+        type: float
+        units: Jy
+      - descr: IRAC_I3 band absolute rest frame AB magnitude
+        ingest: IRAC_I3
+        name: IRAC_I3
+        type: float
+        units: Jy
+      - descr: IRAC_I4 band absolute rest frame AB magnitude
+        ingest: IRAC_I4
+        name: IRAC_I4
+        type: float
+        units: Jy
+      - descr: IRAS_100 band absolute rest frame AB magnitude
+        ingest: IRAS_100
+        name: IRAS_100
+        type: float
+        units: Jy
+      - descr: IRAS_12 band absolute rest frame AB magnitude
+        ingest: IRAS_12
+        name: IRAS_12
+        type: float
+        units: Jy
+      - descr: IRAS_25 band absolute rest frame AB magnitude
+        ingest: IRAS_25
+        name: IRAS_25
+        type: float
+        units: Jy
+      - descr: IRAS_60 band absolute rest frame AB magnitude
+        ingest: IRAS_60
+        name: IRAS_60
+        type: float
+        units: Jy
+      - descr: Johnson_B band absolute rest frame AB magnitude
+        ingest: Johnson_B
+        name: Johnson_B
+        type: float
+        units: Jy
+      - descr: Johnson_B band edge-on absolute rest frame AB magnitude
+        ingest: Johnson_B_e
+        name: Johnson_B_e
+        type: float
+        units: Jy
+      - descr: Johnson_B band face-on absolute rest frame AB magnitude
+        ingest: Johnson_B_f
+        name: Johnson_B_f
+        type: float
+        units: Jy
+      - descr: Johnson_I band absolute rest frame AB magnitude
+        ingest: Johnson_I
+        name: Johnson_I
+        type: float
+        units: Jy
+      - descr: Johnson_I band edge-on absolute rest frame AB magnitude
+        ingest: Johnson_I_e
+        name: Johnson_I_e
+        type: float
+        units: Jy
+      - descr: Johnson_I band face-on absolute rest frame AB magnitude
+        ingest: Johnson_I_f
+        name: Johnson_I_f
+        type: float
+        units: Jy
+      - descr: Johnson_J band absolute rest frame AB magnitude
+        ingest: Johnson_J
+        name: Johnson_J
+        type: float
+        units: Jy
+      - descr: Johnson_J band edge-on absolute rest frame AB magnitude
+        ingest: Johnson_J_e
+        name: Johnson_J_e
+        type: float
+        units: Jy
+      - descr: Johnson_J band face-on absolute rest frame AB magnitude
+        ingest: Johnson_J_f
+        name: Johnson_J_f
+        type: float
+        units: Jy
+      - descr: Johnson_M band absolute rest frame AB magnitude
+        ingest: Johnson_M
+        name: Johnson_M
+        type: float
+        units: Jy
+      - descr: Johnson_R band absolute rest frame AB magnitude
+        ingest: Johnson_R
+        name: Johnson_R
+        type: float
+        units: Jy
+      - descr: Johnson_R band edge-on absolute rest frame AB magnitude
+        ingest: Johnson_R_e
+        name: Johnson_R_e
+        type: float
+        units: Jy
+      - descr: Johnson_R band face-on absolute rest frame AB magnitude
+        ingest: Johnson_R_f
+        name: Johnson_R_f
+        type: float
+        units: Jy
+      - descr: Johnson_U band absolute rest frame AB magnitude
+        ingest: Johnson_U
+        name: Johnson_U
+        type: float
+        units: Jy
+      - descr: Johnson_U band edge-on absolute rest frame AB magnitude
+        ingest: Johnson_U_e
+        name: Johnson_U_e
+        type: float
+        units: Jy
+      - descr: Johnson_U band face-on absolute rest frame AB magnitude
+        ingest: Johnson_U_f
+        name: Johnson_U_f
+        type: float
+        units: Jy
+      - descr: Johnson_V band absolute rest frame AB magnitude
+        ingest: Johnson_V
+        name: Johnson_V
+        type: float
+        units: Jy
+      - descr: Johnson_V band edge-on absolute rest frame AB magnitude
+        ingest: Johnson_V_e
+        name: Johnson_V_e
+        type: float
+        units: Jy
+      - descr: Johnson_V band face-on absolute rest frame AB magnitude
+        ingest: Johnson_V_f
+        name: Johnson_V_f
+        type: float
+        units: Jy
+      - descr: MIPS_160 band absolute rest frame AB magnitude
+        ingest: MIPS_160
+        name: MIPS_160
+        type: float
+        units: Jy
+      - descr: MIPS_24 band absolute rest frame AB magnitude
+        ingest: MIPS_24
+        name: MIPS_24
+        type: float
+        units: Jy
+      - descr: MIPS_70 band absolute rest frame AB magnitude
+        ingest: MIPS_70
+        name: MIPS_70
+        type: float
+        units: Jy
+      - descr: PACS_100 band absolute rest frame AB magnitude
+        ingest: PACS_100
+        name: PACS_100
+        type: float
+        units: Jy
+      - descr: PACS_160 band absolute rest frame AB magnitude
+        ingest: PACS_160
+        name: PACS_160
+        type: float
+        units: Jy
+      - descr: PACS_70 band absolute rest frame AB magnitude
+        ingest: PACS_70
+        name: PACS_70
+        type: float
+        units: Jy
+      - descr: SCUBA2_450 band absolute rest frame AB magnitude
+        ingest: SCUBA2_450
+        name: SCUBA2_450
+        type: float
+        units: Jy
+      - descr: SCUBA2_850 band absolute rest frame AB magnitude
+        ingest: SCUBA2_850
+        name: SCUBA2_850
+        type: float
+        units: Jy
+      - descr: SDSS_g band absolute rest frame AB magnitude
+        ingest: SDSS_g
+        name: SDSS_g
+        type: float
+        units: Jy
+      - descr: SDSS_g band edge-on absolute rest frame AB magnitude
+        ingest: SDSS_g_e
+        name: SDSS_g_e
+        type: float
+        units: Jy
+      - descr: SDSS_g band face-on absolute rest frame AB magnitude
+        ingest: SDSS_g_f
+        name: SDSS_g_f
+        type: float
+        units: Jy
+      - descr: SDSS_i band absolute rest frame AB magnitude
+        ingest: SDSS_i
+        name: SDSS_i
+        type: float
+        units: Jy
+      - descr: SDSS_i band edge-on absolute rest frame AB magnitude
+        ingest: SDSS_i_e
+        name: SDSS_i_e
+        type: float
+        units: Jy
+      - descr: SDSS_i band face-on absolute rest frame AB magnitude
+        ingest: SDSS_i_f
+        name: SDSS_i_f
+        type: float
+        units: Jy
+      - descr: SDSS_r band absolute rest frame AB magnitude
+        ingest: SDSS_r
+        name: SDSS_r
+        type: float
+        units: Jy
+      - descr: SDSS_r band edge-on absolute rest frame AB magnitude
+        ingest: SDSS_r_e
+        name: SDSS_r_e
+        type: float
+        units: Jy
+      - descr: SDSS_r band face-on absolute rest frame AB magnitude
+        ingest: SDSS_r_f
+        name: SDSS_r_f
+        type: float
+        units: Jy
+      - descr: SDSS_u band absolute rest frame AB magnitude
+        ingest: SDSS_u
+        name: SDSS_u
+        type: float
+        units: Jy
+      - descr: SDSS_u band edge-on absolute rest frame AB magnitude
+        ingest: SDSS_u_e
+        name: SDSS_u_e
+        type: float
+        units: Jy
+      - descr: SDSS_u band face-on absolute rest frame AB magnitude
+        ingest: SDSS_u_f
+        name: SDSS_u_f
+        type: float
+        units: Jy
+      - descr: SDSS_z band absolute rest frame AB magnitude
+        ingest: SDSS_z
+        name: SDSS_z
+        type: float
+        units: Jy
+      - descr: SDSS_z band edge-on absolute rest frame AB magnitude
+        ingest: SDSS_z_e
+        name: SDSS_z_e
+        type: float
+        units: Jy
+      - descr: SDSS_z band face-on absolute rest frame AB magnitude
+        ingest: SDSS_z_f
+        name: SDSS_z_f
+        type: float
+        units: Jy
+      - descr: SPIRE_250 band absolute rest frame AB magnitude
+        ingest: SPIRE_250
+        name: SPIRE_250
+        type: float
+        units: Jy
+      - descr: SPIRE_350 band absolute rest frame AB magnitude
+        ingest: SPIRE_350
+        name: SPIRE_350
+        type: float
+        units: Jy
+      - descr: SPIRE_500 band absolute rest frame AB magnitude
+        ingest: SPIRE_500
+        name: SPIRE_500
+        type: float
+        units: Jy
+      - descr: TwoMASS_H band absolute rest frame AB magnitude
+        ingest: TwoMASS_H
+        name: TwoMASS_H
+        type: float
+        units: Jy
+      - descr: TwoMASS_H band edge-on absolute rest frame AB magnitude
+        ingest: TwoMASS_H_e
+        name: TwoMASS_H_e
+        type: float
+        units: Jy
+      - descr: TwoMASS_H band face-on absolute rest frame AB magnitude
+        ingest: TwoMASS_H_f
+        name: TwoMASS_H_f
+        type: float
+        units: Jy
+      - descr: TwoMASS_J band absolute rest frame AB magnitude
+        ingest: TwoMASS_J
+        name: TwoMASS_J
+        type: float
+        units: Jy
+      - descr: TwoMASS_J band edge-on absolute rest frame AB magnitude
+        ingest: TwoMASS_J_e
+        name: TwoMASS_J_e
+        type: float
+        units: Jy
+      - descr: TwoMASS_J band face-on absolute rest frame AB magnitude
+        ingest: TwoMASS_J_f
+        name: TwoMASS_J_f
+        type: float
+        units: Jy
+      - descr: TwoMASS_Ks band absolute rest frame AB magnitude
+        ingest: TwoMASS_Ks
+        name: TwoMASS_Ks
+        type: float
+        units: Jy
+      - descr: TwoMASS_Ks band edge-on absolute rest frame AB magnitude
+        ingest: TwoMASS_Ks_e
+        name: TwoMASS_Ks_e
+        type: float
+        units: Jy
+      - descr: TwoMASS_Ks band face-on absolute rest frame AB magnitude
+        ingest: TwoMASS_Ks_f
+        name: TwoMASS_Ks_f
+        type: float
+        units: Jy
+      - descr: UKIDSS_H band absolute rest frame AB magnitude
+        ingest: UKIDSS_H
+        name: UKIDSS_H
+        type: float
+        units: Jy
+      - descr: UKIDSS_H band edge-on absolute rest frame AB magnitude
+        ingest: UKIDSS_H_e
+        name: UKIDSS_H_e
+        type: float
+        units: Jy
+      - descr: UKIDSS_H band face-on absolute rest frame AB magnitude
+        ingest: UKIDSS_H_f
+        name: UKIDSS_H_f
+        type: float
+        units: Jy
+      - descr: UKIDSS_J band absolute rest frame AB magnitude
+        ingest: UKIDSS_J
+        name: UKIDSS_J
+        type: float
+        units: Jy
+      - descr: UKIDSS_J band edge-on absolute rest frame AB magnitude
+        ingest: UKIDSS_J_e
+        name: UKIDSS_J_e
+        type: float
+        units: Jy
+      - descr: UKIDSS_J band face-on absolute rest frame AB magnitude
+        ingest: UKIDSS_J_f
+        name: UKIDSS_J_f
+        type: float
+        units: Jy
+      - descr: UKIDSS_K band absolute rest frame AB magnitude
+        ingest: UKIDSS_K
+        name: UKIDSS_K
+        type: float
+        units: Jy
+      - descr: UKIDSS_K band edge-on absolute rest frame AB magnitude
+        ingest: UKIDSS_K_e
+        name: UKIDSS_K_e
+        type: float
+        units: Jy
+      - descr: UKIDSS_K band face-on absolute rest frame AB magnitude
+        ingest: UKIDSS_K_f
+        name: UKIDSS_K_f
+        type: float
+        units: Jy
+      - descr: UKIDSS_Y band absolute rest frame AB magnitude
+        ingest: UKIDSS_Y
+        name: UKIDSS_Y
+        type: float
+        units: Jy
+      - descr: UKIDSS_Y band edge-on absolute rest frame AB magnitude
+        ingest: UKIDSS_Y_e
+        name: UKIDSS_Y_e
+        type: float
+        units: Jy
+      - descr: UKIDSS_Y band face-on absolute rest frame AB magnitude
+        ingest: UKIDSS_Y_f
+        name: UKIDSS_Y_f
+        type: float
+        units: Jy
+      - descr: UKIDSS_Z band absolute rest frame AB magnitude
+        ingest: UKIDSS_Z
+        name: UKIDSS_Z
+        type: float
+        units: Jy
+      - descr: UKIDSS_Z band edge-on absolute rest frame AB magnitude
+        ingest: UKIDSS_Z_e
+        name: UKIDSS_Z_e
+        type: float
+        units: Jy
+      - descr: UKIDSS_Z band face-on absolute rest frame AB magnitude
+        ingest: UKIDSS_Z_f
+        name: UKIDSS_Z_f
+        type: float
+        units: Jy
+      - descr: WISE_W1 band absolute rest frame AB magnitude
+        ingest: WISE_W1
+        name: WISE_W1
+        type: float
+        units: Jy
+      - descr: WISE_W2 band absolute rest frame AB magnitude
+        ingest: WISE_W2
+        name: WISE_W2
+        type: float
+        units: Jy
+      - descr: WISE_W3 band absolute rest frame AB magnitude
+        ingest: WISE_W3
+        name: WISE_W3
+        type: float
+        units: Jy
+      - descr: WISE_W4 band absolute rest frame AB magnitude
+        ingest: WISE_W4
+        name: WISE_W4
+        type: float
+        units: Jy
+    - ingest: _supplemental:Magnitudes
+      flag: hidden
+      name: Magnitudes
+      sub:
+      # descr: Unique ID of this galaxy, corresponding to the GalaxyID in the SubHalo table.
+      # ingest: Magnitudes/GalaxyID
+      # name: GalaxyID
+      # type: int
+      - descr: Rest-frame absolute magnitude (AB) in the H band without dust attenuation.
+        ingest: H_nodust
+        name: H_nodust
+        type: float
+        units: mag
+      - descr: Rest-frame absolute magnitude (AB) in the J band without dust attenuation.
+        ingest: J_nodust
+        name: J_nodust
+        type: float
+        units: mag
+      - descr: Rest-frame absolute magnitude (AB) in the K band without dust attenuation.
+        ingest: K_nodust
+        name: K_nodust
+        type: float
+        units: mag
+      - descr: Rest-frame absolute magnitude (AB) in the Y band without dust attenuation.
+        ingest: Y_nodust
+        name: Y_nodust
+        type: float
+        units: mag
+      - descr: Rest-frame absolute magnitude (AB) in the g band without dust attenuation.
+        ingest: g_nodust
+        name: g_nodust
+        type: float
+        units: mag
+      - descr: Rest-frame absolute magnitude (AB) in the i band without dust attenuation.
+        ingest: i_nodust
+        name: i_nodust
+        type: float
+        units: mag
+      - descr: Rest-frame absolute magnitude (AB) in the r band without dust attenuation.
+        ingest: r_nodust
+        name: r_nodust
+        type: float
+        units: mag
+      - descr: Rest-frame absolute magnitude (AB) in the u band without dust attenuation.
+        ingest: u_nodust
+        name: u_nodust
+        type: float
+        units: mag
+      - descr: Rest-frame absolute magnitude (AB) in the z band without dust attenuation.
+        ingest: z_nodust
+        name: z_nodust
+        type: float
+        units: mag
+    - ingest: _supplemental:MorphoKinem
+      flag: hidden
+      name: MorphoKinem
+      sub:
+      - descr: Dark matter ellipticity from the iterative reduced inertia tensor.
+        ingest: DMEllipticity
+        name: DMEllipticity
+        type: float
+      - descr: Stellar disc-to-total ratio from counter-rotation.
+        ingest: DiscToTotal
+        name: DiscToTotal
+        type: float
+      - descr: Stellar velocity dispersion anisotropy.
+        ingest: DispAnisotropy
+        name: DispAnisotropy
+        type: float
+      - descr: Stellar ellipticity from the iterative reduced inertia tensor.
+        ingest: Ellipticity
+        name: Ellipticity
+        type: float
+      # descr: Unique ID of this galaxy, corresponding to the GalaxyID in the SubHalo table.
+      # ingest: GalaxyID
+      # name: GalaxyID
+      # type: int
+      - descr: Stellar counter-rotating kinetic energy fraction.
+        ingest: KappaCoRot
+        name: KappaCoRot
+        type: float
+      - descr: Stellar median orbital circularity.
+        ingest: MedOrbitCircu
+        name: MedOrbitCircu
+        type: float
+      - descr: Stellar velocity rotation-to-dispersion ratio.
+        ingest: RotToDispRatio
+        name: RotToDispRatio
+        type: float
+      - descr: Stellar triaxiality from the iterative reduced inertia tensor.
+        ingest: Triaxiality
+        name: Triaxiality
+        type: float
+    - ingest: _supplemental:ParticleCounts
+      flag: hidden
+      name: ParticleCounts
+      sub:
+      - descr: Number of (sub-)particles Ndust representing the galaxy's body of dust
+        ingest: Count_Dust
+        name: Count_Dust
+        type: int
+      - descr: Number of (sub-)particles Nstar representing the galaxy's stellar sources
+        ingest: Count_Star
+        name: Count_Star
+        type: int
+      # descr: Unique identifier of each galaxy.
+      # ingest: GalaxyID
+      # name: GalaxyID
+      # type: int
+    - ingest: _supplemental:Sizes
+      flag: hidden
+      name: Sizes
+      sub:
+      # descr: Unique ID of this galaxy, corresponding to the GalaxyID in the SubHalo table.
+      # ingest: GalaxyID
+      # name: GalaxyID
+      # type: int
+      - descr: Half mass radius computed for mass within a spherical 100 pkpc aperture.
+        ingest: R_halfmass100
+        name: R_halfmass100
+        type: float
+        units: pkpc
+      - descr: Projected half mass radius computed for mass within a 100 pkpc aperture (averaged
+          over three orthogonal projections).
+        ingest: R_halfmass100_projected
+        name: R_halfmass100_projected
+        type: float
+        units: pkpc
+      - descr: Half mass radius computed for mass within a spherical 30 pkpc aperture.
+        ingest: R_halfmass30
+        name: R_halfmass30
+        type: float
+        units: pkpc
+      - descr: Projected half mass radius computed for mass within a 30 pkpc aperture (averaged
+          over three orthogonal projections).
+        ingest: R_halfmass30_projected
+        name: R_halfmass30_projected
+        type: float
+        units: pkpc
