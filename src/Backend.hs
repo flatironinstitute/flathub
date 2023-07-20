@@ -376,7 +376,7 @@ parseHistogram HistogramArgs{..} = J.withObject "histogram res" $ \o ->
     o J..: JK.fromText (fieldName (histogramField h)) >>= (J..: "buckets") >>= concatMapM pbuc where
     pbuc = J.withObject "hist bucket" $ \b -> do
       j <- b J..: (if histogramLog h then "from" else "key")
-      v <- traverseTypeValue (\Proxy -> Identity <$> J.parseJSON j) (fieldType $ histogramField h)
+      v <- traverseTypeValue (\Proxy -> Identity <$> parseJSONValue j) (fieldType $ histogramField h)
       phist (v : k) l b
   phist k [] b = do
     c <- b J..: "doc_count"
@@ -408,7 +408,7 @@ queryHistogram cat hist@HistogramArgs{..} = do
             then let r = exp int in return $ HistogramRanges histogramField (fromFloatDigits r)
               $ genericTake (succ histogramSize) $ scaleFromByTo fmin r fmax
             else raise400 "invalid log histogram"
-          | typeIsIntegral (fieldType histogramField) = return $
+          | typeIsIntegral (fieldType histogramField) || typeIsBoolean (fieldType histogramField) = return $
             let i = ceiling int in
             (HistogramInterval histogramField `on` fromInteger) i (floor fmin `mod` i)
           | otherwise = return $ (HistogramInterval histogramField `on` fromFloatDigits) int (remainder fmin int)

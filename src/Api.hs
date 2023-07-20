@@ -1000,7 +1000,7 @@ parseHistogramsQuery cat req param =
   histn s = (t, ) <$> readBS r where
     (t, r) = maybe (False, s) (True ,) $ BS.stripPrefix "log" s
   mkHist f (t, n)
-    | typeIsNumeric (fieldType f) = return $ Histogram f n t
+    | typeIsNumeric (fieldType f) || typeIsBoolean (fieldType f) = return $ Histogram f n t
     | otherwise = fail "non-numeric hist"
   lookf = lookupFieldQuery cat True
 
