@@ -91,6 +91,7 @@ fields:
     name: snapshot
     type: short
     flag: top
+    terms: true
   - descr: Redshift at which these properties are computed.
     ingest: Redshift
     name: Redshift
