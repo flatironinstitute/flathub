@@ -22,7 +22,7 @@ RUN apt-key add /tmp/nodesource.gpg.key && \
     echo deb https://deb.nodesource.com/node_12.x bionic main > /etc/apt/sources.list.d/nodesource.list && \
     apt-get update && \
     apt-get upgrade -y && \
-    apt-get install -y libhdf5-100 bzip2 nodejs vim && \
+    apt-get install -y libhdf5-100 bzip2 nodejs vim curl && \
     rm -rf /var/lib/apt/lists/*
 
 EXPOSE 8092
