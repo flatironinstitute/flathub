@@ -48,6 +48,9 @@ import Global
 import qualified ES
 import Ingest.Types
 
+rePutStr :: String -> IO ()
+rePutStr = putStr . ("\r\ESC[K" ++)
+
 unStorableValue :: (forall a . (Typed a, VS.Storable a) => VS.Vector a -> b) -> TypeValue VS.Vector -> b
 unStorableValue f (Double    x) = f $! x
 unStorableValue f (Float     x) = f $! x
@@ -409,7 +412,7 @@ loadHFile info hf =
     ingestBlock i b n
     ij <- ingestSubBlocks i b hf
     let i'' = i'{ ingestJoin = ij }
-    liftIO $ putStr ("\r\ESC[K" ++ show (ingestOffset i'') ++ ' ' : foldMap (show . ingestOffset . joinIngest) ij) >> hFlush stdout
+    liftIO $ rePutStr (show (ingestOffset i'') ++ ' ' : foldMap (show . ingestOffset . joinIngest) ij) >> hFlush stdout
     if ingestEOF i''
       then maybe
         (return $ ingestOffset i'')
@@ -457,7 +460,7 @@ ingestTNG inginfo = do
           where fn = gdir </> ("groups_" ++ snap3) </> ("fof_subhalo_tab_" ++ snap3 ++ "." ++ show fi ++ ".hdf5")
       load [] _ _ = return 0 -- FIXME total rows
       load ghfs@((ginfo, _):_) subhfs supji = do
-        liftIO $ putStrLn $ showing ginfo <> " " <> showing (fst $ head subhfs)
+        liftIO $ rePutStr $ showing ginfo <> " " <> showing (fst $ head subhfs)
         (gn, gb, ghfs') <- liftIO $ loadStackBlock ghfs (ingestBlockSize ginfo)
         subhfs' <- if gn == 0
           then return subhfs -- should be done
@@ -545,7 +548,7 @@ eagleLoad e
 
 eagleInitMap :: Int32 -> EagleSub -> IO (Maybe DataValues, EagleSub)
 eagleInitMap k ei = do
-  putStr ("\r\ESC[K" <> T.unpack (eagleName ei) <> " load") >> hFlush stdout
+  rePutStr (T.unpack (eagleName ei) <> " load") >> hFlush stdout
   e@EagleSub{..} <- eagleLoad ei{ eagleIngest = (eagleIngest ei){ ingestBlockSize = maxmap } }
   when (fromIntegral eagleLen >= maxmap) $ fail "exeeded maxmap"
   eagleTakeMap k e
@@ -601,7 +604,7 @@ ingestEagle inginfo = do
   FieldValue Field{ fieldEnum = Just sime } (Byte (Identity sim)) <- constField "simulation" inginfo
   let simn = sime V.! fromIntegral sim
       ingfof b i l o = do
-        liftIO $ putStr ("\r\ESC[Kfof " ++ show o ++ "/" ++ show l) >> hFlush stdout
+        liftIO $ rePutStr ("fof " ++ show o ++ "/" ++ show l) >> hFlush stdout
         let n = min (fromIntegral $ ingestBlockSize i) l
         ingestWith i (blockDoc i mempty b . (o +)) n
         when (l > n) $ ingfof b i (l - n) (o + n)
@@ -610,7 +613,7 @@ ingestEagle inginfo = do
       { ingestPrefix = show sim ++ "F"
       } hf
     (nfof, fof) <- liftBaseOp (withGroup hf (simn <> "_FoF")) $ \hg -> do
-      liftIO $ putStr "\r\ESC[Kfof load" >> hFlush stdout
+      liftIO $ rePutStr "fof load" >> hFlush stdout
       (n, b, info') <- liftIO $ loadBlock info{ ingestBlockSize = maxfof, ingestOffset = 0 } hg
       when (fromIntegral n >= maxfof) $ fail "exeeded maxfof"
       ingfof b info n 0
@@ -634,7 +637,7 @@ ingestEagle inginfo = do
                   , ingestOffset = 0
                   }) hg sups
             loop info sups = do
-              liftIO $ putStr ("\r\ESC[Ksubhalo " <> show (ingestOffset info)) >> hFlush stdout
+              liftIO $ rePutStr ("subhalo " <> show (ingestOffset info)) >> hFlush stdout
               (n, sb, info') <- liftIO $ loadBlock info hs
               gid <- case lookup subgf sb of
                 Just (Long gid) -> return gid
