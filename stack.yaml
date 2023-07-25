@@ -15,4 +15,3 @@ flags:
     happstack: false
   aeson:
     cffi: true
-    #fast: false
