@@ -6,6 +6,7 @@ settings:
   index:
     number_of_shards: 8
 descr: >
+  <a href="https://arxiv.org/abs/1510.01320">The EAGLE simulations of galaxy formation</a>
 key:
 - simulation
 - GroupID
