@@ -16,7 +16,6 @@
     - tng
     #- simba
     - camels
-    - gaea
 - name: cosmo-dm
   title: Cosmological Dark Matter-Only Simulations
   children:
