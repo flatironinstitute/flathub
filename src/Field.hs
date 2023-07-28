@@ -247,11 +247,11 @@ parseField dict stats = parseFieldDefs def where
     fieldScale <- f J..:? "scale"
     fieldReversed <- dv fieldReversed "reversed"
     fieldIngest <- f J..:? "ingest"
-    fieldMissing <- map TE.encodeUtf8 <$> case JM.lookup "missing" f of
-      Nothing -> return []
+    fieldMissing <- case JM.lookup "missing" f of
+      Nothing -> return $ fieldMissing pf
       Just J.Null -> return []
-      Just (J.String s) -> return [s]
-      Just (J.Array l) -> mapM J.parseJSON $ V.toList l
+      Just (J.String s) -> return $ [TE.encodeUtf8 s]
+      Just (J.Array l) -> mapM (fmap TE.encodeUtf8 . J.parseJSON) $ V.toList l
       Just j -> J.typeMismatch "missing string" j
     fieldAttachment <- f J..:? "attachment"
     fieldTerms <- f J..:! "terms" J..!= (isJust fieldEnum || typeIsString fieldType)
