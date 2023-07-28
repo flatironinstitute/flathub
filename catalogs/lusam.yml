@@ -162,6 +162,7 @@ fields:
     type: float
     descr: instantaneous star formation rate
     units: '\(M_\odot/yr\)'
+    missing: ['-99.9','-99.90000']
   - name: sfr_ave
     dict: SFR
     type: float
@@ -172,23 +173,24 @@ fields:
     type: float
     descr: mean stellar mass weighted age of stars
     units: 'Gyr'
+    missing: ['-99.9','-99.90000']
   - name: tmerge
     dict: t_merge
     type: float
     descr: time since last merger greater than 1:10
     units: 'Gyr'
-    missing: ['99.9','99.90000']
+    missing: ['99.9','99.90000','99.00000']
   - name: tmajmerge
     dict: t_major_merge
     type: float
     descr: time since last merger greater than 1:4
     units: 'Gyr'
-    missing: ['99.9','99.90000']
+    missing: ['99.9','99.90000','99.00000']
   - name: UV1500_rest
     type: float
     descr: CANDELS/TOPHAT/UV1500top.dat
     units: 'mag'
-    missing: ['99.9','99.00000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -202,7 +204,7 @@ fields:
     descr: CANDELS/TOPHAT/UV2300top.dat
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.00000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -215,7 +217,7 @@ fields:
     descr: CANDELS/TOPHAT/UV2800top.dat
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.00000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -227,7 +229,7 @@ fields:
     type: float
     descr: CANDELS/Johnson/Johnson_U.dat
     units: 'mag'
-    missing: ['99.9','99.00000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -240,7 +242,7 @@ fields:
     descr: CANDELS/Johnson/Johnson_B.dat
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.00000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -252,7 +254,7 @@ fields:
     type: float
     descr: CANDELS/Johnson/Johnson_V.dat
     units: 'mag'
-    missing: ['99.9','99.00000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -265,7 +267,7 @@ fields:
     descr: CANDELS/Johnson/Cousins_R.dat
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.00000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -278,7 +280,7 @@ fields:
     descr: CANDELS/Johnson/Cousins_I.dat
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.00000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -290,7 +292,7 @@ fields:
     type: float
     descr: CANDELS/Johnson/Bessell_J.dat
     units: 'mag'
-    missing: ['99.9','99.00000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -303,7 +305,7 @@ fields:
     descr: CANDELS/Johnson/Bessell_H.dat
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.00000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -316,7 +318,7 @@ fields:
     descr: CANDELS/Johnson/Bessell_K.dat
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.00000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -329,7 +331,7 @@ fields:
     descr: CANDELS/GALEX/galex_FUV.dat
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.90000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -342,7 +344,7 @@ fields:
     descr: CANDELS/GALEX/galex_NUV.dat
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.90000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -355,7 +357,7 @@ fields:
     descr: CANDELS/SDSS/sdss_u.dat
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.90000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -368,7 +370,7 @@ fields:
     descr: CANDELS/SDSS/sdss_g.dat
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.90000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -381,7 +383,7 @@ fields:
     descr: CANDELS/SDSS/sdss_r.dat
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.90000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -394,7 +396,7 @@ fields:
     descr: CANDELS/SDSS/sdss_i.dat
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.90000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -407,7 +409,7 @@ fields:
     descr: CANDELS/SDSS/sdss_z.dat
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.90000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -420,7 +422,7 @@ fields:
     descr: CANDELS/ACS/f435w.WFC1.dat
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.90000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -433,7 +435,7 @@ fields:
     descr: CANDELS/ACS/f606w.WFC1.dat
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.90000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -446,7 +448,7 @@ fields:
     descr: CANDELS/ACS/f775w.WFC1.dat
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.90000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -459,7 +461,7 @@ fields:
     descr: CANDELS/ACS/f814w.WFC1.dat
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.90000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -472,7 +474,7 @@ fields:
     descr: CANDELS/ACS/f850lp.WFC1.dat
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.90000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -485,7 +487,7 @@ fields:
     descr: CANDELS/WFC3/f275w.UVIS1.dat
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.90000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -498,7 +500,7 @@ fields:
     descr: CANDELS/WFC3/f336w.UVIS1.dat
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.90000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -511,7 +513,7 @@ fields:
     descr: CANDELS/WFC3/f105w.IR.dat
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.90000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -524,7 +526,7 @@ fields:
     descr: CANDELS/WFC3/f125w.IR.dat
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.90000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -537,7 +539,7 @@ fields:
     descr: CANDELS/WFC3/f160w.IR.dat
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.90000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -550,7 +552,7 @@ fields:
     descr: CANDELS/CTIO/U_ctio_mosaic_tot.dat
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.90000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -563,7 +565,7 @@ fields:
     descr: CANDELS/CFHTLS/uMega.fil
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.90000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -576,7 +578,7 @@ fields:
     descr: CANDELS/MUSYC/ecdfs.U38.filt.dat
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.90000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -589,7 +591,7 @@ fields:
     descr: CANDELS/UKIRT/J_filter.dat
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.90000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -602,7 +604,7 @@ fields:
     descr: CANDELS/UKIRT/H_filter.dat
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.90000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
@@ -615,7 +617,7 @@ fields:
     descr: CANDELS/UKIRT/K_filter.dat
     flag: hidden
     units: 'mag'
-    missing: ['99.9','99.90000']
+    missing: ['99.9','99.90000','99.00000']
     sub:
     - name: ""
       descr: total galaxy magnitude, without extinction
