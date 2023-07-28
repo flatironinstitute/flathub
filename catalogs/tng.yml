@@ -28,8 +28,8 @@ fields:
       - Illustris-3 # L75n455FP
       - Illustris-3-Dark # L75n455DM
       # above are not included
-      - TNG50-1 # L35n2160TNG           # done: 0
-      - TNG50-1-Dark # L35n2160TNG_DM   # done: 0
+      - TNG50-1 # L35n2160TNG           # done: 0..99
+      - TNG50-1-Dark # L35n2160TNG_DM   # done: 0..99
       - TNG50-2 # L35n1080TNG
       - TNG50-2-Dark # L35n1080TNG_DM
       - TNG50-3 # L35n540TNG
