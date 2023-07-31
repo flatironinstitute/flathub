@@ -226,7 +226,7 @@ checkIndices = do
     m <- p J..:? "meta" J..!= JM.empty
     a <- m J..:? "array"
     unless (t == ft && a == arrayMeta fa) $
-      fail $ "incorrect field type; should be " ++ show (fieldType field)
+      fail $ "incorrect field type " ++ show t ++ "; should be " ++ show (fieldType field)
   boolish :: J.Value -> J.Parser Bool
   boolish (J.Bool b) = return b
   boolish (J.String "true") = return True

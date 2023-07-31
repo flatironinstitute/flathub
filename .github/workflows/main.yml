@@ -8,9 +8,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-haskell@v1.1.4
+      - uses: haskell/actions/setup@v2
         with:
-          ghc-version: '8.8.4'
+          ghc-version: '9.0.2'
           enable-stack: true
       - run: sudo apt-get install libhdf5-dev
       - uses: actions/cache@v1

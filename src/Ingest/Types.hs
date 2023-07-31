@@ -74,6 +74,8 @@ ingestValueBS f v
     = Just $ JE.unsafeToEncoding (substitute "NaN" "-999999" v) -- XXX fix "[NaN]"
   | typeIsIntegral ft
     = Just $ JE.unsafeToEncoding (B.byteString $ drop0 v)
+  | typeIsFloating ft
+    = Just $ JE.unsafeToEncoding (B.byteString $ dropdot v)
   | otherwise
     = Just $ JE.unsafeToEncoding (B.byteString v)
   where
@@ -95,6 +97,9 @@ ingestValueBS f v
     | BSC.null s' = "0"
     | otherwise = s'
     where s' = BSC.dropWhile ('0' ==) s
+  dropdot s
+    | BSC.length s > 1 && BSC.last s == '.' = BSC.init s
+    | otherwise = s
 
 ingestFieldBS :: Field -> BS.ByteString -> J.Series
 ingestFieldBS f v = foldMap (JK.fromText (fieldName f) `JE.pair`) $ ingestValueBS f v
