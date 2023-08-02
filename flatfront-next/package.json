@@ -13,6 +13,8 @@
     "@headlessui/react": "latest",
     "@headlessui/tailwindcss": "latest",
     "@heroicons/react": "latest",
+    "@tanstack/react-query": "^4.32.1",
+    "@tanstack/react-table": "^8.9.3",
     "d3": "latest",
     "fast-memoize": "latest",
     "immer": "latest",
