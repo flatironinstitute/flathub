@@ -1,6 +1,6 @@
 "use client";
 
-import type { components } from "./flathub-schema";
+import type * as schema from "./flathub-schema";
 import type { Context, Dispatch, SetStateAction } from "react";
 import type {
   ColumnDef,
@@ -8,6 +8,7 @@ import type {
   AccessorColumnDef,
   HeaderGroup,
 } from "@tanstack/react-table";
+import "highcharts/css/highcharts.css";
 import React from "react";
 import {
   useQuery,
@@ -29,137 +30,110 @@ import { ChevronUpDownIcon, CheckCircleIcon } from "@heroicons/react/20/solid";
 import * as d3 from "d3";
 import KaTeX from "katex";
 import renderMathInElement from "katex/contrib/auto-render";
+import Highcharts from "highcharts";
+import HighchartsReact from "highcharts-react-official";
 import { produce } from "immer";
 import memoize from "fast-memoize";
+import { createReducerContext } from "react-use";
+import * as Slider from "@radix-ui/react-slider";
 
 export default function App() {
-  // const app_controller = useAppControllerFactory();
-
-  const [cells, set_cells] = React.useState<any[]>([
-    {
-      type: `query`,
-      id: `query_1`,
-      catalog: `camels`,
-      query_config: {
-        count: 100,
-        object: true,
-        fields: [
-          "simulation_set",
-          "simulation_set_id",
-          "simulation_suite",
-          "params_Omega_m",
-          "params_sigma_8",
-          "Group_BHMdot",
-        ],
-        params_Omega_m: {
-          gte: 0.4,
-        },
+  const [cells, cells_dispatch] = React.useReducer<
+    React.Reducer<Cell[], CellAction>
+  >(
+    produce((draft, action) => {
+      console.log(`cells reducer`, action);
+    }),
+    [
+      {
+        type: `query`,
+        id: `query_1`,
+        catalog_name: `camels`,
       },
-    },
-    {
-      type: `query`,
-      id: `query_2`,
-      catalog: `camels`,
-      query_config: {
-        count: 100,
-        object: true,
-        fields: [
-          "simulation_set",
-          "simulation_set_id",
-          "simulation_suite",
-          "params_Omega_m",
-          "params_sigma_8",
-        ],
-        params_sigma_8: {
-          gte: 0.7,
-        },
+      {
+        type: `query`,
+        id: `query_2`,
+        catalog_name: `camels`,
       },
-    },
-  ]);
-
-  const app_controller = React.useMemo(() => {
-    return {
-      get_query_config: (id: string) => {
-        const cell = cells.find((cell) => cell.id === id);
-        if (cell.type !== `query`) {
-          throw new Error(`not a query cell`);
-        }
-        return cell.query_config;
-      },
-    };
-  }, []);
+    ]
+  );
 
   return (
     <QueryClientProvider client={query_client}>
-      <AppControllerContext.Provider value={app_controller}>
-        <main
-          className="ms-auto me-auto flex flex-col gap-y-10"
-          style={{ width: `min(900px, 90vw)` }}
-        >
-          <div className="h-10" />
-          {cells.map((cell) => {
-            return <QueryCell key={cell.id} {...cell} />;
-          })}
-          <div className="h-10" />
-        </main>
-      </AppControllerContext.Provider>
+      <main
+        className="ms-auto me-auto flex flex-col gap-y-10"
+        style={{ width: `min(900px, 90vw)` }}
+      >
+        <div className="h-10" />
+        {cells.map((cell) => {
+          return (
+            <QueryCell
+              key={cell.id}
+              id={cell.id}
+              catalog_name={cell.catalog_name}
+            />
+          );
+        })}
+        <div className="h-10" />
+      </main>
     </QueryClientProvider>
   );
 }
 
 const query_client = new QueryClient();
 
-function QueryCell({ id: query_id, catalog }: { id: string; catalog: string }) {
-  const catalog_metadata_query = useQuery({
-    queryKey: ["catalog_metadata", { catalog: `camels` }],
-    queryFn: (): Promise<CatalogResponse> => {
-      const path = `/${catalog}`;
-      const FLATHUB_API_BASE_URL = `https://flathub.flatironinstitute.org`;
-      const url = new URL(`/api${path}`, FLATHUB_API_BASE_URL);
-      log(`💥 fetching`, url.toString());
-      return fetch(url.toString(), {
-        method: `GET`,
-        headers: new Headers({
-          "Content-Type": `application/json`,
-        }),
-      }).then((response) => {
-        if (!response.ok) {
-          throw new Error(`API Fetch Error: ${response.status}`);
+function QueryCell({
+  id: cell_id,
+  catalog_name,
+}: {
+  id: string;
+  catalog_name: string;
+}) {
+  const catalog_metadata_query = useCatalogMetadata(catalog_name);
+
+  const catalog_field_hierarchy: CatalogHierarchyNode | undefined =
+    catalog_metadata_query.data?.hierarchy;
+
+  const initial_filters: Filters = get_initial_cell_filters(
+    catalog_metadata_query
+  );
+
+  const [filter_actions, set_filter_actions] = React.useState<FilterAction[]>(
+    []
+  );
+
+  const dispatch_filter_action = (action: FilterAction) => {
+    set_filter_actions((prev) => [...prev, action]);
+  };
+
+  const filters = React.useMemo(() => {
+    let filters = initial_filters;
+    for (const action of filter_actions) {
+      filters = produce(filters, (draft) => {
+        if (action.type === `set_filter_value`) {
+          draft[action.filter_name] = action.value;
+        } else {
+          throw new Error(`unknown filter action type: ${action.type}`);
         }
-        return response.json() as Promise<CatalogResponse>;
       });
-    },
-  });
+    }
+    return filters;
+  }, [filter_actions, initial_filters]);
 
-  const catalog_fields_raw = catalog_metadata_query.data?.fields ?? null;
+  log(`filters`, filters, initial_filters);
 
-  const catalog_field_hierarchy = React.useMemo(() => {
-    if (!catalog_fields_raw) return null;
-    const root = { sub: catalog_fields_raw } as FieldGroup;
-    const hierarchy = d3.hierarchy<FieldGroup>(root, (d) => d?.sub ?? []);
-    return hierarchy;
-  }, [catalog_fields_raw]);
+  const field_names = get_cell_field_names(catalog_metadata_query);
 
-  log(`catalog_field_hierarchy: ${catalog}`, catalog_field_hierarchy);
+  const request_body: DataRequestBody = {
+    object: true,
+    count: 100,
+    fields: field_names,
+    ...filters,
+  };
 
   const query_config = {
     path: `/camels/data`,
-    body: {
-      count: 100,
-      object: true,
-      fields: [
-        "simulation_set",
-        "simulation_set_id",
-        "simulation_suite",
-        "params_Omega_m",
-        "params_sigma_8",
-        "Group_CM_y",
-        "Group_BHMdot",
-      ],
-      params_Omega_m: {
-        gte: 0.4,
-      },
-    },
+    body: request_body,
   };
 
   const data_query = useQuery({
@@ -184,14 +158,64 @@ function QueryCell({ id: query_id, catalog }: { id: string; catalog: string }) {
   return (
     <CellWrapper>
       <CellTitle>Query</CellTitle>
-      <BigButton onClick={() => data_query.refetch()}>
-        {fetching ? `Fetching Data...` : `Fetch Data`}
-      </BigButton>
-      <div>status: {data_query.status}</div>
-      <div>fetch status: {data_query.fetchStatus}</div>
+      <BigButton onClick={() => {}}>Show All Fields</BigButton>
+      <CellSection label="filters">
+        <CellFiltersSection
+          filters={filters}
+          render={(filter_name) => (
+            <FieldCard
+              key={filter_name}
+              field_name={filter_name}
+              filters={filters}
+              catalog_field_hierarchy={catalog_field_hierarchy!}
+              renderSlider={({ min, max, value }) => {
+                return (
+                  <RangeSlider
+                    min={min}
+                    max={max}
+                    value={value}
+                    onValueChange={([low, high]) => {
+                      log(`on value change`, low, high);
+                      dispatch_filter_action({
+                        type: `set_filter_value`,
+                        filter_name,
+                        value: {
+                          gte: low,
+                          lte: high,
+                        },
+                      });
+                    }}
+                  />
+                );
+              }}
+              minimal
+            />
+          )}
+        />
+      </CellSection>
+      <CellSection label="fields">
+        <CellFieldsSection field_names={field_names} />
+      </CellSection>
+      <CellSection label="fetch">
+        <BigButton onClick={() => data_query.refetch()}>
+          {fetching ? `Fetching Data...` : `Fetch Data`}
+        </BigButton>
+        <div>status: {data_query.status}</div>
+        <div>fetch status: {data_query.fetchStatus}</div>
+      </CellSection>
       <CellSection label="table">
         {ready_to_render ? (
           <Table
+            data={query_data}
+            catalog_field_hierarchy={catalog_field_hierarchy}
+          />
+        ) : (
+          <PendingBox>No Results</PendingBox>
+        )}
+      </CellSection>
+      <CellSection label="scatterplot">
+        {ready_to_render ? (
+          <Scatterplot
             data={query_data}
             catalog_field_hierarchy={catalog_field_hierarchy}
           />
@@ -203,12 +227,402 @@ function QueryCell({ id: query_id, catalog }: { id: string; catalog: string }) {
   );
 }
 
+function CellFiltersSection({
+  filters,
+  render,
+}: {
+  filters: Filters;
+  render: (filter_name: string) => React.JSX.Element;
+}) {
+  const filter_names = Object.keys(filters);
+  return (
+    <div className="grid grid-cols-1 gap-x-3 gap-y-2">
+      {filter_names.map((filter_name) => render(filter_name))}
+    </div>
+  );
+}
+
+function FieldCard({
+  field_name,
+  filters,
+  catalog_field_hierarchy,
+  renderSlider,
+  minimal = true,
+}: {
+  field_name: string;
+  filters: Filters;
+  catalog_field_hierarchy: CatalogHierarchyNode;
+  renderSlider: (props: {
+    min: number;
+    max: number;
+    value: [number, number];
+  }) => React.JSX.Element;
+  minimal?: boolean;
+}): React.JSX.Element {
+  const field_metadata = get_field_metadata(
+    field_name,
+    catalog_field_hierarchy
+  );
+
+  const filter_state = filters[field_name];
+
+  if (typeof filter_state === `undefined`) {
+    log(filters);
+    throw new Error(`Could not find filter state for ${field_name}`);
+  }
+
+  // log(`field card`, field_name, field_metadata, filter_state);
+
+  const field_control = (() => {
+    const metadata = field_metadata?.data;
+    log(`field control`, metadata);
+    if (!metadata) {
+      throw new Error(`Could not find metadata for ${field_name}`);
+    }
+    if (metadata.type === `float`) {
+      const min = metadata.stats?.min;
+      const max = metadata.stats?.max;
+      if (
+        !Number.isFinite(min) ||
+        !Number.isFinite(max) ||
+        min === null ||
+        max === null ||
+        min === undefined ||
+        max === undefined
+      ) {
+        throw new Error(
+          `Could not find min/max stats for ${field_name} of type ${metadata.type}`
+        );
+      }
+      if (!(typeof filter_state === `object`)) {
+        throw new Error(
+          `Expected filter state to be an object for ${field_name}`
+        );
+      }
+      if (!(`gte` in filter_state) || !(`lte` in filter_state)) {
+        log(filters, filter_state);
+        throw new Error(
+          `Expected filter state to have gte/lte for ${field_name}`
+        );
+      }
+      const low = filter_state.gte;
+      const high = filter_state.lte;
+      if (typeof low !== `number` || typeof high !== `number`) {
+        throw new Error(
+          `Expected filter state to have gte/lte numbers for ${field_name}`
+        );
+      }
+      const value = [low, high] as [number, number];
+      return renderSlider({ min, max, value });
+      // return (
+      //   <RangeSlider
+      //     min={min}
+      //     max={max}
+      //     value={[low, high]}
+      //     onValueChange={([low, high]) => {
+      //       log(`on value change`, low, high);
+      //     }}
+      //   />
+      // );
+    }
+  })();
+
+  return (
+    <div className="text-xs text-slate-200 px-2 rounded dark:bg-slate-600">
+      {field_name}
+      {field_control}
+    </div>
+  );
+}
+
+function RangeSlider({
+  min,
+  max,
+  value,
+  onValueChange,
+}: {
+  min: number;
+  max: number;
+  value: [number, number];
+  onValueChange: (value: [number, number]) => void;
+}) {
+  log(`range slider`, min, max);
+  const range = Math.abs(max - min);
+  const step = range / 100;
+  const thumb_class = `cursor-pointer block h-5 w-5 rounded-full dark:bg-white focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75`;
+  return (
+    <Slider.Root
+      min={min}
+      max={max}
+      value={value}
+      className="relative flex h-5 w-64 touch-none items-center"
+      onValueChange={onValueChange}
+      step={step}
+    >
+      <Slider.Track className="relative h-1 w-full grow rounded-full bg-white dark:bg-gray-800">
+        <Slider.Range className="absolute h-full rounded-full bg-purple-600 dark:bg-white" />
+      </Slider.Track>
+      <Slider.Thumb className={thumb_class} />
+      <Slider.Thumb className={thumb_class} />
+    </Slider.Root>
+  );
+}
+
+function get_field_metadata(
+  field_name: string,
+  catalog_field_hierarchy?: CatalogHierarchyNode
+): CatalogHierarchyNode | undefined {
+  if (!catalog_field_hierarchy) {
+    return undefined;
+  }
+  const field_metadata = catalog_field_hierarchy.find(
+    (node) => node.data.name === field_name
+  );
+  if (!field_metadata) {
+    throw new Error(`Could not find field metadata for ${field_name}`);
+  }
+  return field_metadata;
+}
+
+function CellFieldsSection({ field_names }: { field_names: string[] }) {
+  return (
+    <div className="grid grid-cols-3 gap-x-3 gap-y-2">
+      {field_names.map((field_name) => {
+        return (
+          <div
+            key={field_name}
+            className="text-xs text-slate-200 px-2 rounded dark:bg-slate-600"
+          >
+            {field_name}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// function useFilterState(field_name: string) {}
+
+// function useFieldMetadata(field_name: string): d3.HierarchyNode<FieldGroup> {
+//   const catalog_metadata_query = useCatalogMetadata();
+//   if (!catalog_metadata_query.data) {
+//     throw new Error(`Trying to get field metadata before catalog loaded`);
+//   }
+//   const field_metadata = catalog_metadata_query.data?.hierarchy.find(
+//     (node) => node.data.name === field_name
+//   );
+//   if (!field_metadata) {
+//     throw new Error(`Could not find metadata for field ${field_name}`);
+//   }
+//   return field_metadata;
+// }
+
+function get_initial_cell_filters(
+  catalog_metadata_query: ReturnType<typeof useCatalogMetadata>
+): Filters {
+  if (!catalog_metadata_query.data) {
+    return {};
+  }
+  const initial_filter_names =
+    catalog_metadata_query.data?.initial_filter_names;
+  log(`initial_filters:`, initial_filter_names);
+  const initial_filter_object: Filters = Object.fromEntries(
+    initial_filter_names.map((filter_name) => {
+      const metadata = catalog_metadata_query.data?.hierarchy.find(
+        (node) => node.data.name === filter_name
+      )?.data;
+      if (!metadata) {
+        throw new Error(`Could not find metadata for filter ${filter_name}`);
+      }
+      const initial_value: Filters[string] = (() => {
+        const type = metadata.type;
+        if (type === `boolean`) {
+          return true;
+        } else if (type === `byte`) {
+          return 0;
+        } else if ([`float`, `short`].includes(type)) {
+          if (!metadata.stats) {
+            throw new Error(
+              `Trying to use float filter without stats: ${filter_name}`
+            );
+          }
+          if (
+            metadata.stats.min === null ||
+            metadata.stats.max === null ||
+            !Number.isFinite(metadata.stats.min) ||
+            !Number.isFinite(metadata.stats.max)
+          ) {
+            throw new Error(`Missing min/max for float filter: ${filter_name}`);
+          }
+          return {
+            gte: metadata.stats.min,
+            lte: metadata.stats.max,
+          };
+        } else {
+          log(`meta`, metadata);
+          throw new Error(`Unexpected filter type: ${type}`);
+        }
+      })();
+      return [filter_name, initial_value];
+    })
+  );
+  return initial_filter_object;
+}
+
+function get_cell_field_names(catalog_metadata_query: CatalogMetadataQuery) {
+  if (!catalog_metadata_query.data) {
+    return [];
+  }
+  const initial_field_names = catalog_metadata_query.data?.initial_field_names;
+  const current_field_names = initial_field_names;
+  return current_field_names;
+}
+
+// function useCellFields(): string[] {
+//   const catalog_metadata_query = useCatalogMetadata();
+//   if (!catalog_metadata_query.data) {
+//     return [];
+//   }
+//   const initial_field_names = catalog_metadata_query.data?.initial_field_names;
+//   const current_field_names = initial_field_names;
+//   return current_field_names;
+// }
+
+// function useCatalogName(): string {
+//   const cell_id = useCellID();
+//   const [cells] = useCells();
+//   const cell = cells.find((cell) => cell.id === cell_id);
+//   if (!cell) {
+//     throw new Error(`Cell not found: ${cell_id}`);
+//   }
+//   const catalog_name = cell.catalog;
+//   return catalog_name;
+// }
+
+// function useCellID(): string {
+//   const cell_id = React.useContext(CellIDContext);
+//   if (!cell_id) {
+//     throw new Error(`useCellID must be used within a CellIDContext.Provider`);
+//   }
+//   return cell_id;
+// }
+
+// const CellIDContext = React.createContext<string | undefined>(undefined);
+
+// const [useCells, CellsProvider] = createReducerContext<
+//   React.Reducer<Cell[], CellAction>
+// >(
+//   produce((draft, action) => {
+//     console.log(`cells reducer`, action);
+//   }),
+//   [
+//     {
+//       type: `query`,
+//       id: `query_1`,
+//       catalog: `camels`,
+//     },
+//     {
+//       type: `query`,
+//       id: `query_2`,
+//       catalog: `camels`,
+//     },
+//   ]
+// );
+
+function useCatalogMetadata(catalog_name: string) {
+  return useQuery({
+    queryKey: ["catalog_metadata", { catalog: catalog_name }],
+    queryFn: async (): Promise<{
+      metadata: CatalogResponse;
+      hierarchy: d3.HierarchyNode<FieldGroup>;
+      nodes: d3.HierarchyNode<FieldGroup>[];
+      initial_filter_names: string[];
+      initial_field_names: string[];
+    }> => {
+      const path = `/${catalog_name}`;
+      const FLATHUB_API_BASE_URL = `https://flathub.flatironinstitute.org`;
+      const url = new URL(`/api${path}`, FLATHUB_API_BASE_URL);
+      log(`💥 fetching`, url.toString());
+      try {
+        const response = await fetch(url.toString(), {
+          method: `GET`,
+          headers: new Headers({
+            "Content-Type": `application/json`,
+          }),
+        });
+        if (!response.ok) {
+          throw new Error(`API Fetch Error: ${response.status}`);
+        }
+        const metadata = (await response.json()) as CatalogResponse;
+        log(`💥 metadata`, metadata);
+        const catalog_fields_raw = metadata.fields ?? null;
+        const root = { sub: catalog_fields_raw } as FieldGroup;
+        const hierarchy: d3.HierarchyNode<FieldGroup> =
+          d3.hierarchy<FieldGroup>(root, (d) => d?.sub ?? []);
+        const nodes = get_nodes_depth_first<FieldGroup>(hierarchy).filter(
+          (d) => `name` in d.data
+        );
+        const initial_filter_names = nodes
+          .filter((node) => node.height === 0 && `required` in node.data)
+          .map((node) => node.data.name);
+        const initial_field_names = nodes
+          .filter((node) => node.height === 0 && node.data.disp === true)
+          .map((node) => node.data.name);
+        return {
+          metadata,
+          hierarchy,
+          nodes,
+          initial_filter_names,
+          initial_field_names,
+        };
+      } catch (err: any) {
+        throw new Error(`API Fetch Error: ${err.toString()}`);
+      }
+    },
+  });
+}
+
 function get_nodes_depth_first<T>(
   root: d3.HierarchyNode<T>
 ): d3.HierarchyNode<T>[] {
   const nodes: d3.HierarchyNode<T>[] = [];
   root.eachBefore((d) => nodes.push(d));
   return nodes;
+}
+
+function Scatterplot({
+  data,
+  catalog_field_hierarchy,
+}: {
+  data: DataResponse;
+  catalog_field_hierarchy: d3.HierarchyNode<FieldGroup>;
+}) {
+  const options: Highcharts.Options = {
+    chart: {
+      animation: false,
+      styledMode: true,
+    },
+    title: {
+      text: "My chart",
+    },
+    series: [
+      {
+        type: "scatter",
+        animation: false,
+        data: [1, 2, 3],
+      },
+    ],
+  };
+
+  return (
+    <div>
+      <HighchartsReact
+        highcharts={Highcharts}
+        options={options}
+        containerProps={{ className: `highcharts-dark` }}
+      />
+    </div>
+  );
 }
 
 function Table({
@@ -234,8 +648,8 @@ function Table({
   const skip_rendering = new Set();
 
   return (
-    <div>
-      <table>
+    <div className="overflow-x-scroll">
+      <table className="text-xs">
         <thead>
           {header_groups.map((headerGroup) => (
             <tr key={headerGroup.id}>
@@ -310,7 +724,7 @@ function fix_header_groups<T>(raw: HeaderGroup<T>[]): HeaderGroup<T>[] {
  */
 function construct_table_columns<T>(
   data: DataResponse,
-  catalog_field_hierarchy: d3.HierarchyNode<FieldGroup>
+  catalog_field_hierarchy: CatalogHierarchyNode
 ) {
   // Get field names based on keys in data
   const field_names = Object.keys(data[0]);
@@ -322,10 +736,10 @@ function construct_table_columns<T>(
         (d: any) => d.data.name === field_name
       );
     })
-    .filter((d): d is d3.HierarchyNode<FieldGroup> => typeof d !== "undefined");
+    .filter((d): d is CatalogHierarchyNode => typeof d !== "undefined");
 
   // Get unix-like paths for nodes
-  const get_path = (node: d3.HierarchyNode<FieldGroup>) => {
+  const get_path = (node: CatalogHierarchyNode) => {
     return node
       .ancestors()
       .map((d) => d.data.name ?? `ROOT`)
@@ -336,7 +750,7 @@ function construct_table_columns<T>(
   const field_paths = field_nodes.map(get_path);
 
   const next = (
-    node: d3.HierarchyNode<FieldGroup>
+    node: CatalogHierarchyNode
   ): GroupColumnDef<Datum> | AccessorColumnDef<Datum> | null => {
     // Get the path for this node
     const path = get_path(node);
@@ -543,10 +957,6 @@ function useStateObject<T>(initial_value: T): {
   return { value, set };
 }
 
-function useAppController(): AppController {
-  return React.useContext(AppControllerContext);
-}
-
 function fetch_from_api<T>(
   path: string,
   body?: Record<string, any>
@@ -572,19 +982,32 @@ function log(...args: any[]) {
   console.log(`🌔`, ...args);
 }
 
-const AppControllerContext: Context<AppController> = React.createContext(
-  {} as AppController
-);
+type CatalogHierarchyNode = d3.HierarchyNode<FieldGroup>;
 
-// type AppController = ReturnType<typeof useAppControllerFactory>;
-type AppController = any;
+type CatalogMetadataQuery = ReturnType<typeof useCatalogMetadata>;
+
+type Cell = any;
+type CellAction = any;
 
 type Field = any;
+type Filters = schema.components["schemas"]["Filters"];
 
-type FieldGroup = components["schemas"]["FieldGroup"];
+type FilterAction = {
+  type: `set_filter_value`;
+  filter_name: string;
+  value: { gte: number; lte: number };
+};
+
+// type DataQueryBody = schema.operations["dataPOST"]["requestBody"];
+
+type DataRequestBody = NonNullable<
+  schema.operations["dataPOST"]["requestBody"]
+>["content"]["application/json"];
+
+type FieldGroup = schema.components["schemas"]["FieldGroup"];
 
 type CatalogResponse =
-  components["responses"]["catalog"]["content"]["application/json"];
+  schema.components["responses"]["catalog"]["content"]["application/json"];
 
 type DataResponse = Array<Datum>;
 type Datum = Record<string, any>;
