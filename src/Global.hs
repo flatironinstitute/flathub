@@ -14,7 +14,6 @@ import           Control.Monad.Reader (ReaderT(..), ask, asks, MonadReader)
 import qualified Network.HTTP.Client as HTTP
 import qualified Network.Wai as Wai
 import qualified Waimwork.Config as C
-import           Waimwork.Response (response)
 import qualified Web.Route.Invertible as R
 import qualified Web.Route.Invertible.Render as R
 import qualified Web.Route.Invertible.Wai as R
@@ -37,10 +36,10 @@ type MonadM m = (MonadGlobal m, MonadErr m)
 type MonadMIO m = (MonadIO m, MonadM m)
 
 runGlobal :: Global -> M a -> IO a
-runGlobal g (ExceptT (ReaderT f)) = either (fail . snd) return =<< f g
+runGlobal g (ExceptT (ReaderT f)) = either (fail . errMsg) return =<< f g
 
 runGlobalWai :: Global -> M Wai.Response -> IO Wai.Response
-runGlobalWai g (ExceptT (ReaderT f)) = either (\(s, m) -> response s [] m) id <$> f g
+runGlobalWai g (ExceptT (ReaderT f)) = either errResponse id <$> f g
 
 runErr :: Err a -> M a
 runErr = liftEither . runExcept

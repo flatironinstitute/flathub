@@ -262,6 +262,7 @@ ingestSubStackBlocks info@Ingest{ ingestJoin = Just IngestHaloJoin{..} } pb shfs
     supdoc i (supi, Just (supo, supb)) = 
       foldMap (blockJson supb . subtract supo) (supi IM.!? (so + i))
     supdoc _ _ = mempty
+  loop _ [] = fail "ingestSubStacBlocks loop"
   getcol :: T.Text -> DataBlock -> M (V.Vector Int32)
   getcol f b = case lookup f b of
     Just (Integer v) -> return $ V.convert v
@@ -504,7 +505,7 @@ eagleNew simn name info@Ingest{ ingestCatalog = cat } hg
     { ingestOffset = bs * b
     , ingestSize = Just (bs * succ b)
     } hg) [0..9]
-  , eagleTake = take
+  , eagleTake = tke
   }
   | otherwise = EagleSub
   { eagleName = name
@@ -520,9 +521,9 @@ eagleNew simn name info@Ingest{ ingestCatalog = cat } hg
   , eagleLen = 0
   , eagleKey = VS.empty
   , eagleMap = IM.empty
-  , eagleTake = take
+  , eagleTake = tke
   } where
-  take = if isap then eagleAperture else if ismap then eagleInitMap else eagleTake1
+  tke = if isap then eagleAperture else if ismap then eagleInitMap else eagleTake1
   isap = name == "Aperture"
   isblock = 65996151 <$ guard (isap && simn == "RefL0100N1504")
   ismap = name == "Magnitudes"
@@ -614,7 +615,7 @@ ingestEagle inginfo = do
       } hf
     (nfof, fof) <- liftBaseOp (withGroup hf (simn <> "_FoF")) $ \hg -> do
       liftIO $ rePutStr "fof load" >> hFlush stdout
-      (n, b, info') <- liftIO $ loadBlock info{ ingestBlockSize = maxfof, ingestOffset = 0 } hg
+      (n, b, _info') <- liftIO $ loadBlock info{ ingestBlockSize = maxfof, ingestOffset = 0 } hg
       when (fromIntegral n >= maxfof) $ fail "exeeded maxfof"
       ingfof b info n 0
       liftIO $ putStrLn ""

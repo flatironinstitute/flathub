@@ -32,6 +32,7 @@ module Api
 import           Control.Lens ((&), (&~), (.~), (?~), (%~), (.=))
 import           Control.Monad (mfilter, unless, when, join, guard)
 import           Control.Monad.IO.Class (liftIO)
+import           Control.Monad.Except (withExceptT)
 import           Control.Monad.Reader (runReaderT, ask, asks)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
@@ -210,9 +211,9 @@ apiTop = APIOp -- /api
   , apiPath = R.unit
   , apiExampleArg = ()
   , apiPathParams = return []
-  , apiAction = \() req -> do
+  , apiAction = \() _req -> do
     cats <- asks globalCatalogs
-    return $ okResponse (apiHeaders req)
+    return $ okResponse []
       $ JE.list (J.pairs . catalogJSON) $ filter catalogVisible $ HM.elems $ catalogMap cats
   , apiQueryParams = []
   , apiRequestSchema = Nothing
@@ -315,7 +316,7 @@ apiCatalog = APIOp -- /api/{cat}
   , apiAction = \sim req ->
     if T.null sim then apiAction apiTop () req else do -- allow trailing slash
     cat <- askCatalog sim
-    return $ okResponse (apiHeaders req) $ J.pairs
+    return $ okResponse [] $ J.pairs
       $ catalogJSON cat
       <> JE.pair "fields" (fieldsJSON $ V.cons idField $ catalogFieldGroups cat)
       <> "count" J..= catalogCount cat
@@ -706,7 +707,7 @@ apiData = APIOp -- /api/{cat}/data
     cat <- askCatalog sim
     body <- parseJSONBody req (parseDataJSON cat)
     let (args, jobj) = fromMaybe (parseDataQuery cat req, fromMaybe False $ parseBoolQuery req "object") body
-    okResponse (apiHeaders req) <$> if jobj
+    okResponse [] <$> if jobj
       then do
         dat <- queryData cat args{ dataFields = KM.fromList $ V.toList $ dataFields args }
         return $ J.toEncoding (dat :: V.Vector (HM.HashMap T.Text Value))
@@ -785,7 +786,7 @@ outputAction sim fmt comp check req = do
   args' <- check args
   out <- outputGenerator fmt req cat args'
   g <- ask
-  return $ Wai.responseStream ok200 (apiHeaders req ++
+  return $ Wai.responseStream ok200 (
     [ (hContentType, maybe (MT.renderHeader $ outputMimeType fmt) compressionMimeType comp)
     , (hContentDisposition, "attachment; filename=" <> quoteHTTP (TE.encodeUtf8 sim
       <> BSC.pack ('.' : outputExtension fmt ++ foldMap (('.' :) . compressionExtension) comp)))
@@ -871,7 +872,7 @@ apiCount = APIOp -- /api/{cat}/count
     cat <- askCatalog sim
     body <- parseJSONBody req (parseCountJSON cat)
     count <- queryCount cat $ fromMaybe (parseCountQuery cat req) body
-    return $ okResponse (apiHeaders req) $ J.toEncoding count
+    return $ okResponse [] $ J.toEncoding count
   , apiResponse = do
     return $ jsonContent $ OA.Inline $ schemaDescOf statsCount "number of matching rows"
       & OA.title ?~ "stats result"
@@ -940,7 +941,7 @@ apiStats = APIOp -- /api/{cat}/stats
     cat <- askCatalog sim
     body <- parseJSONBody req (parseStatsJSON cat)
     stats <- queryStats cat $ fromMaybe (parseStatsQuery cat req) body
-    return $ okResponse (apiHeaders req) $ J.pairs
+    return $ okResponse [] $ J.pairs
       $ foldMap (\(FieldValue f v) -> JK.fromText (fieldName f) J..= v) stats
   , apiResponse = do
     fs <- fieldStatsSchema
@@ -1068,7 +1069,7 @@ apiHistogram = APIOp -- /api/{cat}/histogram
     body <- parseJSONBody req (parseHistogramJSON cat)
     let args = fromMaybe (parseHistogramQuery cat req) body
     HistogramResult{..} <- queryHistogram cat args
-    return $ okResponse (apiHeaders req) $ J.pairs
+    return $ okResponse [] $ J.pairs
       $  "sizes" J..= histogramSizes
       <> "buckets" `JE.pair` JE.list (\HistogramBucket{..} -> J.pairs
         $  "key" `JE.pair` J.foldable bucketKey
@@ -1235,11 +1236,16 @@ apiAttachmentsField = APIOp
 apiRoute :: APIOp a -> R.Route a
 apiRoute op = R.routePath (apiBase R.*< apiPath op)
 
+addHeaders :: ResponseHeaders -> M Wai.Response -> M Wai.Response
+addHeaders h a = do
+  r <- withExceptT (\e -> e{ errHeaders = h ++ errHeaders e }) a
+  return $ Wai.mapResponseHeaders (h ++) r
+
 apiRouteAction :: APIOp a -> R.RouteAction (R.Method, a) Action
 apiRouteAction op =
   R.RouteAction (R.routeMethods [R.GET, R.POST, R.OPTIONS] R.>*< apiRoute op) act where
   act (R.OPTIONS, _) req = return $ response noContent204 (apiHeaders req) ()
-  act (_, x) req = apiAction op x req
+  act (_, x) req = addHeaders (apiHeaders req) $ apiAction op x req
 
 data AnyAPIOp = forall a . AnyAPIOp (APIOp a)
 
