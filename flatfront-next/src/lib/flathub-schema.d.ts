@@ -3,11 +3,16 @@
  * Do not make direct changes to the file.
  */
 
-
 /** OneOf type helpers */
 type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never };
-type XOR<T, U> = (T | U) extends object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U;
-type OneOf<T extends any[]> = T extends [infer Only] ? Only : T extends [infer A, infer B, ...infer Rest] ? OneOf<[XOR<A, B>, ...Rest]> : never;
+type XOR<T, U> = T | U extends object
+  ? (Without<T, U> & U) | (Without<U, T> & T)
+  : T | U;
+type OneOf<T extends any[]> = T extends [infer Only]
+  ? Only
+  : T extends [infer A, infer B, ...infer Rest]
+  ? OneOf<[XOR<A, B>, ...Rest]>
+  : never;
 
 export interface paths {
   "/": {
@@ -79,7 +84,7 @@ export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
     /**
-     * catalog metadata 
+     * catalog metadata
      * @description High-level metadata for a dataset catalog
      */
     CatalogMeta: {
@@ -95,56 +100,83 @@ export interface components {
       title: string;
     };
     /**
-     * scalar value 
+     * scalar value
      * @description a scalar value for a field
      */
     FieldValueScalar: number | boolean | string;
     /**
-     * field value 
+     * field value
      * @description a value for a field, which must match the type of the field
      */
-    FieldValue: components["schemas"]["FieldValueScalar"] | (components["schemas"]["FieldValueScalar"])[];
+    FieldValue:
+      | components["schemas"]["FieldValueScalar"]
+      | components["schemas"]["FieldValueScalar"][];
     /**
-     * field stats 
+     * field stats
      * @description stats for the field named by the property, depending on its type
      */
-    FieldStats: OneOf<[{
-      /** @description mean value */
-      avg: number | null;
-      /** @description number of rows with values for this field */
-      count: number;
-      /** @description maximum value */
-      max: number | null;
-      /** @description minimum value */
-      min: number | null;
-    }, {
-      /** @description number of rows with values not included in the top terms */
-      others: number;
-      /**
-       * top terms 
-       * @description top terms in descending order of count
-       */
-      terms: ({
-          /** @description number of rows with this value */
+    FieldStats: OneOf<
+      [
+        {
+          /** @description mean value */
+          avg: number | null;
+          /** @description number of rows with values for this field */
           count: number;
-          value: components["schemas"]["FieldValue"];
-        })[];
-    }]>;
+          /** @description maximum value */
+          max: number | null;
+          /** @description minimum value */
+          min: number | null;
+        },
+        {
+          /** @description number of rows with values not included in the top terms */
+          others: number;
+          /**
+           * top terms
+           * @description top terms in descending order of count
+           */
+          terms: {
+            /** @description number of rows with this value */
+            count: number;
+            value: components["schemas"]["FieldValue"];
+          }[];
+        },
+      ]
+    >;
     /**
-     * field type 
-     * @description storage type 
+     * field type
+     * @description storage type
      * @enum {string}
      */
-    Type: "double" | "float" | "half_float" | "long" | "unsigned_long" | "integer" | "short" | "byte" | "boolean" | "keyword" | "array double" | "array float" | "array half_float" | "array long" | "array unsigned_long" | "array integer" | "array short" | "array byte" | "array boolean" | "array keyword";
+    Type:
+      | "double"
+      | "float"
+      | "half_float"
+      | "long"
+      | "unsigned_long"
+      | "integer"
+      | "short"
+      | "byte"
+      | "boolean"
+      | "keyword"
+      | "array double"
+      | "array float"
+      | "array half_float"
+      | "array long"
+      | "array unsigned_long"
+      | "array integer"
+      | "array short"
+      | "array byte"
+      | "array boolean"
+      | "array keyword";
     /**
-     * field 
+     * field
      * @description A single field within a catalog, or a hiearchical group of fields
      */
     FieldGroup: {
       /** @description this is a meta field for a downloadable attachment (type boolean, indicating presence) */
       attachment?: boolean;
       /**
-       * @description base storage type (floating, integral, boolean, string, void) for base scalar values of this field 
+       * @description base storage type (floating, integral, boolean, string, void) for base scalar values of this field
        * @enum {string}
        */
       base: "f" | "i" | "b" | "s" | "v";
@@ -157,10 +189,10 @@ export interface components {
       /** @description numpy dtype for base scalar values of this field */
       dtype: string;
       /** @description if present, display values as these keywords instead (integral or boolean: enum[<int>value]) */
-      enum?: (string)[];
+      enum?: string[];
       /** @description global unique ("variable") name of field within the catalog */
       name: string;
-      /** @description true = required filter; false = top-level (default) optional filter; missing = normal */
+      /** @description true = required field (field you should filter on first to select data sub-set); false = top-level optional field (field that you likely want to filter on by default); missing = normal */
       required?: boolean;
       /** @description display axes and ranges in reverse (high-low) */
       reversed?: boolean;
@@ -170,10 +202,10 @@ export interface components {
       /** @description true if this field is stored but not indexed, so not permitted for filtering or aggregations */
       store?: boolean;
       /**
-       * child fields 
+       * child fields
        * @description if this is present, this is a pseudo grouping field which does not exist itself, but its properties apply to its children
        */
-      sub?: (components["schemas"]["FieldGroup"])[];
+      sub?: components["schemas"]["FieldGroup"][];
       /** @description display dynamically as a dropdown of values */
       terms?: boolean;
       /** @description display name of the field within the group */
@@ -187,71 +219,92 @@ export interface components {
     /** @description filters to apply to a query */
     Filters: {
       /**
-       * Format: double 
-       * @description randomly select a fractional sample 
+       * Format: double
+       * @description randomly select a fractional sample
        * @default 1
        */
       sample?: number;
       /**
-       * @description seed for random sample selection 
+       * @description seed for random sample selection
        * @default 0
        */
       seed?: number;
-      [key: string]: OneOf<[components["schemas"]["FieldValue"], (components["schemas"]["FieldValue"])[], {
-        gte?: components["schemas"]["FieldValue"];
-        lte?: components["schemas"]["FieldValue"];
-      }, {
-        /** @description a pattern containing '*' and/or '?' */
-        wildcard: string;
-      }]> | undefined;
+      [key: string]:
+        | OneOf<
+            [
+              components["schemas"]["FieldValue"],
+              components["schemas"]["FieldValue"][],
+              {
+                gte?: components["schemas"]["FieldValue"];
+                lte?: components["schemas"]["FieldValue"];
+              },
+              {
+                /** @description a pattern containing '*' and/or '?' */
+                wildcard: string;
+              },
+            ]
+          >
+        | undefined;
     };
     /**
-     * field name 
+     * field name
      * @description field name in selected catalog
      */
     FieldName: string;
     /** field list */
-    FieldList: (components["schemas"]["FieldName"])[];
+    FieldList: components["schemas"]["FieldName"][];
     /** sort */
-    sort: (OneOf<[components["schemas"]["FieldName"], {
-        field: components["schemas"]["FieldName"];
-        /**
-         * sort ordering 
-         * @description ascending smallest to largest, or descending largest to smallest 
-         * @default asc 
-         * @enum {string}
-         */
-        order?: "asc" | "desc";
-      }]>)[];
+    sort: OneOf<
+      [
+        components["schemas"]["FieldName"],
+        {
+          field: components["schemas"]["FieldName"];
+          /**
+           * sort ordering
+           * @description ascending smallest to largest, or descending largest to smallest
+           * @default asc
+           * @enum {string}
+           */
+          order?: "asc" | "desc";
+        },
+      ]
+    >[];
     /**
-     * data result 
+     * data result
      * @description result data in the format requested, representing an array (over rows) of arrays (over values); in some formats the first row may be a list of field names
      */
-    data: ((components["schemas"]["FieldValue"])[])[];
+    data: (components["schemas"]["FieldValue"] | null)[][];
     /** histogram field */
-    Histogram: OneOf<[components["schemas"]["FieldName"], {
-      field: components["schemas"]["FieldName"];
-      /**
-       * histogram scale 
-       * @description whether to calculate the histogram using log-spaced buckets (rather than linear spacing) 
-       * @default false
-       */
-      log?: boolean;
-      /**
-       * histogram size 
-       * @description number of buckets to include in the histogram 
-       * @default 16
-       */
-      size?: number;
-    }]>;
+    Histogram: OneOf<
+      [
+        components["schemas"]["FieldName"],
+        {
+          field: components["schemas"]["FieldName"];
+          /**
+           * histogram scale
+           * @description whether to calculate the histogram using log-spaced buckets (rather than linear spacing)
+           * @default false
+           */
+          log?: boolean;
+          /**
+           * histogram size
+           * @description number of buckets to include in the histogram
+           * @default 16
+           */
+          size?: number;
+        },
+      ]
+    >;
     /** histogram fields */
-    HistogramList: components["schemas"]["Histogram"] | (components["schemas"]["Histogram"])[];
+    HistogramList:
+      | components["schemas"]["Histogram"]
+      | components["schemas"]["Histogram"][];
   };
   responses: {
     /** @description top result */
     top: {
       content: {
-        "application/json": (components["schemas"]["CatalogMeta"])[];
+        "application/json": components["schemas"]["CatalogMeta"][];
       };
     };
     /** @description catalog result */
@@ -261,9 +314,9 @@ export interface components {
           /** @description total number of rows */
           count: number;
           /** field groups */
-          fields: (components["schemas"]["FieldGroup"])[];
+          fields: components["schemas"]["FieldGroup"][];
           /** @description default sort fields */
-          sort?: (string)[];
+          sort?: string[];
         };
       };
     };
@@ -315,19 +368,19 @@ export interface components {
     histogram: {
       content: {
         "application/json": {
-          buckets: ({
-              /** @description the number of rows with values that fall within this bucket */
-              count: number;
-              /** @description the minimum (left) point of this bucket, such than the bucket includes the range [key,key+size) (or [key,key*size) for log scale) */
-              key: (components["schemas"]["FieldValue"])[];
-              /** @description if quartiles of a field were requested, includes the values of that field corresponding to the [0,25,50,75,100] percentiles ([min, first quartile, median, third quartile, max]) for rows within this bucket */
-              quartiles?: (components["schemas"]["FieldValue"])[];
-            })[];
+          buckets: {
+            /** @description the number of rows with values that fall within this bucket */
+            count: number;
+            /** @description the minimum (left) point of this bucket, such than the bucket includes the range [key,key+size) (or [key,key*size) for log scale) */
+            key: components["schemas"]["FieldValue"][];
+            /** @description if quartiles of a field were requested, includes the values of that field corresponding to the [0,25,50,75,100] percentiles ([min, first quartile, median, third quartile, max]) for rows within this bucket */
+            quartiles?: components["schemas"]["FieldValue"][];
+          }[];
           /**
-           * bucket dimensions 
+           * bucket dimensions
            * @description field order corresponds to the requested histogram fields and bucket keys
            */
-          sizes: (number)[];
+          sizes: number[];
         };
       };
     };
@@ -370,7 +423,6 @@ export interface components {
 export type external = Record<string, never>;
 
 export interface operations {
-
   /** Get the list of available dataset catalogs */
   top: {
     responses: {
@@ -448,12 +500,12 @@ export interface operations {
           count: number;
           fields: components["schemas"]["FieldList"];
           /**
-           * @description return JSON objects instead of arrays of data 
+           * @description return JSON objects instead of arrays of data
            * @default false
            */
           object?: boolean;
           /**
-           * @description start at this row offset (0 means first) 
+           * @description start at this row offset (0 means first)
            * @default 0
            */
           offset?: number;
@@ -476,7 +528,19 @@ export interface operations {
       path: {
         /** @description catalog name from list of catalogs */
         catalog: string;
-        format: "fits" | "fits.gz" | "npy" | "npy.gz" | "ecsv" | "ecsv.gz" | "ndjson" | "ndjson.gz" | "json" | "json.gz" | "csv" | "csv.gz";
+        format:
+          | "fits"
+          | "fits.gz"
+          | "npy"
+          | "npy.gz"
+          | "ecsv"
+          | "ecsv.gz"
+          | "ndjson"
+          | "ndjson.gz"
+          | "json"
+          | "json.gz"
+          | "csv"
+          | "csv.gz";
       };
     };
     responses: {
@@ -489,7 +553,19 @@ export interface operations {
       path: {
         /** @description catalog name from list of catalogs */
         catalog: string;
-        format: "fits" | "fits.gz" | "npy" | "npy.gz" | "ecsv" | "ecsv.gz" | "ndjson" | "ndjson.gz" | "json" | "json.gz" | "csv" | "csv.gz";
+        format:
+          | "fits"
+          | "fits.gz"
+          | "npy"
+          | "npy.gz"
+          | "ecsv"
+          | "ecsv.gz"
+          | "ndjson"
+          | "ndjson.gz"
+          | "json"
+          | "json.gz"
+          | "csv"
+          | "csv.gz";
       };
     };
     requestBody?: {
