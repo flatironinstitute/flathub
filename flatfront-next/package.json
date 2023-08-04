@@ -14,10 +14,10 @@
     "@headlessui/tailwindcss": "latest",
     "@heroicons/react": "latest",
     "@radix-ui/react-slider": "latest",
+    "@tanstack/query-core": "latest",
     "@tanstack/react-query": "latest",
     "@tanstack/react-table": "latest",
     "d3": "latest",
-    "fast-memoize": "latest",
     "highcharts": "latest",
     "highcharts-react-official": "latest",
     "immer": "latest",
@@ -25,10 +25,9 @@
     "next": "13",
     "react": "18",
     "react-dom": "18",
-    "react-use": "latest",
+    "svelte": "latest",
     "tailwindcss-radix": "latest",
-    "typescript": "5",
-    "uuid": "latest"
+    "typescript": "5"
   },
   "devDependencies": {
     "@types/d3": "latest",
@@ -36,7 +35,6 @@
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
-    "@types/uuid": "latest",
     "autoprefixer": "latest",
     "postcss": "latest",
     "tailwindcss": "latest"
