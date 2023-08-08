@@ -1,5 +1,7 @@
 "use client";
 
+import "highcharts/css/highcharts.css";
+
 import type * as schema from "./flathub-schema";
 import type {
   ColumnDef,
@@ -11,7 +13,8 @@ import type {
   QueryObserverResult,
   QueryObserverOptions,
 } from "@tanstack/query-core";
-import "highcharts/css/highcharts.css";
+import type { Readable, Writable } from "svelte/store";
+
 import React from "react";
 import {
   useQuery,
@@ -29,6 +32,8 @@ import {
 } from "@tanstack/react-table";
 import { QueryObserver, parseQueryArgs } from "@tanstack/query-core";
 
+import { TrashIcon } from "@radix-ui/react-icons";
+
 import { Listbox, Switch } from "@headlessui/react";
 import { ChevronUpDownIcon, CheckCircleIcon } from "@heroicons/react/20/solid";
 import * as d3 from "d3";
@@ -38,7 +43,8 @@ import HighchartsReact from "highcharts-react-official";
 import { produce } from "immer";
 import * as Slider from "@radix-ui/react-slider";
 import { readable, writable, derived, get } from "svelte/store";
-import type { Readable, Writable } from "svelte/store";
+import * as Dialog from "@radix-ui/react-dialog";
+import { Cross1Icon } from "@radix-ui/react-icons";
 
 const query_client = new QueryClient();
 
@@ -193,18 +199,27 @@ async function fetch_catalog_metadata(
     const nodes = get_nodes_depth_first<FieldGroup>(hierarchy).filter(
       (d) => `name` in d.data
     );
+    const nodes_by_name = new Map<string, d3.HierarchyNode<FieldGroup>>();
+    for (const node of nodes) {
+      const name = node.data.name;
+      if (nodes_by_name.has(name)) {
+        throw new Error(`Duplicate node name: ${name}`);
+      }
+      nodes_by_name.set(name, node);
+    }
     const initial_filter_names = nodes
       .filter((node) => node.height === 0 && `required` in node.data)
       .map((node) => node.data.name);
-    const initial_field_names = nodes
+    const initial_column_names = nodes
       .filter((node) => node.height === 0 && node.data.disp === true)
       .map((node) => node.data.name);
     return {
       metadata,
       hierarchy,
       nodes,
+      nodes_by_name,
       initial_filter_names,
-      initial_field_names,
+      initial_column_names,
     };
   } catch (err: any) {
     throw new Error(`API Fetch Error: ${err.toString()}`);
@@ -247,7 +262,9 @@ const actions_by_cell_id_store = derived(actions_store, ($actions) => {
   return actions_by_cell_id;
 });
 
-const filter_list_store = derived(
+const filter_set_store: Readable<{
+  get(cell_id: CellID): Set<string>;
+}> = derived(
   [
     catalog_name_store,
     catalog_metadata_queries_by_catalog_name_store,
@@ -260,7 +277,7 @@ const filter_list_store = derived(
   ]) => {
     // log(`actions by actions_by_cell_id`, $actions_by_cell_id);
     return {
-      get(cell_id: CellID): string[] {
+      get(cell_id: CellID): Set<string> {
         const catalog_name = $catalog_name.get(cell_id);
         const catalog_metadata_query =
           $catalog_metadata_queries_by_catalog_name[catalog_name];
@@ -268,19 +285,28 @@ const filter_list_store = derived(
         const actions_for_cell = $actions_by_cell_id.get(cell_id);
         const remove_filter_actions =
           actions_for_cell?.get("remove_filter") ?? [];
-        const filter_list_actions = [...remove_filter_actions];
-        let filter_list: string[] =
-          catalog_metadata?.initial_filter_names ?? [];
+        const add_filter_actions = actions_for_cell?.get("add_filter") ?? [];
+        const filter_list_actions = [
+          ...add_filter_actions,
+          ...remove_filter_actions,
+        ];
+        const filter_set: Set<string> = new Set(
+          catalog_metadata?.initial_filter_names ?? []
+        );
         for (const action of filter_list_actions) {
           if (action.type === `remove_filter`) {
-            filter_list = filter_list.filter((filter_name) => {
-              return filter_name !== action.filter_name;
-            });
+            filter_set.delete(action.filter_name);
+            // filter_list = filter_list.filter((filter_name) => {
+            //   return filter_name !== action.filter_name;
+            // });
+          } else if (action.type === `add_filter`) {
+            filter_set.add(action.filter_name);
+            // filter_list = [...filter_list, action.filter_name];
           } else {
             throw new Error(`unknown filter action type: ${action.type}`);
           }
         }
-        return filter_list;
+        return filter_set;
       },
     };
   }
@@ -291,10 +317,10 @@ const filter_values_store: Readable<{ get(cell_id: CellID): Filters }> =
     [
       catalog_name_store,
       catalog_metadata_store,
-      filter_list_store,
+      filter_set_store,
       filter_state_store,
     ],
-    ([$catalog_name, $catalog_metadata, $filter_list, $filter_state]) => {
+    ([$catalog_name, $catalog_metadata, $filter_set, $filter_state]) => {
       return {
         get(cell_id: CellID) {
           const catalog_name = $catalog_name.get(cell_id);
@@ -302,9 +328,9 @@ const filter_values_store: Readable<{ get(cell_id: CellID): Filters }> =
           if (!hierarchy) {
             return {};
           }
-          const filter_list = $filter_list.get(cell_id);
+          const filter_set: Set<string> = $filter_set.get(cell_id);
           const initial_filters: Filters = get_initial_cell_filters(
-            filter_list,
+            filter_set,
             hierarchy
           );
           const filter_state_for_cell = $filter_state[cell_id] ?? {};
@@ -359,7 +385,9 @@ const query_config_by_cell_id_store = derived(
         const catalog_metadata_query =
           $catalog_metadata_queries_by_catalog_name[catalog_name];
 
-        const field_names = get_cell_initial_field_list(catalog_metadata_query);
+        const field_names = get_catalog_initial_column_names(
+          catalog_metadata_query
+        );
 
         const filters = $filter_values?.get(cell_id);
 
@@ -436,13 +464,14 @@ const field_metadata_store = derived(
   }
 );
 
-function useContextHelper<T>() {
+function useContextHelper<T>(debug?: string) {
   const context = React.createContext<T | null>(null);
 
   const useContext = (): T => {
     const value: T | null = React.useContext(context);
     if (value === null) {
-      throw new Error(`useContextHelper: value is null`);
+      throw new Error(`useContextHelper: value is null: ${debug}`);
+      // console.warn(`useContextHelper: value is null: ${debug}`);
     }
     return value;
   };
@@ -469,7 +498,8 @@ const [useCatalogName, CatalogNameProvider] = useContextHelper<string>();
 const [useCatalogMetadata, CatalogMetadataProvider] = useContextHelper<
   CatalogMetadataWrapper | undefined
 >();
-const [useCellFilters, CellFiltersProvider] = useContextHelper<Filters>();
+const [useCellFilters, CellFiltersProvider] =
+  useContextHelper<Filters>(`cell filters`);
 const [useFieldName, FieldNameProvider] = useContextHelper<string>();
 
 export default function App() {
@@ -511,7 +541,7 @@ function QueryCell() {
   const catalog_field_hierarchy: CatalogHierarchyNode | undefined =
     catalog_metadata?.hierarchy;
 
-  const field_names = get_cell_initial_field_list(catalog_metadata_query);
+  const field_names = get_catalog_initial_column_names(catalog_metadata_query);
 
   const data_query = useStore(data_queries_store)?.[cell_id];
 
@@ -522,93 +552,173 @@ function QueryCell() {
 
   const has_data = query_data?.length && query_data?.length > 0;
 
+  const filters = useStore(filter_values_store)?.get(cell_id);
+
   return (
     <CatalogMetadataProvider value={catalog_metadata}>
-      <CellWrapper>
-        <CellTitle subtitle={cell_id}>Query</CellTitle>
-        <BigButton onClick={() => {}}>Show All Fields</BigButton>
-        <CellSection label="filters">
-          <CellFiltersSection />
-        </CellSection>
-        <CellSection label="fields">
-          <CellFieldsSection field_names={field_names} />
-        </CellSection>
-        <CellSection label="fetch">
-          <BigButton onClick={() => data_query.refetch()}>
-            {fetching ? `Fetching Data...` : `Fetch Data`}
-          </BigButton>
-          <div>status: {data_query.status}</div>
-          <div>fetch status: {data_query.fetchStatus}</div>
-        </CellSection>
-        <CellSection label="table">
-          {ready_to_render && has_data ? (
-            <Table
-              data={query_data}
-              catalog_field_hierarchy={catalog_field_hierarchy}
-            />
-          ) : (
-            <PendingBox>No Results</PendingBox>
-          )}
-        </CellSection>
-        <CellSection label="scatterplot">
-          {ready_to_render && has_data ? (
-            <Scatterplot
-              data={query_data}
-              catalog_field_hierarchy={catalog_field_hierarchy}
-            />
-          ) : (
-            <PendingBox>No Results</PendingBox>
-          )}
-        </CellSection>
-      </CellWrapper>
+      <CellFiltersProvider value={filters}>
+        <CellWrapper>
+          <CellTitle subtitle={cell_id}>Query</CellTitle>
+          <FieldsDialog />
+          <CellSection label="filters">
+            <CellFiltersSection />
+          </CellSection>
+          <CellSection label="fields">
+            <CellFieldsSection field_names={field_names} />
+          </CellSection>
+          <CellSection label="fetch">
+            <BigButton onClick={() => data_query.refetch()}>
+              {fetching ? `Fetching Data...` : `Fetch Data`}
+            </BigButton>
+            <div>status: {data_query.status}</div>
+            <div>fetch status: {data_query.fetchStatus}</div>
+          </CellSection>
+          <CellSection label="table">
+            {ready_to_render && has_data ? (
+              <Table
+                data={query_data}
+                catalog_field_hierarchy={catalog_field_hierarchy}
+              />
+            ) : (
+              <PendingBox>No Results</PendingBox>
+            )}
+          </CellSection>
+          <CellSection label="scatterplot">
+            {ready_to_render && has_data ? (
+              <Scatterplot
+                data={query_data}
+                catalog_field_hierarchy={catalog_field_hierarchy}
+              />
+            ) : (
+              <PendingBox>No Results</PendingBox>
+            )}
+          </CellSection>
+        </CellWrapper>
+      </CellFiltersProvider>
     </CatalogMetadataProvider>
   );
 }
 
-function CellFiltersSection() {
-  const cell_id = useCellID();
-  const filters = useStore(filter_values_store)?.get(cell_id);
-
-  // const filters = useCellFilters();
-  const filter_names = Object.keys(filters);
+function FieldsDialog() {
+  const catalog_metadata = useCatalogMetadata();
+  const fields_list = catalog_metadata?.nodes ?? [];
+  const field_cards = fields_list
+    .filter((d) => "name" in d.data)
+    .map((field) => {
+      return (
+        <FieldNameProvider value={field.data.name} key={field.data.name}>
+          <FieldCard></FieldCard>
+        </FieldNameProvider>
+      );
+    });
   return (
-    <CellFiltersProvider value={filters}>
-      <div className="grid grid-cols-1 gap-x-3 gap-y-2">
-        {filter_names.map((filter_name) => (
-          <FieldNameProvider key={filter_name} value={filter_name}>
-            <FieldCard minimal />
-          </FieldNameProvider>
-        ))}
-      </div>
-    </CellFiltersProvider>
+    <Dialog.Root>
+      <Dialog.Trigger className={BigButton.className}>
+        Show All Fields
+      </Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-20 bg-black/50" />
+        <Dialog.Content
+          className={[
+            `fixed z-50 w-[95vw] max-w-3xl rounded-lg p-4`,
+            `top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%]`,
+            `bg-white dark:bg-slate-700`,
+            `focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75`,
+          ].join(" ")}
+        >
+          <Dialog.Title className="text-sm font-medium text-slate-900 dark:text-slate-100">
+            All Fields
+          </Dialog.Title>
+          <div className="h-4" />
+          <Dialog.Description />
+          <div className="h-4" />
+          <input
+            className="w-full dark:bg-slate-900 rounded-lg text-lg leading-5 py-2 px-3 focus:ring-2 focus:ring-slate-50 focus:outline-none"
+            type="text"
+            placeholder="search"
+          />
+          <div className="h-4" />
+          <div className="h-[600px] overflow-y-scroll overflow-x-visible grid grid-cols-1 gap-4">
+            {field_cards}
+          </div>
+          <Dialog.Close
+            className={[
+              "absolute top-3.5 right-3.5 inline-flex items-center justify-center rounded-full p-1",
+              "focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75",
+            ].join(" ")}
+          >
+            <Cross1Icon className="h-4 w-4 text-slate-500 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-400" />
+          </Dialog.Close>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
+
+function CellFiltersSection() {
+  const filters = useCellFilters();
+
+  const filter_names = Object.keys(filters);
+
+  const names_order = useCatalogMetadata()?.nodes.map((d) => d.data.name) ?? [];
+
+  const sorted = d3.sort(filter_names, (d) => names_order.indexOf(d));
+
+  return (
+    <div className="grid grid-cols-1 gap-x-3 gap-y-2">
+      {sorted.map((filter_name) => (
+        <FieldNameProvider key={filter_name} value={filter_name}>
+          <FieldCard filterMode />
+        </FieldNameProvider>
+      ))}
+    </div>
   );
 }
 
 function FieldCard({
-  minimal = true,
+  filterMode = false,
 }: {
-  minimal?: boolean;
+  filterMode?: boolean;
 }): React.JSX.Element {
+  const [expanded, setExpanded] = React.useState(!filterMode);
   const cell_id = useCellID();
   const field_name = useFieldName();
   const filters = useCellFilters();
+  const nodes_by_name = useCatalogMetadata()?.nodes_by_name;
+  const field_node = nodes_by_name?.get(field_name);
 
-  const catalog_field_hierarchy = useCatalogMetadata()?.hierarchy;
-
-  const field_metadata = get_field_metadata(
-    field_name,
-    catalog_field_hierarchy
-  );
-
-  const filter_state = filters[field_name];
-
-  if (typeof filter_state === `undefined`) {
-    log(filters);
-    throw new Error(`Could not find filter state for ${field_name}`);
+  if (!field_node) {
+    throw new Error(`Could not find node for ${field_name}`);
   }
 
+  const is_leaf = field_node.children === undefined;
+  const is_required = field_node.data.required;
+
+  const field_title = <FieldTitles node={field_node}></FieldTitles>;
+
+  const units = (() => {
+    if (!expanded) return null;
+    if (!field_node.data.units) return null;
+    return (
+      <div className="text-sm text-slate-500 dark:text-slate-300">
+        <Katex>{field_node.data.units}</Katex>
+      </div>
+    );
+  })();
+
+  const field_description = (() => {
+    if (!expanded) return null;
+    if (!field_node.data.descr) return null;
+    return (
+      <div className="text-sm text-slate-500 dark:text-slate-300 overflow-hidden">
+        <Katex>{field_node.data.descr}</Katex>
+      </div>
+    );
+  })();
+
   const field_control = (() => {
-    const metadata = field_metadata?.data;
+    if (!filterMode) return null;
+    const metadata = field_node?.data;
     // log(`field control`, metadata);
     if (!metadata) {
       throw new Error(`Could not find metadata for ${field_name}`);
@@ -618,12 +728,12 @@ function FieldCard({
     }
   })();
 
-  return (
-    <div className="grid grid-cols-[30ch_1fr_9ch] text-md text-slate-200 px-2 rounded dark:bg-slate-600">
-      {field_name}
-      {field_control}
-      <div
-        className="col-start-3 justify-self-end"
+  const remove_filter_button = (() => {
+    if (!filterMode) return null;
+    if (is_required) return null;
+    return (
+      <TrashIcon
+        className="w-5 h-5 cursor-pointer"
         onClick={() => {
           dispatch_action({
             type: `remove_filter`,
@@ -631,11 +741,122 @@ function FieldCard({
             filter_name: field_name,
           });
         }}
+      />
+    );
+  })();
+
+  const column_toggle = (() => {
+    return <div>column</div>;
+  })();
+
+  const filter_toggle = (() => {
+    if (!is_leaf) return null;
+    const is_active_filter = field_name in filters;
+    log(`filter active wha`, is_active_filter, field_name, filters);
+    const on_change = (checked: boolean) => {
+      log(`filter toggle`, checked);
+      if (checked) {
+        dispatch_action({
+          type: `add_filter`,
+          cell_id,
+          filter_name: field_name,
+        });
+      } else {
+        dispatch_action({
+          type: `remove_filter`,
+          cell_id,
+          filter_name: field_name,
+        });
+      }
+    };
+    return (
+      <Switch
+        checked={is_active_filter}
+        onChange={on_change}
+        disabled={is_required}
+        className="disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        remove
+        {({ checked }) => (
+          <div className="flex gap-x-2 items-center">
+            <div
+              className={`h-3 w-3 outline outline-2 dark:outline-slate-50 rounded-xl ${
+                checked ? `bg-slate-50` : `bg-transparent`
+              }`}
+            ></div>
+            <div>Filter</div>
+          </div>
+        )}
+      </Switch>
+    );
+  })();
+
+  const controls = filterMode ? (
+    <>
+      <div className="col-span-6">{field_control}</div>
+      <div className="col-start-12 justify-self-end">
+        {remove_filter_button}
       </div>
+    </>
+  ) : (
+    <>
+      <div className="col-start-9 col-span-2 justify-self-center">
+        {column_toggle}
+      </div>
+      <div className="col-start-11 col-span-2 justify-self-center">
+        {filter_toggle}
+      </div>
+    </>
+  );
+
+  return (
+    <div className="rounded-md bg-slate-50 dark:bg-slate-600 text-md text-slate-200 px-4 py-1 flex flex-col gap-y-4">
+      <div className="grid grid-cols-12 items-center ">
+        <div className="col-span-5">{field_title}</div>
+        {controls}
+      </div>
+      {units}
+      {field_description}
+      {expanded && <div className="h-1" />}
     </div>
   );
+}
+
+function FieldTitles({
+  node,
+}: {
+  node: CatalogHierarchyNode;
+}): React.JSX.Element {
+  const title_strings = get_field_titles(node);
+  const titles = title_strings.map((title, i, arr) => {
+    const is_last = i === arr.length - 1;
+    return (
+      <React.Fragment key={title}>
+        {i > 0 ? <span>:</span> : ``}
+        <Katex className={is_last ? `opacity-100` : `opacity-40`}>
+          {title}
+        </Katex>
+      </React.Fragment>
+    );
+  });
+  return (
+    <div data-type="field-titles" className="text-md flex gap-x-2">
+      {titles}
+    </div>
+  );
+}
+
+function get_field_titles<T extends { title?: string }>(
+  node: d3.HierarchyNode<T>
+): string[] {
+  const titles: string[] = [];
+  let current_node: d3.HierarchyNode<T> | null = node;
+  while (current_node !== null) {
+    if (current_node.data.title?.length ?? 0 > 0) {
+      titles.push(current_node.data.title ?? `unknown`);
+    }
+    current_node = current_node.parent;
+  }
+  return titles.reverse();
 }
 
 function ConnectedRangeSlider() {
@@ -723,7 +944,7 @@ function RangeSlider({
         onValueChange={onValueChange}
         step={step}
       >
-        <Slider.Track className="relative h-1 w-full grow rounded-full bg-white dark:bg-gray-800">
+        <Slider.Track className="relative h-1 w-full grow rounded-full bg-white dark:bg-slate-800">
           <Slider.Range className="absolute h-full rounded-full bg-purple-600 dark:bg-white" />
         </Slider.Track>
         <Slider.Thumb className={thumb_class} />
@@ -768,12 +989,12 @@ function CellFieldsSection({ field_names }: { field_names: string[] }) {
 }
 
 function get_initial_cell_filters(
-  filter_names: string[],
+  filter_names: Set<string>,
   catalog_field_hierarchy?: d3.HierarchyNode<FieldGroup>
 ): Filters {
   if (!catalog_field_hierarchy) return {};
   const initial_filter_object: Filters = Object.fromEntries(
-    filter_names.map((filter_name) => {
+    Array.from(filter_names).map((filter_name) => {
       const metadata = catalog_field_hierarchy.find(
         (node) => node.data.name === filter_name
       )?.data;
@@ -815,15 +1036,16 @@ function get_initial_cell_filters(
   return initial_filter_object;
 }
 
-function get_cell_initial_field_list(
+function get_catalog_initial_column_names(
   catalog_metadata_query: CatalogMetadataQuery
 ) {
   if (!catalog_metadata_query.data) {
     return [];
   }
-  const initial_field_names = catalog_metadata_query.data?.initial_field_names;
-  const current_field_names = initial_field_names;
-  return current_field_names;
+  const initial_column_names =
+    catalog_metadata_query.data?.initial_column_names;
+  const current_column_names = initial_column_names;
+  return current_column_names;
 }
 
 function get_nodes_depth_first<T>(
@@ -1111,14 +1333,14 @@ function BigButton({
   onClick?: () => void;
 }): React.JSX.Element {
   return (
-    <button
-      className="bg-slate-500 dark:bg-slate-600 rounded-lg py-4 text-white font-bold text-xl"
-      onClick={onClick}
-    >
+    <button className={BigButton.className} onClick={onClick}>
       {children}
     </button>
   );
 }
+
+BigButton.className =
+  "bg-slate-500 dark:bg-slate-600 rounded-lg py-4 text-white font-bold text-xl";
 
 function CellWrapper({
   children,
@@ -1186,9 +1408,12 @@ function log(...args: any[]) {
   console.log(`🌔`, ...args);
 }
 
-type Action =
-  | ActionBase<`remove_filter`, { cell_id: CellID; filter_name: string }>
-  | AddQueryCellAction;
+type Action = FilterListAction | AddQueryCellAction;
+
+type FilterListAction = ActionBase<
+  `add_filter` | `remove_filter`,
+  { cell_id: CellID; filter_name: string }
+>;
 
 type CellAction = AddQueryCellAction;
 
@@ -1216,8 +1441,9 @@ type CatalogMetadataWrapper = {
   metadata: CatalogResponse;
   hierarchy: d3.HierarchyNode<FieldGroup>;
   nodes: d3.HierarchyNode<FieldGroup>[];
+  nodes_by_name: Map<string, d3.HierarchyNode<FieldGroup>>;
   initial_filter_names: string[];
-  initial_field_names: string[];
+  initial_column_names: string[];
 };
 
 type ActionBase<T extends string, U> = U & {
