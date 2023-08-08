@@ -15,6 +15,7 @@
         - illustris_sub
     - tng
     #- simba
+    - eagle
     - camels
 - name: cosmo-dm
   title: Cosmological Dark Matter-Only Simulations
