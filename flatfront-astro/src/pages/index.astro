@@ -1,5 +1,6 @@
 ---
 import "../lib/globals.css";
+import "highcharts/css/highcharts.css";
 
 import App from "../lib/App";
 ---
@@ -12,6 +13,6 @@ import App from "../lib/App";
     <title>FlatHUB</title>
   </head>
   <body class="bg-slate-300 dark:bg-slate-800 dark:text-slate-50">
-    <App client:load />
+    <App client:only="react" />
   </body>
 </html>
