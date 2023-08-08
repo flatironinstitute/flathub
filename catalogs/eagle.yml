@@ -6,6 +6,9 @@ settings:
     number_of_shards: 8
 descr: >
   <a href="https://arxiv.org/abs/1510.01320">The EAGLE simulations of galaxy formation</a>
+  combined FoF Halo and Subfind Subhalo (Galaxies) catalogs. Extensive
+  details about these simulations and the data available here are available
+  at <a href="https://eagle.strw.leidenuniv.nl/">eagle.strw.leidenuniv.nl</a>.
 key:
 - simulation
 - GroupID

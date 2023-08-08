@@ -187,7 +187,6 @@ data APIOp a = APIOp
 catalogJSON :: Catalog -> J.Series
 catalogJSON Catalog{..} =
      "name" J..= catalogName
-  <> "order" J..= catalogOrder
   <> "title" J..= catalogTitle
   <> foldMap ("synopsis" J..=) catalogSynopsis
   <> foldMap ("descr" J..=) catalogDescr
@@ -196,7 +195,6 @@ catalogSchema :: OpenApiM (OA.Referenced OA.Schema)
 catalogSchema = define "CatalogMeta" $ objectSchema
   "High-level metadata for a dataset catalog"
   [ ("name", OA.Inline $ schemaDescOf catalogName "globally unique catalog name used in urls", True)
-  , ("order", OA.Inline $ schemaDescOf catalogOrder "sort key for display order", True)
   , ("title", OA.Inline $ schemaDescOf catalogTitle "display name", True)
   , ("synopsis", OA.Inline $ schemaDescOf catalogSynopsis "short description in plain text", False)
   , ("descr", OA.Inline $ schemaDescOf catalogDescr "long description in html", False)
