@@ -27,8 +27,8 @@ import qualified Data.ByteString.Lazy as BSL
 import           Data.Foldable (fold)
 import qualified Data.HashMap.Strict as HM
 import           Data.HashMap.Strict ((!)) -- hamlet doesn't like qualified operators
-import           Data.List (find, inits, sortOn, intercalate)
-import           Data.Maybe (isNothing, isJust)
+import           Data.List (find, inits, sortOn, intercalate, nub)
+import           Data.Maybe (isNothing, isJust, maybeToList)
 import qualified Data.Text as T
 import qualified Data.Vector as V
 import           Network.HTTP.Types.Header (Header, ResponseHeaders, hAccept, hIfModifiedSince, hLastModified, hContentType, hLocation)
@@ -75,7 +75,10 @@ jsonVar :: J.ToJSON a => T.Text -> a -> H.Html
 jsonVar var = jsonEncodingVar var . J.toEncoding
 
 catalogsSorted :: Catalogs -> [Catalog]
-catalogsSorted = sortOn catalogOrder . filter catalogVisible . HM.elems . catalogMap
+catalogsSorted Catalogs{..} = nub $ filter catalogVisible $ gcs catalogGroupings ++ sortOn catalogName (HM.elems catalogMap) where
+  gcs = foldMap gc . V.toList . groupList
+  gc (GroupCatalog c) = maybeToList $ HM.lookup c catalogMap
+  gc Grouping{..} = gcs groupings
 
 groupingTitle :: Grouping -> Maybe Catalog -> T.Text
 groupingTitle g = maybe (groupTitle g) catalogTitle
@@ -691,23 +694,24 @@ groupPage = getPath ("group" R.*< R.manyI R.parameter) $ \path req -> do
             <div .box-row>
               $forall g <- groupList groupings
                 $with cat' <- groupingCatalog cats g
-                  <div .box>
-                    <div .box-content>
-                      <div .box-copy>
-                        <div .box-head>
-                          <text>#{groupingTitle g cat'}
-                        $case g
-                          $of Grouping{ groupings = gs }
-                            $forall gc <- groupList gs
-                              <div .box-desc>
-                                <a href="@{groupPage !:? (path ++ [groupingName g, groupingName gc])}">
-                                <text>#{groupingTitle gc (groupingCatalog cats gc)}
-                          $of GroupCatalog{}
-                            $forall cat <- cat'
-                              <div .box-desc>
-                                $forall syn <- catalogSynopsis cat
-                                  #{H.preEscapedText syn}
-                      <a .button .button-primary href="@{groupPage !:? (path ++ [groupingName g])}">Learn More
+                  $if all catalogVisible cat'
+                    <div .box>
+                      <div .box-content>
+                        <div .box-copy>
+                          <div .box-head>
+                            <text>#{groupingTitle g cat'}
+                          $case g
+                            $of Grouping{ groupings = gs }
+                              $forall gc <- groupList gs
+                                <div .box-desc>
+                                  <a href="@{groupPage !:? (path ++ [groupingName g, groupingName gc])}">
+                                  <text>#{groupingTitle gc (groupingCatalog cats gc)}
+                            $of GroupCatalog{}
+                              $forall cat <- cat'
+                                <div .box-desc>
+                                  $forall syn <- catalogSynopsis cat
+                                    #{H.preEscapedText syn}
+                        <a .button .button-primary href="@{groupPage !:? (path ++ [groupingName g])}">Learn More
     |]
 
 comparePage :: Route [T.Text]

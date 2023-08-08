@@ -35,6 +35,7 @@ import qualified Data.Aeson.Types as J
 import qualified Data.Aeson.Key as JK
 import qualified Data.Aeson.KeyMap as JM
 import           Data.Bits (xor)
+import           Data.Function (on)
 import           Data.Functor.Classes (Show1(liftShowsPrec))
 import           Data.Functor.Identity (Identity(runIdentity))
 import qualified Data.HashMap.Strict as HM
@@ -60,7 +61,6 @@ data Catalog = Catalog
   , catalogIndexSettings :: J.Object
   , catalogIngestPipeline :: Maybe T.Text
   , catalogVisible :: !Bool
-  , catalogOrder :: !T.Text -- ^display order in catalog list
   , catalogTitle :: !T.Text
   , catalogSynopsis :: Maybe T.Text
   , catalogDescr :: Maybe T.Text
@@ -76,6 +76,9 @@ data Catalog = Catalog
 instance KM.Keyed Catalog where
   type Key Catalog = Simulation
   key = catalogName
+
+instance Eq Catalog where
+  (==) = on (==) catalogName
 
 parseCatalog :: HM.HashMap T.Text Field -> T.Text -> J.Object -> J.Value -> J.Parser Catalog
 parseCatalog dict catalogName stats = J.withObject "catalog" $ \c -> do
@@ -101,7 +104,6 @@ parseCatalog dict catalogName stats = J.withObject "catalog" $ \c -> do
   catalogIndex <- c J..:? "index" J..!= catalogName
   catalogIndexSettings <- c J..:? "settings" J..!= JM.empty
   catalogIngestPipeline <- c J..:? "pipeline"
-  catalogOrder <- c J..:? "order" J..!= catalogName
   let catalogFields = expandFields catalogFieldGroups
       catalogFieldMap = KM.fromList $ V.toList catalogFields
   mapM_ (\k -> unless (HM.member k catalogFieldMap) $ fail $ "key field " <> show k <> " not found in catalog " <> T.unpack catalogName) catalogKey
