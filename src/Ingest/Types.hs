@@ -59,10 +59,10 @@ ingestValueBS f v
   || v `elem` fieldMissing f
   || typeIsFloating ft && v `elem` ["nan","NaN","Inf","-Inf","+Inf","inf"]
     = Nothing
-  | Just i <- guard (not $ isDigit $ BSC.head v) >> fieldEnum f >>= V.elemIndex (TE.decodeLatin1 v)
-    = Just $ J.toEncoding i
   | typeIsBoolean ft
     = Just $ J.toEncoding $ bool v
+  | Just i <- guard (not $ isDigit $ BSC.head v) >> fieldEnum f >>= V.elemIndex (TE.decodeLatin1 v)
+    = Just $ J.toEncoding i
   | typeIsString ft
   || BSC.any isControl v
     = Just $ J.toEncoding $ str v

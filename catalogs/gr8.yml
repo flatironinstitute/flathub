@@ -483,36 +483,41 @@ fields:
       #       type: int
       #       flag: hidden
       #       descr: Number of observations averaged to create the spectrum
-      #   - name: ''
-      #     title: hermes
-      #     sub:
-      #     - name: 'spectrum_hermes'
-      #       title: 'download'
-      #       type:  boolean
-      #       attachment:
-      #         path: gr8/spectra/${primary_name}_hermes.fits
-      #         name: gr8_spectra_${primary_name}_hermes.fits
-      #     - name: 'spectrum_hermes_resolution'
-      #       title: 'resolution'
-      #       type: float
-      #       flag: hidden
-      #       descr: Spectral resolution
-      #     - name: 'spectrum_hermes_snr'
-      #       title: 'snr'
-      #       type: float
-      #       flag: hidden
-      #       descr: Signal-to-noise per pixel at 600 nm
-      #     - name: 'spectrum_hermes_date'
-      #       title: 'date'
-      #       type: float
-      #       units: 'BJD'
-      #       flag: hidden
-      #       descr: Date of observation (or effective average date if nobs > 1)
-      #     - name: 'spectrum_hermes_nobs'
-      #       title: 'nobs'
-      #       type: int
-      #       flag: hidden
-      #       descr: Number of observations averaged to create the spectrum
+      - name: ''
+        title: hermes
+        sub:
+        - name: ''
+          title: 'download'
+          sub:
+            - name: '1d'
+              title: '1D'
+              type: boolean
+              attachment:
+                path: gr8/spectra/HERMES/${primary_name/ /}_HERMES_S1D.fits
+                name: gr8_spectra_${primary_name/ /}_HERMES_S1D.fits
+              ingest: spectrum_hermes
+      # - name: 'hermes_resolution'
+      #   title: 'resolution'
+      #   type: float
+      #   flag: hidden
+      #   descr: Spectral resolution
+        - name: 'hermes_snr'
+          title: 'snr'
+          type: float
+          flag: hidden
+          descr: Signal-to-noise per pixel at 600 nm
+      # - name: 'hermes_date'
+      #   title: 'date'
+      #   type: float
+      #   units: 'BJD'
+      #   flag: hidden
+      #   descr: Date of observation (or effective average date if nobs > 1)
+        - name: 'hermes_nobs'
+          title: 'nobs'
+          type: int
+          flag: hidden
+          descr: Number of observations averaged to create the spectrum
+      # TODO: check on hires, fies?
       - name: 'hires'
         title: hires
         flag: hidden
