@@ -2,6 +2,9 @@ import type { Readable } from "svelte/store";
 import type {
   Action,
   CellID,
+  CatalogCellID,
+  FilterCellID,
+  TableCellID,
   CatalogMetadataWrapper,
   Filters,
   Datum,
@@ -23,6 +26,13 @@ export function dispatch_action(action: Action) {
   stores.actions.update(($actions) => [...$actions, action]);
 }
 
+export function is_catalog_cell_id(cell_id: CellID): CatalogCellID {
+  if (!cell_id.match(/^catalog_cell_/)) {
+    throw new Error(`${cell_id} is not a catalog cell id`);
+  }
+  return cell_id as CatalogCellID;
+}
+
 export function set_filter_value(
   cell_id: CellID,
   filter_name: string,
@@ -39,13 +49,13 @@ export function set_filter_value(
   });
 }
 
-export function useContextHelper<T>(debug?: string) {
+export function useContextHelper<T>(debug: string) {
   const context = React.createContext<T | null>(null);
 
   const useContext = (): T => {
     const value: T | null = React.useContext(context);
     if (value === null) {
-      throw new Error(`useContextHelper: value is null`);
+      throw new Error(`useContextHelper: ${debug}: value is null`);
     }
     return value;
   };
@@ -67,17 +77,20 @@ export function useStore<T>(store: Readable<T>) {
   return state;
 }
 
-export const [useCellID, CellIDProvider] = useContextHelper<CellID>();
+export const [useCellID, CellIDProvider] = useContextHelper<CellID>(`CellID`);
 export const [useParentCellID, ParentCellIDProvider] =
-  useContextHelper<CellID>();
-export const [usePlotID, PlotIDProvider] = useContextHelper<string>();
-export const [useCatalogName, CatalogNameProvider] = useContextHelper<string>();
-// prettier-ignore
-export const [useCatalogMetadata, CatalogMetadataProvider] = useContextHelper<CatalogMetadataWrapper | undefined>();
-// prettier-ignore
-export const [useCellFilters, CellFiltersProvider] = useContextHelper<Filters>();
-export const [useFieldName, FieldNameProvider] = useContextHelper<string>();
-export const [useData, DataProvider] = useContextHelper<Datum[]>();
+  useContextHelper<CellID>(`ParentCellID`);
+export const [usePlotID, PlotIDProvider] = useContextHelper<string>(`PlotID`);
+export const [useCatalogName, CatalogNameProvider] =
+  useContextHelper<string>(`CatalogName`);
+export const [useCatalogMetadata, CatalogMetadataProvider] = useContextHelper<
+  CatalogMetadataWrapper | undefined
+>(`CatalogMetadata`);
+export const [useCellFilters, CellFiltersProvider] =
+  useContextHelper<Filters>(`CellFilters`);
+export const [useFieldName, FieldNameProvider] =
+  useContextHelper<string>(`FieldName`);
+export const [useData, DataProvider] = useContextHelper<Datum[]>(`Data`);
 
 export function LabeledSelect<T>({
   button,
@@ -217,6 +230,35 @@ function Select<T>({
         </Listbox.Options>
       </div>
     </Listbox>
+  );
+}
+
+export function BigButton({
+  children,
+  onClick,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+}): React.JSX.Element {
+  return (
+    <button className={BigButton.className} onClick={onClick}>
+      {children}
+    </button>
+  );
+}
+
+BigButton.className =
+  "bg-slate-500 dark:bg-slate-600 rounded-lg py-4 text-white font-bold text-xl";
+
+export function CellWrapper({
+  children,
+}: {
+  children: React.ReactNode;
+}): React.JSX.Element {
+  return (
+    <div className="rounded font-mono bg-light-1 dark:bg-dark-1 p-6 shadow-lg shadow-black dark:shadow-lg dark:shadow-black w-full transition-all flex flex-col gap-y-10">
+      {children}
+    </div>
   );
 }
 

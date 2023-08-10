@@ -4,6 +4,7 @@ import type {
   CatalogCellID,
   FilterCellID,
   TableCellID,
+  RootCellID,
 } from "./types";
 
 import React from "react";
@@ -35,11 +36,15 @@ import {
   useFieldName,
   useParentCellID,
   useStore,
+  is_catalog_cell_id,
+  CellWrapper,
+  BigButton,
 } from "./shared";
 import * as stores from "./stores";
 import Table from "./Table";
 import Katex from "./Katex";
 import { Scatterplot } from "./Highcharts";
+import GlobalControls from "./GlobalControls";
 
 export default function App() {
   return (
@@ -52,85 +57,6 @@ export default function App() {
       <Cells />
       <div className="h-10" />
     </main>
-  );
-}
-
-function GlobalControls(): React.JSX.Element {
-  return (
-    <CellWrapper>
-      <div className="grid gap-y-4 items-center">
-        <CatalogSelect />
-        <DarkModeToggle />
-      </div>
-    </CellWrapper>
-  );
-}
-
-function CatalogSelect() {
-  const [selected, set_selected] = React.useState<TopResponseEntry | undefined>(
-    undefined
-  );
-  const get_title = (d: TopResponseEntry) => d?.title;
-  const catalog_list_unsorted = useStore(stores.top_response).data ?? [];
-  const ready = catalog_list_unsorted.length > 0;
-  const catalog_list = d3.sort(catalog_list_unsorted, get_title);
-  log(`CatalogSelect: catalog_list`, catalog_list, ready);
-  return (
-    <div data-type="CatalogSelect">
-      <LabeledSelect
-        disabled={!ready}
-        label="Add Catalog"
-        placeholder={ready ? "Select a catalog..." : "Loading catalogs..."}
-        options={catalog_list}
-        getKey={(d) => d?.name}
-        getDisplayName={get_title}
-        value={selected}
-        onValueChange={(d) => {
-          set_selected(d);
-        }}
-        button
-        buttonText="Add"
-        onClick={() => {
-          if (!selected) return;
-          dispatch_action({
-            type: `add_catalog_cell`,
-            cell_id: `catalog_cell_${selected.name}`,
-            catalog_name: selected.name,
-          });
-        }}
-      />
-    </div>
-  );
-}
-
-function DarkModeToggle() {
-  const [dark_mode, set_dark_mode] = React.useState(true);
-
-  React.useEffect(() => {
-    if (dark_mode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [dark_mode]);
-
-  return (
-    <div data-type="DarkModeToggle" className="flex items-center gap-x-4">
-      <div>Dark Mode</div>
-      <div>
-        <Switch
-          checked={dark_mode}
-          onChange={set_dark_mode}
-          className={`bg-slate-50 dark:bg-slate-900 relative inline-flex h-8 w-14 items-center rounded-full`}
-        >
-          <span
-            className={`${
-              dark_mode ? "translate-x-7" : "translate-x-1"
-            } inline-block h-6 w-6 transform rounded-full bg-slate-500 dark:bg-slate-50 transition`}
-          />
-        </Switch>
-      </div>
-    </div>
   );
 }
 
@@ -149,7 +75,6 @@ function Cells() {
             return <FilterCell />;
           } else {
             return <TableCell />;
-            // throw new Error(`Unknown cell type: ${cell.type}`);
           }
         })();
         return (
@@ -192,42 +117,59 @@ function CatalogCell() {
 
 function FilterCell() {
   const cell_id = useCellID() as FilterCellID;
-  const parent_cell_id = useParentCellID();
+  const parent_cell_id: CatalogCellID = is_catalog_cell_id(useParentCellID());
   const catalog_name = useStore(stores.catalog_name).get(cell_id);
   const catalog_metadata = useStore(stores.catalog_metadata).get(catalog_name);
   const catalog_title = catalog_metadata?.metadata?.title;
+
+  const filters = useStore(stores.filter_values)?.get(cell_id);
+
+  log(`FilterCell:`, { cell_id });
   return (
-    <CellWrapper>
-      <CellTitle subtitle={cell_id}>{catalog_title} Filters</CellTitle>
-      <CellSection label="source" small>
-        {parent_cell_id}
-      </CellSection>
-      <CellSection label="actions">
-        <div className="flex flex-col gap-y-4">
-          <BigButton
-            onClick={() => {
-              dispatch_action({
-                type: `add_table_cell`,
-                cell_id: `table_cell_${Date.now()}`,
-                parent_cell_id: cell_id,
-              });
-            }}
-          >
-            Add Table
-          </BigButton>
-          <BigButton
-            onClick={() => {
-              dispatch_action({
-                type: `remove_filter_cell`,
-                cell_id: cell_id,
-              });
-            }}
-          >
-            Remove
-          </BigButton>
-        </div>
-      </CellSection>
-    </CellWrapper>
+    <CellFiltersProvider value={filters}>
+      <CatalogMetadataProvider value={catalog_metadata}>
+        <CatalogNameProvider value={catalog_name}>
+          <CellWrapper>
+            <CellTitle subtitle={cell_id}>{catalog_title} Filters</CellTitle>
+            <CellSection label="source" small>
+              {parent_cell_id}
+            </CellSection>
+            <CellSection label="filters">
+              {catalog_metadata ? (
+                <CellFiltersSection />
+              ) : (
+                <PendingBox>Loading Catalog Metadata...</PendingBox>
+              )}
+            </CellSection>
+            <CellSection label="actions">
+              <div className="flex flex-col gap-y-4">
+                <BigButton
+                  onClick={() => {
+                    dispatch_action({
+                      type: `add_table_cell`,
+                      cell_id: `table_cell_${Date.now()}`,
+                      parent_cell_id: cell_id,
+                    });
+                  }}
+                >
+                  Add Table
+                </BigButton>
+                <BigButton
+                  onClick={() => {
+                    dispatch_action({
+                      type: `remove_filter_cell`,
+                      cell_id: cell_id,
+                    });
+                  }}
+                >
+                  Remove
+                </BigButton>
+              </div>
+            </CellSection>
+          </CellWrapper>
+        </CatalogNameProvider>
+      </CatalogMetadataProvider>
+    </CellFiltersProvider>
   );
 }
 
@@ -368,13 +310,17 @@ function CellFiltersSection() {
   const sorted = d3.sort(filter_names, (d) => names_order.indexOf(d));
 
   return (
-    <div className="grid grid-cols-1 gap-x-3 gap-y-2">
-      {sorted.map((filter_name) => (
-        <FieldNameProvider key={filter_name} value={filter_name}>
-          <FieldCard filterMode />
-        </FieldNameProvider>
-      ))}
-    </div>
+    <>
+      <FieldsDialog />
+      <div className="h-4" />
+      <div className="grid grid-cols-1 gap-x-3 gap-y-2">
+        {sorted.map((filter_name) => (
+          <FieldNameProvider key={filter_name} value={filter_name}>
+            <FieldCard filterMode />
+          </FieldNameProvider>
+        ))}
+      </div>
+    </>
   );
 }
 
@@ -796,35 +742,6 @@ function SimpleLabel({
 }): React.JSX.Element {
   return (
     <div className="text-slate-400 dark:text-slate-400 uppercase text-sm">
-      {children}
-    </div>
-  );
-}
-
-function BigButton({
-  children,
-  onClick,
-}: {
-  children: React.ReactNode;
-  onClick?: () => void;
-}): React.JSX.Element {
-  return (
-    <button className={BigButton.className} onClick={onClick}>
-      {children}
-    </button>
-  );
-}
-
-BigButton.className =
-  "bg-slate-500 dark:bg-slate-600 rounded-lg py-4 text-white font-bold text-xl";
-
-function CellWrapper({
-  children,
-}: {
-  children: React.ReactNode;
-}): React.JSX.Element {
-  return (
-    <div className="rounded font-mono bg-light-1 dark:bg-dark-1 p-6 shadow-lg shadow-black dark:shadow-lg dark:shadow-black w-full transition-all flex flex-col gap-y-10">
       {children}
     </div>
   );

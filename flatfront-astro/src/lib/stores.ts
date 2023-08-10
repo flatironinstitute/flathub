@@ -14,6 +14,7 @@ import type {
   FilterListAction,
   Filters,
   FilterValue,
+  FilterCellID,
   TopResponse,
   ColumnListAction,
 } from "./types";
@@ -23,11 +24,11 @@ import type {
 } from "@tanstack/query-core";
 import type { Readable, Writable } from "svelte/store";
 
-import { QueryClient } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/query-core";
 import { QueryObserver } from "@tanstack/query-core";
-
 import * as d3 from "d3";
 import { readable, writable, derived, get } from "svelte/store";
+import * as lzstring from "lz-string";
 
 import { log } from "./shared";
 
@@ -77,7 +78,25 @@ export const actions = writable<Action[]>([
   // },
 ]);
 
-actions.subscribe((actions) => log(`Actions:`, actions));
+actions.subscribe((actions) => log(`ALL ACTIONS:`, actions));
+
+debounce_store(actions, 1000).subscribe((actions) => {
+  log(`DEBOUNCED ACTIONS:`, actions);
+  store_data_in_url(actions, `actions`);
+});
+
+export const filter_state = writable<
+  Record<CellID, Record<string, FilterValue>>
+>({} as Record<CellID, Record<string, FilterValue>>);
+
+filter_state.subscribe((filter_state) =>
+  log(`Global Filter State:`, filter_state)
+);
+
+debounce_store(filter_state, 1000).subscribe((filters) => {
+  log(`DEBOUNCED FILTERS:`, filters);
+  store_data_in_url(filters, `filters`);
+});
 
 const actions_by_type_store = derived(actions, ($actions) => {
   const actions_by_type = d3.group(
@@ -92,19 +111,6 @@ const actions_by_cell_id = derived(actions, ($actions) => {
   const actions_by_cell_id = d3.group($actions, (d) => d.cell_id);
   return actions_by_cell_id;
 });
-
-export const filter_state = writable<
-  Record<
-    CellID,
-    {
-      [filter_name: string]: FilterValue;
-    }
-  >
->({} as Record<CellID, { [filter_name: string]: FilterValue }>);
-
-filter_state.subscribe((filter_state) =>
-  log(`Global Filter State:`, filter_state)
-);
 
 export const top_response: Readable<QueryObserverResult<TopResponse>> =
   readable<QueryObserverResult<TopResponse>>(null, (set, update) => {
@@ -222,17 +228,12 @@ cells_hierarchy.subscribe((hierarchy) => log(`Cells hierarchy:`, hierarchy));
 export const catalog_name: Readable<{ get(cell_id: CellID): string }> = derived(
   cells_hierarchy,
   ($cells_hierarchy) => {
-    // const cell_id_to_catalog_name = new Map<CellID, string>();
-    // for (const cell of $cells) {
-    //   cell_id_to_catalog_name.set(cell.id, cell.catalog_name);
-    // }
     return {
       get(cell_id: CellID) {
         const found = $cells_hierarchy.find((d) => d.data.cell_id === cell_id);
         if (found === undefined) {
           throw new Error(`No cell found for cell_id: ${cell_id}`);
         }
-        // log(`Getting catalog name for:`, cell_id);
         let catalog_name = undefined;
         if (found.data.type === `catalog`) {
           catalog_name = found.data.catalog_name;
@@ -251,11 +252,6 @@ export const catalog_name: Readable<{ get(cell_id: CellID): string }> = derived(
           throw new Error(`No catalog name for cell_id: ${cell_id}`);
         }
         return catalog_name;
-        // const catalog_name = cell_id_to_catalog_name.get(cell_id);
-        // if (catalog_name === undefined) {
-        //   throw new Error(`No catalog name for cell_id: ${cell_id}`);
-        // }
-        // return catalog_name;
       },
     };
   }
@@ -410,12 +406,12 @@ const filter_set_store: Readable<{
   }
 );
 
-export const fitler_values: Readable<{ get(cell_id: CellID): Filters }> =
+export const filter_values: Readable<{ get(cell_id: FilterCellID): Filters }> =
   derived(
     [catalog_name, catalog_metadata, filter_set_store, filter_state],
     ([$catalog_name, $catalog_metadata, $filter_set, $filter_state]) => {
       return {
-        get(cell_id: CellID) {
+        get(cell_id: FilterCellID) {
           const catalog_name = $catalog_name.get(cell_id);
           const hierarchy = $catalog_metadata.get(catalog_name)?.hierarchy;
           if (!hierarchy) {
@@ -444,7 +440,7 @@ export const fitler_values: Readable<{ get(cell_id: CellID): Filters }> =
 
 const debounced_filter_values_store: Readable<{
   get(cell_id: CellID): Filters;
-}> = debounce_store(fitler_values, 500);
+}> = debounce_store(filter_values, 500);
 
 export const query_config = derived(
   [catalog_name, debounced_filter_values_store, column_names],
@@ -507,6 +503,32 @@ export const query_config = derived(
 
 // =========================================
 // FUNCTIONS
+
+function store_data_in_url<T>(data: T, key: string) {
+  const compressed = compress_data(data);
+  const url = new URL(window.location.href);
+  url.searchParams.set(key, compressed);
+  window.history.replaceState({}, ``, url.toString());
+  const url_length = url.toString().length;
+  log(`URL Length:`, url_length);
+  if (url_length > 2000) {
+    throw new Error(`URL is too long!`);
+  }
+}
+
+function compress_data<T>(data: T): string {
+  const compressed = lzstring.compressToEncodedURIComponent(
+    JSON.stringify(data)
+  );
+  return compressed;
+}
+
+function decompress_data<T>(compressed: string): T {
+  const restored = JSON.parse(
+    lzstring.decompressFromEncodedURIComponent(compressed)
+  );
+  return restored;
+}
 
 function get_catalog_initial_column_names(
   catalog_metadata: CatalogMetadataWrapper
@@ -574,19 +596,10 @@ async function fetch_catalog_metadata(
   catalog_name: string
 ): Promise<CatalogMetadataWrapper> {
   const path = `/${catalog_name}`;
-  const url = new URL(`/api${path}`, FLATHUB_API_BASE_URL);
-  log(`💥 fetching`, url.toString());
   try {
-    const response = await fetch(url.toString(), {
-      method: `GET`,
-      headers: new Headers({
-        "Content-Type": `application/json`,
-      }),
-    });
-    if (!response.ok) {
-      throw new Error(`API Fetch Error: ${response.status}`);
-    }
-    const metadata = (await response.json()) as CatalogResponse;
+    const metadata: CatalogResponse = await fetch_api_get<CatalogResponse>(
+      path
+    );
     log(`💥 metadata`, metadata);
     const catalog_fields_raw = metadata.fields ?? null;
     const root = { sub: catalog_fields_raw } as FieldGroup;
@@ -620,7 +633,7 @@ async function fetch_catalog_metadata(
       initial_column_names,
     };
   } catch (err: any) {
-    throw new Error(`API Fetch Error: ${err.toString()}`);
+    throw new Error(`Catalog Metadata Fetch Error: ${err.toString()}`);
   }
 }
 
@@ -650,17 +663,20 @@ function create_query_observer<T>(options: QueryObserverOptions) {
   return observer as QueryObserver<T>;
 }
 
-function fetch_api_get<T>(path: string): Promise<T> {
+async function fetch_api_get<T>(path: string): Promise<T> {
   const url = new URL(`/api${path}`, FLATHUB_API_BASE_URL);
   log(`💥 fetching`, url.toString());
-  return fetch(url.toString(), {
+  const response = await fetch(url.toString(), {
     method: `GET`,
-  }).then((response) => {
-    if (!response.ok) {
-      throw new Error(`API Fetch Error: ${response.status}`);
-    }
-    return response.json() as T;
+    headers: new Headers({
+      "Content-Type": `application/json`,
+    }),
   });
+  if (!response.ok) {
+    throw new Error(`API Fetch Error: ${response.status}`);
+  }
+  const json: T = await response.json();
+  return json;
 }
 
 function fetch_api_post<T>(
