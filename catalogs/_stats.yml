@@ -7009,59 +7009,59 @@ gr8:
     max: 86.43582153320312
     min: -14.998661994934082
   gaia_lum:
-    avg: 2.3034724740507886
-    count: 2817
+    avg: 2.3020751499861944
+    count: 2816
     max: 45.90388107299805
     min: 6.30476325750351e-2
   gaia_lum_lower:
-    avg: 2.286005781082067
-    count: 2817
+    avg: 2.284644896738676
+    count: 2816
     max: 40.875160217285156
     min: 6.299243867397308e-2
   gaia_lum_upper:
-    avg: 2.320939167252258
-    count: 2817
+    avg: 2.3195054034665437
+    count: 2816
     max: 50.93260192871094
     min: 6.31028264760971e-2
   gaia_radius:
-    avg: 1.3302607477917332
-    count: 2817
+    avg: 1.329683479683643
+    count: 2816
     max: 5.581541061401367
     min: 0.5542305707931519
   gaia_radius_lower:
-    avg: 1.2802583211527083
-    count: 2817
+    avg: 1.2801184250380506
+    count: 2816
     max: 5.307552814483643
     min: 0.4531572759151459
   gaia_radius_upper:
-    avg: 1.3749380894150767
-    count: 2817
+    avg: 1.3742443570782514
+    count: 2816
     max: 5.674553394317627
     min: 0.5794293284416199
   gaia_teff:
-    avg: 5943.103322724822
-    count: 2854
+    avg: 5944.668436464824
+    count: 2849
     max: 7799.25
     min: 3756.666748046875
   gaia_teff_lower:
-    avg: 5843.581651437676
-    count: 2854
+    avg: 5845.58653324083
+    count: 2849
     max: 7502.66650390625
     min: 3565.0
   gaia_teff_upper:
-    avg: 6073.262808315221
-    count: 2854
+    avg: 6073.516433860428
+    count: 2849
     max: 9438.0
     min: 3923.85009765625
   gaiadr2_source_id:
-    avg: 2.3358606466511288e18
-    count: 2858
-    max: 6.9169600346704937e18
-    min: -1.0
+    avg: 2.3385619014549765e18
+    count: 2850
+    max: 6.916960034670494e18
+    min: 6478258087046528
   gaiaedr3_source_id:
     avg: 2.3378491518847447e18
     count: 2858
-    max: 6.9169600346704937e18
+    max: 6.916960034670494e18
     min: 6478258087046528
   gmag:
     avg: 7.300388889015764
@@ -7166,15 +7166,30 @@ gr8:
     - count: 350
       value: true
   spectrum_harps_nobs:
-    avg: 35.13428571428572
+    avg: 28.5
     count: 350
     max: 300.0
-    min: 1.0
+    min: 0.0
   spectrum_harps_snr:
     avg: 365.8991433116368
     count: 350
     max: 2485.800048828125
     min: 17.100000381469727
+  spectrum_hermes_1d:
+    others: 0
+    terms:
+    - count: 53
+      value: true
+  spectrum_hermes_nobs:
+    avg: 1.0
+    count: 53
+    max: 1.0
+    min: 1.0
+  spectrum_hermes_snr:
+    avg: 164.68766136889187
+    count: 53
+    max: 207.37567138671875
+    min: 43.79353332519531
   spectrum_hires_1d:
     others: 0
     terms:
@@ -7221,8 +7236,8 @@ gr8:
     max: 1245.300048828125
     min: 1.399999976158142
   tic:
-    avg: 2.8658497184009796e8
-    count: 2858
+    avg: 2.8669776275508773e8
+    count: 2850
     max: 2054321412
     min: 619444.0
   wisea:
