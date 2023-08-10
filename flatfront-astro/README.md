@@ -12,8 +12,12 @@ npm run dev
 
 ## To Do
 
+- [x] Top query
+- [ ] Scatterplot x y
+- [ ] Collapse cell sections
 - [ ] Add cell
 - [ ] Catalog info
 - [ ] "Show all fields" modal
 - [ ] Filter with select field
 - [ ] Dark mode switch
+- [ ] Tailwind: Standardize theme colors

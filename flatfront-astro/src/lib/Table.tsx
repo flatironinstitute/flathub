@@ -192,7 +192,5 @@ function construct_table_columns<T>(
 
   const columns = root?.columns ?? [];
 
-  log(`columns`, columns);
-
   return columns;
 }

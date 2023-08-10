@@ -1,12 +1,10 @@
 import type {
-  Action,
-  CellID,
-  CatalogMetadataWrapper,
-  Filters,
   CatalogHierarchyNode,
+  TopResponseEntry,
+  CatalogCellID,
+  FilterCellID,
+  TableCellID,
 } from "./types";
-
-import type { Readable } from "svelte/store";
 
 import React from "react";
 
@@ -15,168 +13,294 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { TrashIcon } from "@radix-ui/react-icons";
 import * as Slider from "@radix-ui/react-slider";
 import * as d3 from "d3";
-import { produce } from "immer";
-import { get } from "svelte/store";
 import { Cross1Icon } from "@radix-ui/react-icons";
 
-import { log } from "./shared";
+import {
+  CatalogMetadataProvider,
+  CatalogNameProvider,
+  CellFiltersProvider,
+  CellIDProvider,
+  DataProvider,
+  dispatch_action,
+  FieldNameProvider,
+  LabeledSelect,
+  log,
+  ParentCellIDProvider,
+  PlotIDProvider,
+  set_filter_value,
+  useCatalogMetadata,
+  useCatalogName,
+  useCellFilters,
+  useCellID,
+  useFieldName,
+  useParentCellID,
+  useStore,
+} from "./shared";
 import * as stores from "./stores";
 import Table from "./Table";
 import Katex from "./Katex";
 import { Scatterplot } from "./Highcharts";
 
-const dispatch_action = (action: Action) => {
-  stores.actions.update(($actions) => [...$actions, action]);
-};
-
-const set_filter_value = (
-  cell_id: CellID,
-  filter_name: string,
-  filter_value: {
-    gte: number;
-    lte: number;
-  }
-) => {
-  stores.filter_state.update((fitler_state_object) => {
-    return produce(fitler_state_object, (draft) => {
-      draft[cell_id] = draft[cell_id] || {};
-      draft[cell_id][filter_name] = filter_value;
-    });
-  });
-};
-
-function useContextHelper<T>(debug?: string) {
-  const context = React.createContext<T | null>(null);
-
-  const useContext = (): T => {
-    const value: T | null = React.useContext(context);
-    if (value === null) {
-      throw new Error(`useContextHelper: value is null: ${debug}`);
-    }
-    return value;
-  };
-
-  return [useContext, context.Provider] as const;
-}
-
-function useStore<T>(store: Readable<T>) {
-  const [state, setState] = React.useState<T>(get(store));
-
-  React.useEffect(
-    () =>
-      store.subscribe((value) => {
-        setState(value);
-      }),
-    [store]
-  );
-
-  return state;
-}
-
-const [useCellID, CellIDProvider] = useContextHelper<CellID>();
-const [useCatalogName, CatalogNameProvider] = useContextHelper<string>();
-const [useCatalogMetadata, CatalogMetadataProvider] = useContextHelper<
-  CatalogMetadataWrapper | undefined
->();
-const [useCellFilters, CellFiltersProvider] =
-  useContextHelper<Filters>(`cell filters`);
-const [useFieldName, FieldNameProvider] = useContextHelper<string>();
-
 export default function App() {
-  const cells = useStore(stores.cells);
-
   return (
     <main
       className="ms-auto me-auto flex flex-col gap-y-10"
       style={{ width: `min(900px, 90vw)` }}
     >
       <div className="h-10" />
-      {cells.map((cell) => {
-        return (
-          <CellIDProvider key={cell.id} value={cell.id}>
-            <CatalogNameProvider value={cell.catalog_name}>
-              <QueryCell />
-            </CatalogNameProvider>
-          </CellIDProvider>
-        );
-      })}
+      <GlobalControls />
+      <Cells />
       <div className="h-10" />
     </main>
   );
 }
 
-function QueryCell() {
-  const cell_id = useCellID();
-
-  const catalog_name = useCatalogName();
-
-  const catalog_metadata_query = useStore(
-    stores.catalog_metadata_queries_by_catalog_name
-  )?.[catalog_name];
-
-  const catalog_metadata = catalog_metadata_query.data;
-
-  const catalog_field_hierarchy: CatalogHierarchyNode | undefined =
-    catalog_metadata?.hierarchy;
-
-  // const field_names = get_catalog_initial_column_names(catalog_metadata_query);
-
-  const data_query = useStore(stores.data_queries)?.[cell_id];
-
-  const fetching = data_query.isFetching;
-  const query_data = data_query?.data ?? null;
-
-  const ready_to_render = catalog_field_hierarchy && query_data;
-
-  const has_data = query_data?.length && query_data?.length > 0;
-
-  const filters = useStore(stores.fitler_values)?.get(cell_id);
-  const column_names = useStore(stores.column_names)?.get(cell_id);
-
+function GlobalControls(): React.JSX.Element {
   return (
-    <CatalogMetadataProvider value={catalog_metadata}>
-      <CellFiltersProvider value={filters}>
-        <CellWrapper>
-          <CellTitle subtitle={cell_id}>Query</CellTitle>
-          <FieldsDialog />
-          <CellSection label="filters">
-            <CellFiltersSection />
-          </CellSection>
-          <CellSection label="columns">
-            <CellColumnsSection column_names={column_names} />
-          </CellSection>
-          <CellSection label="fetch">
-            <BigButton onClick={() => data_query.refetch()}>
-              {fetching ? `Fetching Data...` : `Fetch Data`}
-            </BigButton>
-            <div>status: {data_query.status}</div>
-            <div>fetch status: {data_query.fetchStatus}</div>
-          </CellSection>
-          <CellSection label="table">
-            {ready_to_render && has_data ? (
-              <Table
-                data={query_data}
-                catalog_field_hierarchy={catalog_field_hierarchy}
-              />
-            ) : (
-              <PendingBox>No Results</PendingBox>
-            )}
-          </CellSection>
-          <CellSection label="scatterplot">
-            {ready_to_render && has_data ? (
-              <Scatterplot
-                data={query_data}
-                catalog_field_hierarchy={catalog_field_hierarchy}
-              />
-            ) : (
-              <PendingBox>No Results</PendingBox>
-            )}
-          </CellSection>
-        </CellWrapper>
-      </CellFiltersProvider>
-    </CatalogMetadataProvider>
+    <CellWrapper>
+      <div className="grid gap-y-4 items-center">
+        <CatalogSelect />
+        <DarkModeToggle />
+      </div>
+    </CellWrapper>
   );
 }
+
+function CatalogSelect() {
+  const [selected, set_selected] = React.useState<TopResponseEntry | undefined>(
+    undefined
+  );
+  const get_title = (d: TopResponseEntry) => d?.title;
+  const catalog_list_unsorted = useStore(stores.top_response).data ?? [];
+  const ready = catalog_list_unsorted.length > 0;
+  const catalog_list = d3.sort(catalog_list_unsorted, get_title);
+  log(`CatalogSelect: catalog_list`, catalog_list, ready);
+  return (
+    <div data-type="CatalogSelect">
+      <LabeledSelect
+        disabled={!ready}
+        label="Add Catalog"
+        placeholder={ready ? "Select a catalog..." : "Loading catalogs..."}
+        options={catalog_list}
+        getKey={(d) => d?.name}
+        getDisplayName={get_title}
+        value={selected}
+        onValueChange={(d) => {
+          set_selected(d);
+        }}
+        button
+        buttonText="Add"
+        onClick={() => {
+          if (!selected) return;
+          dispatch_action({
+            type: `add_catalog_cell`,
+            cell_id: `catalog_cell_${selected.name}`,
+            catalog_name: selected.name,
+          });
+        }}
+      />
+    </div>
+  );
+}
+
+function DarkModeToggle() {
+  const [dark_mode, set_dark_mode] = React.useState(true);
+
+  React.useEffect(() => {
+    if (dark_mode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [dark_mode]);
+
+  return (
+    <div data-type="DarkModeToggle" className="flex items-center gap-x-4">
+      <div>Dark Mode</div>
+      <div>
+        <Switch
+          checked={dark_mode}
+          onChange={set_dark_mode}
+          className={`bg-slate-50 dark:bg-slate-900 relative inline-flex h-8 w-14 items-center rounded-full`}
+        >
+          <span
+            className={`${
+              dark_mode ? "translate-x-7" : "translate-x-1"
+            } inline-block h-6 w-6 transform rounded-full bg-slate-500 dark:bg-slate-50 transition`}
+          />
+        </Switch>
+      </div>
+    </div>
+  );
+}
+
+function Cells() {
+  const cells = useStore(stores.cells_depth_first).map((d) => d.data);
+
+  log(`Cells: cells`, cells);
+  return (
+    <>
+      {cells.map((cell) => {
+        if (cell.type === `root`) return null;
+        const component = (() => {
+          if (cell.type === `catalog`) {
+            return <CatalogCell />;
+          } else if (cell.type === `filter`) {
+            return <FilterCell />;
+          } else {
+            return <TableCell />;
+            // throw new Error(`Unknown cell type: ${cell.type}`);
+          }
+        })();
+        return (
+          <CellIDProvider key={cell.cell_id} value={cell.cell_id}>
+            <ParentCellIDProvider value={cell.parent_cell_id}>
+              {component}
+            </ParentCellIDProvider>
+          </CellIDProvider>
+        );
+      })}
+    </>
+  );
+}
+function CatalogCell() {
+  const cell_id = useCellID();
+
+  const catalog_name = useStore(stores.catalog_name).get(cell_id);
+  const catalog_metadata = useStore(stores.catalog_metadata).get(catalog_name);
+  const catalog_title = catalog_metadata?.metadata?.title;
+
+  return (
+    <CellWrapper>
+      <CellTitle subtitle={cell_id}>{catalog_title} Catalog</CellTitle>
+      <CellSection label="actions">
+        <BigButton
+          onClick={() => {
+            dispatch_action({
+              type: `add_filter_cell`,
+              cell_id: `filter_cell_${Date.now()}`,
+              parent_cell_id: cell_id as CatalogCellID,
+            });
+          }}
+        >
+          Add Filters
+        </BigButton>
+      </CellSection>
+    </CellWrapper>
+  );
+}
+
+function FilterCell() {
+  const cell_id = useCellID() as FilterCellID;
+  const parent_cell_id = useParentCellID();
+  const catalog_name = useStore(stores.catalog_name).get(cell_id);
+  const catalog_metadata = useStore(stores.catalog_metadata).get(catalog_name);
+  const catalog_title = catalog_metadata?.metadata?.title;
+  return (
+    <CellWrapper>
+      <CellTitle subtitle={cell_id}>{catalog_title} Filters</CellTitle>
+      <CellSection label="source" small>
+        {parent_cell_id}
+      </CellSection>
+      <CellSection label="actions">
+        <div className="flex flex-col gap-y-4">
+          <BigButton
+            onClick={() => {
+              dispatch_action({
+                type: `add_table_cell`,
+                cell_id: `table_cell_${Date.now()}`,
+                parent_cell_id: cell_id,
+              });
+            }}
+          >
+            Add Table
+          </BigButton>
+          <BigButton
+            onClick={() => {
+              dispatch_action({
+                type: `remove_filter_cell`,
+                cell_id: cell_id,
+              });
+            }}
+          >
+            Remove
+          </BigButton>
+        </div>
+      </CellSection>
+    </CellWrapper>
+  );
+}
+
+function TableCell() {
+  const cell_id = useCellID() as TableCellID;
+  const parent_cell_id = useParentCellID();
+  const catalog_name = useStore(stores.catalog_name).get(cell_id);
+  const catalog_metadata = useStore(stores.catalog_metadata).get(catalog_name);
+  const catalog_title = catalog_metadata?.metadata?.title;
+  return (
+    <CellWrapper>
+      <CellTitle subtitle={cell_id}>{catalog_title} Table</CellTitle>
+      <CellSection label="source" small>
+        {parent_cell_id}
+      </CellSection>
+      <CellSection label="actions">
+        <BigButton
+          onClick={() => {
+            dispatch_action({
+              type: `remove_table_cell`,
+              cell_id: cell_id,
+            });
+          }}
+        >
+          Remove
+        </BigButton>
+      </CellSection>
+    </CellWrapper>
+  );
+}
+
+// function FilterCell() {
+//   const cell_id = useCellID();
+
+//   const catalog_name = useCatalogName();
+
+//   const catalog_metadata_query = useStore(
+//     stores.catalog_metadata_queries_by_catalog_name
+//   )?.[catalog_name];
+
+//   const catalog_metadata = catalog_metadata_query.data;
+
+//   const catalog_title = catalog_metadata?.metadata?.title;
+
+//   const filters = useStore(stores.fitler_values)?.get(cell_id);
+
+//   return (
+//     <CatalogMetadataProvider value={catalog_metadata}>
+//       <CellFiltersProvider value={filters}>
+//         <CellWrapper>
+//           <CellTitle subtitle={cell_id}>{catalog_title} Filters</CellTitle>
+//           <FieldsDialog />
+//           <CellSection label="filters">
+//             <CellFiltersSection />
+//           </CellSection>
+//           <CellSection label="actions">
+//             <BigButton
+//               onClick={() => {
+//                 dispatch_action({
+//                   type: `add_table_cell`,
+//                   cell_id: `table_cell_${Date.now()}`,
+//                   parent_cell_id: cell_id,
+//                 });
+//               }}
+//             >
+//               Add Table
+//             </BigButton>
+//           </CellSection>
+//         </CellWrapper>
+//       </CellFiltersProvider>
+//     </CatalogMetadataProvider>
+//   );
+// }
 
 function FieldsDialog() {
   const catalog_metadata = useCatalogMetadata();
@@ -266,6 +390,8 @@ function FieldCard({
   const nodes_by_name = useCatalogMetadata()?.nodes_by_name;
   const field_node = nodes_by_name?.get(field_name);
 
+  const column_names = useStore(stores.column_names)?.get(cell_id);
+
   if (!field_node) {
     throw new Error(`Could not find node for ${field_name}`);
   }
@@ -325,7 +451,43 @@ function FieldCard({
   })();
 
   const column_toggle = (() => {
-    return <div>column</div>;
+    if (!is_leaf) return null;
+    const is_active_column = column_names.has(field_name);
+    const on_change = (checked: boolean) => {
+      log(`column toggle`, checked);
+      if (checked) {
+        dispatch_action({
+          type: `add_column`,
+          cell_id,
+          column_name: field_name,
+        });
+      } else {
+        dispatch_action({
+          type: `remove_column`,
+          cell_id,
+          column_name: field_name,
+        });
+      }
+    };
+    return (
+      <Switch
+        checked={is_active_column}
+        onChange={on_change}
+        disabled={is_required}
+        className="disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {({ checked }) => (
+          <div className="flex gap-x-2 items-center">
+            <div
+              className={`h-3 w-3 outline outline-2 dark:outline-slate-50 rounded-xl ${
+                checked ? `bg-slate-50` : `bg-transparent`
+              }`}
+            ></div>
+            <div>Column</div>
+          </div>
+        )}
+      </Switch>
+    );
   })();
 
   const filter_toggle = (() => {
@@ -387,7 +549,10 @@ function FieldCard({
   );
 
   return (
-    <div className="rounded-md bg-slate-50 dark:bg-slate-600 text-md text-slate-200 px-4 py-1 flex flex-col gap-y-4">
+    <div
+      data-type="FieldCard"
+      className="rounded-md bg-slate-50 dark:bg-slate-600 text-md text-slate-700 dark:text-slate-200 px-4 py-1 flex flex-col gap-y-4"
+    >
       <div className="grid grid-cols-12 items-center ">
         <div className="col-span-5">{field_title}</div>
         {controls}
@@ -482,7 +647,7 @@ function ConnectedRangeSlider() {
       max={max}
       value={value}
       onValueChange={([low, high]) => {
-        log(`on value change`, low, high);
+        // log(`on value change`, low, high);
         set_filter_value(cell_id, field_name, {
           gte: low,
           lte: high,
@@ -507,7 +672,7 @@ function RangeSlider({
   const format = (d: number) => d3.format(`,.4~g`)(d);
   const range = Math.abs(max - min);
   const step = range / 100;
-  const thumb_class = `block h-4 w-4 rounded-full dark:bg-white focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75`;
+  const thumb_class = `block h-4 w-4 rounded-full bg-slate-700 dark:bg-slate-50 focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75`;
   return (
     <div
       className="grid gap-x-2 items-center justify-items-center"
@@ -522,8 +687,8 @@ function RangeSlider({
         onValueChange={onValueChange}
         step={step}
       >
-        <Slider.Track className="relative h-1 w-full grow rounded-full bg-white dark:bg-slate-800">
-          <Slider.Range className="absolute h-full rounded-full bg-purple-600 dark:bg-white" />
+        <Slider.Track className="relative h-1 w-full grow rounded-full bg-slate-400 dark:bg-slate-800">
+          <Slider.Range className="absolute h-full rounded-full bg-slate-600 dark:bg-white" />
         </Slider.Track>
         <Slider.Thumb className={thumb_class} />
         <Slider.Thumb className={thumb_class} />
@@ -549,16 +714,33 @@ function get_field_metadata(
   return field_metadata;
 }
 
-function CellColumnsSection({ column_names }: { column_names: string[] }) {
+function CellColumnsSection({ column_names }: { column_names: Set<string> }) {
+  const cell_id = useCellID();
+
+  const names_order = useCatalogMetadata()?.nodes.map((d) => d.data.name) ?? [];
+
+  const column_names_raw = Array.from(column_names);
+
+  const sorted = d3.sort(column_names_raw, (d) => names_order.indexOf(d));
   return (
     <div className="grid grid-cols-3 gap-x-3 gap-y-2">
-      {column_names.map((column_name) => {
+      {sorted.map((column_name) => {
         return (
           <div
             key={column_name}
-            className="text-xs text-slate-200 px-2 rounded dark:bg-slate-600"
+            className="flex items-center justify-between text-xs text-slate-700 dark:text-slate-200 px-2 py-1 rounded bg-slate-50 dark:bg-slate-600"
           >
-            {column_name}
+            <div>{column_name}</div>
+            <TrashIcon
+              className="w-3 h-3 cursor-pointer"
+              onClick={() => {
+                dispatch_action({
+                  type: `remove_column`,
+                  cell_id,
+                  column_name: column_name,
+                });
+              }}
+            />
           </div>
         );
       })}
@@ -568,7 +750,7 @@ function CellColumnsSection({ column_names }: { column_names: string[] }) {
 
 function PendingBox({ children }: { children: React.ReactNode }) {
   return (
-    <div className="h-40 rounded-lg p-4 outline-2 outline-dashed outline-slate-50 grid place-items-center opacity-50">
+    <div className="h-40 rounded-lg p-4 outline-2 outline-dashed outline-slate-700 dark:outline-slate-50 grid place-items-center opacity-50">
       {children}
     </div>
   );
@@ -592,14 +774,16 @@ function CellTitle({
 function CellSection({
   label,
   children = null,
+  small = false,
 }: {
   label: string;
   children?: React.ReactNode;
+  small?: boolean;
 }): React.JSX.Element {
   return (
     <div className="flex flex-col">
       <SimpleLabel>{label}</SimpleLabel>
-      <div className="h-4"></div>
+      <div className={small ? `h-1` : `h-4`}></div>
       {children}
     </div>
   );
@@ -640,7 +824,7 @@ function CellWrapper({
   children: React.ReactNode;
 }): React.JSX.Element {
   return (
-    <div className="rounded font-mono bg-slate-200 dark:bg-slate-700 p-6 shadow-lg shadow-black dark:shadow-lg dark:shadow-black w-full transition-all flex flex-col gap-y-10">
+    <div className="rounded font-mono bg-light-1 dark:bg-dark-1 p-6 shadow-lg shadow-black dark:shadow-lg dark:shadow-black w-full transition-all flex flex-col gap-y-10">
       {children}
     </div>
   );

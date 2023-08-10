@@ -1,16 +1,21 @@
 import type {
   Action,
-  Cell,
-  CellAction,
-  CellID,
-  CatalogMetadataWrapper,
-  Filters,
-  DataRequestBody,
-  DataResponse,
   CatalogHierarchyNode,
   CatalogMetadataQuery,
-  FieldGroup,
+  CatalogMetadataWrapper,
   CatalogResponse,
+  Cell,
+  CatalogCell,
+  CellAction,
+  CellID,
+  DataRequestBody,
+  DataResponse,
+  FieldGroup,
+  FilterListAction,
+  Filters,
+  FilterValue,
+  TopResponse,
+  ColumnListAction,
 } from "./types";
 import type {
   QueryObserverResult,
@@ -22,17 +27,57 @@ import { QueryClient } from "@tanstack/react-query";
 import { QueryObserver } from "@tanstack/query-core";
 
 import * as d3 from "d3";
-import { writable, derived, get } from "svelte/store";
+import { readable, writable, derived, get } from "svelte/store";
 
 import { log } from "./shared";
+
+const FLATHUB_API_BASE_URL = `https://flathub.flatironinstitute.org`;
 
 const query_client = new QueryClient();
 
 export const actions = writable<Action[]>([
-  { type: `add_query_cell`, catalog_name: `camels`, cell_id: `query_cell_1` },
-  { type: `add_query_cell`, catalog_name: `camels`, cell_id: `query_cell_2` },
-  { type: `add_query_cell`, catalog_name: `camels`, cell_id: `query_cell_3` },
+  {
+    type: "add_catalog_cell",
+    cell_id: "catalog_cell_camels",
+    catalog_name: "camels",
+  },
+  {
+    type: "add_filter_cell",
+    cell_id: "filter_cell_1691622596626",
+    parent_cell_id: "catalog_cell_camels",
+  },
+  // {
+  //   type: `add_filter_cell`,
+  //   catalog_name: `camels`,
+  //   cell_id: `filter_cell_camels_1`,
+  // },
+  // {
+  //   type: `add_filter_cell`,
+  //   catalog_name: `camels`,
+  //   cell_id: `filter_cell_camels_2`,
+  // },
+  // {
+  //   type: `add_filter_cell`,
+  //   catalog_name: `camels`,
+  //   cell_id: `filter_cell_camels_3`,
+  // },
+  // {
+  //   type: "set_plot_control",
+  //   cell_id: "query_cell_1",
+  //   plot_id: "scatterplot_1",
+  //   key: "x_axis",
+  //   value: "Subhalo_Spin_y",
+  // },
+  // {
+  //   type: "set_plot_control",
+  //   cell_id: "query_cell_1",
+  //   plot_id: "scatterplot_1",
+  //   key: "y_axis",
+  //   value: "Subhalo_Pos_x",
+  // },
 ]);
+
+actions.subscribe((actions) => log(`Actions:`, actions));
 
 const actions_by_type_store = derived(actions, ($actions) => {
   const actions_by_type = d3.group(
@@ -43,12 +88,8 @@ const actions_by_type_store = derived(actions, ($actions) => {
   return Object.fromEntries(actions_by_type);
 });
 
-const actions_by_cell_id_store = derived(actions, ($actions) => {
-  const actions_by_cell_id = d3.group(
-    $actions,
-    (d) => d.cell_id,
-    (d) => d.type
-  );
+const actions_by_cell_id = derived(actions, ($actions) => {
+  const actions_by_cell_id = d3.group($actions, (d) => d.cell_id);
   return actions_by_cell_id;
 });
 
@@ -56,45 +97,165 @@ export const filter_state = writable<
   Record<
     CellID,
     {
-      [filter_name: string]: {
-        gte: number;
-        lte: number;
-      };
+      [filter_name: string]: FilterValue;
     }
   >
->({});
+>({} as Record<CellID, { [filter_name: string]: FilterValue }>);
 
-export const cells: Readable<Cell[]> = derived(actions, ($actions) => {
+filter_state.subscribe((filter_state) =>
+  log(`Global Filter State:`, filter_state)
+);
+
+export const top_response: Readable<QueryObserverResult<TopResponse>> =
+  readable<QueryObserverResult<TopResponse>>(null, (set, update) => {
+    const observer: QueryObserver<TopResponse> = create_query_observer({
+      staleTime: Infinity,
+      queryKey: ["top"],
+      queryFn: async (): Promise<TopResponse> =>
+        fetch_api_get<TopResponse>(`/`),
+    });
+    const current: QueryObserverResult<TopResponse> =
+      observer.getCurrentResult();
+    set(current);
+    return observer.subscribe((result) => {
+      set(result);
+    });
+  });
+
+top_response.subscribe((result) => log(`Top response:`, result, result.data));
+
+const cells: Readable<Cell[]> = derived(actions, ($actions) => {
+  const cell_action_types: CellAction["type"][] = [
+    `add_catalog_cell`,
+    `add_filter_cell`,
+    `add_table_cell`,
+    `remove_table_cell`,
+    `remove_filter_cell`,
+  ];
+  // Filter cells to only include those with type in cell_action_types.
   const cell_actions = $actions.filter((action): action is CellAction =>
-    [`add_query_cell`].includes(action.type)
+    cell_action_types.some((type) => action.type === type)
   );
-  const cells: Cell[] = [];
+  log(`CELL ACTIONS:`, cell_actions);
+  let cells: Cell[] = [];
   for (const cell_action of cell_actions) {
-    if (cell_action.type === `add_query_cell`) {
+    if (cell_action.type === `add_catalog_cell`) {
+      // If cells already includes a cell with this catalog name, don't add it.
+      if (
+        cells.some(
+          (cell) =>
+            cell.type === `catalog` &&
+            cell.catalog_name === cell_action.catalog_name
+        )
+      ) {
+        log(
+          `Skipping adding duplicate catalog cell ${cell_action.catalog_name}`
+        );
+        continue;
+      }
       cells.push({
-        type: `query`,
-        id: cell_action.cell_id,
+        type: `catalog`,
+        cell_id: cell_action.cell_id,
         catalog_name: cell_action.catalog_name,
+        parent_cell_id: `root`,
       });
+    } else if (cell_action.type === `add_filter_cell`) {
+      cells.push({
+        type: `filter`,
+        cell_id: cell_action.cell_id,
+        parent_cell_id: cell_action.parent_cell_id,
+      });
+    } else if (cell_action.type === `remove_filter_cell`) {
+      // Remove the table cell with the given cell_id.
+      cells = cells.filter((cell) => cell.cell_id !== cell_action.cell_id);
+      const children = cells.filter(
+        (cell) => cell.parent_cell_id === cell_action.cell_id
+      );
+      for (const child of children) {
+        cells = cells.filter((cell) => cell.cell_id !== child.cell_id);
+      }
+      log(`CELL ACTION: Removed filter cell ${cell_action.cell_id}`);
+    } else if (cell_action.type === `add_table_cell`) {
+      cells.push({
+        type: `table`,
+        cell_id: cell_action.cell_id,
+        parent_cell_id: cell_action.parent_cell_id,
+      });
+    } else if (cell_action.type === `remove_table_cell`) {
+      // Remove the table cell with the given cell_id.
+      cells = cells.filter((cell) => cell.cell_id !== cell_action.cell_id);
+    } else {
+      const type = (cell_action as CellAction).type;
+      throw new Error(`Unrecognized cell action type ${type}`);
     }
   }
-  return unique_by(cells, (d) => d.id);
+  return unique_by(cells, (d) => d.cell_id);
 });
 
-const catalog_name: Readable<{ get(cell_id: CellID): string }> = derived(
+const cells_hierarchy: Readable<d3.HierarchyNode<Cell>> = derived(
   cells,
   ($cells) => {
-    const cell_id_to_catalog_name = new Map<CellID, string>();
-    for (const cell of $cells) {
-      cell_id_to_catalog_name.set(cell.id, cell.catalog_name);
-    }
+    log(`Computing cells hierarchy...`, $cells);
+    const stratifier = d3
+      .stratify<Cell>()
+      .id((d: Cell) => d.cell_id)
+      .parentId((d: Cell & { parent_cell_id?: CellID }) => d.parent_cell_id);
+    const cells_with_root: Cell[] = [
+      {
+        type: `root`,
+        cell_id: `root`,
+        parent_cell_id: undefined,
+      },
+      ...$cells,
+    ];
+    const hierarchy = stratifier(cells_with_root);
+    return hierarchy;
+  }
+);
+
+export const cells_depth_first = derived(cells_hierarchy, ($hierarchy) => {
+  return get_nodes_depth_first($hierarchy);
+});
+
+cells_hierarchy.subscribe((hierarchy) => log(`Cells hierarchy:`, hierarchy));
+
+export const catalog_name: Readable<{ get(cell_id: CellID): string }> = derived(
+  cells_hierarchy,
+  ($cells_hierarchy) => {
+    // const cell_id_to_catalog_name = new Map<CellID, string>();
+    // for (const cell of $cells) {
+    //   cell_id_to_catalog_name.set(cell.id, cell.catalog_name);
+    // }
     return {
       get(cell_id: CellID) {
-        const catalog_name = cell_id_to_catalog_name.get(cell_id);
+        const found = $cells_hierarchy.find((d) => d.data.cell_id === cell_id);
+        if (found === undefined) {
+          throw new Error(`No cell found for cell_id: ${cell_id}`);
+        }
+        // log(`Getting catalog name for:`, cell_id);
+        let catalog_name = undefined;
+        if (found.data.type === `catalog`) {
+          catalog_name = found.data.catalog_name;
+        } else {
+          // Traverse parents until a catalog name is found
+          let parent = found.parent;
+          while (parent !== null) {
+            if (parent.data.type === `catalog`) {
+              catalog_name = parent.data.catalog_name;
+              break;
+            }
+            parent = parent.parent;
+          }
+        }
         if (catalog_name === undefined) {
           throw new Error(`No catalog name for cell_id: ${cell_id}`);
         }
         return catalog_name;
+        // const catalog_name = cell_id_to_catalog_name.get(cell_id);
+        // if (catalog_name === undefined) {
+        //   throw new Error(`No catalog name for cell_id: ${cell_id}`);
+        // }
+        // return catalog_name;
       },
     };
   }
@@ -109,8 +270,11 @@ export const catalog_metadata_queries_by_catalog_name: Readable<
   derived(
     cells,
     ($cells) => {
+      const catalog_cells = $cells.filter(
+        (cell): cell is CatalogCell => cell.type === `catalog`
+      );
       const obj: Record<string, QueryObserver> = {};
-      $cells.forEach((cell) => {
+      catalog_cells.forEach((cell) => {
         const catalog_name = cell.catalog_name;
         const observer = create_query_observer({
           staleTime: Infinity,
@@ -126,7 +290,7 @@ export const catalog_metadata_queries_by_catalog_name: Readable<
   )
 );
 
-const catalog_metadata: Readable<{
+export const catalog_metadata: Readable<{
   get(catalog_name: string): CatalogMetadataWrapper | null;
 }> = derived(
   catalog_metadata_queries_by_catalog_name,
@@ -169,15 +333,32 @@ export const field_metadata = derived(
 );
 
 export const column_names = derived(
-  [catalog_name, catalog_metadata],
-  ([$catalog_name, $catalog_metadata]) => {
+  [catalog_name, catalog_metadata, actions_by_cell_id],
+  ([$catalog_name, $catalog_metadata, $actions_by_cell_id]) => {
     return {
-      get(cell_id: CellID): string[] {
+      get(cell_id: CellID): Set<string> {
         const catalog_name = $catalog_name.get(cell_id);
         const catalog_metadata = $catalog_metadata.get(catalog_name);
-        if (!catalog_metadata) return [];
-        const column_names = get_catalog_initial_column_names(catalog_metadata);
-        return column_names;
+        if (!catalog_metadata) return new Set();
+        const actions = $actions_by_cell_id.get(cell_id);
+        const column_list_actions = actions.filter(
+          (action): action is ColumnListAction =>
+            action.type === `add_column` || action.type === `remove_column`
+        );
+        const column_name_set: Set<string> = new Set(
+          catalog_metadata.initial_column_names
+        );
+        for (const action of column_list_actions) {
+          if (action.type === `remove_column`) {
+            column_name_set.delete(action.column_name);
+          } else if (action.type === `add_column`) {
+            column_name_set.add(action.column_name);
+            // filter_list = [...filter_list, action.filter_name];
+          } else {
+            throw new Error(`unknown filter action type: ${action.type}`);
+          }
+        }
+        return column_name_set;
       },
     };
   }
@@ -186,11 +367,7 @@ export const column_names = derived(
 const filter_set_store: Readable<{
   get(cell_id: CellID): Set<string>;
 }> = derived(
-  [
-    catalog_name,
-    catalog_metadata_queries_by_catalog_name,
-    actions_by_cell_id_store,
-  ],
+  [catalog_name, catalog_metadata_queries_by_catalog_name, actions_by_cell_id],
   ([
     $catalog_name,
     $catalog_metadata_queries_by_catalog_name,
@@ -204,13 +381,13 @@ const filter_set_store: Readable<{
           $catalog_metadata_queries_by_catalog_name[catalog_name];
         const catalog_metadata = catalog_metadata_query?.data;
         const actions_for_cell = $actions_by_cell_id.get(cell_id);
-        const remove_filter_actions =
-          actions_for_cell?.get("remove_filter") ?? [];
-        const add_filter_actions = actions_for_cell?.get("add_filter") ?? [];
-        const filter_list_actions = [
-          ...add_filter_actions,
-          ...remove_filter_actions,
-        ];
+        const filter_list_actions = actions_for_cell.filter(
+          (action): action is FilterListAction => {
+            return (
+              action.type === `add_filter` || action.type === `remove_filter`
+            );
+          }
+        );
         const filter_set: Set<string> = new Set(
           catalog_metadata?.initial_filter_names ?? []
         );
@@ -245,6 +422,7 @@ export const fitler_values: Readable<{ get(cell_id: CellID): Filters }> =
             return {};
           }
           const filter_set: Set<string> = $filter_set.get(cell_id);
+          // log(`filter_set`, cell_id, filter_set);
           const initial_filters: Filters = get_initial_cell_filters(
             filter_set,
             hierarchy
@@ -276,7 +454,8 @@ export const query_config = derived(
         const catalog_name = $catalog_name.get(cell_id);
 
         const filters = $filter_values?.get(cell_id);
-        const column_names = $column_names?.get(cell_id);
+        const column_names_set: Set<string> = $column_names?.get(cell_id);
+        const column_names = Array.from(column_names_set);
 
         const request_body: DataRequestBody = {
           object: true,
@@ -295,36 +474,36 @@ export const query_config = derived(
   }
 );
 
-export const data_queries: Readable<
-  Record<CellID, QueryObserverResult<DataResponse>>
-> = subscribe_to_many(
-  derived(
-    [cells, query_config],
-    ([$cells, $query_config_by_cell_id]) => {
-      const obj: Record<CellID, QueryObserver<DataResponse>> = {};
-      for (const { id: cell_id } of $cells) {
-        const query_config = $query_config_by_cell_id.get(cell_id);
-        const observer = create_query_observer<DataResponse>({
-          staleTime: Infinity,
-          enabled: false,
-          queryKey: [`data`, query_config],
-          queryFn: async (): Promise<DataResponse> => {
-            return fetch_from_api<DataResponse>(
-              query_config.path,
-              query_config.body
-            ).then((response) => {
-              log(`query response`, response);
-              return response;
-            });
-          },
-        });
-        obj[cell_id] = observer;
-      }
-      return obj;
-    },
-    {}
-  )
-);
+// export const data_queries: Readable<
+//   Record<CellID, QueryObserverResult<DataResponse>>
+// > = subscribe_to_many(
+//   derived(
+//     [cells, query_config],
+//     ([$cells, $query_config_by_cell_id]) => {
+//       const obj: Record<CellID, QueryObserver<DataResponse>> = {};
+//       // for (const { cell_id } of $cells) {
+//       //   const query_config = $query_config_by_cell_id.get(cell_id);
+//       //   const observer = create_query_observer<DataResponse>({
+//       //     staleTime: Infinity,
+//       //     enabled: false,
+//       //     queryKey: [`data`, query_config],
+//       //     queryFn: async (): Promise<DataResponse> => {
+//       //       return fetch_api_post<DataResponse>(
+//       //         query_config.path,
+//       //         query_config.body
+//       //       ).then((response) => {
+//       //         log(`query response`, response);
+//       //         return response;
+//       //       });
+//       //     },
+//       //   });
+//       //   obj[cell_id] = observer;
+//       // }
+//       return obj;
+//     },
+//     {}
+//   )
+// );
 
 // =========================================
 // FUNCTIONS
@@ -355,7 +534,9 @@ function get_initial_cell_filters(
       }
       const initial_value: Filters[string] = (() => {
         const type = metadata.type;
-        if (type === `boolean`) {
+        if (metadata.terms) {
+          return 0;
+        } else if (type === `boolean`) {
           return true;
         } else if (type === `byte`) {
           return 0;
@@ -371,6 +552,7 @@ function get_initial_cell_filters(
             !Number.isFinite(metadata.stats.min) ||
             !Number.isFinite(metadata.stats.max)
           ) {
+            log(`meta`, metadata);
             throw new Error(`Missing min/max for float filter: ${filter_name}`);
           }
           return {
@@ -392,7 +574,6 @@ async function fetch_catalog_metadata(
   catalog_name: string
 ): Promise<CatalogMetadataWrapper> {
   const path = `/${catalog_name}`;
-  const FLATHUB_API_BASE_URL = `https://flathub.flatironinstitute.org`;
   const url = new URL(`/api${path}`, FLATHUB_API_BASE_URL);
   log(`💥 fetching`, url.toString());
   try {
@@ -469,11 +650,23 @@ function create_query_observer<T>(options: QueryObserverOptions) {
   return observer as QueryObserver<T>;
 }
 
-function fetch_from_api<T>(
+function fetch_api_get<T>(path: string): Promise<T> {
+  const url = new URL(`/api${path}`, FLATHUB_API_BASE_URL);
+  log(`💥 fetching`, url.toString());
+  return fetch(url.toString(), {
+    method: `GET`,
+  }).then((response) => {
+    if (!response.ok) {
+      throw new Error(`API Fetch Error: ${response.status}`);
+    }
+    return response.json() as T;
+  });
+}
+
+function fetch_api_post<T>(
   path: string,
   body?: Record<string, any>
 ): Promise<T> {
-  const FLATHUB_API_BASE_URL = `https://flathub.flatironinstitute.org`;
   const url = new URL(`/api${path}`, FLATHUB_API_BASE_URL);
   log(`💥 fetching`, url.toString());
   return fetch(url.toString(), {
