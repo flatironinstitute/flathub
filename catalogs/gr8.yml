@@ -1,5 +1,5 @@
 title: Gr8 Stars
-index: gr8
+index: gr8.1
 settings:
   index:
     number_of_shards: 1
@@ -486,7 +486,7 @@ fields:
       #       type: int
       #       flag: hidden
       #       descr: Number of observations averaged to create the spectrum
-      - name: ''
+      - name: 'hermes'
         title: hermes
         sub:
         - name: ''
@@ -499,23 +499,23 @@ fields:
                 path: gr8/spectra/HERMES/${primary_name/ /}_HERMES_S1D.fits
                 name: gr8_spectra_${primary_name/ /}_HERMES_S1D.fits
               ingest: spectrum_hermes
-      # - name: 'hermes_resolution'
+      # - name: 'resolution'
       #   title: 'resolution'
       #   type: float
       #   flag: hidden
       #   descr: Spectral resolution
-        - name: 'hermes_snr'
+        - name: 'snr'
           title: 'snr'
           type: float
           flag: hidden
           descr: Signal-to-noise per pixel at 600 nm
-      # - name: 'hermes_date'
+      # - name: 'date'
       #   title: 'date'
       #   type: float
       #   units: 'BJD'
       #   flag: hidden
       #   descr: Date of observation (or effective average date if nobs > 1)
-        - name: 'hermes_nobs'
+        - name: 'nobs'
           title: 'nobs'
           type: int
           flag: hidden
