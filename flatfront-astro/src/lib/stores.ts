@@ -8,6 +8,8 @@ import type {
   CatalogCell,
   CellAction,
   CellID,
+  TableCellID,
+  PlotCellID,
   DataRequestBody,
   DataResponse,
   FieldGroup,
@@ -30,7 +32,7 @@ import * as d3 from "d3";
 import { readable, writable, derived, get } from "svelte/store";
 import * as lzstring from "lz-string";
 
-import { log } from "./shared";
+import { log, find_parent_node_by_filter, is_filter_cell_id } from "./shared";
 
 const FLATHUB_API_BASE_URL = `https://flathub.flatironinstitute.org`;
 
@@ -46,6 +48,16 @@ export const actions = writable<Action[]>([
     type: "add_filter_cell",
     cell_id: "filter_cell_1691622596626",
     parent_cell_id: "catalog_cell_camels",
+  },
+  {
+    type: "add_filter",
+    cell_id: "filter_cell_1691622596626",
+    filter_name: "Group_GasMetalFractions_He",
+  },
+  {
+    type: "add_table_cell",
+    cell_id: "table_cell_1691701006344",
+    parent_cell_id: "filter_cell_1691622596626",
   },
   // {
   //   type: `add_filter_cell`,
@@ -219,34 +231,55 @@ const cells_hierarchy: Readable<d3.HierarchyNode<Cell>> = derived(
   }
 );
 
+cells_hierarchy.subscribe((hierarchy) => log(`Cells hierarchy:`, hierarchy));
+
+const hierarchy_node = derived(cells_hierarchy, ($hierarchy) => ({
+  get(cell_id: CellID): d3.HierarchyNode<Cell> {
+    const found = $hierarchy.find((d) => d.data.cell_id === cell_id);
+    if (found === undefined) {
+      throw new Error(`No cell found for cell_id: ${cell_id}`);
+    }
+    return found;
+  },
+}));
+
+const parent_cell_id = derived(hierarchy_node, ($hierarchy_node) => ({
+  get(cell_id: CellID): CellID {
+    const found = $hierarchy_node.get(cell_id);
+    return found.data.parent_cell_id;
+  },
+}));
+
 export const cells_depth_first = derived(cells_hierarchy, ($hierarchy) => {
   return get_nodes_depth_first($hierarchy);
 });
 
-cells_hierarchy.subscribe((hierarchy) => log(`Cells hierarchy:`, hierarchy));
-
 export const catalog_name: Readable<{ get(cell_id: CellID): string }> = derived(
-  cells_hierarchy,
-  ($cells_hierarchy) => {
+  hierarchy_node,
+  ($hierarchy_node) => {
     return {
       get(cell_id: CellID) {
-        const found = $cells_hierarchy.find((d) => d.data.cell_id === cell_id);
-        if (found === undefined) {
-          throw new Error(`No cell found for cell_id: ${cell_id}`);
-        }
+        const found = $hierarchy_node.get(cell_id);
         let catalog_name = undefined;
         if (found.data.type === `catalog`) {
           catalog_name = found.data.catalog_name;
         } else {
           // Traverse parents until a catalog name is found
-          let parent = found.parent;
-          while (parent !== null) {
-            if (parent.data.type === `catalog`) {
-              catalog_name = parent.data.catalog_name;
-              break;
-            }
-            parent = parent.parent;
+          const ancestor: d3.HierarchyNode<Cell> = find_parent_node_by_filter(
+            found,
+            (d) => d.data.type === `catalog`
+          );
+          if (!ancestor) {
+            throw new Error(
+              `No catalog ancestor found for cell_id: ${cell_id}`
+            );
           }
+          if (ancestor.data.type !== `catalog`) {
+            throw new Error(
+              `Expected ancestor to be a catalog, but was ${ancestor.data.type}`
+            );
+          }
+          catalog_name = ancestor.data.catalog_name;
         }
         if (catalog_name === undefined) {
           throw new Error(`No catalog name for cell_id: ${cell_id}`);
@@ -332,7 +365,7 @@ export const column_names = derived(
   [catalog_name, catalog_metadata, actions_by_cell_id],
   ([$catalog_name, $catalog_metadata, $actions_by_cell_id]) => {
     return {
-      get(cell_id: CellID): Set<string> {
+      get(cell_id: TableCellID | PlotCellID): Set<string> {
         const catalog_name = $catalog_name.get(cell_id);
         const catalog_metadata = $catalog_metadata.get(catalog_name);
         if (!catalog_metadata) return new Set();
@@ -349,7 +382,6 @@ export const column_names = derived(
             column_name_set.delete(action.column_name);
           } else if (action.type === `add_column`) {
             column_name_set.add(action.column_name);
-            // filter_list = [...filter_list, action.filter_name];
           } else {
             throw new Error(`unknown filter action type: ${action.type}`);
           }
@@ -390,12 +422,8 @@ const filter_set_store: Readable<{
         for (const action of filter_list_actions) {
           if (action.type === `remove_filter`) {
             filter_set.delete(action.filter_name);
-            // filter_list = filter_list.filter((filter_name) => {
-            //   return filter_name !== action.filter_name;
-            // });
           } else if (action.type === `add_filter`) {
             filter_set.add(action.filter_name);
-            // filter_list = [...filter_list, action.filter_name];
           } else {
             throw new Error(`unknown filter action type: ${action.type}`);
           }
@@ -438,18 +466,21 @@ export const filter_values: Readable<{ get(cell_id: FilterCellID): Filters }> =
     }
   );
 
-const debounced_filter_values_store: Readable<{
-  get(cell_id: CellID): Filters;
-}> = debounce_store(filter_values, 500);
+const debounced_filter_values_store = debounce_store(filter_values, 500);
 
 export const query_config = derived(
-  [catalog_name, debounced_filter_values_store, column_names],
-  ([$catalog_name, $filter_values, $column_names]) => {
+  [catalog_name, parent_cell_id, debounced_filter_values_store, column_names],
+  ([$catalog_name, $parent_cell_id, $filter_values, $column_names]) => {
     return {
-      get(cell_id: CellID) {
+      get(cell_id: TableCellID | PlotCellID) {
         const catalog_name = $catalog_name.get(cell_id);
 
-        const filters = $filter_values?.get(cell_id);
+        const parent_cell_id: FilterCellID = is_filter_cell_id(
+          $parent_cell_id.get(cell_id)
+        );
+
+        const filters = $filter_values?.get(parent_cell_id);
+
         const column_names_set: Set<string> = $column_names?.get(cell_id);
         const column_names = Array.from(column_names_set);
 
@@ -461,7 +492,7 @@ export const query_config = derived(
         };
 
         const query_config = {
-          path: `/camels/data`,
+          path: `/${catalog_name}/data`,
           body: request_body,
         };
         return query_config;
@@ -470,36 +501,40 @@ export const query_config = derived(
   }
 );
 
-// export const data_queries: Readable<
-//   Record<CellID, QueryObserverResult<DataResponse>>
-// > = subscribe_to_many(
-//   derived(
-//     [cells, query_config],
-//     ([$cells, $query_config_by_cell_id]) => {
-//       const obj: Record<CellID, QueryObserver<DataResponse>> = {};
-//       // for (const { cell_id } of $cells) {
-//       //   const query_config = $query_config_by_cell_id.get(cell_id);
-//       //   const observer = create_query_observer<DataResponse>({
-//       //     staleTime: Infinity,
-//       //     enabled: false,
-//       //     queryKey: [`data`, query_config],
-//       //     queryFn: async (): Promise<DataResponse> => {
-//       //       return fetch_api_post<DataResponse>(
-//       //         query_config.path,
-//       //         query_config.body
-//       //       ).then((response) => {
-//       //         log(`query response`, response);
-//       //         return response;
-//       //       });
-//       //     },
-//       //   });
-//       //   obj[cell_id] = observer;
-//       // }
-//       return obj;
-//     },
-//     {}
-//   )
-// );
+export const data_queries: Readable<
+  Record<TableCellID | PlotCellID, QueryObserverResult<DataResponse>>
+> = subscribe_to_many(
+  derived(
+    [cells, query_config],
+    ([$cells, $query_config_by_cell_id]) => {
+      const obj: Record<
+        TableCellID | PlotCellID,
+        QueryObserver<DataResponse>
+      > = {};
+      for (const { type, cell_id } of $cells) {
+        if (type !== `table` && type !== `plot`) continue;
+        const query_config = $query_config_by_cell_id.get(cell_id);
+        const observer = create_query_observer<DataResponse>({
+          staleTime: Infinity,
+          enabled: false,
+          queryKey: [`data`, query_config],
+          queryFn: async (): Promise<DataResponse> => {
+            return fetch_api_post<DataResponse>(
+              query_config.path,
+              query_config.body
+            ).then((response) => {
+              log(`query response`, response);
+              return response;
+            });
+          },
+        });
+        obj[cell_id] = observer;
+      }
+      return obj;
+    },
+    {} as Record<TableCellID | PlotCellID, QueryObserver<DataResponse>>
+  )
+);
 
 // =========================================
 // FUNCTIONS
@@ -556,10 +591,10 @@ function get_initial_cell_filters(
       }
       const initial_value: Filters[string] = (() => {
         const type = metadata.type;
-        if (metadata.terms) {
-          return 0;
-        } else if (type === `boolean`) {
+        if (type === `boolean`) {
           return true;
+        } else if (metadata.terms) {
+          return 0;
         } else if (type === `byte`) {
           return 0;
         } else if ([`float`, `short`].includes(type)) {
@@ -582,6 +617,7 @@ function get_initial_cell_filters(
             lte: metadata.stats.max,
           };
         } else {
+          return `unknown`;
           log(`meta`, metadata);
           throw new Error(`Unexpected filter type: ${type}`);
         }
@@ -715,13 +751,13 @@ function unique_by<T>(arr: T[], key: (t: T) => any): T[] {
   });
 }
 
-function debounce_store<T>(store: Readable<T>, delay: number) {
+function debounce_store<T>(store: Readable<T>, delay: number): Readable<T> {
   return derived(
     store,
     ($store, set) => {
       const timeout = setTimeout(() => {
         set($store);
-      }, 500);
+      }, delay);
       return () => {
         clearTimeout(timeout);
       };

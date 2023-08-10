@@ -11,6 +11,7 @@ import type {
 } from "./types";
 
 import React from "react";
+import * as d3 from "d3";
 import clsx from "clsx";
 import { get } from "svelte/store";
 import { ChevronDownIcon } from "@radix-ui/react-icons";
@@ -31,6 +32,12 @@ export function is_catalog_cell_id(cell_id: CellID): CatalogCellID {
     throw new Error(`${cell_id} is not a catalog cell id`);
   }
   return cell_id as CatalogCellID;
+}
+export function is_filter_cell_id(cell_id: CellID): FilterCellID {
+  if (!cell_id.match(/^filter_cell_/)) {
+    throw new Error(`${cell_id} is not a filter cell id`);
+  }
+  return cell_id as FilterCellID;
 }
 
 export function set_filter_value(
@@ -131,7 +138,7 @@ export function LabeledSelect<T>({
       <Select {...select_props} disabled={disabled} />
       {button && (
         <button
-          className="bg-light-2 dark:bg-dark-2 px-4 py-2 rounded-lg disabled:opacity-50"
+          className="bg-light-3 dark:bg-dark-3 px-4 py-2 rounded-lg disabled:opacity-50"
           onClick={onClick}
           disabled={disabled}
         >
@@ -221,7 +228,7 @@ function Select<T>({
         <Listbox.Button
           className={clsx(
             `relative w-full cursor-pointer rounded-md shadow-md`,
-            `bg-light-2 dark:bg-dark-2 py-2 pl-3 pr-10 text-left disabled:opacity-50 disabled:cursor-wait`
+            `bg-light-3 dark:bg-dark-3 py-2 pl-3 pr-10 text-left disabled:opacity-50 disabled:cursor-wait`
           )}
         >
           <span className="block">{getDisplayName(value) ?? placeholder}</span>
@@ -235,7 +242,7 @@ function Select<T>({
         <Listbox.Options
           className={clsx(
             `absolute z-50 w-full mt-1 py-1 shadow-lg overflow-auto rounded-md`,
-            `bg-light-2 dark:bg-dark-2`
+            `bg-light-3 dark:bg-dark-3`
           )}
         >
           {options.map((option) => (
@@ -244,7 +251,7 @@ function Select<T>({
               value={option}
               className={clsx(
                 `relative cursor-pointer select-none py-2 pl-3 pr-4`,
-                `ui-active:bg-light-3 dark:ui-active:bg-dark-3`
+                `ui-active:bg-light-4 dark:ui-active:bg-dark-4`
               )}
             >
               {getDisplayName(option)}
@@ -283,6 +290,50 @@ export function CellWrapper({
       {children}
     </div>
   );
+}
+
+export function filter_hierarchy<T>(
+  hierarchy: d3.HierarchyNode<T>,
+  leaf_ids: Set<string>,
+  get_id: (node: d3.HierarchyNode<T>) => string
+): d3.HierarchyNode<string> {
+  const get_path = (node: d3.HierarchyNode<T>) =>
+    node.ancestors().map(get_id).reverse().join(`/`);
+
+  const leaf_node_paths: string[] = Array.from(leaf_ids)
+    .map((id) => hierarchy.find((d) => get_id(d) === id))
+    .map((node) => get_path(node));
+
+  log("filter_hierarchy: leaf_node_paths", leaf_node_paths);
+
+  const filtered_id_hierarchy = d3.stratify<string>().path((d) => d)(
+    leaf_node_paths
+  );
+
+  return filtered_id_hierarchy;
+}
+
+export function get_node_path<T extends { name?: string }>(
+  node: d3.HierarchyNode<T>
+): string {
+  return node
+    .ancestors()
+    .map((d) => d.data.name ?? `root`)
+    .reverse()
+    .join(`/`);
+}
+
+export function find_parent_node_by_filter<T>(
+  node: d3.HierarchyNode<T>,
+  filter: (node: d3.HierarchyNode<T>) => boolean
+): d3.HierarchyNode<T> | undefined {
+  if (filter(node)) {
+    return node;
+  } else {
+    return node.parent
+      ? find_parent_node_by_filter(node.parent, filter)
+      : undefined;
+  }
 }
 
 // className={({ active }) =>

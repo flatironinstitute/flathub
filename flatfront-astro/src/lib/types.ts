@@ -93,13 +93,24 @@ export type Cell =
       type: `table`;
       cell_id: TableCellID;
       parent_cell_id: FilterCellID;
+    }
+  | {
+      type: `plot`;
+      cell_id: PlotCellID;
+      parent_cell_id: FilterCellID;
     };
 
-export type CellID = CatalogCellID | FilterCellID | TableCellID | RootCellID;
+export type CellID =
+  | RootCellID
+  | CatalogCellID
+  | FilterCellID
+  | TableCellID
+  | PlotCellID;
 
 export type CatalogCellID = `catalog_cell_${string}`;
 export type FilterCellID = `filter_cell_${number}`;
 export type TableCellID = `table_cell_${number}`;
+export type PlotCellID = `plot_cell_${number}`;
 export type RootCellID = `root`;
 
 // ===========================================

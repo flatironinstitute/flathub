@@ -139,6 +139,7 @@ function construct_table_columns<T>(
 
   const field_paths = field_nodes.map(get_path);
 
+  // Recursively construct column definitions
   const next = (
     node: CatalogHierarchyNode
   ): GroupColumnDef<Datum> | AccessorColumnDef<Datum> | null => {

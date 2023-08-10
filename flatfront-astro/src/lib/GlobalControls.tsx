@@ -80,12 +80,12 @@ function DarkModeToggle() {
         <Switch
           checked={dark_mode}
           onChange={set_dark_mode}
-          className={`bg-slate-50 dark:bg-slate-900 relative inline-flex h-8 w-14 items-center rounded-full`}
+          className={`bg-light-3 dark:bg-dark-3 relative inline-flex h-8 w-14 items-center rounded-full`}
         >
           <span
             className={`${
               dark_mode ? "translate-x-7" : "translate-x-1"
-            } inline-block h-6 w-6 transform rounded-full bg-slate-500 dark:bg-slate-50 transition`}
+            } inline-block h-6 w-6 transform rounded-full bg-light-4 dark:bg-dark-4 transition`}
           />
         </Switch>
       </div>
