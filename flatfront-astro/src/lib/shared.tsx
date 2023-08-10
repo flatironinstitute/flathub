@@ -278,7 +278,7 @@ export function BigButton({
 }
 
 BigButton.className =
-  "bg-slate-500 dark:bg-slate-600 rounded-lg py-4 text-white font-bold text-xl";
+  "bg-light-4 dark:bg-dark-4 rounded-lg py-4 text-white font-bold text-xl";
 
 export function CellWrapper({
   children,
@@ -335,22 +335,3 @@ export function find_parent_node_by_filter<T>(
       : undefined;
   }
 }
-
-// className={({ active }) =>
-// `relative cursor-pointer select-none py-2 pl-3 pr-4 ${
-//   active ? `bg-slate-700` : ``
-// }`
-// }
-
-// const SelectItem = React.forwardRef(
-//   ({ children, className, ...props }, forwardedRef) => {
-//     return (
-//       <Select.Item {...props} ref={forwardedRef}>
-//         <Select.ItemText>{children}</Select.ItemText>
-//         <Select.ItemIndicator className="SelectItemIndicator">
-//           <CheckIcon />
-//         </Select.ItemIndicator>
-//       </Select.Item>
-//     );
-//   }
-// );

@@ -279,12 +279,12 @@ function FieldsDialog() {
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-20 bg-black/50" />
         <Dialog.Content
-          className={[
+          className={clsx(
             `fixed z-50 w-[95vw] max-w-3xl rounded-lg p-4`,
             `top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%]`,
-            `bg-white dark:bg-slate-700`,
-            `focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75`,
-          ].join(" ")}
+            `bg-light-2 dark:bg-dark-2`,
+            `focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75`
+          )}
         >
           <Dialog.Title className="text-sm font-medium text-light-text dark:text-dark-text">
             All Fields
@@ -293,7 +293,7 @@ function FieldsDialog() {
           <Dialog.Description />
           <div className="h-4" />
           <input
-            className="w-full dark:bg-slate-900 rounded-lg text-lg leading-5 py-2 px-3 focus:ring-2 focus:ring-slate-50 focus:outline-none"
+            className="w-full bg-light-0 dark:bg-dark-0 rounded-lg text-lg leading-5 py-2 px-3 focus:ring-2 focus:ring-light-4 dark:focus:ring-dark-4 focus:outline-none"
             type="text"
             placeholder="search"
           />
@@ -302,12 +302,12 @@ function FieldsDialog() {
             {field_cards}
           </div>
           <Dialog.Close
-            className={[
+            className={clsx(
               "absolute top-3.5 right-3.5 inline-flex items-center justify-center rounded-full p-1",
-              "focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75",
-            ].join(" ")}
+              "focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75"
+            )}
           >
-            <Cross1Icon className="h-4 w-4 text-slate-500 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-400" />
+            <Cross1Icon className="h-4 w-4 text-light-text dark:text-dark-text" />
           </Dialog.Close>
         </Dialog.Content>
       </Dialog.Portal>
