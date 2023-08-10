@@ -92,6 +92,29 @@ export const [useFieldName, FieldNameProvider] =
   useContextHelper<string>(`FieldName`);
 export const [useData, DataProvider] = useContextHelper<Datum[]>(`Data`);
 
+export const Providers = {
+  CellIDProvider,
+  ParentCellIDProvider,
+  PlotIDProvider,
+  CatalogNameProvider,
+  CatalogMetadataProvider,
+  CellFiltersProvider,
+  FieldNameProvider,
+  DataProvider,
+};
+
+export const hooks = {
+  useStore,
+  useCellID,
+  useParentCellID,
+  usePlotID,
+  useCatalogName,
+  useCatalogMetadata,
+  useCellFilters,
+  useFieldName,
+  useData,
+};
+
 export function LabeledSelect<T>({
   button,
   buttonText,

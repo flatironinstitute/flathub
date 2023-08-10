@@ -17,28 +17,14 @@ import * as d3 from "d3";
 import { Cross1Icon } from "@radix-ui/react-icons";
 
 import {
-  CatalogMetadataProvider,
-  CatalogNameProvider,
-  CellFiltersProvider,
-  CellIDProvider,
-  DataProvider,
-  dispatch_action,
-  FieldNameProvider,
-  LabeledSelect,
-  log,
-  ParentCellIDProvider,
-  PlotIDProvider,
-  set_filter_value,
-  useCatalogMetadata,
-  useCatalogName,
-  useCellFilters,
-  useCellID,
-  useFieldName,
-  useParentCellID,
-  useStore,
-  is_catalog_cell_id,
-  CellWrapper,
   BigButton,
+  CellWrapper,
+  dispatch_action,
+  hooks,
+  is_catalog_cell_id,
+  log,
+  Providers,
+  set_filter_value,
 } from "./shared";
 import * as stores from "./stores";
 import Table from "./Table";
@@ -61,7 +47,7 @@ export default function App() {
 }
 
 function Cells() {
-  const cells = useStore(stores.cells_depth_first).map((d) => d.data);
+  const cells = hooks.useStore(stores.cells_depth_first).map((d) => d.data);
 
   log(`Cells: cells`, cells);
   return (
@@ -78,21 +64,23 @@ function Cells() {
           }
         })();
         return (
-          <CellIDProvider key={cell.cell_id} value={cell.cell_id}>
-            <ParentCellIDProvider value={cell.parent_cell_id}>
+          <Providers.CellIDProvider key={cell.cell_id} value={cell.cell_id}>
+            <Providers.ParentCellIDProvider value={cell.parent_cell_id}>
               {component}
-            </ParentCellIDProvider>
-          </CellIDProvider>
+            </Providers.ParentCellIDProvider>
+          </Providers.CellIDProvider>
         );
       })}
     </>
   );
 }
 function CatalogCell() {
-  const cell_id = useCellID();
+  const cell_id = hooks.useCellID();
 
-  const catalog_name = useStore(stores.catalog_name).get(cell_id);
-  const catalog_metadata = useStore(stores.catalog_metadata).get(catalog_name);
+  const catalog_name = hooks.useStore(stores.catalog_name).get(cell_id);
+  const catalog_metadata = hooks
+    .useStore(stores.catalog_metadata)
+    .get(catalog_name);
   const catalog_title = catalog_metadata?.metadata?.title;
 
   return (
@@ -116,19 +104,23 @@ function CatalogCell() {
 }
 
 function FilterCell() {
-  const cell_id = useCellID() as FilterCellID;
-  const parent_cell_id: CatalogCellID = is_catalog_cell_id(useParentCellID());
-  const catalog_name = useStore(stores.catalog_name).get(cell_id);
-  const catalog_metadata = useStore(stores.catalog_metadata).get(catalog_name);
+  const cell_id = hooks.useCellID() as FilterCellID;
+  const parent_cell_id: CatalogCellID = is_catalog_cell_id(
+    hooks.useParentCellID()
+  );
+  const catalog_name = hooks.useStore(stores.catalog_name).get(cell_id);
+  const catalog_metadata = hooks
+    .useStore(stores.catalog_metadata)
+    .get(catalog_name);
   const catalog_title = catalog_metadata?.metadata?.title;
 
-  const filters = useStore(stores.filter_values)?.get(cell_id);
+  const filters = hooks.useStore(stores.filter_values)?.get(cell_id);
 
   log(`FilterCell:`, { cell_id });
   return (
-    <CellFiltersProvider value={filters}>
-      <CatalogMetadataProvider value={catalog_metadata}>
-        <CatalogNameProvider value={catalog_name}>
+    <Providers.CellFiltersProvider value={filters}>
+      <Providers.CatalogMetadataProvider value={catalog_metadata}>
+        <Providers.CatalogNameProvider value={catalog_name}>
           <CellWrapper>
             <CellTitle subtitle={cell_id}>{catalog_title} Filters</CellTitle>
             <CellSection label="source" small>
@@ -167,17 +159,19 @@ function FilterCell() {
               </div>
             </CellSection>
           </CellWrapper>
-        </CatalogNameProvider>
-      </CatalogMetadataProvider>
-    </CellFiltersProvider>
+        </Providers.CatalogNameProvider>
+      </Providers.CatalogMetadataProvider>
+    </Providers.CellFiltersProvider>
   );
 }
 
 function TableCell() {
-  const cell_id = useCellID() as TableCellID;
-  const parent_cell_id = useParentCellID();
-  const catalog_name = useStore(stores.catalog_name).get(cell_id);
-  const catalog_metadata = useStore(stores.catalog_metadata).get(catalog_name);
+  const cell_id = hooks.useCellID() as TableCellID;
+  const parent_cell_id = hooks.useParentCellID();
+  const catalog_name = hooks.useStore(stores.catalog_name).get(cell_id);
+  const catalog_metadata = hooks
+    .useStore(stores.catalog_metadata)
+    .get(catalog_name);
   const catalog_title = catalog_metadata?.metadata?.title;
   return (
     <CellWrapper>
@@ -245,15 +239,18 @@ function TableCell() {
 // }
 
 function FieldsDialog() {
-  const catalog_metadata = useCatalogMetadata();
+  const catalog_metadata = hooks.useCatalogMetadata();
   const fields_list = catalog_metadata?.nodes ?? [];
   const field_cards = fields_list
     .filter((d) => "name" in d.data)
     .map((field) => {
       return (
-        <FieldNameProvider value={field.data.name} key={field.data.name}>
+        <Providers.FieldNameProvider
+          value={field.data.name}
+          key={field.data.name}
+        >
           <FieldCard></FieldCard>
-        </FieldNameProvider>
+        </Providers.FieldNameProvider>
       );
     });
   return (
@@ -301,11 +298,12 @@ function FieldsDialog() {
 }
 
 function CellFiltersSection() {
-  const filters = useCellFilters();
+  const filters = hooks.useCellFilters();
+  const catalog_metadata = hooks.useCatalogMetadata();
 
   const filter_names = Object.keys(filters);
 
-  const names_order = useCatalogMetadata()?.nodes.map((d) => d.data.name) ?? [];
+  const names_order = catalog_metadata?.nodes.map((d) => d.data.name) ?? [];
 
   const sorted = d3.sort(filter_names, (d) => names_order.indexOf(d));
 
@@ -315,9 +313,9 @@ function CellFiltersSection() {
       <div className="h-4" />
       <div className="grid grid-cols-1 gap-x-3 gap-y-2">
         {sorted.map((filter_name) => (
-          <FieldNameProvider key={filter_name} value={filter_name}>
+          <Providers.FieldNameProvider key={filter_name} value={filter_name}>
             <FieldCard filterMode />
-          </FieldNameProvider>
+          </Providers.FieldNameProvider>
         ))}
       </div>
     </>
@@ -330,13 +328,13 @@ function FieldCard({
   filterMode?: boolean;
 }): React.JSX.Element {
   const [expanded, setExpanded] = React.useState(!filterMode);
-  const cell_id = useCellID();
-  const field_name = useFieldName();
-  const filters = useCellFilters();
-  const nodes_by_name = useCatalogMetadata()?.nodes_by_name;
+  const cell_id = hooks.useCellID();
+  const field_name = hooks.useFieldName();
+  const filters = hooks.useCellFilters();
+  const nodes_by_name = hooks.useCatalogMetadata()?.nodes_by_name;
   const field_node = nodes_by_name?.get(field_name);
 
-  const column_names = useStore(stores.column_names)?.get(cell_id);
+  const column_names = hooks.useStore(stores.column_names)?.get(cell_id);
 
   if (!field_node) {
     throw new Error(`Could not find node for ${field_name}`);
@@ -549,13 +547,12 @@ function get_field_titles<T extends { title?: string }>(
 }
 
 function ConnectedRangeSlider() {
-  const cell_id = useCellID();
-  const catalog_name = useCatalogName();
-  const field_name = useFieldName();
-  const metadata = useStore(stores.field_metadata)?.get(
-    catalog_name,
-    field_name
-  )?.data;
+  const cell_id = hooks.useCellID();
+  const catalog_name = hooks.useCatalogName();
+  const field_name = hooks.useFieldName();
+  const metadata = hooks
+    .useStore(stores.field_metadata)
+    ?.get(catalog_name, field_name)?.data;
   const min = metadata.stats?.min;
   const max = metadata.stats?.max;
   if (
@@ -570,7 +567,7 @@ function ConnectedRangeSlider() {
       `Could not find min/max stats for ${field_name} of type ${metadata.type}`
     );
   }
-  const filters = useCellFilters();
+  const filters = hooks.useCellFilters();
   const filter_state = filters[field_name];
   if (!(typeof filter_state === `object`)) {
     throw new Error(`Expected filter state to be an object for ${field_name}`);
@@ -661,9 +658,10 @@ function get_field_metadata(
 }
 
 function CellColumnsSection({ column_names }: { column_names: Set<string> }) {
-  const cell_id = useCellID();
+  const cell_id = hooks.useCellID();
 
-  const names_order = useCatalogMetadata()?.nodes.map((d) => d.data.name) ?? [];
+  const names_order =
+    hooks.useCatalogMetadata()?.nodes.map((d) => d.data.name) ?? [];
 
   const column_names_raw = Array.from(column_names);
 
