@@ -1,5 +1,8 @@
 title: Gr8 Stars
 index: gr8
+settings:
+  index:
+    number_of_shards: 1
 descr: >
   The gr8stars catalog is an assembly of stellar properties and downloadable high-resolution spectra of bright Sun-like stars in the Northern hemisphere.<br>
   gr8stars targets are uniformly selected from Gaia EDR3 to fulfill the following criteria:
