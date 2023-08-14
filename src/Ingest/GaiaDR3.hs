@@ -46,8 +46,8 @@ indexLevel :: Int
 indexLevel = 59 - 2*level where level = 8
 
 -- |convert from source_id to file naming, HEALpix index level 8
-keyIndex :: Key -> Int
-keyIndex = fromIntegral . (`shiftR` indexLevel)
+_keyIndex :: Key -> Int
+_keyIndex = fromIntegral . (`shiftR` indexLevel)
 
 indexKey :: Int -> Key
 indexKey = (`shiftL` indexLevel) . fromIntegral
