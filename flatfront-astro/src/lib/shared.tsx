@@ -4,7 +4,6 @@ import type {
   CellID,
   CatalogCellID,
   FilterCellID,
-  TableCellID,
   CatalogMetadataWrapper,
   Filters,
   Datum,
@@ -17,7 +16,7 @@ import clsx from "clsx";
 import { get } from "svelte/store";
 import { ChevronDownIcon } from "@radix-ui/react-icons";
 import { produce } from "immer";
-import { Listbox, Transition } from "@headlessui/react";
+import { Listbox } from "@headlessui/react";
 import * as stores from "./stores";
 
 export const format = {
