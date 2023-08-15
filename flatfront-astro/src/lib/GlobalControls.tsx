@@ -57,6 +57,9 @@ function CatalogSelect() {
             catalog_name: selected.name,
           });
         }}
+        buttonClassName="bg-light-3 dark:bg-dark-3"
+        optionsClassName="bg-light-3 dark:bg-dark-3"
+        optionClassName="ui-active:bg-light-4 dark:ui-active:bg-dark-4"
       />
     </div>
   );

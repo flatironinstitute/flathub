@@ -37,5 +37,10 @@ npm run dev
 - [x] Add cell
 - [x] "Show all fields" modal
 - [ ] Filter with select field
-- [ ] Dark mode switch
+- [x] Dark mode switch
 - [ ] Tailwind: Standardize theme colors
+- [ ] Allow typing numbers on range slider
+- [ ] Handle very large numbers
+- [ ] Number format switch
+- [ ] Filter dropdowns
+- [ ] Python

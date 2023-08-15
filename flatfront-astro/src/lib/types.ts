@@ -21,7 +21,7 @@ export type ColumnListAction = ActionBase<
 >;
 
 export type FilterListAction = ActionBase<
-  `add_filter` | `remove_filter`,
+  `add_filter` | `remove_filter` | `remove_child_filters`,
   { cell_id: CellID; filter_name: string }
 >;
 
@@ -58,16 +58,16 @@ export type ActionBase<T extends string, U> = U & {
 
 export type CatalogMetadataWrapper = {
   metadata: CatalogResponse;
-  hierarchy: d3.HierarchyNode<FieldGroup>;
-  nodes: d3.HierarchyNode<FieldGroup>[];
-  nodes_by_name: Map<string, d3.HierarchyNode<FieldGroup>>;
+  hierarchy: d3.HierarchyNode<FieldMetadata>;
+  nodes: d3.HierarchyNode<FieldMetadata>[];
+  nodes_by_name: Map<string, d3.HierarchyNode<FieldMetadata>>;
   initial_filter_names: string[];
   initial_column_names: string[];
 };
 
 export type CatalogMetadataQuery = QueryObserverResult<CatalogMetadataWrapper>;
 
-export type CatalogHierarchyNode = d3.HierarchyNode<FieldGroup>;
+export type CatalogHierarchyNode = d3.HierarchyNode<FieldMetadata>;
 
 export type DataResponse = Array<Datum>;
 export type Datum = Record<string, any>;
@@ -125,11 +125,12 @@ export type DataRequestBody = NonNullable<
   schema.operations["dataPOST"]["requestBody"]
 >["content"]["application/json"];
 
-export type FieldGroup = schema.components["schemas"]["FieldGroup"];
+export type FieldMetadata = schema.components["schemas"]["FieldGroup"];
 
 export type CatalogResponse =
   schema.components["responses"]["catalog"]["content"]["application/json"];
 
-export type Filters = schema.components["schemas"]["Filters"];
+export type FilterValueNumeric = { gte: number; lte: number };
+export type FilterValueRaw = Filters[string];
 
-export type FilterValue = { gte: number; lte: number };
+export type Filters = schema.components["schemas"]["Filters"];

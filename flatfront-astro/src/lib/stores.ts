@@ -12,10 +12,10 @@ import type {
   PlotCellID,
   DataRequestBody,
   DataResponse,
-  FieldGroup,
+  FieldMetadata,
   FilterListAction,
   Filters,
-  FilterValue,
+  FilterValueRaw,
   FilterCellID,
   TopResponse,
   ColumnListAction,
@@ -98,8 +98,8 @@ debounce_store(actions, 1000).subscribe((actions) => {
 });
 
 export const filter_state = writable<
-  Record<CellID, Record<string, FilterValue>>
->({} as Record<CellID, Record<string, FilterValue>>);
+  Record<CellID, Record<string, FilterValueRaw>>
+>({} as Record<CellID, Record<string, FilterValueRaw>>);
 
 filter_state.subscribe((filter_state) =>
   log(`Global Filter State:`, filter_state)
@@ -578,7 +578,7 @@ function get_catalog_initial_column_names(
 
 function get_initial_cell_filters(
   filter_names: Set<string>,
-  catalog_field_hierarchy?: d3.HierarchyNode<FieldGroup>
+  catalog_field_hierarchy?: d3.HierarchyNode<FieldMetadata>
 ): Filters {
   if (!catalog_field_hierarchy) return {};
   const initial_filter_object: Filters = Object.fromEntries(
@@ -592,7 +592,7 @@ function get_initial_cell_filters(
       const initial_value: Filters[string] = (() => {
         const type = metadata.type;
         if (type === `boolean`) {
-          return true;
+          return false;
         } else if (metadata.terms) {
           return 0;
         } else if (type === `byte`) {
@@ -638,15 +638,13 @@ async function fetch_catalog_metadata(
     );
     log(`💥 metadata`, metadata);
     const catalog_fields_raw = metadata.fields ?? null;
-    const root = { sub: catalog_fields_raw } as FieldGroup;
-    const hierarchy: d3.HierarchyNode<FieldGroup> = d3.hierarchy<FieldGroup>(
-      root,
-      (d) => d?.sub ?? []
-    );
-    const nodes = get_nodes_depth_first<FieldGroup>(hierarchy).filter(
+    const root = { sub: catalog_fields_raw } as FieldMetadata;
+    const hierarchy: d3.HierarchyNode<FieldMetadata> =
+      d3.hierarchy<FieldMetadata>(root, (d) => d?.sub ?? []);
+    const nodes = get_nodes_depth_first<FieldMetadata>(hierarchy).filter(
       (d) => `name` in d.data
     );
-    const nodes_by_name = new Map<string, d3.HierarchyNode<FieldGroup>>();
+    const nodes_by_name = new Map<string, d3.HierarchyNode<FieldMetadata>>();
     for (const node of nodes) {
       const name = node.data.name;
       if (nodes_by_name.has(name)) {

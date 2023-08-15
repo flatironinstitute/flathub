@@ -8,6 +8,7 @@ import type {
   CatalogMetadataWrapper,
   Filters,
   Datum,
+  FilterValueRaw,
 } from "./types";
 
 import React from "react";
@@ -18,6 +19,13 @@ import { ChevronDownIcon } from "@radix-ui/react-icons";
 import { produce } from "immer";
 import { Listbox, Transition } from "@headlessui/react";
 import * as stores from "./stores";
+
+export const format = {
+  concise: (d) => {
+    if (d < 1e4) return d3.format(`,.4~g`)(d);
+    return d3.format(`.2~e`)(d);
+  },
+};
 
 export function log(...args: any[]) {
   console.log(`🌔`, ...args);
@@ -43,10 +51,7 @@ export function is_filter_cell_id(cell_id: CellID): FilterCellID {
 export function set_filter_value(
   cell_id: CellID,
   filter_name: string,
-  filter_value: {
-    gte: number;
-    lte: number;
-  }
+  filter_value: FilterValueRaw
 ) {
   stores.filter_state.update((fitler_state_object) => {
     return produce(fitler_state_object, (draft) => {
@@ -128,11 +133,11 @@ export function LabeledSelect<T>({
   onClick,
   disabled,
   ...select_props
-}: Parameters<typeof Select<T>>[0] & {
+}: {
   button?: boolean;
   buttonText?: string;
   onClick?: () => void;
-}): React.JSX.Element {
+} & Parameters<typeof Select<T>>[0]): React.JSX.Element {
   return (
     <div className="grid gap-x-4 gap-y-2 items-center grid-cols-1 md:grid-cols-[max-content_1fr_max-content]">
       <Select {...select_props} disabled={disabled} />
@@ -198,24 +203,30 @@ export function LabeledSelect<T>({
 //   );
 // }
 
-function Select<T>({
+export function Select<T>({
   label,
   placeholder,
   options,
-  getKey,
-  getDisplayName,
+  getKey = (d) => d.toString(),
+  getDisplayName = (d) => d?.toString(),
   disabled = false,
   value = undefined,
   onValueChange = undefined,
+  buttonClassName,
+  optionsClassName,
+  optionClassName,
 }: {
-  label: string;
-  placeholder: string;
+  label?: string;
+  placeholder?: string;
   options: T[];
-  getKey: (option: T) => string;
-  getDisplayName: (option: T) => string;
+  getKey?: (option: T) => string;
+  getDisplayName?: (option: T) => string;
   disabled?: boolean;
   value?: T;
   onValueChange?: (value: T) => void;
+  buttonClassName?: string;
+  optionsClassName?: string;
+  optionClassName?: string;
 }) {
   return (
     <Listbox
@@ -223,26 +234,24 @@ function Select<T>({
       onChange={onValueChange}
       disabled={disabled}
     >
-      <Listbox.Label>{label}</Listbox.Label>
+      {label && <Listbox.Label>{label}</Listbox.Label>}
       <div className="relative">
         <Listbox.Button
           className={clsx(
             `relative w-full cursor-pointer rounded-md shadow-md`,
-            `bg-light-3 dark:bg-dark-3 py-2 pl-3 pr-10 text-left disabled:opacity-50 disabled:cursor-wait`
+            `py-2 pl-3 pr-10 text-left disabled:opacity-50 disabled:cursor-wait`,
+            buttonClassName
           )}
         >
           <span className="block">{getDisplayName(value) ?? placeholder}</span>
           <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-            <ChevronDownIcon
-              className="h-5 w-5 text-light-text dark:text-dark-text"
-              aria-hidden="true"
-            />
+            <ChevronDownIcon className="h-5 w-5 " aria-hidden="true" />
           </span>
         </Listbox.Button>
         <Listbox.Options
           className={clsx(
             `absolute z-50 w-full mt-1 py-1 shadow-lg overflow-auto rounded-md`,
-            `bg-light-3 dark:bg-dark-3`
+            optionsClassName
           )}
         >
           {options.map((option) => (
@@ -251,7 +260,7 @@ function Select<T>({
               value={option}
               className={clsx(
                 `relative cursor-pointer select-none py-2 pl-3 pr-4`,
-                `ui-active:bg-light-4 dark:ui-active:bg-dark-4`
+                optionClassName
               )}
             >
               {getDisplayName(option)}

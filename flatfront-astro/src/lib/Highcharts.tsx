@@ -8,7 +8,6 @@ import type {
   DataResponse,
   CatalogHierarchyNode,
   CatalogMetadataQuery,
-  FieldGroup,
   CatalogResponse,
   Datum,
   PlotControlAction,

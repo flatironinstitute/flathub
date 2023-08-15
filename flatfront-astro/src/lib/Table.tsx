@@ -1,7 +1,7 @@
 import type {
   DataResponse,
   CatalogHierarchyNode,
-  FieldGroup,
+  FieldMetadata,
   Datum,
 } from "./types";
 
@@ -26,7 +26,7 @@ export default function Table({
   catalog_field_hierarchy,
 }: {
   data: DataResponse;
-  catalog_field_hierarchy: d3.HierarchyNode<FieldGroup>;
+  catalog_field_hierarchy: d3.HierarchyNode<FieldMetadata>;
 }) {
   const columns = construct_table_columns(data, catalog_field_hierarchy);
 
