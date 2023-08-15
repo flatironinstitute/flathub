@@ -42,6 +42,7 @@ module Type
 
 import           Control.Applicative ((<|>), many, empty)
 import qualified Data.Aeson as J
+import qualified Data.Aeson.Encoding as JE
 import qualified Data.Aeson.Types as J
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as B
@@ -305,9 +306,24 @@ instance {-# OVERLAPPABLE #-} Show1 f => Show (TypeValue f) where
 instance Show Value where
   showsPrec i = unTypeValue (showsPrec i . runIdentity)
 
+_maxSafeJsInt :: Int64
+_maxSafeJsInt = 9007199254740991
+
+isUnsafeJs :: TypeValue f -> Bool
+isUnsafeJs (Long _) = True
+isUnsafeJs (ULong _) = True
+isUnsafeJs _ = False
+
 instance {-# OVERLAPPABLE #-} J.ToJSON1 f => J.ToJSON (TypeValue f) where
-  toJSON = unTypeValue J.toJSON1
-  toEncoding = unTypeValue J.toEncoding1
+  toJSON v
+    | isUnsafeJs v = unTypeValue (J.liftToJSON (J.toJSON . show) (J.toJSONList . map show)) v
+    | otherwise = unTypeValue J.toJSON1 v
+  toEncoding v
+    | isUnsafeJs v = unTypeValue (J.liftToEncoding toEncodingString (JE.list toEncodingString)) v
+    | otherwise = unTypeValue J.toEncoding1 v
+    where
+    toEncodingString :: Typed a => a -> J.Encoding
+    toEncodingString x = J.unsafeToEncoding $ B.char7 '"' <> renderValue x <> B.char7 '"'
 
 parseJSONOrStringValue :: Typed a => J.Value -> J.Parser a
 parseJSONOrStringValue j@(J.String s) = parseJSONValue j <|> maybe (fail "parseStringValue") return (readValue $ TE.encodeUtf8 s)
