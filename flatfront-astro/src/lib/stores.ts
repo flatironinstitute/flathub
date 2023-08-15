@@ -1,7 +1,6 @@
 import type {
   Action,
   CatalogHierarchyNode,
-  CatalogMetadataQuery,
   CatalogMetadataWrapper,
   CatalogResponse,
   Cell,
@@ -24,7 +23,7 @@ import type {
   QueryObserverResult,
   QueryObserverOptions,
 } from "@tanstack/query-core";
-import type { Readable, Writable } from "svelte/store";
+import type { Readable } from "svelte/store";
 
 import { QueryClient } from "@tanstack/query-core";
 import { QueryObserver } from "@tanstack/query-core";

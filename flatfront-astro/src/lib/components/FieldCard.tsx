@@ -1,4 +1,4 @@
-import type { FieldMetadata, FilterValueRaw } from "./types";
+import type { FieldMetadata, FilterValueRaw } from "../types";
 
 import React from "react";
 
@@ -14,8 +14,8 @@ import {
   set_filter_value,
   format,
   Select,
-} from "./shared";
-import * as stores from "./stores";
+} from "../shared";
+import * as stores from "../stores";
 import Katex from "./Katex";
 
 export function FieldCard(): React.JSX.Element {

@@ -1,21 +1,8 @@
-import type {
-  Action,
-  CellAction,
-  CellID,
-  CatalogMetadataWrapper,
-  Filters,
-  DataRequestBody,
-  DataResponse,
-  CatalogHierarchyNode,
-  CatalogMetadataQuery,
-  CatalogResponse,
-  Datum,
-  PlotControlAction,
-} from "./types";
+import type { PlotControlAction } from "../types";
 
 import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
-import * as stores from "./stores";
+import * as stores from "../stores";
 import {
   LabeledSelect,
   dispatch_action,
@@ -23,8 +10,7 @@ import {
   usePlotID,
   useData,
   useStore,
-  log,
-} from "./shared";
+} from "../shared";
 
 export function Scatterplot() {
   const cell_id = useCellID();

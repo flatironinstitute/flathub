@@ -1,18 +1,18 @@
-import type { TopResponseEntry } from "./types";
+import type { TopResponseEntry } from "../types";
 
 import React from "react";
 
 import { Switch } from "@headlessui/react";
 import * as d3 from "d3";
 
-import * as stores from "./stores";
+import * as stores from "../stores";
 import {
   dispatch_action,
   LabeledSelect,
   log,
   useStore,
   CellWrapper,
-} from "./shared";
+} from "../shared";
 
 export default function GlobalControls(): React.JSX.Element {
   return (

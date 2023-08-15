@@ -3,7 +3,7 @@ import type {
   CatalogHierarchyNode,
   FieldMetadata,
   Datum,
-} from "./types";
+} from "../types";
 
 import type {
   ColumnDef,
@@ -18,7 +18,6 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
-import { log } from "./shared";
 import Katex from "./Katex";
 
 export default function Table({

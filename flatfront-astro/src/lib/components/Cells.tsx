@@ -1,4 +1,4 @@
-import type { CatalogCellID, FilterCellID, TableCellID } from "./types";
+import type { CatalogCellID, FilterCellID, TableCellID } from "../types";
 
 import React from "react";
 
@@ -17,8 +17,8 @@ import {
   is_catalog_cell_id,
   log,
   Providers,
-} from "./shared";
-import * as stores from "./stores";
+} from "../shared";
+import * as stores from "../stores";
 import Table from "./Table";
 import { FieldCard, FilterCard } from "./FieldCard";
 
