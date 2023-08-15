@@ -622,9 +622,8 @@ ingestEagle inginfo = do
       return (n, b)
     nsub <- case ingestJoin info of
       Just IngestHaloJoin
-        { joinIngest = subinfo@Ingest{ ingestCatalog = Catalog{ catalogFields = subcat }, ingestJoin = Just (IngestJoin supfs) }
+        { joinIngest = subinfo@Ingest{ ingestJoin = Just (IngestJoin supfs) }
         , joinFirst = (`lookup` fof) -> Just (Long fofid)
-        , joinCount = fofcountf
         , joinParent = subgf
         } -> liftBaseOp (withGroup hf (simn <> "_Subhalo")) $ \hs -> do
         let fofmap = IM.fromDistinctAscList $ zip (map fromIntegral $ VS.toList fofid) [0..]
