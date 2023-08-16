@@ -17,6 +17,7 @@ import {
   is_catalog_cell_id,
   log,
   Providers,
+  get_field_id,
 } from "../shared";
 import * as stores from "../stores";
 import Table from "./Table";
@@ -25,7 +26,6 @@ import { FieldCard, FilterCard } from "./FieldCard";
 export default function Cells() {
   const cells = hooks.useStore(stores.cells_depth_first).map((d) => d.data);
 
-  log(`Cells: cells`, cells);
   return (
     <>
       {cells.map((cell) => {
@@ -54,10 +54,12 @@ export default function Cells() {
 function CatalogCell() {
   const cell_id = hooks.useCellID();
 
-  const catalog_name = hooks.useStore(stores.catalog_name).get(cell_id);
+  const catalog_id = hooks.useStore(stores.catalog_id).get(cell_id);
+
   const catalog_metadata = hooks
     .useStore(stores.catalog_metadata)
-    .get(catalog_name);
+    .get(catalog_id);
+
   const catalog_title = catalog_metadata?.metadata?.title;
 
   return (
@@ -85,19 +87,18 @@ function FilterCell() {
   const parent_cell_id: CatalogCellID = is_catalog_cell_id(
     hooks.useParentCellID()
   );
-  const catalog_name = hooks.useStore(stores.catalog_name).get(cell_id);
+  const catalog_id = hooks.useStore(stores.catalog_id).get(cell_id);
   const catalog_metadata = hooks
     .useStore(stores.catalog_metadata)
-    .get(catalog_name);
+    .get(catalog_id);
   const catalog_title = catalog_metadata?.metadata?.title;
 
   const filters = hooks.useStore(stores.filter_values)?.get(cell_id);
 
-  log(`FilterCell:`, { cell_id, filters });
   return (
     <Providers.CellFiltersProvider value={filters}>
       <Providers.CatalogMetadataProvider value={catalog_metadata}>
-        <Providers.CatalogNameProvider value={catalog_name}>
+        <Providers.CatalogIDProvider value={catalog_id}>
           <CellWrapper>
             <CellTitle subtitle={cell_id}>{catalog_title} Filters</CellTitle>
             <CellSection label="source" small>
@@ -136,7 +137,7 @@ function FilterCell() {
               </div>
             </CellSection>
           </CellWrapper>
-        </Providers.CatalogNameProvider>
+        </Providers.CatalogIDProvider>
       </Providers.CatalogMetadataProvider>
     </Providers.CellFiltersProvider>
   );
@@ -147,37 +148,37 @@ function CellFiltersSection() {
   const catalog_metadata = hooks.useCatalogMetadata();
   const catalog_field_hierarchy = catalog_metadata.hierarchy;
 
-  const filter_names = Object.keys(filters);
+  const filter_ids = Object.keys(filters);
 
-  const filter_nodes = filter_names.map((filter_name) =>
-    catalog_field_hierarchy.find((d) => d.data.name === filter_name)
+  const filter_nodes = filter_ids.map((filter_id) =>
+    catalog_field_hierarchy.find((d) => get_field_id(d.data) === filter_id)
   );
 
-  const node_names_set = new Set(
+  const node_ids_set = new Set(
     filter_nodes
       .map((node) => node.ancestors())
       .flat()
-      .map((d) => d.data.name ?? `root`)
+      .map((d) => get_field_id(d.data))
   );
 
   const all_nodes = catalog_metadata?.nodes ?? [];
 
   const filtered_nodes = all_nodes.filter((node) => {
-    return node_names_set.has(node.data.name ?? `root`);
+    return node_ids_set.has(get_field_id(node.data));
   });
 
-  const filtered_names = filtered_nodes.map((node) => node.data.name);
+  const filtered_ids = filtered_nodes.map((node) => get_field_id(node.data));
 
   return (
     <>
       <FieldsDialog />
       <div className="h-4" />
-      <div className="grid grid-cols-2 gap-x-3">
+      <div className="grid grid-cols-1 gap-x-3">
         <div className="flex flex-col gap-y-2">
-          {filtered_names.map((filter_name) => (
-            <Providers.FieldNameProvider key={filter_name} value={filter_name}>
+          {filtered_ids.map((filter_id) => (
+            <Providers.FieldIDProvider key={filter_id} value={filter_id}>
               <FilterCard />
-            </Providers.FieldNameProvider>
+            </Providers.FieldIDProvider>
           ))}
         </div>
       </div>
@@ -188,10 +189,10 @@ function CellFiltersSection() {
 function TableCell() {
   const cell_id = hooks.useCellID() as TableCellID;
   const parent_cell_id = hooks.useParentCellID();
-  const catalog_name = hooks.useStore(stores.catalog_name).get(cell_id);
+  const catalog_id = hooks.useStore(stores.catalog_id).get(cell_id);
   const catalog_metadata = hooks
     .useStore(stores.catalog_metadata)
-    .get(catalog_name);
+    .get(catalog_id);
   const catalog_title = catalog_metadata?.metadata?.title;
 
   // const query_config = hooks.useStore(stores.query_config).get(cell_id);
@@ -205,13 +206,25 @@ function TableCell() {
 
   const is_ready = data_query?.data && data_query?.data?.length > 0;
 
+  const status_message = (() => {
+    if (!has_data && !fetching) {
+      return `No Data Loaded`;
+    }
+    if (!has_data && fetching) {
+      return `Loading Data...`;
+    }
+  })();
+
   return (
     <CellWrapper>
       <CellTitle subtitle={cell_id}>{catalog_title} Table</CellTitle>
       <CellSection label="source" small>
         {parent_cell_id}
       </CellSection>
-      <CellSection label="query">
+      <CellSection label="columns">
+        {/* <pre>{JSON.stringify(query_config, null, 2)}</pre> */}
+      </CellSection>
+      <CellSection label="query parameters">
         {/* <pre>{JSON.stringify(query_config, null, 2)}</pre> */}
       </CellSection>
       <CellSection label="table">
@@ -221,7 +234,7 @@ function TableCell() {
             catalog_field_hierarchy={catalog_metadata.hierarchy}
           />
         ) : (
-          <PendingBox>No Data Loaded</PendingBox>
+          <PendingBox>{status_message}</PendingBox>
         )}
       </CellSection>
       <CellSection label="actions">
@@ -251,13 +264,11 @@ function FieldsDialog() {
   const field_cards = fields_list
     .filter((d) => "name" in d.data)
     .map((field) => {
+      const field_id = get_field_id(field.data);
       return (
-        <Providers.FieldNameProvider
-          value={field.data.name}
-          key={field.data.name}
-        >
+        <Providers.FieldIDProvider value={field_id} key={field_id}>
           <FieldCard></FieldCard>
-        </Providers.FieldNameProvider>
+        </Providers.FieldIDProvider>
       );
     });
   return (
@@ -306,86 +317,31 @@ function FieldsDialog() {
 
 const number_regex = /^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/;
 
-// function ConnectedRangeSlider_v1() {
-//   const cell_id = hooks.useCellID();
-//   const catalog_name = hooks.useCatalogName();
-//   const field_name = hooks.useFieldName();
-//   const metadata = hooks
-//     .useStore(stores.field_metadata)
-//     ?.get(catalog_name, field_name)?.data;
-//   const min = metadata.stats?.min;
-//   const max = metadata.stats?.max;
-//   if (
-//     !Number.isFinite(min) ||
-//     !Number.isFinite(max) ||
-//     min === null ||
-//     max === null ||
-//     min === undefined ||
-//     max === undefined
-//   ) {
-//     log(`Error meta:`, metadata);
-//     throw new Error(
-//       `Could not find min/max stats for ${field_name} of type ${metadata.type}`
-//     );
-//   }
-//   const filters = hooks.useCellFilters();
-//   const filter_state = filters[field_name];
-//   if (!(typeof filter_state === `object`)) {
-//     throw new Error(`Expected filter state to be an object for ${field_name}`);
-//   }
-//   if (!(`gte` in filter_state) || !(`lte` in filter_state)) {
-//     log(filters, filter_state);
-//     throw new Error(`Expected filter state to have gte/lte for ${field_name}`);
-//   }
-//   const low = filter_state.gte;
-//   const high = filter_state.lte;
-//   if (typeof low !== `number` || typeof high !== `number`) {
-//     throw new Error(
-//       `Expected filter state to have gte/lte numbers for ${field_name}`
-//     );
-//   }
-//   const value = [low, high] as [number, number];
-//   return (
-//     <RangeSlider
-//       min={min}
-//       max={max}
-//       value={value}
-//       onValueChange={([low, high]) => {
-//         // log(`on value change`, low, high);
-//         set_filter_value(cell_id, field_name, {
-//           gte: low,
-//           lte: high,
-//         });
-//       }}
-//     />
-//   );
-// }
-
-function CellColumnsSection({ column_names }: { column_names: Set<string> }) {
+function CellColumnsSection({ column_ids }: { column_ids: Set<string> }) {
   const cell_id = hooks.useCellID();
 
   const names_order =
     hooks.useCatalogMetadata()?.nodes.map((d) => d.data.name) ?? [];
 
-  const column_names_raw = Array.from(column_names);
+  const column_ids_raw = Array.from(column_ids);
 
-  const sorted = d3.sort(column_names_raw, (d) => names_order.indexOf(d));
+  const sorted = d3.sort(column_ids_raw, (d) => names_order.indexOf(d));
   return (
     <div className="grid grid-cols-3 gap-x-3 gap-y-2">
-      {sorted.map((column_name) => {
+      {sorted.map((column_id) => {
         return (
           <div
-            key={column_name}
+            key={column_id}
             className="flex items-center justify-between text-xs text-slate-700 dark:text-slate-200 px-2 py-1 rounded bg-slate-50 dark:bg-slate-600"
           >
-            <div>{column_name}</div>
+            <div>id: {column_id}</div>
             <TrashIcon
               className="w-3 h-3 cursor-pointer"
               onClick={() => {
                 dispatch_action({
                   type: `remove_column`,
                   cell_id,
-                  column_name: column_name,
+                  column_id,
                 });
               }}
             />

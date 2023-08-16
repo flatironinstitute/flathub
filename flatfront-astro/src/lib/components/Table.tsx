@@ -19,6 +19,7 @@ import {
 } from "@tanstack/react-table";
 
 import Katex from "./Katex";
+import { get_field_id } from "../shared";
 
 export default function Table({
   data,
@@ -115,14 +116,14 @@ function construct_table_columns<T>(
   catalog_field_hierarchy: CatalogHierarchyNode
 ): ColumnDef<Datum>[] {
   if (data.length === 0) return [];
-  // Get field names based on keys in data
-  const field_names = Object.keys(data[0] ?? {});
+  // Get field IDs based on keys in data
+  const field_ids = Object.keys(data[0] ?? {});
 
   // Find the field nodes in the catalog field hierarchy
-  const field_nodes = field_names
-    .map((field_name) => {
+  const field_nodes = field_ids
+    .map((field_id) => {
       return catalog_field_hierarchy.find(
-        (d: any) => d.data.name === field_name
+        (d) => get_field_id(d.data) === field_id
       );
     })
     .filter((d): d is CatalogHierarchyNode => typeof d !== "undefined");
@@ -131,7 +132,7 @@ function construct_table_columns<T>(
   const get_path = (node: CatalogHierarchyNode) => {
     return node
       .ancestors()
-      .map((d) => d.data.name ?? `ROOT`)
+      .map((d) => get_field_id(d.data))
       .reverse()
       .join(`/`);
   };
@@ -160,14 +161,14 @@ function construct_table_columns<T>(
     }
 
     const column_base: ColumnDef<Datum> = {
-      id: node.data.name,
+      id: get_field_id(node.data),
       header: () => <Katex>{node.data.title ?? node.data.name}</Katex>,
     };
 
     if (child_columns.length === 0) {
       const column: AccessorColumnDef<Datum> = {
         ...column_base,
-        accessorKey: node.data.name,
+        accessorKey: get_field_id(node.data),
         cell: (row) => row.getValue(),
       };
       return column;

@@ -8,6 +8,7 @@ import type {
   Filters,
   Datum,
   FilterValueRaw,
+  FieldMetadata,
 } from "./types";
 
 import React from "react";
@@ -24,7 +25,45 @@ export const format = {
     if (d < 1e4) return d3.format(`,.4~g`)(d);
     return d3.format(`.2~e`)(d);
   },
+  commas: (d) => {
+    return d3.format(`,`)(d);
+  },
 };
+
+export function get_field_id(metadata: FieldMetadata): string {
+  if (metadata.__id) {
+    return metadata.__id;
+  } else {
+    log(`Node is missing ID:`, metadata);
+    throw new Error(`Node is missing ID`);
+  }
+}
+
+export function set_field_id(metadata: FieldMetadata) {
+  if (metadata.__id) return;
+  if (metadata.name && !metadata.sub) {
+    metadata.__id = metadata.name;
+    return;
+  }
+  const hash = tiny_json_hash(metadata);
+  let label = `unknown`;
+  if (metadata.name && metadata.name.length > 0) label = metadata.name;
+  else if (metadata.title && metadata.title.length > 0) label = metadata.title;
+  metadata.__id = `${label}_${hash}`;
+}
+
+function tiny_json_hash(object) {
+  const text = JSON.stringify(object);
+
+  let hash = 5381;
+  let index = text.length;
+
+  while (index) {
+    hash = (hash * 33) ^ text.charCodeAt(--index);
+  }
+
+  return (hash >>> 0).toString(16);
+}
 
 export function log(...args: any[]) {
   console.log(`🌔`, ...args);
@@ -49,13 +88,13 @@ export function is_filter_cell_id(cell_id: CellID): FilterCellID {
 
 export function set_filter_value(
   cell_id: CellID,
-  filter_name: string,
+  filter_id: string,
   filter_value: FilterValueRaw
 ) {
   stores.filter_state.update((fitler_state_object) => {
     return produce(fitler_state_object, (draft) => {
       draft[cell_id] = draft[cell_id] || {};
-      draft[cell_id][filter_name] = filter_value;
+      draft[cell_id][filter_id] = filter_value;
     });
   });
 }
@@ -88,29 +127,28 @@ export function useStore<T>(store: Readable<T>) {
   return state;
 }
 
-export const [useCellID, CellIDProvider] = useContextHelper<CellID>(`CellID`);
-export const [useParentCellID, ParentCellIDProvider] =
+const [useCellID, CellIDProvider] = useContextHelper<CellID>(`CellID`);
+const [useParentCellID, ParentCellIDProvider] =
   useContextHelper<CellID>(`ParentCellID`);
-export const [usePlotID, PlotIDProvider] = useContextHelper<string>(`PlotID`);
-export const [useCatalogName, CatalogNameProvider] =
+const [usePlotID, PlotIDProvider] = useContextHelper<string>(`PlotID`);
+const [useCatalogID, CatalogIDProvider] =
   useContextHelper<string>(`CatalogName`);
-export const [useCatalogMetadata, CatalogMetadataProvider] = useContextHelper<
+const [useCatalogMetadata, CatalogMetadataProvider] = useContextHelper<
   CatalogMetadataWrapper | undefined
 >(`CatalogMetadata`);
-export const [useCellFilters, CellFiltersProvider] =
+const [useCellFilters, CellFiltersProvider] =
   useContextHelper<Filters>(`CellFilters`);
-export const [useFieldName, FieldNameProvider] =
-  useContextHelper<string>(`FieldName`);
-export const [useData, DataProvider] = useContextHelper<Datum[]>(`Data`);
+const [useFieldID, FieldIDProvider] = useContextHelper<string>(`FieldID`);
+const [useData, DataProvider] = useContextHelper<Datum[]>(`Data`);
 
 export const Providers = {
   CellIDProvider,
   ParentCellIDProvider,
   PlotIDProvider,
-  CatalogNameProvider,
+  CatalogIDProvider,
   CatalogMetadataProvider,
   CellFiltersProvider,
-  FieldNameProvider,
+  FieldIDProvider,
   DataProvider,
 };
 
@@ -119,10 +157,10 @@ export const hooks = {
   useCellID,
   useParentCellID,
   usePlotID,
-  useCatalogName,
+  useCatalogID,
   useCatalogMetadata,
   useCellFilters,
-  useFieldName,
+  useFieldID,
   useData,
 };
 
@@ -298,37 +336,6 @@ export function CellWrapper({
       {children}
     </div>
   );
-}
-
-export function filter_hierarchy<T>(
-  hierarchy: d3.HierarchyNode<T>,
-  leaf_ids: Set<string>,
-  get_id: (node: d3.HierarchyNode<T>) => string
-): d3.HierarchyNode<string> {
-  const get_path = (node: d3.HierarchyNode<T>) =>
-    node.ancestors().map(get_id).reverse().join(`/`);
-
-  const leaf_node_paths: string[] = Array.from(leaf_ids)
-    .map((id) => hierarchy.find((d) => get_id(d) === id))
-    .map((node) => get_path(node));
-
-  log("filter_hierarchy: leaf_node_paths", leaf_node_paths);
-
-  const filtered_id_hierarchy = d3.stratify<string>().path((d) => d)(
-    leaf_node_paths
-  );
-
-  return filtered_id_hierarchy;
-}
-
-export function get_node_path<T extends { name?: string }>(
-  node: d3.HierarchyNode<T>
-): string {
-  return node
-    .ancestors()
-    .map((d) => d.data.name ?? `root`)
-    .reverse()
-    .join(`/`);
 }
 
 export function find_parent_node_by_filter<T>(

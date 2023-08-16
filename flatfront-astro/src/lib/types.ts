@@ -17,18 +17,18 @@ export type PlotControlAction = ActionBase<
 
 export type ColumnListAction = ActionBase<
   `add_column` | `remove_column`,
-  { cell_id: CellID; column_name: string }
+  { cell_id: CellID; column_id: string }
 >;
 
 export type FilterListAction = ActionBase<
   `add_filter` | `remove_filter` | `remove_child_filters`,
-  { cell_id: CellID; filter_name: string }
+  { cell_id: CellID; filter_id: string }
 >;
 
 export type CellAction =
   | ActionBase<
       `add_catalog_cell`,
-      { catalog_name: string; cell_id: CatalogCellID }
+      { catalog_id: string; cell_id: CatalogCellID }
     >
   | ActionBase<
       `add_filter_cell`,
@@ -60,9 +60,9 @@ export type CatalogMetadataWrapper = {
   metadata: CatalogResponse;
   hierarchy: d3.HierarchyNode<FieldMetadata>;
   nodes: d3.HierarchyNode<FieldMetadata>[];
-  nodes_by_name: Map<string, d3.HierarchyNode<FieldMetadata>>;
-  initial_filter_names: string[];
-  initial_column_names: string[];
+  nodes_by_id: Map<string, d3.HierarchyNode<FieldMetadata>>;
+  initial_filter_ids: string[];
+  initial_column_ids: string[];
 };
 
 export type CatalogMetadataQuery = QueryObserverResult<CatalogMetadataWrapper>;
@@ -81,7 +81,7 @@ export type Cell =
   | {
       type: `catalog`;
       cell_id: CatalogCellID;
-      catalog_name: string;
+      catalog_id: string;
       parent_cell_id: `root`;
     }
   | {
@@ -125,7 +125,10 @@ export type DataRequestBody = NonNullable<
   schema.operations["dataPOST"]["requestBody"]
 >["content"]["application/json"];
 
-export type FieldMetadata = schema.components["schemas"]["FieldGroup"];
+export type FieldMetadata = schema.components["schemas"]["FieldGroup"] & {
+  __id?: string;
+  __is_root?: boolean;
+};
 
 export type CatalogResponse =
   schema.components["responses"]["catalog"]["content"]["application/json"];

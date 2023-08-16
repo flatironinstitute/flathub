@@ -20,13 +20,13 @@ import Katex from "./Katex";
 
 export function FieldCard(): React.JSX.Element {
   const cell_id = hooks.useCellID();
-  const field_name = hooks.useFieldName();
+  const field_id = hooks.useFieldID();
   const filters = hooks.useCellFilters();
-  const nodes_by_name = hooks.useCatalogMetadata()?.nodes_by_name;
-  const field_node = nodes_by_name?.get(field_name);
+  const nodes_by_id = hooks.useCatalogMetadata()?.nodes_by_id;
+  const field_node = nodes_by_id?.get(field_id);
 
   if (!field_node) {
-    throw new Error(`Could not find node for ${field_name}`);
+    throw new Error(`Could not find node for ${field_id}`);
   }
 
   const is_leaf = field_node.children === undefined;
@@ -54,20 +54,20 @@ export function FieldCard(): React.JSX.Element {
 
   const filter_toggle = (() => {
     if (!is_leaf) return null;
-    const is_active_filter = field_name in filters;
+    const is_active_filter = field_id in filters;
     const on_click = () => {
       log(`filter toggle`, is_active_filter);
       if (is_active_filter) {
         dispatch_action({
           type: `remove_filter`,
           cell_id,
-          filter_name: field_name,
+          filter_id: field_id,
         });
       } else {
         dispatch_action({
           type: `add_filter`,
           cell_id,
-          filter_name: field_name,
+          filter_id: field_id,
         });
       }
     };
@@ -96,12 +96,12 @@ export function FieldCard(): React.JSX.Element {
 
 export function FilterCard() {
   const cell_id = hooks.useCellID();
-  const field_name = hooks.useFieldName();
-  const nodes_by_name = hooks.useCatalogMetadata()?.nodes_by_name;
-  const field_node = nodes_by_name?.get(field_name);
+  const field_id = hooks.useFieldID();
+  const nodes_by_id = hooks.useCatalogMetadata()?.nodes_by_id;
+  const field_node = nodes_by_id?.get(field_id);
 
   if (!field_node) {
-    throw new Error(`Could not find node for ${field_name}`);
+    throw new Error(`Could not find node for ${field_id}`);
   }
 
   const is_leaf = field_node.children === undefined;
@@ -112,7 +112,7 @@ export function FilterCard() {
   const filter_control = (() => {
     const metadata = field_node?.data;
     if (!metadata) {
-      throw new Error(`Could not find metadata for ${field_name}`);
+      throw new Error(`Could not find metadata for ${field_id}`);
     }
     if (metadata.sub && metadata.sub.length > 0) {
       return null;
@@ -139,7 +139,7 @@ export function FilterCard() {
             dispatch_action({
               type: `remove_child_filters`,
               cell_id,
-              filter_name: field_name,
+              filter_id: field_id,
             });
           }}
         >
@@ -152,7 +152,7 @@ export function FilterCard() {
           dispatch_action({
             type: `remove_filter`,
             cell_id,
-            filter_name: field_name,
+            filter_id: field_id,
           });
         }}
       >
@@ -181,11 +181,11 @@ function FieldCardWrapper({
 }: {
   children: React.ReactNode;
 }): React.JSX.Element {
-  const field_name = hooks.useFieldName();
-  const nodes_by_name = hooks.useCatalogMetadata()?.nodes_by_name;
-  const field_node = nodes_by_name?.get(field_name);
+  const field_id = hooks.useFieldID();
+  const nodes_by_id = hooks.useCatalogMetadata()?.nodes_by_id;
+  const field_node = nodes_by_id?.get(field_id);
   if (!field_node) {
-    throw new Error(`Could not find node for ${field_name}`);
+    throw new Error(`Could not find node for ${field_id}`);
   }
   const node_depth = (field_node?.depth ?? 0) - 1;
   return (
@@ -206,84 +206,106 @@ function FieldCardWrapper({
 
 function NumericFilterControl() {
   const cell_id = hooks.useCellID();
-  const catalog_name = hooks.useCatalogName();
-  const field_name = hooks.useFieldName();
+  const catalog_id = hooks.useCatalogID();
+  const field_id = hooks.useFieldID();
   const metadata = hooks
     .useStore(stores.field_metadata)
-    ?.get(catalog_name, field_name)?.data;
+    ?.get(catalog_id, field_id)?.data;
   const filters = hooks.useCellFilters();
-  const filter_value_raw: FilterValueRaw = filters[field_name];
+  const filter_value_raw: FilterValueRaw = filters[field_id];
 
   const { min, max } = get_field_stats(metadata);
 
-  const { low, high } = get_numeric_filter_value(filter_value_raw, field_name);
+  const { low, high } = get_numeric_filter_value(filter_value_raw, field_id);
 
   const value = [low, high] as [number, number];
 
+  // const slider = (
+  //   <div className="grid grid-cols-[10ch_1fr_10ch] items-center justify-items-center">
+  //     <div className="col-start-1">
+  //       <Label>from</Label>
+  //     </div>
+  //     <div className="col-start-3">
+  //       <Label>to</Label>
+  //     </div>
+  //     <div>{format.concise(low)}</div>
+  //     <RangeSlider
+  //       min={min}
+  //       max={max}
+  //       value={value}
+  //       onValueChange={([low, high]) => {
+  //         set_filter_value(cell_id, field_id, {
+  //           gte: low,
+  //           lte: high,
+  //         });
+  //       }}
+  //     />
+  //     <div>{format.concise(high)}</div>
+  //   </div>
+  // );
+
   const slider = (
-    <div className="grid grid-cols-[10ch_1fr_10ch] items-center justify-items-center">
-      <div className="col-start-1">
-        <Label>from</Label>
-      </div>
-      <div className="col-start-3">
-        <Label>to</Label>
-      </div>
-      <div>{format.concise(low)}</div>
-      <RangeSlider
-        min={min}
-        max={max}
-        value={value}
-        onValueChange={([low, high]) => {
-          set_filter_value(cell_id, field_name, {
-            gte: low,
-            lte: high,
-          });
-        }}
-      />
-      <div>{format.concise(high)}</div>
-    </div>
+    <RangeSlider
+      min={min}
+      max={max}
+      value={value}
+      onValueChange={([low, high]) => {
+        set_filter_value(cell_id, field_id, {
+          gte: low,
+          lte: high,
+        });
+      }}
+    />
   );
 
   return (
-    <div data-type="ConnectedRangeSlider" className="flex flex-col gap-y-4">
-      {slider}
-      <LabelledInput
-        label="from"
-        value={low.toString()}
-        getValidityMessage={(string) => {
-          const number = valid_number(string);
-          if (number === null) return `Invalid number`;
-          if (number < min) return `Must be greater than ${min.toString()}`;
-          return null;
-        }}
-        onInput={(string) => {
-          const number = valid_number(string);
-          if (number === null) return;
-          set_filter_value(cell_id, field_name, {
-            gte: number,
-            lte: high,
-          });
-        }}
-      />
-      <LabelledInput
-        label="to"
-        value={high.toString()}
-        getValidityMessage={(string) => {
-          const number = valid_number(string);
-          if (number === null) return `Invalid number`;
-          if (number > max) return `Must be less than ${max.toString()}`;
-          return null;
-        }}
-        onInput={(string) => {
-          const number = valid_number(string);
-          if (number === null) return;
-          set_filter_value(cell_id, field_name, {
-            gte: low,
-            lte: number,
-          });
-        }}
-      />
-    </div>
+    <>
+      <div
+        data-type="NumericFilterControl"
+        className="mt-[9px] grid grid-cols-1 gap-4 sm:grid-cols-3 items-center"
+      >
+        <TextInput
+          label="from"
+          value={low.toString()}
+          getValidityMessage={(string) => {
+            const number = valid_number(string);
+            if (number === null) return `Invalid number`;
+            if (number < min) return `Must be greater than ${min.toString()}`;
+            return null;
+          }}
+          onInput={(string) => {
+            const number = valid_number(string);
+            if (number === null) return;
+            set_filter_value(cell_id, field_id, {
+              gte: number,
+              lte: high,
+            });
+          }}
+        />
+        <div>
+          <Label className="hidden sm:block">&nbsp;</Label>
+          {slider}
+        </div>
+        <TextInput
+          label="to"
+          value={high.toString()}
+          getValidityMessage={(string) => {
+            const number = valid_number(string);
+            if (number === null) return `Invalid number`;
+            if (number > max) return `Must be less than ${max.toString()}`;
+            return null;
+          }}
+          onInput={(string) => {
+            const number = valid_number(string);
+            if (number === null) return;
+            set_filter_value(cell_id, field_id, {
+              gte: low,
+              lte: number,
+            });
+          }}
+        />
+      </div>
+    </>
   );
 }
 
@@ -317,19 +339,19 @@ function get_field_stats(metadata: FieldMetadata) {
 
 function get_numeric_filter_value(
   filter_value: FilterValueRaw,
-  field_name: string
+  field_id: string
 ): { low: number; high: number } {
   if (typeof filter_value !== `object`) {
-    throw new Error(`Expected filter state to be an object for ${field_name}`);
+    throw new Error(`Expected filter state to be an object for ${field_id}`);
   }
   if (!(`gte` in filter_value) || !(`lte` in filter_value)) {
-    throw new Error(`Expected filter state to have gte/lte for ${field_name}`);
+    throw new Error(`Expected filter state to have gte/lte for ${field_id}`);
   }
   const low = filter_value.gte;
   const high = filter_value.lte;
   if (typeof low !== `number` || typeof high !== `number`) {
     throw new Error(
-      `Expected filter state to have gte/lte numbers for ${field_name}`
+      `Expected filter state to have gte/lte numbers for ${field_id}`
     );
   }
   return { low, high };
@@ -337,13 +359,13 @@ function get_numeric_filter_value(
 
 function SelectFilterControl() {
   const cell_id = hooks.useCellID();
-  const catalog_name = hooks.useCatalogName();
-  const field_name = hooks.useFieldName();
+  const catalog_id = hooks.useCatalogID();
+  const field_id = hooks.useFieldID();
   const metadata = hooks
     .useStore(stores.field_metadata)
-    ?.get(catalog_name, field_name)?.data;
+    ?.get(catalog_id, field_id)?.data;
   const filters = hooks.useCellFilters();
-  const filter_value_raw: FilterValueRaw = filters[field_name];
+  const filter_value_raw: FilterValueRaw = filters[field_id];
 
   const enums = metadata.enum;
 
@@ -357,24 +379,15 @@ function SelectFilterControl() {
   const value = values.find((d) => d.value === filter_value_raw);
 
   const on_change = (d) => {
-    log(`on value change`, value);
-    set_filter_value(cell_id, field_name, d.value);
+    set_filter_value(cell_id, field_id, d.value);
   };
 
-  log(`SelectFilterControl:`, {
-    cell_id,
-    catalog_name,
-    field_name,
-    metadata,
-    filters,
-    filter_value_raw,
-  });
   return (
     <Select
       value={value}
       options={values}
       getKey={(d) => d.value.toString()}
-      getDisplayName={(d) => d.text}
+      getDisplayName={(d) => `${d.text} (${format.commas(d.count)} rows)`}
       onValueChange={on_change}
       buttonClassName="ring-2 ring-inset ring-light-4 dark:ring-dark-4"
       optionsClassName="bg-light-2 dark:bg-dark-2 shadow-2xl"
@@ -383,15 +396,68 @@ function SelectFilterControl() {
   );
 }
 
-function LabelledInput({
-  label,
+// function LabelledInput({
+//   label,
+//   value,
+//   getValidityMessage = (value) => null,
+//   onInput,
+//   ...rest
+// }: {
+//   label: string;
+//   value?: string;
+//   getValidityMessage?: (value: string) => string | null;
+//   onInput?: (value: string) => void;
+// } & React.InputHTMLAttributes<HTMLInputElement>) {
+//   const ref = React.useRef<HTMLInputElement>(null);
+//   const [internal, set_internal] = React.useState(value ?? ``);
+
+//   const on_input = (string) => {
+//     set_internal(string);
+//     const message = getValidityMessage(string);
+//     if (message) {
+//       ref.current.setCustomValidity(message);
+//     } else {
+//       ref.current.setCustomValidity("");
+//       onInput && onInput(string);
+//     }
+//     ref.current.reportValidity();
+//   };
+
+//   React.useEffect(() => {
+//     on_input(value ?? ``);
+//   }, [value]);
+
+//   return (
+//     <div>
+//       <Label>{label}</Label>
+//       <div className="h-1"></div>
+//       <div>
+//         <TextInput
+//           ref={ref}
+//           type="text"
+//           className={clsx(
+//             `block w-full bg-transparent rounded-md border-0 py-2 px-2`,
+//             `text-light-text dark:text-dark-text`,
+//             `ring-2 ring-inset ring-light-4 dark:ring-dark-4 focus:outline-none focus:ring-dark-0 dark:focus:ring-light-0 invalid:!ring-red-400`
+//           )}
+//           value={internal}
+//           onInput={(event) => on_input(event.currentTarget.value)}
+//           {...rest}
+//         />
+//       </div>
+//     </div>
+//   );
+// }
+
+function TextInput({
   value,
+  label,
   getValidityMessage = (value) => null,
   onInput,
   ...rest
 }: {
-  label: string;
   value?: string;
+  label?: string;
   getValidityMessage?: (value: string) => string | null;
   onInput?: (value: string) => void;
 } & React.InputHTMLAttributes<HTMLInputElement>) {
@@ -415,30 +481,38 @@ function LabelledInput({
   }, [value]);
 
   return (
-    <div>
-      <Label>{label}</Label>
-      <div className="h-1"></div>
-      <div>
-        <input
-          ref={ref}
-          type="text"
-          className={clsx(
-            `block w-full bg-transparent rounded-md border-0 py-2 px-2`,
-            `text-light-text dark:text-dark-text`,
-            `ring-2 ring-inset ring-light-4 dark:ring-dark-4 focus:outline-none focus:ring-dark-0 dark:focus:ring-light-0 invalid:!ring-red-400`
-          )}
-          value={internal}
-          onInput={(event) => on_input(event.currentTarget.value)}
-          {...rest}
-        />
-      </div>
+    <div data-type="TextInput" className="relative w-full">
+      {label && <Label>{label}</Label>}
+      <input
+        ref={ref}
+        type="text"
+        className={clsx(
+          `block w-full bg-transparent rounded-md border-0 py-2 px-2`,
+          `text-light-text dark:text-dark-text`,
+          `ring-2 ring-inset ring-light-4 dark:ring-dark-4 focus:outline-none focus:ring-dark-0 dark:focus:ring-light-0 invalid:!ring-red-400`
+        )}
+        value={internal}
+        onInput={(event) => on_input(event.currentTarget.value)}
+        {...rest}
+      />
     </div>
   );
 }
 
-function Label({ children }: { children: React.ReactNode }) {
+function Label({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <label className="uppercase block text-xs text-slate-700 dark:text-slate-200">
+    <label
+      className={clsx(
+        `uppercase block text-xs text-slate-700 dark:text-slate-200`,
+        className
+      )}
+    >
       {children}
     </label>
   );

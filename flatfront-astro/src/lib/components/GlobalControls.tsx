@@ -33,7 +33,6 @@ function CatalogSelect() {
   const catalog_list_unsorted = useStore(stores.top_response).data ?? [];
   const ready = catalog_list_unsorted.length > 0;
   const catalog_list = d3.sort(catalog_list_unsorted, get_title);
-  log(`CatalogSelect: catalog_list`, catalog_list, ready);
   return (
     <div data-type="CatalogSelect">
       <LabeledSelect
@@ -54,7 +53,7 @@ function CatalogSelect() {
           dispatch_action({
             type: `add_catalog_cell`,
             cell_id: `catalog_cell_${selected.name}`,
-            catalog_name: selected.name,
+            catalog_id: selected.name,
           });
         }}
         buttonClassName="bg-light-3 dark:bg-dark-3"
