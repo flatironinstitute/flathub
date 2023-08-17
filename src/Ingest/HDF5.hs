@@ -437,12 +437,12 @@ ingestTNG inginfo = do
   FieldValue Field{ fieldEnum = Just sime } (Byte sim) <- constField "simulation" inginfo
   FieldValue _ (Short (Identity snap)) <- constField "snapshot" inginfo
   let simn = sime V.! fromIntegral sim
-      isill = T.hasPrefix "Illustris" simn
+      isill = T.isPrefixOf "Illustris" simn
       dir = ingestFile inginfo </> T.unpack simn
       gdir = dir </> "groups"
       isdm = "-Dark" `T.isSuffixOf` simn
       snap3 = printf "%03d" snap
-      next Ingest{ ingestStart = s, ingestSize = Just z, ingestOffset = o, ingestJoin = j } = inginfo
+      next Ingest{ ingestStart = s, ingestSize = ~(Just z), ingestOffset = o, ingestJoin = j } = inginfo
         { ingestStart = s + z
         , ingestSize = Nothing
         , ingestOffset = if o > z then o - z else 0
@@ -637,9 +637,9 @@ ingestEagle inginfo = do
                   { ingestCatalog = (ingestCatalog subinfo){ catalogFieldGroups = fold (fieldSub f) }
                   , ingestOffset = 0
                   }) hg sups
-            loop info sups = do
-              liftIO $ rePutStr ("subhalo " <> show (ingestOffset info)) >> hFlush stdout
-              (n, sb, info') <- liftIO $ loadBlock info hs
+            loop sinfo sups = do
+              liftIO $ rePutStr ("subhalo " <> show (ingestOffset sinfo)) >> hFlush stdout
+              (n, sb, sinfo') <- liftIO $ loadBlock sinfo hs
               gid <- case lookup subgf sb of
                 Just (Long gid) -> return gid
                 _ -> fail $ "Subhalo/" <> T.unpack subgf <> " not found"
@@ -650,15 +650,15 @@ ingestEagle inginfo = do
                     | i == n = return (s, r)
                     | otherwise = do
                       (sd, s') <- unzip <$> mapM (eagleNext $ sid VS.! i) s
-                      let d = blockDoc info
+                      let d = blockDoc sinfo
                             (foldMap (blockJson fof) (IM.lookup (fromIntegral $ gid VS.! i) fofmap) <> fold sd)
                             sb i
                       doc s' (d:r) (succ i)
               (sups', docs) <- liftIO $ doc sups [] 0
-              ES.createBulk (ingestCatalog info') docs
-              if ingestEOF info'
-                then ingestOffset info' <$ liftIO (putStrLn "")
-                else loop info' sups'
+              ES.createBulk (ingestCatalog sinfo') docs
+              if ingestEOF sinfo'
+                then ingestOffset sinfo' <$ liftIO (putStrLn "")
+                else loop sinfo' sups'
         loadsups (V.toList supfs) []
       _ -> fail "missing join"
     return (fromIntegral nfof+nsub)
