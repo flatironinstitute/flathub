@@ -459,7 +459,7 @@ ingestTNG inginfo = do
           info' <- prepareIngest info{ ingestFile = fn } ghf
           when (fi /= 0 && nf /= nf') $ fail "NumFiles mismatch"
           open nf' (succ fi) (next info') $ act . ((info', ghf) :)
-          where fn = gdir </> ("groups_" ++ snap3) </> ((if isill then "fof_subhalo_tab_" else "groups_") ++ snap3 ++ "." ++ show fi ++ ".hdf5")
+          where fn = gdir </> ("groups_" ++ snap3) </> ((if isill then "groups_" else "fof_subhalo_tab_") ++ snap3 ++ "." ++ show fi ++ ".hdf5")
       load [] _ _ = return 0 -- FIXME total rows
       load ghfs@((ginfo, _):_) subhfs supji = do
         liftIO $ rePutStr $ showing ginfo <> " " <> showing (fst $ head subhfs)
