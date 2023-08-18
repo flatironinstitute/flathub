@@ -49,7 +49,7 @@ import qualified ES
 import Ingest.Types
 
 rePutStr :: String -> IO ()
-rePutStr = putStr . ("\r\ESC[K" ++)
+rePutStr s = putStr ("\r\ESC[K" ++ s) >> hFlush stdout
 
 unStorableValue :: (forall a . (Typed a, VS.Storable a) => VS.Vector a -> b) -> TypeValue VS.Vector -> b
 unStorableValue f (Double    x) = f $! x
@@ -224,7 +224,7 @@ loadStackBlock [] _ = return (0, [], [])
 ingestSubStackBlocks :: Ingest -> DataBlock -> FileStack -> Maybe (IM.IntMap Int, Fields, H5.File) -> M FileStack
 ingestSubStackBlocks info@Ingest{ ingestJoin = Just IngestHaloJoin{..} } pb shfs supp = do
   fcl <- V.zip <$> getcol joinFirst pb <*> getcol joinCount pb
-  let fcl' = V.filter ((-1 /=) . fst) fcl
+  let fcl' = V.filter ((`notElem` [-1,maxBound]) . fst) fcl
   if V.null fcl' then return shfs else do
     let (off, _) = V.head fcl'
         (lo, lc) = V.last fcl'
@@ -352,14 +352,14 @@ prepareIngest info hf = infofs info (catalogFieldGroups $ ingestCatalog info)
       v <- liftIO $ readScalarValue n <$> withDataset hf n (\hd -> hdf5ReadType (fieldType f) $ hdf5ReadVector n hd [] 2)
       return $ addIngestConsts (setFieldValue f v) i
     (Just IngestIllustris, ill) -> do
-      sz <- getIllustrisSize ill
+      sz <- getIllustrisSize i ill
       si <- constv "simulation" i
       sn <- constv "snapshot" i
       return i
         { ingestPrefix = si ++ '_' : sn ++ [T.head ill]
         , ingestSize = Just (fromIntegral sz) }
     (Just IngestCamels, ill) -> do
-      sz <- getIllustrisSize ill
+      sz <- getIllustrisSize i ill
       ssuite <- constv "simulation_suite" i
       FieldValue Field{ fieldEnum = Just ssete } (Byte ssetv) <- constField "simulation_set" i
       sid <- constv "simulation_set_id" i
@@ -388,14 +388,14 @@ prepareIngest info hf = infofs info (catalogFieldGroups $ ingestCatalog info)
           f{ fieldIngest = Just gf } $ ingestJoin i
         }
     _ -> return i -- XXX only top-level ingest flags processed here
-  getIllustrisSize ill = liftIO $ do
+  getIllustrisSize i ill = liftIO $ do
     Long sz <- readScalarAttribute hf ("Header/N" <> case ill of { "Subhalo" -> "subgroup" ; s -> T.toLower s } <> "s_ThisFile") (Long Proxy)
     handleJust
       (\(H5E.errorStack -> (H5E.HDF5Error{ H5E.classId = cls, H5E.majorNum = Just H5E.Attr, H5E.minorNum = Just H5E.NotFound }:_)) -> guard (cls == H5E.hdfError)) return $ do
         Long fi <- readScalarAttribute hf "Header/Num_ThisFile" (Long Proxy)
         Long ids <- readAttribute hf ("Header/FileOffsets_" <> ill) (Long Proxy)
         let si = fromIntegral (ids VS.! fromIntegral fi)
-        unless (si == ingestStart info) $ fail "start offset mismatch"
+        unless (si == ingestStart i) $ fail "start offset mismatch"
     return sz
   constv f i = show . fieldValue <$> constField f i
 
@@ -413,7 +413,7 @@ loadHFile info hf =
     ingestBlock i b n
     ij <- ingestSubBlocks i b hf
     let i'' = i'{ ingestJoin = ij }
-    liftIO $ rePutStr (show (ingestOffset i'') ++ ' ' : foldMap (show . ingestOffset . joinIngest) ij) >> hFlush stdout
+    liftIO $ rePutStr (show (ingestOffset i'') ++ ' ' : foldMap (show . ingestOffset . joinIngest) ij)
     if ingestEOF i''
       then maybe
         (return $ ingestOffset i'')
@@ -550,7 +550,7 @@ eagleLoad e
 
 eagleInitMap :: Int32 -> EagleSub -> IO (Maybe DataValues, EagleSub)
 eagleInitMap k ei = do
-  rePutStr (T.unpack (eagleName ei) <> " load") >> hFlush stdout
+  rePutStr (T.unpack (eagleName ei) <> " load")
   e@EagleSub{..} <- eagleLoad ei{ eagleIngest = (eagleIngest ei){ ingestBlockSize = maxmap } }
   when (fromIntegral eagleLen >= maxmap) $ fail "exeeded maxmap"
   eagleTakeMap k e
@@ -606,7 +606,7 @@ ingestEagle inginfo = do
   FieldValue Field{ fieldEnum = Just sime } (Byte (Identity sim)) <- constField "simulation" inginfo
   let simn = sime V.! fromIntegral sim
       ingfof b i l o = do
-        liftIO $ rePutStr ("fof " ++ show o ++ "/" ++ show l) >> hFlush stdout
+        liftIO $ rePutStr ("fof " ++ show o ++ "/" ++ show l)
         let n = min (fromIntegral $ ingestBlockSize i) l
         ingestWith i (blockDoc i mempty b . (o +)) n
         when (l > n) $ ingfof b i (l - n) (o + n)
@@ -615,7 +615,7 @@ ingestEagle inginfo = do
       { ingestPrefix = show sim ++ "F"
       } hf
     (nfof, fof) <- liftBaseOp (withGroup hf (simn <> "_FoF")) $ \hg -> do
-      liftIO $ rePutStr "fof load" >> hFlush stdout
+      liftIO $ rePutStr "fof load"
       (n, b, _info') <- liftIO $ loadBlock info{ ingestBlockSize = maxfof, ingestOffset = 0 } hg
       when (fromIntegral n >= maxfof) $ fail "exeeded maxfof"
       ingfof b info n 0
@@ -638,7 +638,7 @@ ingestEagle inginfo = do
                   , ingestOffset = 0
                   }) hg sups
             loop sinfo sups = do
-              liftIO $ rePutStr ("subhalo " <> show (ingestOffset sinfo)) >> hFlush stdout
+              liftIO $ rePutStr ("subhalo " <> show (ingestOffset sinfo))
               (n, sb, sinfo') <- liftIO $ loadBlock sinfo hs
               gid <- case lookup subgf sb of
                 Just (Long gid) -> return gid
