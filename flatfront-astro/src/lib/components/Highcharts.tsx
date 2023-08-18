@@ -6,7 +6,9 @@ import * as stores from "../stores";
 import { LabeledSelect, dispatch_action, hooks } from "../shared";
 
 export function Scatterplot() {
-  const cell_id = hooks.useCellID();
+  const cell = hooks.useCell();
+  const cell_id = cell.cell_id;
+  const catalog_id = hooks.useStore(stores.catalog_id_by_cell_id).get(cell_id);
   const plot_id = hooks.usePlotID();
   const data = hooks.useData();
   const field_ids = Object.keys(data[0]);

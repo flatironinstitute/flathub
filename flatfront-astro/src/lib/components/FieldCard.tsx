@@ -14,15 +14,20 @@ import {
   set_filter_value,
   format,
   Select,
+  field_is_enum,
 } from "../shared";
 import * as stores from "../stores";
 import Katex from "./Katex";
 
 export function FieldCard(): React.JSX.Element {
-  const cell_id = hooks.useCellID();
+  const cell = hooks.useCell();
+  const cell_id = cell.cell_id;
+  const catalog_id = hooks.useStore(stores.catalog_id_by_cell_id).get(cell_id);
   const field_id = hooks.useFieldID();
-  const filters = hooks.useCellFilters();
-  const nodes_by_id = hooks.useCatalogMetadata()?.nodes_by_id;
+  const filters = hooks.useStore(stores.filters_by_cell_id).get(cell_id);
+  const nodes_by_id = hooks
+    .useStore(stores.catalog_metadata_wrapper_by_catalog_id)
+    .get(catalog_id)?.nodes_by_id;
   const field_node = nodes_by_id?.get(field_id);
 
   if (!field_node) {
@@ -95,9 +100,13 @@ export function FieldCard(): React.JSX.Element {
 }
 
 export function FilterCard() {
-  const cell_id = hooks.useCellID();
+  const cell = hooks.useCell();
+  const cell_id = cell.cell_id;
   const field_id = hooks.useFieldID();
-  const nodes_by_id = hooks.useCatalogMetadata()?.nodes_by_id;
+  const catalog_id = hooks.useStore(stores.catalog_id_by_cell_id).get(cell_id);
+  const nodes_by_id = hooks
+    .useStore(stores.catalog_metadata_wrapper_by_catalog_id)
+    .get(catalog_id)?.nodes_by_id;
   const field_node = nodes_by_id?.get(field_id);
 
   if (!field_node) {
@@ -108,27 +117,6 @@ export function FilterCard() {
   const is_required = field_node.data.required;
 
   const field_title = <Katex>{field_node.data.title}</Katex>;
-
-  const filter_control = (() => {
-    const metadata = field_node?.data;
-    if (!metadata) {
-      throw new Error(`Could not find metadata for ${field_id}`);
-    }
-    if (metadata.sub && metadata.sub.length > 0) {
-      return null;
-    } else if (metadata.type === `float` || metadata.type === `short`) {
-      return <NumericFilterControl />;
-    } else if (
-      (metadata.type === `boolean` || metadata.type === `byte`) &&
-      metadata.enum &&
-      metadata.stats?.terms
-    ) {
-      return <SelectFilterControl />;
-    } else {
-      log(metadata);
-      throw new Error(`Unknown field type: ${metadata.type}`);
-    }
-  })();
 
   const remove_filter_button = (() => {
     if (is_required) return null;
@@ -168,6 +156,23 @@ export function FilterCard() {
     </div>
   );
 
+  const filter_control = (() => {
+    const metadata = field_node?.data;
+    if (!metadata) {
+      throw new Error(`Could not find metadata for ${field_id}`);
+    }
+    if (metadata.sub && metadata.sub.length > 0) {
+      return null;
+    } else if (metadata.type === `float` || metadata.type === `short`) {
+      return <NumericFilterControl />;
+    } else if (field_is_enum(metadata)) {
+      return <SelectFilterControl />;
+    } else {
+      log(metadata);
+      throw new Error(`Unknown field type: ${metadata.type}`);
+    }
+  })();
+
   return (
     <FieldCardWrapper>
       {top_part}
@@ -176,13 +181,78 @@ export function FilterCard() {
   );
 }
 
+export function ColumnCard() {
+  const cell = hooks.useCell();
+  const cell_id = cell.cell_id;
+  const field_id = hooks.useFieldID();
+  const catalog_id = hooks.useStore(stores.catalog_id_by_cell_id).get(cell_id);
+  const nodes_by_id = hooks
+    .useStore(stores.catalog_metadata_wrapper_by_catalog_id)
+    .get(catalog_id)?.nodes_by_id;
+  const field_node = nodes_by_id?.get(field_id);
+
+  if (!field_node) {
+    throw new Error(`Could not find node for ${field_id}`);
+  }
+
+  // const is_leaf = field_node.children === undefined;
+  // const is_required = field_node.data.required;
+
+  const field_title = <Katex>{field_node.data.title}</Katex>;
+
+  const remove_column_button = (() => {
+    // if (is_required) return null;
+    // if (!is_leaf)
+    //   return (
+    //     <LittleTextButton
+    //       onClick={() => {
+    //         dispatch_action({
+    //           type: `remove_child_filters`,
+    //           cell_id,
+    //           filter_id: field_id,
+    //         });
+    //       }}
+    //     >
+    //       remove all
+    //     </LittleTextButton>
+    //   );
+    return (
+      <LittleTextButton
+        onClick={() => {
+          dispatch_action({
+            type: `remove_column`,
+            cell_id,
+            column_id: field_id,
+          });
+        }}
+      >
+        remove
+      </LittleTextButton>
+    );
+  })();
+
+  const top_part = (
+    <div className="flex justify-between items-center">
+      {field_title}
+      {remove_column_button}
+    </div>
+  );
+
+  return <FieldCardWrapper>{top_part}</FieldCardWrapper>;
+}
+
 function FieldCardWrapper({
   children,
 }: {
   children: React.ReactNode;
 }): React.JSX.Element {
+  const cell = hooks.useCell();
+  const cell_id = cell.cell_id;
+  const catalog_id = hooks.useStore(stores.catalog_id_by_cell_id).get(cell_id);
   const field_id = hooks.useFieldID();
-  const nodes_by_id = hooks.useCatalogMetadata()?.nodes_by_id;
+  const nodes_by_id = hooks
+    .useStore(stores.catalog_metadata_wrapper_by_catalog_id)
+    .get(catalog_id)?.nodes_by_id;
   const field_node = nodes_by_id?.get(field_id);
   if (!field_node) {
     throw new Error(`Could not find node for ${field_id}`);
@@ -205,13 +275,15 @@ function FieldCardWrapper({
 }
 
 function NumericFilterControl() {
-  const cell_id = hooks.useCellID();
-  const catalog_id = hooks.useCatalogID();
+  const cell = hooks.useCell();
+  const cell_id = cell.cell_id;
+  const catalog_id = hooks.useStore(stores.catalog_id_by_cell_id).get(cell_id);
   const field_id = hooks.useFieldID();
   const metadata = hooks
-    .useStore(stores.field_metadata)
-    ?.get(catalog_id, field_id)?.data;
-  const filters = hooks.useCellFilters();
+    .useStore(stores.catalog_metadata_wrapper_by_catalog_id)
+    .get(catalog_id)
+    .get_field_metadata(field_id);
+  const filters = hooks.useStore(stores.filters_by_cell_id).get(cell_id);
   const filter_value_raw: FilterValueRaw = filters[field_id];
 
   const { min, max } = get_field_stats(metadata);
@@ -358,13 +430,16 @@ function get_numeric_filter_value(
 }
 
 function SelectFilterControl() {
-  const cell_id = hooks.useCellID();
-  const catalog_id = hooks.useCatalogID();
+  const cell = hooks.useCell();
+  const cell_id = cell.cell_id;
+  const catalog_id = hooks.useStore(stores.catalog_id_by_cell_id).get(cell_id);
   const field_id = hooks.useFieldID();
   const metadata = hooks
-    .useStore(stores.field_metadata)
-    ?.get(catalog_id, field_id)?.data;
-  const filters = hooks.useCellFilters();
+    .useStore(stores.catalog_metadata_wrapper_by_catalog_id)
+    .get(catalog_id)
+    .get_field_metadata(field_id);
+  const filters = hooks.useStore(stores.filters_by_cell_id).get(cell_id);
+
   const filter_value_raw: FilterValueRaw = filters[field_id];
 
   const enums = metadata.enum;

@@ -19,7 +19,7 @@ import {
 } from "@tanstack/react-table";
 
 import Katex from "./Katex";
-import { get_field_id } from "../shared";
+import { field_is_enum, get_field_id, log } from "../shared";
 
 export default function Table({
   data,
@@ -69,6 +69,7 @@ export default function Table({
                 }
                 return (
                   <th
+                    className="py-1 px-2 dark:bg-dark-2 border-2 dark:border-dark-5"
                     key={header.id}
                     colSpan={header.colSpan}
                     rowSpan={row_span}
@@ -91,7 +92,10 @@ export default function Table({
           {table.getRowModel().rows.map((row) => (
             <tr key={row.id}>
               {row.getVisibleCells().map((cell) => (
-                <td key={cell.id}>
+                <td
+                  key={cell.id}
+                  className="whitespace-nowrap text-right py-1 px-2"
+                >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
               ))}
@@ -121,12 +125,14 @@ function construct_table_columns<T>(
 
   // Find the field nodes in the catalog field hierarchy
   const field_nodes = field_ids
-    .map((field_id) => {
-      return catalog_field_hierarchy.find(
-        (d) => get_field_id(d.data) === field_id
-      );
-    })
+    .map((field_id) =>
+      catalog_field_hierarchy.find((d) => get_field_id(d.data) === field_id)
+    )
     .filter((d): d is CatalogHierarchyNode => typeof d !== "undefined");
+
+  const field_id_to_node = new Map(
+    field_nodes.map((node) => [get_field_id(node.data), node])
+  );
 
   // Get unix-like paths for nodes
   const get_path = (node: CatalogHierarchyNode) => {
@@ -146,9 +152,8 @@ function construct_table_columns<T>(
     // Get the path for this node
     const path = get_path(node);
 
-    const include = field_paths.some((d) => d.startsWith(path));
-
     // Only include this node if its path is a partial match of one of the field_paths above
+    const include = field_paths.some((d) => d.startsWith(path));
     if (!include) return null;
 
     const child_columns: ColumnDef<Datum>[] = [];
@@ -160,15 +165,26 @@ function construct_table_columns<T>(
       }
     }
 
+    const field_id = get_field_id(node.data);
+
     const column_base: ColumnDef<Datum> = {
-      id: get_field_id(node.data),
+      id: field_id,
       header: () => <Katex>{node.data.title ?? node.data.name}</Katex>,
     };
 
     if (child_columns.length === 0) {
       const column: AccessorColumnDef<Datum> = {
         ...column_base,
-        accessorKey: get_field_id(node.data),
+        // accessorKey: get_field_id(node.data),
+        accessorFn: (row) => {
+          const value = row[field_id];
+          if (field_is_enum(node.data)) {
+            const index = typeof value === "number" ? value : Number(value);
+            const text = node.data.enum[index];
+            return text;
+          }
+          return value;
+        },
         cell: (row) => row.getValue(),
       };
       return column;

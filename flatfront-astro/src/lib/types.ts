@@ -47,7 +47,12 @@ export type CellAction =
       {
         cell_id: TableCellID;
       }
-    >;
+    >
+  | ActionBase<
+      `add_plot_cell`,
+      { cell_id: PlotCellID; parent_cell_id: FilterCellID }
+    >
+  | ActionBase<`remove_plot_cell`, { cell_id: PlotCellID }>;
 
 export type ActionBase<T extends string, U> = U & {
   type: T;
@@ -59,10 +64,11 @@ export type ActionBase<T extends string, U> = U & {
 export type CatalogMetadataWrapper = {
   metadata: CatalogResponse;
   hierarchy: d3.HierarchyNode<FieldMetadata>;
-  nodes: d3.HierarchyNode<FieldMetadata>[];
+  nodes_array: d3.HierarchyNode<FieldMetadata>[];
   nodes_by_id: Map<string, d3.HierarchyNode<FieldMetadata>>;
   initial_filter_ids: string[];
   initial_column_ids: string[];
+  get_field_metadata: (id: string) => FieldMetadata;
 };
 
 export type CatalogMetadataQuery = QueryObserverResult<CatalogMetadataWrapper>;
