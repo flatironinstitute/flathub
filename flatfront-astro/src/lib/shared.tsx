@@ -78,16 +78,38 @@ export function get_filter_ids(
   const filter_ids_set: Set<string> = new Set(initial_filter_ids);
   const filter_list_actions = actions.filter(
     (action): action is FilterListAction => {
-      return action.type === `add_filter` || action.type === `remove_filter`;
+      return (
+        action.type === `add_filter` ||
+        action.type === `remove_filter` ||
+        action.type === `remove_child_filters`
+      );
     }
   );
   for (const action of filter_list_actions) {
-    if (action.type === `remove_filter`) {
-      filter_ids_set.delete(action.filter_id);
-    } else if (action.type === `add_filter`) {
-      filter_ids_set.add(action.filter_id);
-    } else {
-      throw new Error(`unknown filter action type: ${action.type}`);
+    switch (action.type) {
+      case `remove_filter`:
+        filter_ids_set.delete(action.field_id);
+        break;
+      case `add_filter`:
+        filter_ids_set.add(action.field_id);
+        break;
+      case `remove_child_filters`:
+        const node = nodes.find(
+          (node) => get_field_id(node.data) === action.field_id
+        );
+        if (!node) {
+          throw new Error(
+            `Could not find node for filter ${action.field_id} in hierarchy`
+          );
+        }
+        const to_remove = node.leaves().map((node) => get_field_id(node.data));
+        for (const id of to_remove) {
+          filter_ids_set.delete(id);
+        }
+        break;
+      default:
+        action.type satisfies never;
+        throw new Error(`Unknown filter action type: ${action.type}`);
     }
   }
   return filter_ids_set;
@@ -104,15 +126,35 @@ export function get_column_ids(
   const column_ids_set: Set<string> = new Set(initial_column_ids);
   const column_list_actions = actions.filter(
     (action): action is ColumnListAction =>
-      action.type === `add_column` || action.type === `remove_column`
+      action.type === `add_column` ||
+      action.type === `remove_column` ||
+      action.type === `remove_child_columns`
   );
   for (const action of column_list_actions) {
-    if (action.type === `remove_column`) {
-      column_ids_set.delete(action.column_id);
-    } else if (action.type === `add_column`) {
-      column_ids_set.add(action.column_id);
-    } else {
-      throw new Error(`unknown filter action type: ${action.type}`);
+    switch (action.type) {
+      case `remove_column`:
+        column_ids_set.delete(action.field_id);
+        break;
+      case `add_column`:
+        column_ids_set.add(action.field_id);
+        break;
+      case `remove_child_columns`:
+        const node = nodes.find(
+          (node) => get_field_id(node.data) === action.field_id
+        );
+        if (!node) {
+          throw new Error(
+            `Could not find node for column ${action.field_id} in hierarchy`
+          );
+        }
+        const to_remove = node.leaves().map((node) => get_field_id(node.data));
+        for (const id of to_remove) {
+          column_ids_set.delete(id);
+        }
+        break;
+      default:
+        action.type satisfies never;
+        throw new Error(`Unknown column action type: ${action.type}`);
     }
   }
   return column_ids_set;

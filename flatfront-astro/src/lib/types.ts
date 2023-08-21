@@ -16,13 +16,13 @@ export type PlotControlAction = ActionBase<
 >;
 
 export type ColumnListAction = ActionBase<
-  `add_column` | `remove_column`,
-  { cell_id: CellID; column_id: string }
+  `add_column` | `remove_column` | `remove_child_columns`,
+  { cell_id: CellID; field_id: string }
 >;
 
 export type FilterListAction = ActionBase<
   `add_filter` | `remove_filter` | `remove_child_filters`,
-  { cell_id: CellID; filter_id: string }
+  { cell_id: CellID; field_id: string }
 >;
 
 export type CellAction =

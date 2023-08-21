@@ -103,17 +103,11 @@ function CatalogCell() {
 
   const catalog_id = hooks.useStore(stores.catalog_id_by_cell_id).get(cell_id);
 
-  const catalog_metadata_query_observer = hooks
-    .useStore(stores.catalog_metadata_query_observer_by_catalog_id)
+  const catalog_metadata_wrapper = hooks
+    .useStore(stores.catalog_metadata_wrapper_by_catalog_id)
     .get(catalog_id);
 
-  const catalog_metadata_query = useQueryObserver(
-    catalog_metadata_query_observer
-  );
-
-  const catalog_metadata = catalog_metadata_query?.data ?? null;
-
-  const catalog_title = catalog_metadata?.title;
+  const catalog_title = catalog_metadata_wrapper?.metadata?.title;
 
   return (
     <CellWrapper>

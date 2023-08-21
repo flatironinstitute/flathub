@@ -66,13 +66,13 @@ export function FieldCard(): React.JSX.Element {
         dispatch_action({
           type: `remove_filter`,
           cell_id,
-          filter_id: field_id,
+          field_id,
         });
       } else {
         dispatch_action({
           type: `add_filter`,
           cell_id,
-          filter_id: field_id,
+          field_id,
         });
       }
     };
@@ -127,7 +127,7 @@ export function FilterCard() {
             dispatch_action({
               type: `remove_child_filters`,
               cell_id,
-              filter_id: field_id,
+              field_id,
             });
           }}
         >
@@ -140,7 +140,7 @@ export function FilterCard() {
           dispatch_action({
             type: `remove_filter`,
             cell_id,
-            filter_id: field_id,
+            field_id,
           });
         }}
       >
@@ -167,6 +167,8 @@ export function FilterCard() {
       return <NumericFilterControl />;
     } else if (field_is_enum(metadata)) {
       return <SelectFilterControl />;
+    } else if (metadata.type === `keyword`) {
+      return <StringFilterControl />;
     } else {
       log(metadata);
       throw new Error(`Unknown field type: ${metadata.type}`);
@@ -195,34 +197,34 @@ export function ColumnCard() {
     throw new Error(`Could not find node for ${field_id}`);
   }
 
-  // const is_leaf = field_node.children === undefined;
+  const is_leaf = field_node.children === undefined;
   // const is_required = field_node.data.required;
 
   const field_title = <Katex>{field_node.data.title}</Katex>;
 
   const remove_column_button = (() => {
     // if (is_required) return null;
-    // if (!is_leaf)
-    //   return (
-    //     <LittleTextButton
-    //       onClick={() => {
-    //         dispatch_action({
-    //           type: `remove_child_filters`,
-    //           cell_id,
-    //           filter_id: field_id,
-    //         });
-    //       }}
-    //     >
-    //       remove all
-    //     </LittleTextButton>
-    //   );
+    if (!is_leaf)
+      return (
+        <LittleTextButton
+          onClick={() => {
+            dispatch_action({
+              type: `remove_child_columns`,
+              cell_id,
+              field_id,
+            });
+          }}
+        >
+          remove all
+        </LittleTextButton>
+      );
     return (
       <LittleTextButton
         onClick={() => {
           dispatch_action({
             type: `remove_column`,
             cell_id,
-            column_id: field_id,
+            field_id,
           });
         }}
       >
@@ -469,6 +471,10 @@ function SelectFilterControl() {
       optionClassName="ui-active:bg-light-3 dark:ui-active:bg-dark-3"
     />
   );
+}
+
+function StringFilterControl() {
+  return <div>string</div>;
 }
 
 // function LabelledInput({

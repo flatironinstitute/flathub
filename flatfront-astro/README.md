@@ -29,18 +29,25 @@ npm run dev
 
 ## To Do
 
-- [ ] Filters / Fields Hierarchy
+- [x] Filters / Fields Hierarchy
 - [x] Top query
 - [ ] Catalog Info: Description, etc.
 - [x] Scatterplot x y
-- [ ] Collapse cell sections
+- [ ] Collapseable cell sections
 - [x] Add cell
 - [x] "Show all fields" modal
 - [ ] Filter with select field
 - [x] Dark mode switch
 - [ ] Tailwind: Standardize theme colors
-- [ ] Allow typing numbers on range slider
+- [x] Allow typing numbers on range slider
 - [ ] Handle very large numbers
-- [ ] Number format switch
+- [ ] Number format switch?
 - [ ] Filter dropdowns
 - [ ] Python
+- [ ] Collabsable hierarchy tree
+- [ ] Wider desktop view
+- [ ] Plot
+- [ ] Auto-fetch button
+- [ ] Handle keyword field (gr8)
+- [ ] Remove child filters
+- [ ] Table query parameters (count, offset, seed)
