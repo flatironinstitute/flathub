@@ -779,7 +779,7 @@ fields:
         descr: Projected physical radius enclosing half of the gas mass (averaged over three orthogonal projections).
         ingest: Subhalo/HalfMassProjRad_Gas
       - name: Star
-        descr: Projected physical radius enclosing half of the stellar mass (averaged over three orthogonal projections). 
+        descr: Projected physical radius enclosing half of the stellar mass (averaged over three orthogonal projections).
         ingest: Subhalo/HalfMassProjRad_Star
     - name: InitialMassWeightedBirthZ
       type: float
