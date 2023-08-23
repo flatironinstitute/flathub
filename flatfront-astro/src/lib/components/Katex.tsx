@@ -24,8 +24,10 @@ export default function Katex({
     }
   }, [ref]);
   return (
-    <span ref={ref} className={className}>
-      {children}
-    </span>
+    <span
+      ref={ref}
+      className={className}
+      dangerouslySetInnerHTML={{ __html: children }}
+    ></span>
   );
 }

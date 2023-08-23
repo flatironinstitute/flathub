@@ -1,31 +1,19 @@
 import type {
   Action,
-  CatalogHierarchyNode,
   CatalogMetadataWrapper,
   CatalogResponse,
   Cell,
-  CatalogCell,
   CellAction,
   CellID,
-  TableCellID,
-  PlotCellID,
-  DataRequestBody,
-  DataResponse,
-  FieldMetadata,
-  FilterListAction,
   Filters,
   FilterValueRaw,
-  FilterCellID,
   TopResponse,
-  ColumnListAction,
+  GlobalFilterState,
+  Actions,
 } from "./types";
-import type {
-  QueryObserverResult,
-  QueryObserverOptions,
-} from "@tanstack/query-core";
+import type { QueryObserverResult } from "@tanstack/query-core";
 import type { Readable } from "svelte/store";
 
-import { QueryClient } from "@tanstack/query-core";
 import { QueryObserver } from "@tanstack/query-core";
 import * as d3 from "d3";
 import { readable, writable, derived, get } from "svelte/store";
@@ -33,16 +21,10 @@ import * as lzstring from "lz-string";
 
 import {
   log,
-  find_parent_node_by_filter,
-  is_filter_cell_id,
-  get_field_id,
-  set_field_id,
   create_query_observer,
   fetch_api_get,
-  fetch_api_post,
   get_initial_cell_filters,
   wrap_catalog_response,
-  get_nodes_depth_first,
   get_final_filters,
   get_filter_ids,
   get_column_ids,
@@ -69,33 +51,47 @@ export const top_response: Readable<QueryObserverResult<TopResponse>> =
   });
 
 const initial_actions: Action[] = [
-  {
-    type: "add_catalog_cell",
-    cell_id: "catalog_cell_gr8",
-    catalog_id: "gr8",
-  },
-  {
-    type: "add_catalog_cell",
-    cell_id: "catalog_cell_camels",
-    catalog_id: "camels",
-  },
-  {
-    type: "add_filter_cell",
-    cell_id: "filter_cell_1691622596626",
-    parent_cell_id: "catalog_cell_camels",
-  },
-  {
-    type: "add_table_cell",
-    cell_id: "table_cell_1691701006344",
-    parent_cell_id: "filter_cell_1691622596626",
-  },
+  // {
+  //   type: "add_catalog_cell",
+  //   cell_id: "catalog_cell_gr8",
+  //   catalog_id: "gr8",
+  // },
+  // {
+  //   type: "add_catalog_cell",
+  //   cell_id: "catalog_cell_camels",
+  //   catalog_id: "camels",
+  // },
+  // {
+  //   type: "add_filter_cell",
+  //   cell_id: "filter_cell_1691622596626",
+  //   parent_cell_id: "catalog_cell_camels",
+  // },
+  // {
+  //   type: "add_table_cell",
+  //   cell_id: "table_cell_1691701006344",
+  //   parent_cell_id: "filter_cell_1691622596626",
+  // },
 ];
 
 export const actions = writable<Action[]>(initial_actions);
 
-export const filter_state = writable<
-  Record<CellID, Record<string, FilterValueRaw>>
->({} as Record<CellID, Record<string, FilterValueRaw>>);
+export const filter_state = writable<GlobalFilterState>(
+  {} as Record<CellID, Record<string, FilterValueRaw>>
+);
+
+(function set_app_state_from_url() {
+  const actions_from_url: Action[] = get_data_from_url<Action[]>(`actions`);
+  const filters_from_url: GlobalFilterState =
+    get_data_from_url<GlobalFilterState>(`filters`);
+  if (actions_from_url) {
+    log(`Setting actions from URL:`, actions_from_url);
+    actions.set(actions_from_url);
+  }
+  if (filters_from_url) {
+    log(`Setting filters from URL:`, filters_from_url);
+    filter_state.set(filters_from_url);
+  }
+})();
 
 actions.subscribe((actions) => log(`All actions:`, actions));
 
@@ -111,160 +107,180 @@ debounce_store(filter_state, 1000).subscribe((filters) => {
   store_data_in_url(filters, `filters`);
 });
 
-export const actions_by_cell_id: Readable<d3.InternMap<string, Action[]>> =
+export const actions_by_cell_id: Readable<d3.InternMap<CellID, Action[]>> =
   derived(actions, ($actions) => d3.group($actions, (d) => d.cell_id));
 
-export const cells: Readable<d3.HierarchyNode<Cell>[]> = derived(
-  actions,
-  ($actions) => {
-    const cell_action_types: CellAction["type"][] = [
-      `add_catalog_cell`,
-      `add_filter_cell`,
-      `add_table_cell`,
-      `add_plot_cell`,
-      `remove_table_cell`,
-      `remove_filter_cell`,
-      `remove_plot_cell`,
-    ];
-    // Filter cells to only include those with type in cell_action_types.
-    const cell_actions = $actions.filter((action): action is CellAction =>
-      cell_action_types.some((type) => action.type === type)
-    );
-    let cells: Cell[] = [];
-    for (const cell_action of cell_actions) {
-      const action_type = cell_action.type;
-      if (action_type === `add_catalog_cell`) {
-        // If cells already includes a cell with this catalog name, don't add it.
-        if (
-          cells.some(
+export const cells: Readable<Cell[]> = derived(actions, ($actions) => {
+  const cell_action_types: CellAction["type"][] = [
+    `add_cell`,
+    `add_catalog_cell`,
+    `add_filter_cell`,
+    `add_table_cell`,
+    `add_plot_cell`,
+    `remove_catalog_cell`,
+    `remove_table_cell`,
+    `remove_filter_cell`,
+    `remove_plot_cell`,
+  ];
+  // Filter cells to only include those with type in cell_action_types.
+  const cell_actions = $actions.filter((action): action is CellAction =>
+    cell_action_types.some((type) => action.type === type)
+  );
+  let cells: Cell[] = [];
+  for (const action of cell_actions) {
+    for (const action of cell_actions) {
+      const action_type = action.type;
+      switch (action_type) {
+        // case `add_cell`: {
+        //   cells.push({
+        //     type: `cell`,
+        //     cell_id: action.cell_id,
+        //   });
+        // }
+        case `add_catalog_cell`: {
+          // If cells already includes a cell with this catalog name, don't add it.
+          const already_exists = cells.some(
             (cell) =>
-              cell.type === `catalog` &&
-              cell.catalog_id === cell_action.catalog_id
-          )
-        ) {
-          log(
-            `Skipping adding duplicate catalog cell ${cell_action.catalog_id}`
+              cell.type === `catalog` && cell.catalog_id === action.catalog_id
           );
-          continue;
+          if (already_exists) {
+            log(`Skipping adding duplicate catalog cell ${action.catalog_id}`);
+            continue;
+          }
+          cells.push({
+            type: `catalog`,
+            cell_id: action.cell_id,
+            catalog_id: action.catalog_id,
+            parent_cell_id: `root`,
+          });
+          break;
         }
-        cells.push({
-          type: `catalog`,
-          cell_id: cell_action.cell_id,
-          catalog_id: cell_action.catalog_id,
-          parent_cell_id: `root`,
-        });
-      } else if (action_type === `add_filter_cell`) {
-        cells.push({
-          type: `filter`,
-          cell_id: cell_action.cell_id,
-          parent_cell_id: cell_action.parent_cell_id,
-        });
-      } else if (action_type === `add_table_cell`) {
-        cells.push({
-          type: `table`,
-          cell_id: cell_action.cell_id,
-          parent_cell_id: cell_action.parent_cell_id,
-        });
-      } else if (action_type === `add_plot_cell`) {
-        cells.push({
-          type: `plot`,
-          cell_id: cell_action.cell_id,
-          parent_cell_id: cell_action.parent_cell_id,
-        });
-      } else if (
-        action_type === `remove_filter_cell` ||
-        action_type === `remove_table_cell` ||
-        action_type === `remove_plot_cell`
-      ) {
-        // Remove the table cell with the given cell_id.
-        cells = cells.filter((cell) => cell.cell_id !== cell_action.cell_id);
-      } else {
-        action_type satisfies never;
-        throw new Error(`Unrecognized cell action type ${action_type}`);
+        case `add_filter_cell`: {
+          cells.push({
+            type: `filter`,
+            cell_id: action.cell_id,
+            parent_cell_id: action.parent_cell_id,
+          });
+          break;
+        }
+        case `add_table_cell`: {
+          cells.push({
+            type: `table`,
+            cell_id: action.cell_id,
+            parent_cell_id: action.parent_cell_id,
+          });
+          break;
+        }
+        case `add_plot_cell`: {
+          cells.push({
+            type: `plot`,
+            cell_id: action.cell_id,
+            parent_cell_id: action.parent_cell_id,
+          });
+          break;
+        }
+        case `remove_catalog_cell`:
+        case `remove_filter_cell`:
+        case `remove_table_cell`:
+        case `remove_plot_cell`: {
+          // Remove the table cell with the given cell_id.
+          cells = cells.filter((cell) => cell.cell_id !== action.cell_id);
+          break;
+        }
+        case `add_cell`: {
+          const cell: Cell = {
+            type: `cell`,
+            cell_id: action.cell_id,
+            parent_cell_id: `root`,
+          };
+          cells.push(cell);
+          break;
+        }
+        default: {
+          action_type satisfies never;
+          throw new Error(`Unrecognized cell action type ${action_type}`);
+        }
       }
     }
-    // Remove orphan cells
+  }
+  // Remove orphan cells
+  let need_to_prune = true;
+  while (need_to_prune) {
+    need_to_prune = false;
     const all_cell_ids = new Set(cells.map((cell) => cell.cell_id));
     cells = cells.filter((cell) => {
       if (cell.parent_cell_id === undefined) return true;
       if (cell.parent_cell_id === `root`) return true;
       if (all_cell_ids.has(cell.parent_cell_id)) return true;
+      need_to_prune = true;
       return false;
     });
-    cells = unique_by(cells, (d) => d.cell_id);
-    log(`Computing cells hierarchy...`, cells);
-    const stratifier = d3
-      .stratify<Cell>()
-      .id((d: Cell) => d.cell_id)
-      .parentId((d: Cell & { parent_cell_id?: CellID }) => d.parent_cell_id);
-    const cells_with_root: Cell[] = [
-      {
-        type: `root`,
-        cell_id: `root`,
-        parent_cell_id: undefined,
-      },
-      ...cells,
-    ];
-    const hierarchy: d3.HierarchyNode<Cell> = stratifier(cells_with_root);
-    const cell_nodes = get_nodes_depth_first(hierarchy);
-    return cell_nodes;
   }
-);
+  cells = unique_by(cells, (d) => d.cell_id);
+  // log(`Computing cells hierarchy...`, cells);
+  // const stratifier = d3
+  //   .stratify<Cell>()
+  //   .id((d: Cell) => d.cell_id)
+  //   .parentId((d: Cell & { parent_cell_id?: CellID }) => d.parent_cell_id);
+  // const cells_with_root: Cell[] = [
+  //   {
+  //     type: `root`,
+  //     cell_id: `root`,
+  //     parent_cell_id: undefined,
+  //   },
+  //   ...cells,
+  // ];
+  // const hierarchy: d3.HierarchyNode<Cell> = stratifier(cells_with_root);
+  // const cell_nodes = get_nodes_depth_first(hierarchy);
+  return cells;
+});
 
 export const catalog_id_by_cell_id: Readable<Map<CellID, string>> = derived(
-  cells,
-  ($cells) => {
-    const catalog_id_by_cell_id = new Map<CellID, string>(
-      $cells.map((cell) => {
-        const cell_id = cell.data.cell_id;
-        const cell_type = cell.data.type;
-        let catalog_id = undefined;
-        if (cell_type === `root`) {
-          catalog_id = undefined;
-        } else if (cell_type === `catalog`) {
-          catalog_id = cell.data.catalog_id;
-        } else {
-          // Traverse parents until a catalog name is found
-          const ancestor: d3.HierarchyNode<Cell> = find_parent_node_by_filter(
-            cell,
-            (d) => d.data.type === `catalog`
-          );
-          if (!ancestor) {
-            throw new Error(
-              `No catalog ancestor found for cell_id: ${cell_id}`
-            );
-          }
-          if (ancestor.data.type !== `catalog`) {
-            throw new Error(
-              `Expected ancestor to be a catalog, but was ${ancestor.data.type}`
-            );
-          }
-          catalog_id = ancestor.data.catalog_id;
-          if (catalog_id === undefined) {
-            throw new Error(`No catalog ID for cell_id: ${cell_id}`);
-          }
-        }
+  actions_by_cell_id,
+  ($actions_by_cell_id) => {
+    return new Map<CellID, string>(
+      [...$actions_by_cell_id.entries()].map(([cell_id, actions]) => {
+        const catalog_id = actions
+          .filter(
+            (action): action is Actions[`SetCatalog`] =>
+              action.type === `set_catalog`
+          )
+          .at(-1)?.catalog_id;
         return [cell_id, catalog_id];
       })
     );
-    return catalog_id_by_cell_id;
   },
   new Map<CellID, string>()
 );
 
+export const cell_type_by_cell_id: Readable<Map<CellID, "table" | "plot">> =
+  derived(
+    actions_by_cell_id,
+    ($actions_by_cell_id) => {
+      return new Map<CellID, "table" | "plot">(
+        [...$actions_by_cell_id.entries()].map(([cell_id, actions]) => {
+          const cell_type = actions
+            .filter(
+              (d): d is Actions[`SetCellType`] => d.type === `set_cell_type`
+            )
+            .at(-1)?.cell_type;
+          return [cell_id, cell_type];
+        })
+      );
+    },
+    new Map<CellID, "table" | "plot">()
+  );
+
 export const catalog_metadata_query_observer_by_catalog_id: Readable<
   Map<string, QueryObserver<CatalogResponse>>
 > = derived(
-  cells,
-  ($cells, set, update) => {
-    const cells = $cells.map((d) => d.data);
-    const catalog_cells = cells.filter(
-      (cell): cell is CatalogCell => cell.type === `catalog`
-    );
+  catalog_id_by_cell_id,
+  ($catalog_id_by_cell_id, set, update) => {
+    const catalog_ids = Array.from(new Set($catalog_id_by_cell_id.values()));
 
     update((prev) => {
       const next = new Map(prev);
-      for (const { catalog_id } of catalog_cells) {
+      for (const catalog_id of catalog_ids) {
         if (next.has(catalog_id)) {
           continue;
         }
@@ -373,6 +389,41 @@ export const filters_by_cell_id: Readable<Map<CellID, Filters>> = derived(
   new Map<CellID, Filters>()
 );
 
+export const query_parameters_by_cell_id: Readable<Map<CellID, Filters>> =
+  derived(
+    [cell_type_by_cell_id, actions_by_cell_id, filter_state],
+    ([$cell_type_by_cell_id, $actions_by_cell_id, $filter_state]) => {
+      return new Map(
+        [...$cell_type_by_cell_id.entries()].map(([cell_id, cell_type]) => {
+          // const cell_actions = $actions_by_cell_id.get(cell_id);
+
+          // const filter_ids_set = catalog_hierarchy
+          //   ? get_filter_ids(catalog_hierarchy, cell_actions)
+          //   : new Set<string>();
+
+          // const initial_filters: Filters = get_initial_cell_filters(
+          //   filter_ids_set,
+          //   catalog_hierarchy
+          // );
+
+          const initial_query_parameters: Filters = {
+            count: 30,
+          };
+
+          const filter_state: Filters = $filter_state?.[cell_id] ?? {};
+
+          const filters = get_final_filters(
+            initial_query_parameters,
+            filter_state
+          );
+
+          return [cell_id, filters];
+        })
+      );
+    },
+    new Map<CellID, Filters>()
+  );
+
 export const column_ids_by_cell_id: Readable<Map<CellID, Set<string>>> =
   derived(
     [
@@ -417,6 +468,15 @@ function store_data_in_url<T>(data: T, key: string) {
   // log(`URL Length:`, url_length);
   if (url_length > 2000) {
     throw new Error(`URL is too long!`);
+  }
+}
+
+function get_data_from_url<T>(key: string): T | undefined {
+  const url = new URL(window.location.href);
+  const compressed = url.searchParams.get(key);
+  if (compressed && compressed.length > 0) {
+    const data = decompress_data<T>(compressed);
+    return data;
   }
 }
 

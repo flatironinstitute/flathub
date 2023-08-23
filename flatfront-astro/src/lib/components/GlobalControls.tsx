@@ -12,13 +12,23 @@ import {
   log,
   useStore,
   CellWrapper,
+  BigButton,
 } from "../shared";
 
 export default function GlobalControls(): React.JSX.Element {
   return (
     <CellWrapper>
       <div className="grid gap-y-4 items-center">
-        <CatalogSelect />
+        <BigButton
+          onClick={() => {
+            dispatch_action({
+              type: `add_cell`,
+              cell_id: `cell_${Date.now()}`,
+            });
+          }}
+        >
+          Add Panel
+        </BigButton>
         <DarkModeToggle />
       </div>
     </CellWrapper>

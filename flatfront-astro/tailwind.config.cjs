@@ -1,4 +1,7 @@
+// @ts-check
+
 const colors = require("tailwindcss/colors");
+const defaults = require("tailwindcss/defaultTheme");
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -21,6 +24,9 @@ module.exports = {
         "dark-3": colors.slate[500],
         "dark-4": colors.slate[400],
         "dark-5": colors.slate[300],
+      },
+      screens: {
+        desktop: defaults.screens["md"],
       },
     },
   },

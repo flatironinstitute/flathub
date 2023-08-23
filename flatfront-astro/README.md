@@ -51,3 +51,4 @@ npm run dev
 - [ ] Handle keyword field (gr8)
 - [ ] Remove child filters
 - [ ] Table query parameters (count, offset, seed)
+- [ ] Remove catalog

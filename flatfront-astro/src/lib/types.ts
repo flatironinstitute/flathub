@@ -1,6 +1,8 @@
 import type * as schema from "./flathub-schema";
 import type { QueryObserverResult } from "@tanstack/query-core";
 
+export type GlobalFilterState = Record<CellID, Record<string, FilterValueRaw>>;
+
 // ===========================================
 // ACTIONS
 
@@ -8,7 +10,20 @@ export type Action =
   | CellAction
   | FilterListAction
   | ColumnListAction
-  | PlotControlAction;
+  | PlotControlAction
+  | Actions[`SetCatalog`]
+  | Actions[`SetCellType`];
+
+export type Actions = {
+  SetCatalog: ActionBase<
+    `set_catalog`,
+    { cell_id: GenericCellID; catalog_id: string }
+  >;
+  SetCellType: ActionBase<
+    `set_cell_type`,
+    { cell_id: GenericCellID; cell_type: "table" | "plot" }
+  >;
+};
 
 export type PlotControlAction = ActionBase<
   `set_plot_control`,
@@ -26,10 +41,12 @@ export type FilterListAction = ActionBase<
 >;
 
 export type CellAction =
+  | ActionBase<`add_cell`, { cell_id: GenericCellID }>
   | ActionBase<
       `add_catalog_cell`,
       { catalog_id: string; cell_id: CatalogCellID }
     >
+  | ActionBase<`remove_catalog_cell`, { cell_id: CatalogCellID }>
   | ActionBase<
       `add_filter_cell`,
       { cell_id: FilterCellID; parent_cell_id: CatalogCellID }
@@ -104,6 +121,11 @@ export type Cell =
       type: `plot`;
       cell_id: PlotCellID;
       parent_cell_id: FilterCellID;
+    }
+  | {
+      type: `cell`;
+      cell_id: GenericCellID;
+      parent_cell_id: `root`;
     };
 
 export type CellID =
@@ -111,12 +133,14 @@ export type CellID =
   | CatalogCellID
   | FilterCellID
   | TableCellID
-  | PlotCellID;
+  | PlotCellID
+  | GenericCellID;
 
 export type CatalogCellID = `catalog_cell_${string}`;
 export type FilterCellID = `filter_cell_${number}`;
 export type TableCellID = `table_cell_${number}`;
 export type PlotCellID = `plot_cell_${number}`;
+export type GenericCellID = `cell_${number}`;
 export type RootCellID = `root`;
 
 // ===========================================

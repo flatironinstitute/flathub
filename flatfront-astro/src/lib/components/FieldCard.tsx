@@ -1,10 +1,16 @@
-import type { FieldMetadata, FilterValueRaw } from "../types";
+import type {
+  CellAction,
+  ColumnListAction,
+  FieldMetadata,
+  FilterListAction,
+  FilterValueRaw,
+} from "../types";
 
 import React from "react";
 
 import clsx from "clsx";
 
-import * as Slider from "@radix-ui/react-slider";
+import * as RadixSlider from "@radix-ui/react-slider";
 import * as d3 from "d3";
 
 import {
@@ -19,12 +25,19 @@ import {
 import * as stores from "../stores";
 import Katex from "./Katex";
 
-export function FieldCard(): React.JSX.Element {
+export function FieldCard({
+  mode,
+}: {
+  mode?: "filter" | "column";
+}): React.JSX.Element {
   const cell = hooks.useCell();
   const cell_id = cell.cell_id;
   const catalog_id = hooks.useStore(stores.catalog_id_by_cell_id).get(cell_id);
   const field_id = hooks.useFieldID();
   const filters = hooks.useStore(stores.filters_by_cell_id).get(cell_id);
+  const column_ids_set = hooks
+    .useStore(stores.column_ids_by_cell_id)
+    .get(cell_id);
   const nodes_by_id = hooks
     .useStore(stores.catalog_metadata_wrapper_by_catalog_id)
     .get(catalog_id)?.nodes_by_id;
@@ -57,28 +70,45 @@ export function FieldCard(): React.JSX.Element {
     );
   })();
 
-  const filter_toggle = (() => {
-    if (!is_leaf) return null;
-    const is_active_filter = field_id in filters;
+  const toggle_button = (() => {
+    if (!mode) return null;
+    const filter_mode = mode === `filter`;
+    const disabled = filter_mode ? is_required : false;
+    const is_active = filter_mode
+      ? field_id in filters
+      : column_ids_set.has(field_id);
+    // const any_leaf_is_active =
     const on_click = () => {
-      log(`filter toggle`, is_active_filter);
-      if (is_active_filter) {
-        dispatch_action({
-          type: `remove_filter`,
-          cell_id,
-          field_id,
-        });
-      } else {
-        dispatch_action({
-          type: `add_filter`,
-          cell_id,
-          field_id,
-        });
+      let type: FilterListAction["type"] | ColumnListAction["type"];
+      if (is_active && is_leaf) {
+        type = `remove_${mode}`;
+      } else if (is_active && !is_leaf) {
+        type = `remove_child_${mode}s`;
+      } else if (!is_active && is_leaf) {
+        type = `add_${mode}`;
+      } else if (!is_active && !is_leaf) {
+        // type = `add_child_${mode}s`;
       }
+      const action: FilterListAction | ColumnListAction = {
+        type,
+        cell_id,
+        field_id,
+      };
+      dispatch_action(action);
     };
+    let text;
+    if (is_active && is_leaf) {
+      text = `remove ${mode}`;
+    } else if (is_active && !is_leaf) {
+      text = `remove all ${mode}s`;
+    } else if (!is_active && is_leaf) {
+      text = `add ${mode}`;
+    } else if (!is_active && !is_leaf) {
+      text = `add all ${mode}s`;
+    }
     return (
-      <LittleTextButton disabled={is_required} onClick={() => on_click()}>
-        {is_active_filter ? `Remove Filter` : `Add Filter`}
+      <LittleTextButton disabled={disabled} onClick={() => on_click()}>
+        {text}
       </LittleTextButton>
     );
   })();
@@ -86,7 +116,7 @@ export function FieldCard(): React.JSX.Element {
   const top_part = (
     <div className="flex justify-between items-center">
       {field_title}
-      {filter_toggle}
+      {toggle_button}
     </div>
   );
 
@@ -164,7 +194,7 @@ export function FilterCard() {
     if (metadata.sub && metadata.sub.length > 0) {
       return null;
     } else if (metadata.type === `float` || metadata.type === `short`) {
-      return <NumericFilterControl />;
+      return <RangeFilterControl />;
     } else if (field_is_enum(metadata)) {
       return <SelectFilterControl />;
     } else if (metadata.type === `keyword`) {
@@ -243,7 +273,7 @@ export function ColumnCard() {
   return <FieldCardWrapper>{top_part}</FieldCardWrapper>;
 }
 
-function FieldCardWrapper({
+export function FieldCardWrapper({
   children,
 }: {
   children: React.ReactNode;
@@ -263,10 +293,7 @@ function FieldCardWrapper({
   return (
     <div
       data-type="FieldCardWrapper"
-      className={clsx(
-        `flex flex-col gap-y-4 rounded-md text-md px-4 py-4`,
-        `bg-light-3 dark:bg-dark-3 text-light-text dark:text-dark-text`
-      )}
+      className={clsx(FieldCardWrapper.className, `space-y-4`)}
       style={{
         marginLeft: `${node_depth * 2}ch`,
       }}
@@ -276,7 +303,12 @@ function FieldCardWrapper({
   );
 }
 
-function NumericFilterControl() {
+FieldCardWrapper.className = clsx(
+  `rounded-md text-md px-4 py-4`,
+  `bg-light-3 dark:bg-dark-3 text-light-text dark:text-dark-text`
+);
+
+function RangeFilterControl() {
   const cell = hooks.useCell();
   const cell_id = cell.cell_id;
   const catalog_id = hooks.useStore(stores.catalog_id_by_cell_id).get(cell_id);
@@ -294,30 +326,6 @@ function NumericFilterControl() {
 
   const value = [low, high] as [number, number];
 
-  // const slider = (
-  //   <div className="grid grid-cols-[10ch_1fr_10ch] items-center justify-items-center">
-  //     <div className="col-start-1">
-  //       <Label>from</Label>
-  //     </div>
-  //     <div className="col-start-3">
-  //       <Label>to</Label>
-  //     </div>
-  //     <div>{format.concise(low)}</div>
-  //     <RangeSlider
-  //       min={min}
-  //       max={max}
-  //       value={value}
-  //       onValueChange={([low, high]) => {
-  //         set_filter_value(cell_id, field_id, {
-  //           gte: low,
-  //           lte: high,
-  //         });
-  //       }}
-  //     />
-  //     <div>{format.concise(high)}</div>
-  //   </div>
-  // );
-
   const slider = (
     <RangeSlider
       min={min}
@@ -333,53 +341,51 @@ function NumericFilterControl() {
   );
 
   return (
-    <>
-      <div
-        data-type="NumericFilterControl"
-        className="mt-[9px] grid grid-cols-1 gap-4 sm:grid-cols-3 items-center"
-      >
-        <TextInput
-          label="from"
-          value={low.toString()}
-          getValidityMessage={(string) => {
-            const number = valid_number(string);
-            if (number === null) return `Invalid number`;
-            if (number < min) return `Must be greater than ${min.toString()}`;
-            return null;
-          }}
-          onInput={(string) => {
-            const number = valid_number(string);
-            if (number === null) return;
-            set_filter_value(cell_id, field_id, {
-              gte: number,
-              lte: high,
-            });
-          }}
-        />
-        <div>
-          <Label className="hidden sm:block">&nbsp;</Label>
-          {slider}
-        </div>
-        <TextInput
-          label="to"
-          value={high.toString()}
-          getValidityMessage={(string) => {
-            const number = valid_number(string);
-            if (number === null) return `Invalid number`;
-            if (number > max) return `Must be less than ${max.toString()}`;
-            return null;
-          }}
-          onInput={(string) => {
-            const number = valid_number(string);
-            if (number === null) return;
-            set_filter_value(cell_id, field_id, {
-              gte: low,
-              lte: number,
-            });
-          }}
-        />
+    <div
+      data-type="RangeFilterControl"
+      className="mt-[9px] grid grid-cols-2 gap-x-4 gap-y-2 items-center"
+    >
+      <TextInput
+        label="from"
+        value={low.toString()}
+        getValidityMessage={(string) => {
+          const number = valid_number(string);
+          if (number === null) return `Invalid number`;
+          if (number < min) return `Must be greater than ${min.toString()}`;
+          return null;
+        }}
+        onInput={(string) => {
+          const number = valid_number(string);
+          if (number === null) return;
+          set_filter_value(cell_id, field_id, {
+            gte: number,
+            lte: high,
+          });
+        }}
+      />
+      <TextInput
+        label="to"
+        value={high.toString()}
+        getValidityMessage={(string) => {
+          const number = valid_number(string);
+          if (number === null) return `Invalid number`;
+          if (number > max) return `Must be less than ${max.toString()}`;
+          return null;
+        }}
+        onInput={(string) => {
+          const number = valid_number(string);
+          if (number === null) return;
+          set_filter_value(cell_id, field_id, {
+            gte: low,
+            lte: number,
+          });
+        }}
+      />
+      <div className="col-span-2">
+        <Label className="hidden sm:block">&nbsp;</Label>
+        {slider}
       </div>
-    </>
+    </div>
   );
 }
 
@@ -607,15 +613,15 @@ function RangeSlider({
 }: {
   min: number;
   max: number;
-  value: [number, number];
-  onValueChange: (value: [number, number]) => void;
+  value: number[];
+  onValueChange: (value: number[]) => void;
 }) {
   const step = d3.tickStep(min, max, 100);
 
   const thumb_class = `block h-4 w-4 rounded-full bg-slate-700 dark:bg-slate-50 focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75`;
 
   return (
-    <Slider.Root
+    <RadixSlider.Root
       min={min}
       max={max}
       value={value}
@@ -623,12 +629,12 @@ function RangeSlider({
       onValueChange={onValueChange}
       step={step}
     >
-      <Slider.Track className="relative h-1 w-full grow rounded-full bg-slate-400 dark:bg-slate-800">
-        <Slider.Range className="absolute h-full rounded-full bg-slate-600 dark:bg-white" />
-      </Slider.Track>
-      <Slider.Thumb className={thumb_class} />
-      <Slider.Thumb className={thumb_class} />
-    </Slider.Root>
+      <RadixSlider.Track className="relative h-1 w-full grow rounded-full bg-slate-400 dark:bg-slate-800">
+        <RadixSlider.Range className="absolute h-full rounded-full bg-slate-600 dark:bg-white" />
+      </RadixSlider.Track>
+      <RadixSlider.Thumb className={thumb_class} />
+      {value.length > 1 && <RadixSlider.Thumb className={thumb_class} />}
+    </RadixSlider.Root>
   );
 }
 
@@ -653,5 +659,57 @@ function LittleTextButton({
     >
       {children}
     </button>
+  );
+}
+
+export function QueryParameter({
+  field_id,
+  min,
+  max,
+}: {
+  field_id: string;
+  min: number;
+  max: number;
+}) {
+  const cell_id = hooks.useCell().cell_id;
+
+  const query_parameters = hooks
+    .useStore(stores.query_parameters_by_cell_id)
+    .get(cell_id);
+
+  const value: FilterValueRaw = Number(query_parameters[field_id]);
+
+  return (
+    <div
+      className={clsx(
+        FieldCardWrapper.className,
+        `grid gap-x-4 desktop:grid-cols-[10ch_1fr_1fr] desktop:items-center`
+      )}
+    >
+      <div>Rows</div>
+      <TextInput
+        value={value.toString()}
+        getValidityMessage={(string) => {
+          const number = valid_number(string);
+          if (number === null) return `Invalid number`;
+          if (number < min) return `Must be greater than ${min.toString()}`;
+          if (number > max) return `Must be less than ${max.toString()}`;
+          return null;
+        }}
+        onInput={(string) => {
+          const number = valid_number(string);
+          if (number === null) return;
+          set_filter_value(cell_id, field_id, number);
+        }}
+      />
+      <RangeSlider
+        min={min}
+        max={max}
+        value={[value]}
+        onValueChange={([value]) => {
+          set_filter_value(cell_id, field_id, value);
+        }}
+      />
+    </div>
   );
 }

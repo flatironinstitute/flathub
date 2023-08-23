@@ -461,7 +461,9 @@ export function Select<T>({
             buttonClassName
           )}
         >
-          <span className="block">{getDisplayName(value) ?? placeholder}</span>
+          <span className="block whitespace-nowrap">
+            {getDisplayName(value) ?? placeholder}
+          </span>
           <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
             <ChevronDownIcon className="h-5 w-5 " aria-hidden="true" />
           </span>
@@ -477,7 +479,7 @@ export function Select<T>({
               key={getKey(option)}
               value={option}
               className={clsx(
-                `relative cursor-pointer select-none py-2 pl-3 pr-4`,
+                `relative cursor-pointer select-none py-2 pl-3 pr-4 whitespace-nowrap`,
                 optionClassName
               )}
             >
@@ -505,15 +507,24 @@ export function BigButton({
 }
 
 BigButton.className =
-  "bg-light-4 dark:bg-dark-4 rounded-lg py-4 text-white font-bold text-xl";
+  "block bg-light-4 dark:bg-dark-4 rounded-lg py-4 text-white font-bold text-xl";
 
 export function CellWrapper({
   children,
+  className,
 }: {
   children: React.ReactNode;
+  className?: string;
 }): React.JSX.Element {
   return (
-    <div className="rounded font-mono bg-light-1 dark:bg-dark-1 p-6 shadow-lg shadow-black dark:shadow-lg dark:shadow-black w-full transition-all flex flex-col gap-y-10">
+    <div
+      className={clsx(
+        `rounded font-mono bg-light-1 dark:bg-dark-1 p-6`,
+        `shadow-lg shadow-black dark:shadow-lg dark:shadow-black`,
+        `w-full transition-all grid gap-y-10 gap-x-4`,
+        className
+      )}
+    >
       {children}
     </div>
   );

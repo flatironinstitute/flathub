@@ -34,7 +34,7 @@ export default function Table({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    // getPaginationRowModel: getPaginationRowModel(),
   });
 
   const header_groups = table.getHeaderGroups();
@@ -121,39 +121,20 @@ function construct_table_columns<T>(
 ): ColumnDef<Datum>[] {
   if (data.length === 0) return [];
   // Get field IDs based on keys in data
-  const field_ids = Object.keys(data[0] ?? {});
-
-  // Find the field nodes in the catalog field hierarchy
-  const field_nodes = field_ids
-    .map((field_id) =>
-      catalog_field_hierarchy.find((d) => get_field_id(d.data) === field_id)
-    )
-    .filter((d): d is CatalogHierarchyNode => typeof d !== "undefined");
-
-  const field_id_to_node = new Map(
-    field_nodes.map((node) => [get_field_id(node.data), node])
-  );
-
-  // Get unix-like paths for nodes
-  const get_path = (node: CatalogHierarchyNode) => {
-    return node
-      .ancestors()
-      .map((d) => get_field_id(d.data))
-      .reverse()
-      .join(`/`);
-  };
-
-  const field_paths = field_nodes.map(get_path);
+  const field_ids_set = new Set(Object.keys(data[0] ?? {}));
 
   // Recursively construct column definitions
   const next = (
     node: CatalogHierarchyNode
   ): GroupColumnDef<Datum> | AccessorColumnDef<Datum> | null => {
-    // Get the path for this node
-    const path = get_path(node);
-
-    // Only include this node if its path is a partial match of one of the field_paths above
-    const include = field_paths.some((d) => d.startsWith(path));
+    // Include this node if:
+    // - It is one of the fields in field_ids_set
+    // - It is the ancestor of one of the fields in field_ids_set
+    const is_field = field_ids_set.has(get_field_id(node.data));
+    const is_ancestor_of_field = node
+      .leaves()
+      .some((child) => field_ids_set.has(get_field_id(child.data)));
+    const include = is_field || is_ancestor_of_field;
     if (!include) return null;
 
     const child_columns: ColumnDef<Datum>[] = [];
