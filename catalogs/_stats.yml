@@ -7251,6 +7251,1222 @@ gr8:
       value: J000149.74+652720.6
     - count: 1
       value: J000210.87+270444.6
+illustris:
+  Group_BHMass:
+    avg: 5.022992238747097e-3
+    count: 1313509075
+    max: 2.1200737953186035
+    min: 0.0
+  Group_BHMdot:
+    avg: 3.5926108578707876e-4
+    count: 1313509075
+    max: 4.5987138748168945
+    min: 0.0
+  Group_CM_x:
+    avg: 35947.46977803588
+    count: 24450145
+    max: 74999.9921875
+    min: 8.002948947250843e-3
+  Group_CM_y:
+    avg: 37148.243258379254
+    count: 24450145
+    max: 74999.984375
+    min: 1.6792766749858856e-2
+  Group_CM_z:
+    avg: 38019.098437869616
+    count: 24450145
+    max: 74999.9921875
+    min: 1.2148115783929825e-3
+  Group_FirstSub:
+    avg: 2.52483500116019e8
+    count: 2434682007
+    max: 2147483647
+    min: 0.0
+  Group_FuzzByType_bh:
+    avg: 1.7072726916637404
+    count: 1313509075
+    max: 34722.0
+    min: 0.0
+  Group_FuzzByType_dm:
+    avg: 2.734236070271535e9
+    count: 1313509075
+    max: 6028567935
+    min: 0.0
+  Group_FuzzByType_gas:
+    avg: 2.1458026082431512e9
+    count: 1313509075
+    max: 5996671711
+    min: 0.0
+  Group_FuzzByType_stars:
+    avg: 1.0334710393278984e7
+    count: 1313509075
+    max: 606875891
+    min: 0.0
+  Group_FuzzByType_tracers:
+    avg: 0.0
+    count: 1313509075
+    max: 0.0
+    min: 0.0
+  Group_FuzzByType_unused:
+    avg: 0.0
+    count: 1313509075
+    max: 0.0
+    min: 0.0
+  Group_GasMetallicity:
+    avg: 9.582365762162976e-4
+    count: 1313509075
+    max: 0.1271098107099533
+    min: 0.0
+  Group_Len:
+    avg: 167533.85848695517
+    count: 2434682007
+    max: 103122165
+    min: 32.0
+  Group_LenType_bh:
+    avg: 0.23480569058150516
+    count: 2434682007
+    max: 214.0
+    min: 0.0
+  Group_LenType_dm:
+    avg: 139107.76551844703
+    count: 2434682007
+    max: 66731995
+    min: 1.0
+  Group_LenType_gas:
+    avg: 14872.751137725067
+    count: 2434682007
+    max: 22161687
+    min: 0.0
+  Group_LenType_stars:
+    avg: 13553.107025092497
+    count: 2434682007
+    max: 14431903
+    min: 0.0
+  Group_LenType_tracers:
+    avg: 0.0
+    count: 2434682007
+    max: 0.0
+    min: 0.0
+  Group_LenType_unused:
+    avg: 0.0
+    count: 2434682007
+    max: 0.0
+    min: 0.0
+  Group_M_Crit200:
+    avg: 56.79889160220332
+    count: 2434682007
+    max: 26524.3671875
+    min: 0.0
+  Group_M_Crit500:
+    avg: 37.20937094516379
+    count: 2434682007
+    max: 20361.310546875
+    min: 0.0
+  Group_M_Mean200:
+    avg: 76.78552476783695
+    count: 2434682007
+    max: 32081.130859375
+    min: 0.0
+  Group_M_TopHat200:
+    avg: 69.10944619492302
+    count: 2434682007
+    max: 30203.265625
+    min: 0.0
+  Group_Mass:
+    avg: 83.28722705351025
+    count: 2434682007
+    max: 36021.46484375
+    min: 2.0380050409585238e-3
+  Group_MassType_bh:
+    avg: 3.1252505076690266e-3
+    count: 2434682007
+    max: 11.438307762145996
+    min: 0.0
+  Group_MassType_dm:
+    avg: 80.49138640082847
+    count: 2434682007
+    max: 36021.46484375
+    min: 4.408965178299695e-4
+  Group_MassType_gas:
+    avg: 1.8658112635869653
+    count: 2434682007
+    max: 3311.268310546875
+    min: 0.0
+  Group_MassType_stars:
+    avg: 0.9233521149423342
+    count: 2434682007
+    max: 826.2573852539062
+    min: 0.0
+  Group_MassType_tracers:
+    avg: 0.0
+    count: 2434682007
+    max: 0.0
+    min: 0.0
+  Group_MassType_unused:
+    avg: 0.0
+    count: 2434682007
+    max: 0.0
+    min: 0.0
+  Group_Nsubs:
+    avg: 42.17764518518496
+    count: 2434682007
+    max: 21802.0
+    min: 0.0
+  Group_Pos_x:
+    avg: 36085.409695787006
+    count: 2434682007
+    max: 75000.0
+    min: 0.0
+  Group_Pos_y:
+    avg: 37283.335374165625
+    count: 2434682007
+    max: 75000.0
+    min: 0.0
+  Group_Pos_z:
+    avg: 38010.509975600304
+    count: 2434682007
+    max: 75000.0
+    min: 0.0
+  Group_R_Crit200:
+    avg: 30.43168270418438
+    count: 2434682007
+    max: 1103.5836181640625
+    min: 0.0
+  Group_R_Crit500:
+    avg: 19.49754365434036
+    count: 2434682007
+    max: 755.3135986328125
+    min: 0.0
+  Group_R_Mean200:
+    avg: 38.350795832593896
+    count: 2434682007
+    max: 1717.0870361328125
+    min: 0.0
+  Group_R_TopHat200:
+    avg: 35.78778829960787
+    count: 2434682007
+    max: 1408.0452880859375
+    min: 0.0
+  Group_SFR:
+    avg: 1.242282273548043
+    count: 1313509075
+    max: 2515.283935546875
+    min: 0.0
+  Group_SnapByType_bh:
+    avg: 12797.297442337816
+    count: 2434682007
+    max: 34458.0
+    min: 0.0
+  Group_SnapByType_dm:
+    avg: 1.7442282095579145e9
+    count: 2434682007
+    max: 3328997624
+    min: 0.0
+  Group_SnapByType_gas:
+    avg: 4.344211535545056e8
+    count: 2434682007
+    max: 1344676135
+    min: 0.0
+  Group_SnapByType_stars:
+    avg: 1.5532496751343888e8
+    count: 2434682007
+    max: 606001799
+    min: 0.0
+  Group_SnapByType_tracers:
+    avg: 0.0
+    count: 2434682007
+    max: 0.0
+    min: 0.0
+  Group_SnapByType_unused:
+    avg: 0.0
+    count: 2434682007
+    max: 0.0
+    min: 0.0
+  Group_StarMetallicity:
+    avg: 5.382238261523714e-4
+    count: 1313509075
+    max: 8.525741845369339e-2
+    min: 0.0
+  Group_Vel_x:
+    avg: -5.989095031197075e-2
+    count: 2434682007
+    max: 2783.266845703125
+    min: -1897.4146728515625
+  Group_Vel_y:
+    avg: 6.0479593990138435e-2
+    count: 2434682007
+    max: 1985.8482666015625
+    min: -2197.109375
+  Group_Vel_z:
+    avg: -0.29000491859856364
+    count: 2434682007
+    max: 3306.859130859375
+    min: -2768.646484375
+  Group_WindMass:
+    avg: 1.9258868379481608e-2
+    count: 1313509075
+    max: 12.4690580368042
+    min: 0.0
+  Subhalo_Aperture_Mass_BH_1:
+    avg: 3.3715300683926806e7
+    count: 12833960
+    max: 74766082048
+    min: 0.0
+  Subhalo_Aperture_Mass_BH_10:
+    avg: 4.199351816897292e7
+    count: 12833960
+    max: 75416117248
+    min: 0.0
+  Subhalo_Aperture_Mass_BH_100:
+    avg: 4.220825656410062e7
+    count: 12833960
+    max: 75516051456
+    min: 0.0
+  Subhalo_Aperture_Mass_BH_20:
+    avg: 4.209438831585507e7
+    count: 12833960
+    max: 75416117248
+    min: 0.0
+  Subhalo_Aperture_Mass_BH_3:
+    avg: 4.060641843622104e7
+    count: 12833960
+    max: 75416117248
+    min: 0.0
+  Subhalo_Aperture_Mass_BH_30:
+    avg: 4.2132089410408355e7
+    count: 12833960
+    max: 75416117248
+    min: 0.0
+  Subhalo_Aperture_Mass_BH_40:
+    avg: 4.215159778380991e7
+    count: 12833960
+    max: 75416117248
+    min: 0.0
+  Subhalo_Aperture_Mass_BH_5:
+    avg: 4.17599874974426e7
+    count: 12833960
+    max: 75416117248
+    min: 0.0
+  Subhalo_Aperture_Mass_BH_50:
+    avg: 4.216466790899186e7
+    count: 12833960
+    max: 75516051456
+    min: 0.0
+  Subhalo_Aperture_Mass_BH_70:
+    avg: 4.218479858042742e7
+    count: 12833960
+    max: 75516051456
+    min: 0.0
+  Subhalo_Aperture_Mass_DM_1:
+    avg: 1.9661236798129043e8
+    count: 12833960
+    max: 1.98653952e10
+    min: 0.0
+  Subhalo_Aperture_Mass_DM_10:
+    avg: 1.6224127498956703e10
+    count: 12833960
+    max: 603076296704
+    min: 0.0
+  Subhalo_Aperture_Mass_DM_100:
+    avg: 1.1314616057584555e11
+    count: 12833960
+    max: 12562293850112
+    min: 0.0
+  Subhalo_Aperture_Mass_DM_20:
+    avg: 3.525499721456435e10
+    count: 12833960
+    max: 1446942212096
+    min: 0.0
+  Subhalo_Aperture_Mass_DM_3:
+    avg: 2.381811421102641e9
+    count: 12833960
+    max: 9.895120896e10
+    min: 0.0
+  Subhalo_Aperture_Mass_DM_30:
+    avg: 5.135033020508614e10
+    count: 12833960
+    max: 2.41881841664e12
+    min: 0.0
+  Subhalo_Aperture_Mass_DM_40:
+    avg: 6.48410157606708e10
+    count: 12833960
+    max: 3571762855936
+    min: 0.0
+  Subhalo_Aperture_Mass_DM_5:
+    avg: 5.987288380230315e9
+    count: 12833960
+    max: 1.9419488256e11
+    min: 0.0
+  Subhalo_Aperture_Mass_DM_50:
+    avg: 7.620827156687546e10
+    count: 12833960
+    max: 4809379282944
+    min: 0.0
+  Subhalo_Aperture_Mass_DM_70:
+    avg: 9.416964787065918e10
+    count: 12833960
+    max: 7594192142336
+    min: 0.0
+  Subhalo_Aperture_Mass_Gas_1:
+    avg: 4.7095851017803475e7
+    count: 12833960
+    max: 30382680064
+    min: 0.0
+  Subhalo_Aperture_Mass_Gas_10:
+    avg: 3.791345851962829e9
+    count: 12833960
+    max: 227674996736
+    min: 0.0
+  Subhalo_Aperture_Mass_Gas_100:
+    avg: 1.7091945182511484e10
+    count: 12833960
+    max: 1845253505024
+    min: 0.0
+  Subhalo_Aperture_Mass_Gas_20:
+    avg: 8.67181020607543e9
+    count: 12833960
+    max: 317324754944
+    min: 0.0
+  Subhalo_Aperture_Mass_Gas_3:
+    avg: 5.113048127964712e8
+    count: 12833960
+    max: 122429308928
+    min: 0.0
+  Subhalo_Aperture_Mass_Gas_30:
+    avg: 1.1916040994249342e10
+    count: 12833960
+    max: 435269337088
+    min: 0.0
+  Subhalo_Aperture_Mass_Gas_40:
+    avg: 1.378219337988853e10
+    count: 12833960
+    max: 556322455552
+    min: 0.0
+  Subhalo_Aperture_Mass_Gas_5:
+    avg: 1.3047968932439566e9
+    count: 12833960
+    max: 186840907776
+    min: 0.0
+  Subhalo_Aperture_Mass_Gas_50:
+    avg: 1.4898672655360535e10
+    count: 12833960
+    max: 7.5198464e11
+    min: 0.0
+  Subhalo_Aperture_Mass_Gas_70:
+    avg: 1.6143001837597574e10
+    count: 12833960
+    max: 1164398952448
+    min: 0.0
+  Subhalo_Aperture_Mass_Star_1:
+    avg: 9.207104870036419e7
+    count: 12833960
+    max: 386722955264
+    min: 0.0
+  Subhalo_Aperture_Mass_Star_10:
+    avg: 2.6747879645984077e9
+    count: 12833960
+    max: 1.13036689408e12
+    min: 0.0
+  Subhalo_Aperture_Mass_Star_100:
+    avg: 4.583603075061995e9
+    count: 12833960
+    max: 2185742385152
+    min: 0.0
+  Subhalo_Aperture_Mass_Star_20:
+    avg: 3.7406764969992614e9
+    count: 12833960
+    max: 1.43505883136e12
+    min: 0.0
+  Subhalo_Aperture_Mass_Star_3:
+    avg: 7.06707181502491e8
+    count: 12833960
+    max: 681612214272
+    min: 0.0
+  Subhalo_Aperture_Mass_Star_30:
+    avg: 4.103476100957693e9
+    count: 12833960
+    max: 1.55505393664e12
+    min: 0.0
+  Subhalo_Aperture_Mass_Star_40:
+    avg: 4.2736752205171385e9
+    count: 12833960
+    max: 1633346781184
+    min: 0.0
+  Subhalo_Aperture_Mass_Star_5:
+    avg: 1.4073980233463337e9
+    count: 12833960
+    max: 919680188416
+    min: 0.0
+  Subhalo_Aperture_Mass_Star_50:
+    avg: 4.373949931101634e9
+    count: 12833960
+    max: 1724382969856
+    min: 0.0
+  Subhalo_Aperture_Mass_Star_70:
+    avg: 4.490837144011063e9
+    count: 12833960
+    max: 1936649486336
+    min: 0.0
+  Subhalo_Aperture_SFR_1:
+    avg: 4.929899562470947e-2
+    count: 12833960
+    max: 894.6732177734375
+    min: 0.0
+  Subhalo_Aperture_SFR_10:
+    avg: 0.8329433690478388
+    count: 12833960
+    max: 1756.609375
+    min: 0.0
+  Subhalo_Aperture_SFR_100:
+    avg: 1.0861289962849132
+    count: 12833960
+    max: 1935.5440673828125
+    min: 0.0
+  Subhalo_Aperture_SFR_20:
+    avg: 1.0281680787991478
+    count: 12833960
+    max: 1828.32763671875
+    min: 0.0
+  Subhalo_Aperture_SFR_3:
+    avg: 0.29257122934276264
+    count: 12833960
+    max: 1329.7572021484375
+    min: 0.0
+  Subhalo_Aperture_SFR_30:
+    avg: 1.0664961508524191
+    count: 12833960
+    max: 1862.9913330078125
+    min: 0.0
+  Subhalo_Aperture_SFR_40:
+    avg: 1.0770128353541486
+    count: 12833960
+    max: 1884.584716796875
+    min: 0.0
+  Subhalo_Aperture_SFR_5:
+    avg: 0.512690637845604
+    count: 12833960
+    max: 1701.864501953125
+    min: 0.0
+  Subhalo_Aperture_SFR_50:
+    avg: 1.0811057316828727
+    count: 12833960
+    max: 1903.790283203125
+    min: 0.0
+  Subhalo_Aperture_SFR_70:
+    avg: 1.0843888113982452
+    count: 12833960
+    max: 1929.857666015625
+    min: 0.0
+  Subhalo_Aperture_VelDisp_1:
+    avg: 43.981586649254304
+    count: 9187834
+    max: 803.264892578125
+    min: 0.1342684030532837
+  Subhalo_Aperture_VelDisp_10:
+    avg: 46.21654964314614
+    count: 12793832
+    max: 787.0357666015625
+    min: 0.21287205815315247
+  Subhalo_Aperture_VelDisp_100:
+    avg: 45.81926480515295
+    count: 12833952
+    max: 787.2736206054688
+    min: 0.21287205815315247
+  Subhalo_Aperture_VelDisp_20:
+    avg: 46.01697387674928
+    count: 12830196
+    max: 786.8485717773438
+    min: 0.21287205815315247
+  Subhalo_Aperture_VelDisp_3:
+    avg: 45.09970320515824
+    count: 12066983
+    max: 788.59765625
+    min: 0.21287205815315247
+  Subhalo_Aperture_VelDisp_30:
+    avg: 45.90932932043885
+    count: 12833304
+    max: 784.9530639648438
+    min: 0.21287205815315247
+  Subhalo_Aperture_VelDisp_40:
+    avg: 45.865721044246804
+    count: 12833788
+    max: 784.1845092773438
+    min: 0.21287205815315247
+  Subhalo_Aperture_VelDisp_5:
+    avg: 45.837114778721805
+    count: 12578811
+    max: 786.5037841796875
+    min: 0.21287205815315247
+  Subhalo_Aperture_VelDisp_50:
+    avg: 45.84580432197831
+    count: 12833896
+    max: 784.36865234375
+    min: 0.21287205815315247
+  Subhalo_Aperture_VelDisp_70:
+    avg: 45.82892542305713
+    count: 12833936
+    max: 786.0772705078125
+    min: 0.21287205815315247
+  Subhalo_BHMass:
+    avg: 1.3232354174369824e-5
+    count: 581288114
+    max: 1.4895638227462769
+    min: 0.0
+  Subhalo_BHMdot:
+    avg: 3.0559666539073943e-6
+    count: 581288114
+    max: 4.596288681030273
+    min: 0.0
+  Subhalo_CM_x:
+    avg: 36180.365425937736
+    count: 1175372132
+    max: 75000.0
+    min: 1.2843767763115466e-5
+  Subhalo_CM_y:
+    avg: 37215.727182890325
+    count: 1175372132
+    max: 75000.0
+    min: 2.4068904167506844e-5
+  Subhalo_CM_z:
+    avg: 37900.74408298879
+    count: 1175372132
+    max: 75000.0
+    min: 5.363010131986812e-5
+  Subhalo_GasMetallicity:
+    avg: 1.39264157224985e-4
+    count: 581288114
+    max: 0.12431003153324127
+    min: 0.0
+  Subhalo_GasMetallicityHalfRad:
+    avg: 1.7825281773000944e-4
+    count: 581288114
+    max: 0.12884417176246643
+    min: 0.0
+  Subhalo_GasMetallicityMaxRad:
+    avg: 1.334273979765999e-4
+    count: 581288114
+    max: 0.1255492866039276
+    min: 0.0
+  Subhalo_GasMetallicitySfr:
+    avg: 1.609981496273339e-4
+    count: 581288114
+    max: 0.13802975416183472
+    min: 0.0
+  Subhalo_GasMetallicitySfrWeighted:
+    avg: 1.6474433748920873e-4
+    count: 581288114
+    max: 0.1420109122991562
+    min: 0.0
+  Subhalo_Gas_Spin_x:
+    avg: 4.288713361995547
+    count: 12833960
+    max: 147143.171875
+    min: -98591.53125
+  Subhalo_Gas_Spin_y:
+    avg: 2.4639869407475326
+    count: 12833960
+    max: 96170.3671875
+    min: -129961.28125
+  Subhalo_Gas_Spin_z:
+    avg: 0.7849502642712608
+    count: 12833960
+    max: 91861.203125
+    min: -129482.8515625
+  Subhalo_GrNr:
+    avg: 1739255.58827715
+    count: 1175372132
+    max: 7713599.0
+    min: 0.0
+  Subhalo_HalfMassProjRad_BH:
+    avg: 8.02848202153651e-3
+    count: 12833960
+    max: 1151.6732177734375
+    min: 0.0
+  Subhalo_HalfMassProjRad_DM:
+    avg: 19.26598829781462
+    count: 12833960
+    max: 1033.3304443359375
+    min: 0.0
+  Subhalo_HalfMassProjRad_Gas:
+    avg: 12.44045193381362
+    count: 12833960
+    max: 1128.9871826171875
+    min: 0.0
+  Subhalo_HalfMassProjRad_Star:
+    avg: 4.399219999939844
+    count: 12833960
+    max: 451.76751708984375
+    min: 0.0
+  Subhalo_HalfmassRad:
+    avg: 10.103629260883146
+    count: 1175372132
+    max: 1136.5894775390625
+    min: 7.672327046748251e-5
+  Subhalo_HalfmassRadType_bh:
+    avg: 1.4344762849602546e-4
+    count: 1175372132
+    max: 1161.0546875
+    min: 0.0
+  Subhalo_HalfmassRadType_dm:
+    avg: 10.107834382899346
+    count: 1175372132
+    max: 1139.0335693359375
+    min: 0.0
+  Subhalo_HalfmassRadType_gas:
+    avg: 2.450308279242125
+    count: 1175372132
+    max: 1485.3433837890625
+    min: 0.0
+  Subhalo_HalfmassRadType_stars:
+    avg: 0.180983945658877
+    count: 1175372132
+    max: 680.706787109375
+    min: 0.0
+  Subhalo_HalfmassRadType_tracers:
+    avg: 0.0
+    count: 1175372132
+    max: 0.0
+    min: 0.0
+  Subhalo_HalfmassRadType_unused:
+    avg: 0.0
+    count: 1175372132
+    max: 0.0
+    min: 0.0
+  Subhalo_IDMostbound:
+    avg: 4.617370220265483e18
+    count: 1175372132
+    max: 9.223372036854776e18
+    min: 0.0
+  Subhalo_InitialMassWeightedBirthZ:
+    avg: 1.9434721550352636
+    count: 12833960
+    max: 13.648965835571289
+    min: 0.0
+  Subhalo_InitialMassWeightedStellarAge:
+    avg: 3.122407837830624
+    count: 12833960
+    max: 12.370783805847168
+    min: -1.430511474609375e-6
+  Subhalo_Len:
+    avg: 495.35837673238285
+    count: 1175372132
+    max: 68882471
+    min: 20.0
+  Subhalo_LenType_bh:
+    avg: 6.278596198671826e-3
+    count: 1175372132
+    max: 111.0
+    min: 0.0
+  Subhalo_LenType_dm:
+    avg: 383.3913529251517
+    count: 1175372132
+    max: 46056847
+    min: 0.0
+  Subhalo_LenType_gas:
+    avg: 82.35552868884933
+    count: 1175372132
+    max: 19176755
+    min: 0.0
+  Subhalo_LenType_stars:
+    avg: 29.60521652218312
+    count: 1175372132
+    max: 4121303.0
+    min: 0.0
+  Subhalo_LenType_tracers:
+    avg: 0.0
+    count: 1175372132
+    max: 0.0
+    min: 0.0
+  Subhalo_LenType_unused:
+    avg: 0.0
+    count: 1175372132
+    max: 0.0
+    min: 0.0
+  Subhalo_Mass:
+    avg: 0.47084906370319807
+    count: 1175372132
+    max: 26229.576171875
+    min: 9.78941796347499e-4
+  Subhalo_MassInHalfRad:
+    avg: 1.2756772523677818e-2
+    count: 1175372132
+    max: 4692.59716796875
+    min: 0.0
+  Subhalo_MassInHalfRadType_bh:
+    avg: 3.1361023430296196e-5
+    count: 1175372132
+    max: 5.3163299560546875
+    min: 0.0
+  Subhalo_MassInHalfRadType_dm:
+    avg: 9.017042343490418e-3
+    count: 1175372132
+    max: 4286.32568359375
+    min: 0.0
+  Subhalo_MassInHalfRadType_gas:
+    avg: 1.8568069500276905e-3
+    count: 1175372132
+    max: 332.15460205078125
+    min: 0.0
+  Subhalo_MassInHalfRadType_stars:
+    avg: 1.8515622093692174e-3
+    count: 1175372132
+    max: 128.58038330078125
+    min: 0.0
+  Subhalo_MassInHalfRadType_tracers:
+    avg: 0.0
+    count: 1175372132
+    max: 0.0
+    min: 0.0
+  Subhalo_MassInHalfRadType_unused:
+    avg: 0.0
+    count: 1175372132
+    max: 0.0
+    min: 0.0
+  Subhalo_MassInMaxRad:
+    avg: 0.1893587649823951
+    count: 1175372132
+    max: 18580.994140625
+    min: 2.683773054741323e-4
+  Subhalo_MassInMaxRadType_bh:
+    avg: 3.5693963438860455e-5
+    count: 1175372132
+    max: 5.493185043334961
+    min: 0.0
+  Subhalo_MassInMaxRadType_dm:
+    avg: 0.17580176449285798
+    count: 1175372132
+    max: 18580.994140625
+    min: 0.0
+  Subhalo_MassInMaxRadType_gas:
+    avg: 1.0526280074116344e-2
+    count: 1175372132
+    max: 1808.9727783203125
+    min: 0.0
+  Subhalo_MassInMaxRadType_stars:
+    avg: 2.995026464781801e-3
+    count: 1175372132
+    max: 231.05374145507812
+    min: 0.0
+  Subhalo_MassInMaxRadType_tracers:
+    avg: 0.0
+    count: 1175372132
+    max: 0.0
+    min: 0.0
+  Subhalo_MassInMaxRadType_unused:
+    avg: 0.0
+    count: 1175372132
+    max: 0.0
+    min: 0.0
+  Subhalo_MassInRad:
+    avg: 3.054934230669915e-2
+    count: 1175372132
+    max: 13528.7587890625
+    min: 0.0
+  Subhalo_MassInRadType_bh:
+    avg: 3.159351968460825e-5
+    count: 1175372132
+    max: 5.567878723144531
+    min: 0.0
+  Subhalo_MassInRadType_dm:
+    avg: 2.2426381647527978e-2
+    count: 1175372132
+    max: 12048.9052734375
+    min: 0.0
+  Subhalo_MassInRadType_gas:
+    avg: 5.2048074473507264e-3
+    count: 1175372132
+    max: 1350.072998046875
+    min: 0.0
+  Subhalo_MassInRadType_stars:
+    avg: 2.886559695959698e-3
+    count: 1175372132
+    max: 163.12872314453125
+    min: 0.0
+  Subhalo_MassInRadType_tracers:
+    avg: 0.0
+    count: 1175372132
+    max: 0.0
+    min: 0.0
+  Subhalo_MassInRadType_unused:
+    avg: 0.0
+    count: 1175372132
+    max: 0.0
+    min: 0.0
+  Subhalo_MassType_bh:
+    avg: 3.614361554385428e-5
+    count: 1175372132
+    max: 6.0407938957214355
+    min: 0.0
+  Subhalo_MassType_dm:
+    avg: 0.4447777028682157
+    count: 1175372132
+    max: 26229.576171875
+    min: 0.0
+  Subhalo_MassType_gas:
+    avg: 2.2306375565496483e-2
+    count: 1175372132
+    max: 3067.290283203125
+    min: 0.0
+  Subhalo_MassType_stars:
+    avg: 3.7288416611723305e-3
+    count: 1175372132
+    max: 257.1609802246094
+    min: 0.0
+  Subhalo_MassType_tracers:
+    avg: 0.0
+    count: 1175372132
+    max: 0.0
+    min: 0.0
+  Subhalo_MassType_unused:
+    avg: 0.0
+    count: 1175372132
+    max: 0.0
+    min: 0.0
+  Subhalo_Parent:
+    avg: 3.2275426451917952
+    count: 1175372132
+    max: 21791.0
+    min: 0.0
+  Subhalo_Pos_x:
+    avg: 36180.35875317379
+    count: 1175372132
+    max: 75000.0
+    min: 0.0
+  Subhalo_Pos_y:
+    avg: 37215.71538817928
+    count: 1175372132
+    max: 75000.0
+    min: 0.0
+  Subhalo_Pos_z:
+    avg: 37900.7207111792
+    count: 1175372132
+    max: 75000.0
+    min: 0.0
+  Subhalo_SFR:
+    avg: 2.554144843398185e-2
+    count: 581288114
+    max: 1944.306640625
+    min: 0.0
+  Subhalo_SFRinHalfRad:
+    avg: 1.43347169682547e-2
+    count: 581288114
+    max: 1893.560546875
+    min: 0.0
+  Subhalo_SFRinMaxRad:
+    avg: 2.3957812350501005e-2
+    count: 581288114
+    max: 1943.4500732421875
+    min: 0.0
+  Subhalo_SFRinRad:
+    avg: 2.2125367465842604e-2
+    count: 581288114
+    max: 1935.302001953125
+    min: 0.0
+  Subhalo_Sizes_R_halfmass100:
+    avg: 20.757745334833157
+    count: 12833960
+    max: 82.73741149902344
+    min: 0.0
+  Subhalo_Sizes_R_halfmass100_projected:
+    avg: 15.240101569792486
+    count: 12833960
+    max: 48.94367980957031
+    min: 0.0
+  Subhalo_Sizes_R_halfmass30:
+    avg: 12.576406292349471
+    count: 12833960
+    max: 25.742361068725586
+    min: 0.0
+  Subhalo_Sizes_R_halfmass30_projected:
+    avg: 15.240101569792486
+    count: 12833960
+    max: 48.94367980957031
+    min: 0.0
+  Subhalo_SnapByType_bh:
+    avg: 10884.628147929408
+    count: 1175372132
+    max: 34458.0
+    min: 0.0
+  Subhalo_SnapByType_dm:
+    avg: 1.6183669058801186e9
+    count: 1175372132
+    max: 3328997624
+    min: 0.0
+  Subhalo_SnapByType_gas:
+    avg: 3.7008777228651595e8
+    count: 1175372132
+    max: 1344676135
+    min: 0.0
+  Subhalo_SnapByType_stars:
+    avg: 1.2905446211981383e8
+    count: 1175372132
+    max: 606001799
+    min: 0.0
+  Subhalo_SnapByType_tracers:
+    avg: 0.0
+    count: 1175372132
+    max: 0.0
+    min: 0.0
+  Subhalo_SnapByType_unused:
+    avg: 0.0
+    count: 1175372132
+    max: 0.0
+    min: 0.0
+  Subhalo_Spin_x:
+    avg: 1.4452287915437142e-2
+    count: 1175372132
+    max: 33605.76953125
+    min: -57138.71484375
+  Subhalo_Spin_y:
+    avg: 3.920912725114039e-2
+    count: 1175372132
+    max: 59366.875
+    min: -52107.390625
+  Subhalo_Spin_z:
+    avg: -9.605484913954397e-3
+    count: 1175372132
+    max: 50842.6640625
+    min: -63337.8203125
+  Subhalo_StarMetallicity:
+    avg: 1.1235704505978859e-4
+    count: 581288114
+    max: 0.1139153465628624
+    min: 0.0
+  Subhalo_StarMetallicityHalfRad:
+    avg: 1.2417431925395143e-4
+    count: 581288114
+    max: 0.11767719686031342
+    min: 0.0
+  Subhalo_StarMetallicityMaxRad:
+    avg: 1.122237252509786e-4
+    count: 581288114
+    max: 0.11510170251131058
+    min: 0.0
+  Subhalo_Stars_Spin_x:
+    avg: 7.030132927175568e-2
+    count: 12833960
+    max: 229436.765625
+    min: -93114.9765625
+  Subhalo_Stars_Spin_y:
+    avg: 0.7681065578580393
+    count: 12833960
+    max: 74188.46875
+    min: -125197.5078125
+  Subhalo_Stars_Spin_z:
+    avg: 9.536440683546633e-2
+    count: 12833960
+    max: 124449.71875
+    min: -198876.171875
+  Subhalo_StellarInitialMass:
+    avg: 8.108766400516963e9
+    count: 12833960
+    max: 6646673702912
+    min: 100013968
+  Subhalo_StellarPhotometricsMassInRad:
+    avg: 3.4126027352420736e-3
+    count: 581288114
+    max: 135.3041534423828
+    min: 0.0
+  Subhalo_StellarPhotometricsRad:
+    avg: 0.12617510656400072
+    count: 581288114
+    max: 38.522727966308594
+    min: 0.0
+  Subhalo_StellarPhotometrics_B:
+    avg: 9.021681157739473e36
+    count: 581288114
+    max: 9.999999933815813e36
+    min: -27.1148681640625
+  Subhalo_StellarPhotometrics_K:
+    avg: 9.021681157739473e36
+    count: 581288114
+    max: 9.999999933815813e36
+    min: -29.17131805419922
+  Subhalo_StellarPhotometrics_U:
+    avg: 9.021681157739473e36
+    count: 581288114
+    max: 9.999999933815813e36
+    min: -27.521631240844727
+  Subhalo_StellarPhotometrics_V:
+    avg: 9.021681157739473e36
+    count: 581288114
+    max: 9.999999933815813e36
+    min: -27.23714256286621
+  Subhalo_StellarPhotometrics_g:
+    avg: 9.021681157739473e36
+    count: 581288114
+    max: 9.999999933815813e36
+    min: -27.30307388305664
+  Subhalo_StellarPhotometrics_i:
+    avg: 9.021681157739473e36
+    count: 581288114
+    max: 9.999999933815813e36
+    min: -27.374902725219727
+  Subhalo_StellarPhotometrics_r:
+    avg: 9.021681157739473e36
+    count: 581288114
+    max: 9.999999933815813e36
+    min: -27.31097412109375
+  Subhalo_StellarPhotometrics_z:
+    avg: 9.021681157739473e36
+    count: 581288114
+    max: 9.999999933815813e36
+    min: -27.46876335144043
+  Subhalo_StellarVelDisp:
+    avg: 45.80724182754854
+    count: 12833960
+    max: 703.0115966796875
+    min: 0.21287205815315247
+  Subhalo_ThermalEnergy:
+    avg: 7.340007519810442e14
+    count: 12833960
+    max: 2.1686450686905025e19
+    min: 0.0
+  Subhalo_VelDisp:
+    avg: 11.768649955687716
+    count: 1175372132
+    max: 743.9366455078125
+    min: 0.8112476468086243
+  Subhalo_Vel_x:
+    avg: -9.530651204331336e-2
+    count: 1175372132
+    max: 2759.2705078125
+    min: -2647.269287109375
+  Subhalo_Vel_y:
+    avg: 0.27152385616696995
+    count: 1175372132
+    max: 2429.5048828125
+    min: -2369.3349609375
+  Subhalo_Vel_z:
+    avg: -0.7504268278972233
+    count: 1175372132
+    max: 2311.99755859375
+    min: -2346.4599609375
+  Subhalo_Vmax:
+    avg: 21.492646617941965
+    count: 1175372132
+    max: 1745.0855712890625
+    min: 2.24275541305542
+  Subhalo_VmaxRad:
+    avg: 9.461464303835893
+    count: 1175372132
+    max: 1234.639892578125
+    min: 2.0874202251434326e-2
+  Subhalo_WindMass:
+    avg: 5.884581207565668e-4
+    count: 581288114
+    max: 8.561744689941406
+    min: 0.0
+  Subhalo_id:
+    avg: 2220937.8497794415
+    count: 1175372132
+    max: 6025080.0
+    min: 0.0
+  count: 2434682007
+  id:
+    avg: 2135361.0230290345
+    count: 2434682007
+    max: 7713600.0
+    min: 0.0
+  redshift:
+    avg: 1.8175013895435004
+    count: 1433094961
+    max: 25.172157287597656
+    min: 2.220446049250313e-16
+  simulation:
+    others: 0
+    terms:
+    - count: 1130308380
+      value: 0
+    - count: 970857221
+      value: 1
+    - count: 158750550
+      value: 2
+    - count: 132294763
+      value: 3
+    - count: 24450145
+      value: 4
+    - count: 18020948
+      value: 5
+  snapshot:
+    others: 1594515417
+    terms:
+    - count: 26839580
+      value: 64
+    - count: 26830521
+      value: 65
+    - count: 26826220
+      value: 63
+    - count: 26794222
+      value: 66
+    - count: 26784908
+      value: 62
+    - count: 26752218
+      value: 67
+    - count: 26709205
+      value: 61
+    - count: 26701155
+      value: 68
+    - count: 26647554
+      value: 60
+    - count: 26630006
+      value: 69
+    - count: 26596161
+      value: 59
+    - count: 26559958
+      value: 70
+    - count: 26492440
+      value: 71
+    - count: 26439145
+      value: 58
+    - count: 26422964
+      value: 72
+    - count: 26358713
+      value: 73
+    - count: 26279049
+      value: 74
+    - count: 26233533
+      value: 57
+    - count: 26213954
+      value: 75
+    - count: 26135826
+      value: 76
+    - count: 26054163
+      value: 77
+    - count: 25979855
+      value: 78
+    - count: 25974562
+      value: 56
+    - count: 25888884
+      value: 79
+    - count: 25817224
+      value: 80
+    - count: 25745388
+      value: 81
+    - count: 25682091
+      value: 82
+    - count: 25626684
+      value: 83
+    - count: 25571494
+      value: 84
+    - count: 25569621
+      value: 54
+    - count: 25510184
+      value: 85
+    - count: 25499108
+      value: 86
+  time:
+    avg: 0.5265025117762138
+    count: 1433094961
+    max: 1.0
+    min: 3.820854425430298e-2
+  type:
+    others: 0
+    terms:
+    - count: 1259309875
+      value: false
+    - count: 1175372132
+      value: true
 illustris_fof:
   BHMass:
     avg: 1.0506348766508513e-5
