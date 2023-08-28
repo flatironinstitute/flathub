@@ -358,7 +358,7 @@ export interface components {
     stats: {
       content: {
         "application/json": {
-          [key: string]: components["schemas"]["FieldStats"] | undefined;
+          [key: string]: components["schemas"]["FieldStats"];
         };
       };
     };
@@ -417,6 +417,8 @@ export interface components {
   headers: never;
   pathItems: never;
 }
+
+export type $defs = Record<string, never>;
 
 export type external = Record<string, never>;
 
