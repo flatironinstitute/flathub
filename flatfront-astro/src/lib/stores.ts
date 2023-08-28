@@ -10,6 +10,7 @@ import type {
   TopResponse,
   GlobalFilterState,
   Actions,
+  QueryParameters,
 } from "./types";
 import type { QueryObserverResult } from "@tanstack/query-core";
 import type { Readable } from "svelte/store";
@@ -95,15 +96,11 @@ export const filter_state = writable<GlobalFilterState>(
 
 actions.subscribe((actions) => log(`All actions:`, actions));
 
-filter_state.subscribe((filter_state) =>
-  log(`Global Filter State:`, filter_state)
-);
-
-debounce_store(actions, 1000).subscribe((actions) => {
+debounce_store(actions, 500).subscribe((actions) => {
   store_data_in_url(actions, `actions`);
 });
 
-debounce_store(filter_state, 1000).subscribe((filters) => {
+debounce_store(filter_state, 500).subscribe((filters) => {
   store_data_in_url(filters, `filters`);
 });
 
@@ -276,7 +273,9 @@ export const catalog_metadata_query_observer_by_catalog_id: Readable<
 > = derived(
   catalog_id_by_cell_id,
   ($catalog_id_by_cell_id, set, update) => {
-    const catalog_ids = Array.from(new Set($catalog_id_by_cell_id.values()));
+    const catalog_ids = Array.from(
+      new Set($catalog_id_by_cell_id.values())
+    ).filter((d) => d);
 
     update((prev) => {
       const next = new Map(prev);
@@ -389,40 +388,31 @@ export const filters_by_cell_id: Readable<Map<CellID, Filters>> = derived(
   new Map<CellID, Filters>()
 );
 
-export const query_parameters_by_cell_id: Readable<Map<CellID, Filters>> =
-  derived(
-    [cell_type_by_cell_id, actions_by_cell_id, filter_state],
-    ([$cell_type_by_cell_id, $actions_by_cell_id, $filter_state]) => {
-      return new Map(
-        [...$cell_type_by_cell_id.entries()].map(([cell_id, cell_type]) => {
-          // const cell_actions = $actions_by_cell_id.get(cell_id);
+export const query_parameters_by_cell_id: Readable<
+  Map<CellID, QueryParameters>
+> = derived(
+  [cell_type_by_cell_id, filter_state],
+  ([$cell_type_by_cell_id, $filter_state]) => {
+    return new Map(
+      [...$cell_type_by_cell_id.entries()].map(([cell_id, cell_type]) => {
+        const initial_query_parameters: QueryParameters = {
+          count: cell_type === `table` ? 25 : 2000,
+        };
 
-          // const filter_ids_set = catalog_hierarchy
-          //   ? get_filter_ids(catalog_hierarchy, cell_actions)
-          //   : new Set<string>();
+        const filter_state = ($filter_state?.[cell_id] ??
+          {}) as QueryParameters;
 
-          // const initial_filters: Filters = get_initial_cell_filters(
-          //   filter_ids_set,
-          //   catalog_hierarchy
-          // );
+        const filters = get_final_filters<QueryParameters>(
+          initial_query_parameters,
+          filter_state
+        );
 
-          const initial_query_parameters: Filters = {
-            count: 30,
-          };
-
-          const filter_state: Filters = $filter_state?.[cell_id] ?? {};
-
-          const filters = get_final_filters(
-            initial_query_parameters,
-            filter_state
-          );
-
-          return [cell_id, filters];
-        })
-      );
-    },
-    new Map<CellID, Filters>()
-  );
+        return [cell_id, filters];
+      })
+    );
+  },
+  new Map<CellID, QueryParameters>()
+);
 
 export const column_ids_by_cell_id: Readable<Map<CellID, Set<string>>> =
   derived(

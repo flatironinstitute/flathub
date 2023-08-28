@@ -10,9 +10,11 @@ export type Action =
   | CellAction
   | FilterListAction
   | ColumnListAction
-  | PlotControlAction
   | Actions[`SetCatalog`]
-  | Actions[`SetCellType`];
+  | Actions[`SetCellType`]
+  | Actions[`SetPlotType`]
+  | Actions[`SetPlotControl`]
+  | Actions[`SetDarkMode`];
 
 export type Actions = {
   SetCatalog: ActionBase<
@@ -23,12 +25,16 @@ export type Actions = {
     `set_cell_type`,
     { cell_id: GenericCellID; cell_type: "table" | "plot" }
   >;
+  SetPlotType: ActionBase<
+    `set_plot_type`,
+    { cell_id: CellID; plot_type: "scatterplot" | "heatmap" }
+  >;
+  SetPlotControl: ActionBase<
+    `set_plot_control`,
+    { cell_id: CellID; key: string; value: any }
+  >;
+  SetDarkMode: ActionBase<`set_dark_mode`, { value: boolean }>;
 };
-
-export type PlotControlAction = ActionBase<
-  `set_plot_control`,
-  { cell_id: CellID; plot_id: string; key: string; value: any }
->;
 
 export type ColumnListAction = ActionBase<
   `add_column` | `remove_column` | `remove_child_columns`,
@@ -145,6 +151,8 @@ export type RootCellID = `root`;
 
 // ===========================================
 // SCHEMA
+
+export type QueryParameters = Pick<DataRequestBody, "count">;
 
 export type TopResponseEntry = TopResponse[number];
 

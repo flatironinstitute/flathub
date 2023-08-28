@@ -21,6 +21,8 @@ import {
   format,
   Select,
   field_is_enum,
+  field_is_numeric,
+  field_is_select,
 } from "../shared";
 import * as stores from "../stores";
 import Katex from "./Katex";
@@ -193,9 +195,9 @@ export function FilterCard() {
     }
     if (metadata.sub && metadata.sub.length > 0) {
       return null;
-    } else if (metadata.type === `float` || metadata.type === `short`) {
+    } else if (field_is_numeric(metadata)) {
       return <RangeFilterControl />;
-    } else if (field_is_enum(metadata)) {
+    } else if (field_is_enum(metadata) || field_is_select(metadata)) {
       return <SelectFilterControl />;
     } else if (metadata.type === `keyword`) {
       return <StringFilterControl />;
@@ -450,14 +452,29 @@ function SelectFilterControl() {
 
   const filter_value_raw: FilterValueRaw = filters[field_id];
 
-  const enums = metadata.enum;
-
   const terms = metadata.stats.terms;
 
-  const values = enums.map((text, index) => {
-    const { value, count } = terms[index];
-    return { text, value, count };
-  });
+  if (!terms?.length) {
+    throw new Error(`Expected terms to be non-empty for ${field_id}`);
+  }
+
+  const values: { text: string; value: number; count?: number }[] = (() => {
+    if ("enum" in metadata) {
+      return metadata.enum.map((text, index) => {
+        const term_data = terms[index];
+        if (!term_data) {
+          return { text, value: index };
+        }
+        const value = Number(term_data.value);
+        const count = term_data.count;
+        return { text, value, count };
+      });
+    } else {
+      return terms.map(({ value, count }) => {
+        return { text: value.toString(), value: Number(value), count };
+      });
+    }
+  })();
 
   const value = values.find((d) => d.value === filter_value_raw);
 
@@ -470,7 +487,10 @@ function SelectFilterControl() {
       value={value}
       options={values}
       getKey={(d) => d.value.toString()}
-      getDisplayName={(d) => `${d.text} (${format.commas(d.count)} rows)`}
+      getDisplayName={(d) => {
+        if (!d.count) return d.text;
+        return `${d.text} (${format.commas(d.count)} rows)`;
+      }}
       onValueChange={on_change}
       buttonClassName="ring-2 ring-inset ring-light-4 dark:ring-dark-4"
       optionsClassName="bg-light-2 dark:bg-dark-2 shadow-2xl"
@@ -663,10 +683,12 @@ function LittleTextButton({
 }
 
 export function QueryParameter({
+  label,
   field_id,
   min,
   max,
 }: {
+  label: string;
   field_id: string;
   min: number;
   max: number;
@@ -686,7 +708,7 @@ export function QueryParameter({
         `grid gap-x-4 desktop:grid-cols-[10ch_1fr_1fr] desktop:items-center`
       )}
     >
-      <div>Rows</div>
+      <div>{label}</div>
       <TextInput
         value={value.toString()}
         getValidityMessage={(string) => {

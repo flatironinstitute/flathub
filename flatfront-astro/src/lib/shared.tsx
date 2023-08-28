@@ -30,6 +30,7 @@ import { produce } from "immer";
 import { Listbox } from "@headlessui/react";
 import { QueryClient, QueryObserver } from "@tanstack/query-core";
 import * as stores from "./stores";
+import Katex from "./components/Katex";
 
 const FLATHUB_API_BASE_URL = `https://flathub.flatironinstitute.org`;
 
@@ -212,11 +213,11 @@ export function get_initial_cell_filters(
   return initial_filter_object;
 }
 
-export function get_final_filters(
-  initial_filters: Filters,
-  filter_state_for_cell: Filters
-) {
-  const filters: Filters = {};
+export function get_final_filters<T>(
+  initial_filters: T,
+  filter_state_for_cell: T
+): T {
+  const filters: T = {} as T;
   for (const [field_id, initial_value] of Object.entries(initial_filters)) {
     const filter_state = filter_state_for_cell[field_id];
     const value = filter_state ?? initial_value;
@@ -438,7 +439,7 @@ export function Select<T>({
   placeholder?: string;
   options: T[];
   getKey?: (option: T) => string;
-  getDisplayName?: (option: T) => string;
+  getDisplayName?: (option: T) => React.ReactNode;
   disabled?: boolean;
   value?: T;
   onValueChange?: (value: T) => void;
@@ -462,7 +463,7 @@ export function Select<T>({
           )}
         >
           <span className="block whitespace-nowrap">
-            {getDisplayName(value) ?? placeholder}
+            {value ? getDisplayName(value) : placeholder}
           </span>
           <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
             <ChevronDownIcon className="h-5 w-5 " aria-hidden="true" />
@@ -650,6 +651,18 @@ export function field_is_enum(metadata: FieldMetadata): boolean {
   return type_check && has_enum && has_terms && has_stats_terms;
 }
 
+export function field_is_numeric(metadata: FieldMetadata): boolean {
+  const type_check = metadata.type === `float` || metadata.type === `short`;
+  const has_terms = metadata.terms === true;
+  return type_check && !has_terms;
+}
+
+export function field_is_select(metadata: FieldMetadata): boolean {
+  const type_check = metadata.type === `float` || metadata.type === `short`;
+  const has_terms = metadata.terms === true;
+  return type_check && has_terms;
+}
+
 export function get_catalog_id(
   cells_hierarchy: d3.HierarchyNode<Cell>,
   cell_id: CellID
@@ -693,3 +706,111 @@ export function get_catalog_id(
 // };
 
 // export function get_field_metadata(catalog_field_hierarchy: d3.HierarchyNode<FieldMetadata>, field_id: FieldID): FieldMetadata {
+
+export function CellSection({
+  label,
+  children = null,
+  className,
+}: {
+  label?: string;
+  children?: React.ReactNode;
+  className?: string;
+}): React.JSX.Element {
+  return (
+    <div className={clsx(`flex flex-col`, className)}>
+      {label && <SimpleLabel className="mb-4">{label}</SimpleLabel>}
+      {children}
+    </div>
+  );
+}
+
+export function CellTitle({
+  children,
+  subtitle,
+}: {
+  children: React.ReactNode;
+  subtitle?: React.ReactNode;
+}): React.JSX.Element {
+  return (
+    <div>
+      <div className="text-2xl font-bold">{children}</div>
+      {subtitle && <div className="text-slate-400">{subtitle}</div>}
+    </div>
+  );
+}
+
+export function SimpleLabel({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}): React.JSX.Element {
+  return (
+    <div
+      className={clsx(
+        `text-slate-400 dark:text-slate-400 uppercase text-sm`,
+        className
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+export function PendingBox({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="h-40 rounded-lg p-4 outline-2 outline-dashed outline-slate-700 dark:outline-slate-50 grid place-items-center opacity-50">
+      {children}
+    </div>
+  );
+}
+
+export function useQueryObserver<T>(observer: QueryObserver<T> | null) {
+  const [value, set_value] = React.useState(observer?.getCurrentResult());
+  React.useEffect(() => {
+    if (!observer) return;
+    set_value(observer.getCurrentResult());
+    const unsubscribe = observer.subscribe(set_value);
+    return unsubscribe;
+  }, [observer]);
+  return value;
+}
+
+export function FieldTitles({
+  node,
+}: {
+  node: d3.HierarchyNode<FieldMetadata>;
+}): React.JSX.Element {
+  const title_strings = get_field_titles(node);
+  const titles = title_strings.map((title, i, arr) => {
+    const is_last = i === arr.length - 1;
+    return (
+      <React.Fragment key={title}>
+        {i > 0 ? <span>:</span> : ``}
+        <Katex className={is_last ? `opacity-100` : `opacity-40`}>
+          {title}
+        </Katex>
+      </React.Fragment>
+    );
+  });
+  return (
+    <div data-type="field-titles" className="text-md flex gap-x-2">
+      {titles}
+    </div>
+  );
+}
+
+export function get_field_titles<T extends { title?: string }>(
+  node: d3.HierarchyNode<T>
+): string[] {
+  const titles: string[] = [];
+  let current_node: d3.HierarchyNode<T> | null = node;
+  while (current_node !== null) {
+    if (current_node.data.title?.length ?? 0 > 0) {
+      titles.push(current_node.data.title ?? `unknown`);
+    }
+    current_node = current_node.parent;
+  }
+  return titles.reverse();
+}

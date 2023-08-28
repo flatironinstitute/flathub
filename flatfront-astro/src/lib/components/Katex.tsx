@@ -22,9 +22,10 @@ export default function Katex({
         ],
       });
     }
-  }, [ref]);
+  }, [ref, ref.current, children]);
   return (
     <span
+      data-type="Katex"
       ref={ref}
       className={className}
       dangerouslySetInnerHTML={{ __html: children }}

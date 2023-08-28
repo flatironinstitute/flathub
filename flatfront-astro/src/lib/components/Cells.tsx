@@ -13,8 +13,8 @@ import clsx from "clsx";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as d3 from "d3";
 import { Cross1Icon } from "@radix-ui/react-icons";
-import { Select } from "../shared";
-import { FieldCardWrapper, QueryParameter } from "./FieldCard";
+import { Select, useQueryObserver } from "../shared";
+import { QueryParameter } from "./FieldCard";
 
 import {
   BigButton,
@@ -26,10 +26,13 @@ import {
   log,
   Providers,
   get_field_id,
+  CellSection,
+  PendingBox,
 } from "../shared";
 import * as stores from "../stores";
 import Table from "./Table";
 import { FieldCard, FilterCard } from "./FieldCard";
+import PlotSections from "./PlotSections";
 
 export default function Cells() {
   const cells = hooks.useStore(stores.cells);
@@ -254,7 +257,7 @@ function TableSections() {
         <ColumnsDialog />
       </CellSection>
       <CellSection label="query parameters">
-        <QueryParameters />
+        <QueryParameter label="Rows" field_id="count" min={10} max={200} />
       </CellSection>
       <CellSection label="fetch">
         <BigButton onClick={() => fetch_data()}>
@@ -287,25 +290,6 @@ function ColumnsDialog() {
     <FieldsDialog label="Select Columns">
       <div className="space-y-4">{column_cards}</div>
     </FieldsDialog>
-  );
-}
-
-function QueryParameters() {
-  return (
-    <>
-      <QueryParameter field_id="count" min={10} max={200} />
-    </>
-  );
-}
-
-function PlotSections() {
-  return (
-    <>
-      <CellSection label="plot type"></CellSection>
-      <CellSection label="variables"></CellSection>
-      <CellSection label="query parameters"></CellSection>
-      <CellSection label="plot"></CellSection>
-    </>
   );
 }
 
@@ -358,7 +342,7 @@ function CellFiltersSection() {
       <FieldsDialog label="Select Filters">
         <div className="space-y-4">{all_field_cards}</div>
       </FieldsDialog>
-      <FieldsDialog label="Update Filters">
+      <FieldsDialog label="Update Filters" className="desktop:hidden">
         <FiltersList />
       </FieldsDialog>
       <div className="hidden desktop:block">
@@ -459,27 +443,20 @@ function CellColumnsSection() {
   );
 }
 
-function useQueryObserver<T>(observer: QueryObserver<T> | null) {
-  const [value, set_value] = React.useState(observer?.getCurrentResult());
-  React.useEffect(() => {
-    if (!observer) return;
-    set_value(observer.getCurrentResult());
-    const unsubscribe = observer.subscribe(set_value);
-    return unsubscribe;
-  }, [observer]);
-  return value;
-}
-
 function FieldsDialog({
   label,
   children,
+  className,
 }: {
   label: string;
   children: React.ReactNode;
+  className?: string;
 }): React.JSX.Element {
   return (
     <Dialog.Root>
-      <Dialog.Trigger className={BigButton.className}>{label}</Dialog.Trigger>
+      <Dialog.Trigger className={clsx(BigButton.className, className)}>
+        {label}
+      </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-20 bg-black/50" />
         <Dialog.Content
@@ -516,64 +493,5 @@ function FieldsDialog({
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
-  );
-}
-
-function PendingBox({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="h-40 rounded-lg p-4 outline-2 outline-dashed outline-slate-700 dark:outline-slate-50 grid place-items-center opacity-50">
-      {children}
-    </div>
-  );
-}
-
-function CellTitle({
-  children,
-  subtitle,
-}: {
-  children: React.ReactNode;
-  subtitle?: React.ReactNode;
-}): React.JSX.Element {
-  return (
-    <div>
-      <div className="text-2xl font-bold">{children}</div>
-      {subtitle && <div className="text-slate-400">{subtitle}</div>}
-    </div>
-  );
-}
-
-function CellSection({
-  label,
-  children = null,
-  className,
-}: {
-  label?: string;
-  children?: React.ReactNode;
-  className?: string;
-}): React.JSX.Element {
-  return (
-    <div className={clsx(`flex flex-col`, className)}>
-      {label && <SimpleLabel className="mb-4">{label}</SimpleLabel>}
-      {children}
-    </div>
-  );
-}
-
-function SimpleLabel({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}): React.JSX.Element {
-  return (
-    <div
-      className={clsx(
-        `text-slate-400 dark:text-slate-400 uppercase text-sm`,
-        className
-      )}
-    >
-      {children}
-    </div>
   );
 }
