@@ -211,6 +211,8 @@ fields:
       flag: hidden
   - ingest: _subhalo:type GroupID FoF_NumOfSubhalos Subhalo_GroupID
     name: Subhalo
+    condition:
+      type: true
     sub:
     - descr: Co-moving position of the centre of mass.
       name: CentreOfMass
