@@ -2,7 +2,7 @@ import type {
   DataRequestBody,
   DataResponse,
   TopResponseEntry,
-  Actions,
+  Actions
 } from "../types";
 import type { QueryObserver } from "@tanstack/query-core";
 
@@ -27,7 +27,7 @@ import {
   Providers,
   get_field_id,
   CellSection,
-  PendingBox,
+  PendingBox
 } from "../shared";
 import * as stores from "../stores";
 import Table from "./Table";
@@ -70,35 +70,45 @@ export default function Cells() {
 function GenericCell() {
   const cell_id = hooks.useCell().cell_id;
 
+  // const catalog_id = hooks.useStore(stores.catalog_id_by_cell_id).get(cell_id);
+  // const cell_type = hooks.useStore(stores.cell_type_by_cell_id).get(cell_id);
+
+  // const main_section =
+
+  //   <div className="desktop:col-start-3 desktop:col-span-4">
+  //   <CellSubSections />
+  // </div>
+
   return (
     <CellWrapper className="desktop:grid-cols-6">
-      <div className="text-slate-400 desktop:col-span-6">{cell_id}</div>
-      <CellSection label="catalog" className="desktop:col-span-3">
+      <CellSection label="catalog" className="desktop:col-span-2">
         <CatalogSelect />
-      </CellSection>
-      <CellSection label="type" className="desktop:col-span-3">
-        <CellTypeSelect />
       </CellSection>
       <CellSection
         label="filters"
-        className="desktop:col-start-1 desktop:col-span-2"
+        className="desktop:col-span-2 desktop:col-start-1"
       >
         <CellFiltersSection />
       </CellSection>
-      <div className="desktop:col-start-3 desktop:col-span-4">
-        <CellSubSections />
-      </div>
+      <CellSection
+        label="results"
+        className="desktop:col-span-4 desktop:col-start-3"
+      >
+        <CellResultsSection />
+      </CellSection>
     </CellWrapper>
   );
 }
 
 function CatalogSelect() {
   const cell_id = hooks.useCell().cell_id;
-  const catalog_id = hooks
-    .useStore(stores.actions_by_cell_id)
-    .get(cell_id)
-    .filter((d): d is Actions[`SetCatalog`] => d.type === `set_catalog`)
-    .at(-1)?.catalog_id;
+  const catalog_id = hooks.useStore(stores.catalog_id_by_cell_id).get(cell_id);
+
+  // const catalog_id = hooks
+  //   .useStore(stores.actions_by_cell_id)
+  //   .get(cell_id)
+  //   .filter((d): d is Actions[`SetCatalog`] => d.type === `set_catalog`)
+  //   .at(-1)?.catalog_id;
   const get_title = (d: TopResponseEntry) => d?.title;
   const catalog_list_unsorted = hooks.useStore(stores.top_response).data ?? [];
   const ready = catalog_list_unsorted.length > 0;
@@ -117,157 +127,134 @@ function CatalogSelect() {
           dispatch_action({
             type: `set_catalog`,
             cell_id,
-            catalog_id: d?.name,
+            catalog_id: d?.name
           } as Actions[`SetCatalog`]);
           // set_selected(d);
         }}
-        buttonClassName="bg-light-3 dark:bg-dark-3"
-        optionsClassName="bg-light-3 dark:bg-dark-3"
-        optionClassName="ui-active:bg-light-4 dark:ui-active:bg-dark-4"
       />
     </div>
   );
 }
 
-function CellTypeSelect() {
+function CellResultsSection() {
   const cell_id = hooks.useCell().cell_id;
-  const cell_type = hooks
-    .useStore(stores.actions_by_cell_id)
-    .get(cell_id)
-    .filter((d): d is Actions[`SetCellType`] => d.type === `set_cell_type`)
-    .at(-1)?.cell_type;
-  return (
-    <div data-type="CatalogSelect">
-      <Select
-        placeholder={`Select a cell type...`}
-        options={[`table`, `plot`]}
-        value={cell_type}
-        getDisplayName={(d) => {
-          switch (d) {
-            case `table`:
-              return `Table`;
-            case `plot`:
-              return `Plot`;
-          }
-        }}
-        onValueChange={(d) => {
-          dispatch_action({
-            type: `set_cell_type`,
-            cell_id,
-            cell_type: d,
-          } as Actions[`SetCellType`]);
-        }}
-        buttonClassName="bg-light-3 dark:bg-dark-3"
-        optionsClassName="bg-light-3 dark:bg-dark-3"
-        optionClassName="ui-active:bg-light-4 dark:ui-active:bg-dark-4"
-      />
-    </div>
-  );
-}
 
-function CellSubSections() {
-  const cell_id = hooks.useCell().cell_id;
-  const cell_type = hooks.useStore(stores.cell_type_by_cell_id).get(cell_id);
-
-  const placeholder = <PendingBox>Select a cell type...</PendingBox>;
-
-  const component = (() => {
-    switch (cell_type) {
-      case `table`:
-        return <TableSections />;
-      case `plot`:
-        return <PlotSections />;
-      default:
-        return placeholder;
-    }
-  })();
-
-  return <div className="desktop:col-start-2">{component}</div>;
-}
-
-function TableSections() {
-  const cell_id = hooks.useCell().cell_id;
-  const catalog_id = hooks.useStore(stores.catalog_id_by_cell_id).get(cell_id);
-
-  const column_ids_set = hooks
-    .useStore(stores.column_ids_by_cell_id)
-    .get(cell_id);
-
-  const filters = hooks.useStore(stores.filters_by_cell_id).get(cell_id);
-
-  const query_parameters = hooks
-    .useStore(stores.query_parameters_by_cell_id)
-    .get(cell_id);
-
-  const request_body: DataRequestBody = {
-    object: true,
-    count: 100,
-    fields: Array.from(column_ids_set),
-    ...filters,
-    ...query_parameters,
-  };
-
-  const query_config = {
-    path: `/${catalog_id}/data`,
-    body: request_body,
-  };
-
-  const [data_query_observer, set_data_query_observer] =
-    React.useState<QueryObserver<DataResponse> | null>(null);
-
-  const fetch_data = React.useCallback(() => {
-    const observer = create_query_observer<DataResponse>({
-      staleTime: Infinity,
-      queryKey: [`data`, query_config],
-      queryFn: async (): Promise<DataResponse> => {
-        return fetch_api_post<DataResponse>(
-          query_config.path,
-          query_config.body
-        ).then((response) => {
-          log(`query response`, response);
-          return response;
-        });
-      },
-    });
-    set_data_query_observer(observer);
-  }, [query_config]);
-
-  const data_query = useQueryObserver(data_query_observer);
-
-  const catalog_hierarchy = hooks
-    .useStore(stores.catalog_metadata_wrapper_by_catalog_id)
-    .get(catalog_id)?.hierarchy;
-
-  const fetching = data_query?.isFetching;
-  const data = data_query?.data ?? null;
-  const has_data = data?.length && data?.length > 0;
-  const is_ready = has_data && catalog_hierarchy;
-
-  const table_component = (() => {
-    if (!is_ready) {
-      const status_message = fetching ? `Loading Data...` : `No Data Loaded`;
-      return <PendingBox>{status_message}</PendingBox>;
-    }
-    return <Table data={data} catalog_field_hierarchy={catalog_hierarchy} />;
-  })();
-
-  return (
+  const placeholder = (
     <div className="space-y-4">
-      <CellSection label="columns">
-        <ColumnsDialog />
-      </CellSection>
-      <CellSection label="query parameters">
-        <QueryParameter label="Rows" field_id="count" min={10} max={200} />
-      </CellSection>
-      <CellSection label="fetch">
-        <BigButton onClick={() => fetch_data()}>
-          {fetching ? `Fetching Data...` : `Fetch Data`}
-        </BigButton>
-      </CellSection>
-      <CellSection label="table">{table_component}</CellSection>
+      <BigButton
+        className="w-full"
+        onClick={() => {
+          // dispatch_action({
+          //   type: `add_result`,
+          //   cell_id,
+          //   result_type: `table`
+          // });
+        }}
+      >
+        Add a Table
+      </BigButton>
+      <BigButton className="w-full">Add a Plot</BigButton>
+      <BigButton className="w-full">Add Python</BigButton>
     </div>
   );
+
+  // const component = (() => {
+  //   switch (cell_type) {
+  //     case `table`:
+  //       return <TableSections />;
+  //     case `plot`:
+  //       return <PlotSections />;
+  //     default:
+  //       return placeholder;
+  //   }
+  // })();
+
+  return <div className="desktop:col-start-2">{placeholder}</div>;
 }
+
+// function TableSections() {
+//   const cell_id = hooks.useCell().cell_id;
+//   const catalog_id = hooks.useStore(stores.catalog_id_by_cell_id).get(cell_id);
+
+//   const column_ids_set = hooks
+//     .useStore(stores.column_ids_by_cell_id)
+//     .get(cell_id);
+
+//   const filters = hooks.useStore(stores.filters_by_cell_id).get(cell_id);
+
+//   const query_parameters = hooks
+//     .useStore(stores.query_parameters_by_cell_id)
+//     .get(cell_id);
+
+//   const request_body: DataRequestBody = {
+//     object: true,
+//     count: 100,
+//     fields: Array.from(column_ids_set),
+//     ...filters,
+//     ...query_parameters
+//   };
+
+//   const query_config = {
+//     path: `/${catalog_id}/data`,
+//     body: request_body
+//   };
+
+//   const [data_query_observer, set_data_query_observer] =
+//     React.useState<QueryObserver<DataResponse> | null>(null);
+
+//   const fetch_data = React.useCallback(() => {
+//     const observer = create_query_observer<DataResponse>({
+//       staleTime: Infinity,
+//       queryKey: [`data`, query_config],
+//       queryFn: async (): Promise<DataResponse> => {
+//         return fetch_api_post<DataResponse>(
+//           query_config.path,
+//           query_config.body
+//         ).then((response) => {
+//           log(`query response`, response);
+//           return response;
+//         });
+//       }
+//     });
+//     set_data_query_observer(observer);
+//   }, [query_config]);
+
+//   const data_query = useQueryObserver(data_query_observer);
+
+//   const catalog_hierarchy = hooks
+//     .useStore(stores.catalog_metadata_wrapper_by_catalog_id)
+//     .get(catalog_id)?.hierarchy;
+
+//   const fetching = data_query?.isFetching;
+//   const data = data_query?.data ?? null;
+//   const has_data = data?.length && data?.length > 0;
+//   const is_ready = has_data && catalog_hierarchy;
+
+//   const table_component = (() => {
+//     if (!is_ready) {
+//       const status_message = fetching ? `Loading Data...` : `No Data Loaded`;
+//       return <PendingBox>{status_message}</PendingBox>;
+//     }
+//     return <Table data={data} catalog_field_hierarchy={catalog_hierarchy} />;
+//   })();
+
+//   return (
+//     <div className="space-y-4">
+//       <CellSection label="columns">
+//         <ColumnsDialog />
+//       </CellSection>
+//       <CellSection label="query parameters">
+//         <QueryParameter label="Rows" field_id="count" min={10} max={200} />
+//       </CellSection>
+//       <CellSection label="fetch">
+//         <BigButton onClick={() => fetch_data()}>
+//           {fetching ? `Fetching Data...` : `Fetch Data`}
+//         </BigButton>
+//       </CellSection>
+//       <CellSection label="table">{table_component}</CellSection>
+//     </div>
+//   );
+// }
 
 function ColumnsDialog() {
   const cell_id = hooks.useCell().cell_id;
@@ -295,36 +282,14 @@ function ColumnsDialog() {
 
 function CellFiltersSection() {
   const cell_id = hooks.useCell().cell_id;
-  const catalog_id = hooks
-    .useStore(stores.actions_by_cell_id)
-    .get(cell_id)
-    .filter((d): d is Actions[`SetCatalog`] => d.type === `set_catalog`)
-    .at(-1)?.catalog_id;
-  // const filters = hooks.useStore(stores.filters_by_cell_id).get(cell_id);
-  // const catalog_id = hooks.useStore(stores.catalog_id_by_cell_id).get(cell_id);
+
+  const catalog_id = hooks.useStore(stores.catalog_id_by_cell_id).get(cell_id);
+
   const catalog_metadata = hooks
     .useStore(stores.catalog_metadata_wrapper_by_catalog_id)
     .get(catalog_id);
 
-  // const filter_ids_set = new Set(Object.keys(filters));
-
   const all_field_nodes = catalog_metadata?.nodes_array ?? [];
-
-  // const filter_and_ancestor_ids = all_field_nodes
-  //   .filter((d) => !d.data.__is_root)
-  //   .filter((node) => {
-  //     // Include if this node is in the filter list
-  //     if (filter_ids_set.has(get_field_id(node.data))) return true;
-  //     // Include if this node is an ancestor of a node in the filter list
-  //     if (
-  //       node
-  //         .leaves()
-  //         .some((leaf) => filter_ids_set.has(get_field_id(leaf.data)))
-  //     )
-  //       return true;
-  //     return false;
-  //   })
-  //   .map((d) => get_field_id(d.data));
 
   const all_field_cards = all_field_nodes
     .filter((d) => !d.data.__is_root)
@@ -337,8 +302,8 @@ function CellFiltersSection() {
       );
     });
 
-  return (
-    <div className="flex flex-col gap-y-4">
+  const contents = (
+    <>
       <FieldsDialog label="Select Filters">
         <div className="space-y-4">{all_field_cards}</div>
       </FieldsDialog>
@@ -348,6 +313,12 @@ function CellFiltersSection() {
       <div className="hidden desktop:block">
         <FiltersList />
       </div>
+    </>
+  );
+
+  return (
+    <div className="flex flex-col gap-y-4">
+      {catalog_id ? contents : <PendingBox>Select a catalog...</PendingBox>}
     </div>
   );
 }
@@ -378,7 +349,7 @@ function FiltersList() {
     .map((d) => get_field_id(d.data));
 
   return (
-    <div className="space-y-2 text-xs">
+    <div className="space-y-3 text-xs">
       {filter_and_ancestor_ids.map((filter_id) => (
         <Providers.FieldIDProvider key={filter_id} value={filter_id}>
           <FilterCard />
@@ -446,7 +417,7 @@ function CellColumnsSection() {
 function FieldsDialog({
   label,
   children,
-  className,
+  className
 }: {
   label: string;
   children: React.ReactNode;
@@ -462,33 +433,32 @@ function FieldsDialog({
         <Dialog.Content
           className={clsx(
             `fixed z-50 w-[95vw] max-w-3xl rounded-lg p-4`,
-            `top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%]`,
-            `bg-light-2 dark:bg-dark-2`,
+            `left-[50%] top-[50%] -translate-x-[50%] -translate-y-[50%]`,
             `focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75`
           )}
         >
-          <Dialog.Title className="text-sm font-medium text-light-text dark:text-dark-text">
+          {/* <Dialog.Title className="text-sm font-medium">
             All Fields
-          </Dialog.Title>
+          </Dialog.Title> */}
           {/* <div className="h-4" /> */}
           {/* <Dialog.Description /> */}
           <div className="h-4" />
           <input
-            className="w-full bg-light-0 dark:bg-dark-0 rounded-lg text-lg leading-5 py-2 px-3 focus:ring-2 focus:ring-light-4 dark:focus:ring-dark-4 focus:outline-none"
+            className="w-full rounded-lg px-3 py-2 text-lg leading-5 focus:outline-none focus-visible:ring-4 focus-visible:ring-white"
             type="text"
             placeholder="search"
           />
           <div className="h-4" />
-          <div className="h-[600px] overflow-y-scroll overflow-x-visible">
+          <div className="h-[600px] overflow-x-visible overflow-y-scroll">
             {children}
           </div>
           <Dialog.Close
             className={clsx(
-              "absolute top-3.5 right-3.5 inline-flex items-center justify-center rounded-full p-1",
+              "absolute right-3.5 top-3.5 inline-flex items-center justify-center rounded-full p-1",
               "focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75"
             )}
           >
-            <Cross1Icon className="h-4 w-4 text-light-text dark:text-dark-text" />
+            <Cross1Icon className="h-4 w-4" />
           </Dialog.Close>
         </Dialog.Content>
       </Dialog.Portal>

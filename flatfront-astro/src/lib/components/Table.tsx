@@ -69,7 +69,7 @@ export default function Table({
                 }
                 return (
                   <th
-                    className="py-1 px-2 dark:bg-dark-2 border-2 dark:border-dark-5"
+                    className="py-1 px-2 border-2 "
                     key={header.id}
                     colSpan={header.colSpan}
                     rowSpan={row_span}

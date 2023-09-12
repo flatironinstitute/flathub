@@ -10,7 +10,7 @@ import type {
   TopResponse,
   GlobalFilterState,
   Actions,
-  QueryParameters,
+  QueryParameters
 } from "./types";
 import type { QueryObserverResult } from "@tanstack/query-core";
 import type { Readable } from "svelte/store";
@@ -28,7 +28,7 @@ import {
   wrap_catalog_response,
   get_final_filters,
   get_filter_ids,
-  get_column_ids,
+  get_column_ids
 } from "./shared";
 
 export const top_response: Readable<QueryObserverResult<TopResponse>> =
@@ -36,8 +36,7 @@ export const top_response: Readable<QueryObserverResult<TopResponse>> =
     const observer: QueryObserver<TopResponse> = create_query_observer({
       staleTime: Infinity,
       queryKey: ["top"],
-      queryFn: async (): Promise<TopResponse> =>
-        fetch_api_get<TopResponse>(`/`),
+      queryFn: async (): Promise<TopResponse> => fetch_api_get<TopResponse>(`/`)
     });
     const current: QueryObserverResult<TopResponse> =
       observer.getCurrentResult();
@@ -117,7 +116,7 @@ export const cells: Readable<Cell[]> = derived(actions, ($actions) => {
     `remove_catalog_cell`,
     `remove_table_cell`,
     `remove_filter_cell`,
-    `remove_plot_cell`,
+    `remove_plot_cell`
   ];
   // Filter cells to only include those with type in cell_action_types.
   const cell_actions = $actions.filter((action): action is CellAction =>
@@ -148,7 +147,7 @@ export const cells: Readable<Cell[]> = derived(actions, ($actions) => {
             type: `catalog`,
             cell_id: action.cell_id,
             catalog_id: action.catalog_id,
-            parent_cell_id: `root`,
+            parent_cell_id: `root`
           });
           break;
         }
@@ -156,7 +155,7 @@ export const cells: Readable<Cell[]> = derived(actions, ($actions) => {
           cells.push({
             type: `filter`,
             cell_id: action.cell_id,
-            parent_cell_id: action.parent_cell_id,
+            parent_cell_id: action.parent_cell_id
           });
           break;
         }
@@ -164,7 +163,7 @@ export const cells: Readable<Cell[]> = derived(actions, ($actions) => {
           cells.push({
             type: `table`,
             cell_id: action.cell_id,
-            parent_cell_id: action.parent_cell_id,
+            parent_cell_id: action.parent_cell_id
           });
           break;
         }
@@ -172,7 +171,7 @@ export const cells: Readable<Cell[]> = derived(actions, ($actions) => {
           cells.push({
             type: `plot`,
             cell_id: action.cell_id,
-            parent_cell_id: action.parent_cell_id,
+            parent_cell_id: action.parent_cell_id
           });
           break;
         }
@@ -188,7 +187,7 @@ export const cells: Readable<Cell[]> = derived(actions, ($actions) => {
           const cell: Cell = {
             type: `cell`,
             cell_id: action.cell_id,
-            parent_cell_id: `root`,
+            parent_cell_id: `root`
           };
           cells.push(cell);
           break;
@@ -250,24 +249,6 @@ export const catalog_id_by_cell_id: Readable<Map<CellID, string>> = derived(
   new Map<CellID, string>()
 );
 
-export const cell_type_by_cell_id: Readable<Map<CellID, "table" | "plot">> =
-  derived(
-    actions_by_cell_id,
-    ($actions_by_cell_id) => {
-      return new Map<CellID, "table" | "plot">(
-        [...$actions_by_cell_id.entries()].map(([cell_id, actions]) => {
-          const cell_type = actions
-            .filter(
-              (d): d is Actions[`SetCellType`] => d.type === `set_cell_type`
-            )
-            .at(-1)?.cell_type;
-          return [cell_id, cell_type];
-        })
-      );
-    },
-    new Map<CellID, "table" | "plot">()
-  );
-
 export const catalog_metadata_query_observer_by_catalog_id: Readable<
   Map<string, QueryObserver<CatalogResponse>>
 > = derived(
@@ -288,7 +269,7 @@ export const catalog_metadata_query_observer_by_catalog_id: Readable<
           staleTime: Infinity,
           queryKey: ["catalog_metadata", { catalog_id }],
           queryFn: (): Promise<CatalogResponse> =>
-            fetch_api_get<CatalogResponse>(`/${catalog_id}`),
+            fetch_api_get<CatalogResponse>(`/${catalog_id}`)
         });
         next.set(catalog_id, observer);
       }
@@ -305,7 +286,7 @@ export const catalog_metadata_query_by_catalog_id = derived(
       const next = new Map(prev);
       for (const [
         catalog_id,
-        observer,
+        observer
       ] of $catalog_metadata_query_observer_by_catalog_id) {
         if (next.has(catalog_id)) {
           continue;
@@ -351,13 +332,13 @@ export const filters_by_cell_id: Readable<Map<CellID, Filters>> = derived(
     catalog_id_by_cell_id,
     catalog_metadata_wrapper_by_catalog_id,
     actions_by_cell_id,
-    filter_state,
+    filter_state
   ],
   ([
     $catalog_id_by_cell_id,
     $catalog_metadata_wrapper_by_catalog_id,
     $actions_by_cell_id,
-    $filter_state,
+    $filter_state
   ]) => {
     return new Map(
       [...$catalog_id_by_cell_id.entries()].map(([cell_id, catalog_id]) => {
@@ -388,43 +369,43 @@ export const filters_by_cell_id: Readable<Map<CellID, Filters>> = derived(
   new Map<CellID, Filters>()
 );
 
-export const query_parameters_by_cell_id: Readable<
-  Map<CellID, QueryParameters>
-> = derived(
-  [cell_type_by_cell_id, filter_state],
-  ([$cell_type_by_cell_id, $filter_state]) => {
-    return new Map(
-      [...$cell_type_by_cell_id.entries()].map(([cell_id, cell_type]) => {
-        const initial_query_parameters: QueryParameters = {
-          count: cell_type === `table` ? 25 : 2000,
-        };
+// export const query_parameters_by_cell_id: Readable<
+//   Map<CellID, QueryParameters>
+// > = derived(
+//   [cell_type_by_cell_id, filter_state],
+//   ([$cell_type_by_cell_id, $filter_state]) => {
+//     return new Map(
+//       [...$cell_type_by_cell_id.entries()].map(([cell_id, cell_type]) => {
+//         const initial_query_parameters: QueryParameters = {
+//           count: cell_type === `table` ? 25 : 2000
+//         };
 
-        const filter_state = ($filter_state?.[cell_id] ??
-          {}) as QueryParameters;
+//         const filter_state = ($filter_state?.[cell_id] ??
+//           {}) as QueryParameters;
 
-        const filters = get_final_filters<QueryParameters>(
-          initial_query_parameters,
-          filter_state
-        );
+//         const filters = get_final_filters<QueryParameters>(
+//           initial_query_parameters,
+//           filter_state
+//         );
 
-        return [cell_id, filters];
-      })
-    );
-  },
-  new Map<CellID, QueryParameters>()
-);
+//         return [cell_id, filters];
+//       })
+//     );
+//   },
+//   new Map<CellID, QueryParameters>()
+// );
 
 export const column_ids_by_cell_id: Readable<Map<CellID, Set<string>>> =
   derived(
     [
       catalog_id_by_cell_id,
       catalog_metadata_wrapper_by_catalog_id,
-      actions_by_cell_id,
+      actions_by_cell_id
     ],
     ([
       $catalog_id_by_cell_id,
       $catalog_metadata_wrapper_by_catalog_id,
-      $actions_by_cell_id,
+      $actions_by_cell_id
     ]) => {
       return new Map(
         [...$catalog_id_by_cell_id.entries()].map(([cell_id, catalog_id]) => {

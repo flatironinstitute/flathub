@@ -15,9 +15,7 @@ npm run dev
 - [React](https://reactjs.org/)
 - [Astro](https://astro.build/): One of many modern site generators, with support for React, Vue, and Svelte components.
 - [Tailwind CSS](https://tailwindcss.com/): A utility-first CSS framework.
-- [Headless UI](https://headlessui.dev/): A UI component library built by the Tailwind team.
 - [Radix UI](https://www.radix-ui.com/): Another UI component library, compatible with Tailwind.
-- [Heroicons](https://heroicons.com/): SVG icons, also built by the Tailwind team.
 - [TanStack Table](https://tanstack.com/table/v8): A comprehensive table component.
 - [TanStack Query](https://tanstack.com/query/latest): Query management and caching.
 - [d3](https://d3js.org/): A staple of any dataviz project.

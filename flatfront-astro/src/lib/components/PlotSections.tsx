@@ -1,9 +1,4 @@
-import type {
-  DataRequestBody,
-  DataResponse,
-  Actions,
-  FieldMetadata,
-} from "../types";
+import type { DataRequestBody, DataResponse, Actions } from "../types";
 import type { QueryObserver } from "@tanstack/query-core";
 
 import React from "react";
@@ -22,98 +17,84 @@ import {
   log,
   get_field_id,
   CellSection,
-  PendingBox,
+  PendingBox
 } from "../shared";
 import * as stores from "../stores";
-import Katex from "./Katex";
 import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
 
 export default function PlotSections() {
-  const cell_id = hooks.useCell().cell_id;
-  const catalog_id = hooks.useStore(stores.catalog_id_by_cell_id).get(cell_id);
-
-  const filters = hooks.useStore(stores.filters_by_cell_id).get(cell_id);
-
-  const query_parameters = hooks
-    .useStore(stores.query_parameters_by_cell_id)
-    .get(cell_id);
-
-  const plot_state = usePlotState();
-
-  const x_axis_field_id = plot_state?.x_axis;
-  const y_axis_field_id = plot_state?.y_axis;
-
-  const request_body: DataRequestBody = {
-    object: true,
-    fields: [x_axis_field_id, y_axis_field_id],
-    count: query_parameters?.count ?? 2000,
-    ...filters,
-  };
-
-  const query_config = {
-    path: `/${catalog_id}/data`,
-    body: request_body,
-  };
-
-  const [data_query_observer, set_data_query_observer] =
-    React.useState<QueryObserver<DataResponse> | null>(null);
-
-  const fetch_data = React.useCallback(() => {
-    const observer = create_query_observer<DataResponse>({
-      staleTime: Infinity,
-      queryKey: [`data`, query_config],
-      queryFn: async (): Promise<DataResponse> => {
-        return fetch_api_post<DataResponse>(
-          query_config.path,
-          query_config.body
-        ).then((response) => {
-          log(`query response`, response);
-          return response;
-        });
-      },
-    });
-    set_data_query_observer(observer);
-  }, [query_config]);
-
-  const data_query = useQueryObserver(data_query_observer);
-
-  const catalog_hierarchy = hooks
-    .useStore(stores.catalog_metadata_wrapper_by_catalog_id)
-    .get(catalog_id)?.hierarchy;
-
-  const fetching = data_query?.isFetching;
-  const data = data_query?.data ?? null;
-  const has_data = data?.length && data?.length > 0;
-  const is_ready = has_data && catalog_hierarchy;
-
-  const plot_component = (() => {
-    if (!is_ready) {
-      const status_message = fetching ? `Loading Data...` : `No Data Loaded`;
-      return <PendingBox>{status_message}</PendingBox>;
-    }
-    return <Plot data={data} />;
-  })();
-
-  return (
-    <div className="space-y-4">
-      <CellSection label="plot type">
-        <PlotTypeSelect />
-      </CellSection>
-      <CellSection label="variables">
-        <PlotVariables />
-      </CellSection>
-      <CellSection label="query parameters">
-        <PlotQueryParameters />
-      </CellSection>
-      <CellSection label="fetch">
-        <BigButton onClick={() => fetch_data()}>
-          {fetching ? `Fetching Data...` : `Fetch Data`}
-        </BigButton>
-      </CellSection>
-      <CellSection label="plot">{plot_component}</CellSection>
-    </div>
-  );
+  // const cell_id = hooks.useCell().cell_id;
+  // const catalog_id = hooks.useStore(stores.catalog_id_by_cell_id).get(cell_id);
+  // const filters = hooks.useStore(stores.filters_by_cell_id).get(cell_id);
+  // const query_parameters = hooks
+  //   .useStore(stores.query_parameters_by_result_id)
+  //   .get(cell_id);
+  // const plot_state = usePlotState();
+  // const x_axis_field_id = plot_state?.x_axis;
+  // const y_axis_field_id = plot_state?.y_axis;
+  // const request_body: DataRequestBody = {
+  //   object: true,
+  //   fields: [x_axis_field_id, y_axis_field_id],
+  //   count: query_parameters?.count ?? 2000,
+  //   ...filters
+  // };
+  // const query_config = {
+  //   path: `/${catalog_id}/data`,
+  //   body: request_body
+  // };
+  // const [data_query_observer, set_data_query_observer] =
+  //   React.useState<QueryObserver<DataResponse> | null>(null);
+  // const fetch_data = React.useCallback(() => {
+  //   const observer = create_query_observer<DataResponse>({
+  //     staleTime: Infinity,
+  //     queryKey: [`data`, query_config],
+  //     queryFn: async (): Promise<DataResponse> => {
+  //       return fetch_api_post<DataResponse>(
+  //         query_config.path,
+  //         query_config.body
+  //       ).then((response) => {
+  //         log(`query response`, response);
+  //         return response;
+  //       });
+  //     }
+  //   });
+  //   set_data_query_observer(observer);
+  // }, [query_config]);
+  // const data_query = useQueryObserver(data_query_observer);
+  // const catalog_hierarchy = hooks
+  //   .useStore(stores.catalog_metadata_wrapper_by_catalog_id)
+  //   .get(catalog_id)?.hierarchy;
+  // const fetching = data_query?.isFetching;
+  // const data = data_query?.data ?? null;
+  // const has_data = data?.length && data?.length > 0;
+  // const is_ready = has_data && catalog_hierarchy;
+  // const plot_component = (() => {
+  //   if (!is_ready) {
+  //     const status_message = fetching ? `Loading Data...` : `No Data Loaded`;
+  //     return <PendingBox>{status_message}</PendingBox>;
+  //   }
+  //   return <Plot data={data} />;
+  // })();
+  // return (
+  //   <div className="space-y-4">
+  //     <CellSection label="plot type">
+  //       <PlotTypeSelect />
+  //     </CellSection>
+  //     <CellSection label="variables">
+  //       <PlotVariables />
+  //     </CellSection>
+  //     <CellSection label="query parameters">
+  //       <PlotQueryParameters />
+  //     </CellSection>
+  //     <CellSection label="fetch">
+  //       <BigButton onClick={() => fetch_data()}>
+  //         {fetching ? `Fetching Data...` : `Fetch Data`}
+  //       </BigButton>
+  //     </CellSection>
+  //     <CellSection label="plot">{plot_component}</CellSection>
+  //   </div>
+  // );
 }
 
 function PlotTypeSelect() {
@@ -141,12 +122,9 @@ function PlotTypeSelect() {
           dispatch_action({
             type: `set_plot_type`,
             cell_id,
-            plot_type: d,
+            plot_type: d
           } as Actions[`SetPlotType`]);
         }}
-        buttonClassName="bg-light-3 dark:bg-dark-3"
-        optionsClassName="bg-light-3 dark:bg-dark-3"
-        optionClassName="ui-active:bg-light-4 dark:ui-active:bg-dark-4"
       />
     </div>
   );
@@ -176,14 +154,14 @@ function PlotVariable({ label, plot_key }) {
       action.type === `set_plot_control` && action.cell_id === cell_id
   );
 
-  const field_id = plot_control_actions
-    .filter((d) => d.key === plot_key)
-    .at(-1)?.value;
+  const field_id = plot_control_actions.filter((d) => d.key === plot_key).at(-1)
+    ?.value;
 
   const value = field_nodes.find((d) => get_field_id(d.data) === field_id);
 
   return (
     <div
+      data-type="PlotVariable"
       className={clsx(
         FieldCardWrapper.className,
         `grid gap-x-4 desktop:grid-cols-[10ch_1fr_1fr] desktop:items-center`
@@ -201,12 +179,9 @@ function PlotVariable({ label, plot_key }) {
             type: `set_plot_control`,
             cell_id,
             key: plot_key,
-            value: get_field_id(node.data),
+            value: get_field_id(node.data)
           });
         }}
-        buttonClassName="bg-light-2 dark:bg-dark-2"
-        optionsClassName="bg-light-2 dark:bg-dark-2"
-        optionClassName="ui-active:bg-light-3 dark:ui-active:bg-dark-3"
       />
     </div>
   );
@@ -219,19 +194,22 @@ function usePlotState() {
     (action): action is Actions[`SetPlotControl`] =>
       action.type === `set_plot_control` && action.cell_id === cell_id
   );
-  const plot_state = plot_control_actions.reduce((state, action) => {
-    return { ...state, [action.key]: action.value };
-  }, {} as { [key: string]: string });
+  const plot_state = plot_control_actions.reduce(
+    (state, action) => {
+      return { ...state, [action.key]: action.value };
+    },
+    {} as { [key: string]: string }
+  );
   return plot_state;
 }
 
-function PlotQueryParameters() {
-  return (
-    <>
-      <QueryParameter label="Count" field_id="count" min={10} max={10_000} />
-    </>
-  );
-}
+// function PlotQueryParameters() {
+//   return (
+//     <>
+//       <QueryParameter label="Count" field_id="count" min={10} max={10_000} />
+//     </>
+//   );
+// }
 
 function Plot({ data }) {
   const plot_state = usePlotState();
@@ -250,25 +228,25 @@ function Plot({ data }) {
   const options: Highcharts.Options = {
     chart: {
       animation: false,
-      styledMode: true,
+      styledMode: true
     },
     xAxis: {
       title: {
-        text: x_axis_field_id,
-      },
+        text: x_axis_field_id
+      }
     },
     yAxis: {
       title: {
-        text: y_axis_field_id,
-      },
+        text: y_axis_field_id
+      }
     },
     series: [
       {
         type: "scatter",
         animation: false,
-        data: data_munged,
-      },
-    ],
+        data: data_munged
+      }
+    ]
   };
 
   return (

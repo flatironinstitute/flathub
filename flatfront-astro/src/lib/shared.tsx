@@ -1,8 +1,5 @@
 import type { Readable } from "svelte/store";
-import type {
-  QueryObserverResult,
-  QueryObserverOptions,
-} from "@tanstack/query-core";
+import type { QueryObserverOptions } from "@tanstack/query-core";
 import type {
   Action,
   Cell,
@@ -18,16 +15,16 @@ import type {
   FieldMetadata,
   CatalogResponse,
   ColumnListAction,
-  FilterListAction,
+  FilterListAction
 } from "./types";
 
 import React from "react";
 import * as d3 from "d3";
 import clsx from "clsx";
 import { get } from "svelte/store";
-import { ChevronDownIcon } from "@radix-ui/react-icons";
+import * as RadixIcons from "@radix-ui/react-icons";
+import * as RadixSelect from "@radix-ui/react-select";
 import { produce } from "immer";
-import { Listbox } from "@headlessui/react";
 import { QueryClient, QueryObserver } from "@tanstack/query-core";
 import * as stores from "./stores";
 import Katex from "./components/Katex";
@@ -45,7 +42,7 @@ export const Providers = {
   CellProvider,
   PlotIDProvider,
   FieldIDProvider,
-  DataProvider,
+  DataProvider
 };
 
 export const hooks = {
@@ -53,7 +50,7 @@ export const hooks = {
   useCell,
   usePlotID,
   useFieldID,
-  useData,
+  useData
 };
 
 export function get_catalog_hierarchy(metadata: CatalogResponse) {
@@ -61,7 +58,7 @@ export function get_catalog_hierarchy(metadata: CatalogResponse) {
   const root = {
     sub: catalog_fields_raw,
     __is_root: true,
-    __id: `root`,
+    __id: `root`
   } as FieldMetadata;
   const hierarchy: d3.HierarchyNode<FieldMetadata> =
     d3.hierarchy<FieldMetadata>(root, (d) => d?.sub ?? []);
@@ -199,7 +196,7 @@ export function get_initial_cell_filters(
           }
           return {
             gte: metadata.stats.min,
-            lte: metadata.stats.max,
+            lte: metadata.stats.max
           };
         } else {
           return `unknown`;
@@ -233,7 +230,7 @@ export const format = {
   },
   commas: (d) => {
     return d3.format(`,`)(d);
-  },
+  }
 };
 
 export function get_field_id(metadata: FieldMetadata): string {
@@ -346,94 +343,17 @@ export function useStore<T>(store: Readable<T>) {
   return state;
 }
 
-export function LabeledSelect<T>({
-  button,
-  buttonText,
-  onClick,
-  disabled,
-  ...select_props
-}: {
-  button?: boolean;
-  buttonText?: string;
-  onClick?: () => void;
-} & Parameters<typeof Select<T>>[0]): React.JSX.Element {
-  return (
-    <div className="grid gap-x-4 gap-y-2 items-center grid-cols-1 md:grid-cols-[max-content_1fr_max-content]">
-      <Select {...select_props} disabled={disabled} />
-      {button && (
-        <button
-          className="bg-light-3 dark:bg-dark-3 px-4 py-2 rounded-lg disabled:opacity-50"
-          onClick={onClick}
-          disabled={disabled}
-        >
-          {buttonText}
-        </button>
-      )}
-    </div>
-  );
-}
-
-// function Select({
-//   label,
-//   placeholder,
-//   options,
-//   value = undefined,
-//   onValueChange = undefined,
-// }: {
-//   label: string;
-//   placeholder: SelectValueProps["placeholder"];
-//   options: string[];
-//   value?: SelectProps["value"];
-//   onValueChange?: SelectProps["onValueChange"];
-// }): React.JSX.Element {
-//   return (
-//     <SelectPrimitive.Root value={value} onValueChange={onValueChange}>
-//       <SelectPrimitive.Trigger
-//         aria-label={label}
-//         className="bg-light-2 dark:bg-dark-2 rounded-lg py-2"
-//       >
-//         <SelectPrimitive.Value placeholder={placeholder} aria-label={label}>
-//           {value}
-//         </SelectPrimitive.Value>
-//       </SelectPrimitive.Trigger>
-//       <SelectPrimitive.Portal>
-//         <SelectPrimitive.Content position="popper">
-//           <SelectPrimitive.Viewport className="bg-light-3 dark:bg-dark-3 p-2 rounded-lg shadow-lg">
-//             {options.map((option) => {
-//               return (
-//                 <SelectPrimitive.Item
-//                   value={option}
-//                   key={option}
-//                   className={clsx(
-//                     `relative flex items-center`,
-//                     `px-4 py-2 rounded-md`,
-//                     `text-sm text-light-text dark:text-dark-text font-medium`,
-//                     `focus:bg-light-0 dark:focus:bg-dark-0 focus:outline-none select-none`
-//                   )}
-//                 >
-//                   <SelectPrimitive.ItemText>{option}</SelectPrimitive.ItemText>
-//                 </SelectPrimitive.Item>
-//               );
-//             })}
-//           </SelectPrimitive.Viewport>
-//         </SelectPrimitive.Content>
-//       </SelectPrimitive.Portal>
-//     </SelectPrimitive.Root>
-//   );
-// }
-
 export function Select<T>({
-  label,
   placeholder,
   options,
-  getKey = (d) => d.toString(),
+  getKey = (d) => d?.toString(),
   getDisplayName = (d) => d?.toString(),
   disabled = false,
   value = undefined,
   onValueChange = undefined,
   buttonClassName,
   optionsClassName,
-  optionClassName,
+  optionClassName
 }: {
   label?: string;
   placeholder?: string;
@@ -448,81 +368,211 @@ export function Select<T>({
   optionClassName?: string;
 }) {
   return (
-    <Listbox
-      value={value ?? ({} as T)}
-      onChange={onValueChange}
+    <RadixSelect.Root
+      data-type="Select"
       disabled={disabled}
+      value={value ? getKey(value) : undefined}
+      onValueChange={(key) => {
+        const option = options.find((option) => getKey(option) === key);
+        if (option === undefined) {
+          throw new Error(`Could not find option for key: ${key}`);
+        }
+        onValueChange?.(option);
+      }}
     >
-      {label && <Listbox.Label>{label}</Listbox.Label>}
-      <div className="relative">
-        <Listbox.Button
-          className={clsx(
-            `relative w-full cursor-pointer rounded-md shadow-md`,
-            `py-2 pl-3 pr-10 text-left disabled:opacity-50 disabled:cursor-wait`,
-            buttonClassName
-          )}
-        >
-          <span className="block whitespace-nowrap">
-            {value ? getDisplayName(value) : placeholder}
-          </span>
-          <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-            <ChevronDownIcon className="h-5 w-5 " aria-hidden="true" />
-          </span>
-        </Listbox.Button>
-        <Listbox.Options
-          className={clsx(
-            `absolute z-50 w-full mt-1 py-1 shadow-lg overflow-auto rounded-md`,
-            optionsClassName
-          )}
-        >
-          {options.map((option) => (
-            <Listbox.Option
-              key={getKey(option)}
-              value={option}
-              className={clsx(
-                `relative cursor-pointer select-none py-2 pl-3 pr-4 whitespace-nowrap`,
-                optionClassName
-              )}
-            >
-              {getDisplayName(option)}
-            </Listbox.Option>
-          ))}
-        </Listbox.Options>
-      </div>
-    </Listbox>
+      <RadixSelect.Trigger
+        className={clsx(
+          `relative flex w-full items-center justify-between`,
+          `cursor-pointer py-2 pl-3 pr-4 text-left`,
+          `disabled:cursor-wait disabled:opacity-50`,
+          `rounded-md ring-1 ring-black dark:ring-white`,
+          `focus:outline-none focus-visible:ring-4`
+        )}
+      >
+        <RadixSelect.Value placeholder={placeholder}></RadixSelect.Value>
+        <RadixSelect.Icon>
+          <RadixIcons.ChevronDownIcon className="h-6 w-6" />
+        </RadixSelect.Icon>
+      </RadixSelect.Trigger>
+      <RadixSelect.Portal>
+        <RadixSelect.Content position="popper" sideOffset={10}>
+          <RadixSelect.Viewport
+            className={clsx(
+              `w-[var(--radix-select-trigger-width)] rounded-lg`,
+              `bg-white shadow-2xl dark:bg-black`,
+              `ring-1 ring-black dark:ring-white`
+            )}
+          >
+            {options.map((option) => {
+              const key = getKey(option);
+              return (
+                <RadixSelect.Item
+                  key={key}
+                  value={key}
+                  className={clsx(
+                    `cursor-pointer select-none focus:outline-none`,
+                    `py-2 pl-3`,
+                    `focus:bg-black/10 dark:focus:bg-white/40`
+                  )}
+                >
+                  <RadixSelect.ItemText>
+                    {getDisplayName(option)}
+                  </RadixSelect.ItemText>
+                </RadixSelect.Item>
+              );
+            })}
+          </RadixSelect.Viewport>
+        </RadixSelect.Content>
+      </RadixSelect.Portal>
+    </RadixSelect.Root>
   );
 }
+
+// <Select.Root>
+// <Select.Trigger>
+//   <Select.Value />
+//   <Select.Icon />
+// </Select.Trigger>
+
+// <Select.Portal>
+//   <Select.Content>
+//     <Select.ScrollUpButton />
+//     <Select.Viewport>
+//       <Select.Item>
+//         <Select.ItemText />
+//         <Select.ItemIndicator />
+//       </Select.Item>
+
+//       <Select.Group>
+//         <Select.Label />
+//         <Select.Item>
+//           <Select.ItemText />
+//           <Select.ItemIndicator />
+//         </Select.Item>
+//       </Select.Group>
+
+//       <Select.Separator />
+//     </Select.Viewport>
+//     <Select.ScrollDownButton />
+//     <Select.Arrow />
+//   </Select.Content>
+// </Select.Portal>
+// </Select.Root>
+
+// export function Select_old<T>({
+//   label,
+//   placeholder,
+//   options,
+//   getKey = (d) => d.toString(),
+//   getDisplayName = (d) => d?.toString(),
+//   disabled = false,
+//   value = undefined,
+//   onValueChange = undefined,
+//   buttonClassName,
+//   optionsClassName,
+//   optionClassName
+// }: {
+//   label?: string;
+//   placeholder?: string;
+//   options: T[];
+//   getKey?: (option: T) => string;
+//   getDisplayName?: (option: T) => React.ReactNode;
+//   disabled?: boolean;
+//   value?: T;
+//   onValueChange?: (value: T) => void;
+//   buttonClassName?: string;
+//   optionsClassName?: string;
+//   optionClassName?: string;
+// }) {
+//   return (
+//     <Listbox
+//       value={value ?? ({} as T)}
+//       onChange={onValueChange}
+//       disabled={disabled}
+//     >
+//       {label && <Listbox.Label>{label}</Listbox.Label>}
+//       <div className="relative">
+//         <Listbox.Button
+//           className={clsx(
+//             `relative w-full cursor-pointer rounded-md`,
+//             `py-2 pl-3 pr-10 text-left disabled:cursor-wait disabled:opacity-50`,
+//             buttonClassName
+//           )}
+//         >
+//           <span className="block whitespace-nowrap">
+//             {value ? getDisplayName(value) : placeholder}
+//           </span>
+//           <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+//             <RadixIcons.ChevronDownIcon
+//               className="h-5 w-5 "
+//               aria-hidden="true"
+//             />
+//           </span>
+//         </Listbox.Button>
+//         <Listbox.Options
+//           className={clsx(
+//             `absolute z-50 mt-1 w-full overflow-auto rounded-md py-1`,
+//             optionsClassName
+//           )}
+//         >
+//           {options.map((option) => (
+//             <Listbox.Option
+//               key={getKey(option)}
+//               value={option}
+//               className={clsx(
+//                 `relative cursor-pointer select-none whitespace-nowrap py-2 pl-3 pr-4`,
+//                 optionClassName
+//               )}
+//             >
+//               {getDisplayName(option)}
+//             </Listbox.Option>
+//           ))}
+//         </Listbox.Options>
+//       </div>
+//     </Listbox>
+//   );
+// }
 
 export function BigButton({
   children,
   onClick,
+  className
 }: {
   children: React.ReactNode;
   onClick?: () => void;
+  className?: string;
 }): React.JSX.Element {
   return (
-    <button className={BigButton.className} onClick={onClick}>
+    <button
+      data-type="BigButton"
+      className={clsx(BigButton.className, className)}
+      onClick={onClick}
+    >
       {children}
     </button>
   );
 }
 
-BigButton.className =
-  "block bg-light-4 dark:bg-dark-4 rounded-lg py-4 text-white font-bold text-xl";
+BigButton.className = clsx(
+  `block rounded-lg py-4 font-bold text-xl`,
+  `ring-1 ring-black dark:ring-white`,
+  `focus:outline-none focus-visible:ring-4`
+);
 
 export function CellWrapper({
   children,
-  className,
+  className
 }: {
   children: React.ReactNode;
   className?: string;
 }): React.JSX.Element {
   return (
     <div
+      data-type="CellWrapper"
       className={clsx(
-        `rounded font-mono bg-light-1 dark:bg-dark-1 p-6`,
-        `shadow-lg shadow-black dark:shadow-lg dark:shadow-black`,
-        `w-full transition-all grid gap-y-10 gap-x-4`,
+        `rounded p-6`,
+        `grid w-full gap-x-4 gap-y-10 transition-all`,
+        `ring-1 ring-black/30 dark:ring-white/30`,
         className
       )}
     >
@@ -554,13 +604,14 @@ export function create_query_observer<T>(
 
 export async function fetch_api_get<T>(path: string): Promise<T> {
   const url = new URL(`/api${path}`, FLATHUB_API_BASE_URL);
-  log(`💥 Fetching`, url.toString());
+  log(`💥 Fetching:`, url.toString());
   const response = await fetch(url.toString(), {
     method: `GET`,
     headers: new Headers({
-      "Content-Type": `application/json`,
-    }),
+      "Content-Type": `application/json`
+    })
   });
+  log(`💥 Got Response:`, url.toString());
   if (!response.ok) {
     throw new Error(`API Fetch Error: ${response.status}`);
   }
@@ -573,13 +624,13 @@ export async function fetch_api_post<T>(
   body?: Record<string, any>
 ): Promise<T> {
   const url = new URL(`/api${path}`, FLATHUB_API_BASE_URL);
-  log(`💥 fetching`, url.toString());
+  log(`💥 Fetching (POST):`, url.toString());
   const response = await fetch(url.toString(), {
     method: `POST`,
     headers: new Headers({
-      "Content-Type": `application/json`,
+      "Content-Type": `application/json`
     }),
-    body: JSON.stringify(body),
+    body: JSON.stringify(body)
   });
   if (!response.ok) {
     throw new Error(`API Fetch Error: ${response.status}`);
@@ -595,7 +646,7 @@ export function wrap_catalog_response(
   const root = {
     sub: catalog_fields_raw,
     __is_root: true,
-    __id: `root`,
+    __id: `root`
   } as FieldMetadata;
   const hierarchy: d3.HierarchyNode<FieldMetadata> =
     d3.hierarchy<FieldMetadata>(root, (d) => d?.sub ?? []);
@@ -631,7 +682,7 @@ export function wrap_catalog_response(
     nodes_by_id,
     initial_filter_ids,
     initial_column_ids,
-    get_field_metadata: (id: string) => field_metadata.get(id),
+    get_field_metadata: (id: string) => field_metadata.get(id)
   };
 }
 
@@ -658,7 +709,10 @@ export function field_is_numeric(metadata: FieldMetadata): boolean {
 }
 
 export function field_is_select(metadata: FieldMetadata): boolean {
-  const type_check = metadata.type === `float` || metadata.type === `short`;
+  const type_check =
+    metadata.type === `float` ||
+    metadata.type === `short` ||
+    metadata.type === `byte`;
   const has_terms = metadata.terms === true;
   return type_check && has_terms;
 }
@@ -710,14 +764,14 @@ export function get_catalog_id(
 export function CellSection({
   label,
   children = null,
-  className,
+  className
 }: {
   label?: string;
   children?: React.ReactNode;
   className?: string;
 }): React.JSX.Element {
   return (
-    <div className={clsx(`flex flex-col`, className)}>
+    <div data-type="CellSection" className={clsx(`flex flex-col`, className)}>
       {label && <SimpleLabel className="mb-4">{label}</SimpleLabel>}
       {children}
     </div>
@@ -726,7 +780,7 @@ export function CellSection({
 
 export function CellTitle({
   children,
-  subtitle,
+  subtitle
 }: {
   children: React.ReactNode;
   subtitle?: React.ReactNode;
@@ -734,33 +788,24 @@ export function CellTitle({
   return (
     <div>
       <div className="text-2xl font-bold">{children}</div>
-      {subtitle && <div className="text-slate-400">{subtitle}</div>}
+      {subtitle && <div>{subtitle}</div>}
     </div>
   );
 }
 
 export function SimpleLabel({
   children,
-  className,
+  className
 }: {
   children: React.ReactNode;
   className?: string;
 }): React.JSX.Element {
-  return (
-    <div
-      className={clsx(
-        `text-slate-400 dark:text-slate-400 uppercase text-sm`,
-        className
-      )}
-    >
-      {children}
-    </div>
-  );
+  return <div className={clsx(`text-sm uppercase`, className)}>{children}</div>;
 }
 
 export function PendingBox({ children }: { children: React.ReactNode }) {
   return (
-    <div className="h-40 rounded-lg p-4 outline-2 outline-dashed outline-slate-700 dark:outline-slate-50 grid place-items-center opacity-50">
+    <div className="grid h-40 place-items-center rounded-lg p-4 opacity-50 outline-dashed outline-1">
       {children}
     </div>
   );
@@ -778,7 +823,7 @@ export function useQueryObserver<T>(observer: QueryObserver<T> | null) {
 }
 
 export function FieldTitles({
-  node,
+  node
 }: {
   node: d3.HierarchyNode<FieldMetadata>;
 }): React.JSX.Element {

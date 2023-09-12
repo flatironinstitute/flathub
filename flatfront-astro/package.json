@@ -14,9 +14,6 @@
   "dependencies": {
     "@astrojs/react": "latest",
     "@astrojs/tailwind": "latest",
-    "@headlessui/react": "latest",
-    "@headlessui/tailwindcss": "latest",
-    "@heroicons/react": "latest",
     "@radix-ui/react-accordion": "latest",
     "@radix-ui/react-dialog": "latest",
     "@radix-ui/react-form": "latest",
@@ -24,13 +21,9 @@
     "@radix-ui/react-label": "latest",
     "@radix-ui/react-select": "latest",
     "@radix-ui/react-slider": "latest",
+    "@radix-ui/react-switch": "latest",
     "@tanstack/query-core": "latest",
     "@tanstack/react-table": "latest",
-    "@types/d3": "latest",
-    "@types/katex": "latest",
-    "@types/node": "latest",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
     "astro": "latest",
     "autoprefixer": "latest",
     "clsx": "latest",
@@ -47,5 +40,20 @@
     "tailwindcss": "latest",
     "tailwindcss-radix": "latest",
     "typescript": "5"
+  },
+  "prettier": {
+    "plugins": [
+      "prettier-plugin-tailwindcss"
+    ],
+    "trailingComma": "none"
+  },
+  "devDependencies": {
+    "prettier": "latest",
+    "prettier-plugin-tailwindcss": "latest",
+    "@types/d3": "latest",
+    "@types/katex": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest"
   }
 }

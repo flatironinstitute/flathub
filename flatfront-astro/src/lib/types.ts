@@ -11,7 +11,6 @@ export type Action =
   | FilterListAction
   | ColumnListAction
   | Actions[`SetCatalog`]
-  | Actions[`SetCellType`]
   | Actions[`SetPlotType`]
   | Actions[`SetPlotControl`]
   | Actions[`SetDarkMode`];
@@ -21,10 +20,6 @@ export type Actions = {
     `set_catalog`,
     { cell_id: GenericCellID; catalog_id: string }
   >;
-  SetCellType: ActionBase<
-    `set_cell_type`,
-    { cell_id: GenericCellID; cell_type: "table" | "plot" }
-  >;
   SetPlotType: ActionBase<
     `set_plot_type`,
     { cell_id: CellID; plot_type: "scatterplot" | "heatmap" }
@@ -33,7 +28,7 @@ export type Actions = {
     `set_plot_control`,
     { cell_id: CellID; key: string; value: any }
   >;
-  SetDarkMode: ActionBase<`set_dark_mode`, { value: boolean }>;
+  SetDarkMode: ActionBase<`set_dark_mode`, { value: boolean; cell_id: null }>;
 };
 
 export type ColumnListAction = ActionBase<

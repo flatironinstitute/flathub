@@ -3,7 +3,7 @@ import type {
   ColumnListAction,
   FieldMetadata,
   FilterListAction,
-  FilterValueRaw,
+  FilterValueRaw
 } from "../types";
 
 import React from "react";
@@ -22,13 +22,13 @@ import {
   Select,
   field_is_enum,
   field_is_numeric,
-  field_is_select,
+  field_is_select
 } from "../shared";
 import * as stores from "../stores";
 import Katex from "./Katex";
 
 export function FieldCard({
-  mode,
+  mode
 }: {
   mode?: "filter" | "column";
 }): React.JSX.Element {
@@ -57,7 +57,7 @@ export function FieldCard({
   const units = (() => {
     if (!field_node.data.units) return null;
     return (
-      <div className="text-sm text-slate-500 dark:text-slate-300">
+      <div className="text-sm">
         <Katex>{field_node.data.units}</Katex>
       </div>
     );
@@ -66,7 +66,7 @@ export function FieldCard({
   const field_description = (() => {
     if (!field_node.data.descr) return null;
     return (
-      <div className="text-sm text-slate-500 dark:text-slate-300 overflow-hidden">
+      <div className="overflow-hidden text-sm">
         <Katex>{field_node.data.descr}</Katex>
       </div>
     );
@@ -94,7 +94,7 @@ export function FieldCard({
       const action: FilterListAction | ColumnListAction = {
         type,
         cell_id,
-        field_id,
+        field_id
       };
       dispatch_action(action);
     };
@@ -116,7 +116,7 @@ export function FieldCard({
   })();
 
   const top_part = (
-    <div className="flex justify-between items-center">
+    <div className="flex items-center justify-between">
       {field_title}
       {toggle_button}
     </div>
@@ -159,7 +159,7 @@ export function FilterCard() {
             dispatch_action({
               type: `remove_child_filters`,
               cell_id,
-              field_id,
+              field_id
             });
           }}
         >
@@ -172,7 +172,7 @@ export function FilterCard() {
           dispatch_action({
             type: `remove_filter`,
             cell_id,
-            field_id,
+            field_id
           });
         }}
       >
@@ -182,7 +182,7 @@ export function FilterCard() {
   })();
 
   const top_part = (
-    <div className="flex justify-between items-center">
+    <div className="flex items-center justify-between">
       {field_title}
       {remove_filter_button}
     </div>
@@ -243,7 +243,7 @@ export function ColumnCard() {
             dispatch_action({
               type: `remove_child_columns`,
               cell_id,
-              field_id,
+              field_id
             });
           }}
         >
@@ -256,7 +256,7 @@ export function ColumnCard() {
           dispatch_action({
             type: `remove_column`,
             cell_id,
-            field_id,
+            field_id
           });
         }}
       >
@@ -266,7 +266,7 @@ export function ColumnCard() {
   })();
 
   const top_part = (
-    <div className="flex justify-between items-center">
+    <div className="flex items-center justify-between">
       {field_title}
       {remove_column_button}
     </div>
@@ -276,7 +276,7 @@ export function ColumnCard() {
 }
 
 export function FieldCardWrapper({
-  children,
+  children
 }: {
   children: React.ReactNode;
 }): React.JSX.Element {
@@ -297,7 +297,7 @@ export function FieldCardWrapper({
       data-type="FieldCardWrapper"
       className={clsx(FieldCardWrapper.className, `space-y-4`)}
       style={{
-        marginLeft: `${node_depth * 2}ch`,
+        marginLeft: `${node_depth * 2}ch`
       }}
     >
       {children}
@@ -307,7 +307,7 @@ export function FieldCardWrapper({
 
 FieldCardWrapper.className = clsx(
   `rounded-md text-md px-4 py-4`,
-  `bg-light-3 dark:bg-dark-3 text-light-text dark:text-dark-text`
+  `ring-1 ring-black/30 dark:ring-white/30`
 );
 
 function RangeFilterControl() {
@@ -336,7 +336,7 @@ function RangeFilterControl() {
       onValueChange={([low, high]) => {
         set_filter_value(cell_id, field_id, {
           gte: low,
-          lte: high,
+          lte: high
         });
       }}
     />
@@ -345,7 +345,7 @@ function RangeFilterControl() {
   return (
     <div
       data-type="RangeFilterControl"
-      className="mt-[9px] grid grid-cols-2 gap-x-4 gap-y-2 items-center"
+      className="mt-[9px] grid grid-cols-2 items-center gap-x-4 gap-y-2"
     >
       <TextInput
         label="from"
@@ -361,7 +361,7 @@ function RangeFilterControl() {
           if (number === null) return;
           set_filter_value(cell_id, field_id, {
             gte: number,
-            lte: high,
+            lte: high
           });
         }}
       />
@@ -379,7 +379,7 @@ function RangeFilterControl() {
           if (number === null) return;
           set_filter_value(cell_id, field_id, {
             gte: low,
-            lte: number,
+            lte: number
           });
         }}
       />
@@ -486,15 +486,13 @@ function SelectFilterControl() {
     <Select
       value={value}
       options={values}
-      getKey={(d) => d.value.toString()}
+      getKey={(d) => d?.value?.toString()}
       getDisplayName={(d) => {
         if (!d.count) return d.text;
         return `${d.text} (${format.commas(d.count)} rows)`;
       }}
       onValueChange={on_change}
-      buttonClassName="ring-2 ring-inset ring-light-4 dark:ring-dark-4"
-      optionsClassName="bg-light-2 dark:bg-dark-2 shadow-2xl"
-      optionClassName="ui-active:bg-light-3 dark:ui-active:bg-dark-3"
+      buttonClassName="ring-2 ring-inset"
     />
   );
 }
@@ -502,59 +500,6 @@ function SelectFilterControl() {
 function StringFilterControl() {
   return <div>string</div>;
 }
-
-// function LabelledInput({
-//   label,
-//   value,
-//   getValidityMessage = (value) => null,
-//   onInput,
-//   ...rest
-// }: {
-//   label: string;
-//   value?: string;
-//   getValidityMessage?: (value: string) => string | null;
-//   onInput?: (value: string) => void;
-// } & React.InputHTMLAttributes<HTMLInputElement>) {
-//   const ref = React.useRef<HTMLInputElement>(null);
-//   const [internal, set_internal] = React.useState(value ?? ``);
-
-//   const on_input = (string) => {
-//     set_internal(string);
-//     const message = getValidityMessage(string);
-//     if (message) {
-//       ref.current.setCustomValidity(message);
-//     } else {
-//       ref.current.setCustomValidity("");
-//       onInput && onInput(string);
-//     }
-//     ref.current.reportValidity();
-//   };
-
-//   React.useEffect(() => {
-//     on_input(value ?? ``);
-//   }, [value]);
-
-//   return (
-//     <div>
-//       <Label>{label}</Label>
-//       <div className="h-1"></div>
-//       <div>
-//         <TextInput
-//           ref={ref}
-//           type="text"
-//           className={clsx(
-//             `block w-full bg-transparent rounded-md border-0 py-2 px-2`,
-//             `text-light-text dark:text-dark-text`,
-//             `ring-2 ring-inset ring-light-4 dark:ring-dark-4 focus:outline-none focus:ring-dark-0 dark:focus:ring-light-0 invalid:!ring-red-400`
-//           )}
-//           value={internal}
-//           onInput={(event) => on_input(event.currentTarget.value)}
-//           {...rest}
-//         />
-//       </div>
-//     </div>
-//   );
-// }
 
 function TextInput({
   value,
@@ -594,9 +539,9 @@ function TextInput({
         ref={ref}
         type="text"
         className={clsx(
-          `block w-full bg-transparent rounded-md border-0 py-2 px-2`,
-          `text-light-text dark:text-dark-text`,
-          `ring-2 ring-inset ring-light-4 dark:ring-dark-4 focus:outline-none focus:ring-dark-0 dark:focus:ring-light-0 invalid:!ring-red-400`
+          `block w-full rounded-md border-0 bg-transparent px-2 py-2`,
+          `ring-1 ring-inset ring-black invalid:!ring-red-400 dark:ring-white`,
+          `focus:outline-none focus-visible:ring-4`
         )}
         value={internal}
         onInput={(event) => on_input(event.currentTarget.value)}
@@ -608,18 +553,13 @@ function TextInput({
 
 function Label({
   children,
-  className,
+  className
 }: {
   children: React.ReactNode;
   className?: string;
 }) {
   return (
-    <label
-      className={clsx(
-        `uppercase block text-xs text-slate-700 dark:text-slate-200`,
-        className
-      )}
-    >
+    <label className={clsx(`block text-xs uppercase`, className)}>
       {children}
     </label>
   );
@@ -629,7 +569,7 @@ function RangeSlider({
   min,
   max,
   value,
-  onValueChange,
+  onValueChange
 }: {
   min: number;
   max: number;
@@ -638,19 +578,24 @@ function RangeSlider({
 }) {
   const step = d3.tickStep(min, max, 100);
 
-  const thumb_class = `block h-4 w-4 rounded-full bg-slate-700 dark:bg-slate-50 focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75`;
+  const thumb_class = clsx(
+    `block h-2 w-2 rounded-full`,
+    `bg-black dark:bg-white`,
+    `focus:outline-none focus-visible:ring-4 focus-visible:ring-offset-4 focus-visible:ring-black dark:focus-visible:ring-white dark:focus-visible:ring-offset-black`
+  );
 
   return (
     <RadixSlider.Root
+      data-type="RangeSlider"
       min={min}
       max={max}
       value={value}
-      className="cursor-pointer relative flex h-5 w-full touch-none items-center"
+      className="relative flex h-5 w-full cursor-pointer touch-none items-center"
       onValueChange={onValueChange}
       step={step}
     >
-      <RadixSlider.Track className="relative h-1 w-full grow rounded-full bg-slate-400 dark:bg-slate-800">
-        <RadixSlider.Range className="absolute h-full rounded-full bg-slate-600 dark:bg-white" />
+      <RadixSlider.Track className="relative h-1 w-full grow rounded-full bg-black/10 dark:bg-white/30">
+        <RadixSlider.Range className="absolute h-full rounded-full bg-black/20 dark:bg-white/40" />
       </RadixSlider.Track>
       <RadixSlider.Thumb className={thumb_class} />
       {value.length > 1 && <RadixSlider.Thumb className={thumb_class} />}
@@ -661,7 +606,7 @@ function RangeSlider({
 function LittleTextButton({
   children,
   disabled,
-  onClick,
+  onClick
 }: {
   children: React.ReactNode;
   disabled?: boolean;
@@ -672,8 +617,8 @@ function LittleTextButton({
       disabled={disabled}
       className={clsx(
         `block cursor-pointer`,
-        `underline uppercase text-xs tracking-widest`,
-        `disabled:opacity-50 disabled:cursor-not-allowed`
+        `text-xs uppercase tracking-widest underline`,
+        `disabled:cursor-not-allowed disabled:opacity-50`
       )}
       onClick={onClick}
     >
@@ -686,7 +631,7 @@ export function QueryParameter({
   label,
   field_id,
   min,
-  max,
+  max
 }: {
   label: string;
   field_id: string;
@@ -695,43 +640,43 @@ export function QueryParameter({
 }) {
   const cell_id = hooks.useCell().cell_id;
 
-  const query_parameters = hooks
-    .useStore(stores.query_parameters_by_cell_id)
-    .get(cell_id);
+  // const query_parameters = hooks
+  //   .useStore(stores.query_parameters_by_cell_id)
+  //   .get(cell_id);
 
-  const value: FilterValueRaw = Number(query_parameters[field_id]);
+  // const value: FilterValueRaw = Number(query_parameters[field_id]);
 
-  return (
-    <div
-      className={clsx(
-        FieldCardWrapper.className,
-        `grid gap-x-4 desktop:grid-cols-[10ch_1fr_1fr] desktop:items-center`
-      )}
-    >
-      <div>{label}</div>
-      <TextInput
-        value={value.toString()}
-        getValidityMessage={(string) => {
-          const number = valid_number(string);
-          if (number === null) return `Invalid number`;
-          if (number < min) return `Must be greater than ${min.toString()}`;
-          if (number > max) return `Must be less than ${max.toString()}`;
-          return null;
-        }}
-        onInput={(string) => {
-          const number = valid_number(string);
-          if (number === null) return;
-          set_filter_value(cell_id, field_id, number);
-        }}
-      />
-      <RangeSlider
-        min={min}
-        max={max}
-        value={[value]}
-        onValueChange={([value]) => {
-          set_filter_value(cell_id, field_id, value);
-        }}
-      />
-    </div>
-  );
+  // return (
+  //   <div
+  //     className={clsx(
+  //       FieldCardWrapper.className,
+  //       `grid gap-x-4 desktop:grid-cols-[10ch_1fr_1fr] desktop:items-center`
+  //     )}
+  //   >
+  //     <div>{label}</div>
+  //     <TextInput
+  //       value={value.toString()}
+  //       getValidityMessage={(string) => {
+  //         const number = valid_number(string);
+  //         if (number === null) return `Invalid number`;
+  //         if (number < min) return `Must be greater than ${min.toString()}`;
+  //         if (number > max) return `Must be less than ${max.toString()}`;
+  //         return null;
+  //       }}
+  //       onInput={(string) => {
+  //         const number = valid_number(string);
+  //         if (number === null) return;
+  //         set_filter_value(cell_id, field_id, number);
+  //       }}
+  //     />
+  //     <RangeSlider
+  //       min={min}
+  //       max={max}
+  //       value={[value]}
+  //       onValueChange={([value]) => {
+  //         set_filter_value(cell_id, field_id, value);
+  //       }}
+  //     />
+  //   </div>
+  // );
 }
