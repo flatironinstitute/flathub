@@ -260,6 +260,8 @@ fields:
   - name: Subhalo
     descr: 'Subfind Subhalos'
     ingest: _subhalo:type Group_FirstSub Group_Nsubs Subhalo_GrNr
+    condition:
+      type: true
     sub:
     - name: id
       type: int
