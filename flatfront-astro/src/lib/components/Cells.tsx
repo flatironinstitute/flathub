@@ -1,8 +1,8 @@
 import type {
-  DataRequestBody,
-  DataResponse,
   TopResponseEntry,
-  Actions
+  Actions,
+  DataRequestBody,
+  DataResponse
 } from "../types";
 import type { QueryObserver } from "@tanstack/query-core";
 
@@ -13,26 +13,27 @@ import clsx from "clsx";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as d3 from "d3";
 import { Cross1Icon } from "@radix-ui/react-icons";
-import { Select, useQueryObserver } from "../shared";
-import { QueryParameter } from "./FieldCard";
 
 import {
   BigButton,
+  CellSection,
   CellWrapper,
   create_query_observer,
   dispatch_action,
   fetch_api_post,
-  hooks,
-  log,
-  Providers,
   get_field_id,
-  CellSection,
-  PendingBox
+  hooks,
+  is_generic_cell_id,
+  is_table_cell_id,
+  log,
+  PendingBox,
+  Providers,
+  Select,
+  useQueryObserver
 } from "../shared";
 import * as stores from "../stores";
+import { FieldCard, FilterCard, QueryParameter } from "./FieldCard";
 import Table from "./Table";
-import { FieldCard, FilterCard } from "./FieldCard";
-import PlotSections from "./PlotSections";
 
 export default function Cells() {
   const cells = hooks.useStore(stores.cells);
@@ -40,26 +41,10 @@ export default function Cells() {
   return (
     <>
       {cells.map((cell) => {
-        if (cell.type === `root`) return null;
-        const component = (() => {
-          switch (cell.type) {
-            case `cell`:
-              return <GenericCell />;
-            case `catalog`:
-              return null;
-            case `filter`:
-              return null;
-            case `table`:
-              return null;
-            case `plot`:
-              return null;
-            default:
-              cell satisfies never;
-          }
-        })();
+        if (cell.type !== `cell`) return null;
         return (
           <Providers.CellProvider key={cell.cell_id} value={cell}>
-            {component}
+            <GenericCell />
           </Providers.CellProvider>
         );
       })}
@@ -103,12 +88,6 @@ function GenericCell() {
 function CatalogSelect() {
   const cell_id = hooks.useCell().cell_id;
   const catalog_id = hooks.useStore(stores.catalog_id_by_cell_id).get(cell_id);
-
-  // const catalog_id = hooks
-  //   .useStore(stores.actions_by_cell_id)
-  //   .get(cell_id)
-  //   .filter((d): d is Actions[`SetCatalog`] => d.type === `set_catalog`)
-  //   .at(-1)?.catalog_id;
   const get_title = (d: TopResponseEntry) => d?.title;
   const catalog_list_unsorted = hooks.useStore(stores.top_response).data ?? [];
   const ready = catalog_list_unsorted.length > 0;
@@ -129,7 +108,6 @@ function CatalogSelect() {
             cell_id,
             catalog_id: d?.name
           } as Actions[`SetCatalog`]);
-          // set_selected(d);
         }}
       />
     </div>
@@ -137,18 +115,37 @@ function CatalogSelect() {
 }
 
 function CellResultsSection() {
-  const cell_id = hooks.useCell().cell_id;
+  const cell_id = is_generic_cell_id(hooks.useCell().cell_id);
 
-  const placeholder = (
+  const all_cells = hooks.useStore(stores.cells);
+
+  const cell_components = all_cells.map((cell) => {
+    log(`rabbits`, cell);
+    const component = (() => {
+      switch (cell.type) {
+        case `table`:
+          return <TableCell />;
+        default:
+          return null;
+      }
+    })();
+    return (
+      <Providers.CellProvider key={cell.cell_id} value={cell}>
+        {component}
+      </Providers.CellProvider>
+    );
+  });
+
+  const add_buttons = (
     <div className="space-y-4">
       <BigButton
         className="w-full"
         onClick={() => {
-          // dispatch_action({
-          //   type: `add_result`,
-          //   cell_id,
-          //   result_type: `table`
-          // });
+          dispatch_action({
+            type: `add_table_cell`,
+            cell_id: `table_cell_${Date.now()}`,
+            parent_cell_id: cell_id
+          });
         }}
       >
         Add a Table
@@ -169,96 +166,113 @@ function CellResultsSection() {
   //   }
   // })();
 
-  return <div className="desktop:col-start-2">{placeholder}</div>;
+  return (
+    <div className="desktop:col-start-2">
+      {cell_components}
+      {add_buttons}
+    </div>
+  );
 }
 
-// function TableSections() {
-//   const cell_id = hooks.useCell().cell_id;
-//   const catalog_id = hooks.useStore(stores.catalog_id_by_cell_id).get(cell_id);
+function TableCell() {
+  const cell_data = hooks.useCell();
+  const cell_id = is_table_cell_id(cell_data.cell_id);
+  const parent_cell_id = is_generic_cell_id(cell_data.parent_cell_id);
+  const catalog_id = hooks
+    .useStore(stores.catalog_id_by_cell_id)
+    .get(parent_cell_id);
 
-//   const column_ids_set = hooks
-//     .useStore(stores.column_ids_by_cell_id)
-//     .get(cell_id);
+  const column_ids_set = hooks
+    .useStore(stores.column_ids_by_cell_id)
+    .get(parent_cell_id);
 
-//   const filters = hooks.useStore(stores.filters_by_cell_id).get(cell_id);
+  const filters = hooks.useStore(stores.filters_by_cell_id).get(parent_cell_id);
 
-//   const query_parameters = hooks
-//     .useStore(stores.query_parameters_by_cell_id)
-//     .get(cell_id);
+  const query_parameters = hooks
+    .useStore(stores.query_parameters_by_cell_id)
+    .get(cell_id);
 
-//   const request_body: DataRequestBody = {
-//     object: true,
-//     count: 100,
-//     fields: Array.from(column_ids_set),
-//     ...filters,
-//     ...query_parameters
-//   };
+  const request_body: DataRequestBody = {
+    object: true,
+    count: 100,
+    fields: Array.from(column_ids_set),
+    ...filters,
+    ...query_parameters
+  };
 
-//   const query_config = {
-//     path: `/${catalog_id}/data`,
-//     body: request_body
-//   };
+  const query_config = {
+    path: `/${catalog_id}/data`,
+    body: request_body
+  };
 
-//   const [data_query_observer, set_data_query_observer] =
-//     React.useState<QueryObserver<DataResponse> | null>(null);
+  const fetch_data = React.useCallback(() => {
+    const observer = create_query_observer<DataResponse>({
+      staleTime: Infinity,
+      queryKey: [`data`, query_config],
+      queryFn: async (): Promise<DataResponse> => {
+        return fetch_api_post<DataResponse>(
+          query_config.path,
+          query_config.body
+        ).then((response) => {
+          log(`query response`, response);
+          return response;
+        });
+      }
+    });
+    set_data_query_observer(observer);
+  }, [query_config]);
 
-//   const fetch_data = React.useCallback(() => {
-//     const observer = create_query_observer<DataResponse>({
-//       staleTime: Infinity,
-//       queryKey: [`data`, query_config],
-//       queryFn: async (): Promise<DataResponse> => {
-//         return fetch_api_post<DataResponse>(
-//           query_config.path,
-//           query_config.body
-//         ).then((response) => {
-//           log(`query response`, response);
-//           return response;
-//         });
-//       }
-//     });
-//     set_data_query_observer(observer);
-//   }, [query_config]);
+  const [data_query_observer, set_data_query_observer] =
+    React.useState<QueryObserver<DataResponse> | null>(null);
 
-//   const data_query = useQueryObserver(data_query_observer);
+  const data_query = useQueryObserver(data_query_observer);
 
-//   const catalog_hierarchy = hooks
-//     .useStore(stores.catalog_metadata_wrapper_by_catalog_id)
-//     .get(catalog_id)?.hierarchy;
+  // return (
+  //   <div>
+  //     <pre>{JSON.stringify({ query_parameters, filters }, null, 2)}</pre>
+  //   </div>
+  // );
 
-//   const fetching = data_query?.isFetching;
-//   const data = data_query?.data ?? null;
-//   const has_data = data?.length && data?.length > 0;
-//   const is_ready = has_data && catalog_hierarchy;
+  const catalog_hierarchy = hooks
+    .useStore(stores.catalog_metadata_wrapper_by_catalog_id)
+    .get(catalog_id)?.hierarchy;
 
-//   const table_component = (() => {
-//     if (!is_ready) {
-//       const status_message = fetching ? `Loading Data...` : `No Data Loaded`;
-//       return <PendingBox>{status_message}</PendingBox>;
-//     }
-//     return <Table data={data} catalog_field_hierarchy={catalog_hierarchy} />;
-//   })();
+  const fetching = data_query?.isFetching;
+  const data = data_query?.data ?? null;
+  const has_data = data?.length && data?.length > 0;
+  const is_ready = has_data && catalog_hierarchy;
 
-//   return (
-//     <div className="space-y-4">
-//       <CellSection label="columns">
-//         <ColumnsDialog />
-//       </CellSection>
-//       <CellSection label="query parameters">
-//         <QueryParameter label="Rows" field_id="count" min={10} max={200} />
-//       </CellSection>
-//       <CellSection label="fetch">
-//         <BigButton onClick={() => fetch_data()}>
-//           {fetching ? `Fetching Data...` : `Fetch Data`}
-//         </BigButton>
-//       </CellSection>
-//       <CellSection label="table">{table_component}</CellSection>
-//     </div>
-//   );
-// }
+  const table_component = (() => {
+    if (!is_ready) {
+      const status_message = fetching ? `Loading Data...` : `No Data Loaded`;
+      return <PendingBox>{status_message}</PendingBox>;
+    }
+    return <Table data={data} catalog_field_hierarchy={catalog_hierarchy} />;
+  })();
+
+  return (
+    <div className="space-y-4">
+      <CellSection label="columns">
+        <ColumnsDialog />
+      </CellSection>
+      <CellSection label="query parameters">
+        <QueryParameter label="Rows" field_id="count" min={10} max={200} />
+      </CellSection>
+      <CellSection label="fetch">
+        <BigButton onClick={() => fetch_data()}>
+          {fetching ? `Fetching Data...` : `Fetch Data`}
+        </BigButton>
+      </CellSection>
+      <CellSection label="table">{table_component}</CellSection>
+    </div>
+  );
+}
 
 function ColumnsDialog() {
-  const cell_id = hooks.useCell().cell_id;
-  const catalog_id = hooks.useStore(stores.catalog_id_by_cell_id).get(cell_id);
+  const parent_cell_id = hooks.useCell().parent_cell_id;
+  const catalog_id = hooks
+    .useStore(stores.catalog_id_by_cell_id)
+    .get(parent_cell_id);
   const catalog_metadata = hooks
     .useStore(stores.catalog_metadata_wrapper_by_catalog_id)
     .get(catalog_id);

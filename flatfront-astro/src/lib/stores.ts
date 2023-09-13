@@ -109,13 +109,9 @@ export const actions_by_cell_id: Readable<d3.InternMap<CellID, Action[]>> =
 export const cells: Readable<Cell[]> = derived(actions, ($actions) => {
   const cell_action_types: CellAction["type"][] = [
     `add_cell`,
-    `add_catalog_cell`,
-    `add_filter_cell`,
     `add_table_cell`,
     `add_plot_cell`,
-    `remove_catalog_cell`,
     `remove_table_cell`,
-    `remove_filter_cell`,
     `remove_plot_cell`
   ];
   // Filter cells to only include those with type in cell_action_types.
@@ -124,78 +120,42 @@ export const cells: Readable<Cell[]> = derived(actions, ($actions) => {
   );
   let cells: Cell[] = [];
   for (const action of cell_actions) {
-    for (const action of cell_actions) {
-      const action_type = action.type;
-      switch (action_type) {
-        // case `add_cell`: {
-        //   cells.push({
-        //     type: `cell`,
-        //     cell_id: action.cell_id,
-        //   });
-        // }
-        case `add_catalog_cell`: {
-          // If cells already includes a cell with this catalog name, don't add it.
-          const already_exists = cells.some(
-            (cell) =>
-              cell.type === `catalog` && cell.catalog_id === action.catalog_id
-          );
-          if (already_exists) {
-            log(`Skipping adding duplicate catalog cell ${action.catalog_id}`);
-            continue;
-          }
-          cells.push({
-            type: `catalog`,
-            cell_id: action.cell_id,
-            catalog_id: action.catalog_id,
-            parent_cell_id: `root`
-          });
-          break;
-        }
-        case `add_filter_cell`: {
-          cells.push({
-            type: `filter`,
-            cell_id: action.cell_id,
-            parent_cell_id: action.parent_cell_id
-          });
-          break;
-        }
-        case `add_table_cell`: {
-          cells.push({
-            type: `table`,
-            cell_id: action.cell_id,
-            parent_cell_id: action.parent_cell_id
-          });
-          break;
-        }
-        case `add_plot_cell`: {
-          cells.push({
-            type: `plot`,
-            cell_id: action.cell_id,
-            parent_cell_id: action.parent_cell_id
-          });
-          break;
-        }
-        case `remove_catalog_cell`:
-        case `remove_filter_cell`:
-        case `remove_table_cell`:
-        case `remove_plot_cell`: {
-          // Remove the table cell with the given cell_id.
-          cells = cells.filter((cell) => cell.cell_id !== action.cell_id);
-          break;
-        }
-        case `add_cell`: {
-          const cell: Cell = {
-            type: `cell`,
-            cell_id: action.cell_id,
-            parent_cell_id: `root`
-          };
-          cells.push(cell);
-          break;
-        }
-        default: {
-          action_type satisfies never;
-          throw new Error(`Unrecognized cell action type ${action_type}`);
-        }
+    const action_type = action.type;
+    switch (action_type) {
+      case `add_table_cell`: {
+        cells.push({
+          type: `table`,
+          cell_id: action.cell_id,
+          parent_cell_id: action.parent_cell_id
+        });
+        break;
+      }
+      case `add_plot_cell`: {
+        cells.push({
+          type: `plot`,
+          cell_id: action.cell_id,
+          parent_cell_id: action.parent_cell_id
+        });
+        break;
+      }
+      case `remove_table_cell`:
+      case `remove_plot_cell`: {
+        // Remove the table cell with the given cell_id.
+        cells = cells.filter((cell) => cell.cell_id !== action.cell_id);
+        break;
+      }
+      case `add_cell`: {
+        const cell: Cell = {
+          type: `cell`,
+          cell_id: action.cell_id,
+          parent_cell_id: `root`
+        };
+        cells.push(cell);
+        break;
+      }
+      default: {
+        action_type satisfies never;
+        throw new Error(`Unrecognized cell action type ${action_type}`);
       }
     }
   }
@@ -213,21 +173,6 @@ export const cells: Readable<Cell[]> = derived(actions, ($actions) => {
     });
   }
   cells = unique_by(cells, (d) => d.cell_id);
-  // log(`Computing cells hierarchy...`, cells);
-  // const stratifier = d3
-  //   .stratify<Cell>()
-  //   .id((d: Cell) => d.cell_id)
-  //   .parentId((d: Cell & { parent_cell_id?: CellID }) => d.parent_cell_id);
-  // const cells_with_root: Cell[] = [
-  //   {
-  //     type: `root`,
-  //     cell_id: `root`,
-  //     parent_cell_id: undefined,
-  //   },
-  //   ...cells,
-  // ];
-  // const hierarchy: d3.HierarchyNode<Cell> = stratifier(cells_with_root);
-  // const cell_nodes = get_nodes_depth_first(hierarchy);
   return cells;
 });
 
@@ -369,31 +314,35 @@ export const filters_by_cell_id: Readable<Map<CellID, Filters>> = derived(
   new Map<CellID, Filters>()
 );
 
-// export const query_parameters_by_cell_id: Readable<
-//   Map<CellID, QueryParameters>
-// > = derived(
-//   [cell_type_by_cell_id, filter_state],
-//   ([$cell_type_by_cell_id, $filter_state]) => {
-//     return new Map(
-//       [...$cell_type_by_cell_id.entries()].map(([cell_id, cell_type]) => {
-//         const initial_query_parameters: QueryParameters = {
-//           count: cell_type === `table` ? 25 : 2000
-//         };
+export const query_parameters_by_cell_id: Readable<
+  Map<CellID, QueryParameters>
+> = derived(
+  [cells, filter_state],
+  ([$cells, $filter_state]) => {
+    return new Map(
+      $cells.map((cell) => {
+        const cell_id = cell.cell_id;
+        const cell_type = cell.type;
+        if (cell_type === "cell") return [cell_id, undefined];
 
-//         const filter_state = ($filter_state?.[cell_id] ??
-//           {}) as QueryParameters;
+        const initial_query_parameters: QueryParameters = {
+          count: cell_type === `table` ? 25 : 2000
+        };
 
-//         const filters = get_final_filters<QueryParameters>(
-//           initial_query_parameters,
-//           filter_state
-//         );
+        const filter_state = ($filter_state?.[cell_id] ??
+          {}) as QueryParameters;
 
-//         return [cell_id, filters];
-//       })
-//     );
-//   },
-//   new Map<CellID, QueryParameters>()
-// );
+        const filters = get_final_filters<QueryParameters>(
+          initial_query_parameters,
+          filter_state
+        );
+
+        return [cell_id, filters];
+      })
+    );
+  },
+  new Map<CellID, QueryParameters>()
+);
 
 export const column_ids_by_cell_id: Readable<Map<CellID, Set<string>>> =
   derived(

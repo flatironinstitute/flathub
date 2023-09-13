@@ -4,10 +4,9 @@ import type {
   Action,
   Cell,
   CellID,
-  CatalogCellID,
-  FilterCellID,
   TableCellID,
   PlotCellID,
+  GenericCellID,
   CatalogMetadataWrapper,
   Filters,
   Datum,
@@ -276,28 +275,22 @@ export function dispatch_action(action: Action) {
   stores.actions.update(($actions) => [...$actions, action]);
 }
 
-export function is_catalog_cell_id(cell_id: CellID): CatalogCellID {
-  if (!cell_id.match(/^catalog_cell_/)) {
-    throw new Error(`${cell_id} is not a catalog cell id`);
-  }
-  return cell_id as CatalogCellID;
-}
-export function is_filter_cell_id(cell_id: CellID): FilterCellID {
-  if (!cell_id.match(/^filter_cell_/)) {
-    throw new Error(`${cell_id} is not a filter cell id`);
-  }
-  return cell_id as FilterCellID;
-}
 export function is_table_cell_id(cell_id: CellID): TableCellID {
   if (!cell_id.match(/^table_cell_/)) {
     throw new Error(`${cell_id} is not a table cell id`);
   }
   return cell_id as TableCellID;
 }
+export function is_generic_cell_id(cell_id: CellID): GenericCellID {
+  if (!cell_id.startsWith(`cell_`)) {
+    throw new Error(`${cell_id} is not a generic cell id`);
+  }
+  return cell_id as GenericCellID;
+}
 
 export function is_plot_cell_id(cell_id: CellID): PlotCellID {
   if (!cell_id.match(/^plot_cell_/)) {
-    throw new Error(`${cell_id} is not a table cell id`);
+    throw new Error(`${cell_id} is not a plot cell id`);
   }
   return cell_id as PlotCellID;
 }
@@ -716,50 +709,6 @@ export function field_is_select(metadata: FieldMetadata): boolean {
   const has_terms = metadata.terms === true;
   return type_check && has_terms;
 }
-
-export function get_catalog_id(
-  cells_hierarchy: d3.HierarchyNode<Cell>,
-  cell_id: CellID
-) {
-  const found = cells_hierarchy.find((d) => d.data.cell_id === cell_id);
-  if (found === undefined) {
-    log(`No cell found for cell_id: ${cell_id}`, { cells_hierarchy });
-    throw new Error(`No cell found for cell_id: ${cell_id}`);
-  }
-  let catalog_id = undefined;
-  if (found.data.type === `catalog`) {
-    catalog_id = found.data.catalog_id;
-  } else {
-    // Traverse parents until a catalog name is found
-    const ancestor: d3.HierarchyNode<Cell> = find_parent_node_by_filter(
-      found,
-      (d) => d.data.type === `catalog`
-    );
-    if (!ancestor) {
-      throw new Error(`No catalog ancestor found for cell_id: ${cell_id}`);
-    }
-    if (ancestor.data.type !== `catalog`) {
-      throw new Error(
-        `Expected ancestor to be a catalog, but was ${ancestor.data.type}`
-      );
-    }
-    catalog_id = ancestor.data.catalog_id;
-  }
-  if (catalog_id === undefined) {
-    throw new Error(`No catalog ID for cell_id: ${cell_id}`);
-  }
-  return catalog_id;
-}
-
-// export const field_metadata = {
-//   cache: new Map<string, FieldMetadata>(),
-//   get(
-//     catalog_field_hierarchy: d3.HierarchyNode<FieldMetadata>,
-//     field_id: string
-//   ): FieldMetadata {},
-// };
-
-// export function get_field_metadata(catalog_field_hierarchy: d3.HierarchyNode<FieldMetadata>, field_id: FieldID): FieldMetadata {
 
 export function CellSection({
   label,

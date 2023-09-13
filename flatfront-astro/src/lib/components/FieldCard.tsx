@@ -638,45 +638,46 @@ export function QueryParameter({
   min: number;
   max: number;
 }) {
+  // const parent_cell_id = hooks.useCell().parent_cell_id;
   const cell_id = hooks.useCell().cell_id;
 
-  // const query_parameters = hooks
-  //   .useStore(stores.query_parameters_by_cell_id)
-  //   .get(cell_id);
+  const query_parameters = hooks
+    .useStore(stores.query_parameters_by_cell_id)
+    .get(cell_id);
 
-  // const value: FilterValueRaw = Number(query_parameters[field_id]);
+  const value: FilterValueRaw = Number(query_parameters[field_id]);
 
-  // return (
-  //   <div
-  //     className={clsx(
-  //       FieldCardWrapper.className,
-  //       `grid gap-x-4 desktop:grid-cols-[10ch_1fr_1fr] desktop:items-center`
-  //     )}
-  //   >
-  //     <div>{label}</div>
-  //     <TextInput
-  //       value={value.toString()}
-  //       getValidityMessage={(string) => {
-  //         const number = valid_number(string);
-  //         if (number === null) return `Invalid number`;
-  //         if (number < min) return `Must be greater than ${min.toString()}`;
-  //         if (number > max) return `Must be less than ${max.toString()}`;
-  //         return null;
-  //       }}
-  //       onInput={(string) => {
-  //         const number = valid_number(string);
-  //         if (number === null) return;
-  //         set_filter_value(cell_id, field_id, number);
-  //       }}
-  //     />
-  //     <RangeSlider
-  //       min={min}
-  //       max={max}
-  //       value={[value]}
-  //       onValueChange={([value]) => {
-  //         set_filter_value(cell_id, field_id, value);
-  //       }}
-  //     />
-  //   </div>
-  // );
+  return (
+    <div
+      className={clsx(
+        FieldCardWrapper.className,
+        `grid gap-x-4 desktop:grid-cols-[10ch_1fr_1fr] desktop:items-center`
+      )}
+    >
+      <div>{label}</div>
+      <TextInput
+        value={value.toString()}
+        getValidityMessage={(string) => {
+          const number = valid_number(string);
+          if (number === null) return `Invalid number`;
+          if (number < min) return `Must be greater than ${min.toString()}`;
+          if (number > max) return `Must be less than ${max.toString()}`;
+          return null;
+        }}
+        onInput={(string) => {
+          const number = valid_number(string);
+          if (number === null) return;
+          set_filter_value(cell_id, field_id, number);
+        }}
+      />
+      <RangeSlider
+        min={min}
+        max={max}
+        value={[value]}
+        onValueChange={([value]) => {
+          set_filter_value(cell_id, field_id, value);
+        }}
+      />
+    </div>
+  );
 }

@@ -44,20 +44,10 @@ export type FilterListAction = ActionBase<
 export type CellAction =
   | ActionBase<`add_cell`, { cell_id: GenericCellID }>
   | ActionBase<
-      `add_catalog_cell`,
-      { catalog_id: string; cell_id: CatalogCellID }
-    >
-  | ActionBase<`remove_catalog_cell`, { cell_id: CatalogCellID }>
-  | ActionBase<
-      `add_filter_cell`,
-      { cell_id: FilterCellID; parent_cell_id: CatalogCellID }
-    >
-  | ActionBase<`remove_filter_cell`, { cell_id: FilterCellID }>
-  | ActionBase<
       `add_table_cell`,
       {
         cell_id: TableCellID;
-        parent_cell_id: FilterCellID;
+        parent_cell_id: GenericCellID;
       }
     >
   | ActionBase<
@@ -68,7 +58,7 @@ export type CellAction =
     >
   | ActionBase<
       `add_plot_cell`,
-      { cell_id: PlotCellID; parent_cell_id: FilterCellID }
+      { cell_id: PlotCellID; parent_cell_id: GenericCellID }
     >
   | ActionBase<`remove_plot_cell`, { cell_id: PlotCellID }>;
 
@@ -103,25 +93,14 @@ export type CatalogCell = Cell & {
 export type Cell =
   | { type: `root`; cell_id: RootCellID; parent_cell_id: undefined }
   | {
-      type: `catalog`;
-      cell_id: CatalogCellID;
-      catalog_id: string;
-      parent_cell_id: `root`;
-    }
-  | {
-      type: `filter`;
-      cell_id: FilterCellID;
-      parent_cell_id: CatalogCellID;
-    }
-  | {
       type: `table`;
       cell_id: TableCellID;
-      parent_cell_id: FilterCellID;
+      parent_cell_id: GenericCellID;
     }
   | {
       type: `plot`;
       cell_id: PlotCellID;
-      parent_cell_id: FilterCellID;
+      parent_cell_id: GenericCellID;
     }
   | {
       type: `cell`;
@@ -129,16 +108,8 @@ export type Cell =
       parent_cell_id: `root`;
     };
 
-export type CellID =
-  | RootCellID
-  | CatalogCellID
-  | FilterCellID
-  | TableCellID
-  | PlotCellID
-  | GenericCellID;
+export type CellID = RootCellID | TableCellID | PlotCellID | GenericCellID;
 
-export type CatalogCellID = `catalog_cell_${string}`;
-export type FilterCellID = `filter_cell_${number}`;
 export type TableCellID = `table_cell_${number}`;
 export type PlotCellID = `plot_cell_${number}`;
 export type GenericCellID = `cell_${number}`;
