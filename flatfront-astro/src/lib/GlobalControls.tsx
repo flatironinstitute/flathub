@@ -3,24 +3,33 @@ import clsx from "clsx";
 
 import * as RadixSwitch from "@radix-ui/react-switch";
 
-import { dispatch_action, CellWrapper, BigButton } from "../shared";
+import { dispatch_action, CellWrapper, BigButton } from "./shared";
 
 export default function GlobalControls(): React.JSX.Element {
   return (
-    <CellWrapper>
-      <div className="grid items-center gap-y-4">
-        <BigButton
-          onClick={() => {
-            dispatch_action({
-              type: `add_cell`,
-              cell_id: `cell_${Date.now()}`
-            });
-          }}
-        >
-          Add Panel
-        </BigButton>
-        <DarkModeToggle />
-      </div>
+    <CellWrapper className="grid items-center gap-y-4">
+      <BigButton
+        onClick={() => {
+          dispatch_action({
+            type: `add_catalog_cell`,
+            cell_id: `catalog_cell_${Date.now()}`
+          });
+        }}
+      >
+        Add Catalog
+      </BigButton>
+      <BigButton
+        disabled
+        onClick={() => {
+          dispatch_action({
+            type: `add_comparison_cell`,
+            cell_id: `comparison_cell_${Date.now()}`
+          });
+        }}
+      >
+        Add Comparison
+      </BigButton>
+      <DarkModeToggle />
     </CellWrapper>
   );
 }
