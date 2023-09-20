@@ -1,6 +1,13 @@
 import type { QueryObserverOptions } from "@tanstack/query-core";
 import type { Readable } from "svelte/store";
-import type { Action, Cell, CellID } from "./types";
+import type {
+  Action,
+  CatalogHierarchyNode,
+  Cell,
+  CellID,
+  FieldMetadata,
+  FieldType
+} from "./types";
 
 import React from "react";
 import clsx from "clsx";
@@ -14,20 +21,25 @@ const FLATHUB_API_BASE_URL = `https://flathub.flatironinstitute.org`;
 const query_client = new QueryClient();
 
 const [useCell, CellProvider] = useContextHelper<Cell.Any>(`Cell`);
-// const [usePlotID, PlotIDProvider] = useContextHelper<string>(`PlotID`);
+const [useFieldNode, FieldNodeProvider] =
+  useContextHelper<CatalogHierarchyNode>(`FieldNode`);
 // const [useFieldID, FieldIDProvider] = useContextHelper<string>(`FieldID`);
+// const [usePlotID, PlotIDProvider] = useContextHelper<string>(`PlotID`);
 // const [useData, DataProvider] = useContextHelper<Datum[]>(`Data`);
 
 export const Providers = {
-  CellProvider
+  CellProvider,
+  FieldNodeProvider
+  // FieldIDProvider
   // PlotIDProvider,
-  // FieldIDProvider,
   // DataProvider
 };
 
 export const hooks = {
   useStore,
-  useCell
+  useCell,
+  useFieldNode
+  // useFieldID
 };
 
 function useStore<T>(store: Readable<T>) {
@@ -58,13 +70,13 @@ function useContextHelper<T>(debug: string) {
   return [useContext, context.Provider] as const;
 }
 
-export function create_query_observer<T>(
-  options: QueryObserverOptions<T>
-): QueryObserver<T> {
-  log(`🐛 Creating Query Observer:`, options.queryKey, options);
-  const defaulted_options = query_client.defaultQueryOptions(options);
-  return new QueryObserver(query_client, defaulted_options);
-}
+// export function create_query_observer<T>(
+//   options: QueryObserverOptions<T>
+// ): QueryObserver<T> {
+//   log(`🐛 Creating Query Observer:`, options.queryKey, options);
+//   const defaulted_options = query_client.defaultQueryOptions(options);
+//   return new QueryObserver(query_client, defaulted_options);
+// }
 
 export async function fetch_api_get<T>(path: string): Promise<T> {
   const url = new URL(`/api${path}`, FLATHUB_API_BASE_URL);
@@ -87,19 +99,97 @@ export function log(...args: any[]) {
   console.log(`🌔`, ...args);
 }
 
-// Function to ensure that a string is a CellID.Catalog
-export function is_catalog_cell_id(cell_id: CellID.Any): CellID.Catalog {
-  if (!cell_id.match(/^catalog_cell_/)) {
-    throw new Error(`${cell_id} is not a catalog cell id`);
-  }
-  return cell_id as CellID.Catalog;
+export function is_catalog_cell_id(
+  cell_id: CellID.Any
+): cell_id is CellID.Catalog {
+  return cell_id.match(/^catalog_cell_/) ? true : false;
 }
 
-export function is_table_cell_id(cell_id: CellID.Any): CellID.Table {
-  if (!cell_id.match(/^table_cell_/)) {
+export function is_table_cell_id(cell_id: CellID.Any): cell_id is CellID.Table {
+  return cell_id.match(/^table_cell_/) ? true : false;
+}
+
+export function assert_catalog_cell_id(
+  cell_id: CellID.Any
+): asserts cell_id is CellID.Catalog {
+  if (!is_catalog_cell_id(cell_id)) {
+    throw new Error(`${cell_id} is not a catalog cell id`);
+  }
+}
+
+export function assert_table_cell_id(
+  cell_id: CellID.Any
+): asserts cell_id is CellID.Table {
+  if (!is_table_cell_id(cell_id)) {
     throw new Error(`${cell_id} is not a table cell id`);
   }
-  return cell_id as CellID.Table;
+}
+
+export function get_field_type(field: FieldMetadata): FieldType {
+  const { type, dtype, base } = field;
+  const has_enum = field.enum && field.enum.length > 0 ? true : false;
+  const has_terms = field.terms ? true : false;
+  if (!type) {
+    return `ROOT`;
+  }
+  const type_string = [type, dtype, base, has_terms, has_enum].join(`_`);
+  log(`🐛`, type_string);
+  switch (type_string) {
+    case `byte_i1_i_false_false`:
+    case `short_i2_i_false_false`:
+    case `integer_i4_i_false_false`:
+    case `long_i8_i_false_false`:
+      return `INTEGER`;
+    case `float_f4_f_false_false`:
+    case `double_f8_f_false_false`:
+      return `FLOAT`;
+    case `byte_i1_i_true_true`:
+      return `LABELLED_ENUMERABLE_INTEGER`;
+    case `boolean_?_b_true_true`:
+      return `LABELLED_ENUMERABLE_BOOLEAN`;
+    case `byte_i1_i_true_false`:
+    case `short_i2_i_true_false`:
+      return `ENUMERABLE_INTEGER`;
+    case `keyword_S8_s_false_false`:
+    case `keyword_S32_s_false_false`:
+    case `keyword_S16_s_false_false`:
+    case `keyword_S20_s_false_false`:
+    case `keyword_S8_s_true_false`:
+      return `STRING`;
+    case `array float_f4_f_false_false`:
+    case `array integer_i4_i_false_false`:
+    case `array double_f8_f_false_false`:
+      return `ARRAY`;
+  }
+  console.error(`Could not determine field type for: ${field.name}`, field);
+}
+
+// const global_field_ids = new Set<string>();
+
+// export function get_field_id(node: CatalogHierarchyNode): string {
+//   const metadata = node.data;
+//   let id: string;
+//   if (is_root_node(node)) return `root`;
+//   if (metadata.__id) id = metadata.__id;
+//   if (metadata.name && metadata.name.length > 0) id = metadata.name;
+//   else if (metadata.title && metadata.title.length > 0) id = metadata.title;
+//   if (typeof id === `undefined`) {
+//     log(`🐛`, node);
+//     throw new Error(`get_field_id: id is undefined`);
+//   }
+//   // if (maybe === undefined) {
+//   //   throw new Error(`get_field_id: node.data.name is undefined`);
+//   // }
+//   // if (global_field_ids.has(maybe)) {
+//   //   throw new Error(`get_field_id: duplicate field id: ${maybe}`);
+//   // }
+//   // global_field_ids.add(maybe);
+//   // log(`how`, maybe)
+//   return id;
+// }
+
+export function is_root_node(node: CatalogHierarchyNode): boolean {
+  return node.depth === 0;
 }
 
 export function CellWrapper({

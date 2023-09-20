@@ -4,7 +4,7 @@ import {
   CellWrapper,
   dispatch_action,
   hooks,
-  is_catalog_cell_id,
+  assert_catalog_cell_id,
   log,
   Placeholder,
   Providers

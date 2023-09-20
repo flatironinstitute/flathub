@@ -23,6 +23,7 @@
     "@radix-ui/react-slider": "latest",
     "@radix-ui/react-switch": "latest",
     "@tanstack/query-core": "latest",
+    "@tanstack/react-query": "latest",
     "@tanstack/react-table": "latest",
     "astro": "latest",
     "autoprefixer": "latest",
@@ -48,12 +49,12 @@
     "trailingComma": "none"
   },
   "devDependencies": {
-    "prettier": "latest",
-    "prettier-plugin-tailwindcss": "latest",
     "@types/d3": "latest",
     "@types/katex": "latest",
     "@types/node": "latest",
     "@types/react": "latest",
-    "@types/react-dom": "latest"
+    "@types/react-dom": "latest",
+    "prettier": "latest",
+    "prettier-plugin-tailwindcss": "latest"
   }
 }

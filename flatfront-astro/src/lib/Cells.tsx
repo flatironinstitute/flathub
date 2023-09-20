@@ -1,13 +1,22 @@
-import type { Cell, TopResponseEntry } from "./types";
+import type {
+  Cell,
+  TopResponseEntry,
+  Action,
+  TopResponse,
+  CatalogResponse
+} from "./types";
 
+import React from "react";
 import * as d3 from "d3";
+import { useQuery } from "@tanstack/react-query";
 import {
   BigButton,
   CellSection,
   CellWrapper,
   dispatch_action,
+  fetch_api_get,
   hooks,
-  is_catalog_cell_id,
+  assert_catalog_cell_id,
   log,
   Placeholder,
   Providers
@@ -16,6 +25,7 @@ import * as stores from "./stores";
 import Select from "./Select";
 import TableSection from "./Table";
 import PlotSection from "./Plot";
+import FilterControls from "./FilterControls";
 
 export default function Cells() {
   const cells = hooks.useStore(stores.cells);
@@ -50,7 +60,26 @@ export default function Cells() {
 }
 
 function CatalogCell() {
-  const catalog_cell_id = is_catalog_cell_id(hooks.useCell().cell_id);
+  const catalog_cell_id = hooks.useCell().cell_id;
+  assert_catalog_cell_id(catalog_cell_id);
+
+  const catalog_id = hooks
+    .useStore(stores.catalog_id_by_cell_id)
+    .get(catalog_cell_id);
+
+  const catalog_query = useQuery({
+    queryKey: [`catalog`, catalog_id],
+    queryFn: (): Promise<CatalogResponse> => fetch_api_get(`/${catalog_id}`),
+    enabled: !!catalog_id,
+    staleTime: Infinity
+  });
+
+  React.useEffect(() => {
+    if (!catalog_id) return;
+    stores.catalog_query_by_catalog_id.update((old) => {
+      return { ...old, [catalog_id]: catalog_query };
+    });
+  }, [catalog_query]);
 
   const cells = hooks.useStore(stores.cells);
 
@@ -58,11 +87,12 @@ function CatalogCell() {
     <>
       <CellSection label="catalog" className="flex flex-col gap-y-4">
         <CatalogSelect />
-        <BigButton>About</BigButton>
-        <BigButton>Browse Fields</BigButton>
+        <BigButton disabled={!catalog_id}>About</BigButton>
+        <BigButton disabled={!catalog_id}>Browse Fields</BigButton>
       </CellSection>
       <CellSection label="filters" className="flex flex-col gap-y-4">
-        <BigButton>Edit Filters</BigButton>
+        <BigButton disabled={!catalog_id}>Edit Filters</BigButton>
+        <FilterControls />
       </CellSection>
       <CellSection label="random sample" className="flex flex-col gap-y-4">
         <div>fraction</div>
@@ -126,16 +156,22 @@ function CatalogCell() {
 }
 
 function CatalogSelect() {
-  // const cell_id = hooks.useCell().cell_id;
-  // const catalog_id = hooks.useStore(stores.catalog_id_by_cell_id).get(cell_id);
+  const cell_id = hooks.useCell().cell_id;
+  assert_catalog_cell_id(cell_id);
+  const catalog_id = hooks.useStore(stores.catalog_id_by_cell_id).get(cell_id);
   const get_title = (d: TopResponseEntry) => d?.title;
-  const catalog_list_unsorted = hooks.useStore(stores.top_response).data ?? [];
+  const catalog_list_query = useQuery({
+    staleTime: Infinity,
+    queryKey: ["top"],
+    queryFn: async (): Promise<TopResponse> => fetch_api_get<TopResponse>(`/`)
+  });
+  const catalog_list_unsorted = catalog_list_query.data ?? [];
   const catalog_list = d3.sort(catalog_list_unsorted, get_title);
   const ready = catalog_list.length > 0;
-  // const selected = catalog_list.find((d) => d.name === catalog_id);
+  const selected = catalog_list.find((d) => d.name === catalog_id);
   return (
     <div data-type="CatalogSelect">
-      {/* <Select
+      <Select
         placeholder={ready ? "Select a catalog..." : "Loading catalogs..."}
         options={catalog_list}
         getKey={(d) => d?.name}
@@ -147,14 +183,8 @@ function CatalogSelect() {
             type: `set_catalog`,
             cell_id,
             catalog_id: d?.name
-          } as Actions[`SetCatalog`]);
+          } as Action.SetCatalog);
         }}
-      /> */}
-      <Select
-        placeholder={ready ? "Select a catalog..." : "Loading catalogs..."}
-        options={catalog_list}
-        getKey={(d) => d?.name}
-        getDisplayName={get_title}
       />
     </div>
   );

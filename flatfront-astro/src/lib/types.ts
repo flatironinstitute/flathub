@@ -1,5 +1,28 @@
 import type * as schema from "./flathub-schema";
 
+export type FieldType =
+  | `ROOT`
+  | `INTEGER`
+  | `FLOAT`
+  | `LABELLED_ENUMERABLE_BOOLEAN`
+  | `LABELLED_ENUMERABLE_INTEGER`
+  | `ENUMERABLE_INTEGER`
+  | `ARRAY`
+  | `STRING`;
+
+export type GlobalFilterState = Record<
+  CellID.Catalog,
+  Record<string, FilterValueRaw>
+>;
+
+export type CatalogMetadataWrapper = {
+  response: CatalogResponse;
+  hierarchy: CatalogHierarchyNode;
+  depth_first: Array<CatalogHierarchyNode>;
+};
+
+export type CatalogHierarchyNode = d3.HierarchyNode<FieldMetadata>;
+
 export namespace Cell {
   export type Catalog = {
     type: `catalog`;
@@ -46,8 +69,20 @@ export namespace Action {
     | AddTableCell
     | AddPlotCell
     | RemoveCell;
-  export type Any = CellAction;
+  export type FilterList = ActionBase<
+    `add_filter` | `remove_filter` | `remove_child_filters`,
+    { cell_id: CellID.Catalog; field_id: string }
+  >;
+  export type SetCatalog = ActionBase<
+    `set_catalog`,
+    { cell_id: CellID.Catalog; catalog_id: string }
+  >;
+  export type Any = CellAction | FilterList | SetCatalog;
 }
+
+type ActionBase<T extends string, U> = U & {
+  type: T;
+};
 
 export namespace CellID {
   export type Catalog = `catalog_cell_${number}`;
@@ -57,13 +92,20 @@ export namespace CellID {
   export type Any = Catalog | Comparison | Table | Plot;
 }
 
-type ActionBase<T extends string, U> = U & {
-  type: T;
-};
-
 // ===========================================
 // SCHEMA
 // ===========================================
+
+export type FilterValueRaw = Filters[string];
+
+export type Filters = schema.components["schemas"]["Filters"];
+
+export type FieldMetadata = schema.components["schemas"]["FieldGroup"] & {
+  __hash?: string;
+};
+
+export type CatalogResponse =
+  schema.components["responses"]["catalog"]["content"]["application/json"];
 
 export type TopResponseEntry = TopResponse[number];
 
