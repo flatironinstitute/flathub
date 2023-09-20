@@ -288,39 +288,46 @@ function get_initial_cell_filters(
       if (!metadata) {
         throw new Error(`Could not find metadata for filter ${filter_name}`);
       }
-      const initial_value: Filters[string] = (() => {
-        const type = metadata.type;
-        if (type === `boolean`) {
-          return false;
-        } else if (metadata.terms) {
-          return 0;
-        } else if (type === `byte`) {
-          return 0;
-        } else if ([`float`, `short`].includes(type)) {
-          if (!metadata.stats) {
-            throw new Error(
-              `Trying to use float filter without stats: ${filter_name}`
-            );
-          }
-          if (
-            metadata.stats.min === null ||
-            metadata.stats.max === null ||
-            !Number.isFinite(metadata.stats.min) ||
-            !Number.isFinite(metadata.stats.max)
-          ) {
-            log(`meta`, metadata);
-            throw new Error(`Missing min/max for float filter: ${filter_name}`);
-          }
-          return {
-            gte: metadata.stats.min,
-            lte: metadata.stats.max
-          };
-        } else {
-          return `unknown`;
-          log(`meta`, metadata);
-          throw new Error(`Unexpected filter type: ${type}`);
+
+      const field_type = get_field_type(metadata);
+
+      const initial_value: FilterValueRaw = (() => {
+        switch (field_type) {
+          case `ROOT`:
+            throw new Error(`Root field should not be a filter`);
+          case `INTEGER`:
+          case `FLOAT`:
+            if (!metadata.stats) {
+              throw new Error(`Numeric field is missing stats: ${filter_name}`);
+            }
+            if (
+              metadata.stats.min === null ||
+              metadata.stats.max === null ||
+              !Number.isFinite(metadata.stats.min) ||
+              !Number.isFinite(metadata.stats.max)
+            ) {
+              throw new Error(
+                `Numeric field is missing min/max: ${filter_name}`
+              );
+            }
+            return {
+              gte: metadata.stats.min,
+              lte: metadata.stats.max
+            };
+          case `LABELLED_ENUMERABLE_BOOLEAN`:
+            return false;
+          case `LABELLED_ENUMERABLE_INTEGER`:
+          case `ENUMERABLE_INTEGER`:
+            return 0;
+          case `ARRAY`:
+            return null;
+          case `STRING`:
+            return ``;
+          default:
+            field_type satisfies never;
         }
       })();
+
       return [filter_name, initial_value];
     })
   );
