@@ -10,7 +10,6 @@ import type {
 } from "./types";
 
 import React from "react";
-import clsx from "clsx";
 import { get } from "svelte/store";
 import { QueryClient, QueryObserver } from "@tanstack/query-core";
 
@@ -133,7 +132,6 @@ export function get_field_type(field: FieldMetadata): FieldType {
     return `ROOT`;
   }
   const type_string = [type, dtype, base, has_terms, has_enum].join(`_`);
-  log(`🐛`, type_string);
   switch (type_string) {
     case `byte_i1_i_false_false`:
     case `short_i2_i_false_false`:
@@ -192,96 +190,4 @@ export function is_root_node(node: CatalogHierarchyNode): boolean {
   return node.depth === 0;
 }
 
-export function CellWrapper({
-  children,
-  className
-}: {
-  children: React.ReactNode;
-  className?: string;
-}): React.JSX.Element {
-  return (
-    <div
-      data-type="CellWrapper"
-      className={clsx(
-        `w-full rounded p-6`,
-        `ring-1 ring-black/30 dark:ring-white/30`,
-        className
-      )}
-    >
-      {children}
-    </div>
-  );
-}
 
-export function BigButton({
-  children,
-  onClick,
-  className,
-  ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  children: React.ReactNode;
-}): React.JSX.Element {
-  return (
-    <button
-      data-type="BigButton"
-      className={clsx(BigButton.className, className)}
-      onClick={onClick}
-      {...props}
-    >
-      {children}
-    </button>
-  );
-}
-
-BigButton.className = clsx(
-  `block rounded-lg py-3 font-bold text-xl`,
-  `ring-1 ring-black dark:ring-white`,
-  `focus:outline-none focus-visible:ring-4`,
-  `disabled:opacity-50 disabled:cursor-not-allowed`
-);
-
-export function CellSection({
-  label,
-  children = null,
-  className
-}: {
-  label?: string;
-  children?: React.ReactNode;
-  className?: string;
-}): React.JSX.Element {
-  return (
-    <div data-type="CellSection" className={className}>
-      {label && <SimpleLabel>{label}</SimpleLabel>}
-      {children}
-    </div>
-  );
-}
-
-export function SimpleLabel({
-  children,
-  className
-}: {
-  children: React.ReactNode;
-  className?: string;
-}): React.JSX.Element {
-  return <div className={clsx(`text-sm uppercase`, className)}>{children}</div>;
-}
-
-export function Placeholder({
-  children,
-  className,
-  ...rest
-}: { children: React.ReactNode } & React.HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      className={clsx(
-        `grid h-40 place-items-center rounded-lg p-4 opacity-50`,
-        `leading-none`,
-        `outline-dashed outline-2 outline-slate-700 dark:outline-slate-50`,
-        className
-      )}
-    >
-      {children}
-    </div>
-  );
-}

@@ -3,7 +3,8 @@ import clsx from "clsx";
 
 import * as RadixSwitch from "@radix-ui/react-switch";
 
-import { dispatch_action, CellWrapper, BigButton } from "./shared";
+import { dispatch_action } from "./shared";
+import { CellWrapper, BigButton } from "./Primitives";
 
 export default function GlobalControls(): React.JSX.Element {
   return (

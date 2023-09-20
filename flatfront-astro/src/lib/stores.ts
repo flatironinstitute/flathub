@@ -18,7 +18,12 @@ import { QueryObserver } from "@tanstack/query-core";
 import * as d3 from "d3";
 import { readable, writable, derived, get } from "svelte/store";
 import * as lzstring from "lz-string";
-import { fetch_api_get, get_field_type, is_catalog_cell_id, log } from "./shared";
+import {
+  fetch_api_get,
+  get_field_type,
+  is_catalog_cell_id,
+  log
+} from "./shared";
 
 const initial_actions: Action.Any[] = [];
 
@@ -118,8 +123,8 @@ export const catalog_metadata_by_catalog_id: Readable<
       const depth_first: Array<CatalogHierarchyNode> = [];
       hierarchy.eachBefore((d) => {
         d.data.__hash = tiny_json_hash(d.data);
-        depth_first.push(d);
-        get_field_type(d.data)
+        if (!is_root_node(d)) depth_first.push(d);
+        get_field_type(d.data);
       });
       const wrapper: CatalogMetadataWrapper = {
         response: catalog_response,
