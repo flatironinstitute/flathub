@@ -287,13 +287,13 @@ function NumericFieldHistogram() {
         d === 0 || d === 1 ? "" : d3.format(".2~s")(d).replace("G", "B"),
       // type: should_use_log ? "log" : undefined,
       grid: true,
-      type: should_use_log ? "log" : "linear",
+      type: should_use_log ? "log" : "linear"
       // insetBottom: 10
     },
     x: {
       label: null,
       ticks: 3,
-      tickFormat: (d) => d3.format(".2~s")(d).replace("G", "B")
+      tickFormat: (d) => d3.format(".4~g")(d).replace("G", "B")
     },
     marks: [
       Plot.rectY(histogram_data, {
