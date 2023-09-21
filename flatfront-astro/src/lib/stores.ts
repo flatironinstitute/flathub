@@ -19,8 +19,10 @@ import * as d3 from "d3";
 import { readable, writable, derived, get } from "svelte/store";
 import * as lzstring from "lz-string";
 import {
+  assert_numeric_field_stats,
   fetch_api_get,
   get_field_type,
+  has_numeric_field_stats,
   is_catalog_cell_id,
   log
 } from "./shared";
@@ -140,22 +142,6 @@ export const catalog_metadata_by_catalog_id: Readable<
   return output;
 })();
 
-function get_node_label(node: CatalogHierarchyNode) {
-  let label;
-  if (is_root_node(node)) {
-    label = `root`;
-  } else if (node.data.name && node.data.name.length > 0) {
-    label = node.data.name;
-  } else if (node.data.title && node.data.title.length > 0) {
-    label = node.data.title;
-  }
-  if (!label) {
-    console.error(`Could not find label for node:`, node);
-    throw new Error(`Could not find label for node: ${node}`);
-  }
-  return label;
-}
-
 function is_root_node(node: CatalogHierarchyNode): boolean {
   return node.depth === 0;
 }
@@ -169,8 +155,6 @@ function tiny_json_hash(object) {
   }
   return (hash >>> 0).toString(16);
 }
-
-// export const filters_by_cell_id = readable(new Map());
 
 export const filters_by_cell_id: Readable<Map<CellID.Catalog, Filters>> =
   derived(
@@ -297,19 +281,12 @@ function get_initial_cell_filters(
             throw new Error(`Root field should not be a filter`);
           case `INTEGER`:
           case `FLOAT`:
-            if (!metadata.stats) {
-              throw new Error(`Numeric field is missing stats: ${filter_name}`);
-            }
-            if (
-              metadata.stats.min === null ||
-              metadata.stats.max === null ||
-              !Number.isFinite(metadata.stats.min) ||
-              !Number.isFinite(metadata.stats.max)
-            ) {
+            if (!has_numeric_field_stats(metadata)) {
               throw new Error(
-                `Numeric field is missing min/max: ${filter_name}`
+                `Field ${metadata.name} does not have numeric field stats`
               );
             }
+            assert_numeric_field_stats(metadata);
             return {
               gte: metadata.stats.min,
               lte: metadata.stats.max

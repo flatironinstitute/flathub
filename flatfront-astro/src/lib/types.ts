@@ -1,5 +1,7 @@
 import type * as schema from "./flathub-schema";
 
+export type { schema };
+
 export type FieldType =
   | `ROOT`
   | `INTEGER`
@@ -95,6 +97,13 @@ export namespace CellID {
 // ===========================================
 // SCHEMA
 // ===========================================
+
+export type HistogramPostRequestBody = NonNullable<
+  schema.operations["histogramPOST"]["requestBody"]
+>["content"]["application/json"];
+
+export type HistogramResponse =
+  schema.components["responses"]["histogram"]["content"]["application/json"];
 
 export type FilterValueRaw = Filters[string];
 

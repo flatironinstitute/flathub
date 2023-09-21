@@ -177,7 +177,7 @@ function BrowseFieldsDialog() {
 
   return (
     <Dialog disabled={!catalog_id} label="Browse Fields">
-      <div className="space-y-3 text-xs max-h-[80dvh] overflow-x-visible overflow-y-scroll p-4">
+      <div className="space-y-3 text-xs w-[80dvw] max-w-[600px] max-h-[80dvh] overflow-x-visible overflow-y-scroll p-4">
         {all_field_nodes.map((node) => (
           <Providers.FieldNodeProvider value={node} key={node.data.__hash}>
             <FieldCard />
@@ -216,7 +216,7 @@ function FilterControls() {
       <pre>{JSON.stringify(filters, null, 2)}</pre>
       {filter_and_ancestor_nodes.map((node) => (
         <Providers.FieldNodeProvider value={node} key={node.data.__hash}>
-          <FieldCard />
+          <FieldCard filter />
         </Providers.FieldNodeProvider>
       ))}
     </div>
