@@ -132,7 +132,7 @@ export function Dialog({
           <RadixDialog.Close
             className={clsx(
               "absolute right-3.5 top-3.5 inline-flex items-center justify-center rounded-full p-1",
-              "focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75"
+              "focus:outline-none focus-visible:ring focus-visible:ring-white focus-visible:ring-opacity-75"
             )}
           >
             <Icons.Cross1Icon className="h-4 w-4" />
