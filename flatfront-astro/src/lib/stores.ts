@@ -14,7 +14,6 @@ import type {
   TopResponse
 } from "./types";
 
-import { QueryObserver } from "@tanstack/query-core";
 import * as d3 from "d3";
 import { readable, writable, derived, get } from "svelte/store";
 import * as lzstring from "lz-string";
@@ -75,7 +74,7 @@ export const cells: Readable<Cell.Any[]> = derived(actions, ($actions) => {
   return cells;
 });
 
-const actions_by_cell_id: Readable<d3.InternMap<CellID.Any, Action.Any[]>> =
+export const actions_by_cell_id: Readable<d3.InternMap<CellID.Any, Action.Any[]>> =
   derived(actions, ($actions) => d3.group($actions, (d) => d.cell_id));
 
 export const catalog_id_by_cell_id: Readable<Map<CellID.Catalog, string>> =
@@ -173,34 +172,20 @@ export const filters_by_cell_id: Readable<Map<CellID.Catalog, Filters>> =
       return new Map(
         [...$catalog_id_by_cell_id.entries()].map(([cell_id, catalog_id]) => {
           const catalog_metadata = $catalog_metadata_by_catalog_id[catalog_id];
-
           const catalog_hierarchy = catalog_metadata?.hierarchy;
-
           const cell_actions = $actions_by_cell_id.get(cell_id);
-
           const filter_names_set = catalog_hierarchy
             ? get_filter_names(catalog_hierarchy, cell_actions)
             : new Set<string>();
-
           const initial_filters: Filters = get_initial_cell_filters(
             filter_names_set,
             catalog_hierarchy
           );
-
-          // log(`filter_ids_set`, {
-          //   filter_ids_set,
-          //   catalog_hierarchy,
-          //   cell_actions,
-          //   initial_filters
-          // });
-
           const filter_state: Filters = $filter_state?.[cell_id] ?? {};
-
           const filters = {
             ...initial_filters,
             ...filter_state
           };
-
           return [cell_id, filters];
         })
       );
@@ -219,7 +204,7 @@ export function get_filter_names(
   log(`initial_filter_names`, initial_filter_names);
   const filter_names_set: Set<string> = new Set(initial_filter_names);
   const filter_list_actions = actions.filter(
-    (action): action is Action.FilterList => {
+    (action): action is Action.FilterListAction => {
       return (
         action.type === `add_filter` ||
         action.type === `remove_filter` ||

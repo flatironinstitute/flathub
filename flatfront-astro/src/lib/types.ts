@@ -2,6 +2,9 @@ import type * as schema from "./flathub-schema";
 
 export type { schema };
 
+export type DataResponse = Array<DataRow>;
+export type DataRow = Record<string, any>;
+
 export type FieldType =
   | `ROOT`
   | `INTEGER`
@@ -71,7 +74,7 @@ export namespace Action {
     | AddTableCell
     | AddPlotCell
     | RemoveCell;
-  export type FilterList = ActionBase<
+  export type FilterListAction = ActionBase<
     `add_filter` | `remove_filter` | `remove_child_filters`,
     { cell_id: CellID.Catalog; field_id: string }
   >;
@@ -79,7 +82,20 @@ export namespace Action {
     `set_catalog`,
     { cell_id: CellID.Catalog; catalog_id: string }
   >;
-  export type Any = CellAction | FilterList | SetCatalog;
+  export type AddTableColumn = ActionBase<
+    `add_table_column`,
+    { cell_id: CellID.Table; field_id: string }
+  >;
+  export type RemoveTableColumn = ActionBase<
+    `remove_table_column`,
+    { cell_id: CellID.Table; field_id: string }
+  >;
+  export type TableColumnAction = AddTableColumn | RemoveTableColumn;
+  export type Any =
+    | CellAction
+    | TableColumnAction
+    | FilterListAction
+    | SetCatalog;
 }
 
 type ActionBase<T extends string, U> = U & {
@@ -97,6 +113,10 @@ export namespace CellID {
 // ===========================================
 // SCHEMA
 // ===========================================
+
+export type DataPostRequestBody = NonNullable<
+  schema.operations["dataPOST"]["requestBody"]
+>["content"]["application/json"];
 
 export type HistogramPostRequestBody = NonNullable<
   schema.operations["histogramPOST"]["requestBody"]

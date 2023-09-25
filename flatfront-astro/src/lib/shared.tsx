@@ -2,6 +2,7 @@ import type { Readable } from "svelte/store";
 import type {
   Action,
   CatalogHierarchyNode,
+  CatalogMetadataWrapper,
   Cell,
   CellID,
   FieldMetadata,
@@ -19,9 +20,21 @@ import * as stores from "./stores";
 
 const FLATHUB_API_BASE_URL = `https://flathub.flatironinstitute.org`;
 
-const [useCell, CellProvider] = useContextHelper<Cell.Any>(`Cell`);
+function create_context_helper<T>(debug: string) {
+  const context = React.createContext<T | null>(null);
+  const useContext = (): T => {
+    const value: T | null = React.useContext(context);
+    if (value === null) {
+      throw new Error(`useContextHelper: ${debug}: value is null`);
+    }
+    return value;
+  };
+  return [useContext, context.Provider] as const;
+}
+
+const [useCell, CellProvider] = create_context_helper<Cell.Any>(`Cell`);
 const [useFieldNode, FieldNodeProvider] =
-  useContextHelper<CatalogHierarchyNode>(`FieldNode`);
+  create_context_helper<CatalogHierarchyNode>(`FieldNode`);
 // const [useFieldID, FieldIDProvider] = useContextHelper<string>(`FieldID`);
 // const [usePlotID, PlotIDProvider] = useContextHelper<string>(`PlotID`);
 // const [useData, DataProvider] = useContextHelper<Datum[]>(`Data`);
@@ -34,16 +47,6 @@ export const Providers = {
   // DataProvider
 };
 
-function useCatalogID(): string {
-  const catalog_cell_id = hooks.useCell().cell_id;
-  assert_catalog_cell_id(catalog_cell_id);
-  const catalog_id = hooks
-    .useStore(stores.catalog_id_by_cell_id)
-    .get(catalog_cell_id);
-  return catalog_id;
-}
-
-// A react hook that takes a ref and a delay time and returns a boolean. the boolean is true when the element has been visible on the screen for the delay time.
 function useDelayVisible(
   ref: React.RefObject<HTMLElement>,
   delay: number
@@ -94,6 +97,28 @@ function useCatalogCellID(): CellID.Catalog {
   return catalog_cell_id;
 }
 
+function useCellActions(): Action.Any[] {
+  const catalog_cell_id = useCatalogCellID();
+  const cell_actions = useStore(stores.actions_by_cell_id).get(catalog_cell_id);
+  return cell_actions;
+}
+
+function useCatalogID(): string {
+  const catalog_cell_id = useCatalogCellID();
+  const catalog_id = hooks
+    .useStore(stores.catalog_id_by_cell_id)
+    .get(catalog_cell_id);
+  return catalog_id;
+}
+
+function useCatalogMetadata(): CatalogMetadataWrapper {
+  const catalog_id = useCatalogID();
+  const catalog_metadata = hooks.useStore(
+    stores.catalog_metadata_by_catalog_id
+  )?.[catalog_id];
+  return catalog_metadata;
+}
+
 function useFilters(): Filters {
   const catalog_cell_id = useCatalogCellID();
   const filters = hooks
@@ -123,6 +148,8 @@ export const hooks = {
   useFieldNode,
   useDelayVisible,
   useCatalogID,
+  useCatalogMetadata,
+  useCellActions,
   useFilters,
   useFilterValueSetter
 };
@@ -130,26 +157,6 @@ export const hooks = {
 export function dispatch_action(action: Action.Any) {
   stores.actions.update(($actions) => [...$actions, action]);
 }
-
-function useContextHelper<T>(debug: string) {
-  const context = React.createContext<T | null>(null);
-  const useContext = (): T => {
-    const value: T | null = React.useContext(context);
-    if (value === null) {
-      throw new Error(`useContextHelper: ${debug}: value is null`);
-    }
-    return value;
-  };
-  return [useContext, context.Provider] as const;
-}
-
-// export function create_query_observer<T>(
-//   options: QueryObserverOptions<T>
-// ): QueryObserver<T> {
-//   log(`🐛 Creating Query Observer:`, options.queryKey, options);
-//   const defaulted_options = query_client.defaultQueryOptions(options);
-//   return new QueryObserver(query_client, defaulted_options);
-// }
 
 export async function fetch_api_get<T>(path: string): Promise<T> {
   const url = new URL(`/api${path}`, FLATHUB_API_BASE_URL);
