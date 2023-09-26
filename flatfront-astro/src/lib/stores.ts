@@ -28,13 +28,34 @@ import {
 
 const initial_actions: Action.Any[] = [];
 
-export const actions = writable<Action.Any[]>(initial_actions);
+export const actions = writable<Action.Any[]>(initial_actions, (set) => {
+  const actions = get_data_from_url<Action.Any[]>(`actions`);
+  if (actions) {
+    log(`Setting actions from URL:`, actions);
+    set(actions);
+  }
+});
 
 export const filter_state = writable<GlobalFilterState>(
-  {} as GlobalFilterState
+  {} as GlobalFilterState,
+  (set) => {
+    const state = get_data_from_url<GlobalFilterState>(`filters`);
+    if (state) {
+      log(`Setting filter state from URL:`, state);
+      set(state);
+    }
+  }
 );
 
 actions.subscribe((actions) => log(`All actions:`, actions));
+
+debounce_store(actions, 500).subscribe((actions) => {
+  store_data_in_url(actions, `actions`);
+});
+
+debounce_store(filter_state, 500).subscribe((filters) => {
+  store_data_in_url(filters, `filters`);
+});
 
 export const cells: Readable<Cell.Any[]> = derived(actions, ($actions) => {
   let cells: Cell.Any[] = [];
@@ -74,8 +95,9 @@ export const cells: Readable<Cell.Any[]> = derived(actions, ($actions) => {
   return cells;
 });
 
-export const actions_by_cell_id: Readable<d3.InternMap<CellID.Any, Action.Any[]>> =
-  derived(actions, ($actions) => d3.group($actions, (d) => d.cell_id));
+export const actions_by_cell_id: Readable<
+  d3.InternMap<CellID.Any, Action.Any[]>
+> = derived(actions, ($actions) => d3.group($actions, (d) => d.cell_id));
 
 export const catalog_id_by_cell_id: Readable<Map<CellID.Catalog, string>> =
   derived(
@@ -294,4 +316,58 @@ function get_initial_cell_filters(
     })
   );
   return initial_filter_object;
+}
+
+// =========================================
+// FUNCTIONS
+
+function store_data_in_url<T>(data: T, key: string) {
+  const compressed = compress_data(data);
+  const url = new URL(window.location.href);
+  url.searchParams.set(key, compressed);
+  window.history.replaceState({}, ``, url.toString());
+  const url_length = url.toString().length;
+  // log(`URL Length:`, url_length);
+  if (url_length > 2000) {
+    throw new Error(`URL is too long!`);
+  }
+}
+
+function get_data_from_url<T>(key: string): T | undefined {
+  const url = new URL(window.location.href);
+  const compressed = url.searchParams.get(key);
+  if (compressed && compressed.length > 0) {
+    const data = decompress_data<T>(compressed);
+    return data;
+  }
+  return undefined;
+}
+
+function compress_data<T>(data: T): string {
+  const compressed = lzstring.compressToEncodedURIComponent(
+    JSON.stringify(data)
+  );
+  return compressed;
+}
+
+function decompress_data<T>(compressed: string): T {
+  const restored = JSON.parse(
+    lzstring.decompressFromEncodedURIComponent(compressed)
+  );
+  return restored;
+}
+
+function debounce_store<T>(store: Readable<T>, delay: number): Readable<T> {
+  return derived(
+    store,
+    ($store, set) => {
+      const timeout = setTimeout(() => {
+        set($store);
+      }, delay);
+      return () => {
+        clearTimeout(timeout);
+      };
+    },
+    get(store)
+  );
 }
