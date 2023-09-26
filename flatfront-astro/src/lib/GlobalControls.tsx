@@ -3,7 +3,7 @@ import clsx from "clsx";
 
 import * as RadixSwitch from "@radix-ui/react-switch";
 
-import { dispatch_action } from "./shared";
+import { dispatch_action, hooks, log } from "./shared";
 import { CellWrapper, BigButton } from "./Primitives";
 
 export default function GlobalControls(): React.JSX.Element {
@@ -36,21 +36,15 @@ export default function GlobalControls(): React.JSX.Element {
 }
 
 function DarkModeToggle() {
-  const [dark_mode, set_dark_mode] = React.useState(true);
+  const dark_mode = hooks.useIsDarkMode();
 
-  React.useEffect(() => {
-    const system_dark_mode = window.matchMedia(
-      "(prefers-color-scheme: dark)"
-    ).matches;
-  }, []);
-
-  React.useEffect(() => {
-    if (dark_mode) {
+  const set_dark_mode = (value: boolean) => {
+    if (value) {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
     }
-  }, [dark_mode]);
+  };
 
   return (
     <div data-type="DarkModeToggle" className="flex h-20 items-center gap-x-4">

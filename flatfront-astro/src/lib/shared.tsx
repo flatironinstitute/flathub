@@ -92,7 +92,11 @@ function useStore<T>(store: Readable<T>) {
 }
 
 function useCatalogCellID(): CellID.Catalog {
-  const catalog_cell_id = hooks.useCell().cell_id;
+  const cell_data = hooks.useCell();
+  const catalog_cell_id =
+    "catalog_cell_id" in cell_data
+      ? cell_data.catalog_cell_id
+      : cell_data.cell_id;
   assert_catalog_cell_id(catalog_cell_id);
   return catalog_cell_id;
 }
@@ -142,6 +146,60 @@ function useFilterValueSetter() {
   return set_filter_value;
 }
 
+function useIsDarkMode() {
+  const [is_dark_mode, set_is_dark_mode] = React.useState(() => {
+    const system_dark_mode = window.matchMedia(
+      "(prefers-color-scheme: dark)"
+    ).matches;
+    log(`Initial dark mode:`, system_dark_mode);
+    return system_dark_mode;
+  });
+
+  React.useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === "attributes") {
+          const mutation_target = mutation.target as HTMLElement;
+          const is_dark_mode = mutation_target.classList.contains("dark");
+          log(`Dark mode changed:`, is_dark_mode);
+          set_is_dark_mode(is_dark_mode);
+        }
+      });
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"]
+    });
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  React.useEffect(() => {
+    const system_dark_mode = window.matchMedia("(prefers-color-scheme: dark)");
+    const listener = (event: MediaQueryListEvent) => {
+      log(`System dark mode changed:`, event.matches);
+      set_is_dark_mode(event.matches);
+    };
+    system_dark_mode.addEventListener("change", listener);
+    return () => {
+      system_dark_mode.removeEventListener("change", listener);
+    };
+  }, []);
+
+  React.useEffect(() => {
+    const has_dark_mode_class =
+      document.documentElement.classList.contains("dark");
+    if (is_dark_mode && !has_dark_mode_class) {
+      document.documentElement.classList.add("dark");
+    } else if (!is_dark_mode && has_dark_mode_class) {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [is_dark_mode]);
+
+  return is_dark_mode;
+}
+
 export const hooks = {
   useStore,
   useCell,
@@ -151,7 +209,8 @@ export const hooks = {
   useCatalogMetadata,
   useCellActions,
   useFilters,
-  useFilterValueSetter
+  useFilterValueSetter,
+  useIsDarkMode
 };
 
 export function dispatch_action(action: Action.Any) {
