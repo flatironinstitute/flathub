@@ -334,3 +334,43 @@ export const format = {
     return d3.format(`,`)(d);
   }
 };
+
+export function join_enums(
+  metadata: FieldMetadata
+): Array<{ text: string; count?: number; value: FilterValueRaw }> {
+  const has_enum = metadata.enum && metadata.enum.length > 0 ? true : false;
+  const has_terms =
+    metadata.stats?.terms && metadata.stats.terms.length > 0 ? true : false;
+  if (has_enum && !has_terms) {
+    throw new Error(`Has enum but no terms: ${metadata.name}`);
+  }
+  const joined = has_enum
+    ? metadata.enum.map((text, index) => {
+        const found = metadata.stats.terms.find((term) => {
+          const value_as_number = Number(term.value);
+          if (Number.isNaN(value_as_number)) return false;
+          return value_as_number === index;
+        });
+
+        const count = found?.count ?? null;
+        const value = found?.value ?? null;
+        return {
+          text,
+          count,
+          value
+        };
+      })
+    : metadata.stats.terms.map(({ value, count }) => {
+        const text = value.toString();
+        return {
+          text,
+          count,
+          value
+        };
+      });
+  const sorted = d3.sort(
+    joined,
+    has_enum ? (d) => -d.count : (d) => Number(d.text)
+  );
+  return sorted;
+}

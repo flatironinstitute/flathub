@@ -4,11 +4,12 @@ import {
   log,
   format,
   assert_numeric_field_stats,
-  assert_numeric_filter_value
+  assert_numeric_filter_value,
+  join_enums
 } from "./shared";
 import * as stores from "./stores";
 import Katex from "./Katex";
-import { RangeSlider, TextInput, Label } from "./Primitives";
+import { RangeSlider, TextInput, Select } from "./Primitives";
 import type { FilterValueRaw } from "./types";
 
 export function RangeFilterControl() {
@@ -81,9 +82,36 @@ export function RangeFilterControl() {
         }}
       />
       <div className="col-span-2">
-        <Label className="hidden sm:block">&nbsp;</Label>
+        {/* <Label className="hidden sm:block">&nbsp;</Label> */}
         {slider}
       </div>
     </div>
+  );
+}
+
+export function SelectFilterControl() {
+  const field_node = hooks.useFieldNode();
+  const metadata = field_node.data;
+  const field_id = metadata.name;
+  const filters = hooks.useFilters();
+  const filter_value_raw: FilterValueRaw = filters[field_id];
+  const values = join_enums(metadata);
+  const value = values.find((d) => d.value === filter_value_raw);
+
+  const set_filter_value = hooks.useFilterValueSetter();
+
+  return (
+    <Select
+      value={value}
+      options={values}
+      getKey={(d) => d?.value?.toString()}
+      getDisplayName={(d) => {
+        if (!d.count) return d.text;
+        return `${d.text} (${format.commas(d.count)} rows)`;
+      }}
+      onValueChange={({ value }) => {
+        set_filter_value(value);
+      }}
+    />
   );
 }

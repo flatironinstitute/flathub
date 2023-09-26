@@ -1,7 +1,9 @@
 import type {
   schema,
   HistogramPostRequestBody,
-  HistogramResponse
+  HistogramResponse,
+  FieldMetadata,
+  FilterValueRaw
 } from "./types";
 
 import React from "react";
@@ -11,21 +13,23 @@ import { useQuery } from "@tanstack/react-query";
 import * as Plot from "@observablehq/plot";
 import ObservablePlot from "./ObservablePlot";
 import {
-  hooks,
-  get_field_type,
   assert_numeric_field_stats,
-  log,
-  should_use_log_scale,
-  has_numeric_field_stats,
-  format,
   fetch_api_post,
-  is_leaf_node
+  format,
+  get_field_type,
+  has_numeric_field_stats,
+  hooks,
+  is_leaf_node,
+  join_enums,
+  log,
+  should_use_log_scale
 } from "./shared";
 import Katex from "./Katex";
 import { Placeholder } from "./Primitives";
-import { RangeFilterControl } from "./FilterControls";
+import { RangeFilterControl, SelectFilterControl } from "./FilterControls";
 
 export default function FieldCard({ filter }: { filter?: boolean }) {
+  const [show_details, set_show_details] = React.useState(!filter);
   const field_node = hooks.useFieldNode();
 
   const metadata = field_node.data;
@@ -57,59 +61,72 @@ export default function FieldCard({ filter }: { filter?: boolean }) {
       case `INTEGER`:
       case `FLOAT`:
         return <RangeFilterControl />;
-      // case `ENUMERABLE_INTEGER`:
-      // case `LABELLED_ENUMERABLE_INTEGER`:
-      // case `LABELLED_ENUMERABLE_BOOLEAN`:
-      //   return <EnumerableFieldStats />;
+      case `ENUMERABLE_INTEGER`:
+      case `LABELLED_ENUMERABLE_INTEGER`:
+      case `LABELLED_ENUMERABLE_BOOLEAN`:
+        return <SelectFilterControl />;
       default:
         return <div>not yet implemented</div>;
     }
   })();
 
-  const field_description = metadata.descr ? (
-    <div className="overflow-hidden text-xs opacity-80">
-      <Katex>{metadata.descr}</Katex>
-    </div>
-  ) : null;
-
-  const stats = (() => {
-    if (!metadata.stats) return null;
-    switch (field_type) {
-      case `INTEGER`:
-      case `FLOAT`:
-        if (!has_numeric_field_stats(metadata)) return null;
-        return <NumericFieldStats />;
-      case `ENUMERABLE_INTEGER`:
-      case `LABELLED_ENUMERABLE_INTEGER`:
-      case `LABELLED_ENUMERABLE_BOOLEAN`:
-        return <EnumerableFieldStats />;
-      default:
-        return null;
-    }
+  const details = (() => {
+    if (!show_details) return null;
+    const field_description = metadata.descr ? (
+      <div className="overflow-hidden text-xs opacity-80">
+        <Katex>{metadata.descr}</Katex>
+      </div>
+    ) : null;
+    const stats = (() => {
+      if (!metadata.stats) return null;
+      switch (field_type) {
+        case `INTEGER`:
+        case `FLOAT`:
+          if (!has_numeric_field_stats(metadata)) return null;
+          return <NumericFieldStats />;
+        case `ENUMERABLE_INTEGER`:
+        case `LABELLED_ENUMERABLE_INTEGER`:
+        case `LABELLED_ENUMERABLE_BOOLEAN`:
+          return <EnumerableFieldStats />;
+        default:
+          return null;
+      }
+    })();
+    const chart = has_numeric_field_stats(metadata) ? (
+      <NumericFieldHistogram />
+    ) : null;
+    const debug_section = (
+      <>
+        <div>{field_type}</div>
+        <pre>{JSON.stringify({ ...metadata, sub: undefined }, null, 2)}</pre>
+      </>
+    );
+    return (
+      <>
+        {field_description}
+        {stats}
+        {chart}
+        {debug_section}
+      </>
+    );
   })();
 
-  const chart = has_numeric_field_stats(metadata) ? (
-    <NumericFieldHistogram />
-  ) : null;
+  const show_details_button = !show_details && (
+    <button className="underline" onClick={() => set_show_details(true)}>
+      Show details
+    </button>
+  );
 
-  const top_part = (
+  const contents = (
     <div className="space-y-4">
       {title_and_units}
       {filter_control}
-      {field_description}
-      {stats}
-      {chart}
+      {details}
+      {show_details_button}
     </div>
   );
 
-  const debug_section = (
-    <>
-      <div>{field_type}</div>
-      <pre>{JSON.stringify({ ...metadata, sub: undefined }, null, 2)}</pre>
-    </>
-  );
-
-  return <FieldCardWrapper>{top_part}</FieldCardWrapper>;
+  return <FieldCardWrapper>{contents}</FieldCardWrapper>;
 }
 
 function FieldCardWrapper({
@@ -173,41 +190,10 @@ function NumericFieldStats() {
 function EnumerableFieldStats() {
   const field_node = hooks.useFieldNode();
   const metadata = field_node.data;
-  const has_enum = metadata.enum && metadata.enum.length > 0 ? true : false;
-  const has_terms =
-    metadata.stats?.terms && metadata.stats.terms.length > 0 ? true : false;
 
-  if (has_enum && !has_terms) {
-    throw new Error(`Has enum but no terms: ${metadata.name}`);
-  }
+  const joined = join_enums(metadata);
 
-  const joined = has_enum
-    ? metadata.enum.map((text, index) => {
-        const count =
-          metadata.stats.terms.find((term) => {
-            const value_as_number = Number(term.value);
-            if (Number.isNaN(value_as_number)) return false;
-            return value_as_number === index;
-          })?.count ?? null;
-        return {
-          text,
-          count
-        };
-      })
-    : metadata.stats.terms.map(({ value, count }) => {
-        const text = value.toString();
-        return {
-          text,
-          count
-        };
-      });
-
-  const sorted = d3.sort(
-    joined,
-    has_enum ? (d) => -d.count : (d) => Number(d.text)
-  );
-
-  const pills = sorted.map(({ text, count }, index) => {
+  const pills = joined.map(({ text, count }, index) => {
     const count_string = count ? ` (${format.commas(count)} rows)` : ``;
     return (
       <div
@@ -248,7 +234,8 @@ function NumericFieldHistogram() {
     queryFn: () => {
       const histogram_field_config: schema.components["schemas"]["HistogramList"] =
         {
-          field: metadata.name
+          field: metadata.name,
+          size: 30
         };
       const request_body = {
         fields: [histogram_field_config]

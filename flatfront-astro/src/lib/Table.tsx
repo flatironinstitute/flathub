@@ -7,7 +7,6 @@ import type {
   FieldMetadata
 } from "./types";
 import type {
-  Table as TableType,
   AccessorColumnDef,
   ColumnDef,
   GroupColumnDef
@@ -18,26 +17,22 @@ import { useQuery } from "@tanstack/react-query";
 import {
   flexRender,
   getCoreRowModel,
-  getPaginationRowModel,
   useReactTable
 } from "@tanstack/react-table";
 import {
-  assert_catalog_cell_id,
-  dispatch_action,
   fetch_api_post,
   get_field_type,
   hooks,
   is_leaf_node,
-  log,
-  Providers
+  log
 } from "./shared";
-import { BigButton, CellSection, CellWrapper, Placeholder } from "./Primitives";
+import { BigButton, CellSection, Placeholder } from "./Primitives";
 import Katex from "./Katex";
 
 export default function TableSection() {
   return (
     <CellSection label="table" className="space-y-4">
-      <div className="grid grid-cols-2 gap-x-4">
+      <div className="grid">
         <BigButton className="w-full">Select Columns</BigButton>
       </div>
       <Table />
@@ -97,7 +92,7 @@ function Table() {
       });
     },
     enabled: enable_request,
-    keepPreviousData: false,
+    keepPreviousData: true,
     staleTime: Infinity
   });
 
@@ -108,13 +103,17 @@ function Table() {
   const component =
     query.data && query.data.length > 0 && catalog_hierarchy ? (
       <TablePrimitive data={query.data} />
+    ) : query.data && query.data.length === 0 ? (
+      <Placeholder className="m-2">Empty Response</Placeholder>
     ) : (
-      <Placeholder>Loading...</Placeholder>
+      <Placeholder className="m-2">Loading...</Placeholder>
     );
 
   return (
     <>
-      <div className="overflow-x-scroll">{component}</div>
+      <div className="max-w-[80dvw] overflow-x-scroll desktop:max-w-none">
+        {component}
+      </div>
       <div>offset: {offset}</div>
       <button
         onClick={() => {
@@ -165,7 +164,6 @@ function get_column_ids(
       //   break;
       default:
         action satisfies never;
-      // throw new Error(`Unknown column action type: ${action}`);
     }
   }
   return column_ids_set;
@@ -181,7 +179,6 @@ function TablePrimitive({ data }: { data: Array<DataRow> }) {
     data,
     columns,
     getCoreRowModel: getCoreRowModel()
-    // getPaginationRowModel: getPaginationRowModel(),
   });
 
   const header_groups = table.getHeaderGroups();

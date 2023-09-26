@@ -20,10 +20,10 @@ import {
   CellSection,
   CellWrapper,
   Placeholder,
-  Dialog
+  Dialog,
+  Select
 } from "./Primitives";
 import * as stores from "./stores";
-import Select from "./Select";
 import TableSection from "./Table";
 import PlotSection from "./Plot";
 import FieldCard from "./FieldCard";
@@ -177,7 +177,9 @@ function BrowseFieldsDialog() {
 
   return (
     <Dialog disabled={!catalog_id} label="Browse Fields">
-      <div className="h-10 border-b border-b-black/20">some controls go here</div>
+      <div className="h-10 border-b border-b-black/20">
+        some controls go here
+      </div>
       <div className="max-h-[80dvh] w-[80dvw] max-w-[600px] space-y-3 overflow-x-visible overflow-y-scroll p-4 text-xs">
         {all_field_nodes.map((node) => (
           <Providers.FieldNodeProvider value={node} key={node.data.__hash}>
