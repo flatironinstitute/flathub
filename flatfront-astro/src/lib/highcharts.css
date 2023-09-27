@@ -1,0 +1,14 @@
+@import "highcharts/css/highcharts.css";
+
+.highcharts-light {
+  --highcharts-background-color: white;
+}
+
+.highcharts-dark {
+  --highcharts-background-color: black !important;
+}
+
+.highcharts-dark .highcharts-tooltip-box {
+  fill: #444;
+  fill-opacity: 1;
+}

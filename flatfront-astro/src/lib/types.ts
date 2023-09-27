@@ -91,12 +91,19 @@ export namespace Action {
     { cell_id: CellID.Table; field_id: string }
   >;
   export type TableColumnAction = AddTableColumn | RemoveTableColumn;
+  export type SetDarkMode = ActionBase<
+    `set_dark_mode`,
+    { value: DarkModeValue; cell_id: null }
+  >;
   export type Any =
     | CellAction
     | TableColumnAction
     | FilterListAction
-    | SetCatalog;
+    | SetCatalog
+    | SetDarkMode;
 }
+
+export type DarkModeValue = `system` | `light` | `dark`;
 
 type ActionBase<T extends string, U> = U & {
   type: T;

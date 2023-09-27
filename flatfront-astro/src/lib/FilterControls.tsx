@@ -1,6 +1,5 @@
+import * as hooks from "./hooks";
 import {
-  dispatch_action,
-  hooks,
   log,
   format,
   assert_numeric_field_stats,

@@ -1,12 +1,7 @@
-import type {
-  Cell} from "./types";
+import type { Cell } from "./types";
 
-import React from "react";
-import {
-  hooks,
-  log,
-  Providers
-} from "./shared";
+import { Providers } from "./contexts";
+import * as hooks from "./hooks";
 import * as stores from "./stores";
 import CatalogCell from "./CatalogCell";
 

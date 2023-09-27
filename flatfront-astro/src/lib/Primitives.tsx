@@ -5,6 +5,7 @@ import * as RadixSlider from "@radix-ui/react-slider";
 import * as RadixDialog from "@radix-ui/react-dialog";
 import * as RadixIcons from "@radix-ui/react-icons";
 import * as RadixSelect from "@radix-ui/react-select";
+import * as RadixRadioGroup from "@radix-ui/react-radio-group";
 
 export function CellWrapper({
   children,
@@ -319,3 +320,88 @@ export function Select<T>({
     </RadixSelect.Root>
   );
 }
+
+export function RadioGroup<T extends string>(
+  props: RadixRadioGroup.RadioGroupProps & {
+    items: Array<{ value: T; text: string }>;
+  }
+) {
+  const { items, ...root_props } = props;
+
+  return (
+    <RadixRadioGroup.Root orientation="horizontal" {...root_props}>
+      <div className="flex gap-x-4">
+        {items.map((item) => (
+          <div key={item.value} className="flex items-center gap-x-2">
+            <RadixRadioGroup.Item
+              id={item.value}
+              value={item.value}
+              className={clsx(
+                `peer relative h-5 w-5 rounded-full`,
+                `border border-transparent text-white`,
+                `bg-simons-gray-2`,
+                `data-[state=unchecked]:opacity-30`,
+                `data-[state=checked]:opacity-100`,
+                `focus:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 dark:focus-visible:ring-white`
+              )}
+            >
+              <RadixRadioGroup.Indicator className="leading-0 absolute inset-0 flex items-center justify-center">
+                <div className="h-1.5 w-1.5 rounded-full bg-white"></div>
+              </RadixRadioGroup.Indicator>
+            </RadixRadioGroup.Item>
+            <label
+              htmlFor={item.value}
+              className="block cursor-pointer text-sm font-medium"
+            >
+              {item.text}
+            </label>
+          </div>
+        ))}
+      </div>
+    </RadixRadioGroup.Root>
+  );
+}
+
+// function DarkModeToggle() {
+//   const dark_mode = hooks.useIsDarkMode();
+
+//   // const set_dark_mode = (value: boolean) => {
+//   //   if (value) {
+//   //     document.documentElement.classList.add("dark");
+//   //   } else {
+//   //     document.documentElement.classList.remove("dark");
+//   //   }
+//   // };
+
+//   return (
+//     <div data-type="DarkModeToggle" className="flex h-20 items-center gap-x-4">
+//       <div>Dark Mode</div>
+//       <RadixSwitch.Root
+//         className={clsx(
+//           `relative h-[30px] w-[50px] cursor-pointer rounded-full`,
+//           `transition-colors duration-200 ease-in-out`,
+//           `data-[state=checked]:bg-simons-gray-1/100 data-[state=unchecked]:bg-simons-gray-1/50`,
+//           `focus:outline-none focus-visible:ring-4 focus-visible:ring-white`
+//         )}
+//         checked={dark_mode}
+//         onCheckedChange={(value: boolean) => {
+//           // set_dark_mode(value);
+//           dispatch_action({
+//             type: `set_dark_mode`,
+//             value,
+//             cell_id: null
+//           });
+//         }}
+//       >
+//         <RadixSwitch.Thumb
+//           className={clsx(
+//             `pointer-events-none absolute block h-[20px] w-[20px] rounded-full bg-white shadow-lg ring-0`,
+//             `-translate-y-1/2 transform`,
+//             `transition-all duration-200 ease-in-out`,
+//             `data-[state=checked]:left-[calc(100%-25px)] data-[state=unchecked]:left-[5px]`
+//           )}
+//         />
+//       </RadixSwitch.Root>
+//     </div>
+//   );
+// }

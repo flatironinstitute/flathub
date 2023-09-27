@@ -1,12 +1,11 @@
 import type { DataPostRequestBody, DataResponse, DataRow } from "./types";
 
 import React from "react";
+import * as hooks from "./hooks";
 import {
   dispatch_action,
-  hooks,
   assert_catalog_cell_id,
   log,
-  Providers,
   fetch_api_post
 } from "./shared";
 import Highcharts from "highcharts";
@@ -101,7 +100,8 @@ function Scatterplot() {
     xAxis: {
       title: {
         text: x_axis_field_id
-      }
+      },
+      gridLineWidth: 1
     },
     yAxis: {
       title: {
@@ -117,16 +117,24 @@ function Scatterplot() {
     series: [
       {
         type: `scatter`,
-        animation: false,
         data: data_munged
+        // className: `blarm`
+        // color: `red`
       }
     ],
     plotOptions: {
       scatter: {
         marker: {
-          radius: 1,
+          radius: 3,
           symbol: `circle`
-        }
+        },
+        animation: false
+        // opacity: 0.5
+        // color: `red`
+        // opacity: 0.5,
+        // colorIndex: 3
+        // color: `blue`
+        // className: `[&_path]:fill-white [&_path]:stroke-none`
       }
     }
   };

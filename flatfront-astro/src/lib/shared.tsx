@@ -1,217 +1,17 @@
-import type { Readable } from "svelte/store";
 import type {
   Action,
   CatalogHierarchyNode,
-  CatalogMetadataWrapper,
-  Cell,
   CellID,
   FieldMetadata,
   FieldType,
-  FilterValueRaw,
-  Filters
+  FilterValueRaw
 } from "./types";
 
-import React from "react";
 import * as d3 from "d3";
-import { get } from "svelte/store";
-import * as immer from "immer";
 
 import * as stores from "./stores";
 
 const FLATHUB_API_BASE_URL = `https://flathub.flatironinstitute.org`;
-
-function create_context_helper<T>(debug: string) {
-  const context = React.createContext<T | null>(null);
-  const useContext = (): T => {
-    const value: T | null = React.useContext(context);
-    if (value === null) {
-      throw new Error(`useContextHelper: ${debug}: value is null`);
-    }
-    return value;
-  };
-  return [useContext, context.Provider] as const;
-}
-
-const [useCell, CellProvider] = create_context_helper<Cell.Any>(`Cell`);
-const [useFieldNode, FieldNodeProvider] =
-  create_context_helper<CatalogHierarchyNode>(`FieldNode`);
-// const [useFieldID, FieldIDProvider] = useContextHelper<string>(`FieldID`);
-// const [usePlotID, PlotIDProvider] = useContextHelper<string>(`PlotID`);
-// const [useData, DataProvider] = useContextHelper<Datum[]>(`Data`);
-
-export const Providers = {
-  CellProvider,
-  FieldNodeProvider
-  // FieldIDProvider
-  // PlotIDProvider,
-  // DataProvider
-};
-
-function useDelayVisible(
-  ref: React.RefObject<HTMLElement>,
-  delay: number
-): boolean {
-  const [visible, setVisible] = React.useState(false);
-  React.useEffect(() => {
-    let timeout: number;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          timeout = window.setTimeout(() => {
-            setVisible(true);
-          }, delay);
-        }
-        if (!entries[0].isIntersecting) {
-          clearTimeout(timeout);
-        }
-      },
-      { threshold: 0.5 }
-    );
-    if (ref.current) {
-      observer.observe(ref.current);
-    }
-    return () => {
-      if (ref.current) {
-        observer.unobserve(ref.current);
-      }
-    };
-  }, [ref, delay]);
-  return visible;
-}
-
-function useStore<T>(store: Readable<T>) {
-  const [state, setState] = React.useState<T>(get(store));
-  React.useEffect(
-    () =>
-      store.subscribe((value) => {
-        setState(value);
-      }),
-    [store]
-  );
-  return state;
-}
-
-function useCatalogCellID(): CellID.Catalog {
-  const cell_data = hooks.useCell();
-  const catalog_cell_id =
-    "catalog_cell_id" in cell_data
-      ? cell_data.catalog_cell_id
-      : cell_data.cell_id;
-  assert_catalog_cell_id(catalog_cell_id);
-  return catalog_cell_id;
-}
-
-function useCellActions(): Action.Any[] {
-  const catalog_cell_id = useCatalogCellID();
-  const cell_actions = useStore(stores.actions_by_cell_id).get(catalog_cell_id);
-  return cell_actions;
-}
-
-function useCatalogID(): string {
-  const catalog_cell_id = useCatalogCellID();
-  const catalog_id = hooks
-    .useStore(stores.catalog_id_by_cell_id)
-    .get(catalog_cell_id);
-  return catalog_id;
-}
-
-function useCatalogMetadata(): CatalogMetadataWrapper {
-  const catalog_id = useCatalogID();
-  const catalog_metadata = hooks.useStore(
-    stores.catalog_metadata_by_catalog_id
-  )?.[catalog_id];
-  return catalog_metadata;
-}
-
-function useFilters(): Filters {
-  const catalog_cell_id = useCatalogCellID();
-  const filters = hooks
-    .useStore(stores.filters_by_cell_id)
-    .get(catalog_cell_id);
-  return filters;
-}
-
-function useFilterValueSetter() {
-  const catalog_cell_id = useCatalogCellID();
-  const field_node = hooks.useFieldNode();
-  const field_id = field_node.data.name;
-  const set_filter_value = (filter_value: FilterValueRaw) => {
-    stores.filter_state.update((fitler_state_object) => {
-      return immer.produce(fitler_state_object, (draft) => {
-        draft[catalog_cell_id] = draft[catalog_cell_id] || {};
-        draft[catalog_cell_id][field_id] = filter_value;
-      });
-    });
-  };
-  return set_filter_value;
-}
-
-function useIsDarkMode() {
-  const [is_dark_mode, set_is_dark_mode] = React.useState(() => {
-    const system_dark_mode = window.matchMedia(
-      "(prefers-color-scheme: dark)"
-    ).matches;
-    log(`Initial dark mode:`, system_dark_mode);
-    return system_dark_mode;
-  });
-
-  React.useEffect(() => {
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.type === "attributes") {
-          const mutation_target = mutation.target as HTMLElement;
-          const is_dark_mode = mutation_target.classList.contains("dark");
-          log(`Dark mode changed:`, is_dark_mode);
-          set_is_dark_mode(is_dark_mode);
-        }
-      });
-    });
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"]
-    });
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-
-  React.useEffect(() => {
-    const system_dark_mode = window.matchMedia("(prefers-color-scheme: dark)");
-    const listener = (event: MediaQueryListEvent) => {
-      log(`System dark mode changed:`, event.matches);
-      set_is_dark_mode(event.matches);
-    };
-    system_dark_mode.addEventListener("change", listener);
-    return () => {
-      system_dark_mode.removeEventListener("change", listener);
-    };
-  }, []);
-
-  React.useEffect(() => {
-    const has_dark_mode_class =
-      document.documentElement.classList.contains("dark");
-    if (is_dark_mode && !has_dark_mode_class) {
-      document.documentElement.classList.add("dark");
-    } else if (!is_dark_mode && has_dark_mode_class) {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [is_dark_mode]);
-
-  return is_dark_mode;
-}
-
-export const hooks = {
-  useStore,
-  useCell,
-  useFieldNode,
-  useDelayVisible,
-  useCatalogID,
-  useCatalogMetadata,
-  useCellActions,
-  useFilters,
-  useFilterValueSetter,
-  useIsDarkMode
-};
 
 export function dispatch_action(action: Action.Any) {
   stores.actions.update(($actions) => [...$actions, action]);
@@ -257,13 +57,15 @@ export function log(...args: any[]) {
 }
 
 export function is_catalog_cell_id(
-  cell_id: CellID.Any
+  cell_id: CellID.Any | null
 ): cell_id is CellID.Catalog {
-  return cell_id.match(/^catalog_cell_/) ? true : false;
+  return cell_id?.match(/^catalog_cell_/) ? true : false;
 }
 
-export function is_table_cell_id(cell_id: CellID.Any): cell_id is CellID.Table {
-  return cell_id.match(/^table_cell_/) ? true : false;
+export function is_table_cell_id(
+  cell_id: CellID.Any | null
+): cell_id is CellID.Table {
+  return cell_id?.match(/^table_cell_/) ? true : false;
 }
 
 export function assert_catalog_cell_id(

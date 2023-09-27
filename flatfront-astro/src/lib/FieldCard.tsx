@@ -11,6 +11,7 @@ import clsx from "clsx";
 import * as d3 from "d3";
 import { useQuery } from "@tanstack/react-query";
 import * as Plot from "@observablehq/plot";
+import * as hooks from "./hooks";
 import ObservablePlot from "./ObservablePlot";
 import {
   assert_numeric_field_stats,
@@ -18,7 +19,6 @@ import {
   format,
   get_field_type,
   has_numeric_field_stats,
-  hooks,
   is_leaf_node,
   join_enums,
   log,

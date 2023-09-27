@@ -2,10 +2,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import clsx from "clsx";
 import GlobalControls from "./GlobalControls";
 import Cells from "./Cells";
+import * as hooks from "./hooks";
 
 const query_client = new QueryClient();
 
 export default function App() {
+  hooks.useToggleDarkMode();
+
   return (
     <QueryClientProvider client={query_client}>
       <main
