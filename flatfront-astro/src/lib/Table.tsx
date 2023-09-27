@@ -250,7 +250,7 @@ function TablePrimitive({ data }: { data: Array<DataRow> }) {
  * @param catalog_field_hierarchy The complete field hierarchy for this catalog
  * @returns An array of column definitions for use with react-table
  */
-function construct_table_columns<T>(
+function construct_table_columns(
   data: DataResponse,
   catalog_field_hierarchy: CatalogHierarchyNode
 ): ColumnDef<DataRow>[] {

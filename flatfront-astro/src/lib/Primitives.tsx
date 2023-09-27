@@ -185,25 +185,25 @@ export function RangeSlider({
 
 export function TextInput({
   value,
-  onInput,
-  getValidityMessage = (value) => null,
+  onStringInput = () => null,
+  getValidityMessage = () => null,
   ...rest
-}: {
+}: React.InputHTMLAttributes<HTMLInputElement> & {
   value?: string;
+  onStringInput?: (value: string) => void;
   getValidityMessage?: (value: string) => string | null;
-  onInput?: (value: string) => void;
-} & React.InputHTMLAttributes<HTMLInputElement>) {
+}) {
   const ref = React.useRef<HTMLInputElement>(null);
   const [internal, set_internal] = React.useState(value ?? ``);
 
-  const on_input = (string) => {
+  const on_input = (string: string) => {
     set_internal(string);
     const message = getValidityMessage(string);
     if (message) {
       ref.current.setCustomValidity(message);
     } else {
       ref.current.setCustomValidity("");
-      onInput && onInput(string);
+      onStringInput(string);
     }
     ref.current.reportValidity();
   };
@@ -223,7 +223,9 @@ export function TextInput({
         `focus:outline-none focus-visible:ring-4`
       )}
       value={internal}
-      onInput={(event) => on_input(event.currentTarget.value)}
+      onInput={(event: React.FormEvent<HTMLInputElement>) =>
+        on_input(event.currentTarget.value)
+      }
       {...rest}
     />
   );

@@ -8,10 +8,12 @@
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "check": "astro check",
     "astro": "astro",
     "generate-types": "npx openapi-typescript https://flathub.flatironinstitute.org/openapi.json --output src/lib/flathub-schema.d.ts && npx prettier src/lib/flathub-schema.d.ts --write"
   },
   "dependencies": {
+    "@astrojs/check": "latest",
     "@astrojs/react": "latest",
     "@astrojs/tailwind": "latest",
     "@observablehq/plot": "latest",

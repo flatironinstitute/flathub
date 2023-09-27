@@ -160,7 +160,7 @@ function NumericFieldStats() {
   const metadata = field_node.data;
   assert_numeric_field_stats(metadata);
 
-  const format = (number): string => {
+  const format = (number: number): string => {
     const exponent = Math.floor(Math.log10(Math.abs(number)));
     if (number === 0) return `0`;
     if (exponent >= 5) return d3.format(`,.2~e`)(number);
@@ -175,7 +175,7 @@ function NumericFieldStats() {
     [min, `min`],
     [avg, `avg`],
     [max, `max`]
-  ].map(([number, label]) => {
+  ].map(([number, label]: [number, string]) => {
     return (
       <div key={label}>
         <div className="text-center text-lg">{format(number)}</div>

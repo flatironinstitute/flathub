@@ -1,4 +1,4 @@
-import type { QueryObserverResult } from "@tanstack/query-core";
+import type { QueryObserverResult } from "@tanstack/react-query";
 import type { Readable } from "svelte/store";
 import type {
   Action,
@@ -11,15 +11,13 @@ import type {
   Filters,
   FilterValueRaw,
   GlobalFilterState,
-  TopResponse
 } from "./types";
 
 import * as d3 from "d3";
-import { readable, writable, derived, get } from "svelte/store";
+import { writable, derived, get } from "svelte/store";
 import * as lzstring from "lz-string";
 import {
   assert_numeric_field_stats,
-  fetch_api_get,
   get_field_type,
   has_numeric_field_stats,
   is_catalog_cell_id,
@@ -167,7 +165,7 @@ function is_root_node(node: CatalogHierarchyNode): boolean {
   return node.depth === 0;
 }
 
-function tiny_json_hash(object) {
+function tiny_json_hash(object: any) {
   const text = JSON.stringify(object);
   let hash = 5381;
   let index = text.length;

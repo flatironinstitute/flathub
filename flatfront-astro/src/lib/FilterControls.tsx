@@ -54,7 +54,7 @@ export function RangeFilterControl() {
           if (number < min) return `Must be greater than ${min.toString()}`;
           return null;
         }}
-        onInput={(string) => {
+        onStringInput={(string: string) => {
           const number = Number(string);
           if (!Number.isFinite(number)) return;
           set_filter_value({
@@ -71,7 +71,7 @@ export function RangeFilterControl() {
           if (number > max) return `Must be less than ${max.toString()}`;
           return null;
         }}
-        onInput={(string) => {
+        onStringInput={(string: string) => {
           const number = Number(string);
           if (!Number.isFinite(number)) return;
           set_filter_value({

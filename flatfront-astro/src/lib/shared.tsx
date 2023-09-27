@@ -187,11 +187,11 @@ export function is_leaf_node(node: CatalogHierarchyNode): boolean {
 }
 
 export const format = {
-  concise: (d) => {
+  concise: (d: number) => {
     if (d < 1e4) return d3.format(`,.4~g`)(d);
     return d3.format(`.2~e`)(d);
   },
-  commas: (d) => {
+  commas: (d: number) => {
     return d3.format(`,`)(d);
   }
 };
