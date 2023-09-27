@@ -62,25 +62,11 @@ export function is_catalog_cell_id(
   return cell_id?.match(/^catalog_cell_/) ? true : false;
 }
 
-export function is_table_cell_id(
-  cell_id: CellID.Any | null
-): cell_id is CellID.Table {
-  return cell_id?.match(/^table_cell_/) ? true : false;
-}
-
 export function assert_catalog_cell_id(
   cell_id: CellID.Any
 ): asserts cell_id is CellID.Catalog {
   if (!is_catalog_cell_id(cell_id)) {
     throw new Error(`${cell_id} is not a catalog cell id`);
-  }
-}
-
-export function assert_table_cell_id(
-  cell_id: CellID.Any
-): asserts cell_id is CellID.Table {
-  if (!is_table_cell_id(cell_id)) {
-    throw new Error(`${cell_id} is not a table cell id`);
   }
 }
 

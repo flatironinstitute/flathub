@@ -83,9 +83,8 @@ export function SimpleLabel({
 
 export function Placeholder({
   children,
-  className,
-  ...rest
-}: { children: React.ReactNode } & React.HTMLAttributes<HTMLDivElement>) {
+  className
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={clsx(

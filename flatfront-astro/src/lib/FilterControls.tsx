@@ -1,13 +1,11 @@
 import * as hooks from "./hooks";
 import {
-  log,
   format,
   assert_numeric_field_stats,
   assert_numeric_filter_value,
-  join_enums
+  join_enums,
+  log
 } from "./shared";
-import * as stores from "./stores";
-import Katex from "./Katex";
 import { RangeSlider, TextInput, Select } from "./Primitives";
 import type { FilterValueRaw } from "./types";
 
@@ -32,10 +30,10 @@ export function RangeFilterControl() {
       min={min}
       max={max}
       value={value}
-      onValueChange={([low, high]) => {
+      onValueChange={([new_low, new_high]) => {
         set_filter_value({
-          gte: low,
-          lte: high
+          gte: new_low,
+          lte: new_high
         });
       }}
     />
@@ -57,6 +55,10 @@ export function RangeFilterControl() {
         onStringInput={(string: string) => {
           const number = Number(string);
           if (!Number.isFinite(number)) return;
+          if (string === low.toString()) {
+            log(`Not updating filter because it didn't change:`, string, low);
+            return;
+          }
           set_filter_value({
             gte: number,
             lte: high
@@ -74,6 +76,10 @@ export function RangeFilterControl() {
         onStringInput={(string: string) => {
           const number = Number(string);
           if (!Number.isFinite(number)) return;
+          if (string === high.toString()) {
+            log(`Not updating filter because it didn't change:`, string, high);
+            return;
+          }
           set_filter_value({
             gte: low,
             lte: number

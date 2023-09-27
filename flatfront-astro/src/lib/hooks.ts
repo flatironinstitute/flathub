@@ -2,8 +2,8 @@ import type { Readable } from "svelte/store";
 import type {
   Action,
   CatalogMetadataWrapper,
-  CellID,
   DarkModeValue,
+  FieldMetadata,
   FilterValueRaw,
   Filters
 } from "./types";
@@ -12,45 +12,18 @@ import React from "react";
 import { get } from "svelte/store";
 import * as immer from "immer";
 
-import { assert_catalog_cell_id, log } from "./shared";
+import {
+  assert_numeric_field_stats,
+  get_field_type,
+  has_numeric_field_stats,
+  log
+} from "./shared";
 import * as stores from "./stores";
 import { hooks as context_hooks } from "./contexts";
 
-const { useFieldNode, useCell } = context_hooks;
+const { useFieldNode, useCatalogCellID } = context_hooks;
 
-export { useCell, useFieldNode };
-
-export function useDelayVisible(
-  ref: React.RefObject<HTMLElement>,
-  delay: number
-): boolean {
-  const [visible, setVisible] = React.useState(false);
-  React.useEffect(() => {
-    let timeout: number;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          timeout = window.setTimeout(() => {
-            setVisible(true);
-          }, delay);
-        }
-        if (!entries[0].isIntersecting) {
-          clearTimeout(timeout);
-        }
-      },
-      { threshold: 0.5 }
-    );
-    if (ref.current) {
-      observer.observe(ref.current);
-    }
-    return () => {
-      if (ref.current) {
-        observer.unobserve(ref.current);
-      }
-    };
-  }, [ref, delay]);
-  return visible;
-}
+export { useFieldNode, useCatalogCellID };
 
 export function useStore<T>(store: Readable<T>) {
   const [state, setState] = React.useState<T>(get(store));
@@ -63,28 +36,21 @@ export function useStore<T>(store: Readable<T>) {
   );
   return state;
 }
-
-export function useCatalogCellID(): CellID.Catalog {
-  const cell_data = useCell();
-  const catalog_cell_id =
-    "catalog_cell_id" in cell_data
-      ? cell_data.catalog_cell_id
-      : cell_data.cell_id;
-  assert_catalog_cell_id(catalog_cell_id);
-  return catalog_cell_id;
-}
-
-export function useCellActions(): Action.Any[] {
-  const catalog_cell_id = useCatalogCellID();
-  const cell_actions = useStore(stores.actions_by_cell_id).get(catalog_cell_id);
-  return cell_actions;
+export function useActions(): Action.Any[] {
+  return useStore(stores.actions);
 }
 
 export function useCatalogID(): string {
   const catalog_cell_id = useCatalogCellID();
-  const catalog_id = useStore(stores.catalog_id_by_cell_id).get(
-    catalog_cell_id
-  );
+  const all_actions = useActions();
+  const catalog_id = all_actions
+    .filter((action): action is Action.SetCatalog => {
+      return (
+        action.type === `set_catalog` &&
+        action.catalog_cell_id === catalog_cell_id
+      );
+    })
+    .at(-1)?.catalog_id;
   return catalog_id;
 }
 
@@ -96,17 +62,12 @@ export function useCatalogMetadata(): CatalogMetadataWrapper {
   return catalog_metadata;
 }
 
-export function useFilters(): Filters {
-  const catalog_cell_id = useCatalogCellID();
-  const filters = useStore(stores.filters_by_cell_id).get(catalog_cell_id);
-  return filters;
-}
-
 export function useFilterValueSetter() {
   const catalog_cell_id = useCatalogCellID();
   const field_node = useFieldNode();
   const field_id = field_node.data.name;
   const set_filter_value = (filter_value: FilterValueRaw) => {
+    log(`Setting filter value:`, catalog_cell_id, field_id, filter_value);
     stores.filter_state.update((fitler_state_object) => {
       return immer.produce(fitler_state_object, (draft) => {
         draft[catalog_cell_id] = draft[catalog_cell_id] || {};
@@ -157,16 +118,35 @@ export function useIsDarkMode(): boolean {
   return is_dark_mode;
 }
 
-export function useDebounce<T>(value: T, delay: number): T {
-  const [debounced, set_debounced] = React.useState<T>(value);
+export function useDebouncedValue<T>(value: T, delay: number): T {
+  const [debounced, set_debounced] = React.useState(value);
+  const timeout_ref = React.useRef<NodeJS.Timeout | null>(null);
+  const string_ref = React.useRef<string | null>(null);
+
   React.useEffect(() => {
-    const handler = setTimeout(() => {
+    if (string_ref.current === JSON.stringify(value)) {
+      log(`Debounced value unchanged:`, value);
+      return;
+    }
+    string_ref.current = JSON.stringify(value);
+    if (timeout_ref.current) {
+      clearTimeout(timeout_ref.current);
+      timeout_ref.current = null;
+    }
+
+    timeout_ref.current = setTimeout(() => {
+      log(`Debounced value changed:`, value);
       set_debounced(value);
     }, delay);
+
     return () => {
-      clearTimeout(handler);
+      if (timeout_ref.current) {
+        clearTimeout(timeout_ref.current);
+        timeout_ref.current = null;
+      }
     };
   }, [value, delay]);
+
   return debounced;
 }
 
@@ -181,4 +161,142 @@ export function useToggleDarkMode(): void {
       document.documentElement.classList.remove("dark");
     }
   }, [is_dark_mode]);
+}
+
+export function useFilters(): Filters {
+  const catalog_cell_id = useCatalogCellID();
+  const catalog_id = useCatalogID();
+  const catalog_metadata = useStore(stores.catalog_metadata_by_catalog_id)[
+    catalog_id
+  ];
+  const catalog_hierarchy = catalog_metadata?.hierarchy;
+  const filter_actions = [];
+  const filter_names_set = catalog_hierarchy
+    ? get_filter_names(catalog_hierarchy, filter_actions)
+    : new Set<string>();
+  const initial_filters: Filters = get_initial_cell_filters(
+    filter_names_set,
+    catalog_hierarchy
+  );
+  const filter_state: Filters =
+    useStore(stores.filter_state)?.[catalog_cell_id] ?? {};
+  const filters = {
+    ...initial_filters,
+    ...filter_state
+  };
+  return filters;
+}
+
+export function get_filter_names(
+  hierarchy: d3.HierarchyNode<FieldMetadata>,
+  actions: Action.Any[]
+) {
+  const nodes = hierarchy.descendants();
+  const initial_filter_names = nodes
+    .filter((node) => node.height === 0 && `required` in node.data)
+    .map((node) => node.data.name);
+  const filter_names_set: Set<string> = new Set(initial_filter_names);
+  const filter_list_actions = actions.filter(
+    (action): action is Action.AddFilter | Action.RemoveFilter => {
+      return action.type === `add_filter` || action.type === `remove_filter`;
+    }
+  );
+  for (const action of filter_list_actions) {
+    switch (action.type) {
+      case `remove_filter`:
+        filter_names_set.delete(action.field_id);
+        break;
+      case `add_filter`:
+        filter_names_set.add(action.field_id);
+        break;
+      default:
+        action satisfies never;
+    }
+  }
+  return filter_names_set;
+}
+
+function get_initial_cell_filters(
+  filter_names: Set<string>,
+  catalog_field_hierarchy?: d3.HierarchyNode<FieldMetadata>
+): Filters {
+  if (!catalog_field_hierarchy) return {};
+  const initial_filter_object: Filters = Object.fromEntries(
+    Array.from(filter_names).map((filter_name) => {
+      const metadata = catalog_field_hierarchy.find(
+        (node) => node.data.name === filter_name
+      )?.data;
+
+      if (!metadata) {
+        throw new Error(`Could not find metadata for filter ${filter_name}`);
+      }
+
+      const field_type = get_field_type(metadata);
+
+      const initial_value: FilterValueRaw = (() => {
+        switch (field_type) {
+          case `ROOT`:
+            throw new Error(`Root field should not be a filter`);
+          case `INTEGER`:
+          case `FLOAT`:
+            if (!has_numeric_field_stats(metadata)) {
+              throw new Error(
+                `Field ${metadata.name} does not have numeric field stats`
+              );
+            }
+            assert_numeric_field_stats(metadata);
+            return {
+              gte: metadata.stats.min,
+              lte: metadata.stats.max
+            };
+          case `LABELLED_ENUMERABLE_BOOLEAN`:
+            return false;
+          case `LABELLED_ENUMERABLE_INTEGER`:
+          case `ENUMERABLE_INTEGER`:
+            return 0;
+          case `ARRAY`:
+            return null;
+          case `STRING`:
+            return ``;
+          default:
+            field_type satisfies never;
+        }
+      })();
+
+      return [filter_name, initial_value];
+    })
+  );
+  return initial_filter_object;
+}
+
+export function useDelayVisible(
+  ref: React.RefObject<HTMLElement>,
+  delay: number
+): boolean {
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => {
+    let timeout: number;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          timeout = window.setTimeout(() => {
+            setVisible(true);
+          }, delay);
+        }
+        if (!entries[0].isIntersecting) {
+          clearTimeout(timeout);
+        }
+      },
+      { threshold: 0.5 }
+    );
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+    return () => {
+      if (ref.current) {
+        observer.unobserve(ref.current);
+      }
+    };
+  }, [ref, delay]);
+  return visible;
 }

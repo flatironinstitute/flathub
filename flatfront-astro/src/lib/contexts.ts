@@ -1,4 +1,4 @@
-import type { CatalogHierarchyNode, Cell } from "./types";
+import type { CatalogHierarchyNode, CellID } from "./types";
 
 import React from "react";
 
@@ -14,16 +14,17 @@ function create_context_helper<T>(debug: string) {
   return [useContext, context.Provider] as const;
 }
 
-const [useCell, CellProvider] = create_context_helper<Cell.Any>(`Cell`);
+const [useCatalogCellID, CatalogCellIDProvider] =
+  create_context_helper<CellID.Catalog>(`CatalogCellID`);
 const [useFieldNode, FieldNodeProvider] =
   create_context_helper<CatalogHierarchyNode>(`FieldNode`);
 
 export const Providers = {
-  CellProvider,
+  CatalogCellIDProvider,
   FieldNodeProvider
 };
 
 export const hooks = {
-  useCell,
+  useCatalogCellID,
   useFieldNode
 };

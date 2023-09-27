@@ -1,9 +1,7 @@
 import type {
   schema,
   HistogramPostRequestBody,
-  HistogramResponse,
-  FieldMetadata,
-  FilterValueRaw
+  HistogramResponse
 } from "./types";
 
 import React from "react";
@@ -21,7 +19,6 @@ import {
   has_numeric_field_stats,
   is_leaf_node,
   join_enums,
-  log,
   should_use_log_scale
 } from "./shared";
 import Katex from "./Katex";

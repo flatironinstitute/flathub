@@ -12,7 +12,7 @@ export default function GlobalControls(): React.JSX.Element {
         onClick={() => {
           dispatch_action({
             type: `add_catalog_cell`,
-            cell_id: `catalog_cell_${Date.now()}`
+            catalog_cell_id: `catalog_cell_${Date.now()}`
           });
         }}
       >
@@ -23,7 +23,7 @@ export default function GlobalControls(): React.JSX.Element {
         onClick={() => {
           dispatch_action({
             type: `add_comparison_cell`,
-            cell_id: `comparison_cell_${Date.now()}`
+            comparison_cell_id: `comparison_cell_${Date.now()}`
           });
         }}
       >
@@ -42,8 +42,7 @@ function DarkModeSelect() {
     log(`DarkModeSelect.on_change`, { value });
     dispatch_action({
       type: `set_dark_mode`,
-      value,
-      cell_id: null
+      value
     });
   };
 

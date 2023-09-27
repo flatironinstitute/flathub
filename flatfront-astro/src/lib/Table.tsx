@@ -38,22 +38,26 @@ export default function TableSection() {
 function Table() {
   const catalog_id = hooks.useCatalogID();
 
-  const filters = hooks.useFilters();
-
   const catalog_metadata_wrapper = hooks.useCatalogMetadata();
   const catalog_hierarchy = catalog_metadata_wrapper?.hierarchy;
-  const cell_actions = hooks.useCellActions();
+  const all_actions = hooks.useActions();
 
-  const [rows_per_page, set_rows_per_page] = React.useState(25);
-  const [offset, set_offset] = React.useState(0);
+  const table_actions = all_actions.filter(
+    (action): action is Action.AddTableColumn | Action.RemoveTableColumn =>
+      action.type === `add_table_column` ||
+      action.type === `remove_table_column`
+  );
 
   const column_ids_set = catalog_hierarchy
-    ? get_column_ids(catalog_hierarchy, cell_actions)
+    ? get_column_ids(catalog_hierarchy, table_actions)
     : new Set<string>();
 
   const fields = Array.from(column_ids_set);
 
-  log(`column_ids_set`, column_ids_set);
+  const filters = hooks.useFilters();
+
+  const [rows_per_page] = React.useState(25);
+  const [offset, set_offset] = React.useState(0);
 
   // const query_parameters = {
   //   seed: 243523423
@@ -73,27 +77,22 @@ function Table() {
     body: request_body
   };
 
+  const debounced_query_config = hooks.useDebouncedValue(query_config, 500);
+
   const enable_request = !!catalog_id && fields.length > 0;
 
   const query = useQuery({
-    queryKey: [`table-data`, query_config],
+    queryKey: [`table-data`, debounced_query_config],
     queryFn: async (): Promise<DataResponse> => {
       return fetch_api_post<DataPostRequestBody, DataResponse>(
         query_config.path,
         query_config.body
-      ).then((response) => {
-        log(`query response`, response);
-        return response;
-      });
+      );
     },
     enabled: enable_request,
     keepPreviousData: true,
     staleTime: Infinity
   });
-
-  if (query.data) {
-    log(`query data`, query.data);
-  }
 
   const component =
     query.data && query.data.length > 0 && catalog_hierarchy ? (
@@ -130,37 +129,38 @@ function get_column_ids(
     .filter((node) => node.height === 0 && node.data.disp === true)
     .map((node) => node.data.name);
   const column_ids_set: Set<string> = new Set(initial_column_ids);
-  const column_list_actions = actions.filter(
-    (action): action is Action.TableColumnAction =>
-      action.type === `add_table_column` ||
-      action.type === `remove_table_column`
-  );
-  for (const action of column_list_actions) {
-    switch (action.type) {
-      case `remove_table_column`:
-        column_ids_set.delete(action.field_id);
-        break;
-      case `add_table_column`:
-        column_ids_set.add(action.field_id);
-        break;
-      // case `remove_child_columns`:
-      //   const node = nodes.find(
-      //     (node) => get_field_id(node.data) === action.field_id
-      //   );
-      //   if (!node) {
-      //     throw new Error(
-      //       `Could not find node for column ${action.field_id} in hierarchy`
-      //     );
-      //   }
-      //   const to_remove = node.leaves().map((node) => get_field_id(node.data));
-      //   for (const id of to_remove) {
-      //     column_ids_set.delete(id);
-      //   }
-      //   break;
-      default:
-        action satisfies never;
-    }
-  }
+  actions;
+  // const column_list_actions = actions.filter(
+  //   (action): action is Action.TableColumnAction =>
+  //     action.type === `add_table_column` ||
+  //     action.type === `remove_table_column`
+  // );
+  // for (const action of column_list_actions) {
+  //   switch (action.type) {
+  //     case `remove_table_column`:
+  //       column_ids_set.delete(action.field_id);
+  //       break;
+  //     case `add_table_column`:
+  //       column_ids_set.add(action.field_id);
+  //       break;
+  //     // case `remove_child_columns`:
+  //     //   const node = nodes.find(
+  //     //     (node) => get_field_id(node.data) === action.field_id
+  //     //   );
+  //     //   if (!node) {
+  //     //     throw new Error(
+  //     //       `Could not find node for column ${action.field_id} in hierarchy`
+  //     //     );
+  //     //   }
+  //     //   const to_remove = node.leaves().map((node) => get_field_id(node.data));
+  //     //   for (const id of to_remove) {
+  //     //     column_ids_set.delete(id);
+  //     //   }
+  //     //   break;
+  //     default:
+  //       action satisfies never;
+  //   }
+  // }
   return column_ids_set;
 }
 

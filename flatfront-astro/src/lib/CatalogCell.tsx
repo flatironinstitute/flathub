@@ -1,9 +1,9 @@
 import type {
-  Cell,
   TopResponseEntry,
   Action,
   TopResponse,
-  CatalogResponse
+  CatalogResponse,
+  PlotID
 } from "./types";
 import React from "react";
 import * as d3 from "d3";
@@ -29,12 +29,10 @@ import PlotSection from "./Plot";
 import FieldCard from "./FieldCard";
 
 export default function CatalogCell() {
-  const catalog_cell_id = hooks.useCell().cell_id;
+  const catalog_cell_id = hooks.useCatalogCellID();
   assert_catalog_cell_id(catalog_cell_id);
 
-  const catalog_id = hooks
-    .useStore(stores.catalog_id_by_cell_id)
-    .get(catalog_cell_id);
+  const catalog_id = hooks.useCatalogID();
 
   const catalog_query = useQuery({
     queryKey: [`catalog`, catalog_id],
@@ -49,8 +47,6 @@ export default function CatalogCell() {
       return { ...old, [catalog_id]: catalog_query };
     });
   }, [catalog_query]);
-
-  const cells = hooks.useStore(stores.cells);
 
   const top_sections = (
     <>
@@ -77,8 +73,8 @@ export default function CatalogCell() {
       <BigButton
         onClick={() => {
           dispatch_action({
-            type: `add_plot_cell`,
-            cell_id: `plot_cell_${Date.now()}`,
+            type: `add_plot`,
+            plot_id: `plot_${Date.now()}`,
             catalog_cell_id
           });
         }}
@@ -88,17 +84,37 @@ export default function CatalogCell() {
     </>
   );
 
-  const child_cells = cells
-    .filter((cell: Cell.Any): cell is Cell.Plot => {
-      return cell.type === `plot` && cell.catalog_cell_id === catalog_cell_id;
-    })
-    .map((cell) => {
+  const actions = hooks.useActions();
+
+  const plot_actions = actions.filter(
+    (action): action is Action.AddPlot | Action.RemovePlot => {
       return (
-        <Providers.CellProvider key={cell.cell_id} value={cell}>
-          <PlotSection />
-        </Providers.CellProvider>
+        (action.type === `add_plot` || action.type === `remove_plot`) &&
+        action.catalog_cell_id === catalog_cell_id
       );
-    });
+    }
+  );
+
+  const plots = React.useMemo(() => {
+    let _plots: Array<{ id: PlotID }> = [];
+    for (const action of plot_actions) {
+      switch (action.type) {
+        case `add_plot`:
+          _plots.push({
+            id: action.plot_id
+          });
+          break;
+        case `remove_plot`:
+          _plots = _plots.filter((plot) => plot.id !== action.plot_id);
+          break;
+      }
+    }
+    return _plots;
+  }, [plot_actions]);
+
+  const plot_components = plots.map((plot) => {
+    return <PlotSection key={plot.id} />;
+  });
 
   const bottom_sections = (
     <>
@@ -119,7 +135,7 @@ export default function CatalogCell() {
       </div>
       <CellSection className="flex flex-col gap-y-4 desktop:col-span-4 desktop:col-start-3 desktop:row-start-1">
         {add_buttons}
-        {child_cells}
+        {plot_components}
         {bottom_sections}
       </CellSection>
     </CellWrapper>
@@ -127,9 +143,9 @@ export default function CatalogCell() {
 }
 
 function CatalogSelect() {
-  const cell_id = hooks.useCell().cell_id;
-  assert_catalog_cell_id(cell_id);
-  const catalog_id = hooks.useStore(stores.catalog_id_by_cell_id).get(cell_id);
+  const catalog_cell_id = hooks.useCatalogCellID();
+  assert_catalog_cell_id(catalog_cell_id);
+  const catalog_id = hooks.useCatalogID();
   const get_title = (d: TopResponseEntry) => d?.title;
   const catalog_list_query = useQuery({
     staleTime: Infinity,
@@ -152,7 +168,7 @@ function CatalogSelect() {
         onValueChange={(d) => {
           dispatch_action({
             type: `set_catalog`,
-            cell_id,
+            catalog_cell_id,
             catalog_id: d?.name
           } as Action.SetCatalog);
         }}
@@ -162,16 +178,12 @@ function CatalogSelect() {
 }
 
 function BrowseFieldsDialog() {
-  const catalog_cell_id = hooks.useCell().cell_id;
+  const catalog_cell_id = hooks.useCatalogCellID();
   assert_catalog_cell_id(catalog_cell_id);
 
-  const catalog_id = hooks
-    .useStore(stores.catalog_id_by_cell_id)
-    .get(catalog_cell_id);
+  const catalog_id = hooks.useCatalogID();
 
-  const catalog_metadata = hooks.useStore(
-    stores.catalog_metadata_by_catalog_id
-  )?.[catalog_id];
+  const catalog_metadata = hooks.useCatalogMetadata();
 
   const all_field_nodes = catalog_metadata?.depth_first ?? [];
 
@@ -192,17 +204,8 @@ function BrowseFieldsDialog() {
 }
 
 function FilterControls() {
-  const catalog_cell_id = hooks.useCell().cell_id;
-  assert_catalog_cell_id(catalog_cell_id);
-  const catalog_id = hooks
-    .useStore(stores.catalog_id_by_cell_id)
-    .get(catalog_cell_id);
-  const catalog_metadata = hooks.useStore(
-    stores.catalog_metadata_by_catalog_id
-  )?.[catalog_id];
-  const filters = hooks
-    .useStore(stores.filters_by_cell_id)
-    .get(catalog_cell_id);
+  const catalog_metadata = hooks.useCatalogMetadata();
+  const filters = hooks.useFilters();
   const all_field_nodes = catalog_metadata?.depth_first ?? [];
   const filter_and_ancestor_nodes = all_field_nodes.filter((node) => {
     // Exclude if is root node

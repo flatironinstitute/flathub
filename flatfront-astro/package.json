@@ -8,7 +8,7 @@
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "check": "astro check",
+    "check": "astro check && tsc --noEmit",
     "astro": "astro",
     "generate-types": "npx openapi-typescript https://flathub.flatironinstitute.org/openapi.json --output src/lib/flathub-schema.d.ts && npx prettier src/lib/flathub-schema.d.ts --write"
   },

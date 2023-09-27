@@ -1,19 +1,13 @@
-import type { DataPostRequestBody, DataResponse, DataRow } from "./types";
+import type { DataPostRequestBody, DataResponse } from "./types";
 
-import React from "react";
 import * as hooks from "./hooks";
-import {
-  dispatch_action,
-  assert_catalog_cell_id,
-  log,
-  fetch_api_post
-} from "./shared";
+import { log, fetch_api_post } from "./shared";
 import Highcharts from "highcharts";
 import HighchartsExporting from "highcharts/modules/exporting";
 import HighchartsExportData from "highcharts/modules/export-data";
 import HighchartsReact from "highcharts-react-official";
 import { useQuery } from "@tanstack/react-query";
-import { BigButton, CellSection, CellWrapper, Placeholder } from "./Primitives";
+import { CellSection } from "./Primitives";
 
 HighchartsExporting(Highcharts);
 HighchartsExportData(Highcharts);
