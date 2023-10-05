@@ -1,21 +1,80 @@
-import type { DataPostRequestBody, DataResponse } from "./types";
+import type {
+  Action,
+  DataPostRequestBody,
+  DataResponse,
+  PlotType
+} from "./types";
 
 import * as hooks from "./hooks";
-import { log, fetch_api_post } from "./shared";
+import { log, fetch_api_post, dispatch_action } from "./shared";
 import Highcharts from "highcharts";
 import HighchartsExporting from "highcharts/modules/exporting";
 import HighchartsExportData from "highcharts/modules/export-data";
 import HighchartsReact from "highcharts-react-official";
 import { useQuery } from "@tanstack/react-query";
-import { CellSection } from "./Primitives";
+import { CellSection, Placeholder, Select } from "./Primitives";
 
 HighchartsExporting(Highcharts);
 HighchartsExportData(Highcharts);
 
+function usePlotActions() {
+  const all_actions = hooks.useActions();
+  const plot_id = hooks.usePlotID();
+  const plot_actions = all_actions.filter(
+    (action): action is Action.SetPlotType | Action.SetPlotControl => {
+      if (
+        !(action.type === `set_plot_type` || action.type === `set_plot_control`)
+      )
+        return false;
+      return action.plot_id === plot_id;
+    }
+  );
+  return plot_actions;
+}
+
 export default function PlotSection() {
-  const plot_component = <Scatterplot />;
+  const plot_actions = usePlotActions();
+  const plot_id = hooks.usePlotID();
+  const plot_type = plot_actions
+    .filter(
+      (action): action is Action.SetPlotType => action.type === `set_plot_type`
+    )
+    .at(-1)?.plot_type;
+  const plot_type_options = [
+    { key: `scatterplot` as PlotType, label: `Scatterplot` },
+    { key: `heatmap` as PlotType, label: `Heatmap` }
+  ];
+  const value = plot_type_options.find((d) => d.key === plot_type);
+  const plot_component = (() => {
+    switch (plot_type) {
+      case `scatterplot`:
+        return <Scatterplot />;
+      case `heatmap`:
+        return <Placeholder>Heatmap</Placeholder>;
+      default:
+        return <Placeholder>Choose a plot type</Placeholder>;
+    }
+  })();
   return (
     <CellSection label="plot" className="space-y-4">
+      <div className="flex items-center gap-x-4">
+        <label className="whitespace-nowrap">Plot Type:</label>
+        <Select
+          placeholder="Choose plot type..."
+          options={plot_type_options}
+          getKey={(d) => d.key}
+          getDisplayName={(d) => d.label}
+          value={value}
+          onValueChange={(d) => {
+            const action: Action.SetPlotType = {
+              type: `set_plot_type`,
+              plot_id,
+              plot_type: d?.key
+            };
+            dispatch_action(action);
+          }}
+        />
+      </div>
       {plot_component}
     </CellSection>
   );

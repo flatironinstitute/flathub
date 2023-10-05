@@ -113,7 +113,11 @@ export default function CatalogCell() {
   }, [plot_actions]);
 
   const plot_components = plots.map((plot) => {
-    return <PlotSection key={plot.id} />;
+    return (
+      <Providers.PlotIDProvider key={plot.id} value={plot.id}>
+        <PlotSection key={plot.id} />
+      </Providers.PlotIDProvider>
+    );
   });
 
   const bottom_sections = (

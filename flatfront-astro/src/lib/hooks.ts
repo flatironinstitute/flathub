@@ -21,9 +21,9 @@ import {
 import * as stores from "./stores";
 import { hooks as context_hooks } from "./contexts";
 
-const { useFieldNode, useCatalogCellID } = context_hooks;
+const { useFieldNode, useCatalogCellID, usePlotID } = context_hooks;
 
-export { useFieldNode, useCatalogCellID };
+export { useFieldNode, useCatalogCellID, usePlotID };
 
 export function useStore<T>(store: Readable<T>) {
   const [state, setState] = React.useState<T>(get(store));

@@ -246,7 +246,7 @@ export function Label({
 
 export function Select<T>({
   placeholder,
-  options,
+  options = [],
   getKey = (d) => d?.toString(),
   getDisplayName = (d) => d?.toString(),
   disabled = false,

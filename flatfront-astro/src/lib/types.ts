@@ -70,6 +70,17 @@ export namespace Action {
     `set_dark_mode`,
     { value: DarkModeValue }
   >;
+  export type SetPlotType = ActionBase<
+    `set_plot_type`,
+    {
+      plot_id: PlotID;
+      plot_type: PlotType;
+    }
+  >;
+  export type SetPlotControl = ActionBase<
+    `set_plot_control`,
+    { plot_id: PlotID; key: string; value: any }
+  >;
   export type Any =
     | AddCatalogCell
     | AddComparisonCell
@@ -81,9 +92,12 @@ export namespace Action {
     | SetCatalog
     | AddTableColumn
     | RemoveTableColumn
-    | SetDarkMode;
+    | SetDarkMode
+    | SetPlotType
+    | SetPlotControl;
 }
 
+export type PlotType = `histogram` | `scatterplot` | `heatmap`;
 export type PlotID = `plot_${number}`;
 
 export type DarkModeValue = `system` | `light` | `dark`;
