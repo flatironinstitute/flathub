@@ -1,8 +1,8 @@
-import type { Cell } from "./types";
+import type { Cell } from "../types";
 
 import React from "react";
-import { Providers } from "./contexts";
-import * as hooks from "./hooks";
+import { Providers } from "../contexts";
+import * as hooks from "../hooks";
 import CatalogCell from "./CatalogCell";
 
 export default function Cells() {

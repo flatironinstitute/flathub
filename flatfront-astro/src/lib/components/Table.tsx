@@ -5,7 +5,7 @@ import type {
   DataResponse,
   DataRow,
   FieldMetadata
-} from "./types";
+} from "../types";
 import type {
   AccessorColumnDef,
   ColumnDef,
@@ -19,8 +19,8 @@ import {
   getCoreRowModel,
   useReactTable
 } from "@tanstack/react-table";
-import { fetch_api_post, get_field_type, is_leaf_node } from "./shared";
-import * as hooks from "./hooks";
+import { fetch_api_post, get_field_type, is_leaf_node } from "../shared";
+import * as hooks from "../hooks";
 import { BigButton, CellSection, Placeholder } from "./Primitives";
 import Katex from "./Katex";
 

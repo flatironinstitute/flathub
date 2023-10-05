@@ -4,17 +4,19 @@ import type {
   TopResponse,
   CatalogResponse,
   PlotID
-} from "./types";
+} from "../types";
+
 import React from "react";
 import * as d3 from "d3";
 import { useQuery } from "@tanstack/react-query";
-import { Providers } from "./contexts";
-import * as hooks from "./hooks";
+import { Providers } from "../contexts";
+import * as hooks from "../hooks";
 import {
   dispatch_action,
   fetch_api_get,
   assert_catalog_cell_id
-} from "./shared";
+} from "../shared";
+import * as stores from "../stores";
 import {
   BigButton,
   CellSection,
@@ -23,7 +25,6 @@ import {
   Dialog,
   Select
 } from "./Primitives";
-import * as stores from "./stores";
 import TableSection from "./Table";
 import PlotSection from "./Plot";
 import FieldCard from "./FieldCard";

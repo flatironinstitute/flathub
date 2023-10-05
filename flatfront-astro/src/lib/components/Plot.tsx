@@ -3,10 +3,10 @@ import type {
   DataPostRequestBody,
   DataResponse,
   PlotType
-} from "./types";
+} from "../types";
 
-import * as hooks from "./hooks";
-import { log, fetch_api_post, dispatch_action } from "./shared";
+import * as hooks from "../hooks";
+import { log, fetch_api_post, dispatch_action } from "../shared";
 import Highcharts from "highcharts";
 import HighchartsExporting from "highcharts/modules/exporting";
 import HighchartsExportData from "highcharts/modules/export-data";

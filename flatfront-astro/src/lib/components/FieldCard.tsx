@@ -2,15 +2,14 @@ import type {
   schema,
   HistogramPostRequestBody,
   HistogramResponse
-} from "./types";
+} from "../types";
 
 import React from "react";
 import clsx from "clsx";
 import * as d3 from "d3";
 import { useQuery } from "@tanstack/react-query";
 import * as Plot from "@observablehq/plot";
-import * as hooks from "./hooks";
-import ObservablePlot from "./ObservablePlot";
+import * as hooks from "../hooks";
 import {
   assert_numeric_field_stats,
   fetch_api_post,
@@ -20,7 +19,8 @@ import {
   is_leaf_node,
   join_enums,
   should_use_log_scale
-} from "./shared";
+} from "../shared";
+import ObservablePlot from "./ObservablePlot";
 import Katex from "./Katex";
 import { Placeholder } from "./Primitives";
 import { RangeFilterControl, SelectFilterControl } from "./FilterControls";

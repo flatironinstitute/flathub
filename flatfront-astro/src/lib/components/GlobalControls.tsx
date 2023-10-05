@@ -1,9 +1,9 @@
-import React from "react";
+import type { DarkModeValue } from "../types";
 
-import * as hooks from "./hooks";
-import { dispatch_action, log } from "./shared";
+import React from "react";
+import * as hooks from "../hooks";
+import { dispatch_action, log } from "../shared";
 import { CellWrapper, BigButton, RadioGroup } from "./Primitives";
-import type { DarkModeValue } from "./types";
 
 export default function GlobalControls(): React.JSX.Element {
   return (
