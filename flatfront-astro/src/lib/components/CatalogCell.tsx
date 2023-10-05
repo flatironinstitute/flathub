@@ -11,12 +11,9 @@ import * as d3 from "d3";
 import { useQuery } from "@tanstack/react-query";
 import { Providers } from "../contexts";
 import * as hooks from "../hooks";
-import {
-  dispatch_action,
-  fetch_api_get,
-  assert_catalog_cell_id
-} from "../shared";
+import { fetch_api_get, assert_catalog_cell_id } from "../shared";
 import * as stores from "../stores";
+import { dispatch_action } from "../stores";
 import {
   BigButton,
   CellSection,

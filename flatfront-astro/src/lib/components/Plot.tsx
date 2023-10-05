@@ -6,7 +6,8 @@ import type {
 } from "../types";
 
 import * as hooks from "../hooks";
-import { log, fetch_api_post, dispatch_action } from "../shared";
+import { log, fetch_api_post } from "../shared";
+import { dispatch_action } from "../stores";
 import Highcharts from "highcharts";
 import HighchartsExporting from "highcharts/modules/exporting";
 import HighchartsExportData from "highcharts/modules/export-data";

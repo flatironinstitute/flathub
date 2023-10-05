@@ -1,5 +1,4 @@
 import type {
-  Action,
   CatalogHierarchyNode,
   CellID,
   FieldMetadata,
@@ -9,13 +8,7 @@ import type {
 
 import * as d3 from "d3";
 
-import * as stores from "./stores";
-
 const FLATHUB_API_BASE_URL = `https://flathub.flatironinstitute.org`;
-
-export function dispatch_action(action: Action.Any) {
-  stores.actions.update(($actions) => [...$actions, action]);
-}
 
 export async function fetch_api_get<T>(path: string): Promise<T> {
   const url = new URL(`/api${path}`, FLATHUB_API_BASE_URL);

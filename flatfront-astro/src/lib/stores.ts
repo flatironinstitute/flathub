@@ -24,6 +24,10 @@ export const actions = writable<Action.Any[]>(initial_actions, (set) => {
   }
 });
 
+export function dispatch_action(action: Action.Any) {
+  actions.update(($actions) => [...$actions, action]);
+}
+
 export const filter_state = writable<GlobalFilterState>(
   {} as GlobalFilterState,
   (set) => {
