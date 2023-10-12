@@ -5,8 +5,7 @@ import type {
   CatalogHierarchyNode,
   CatalogMetadataWrapper,
   CatalogResponse,
-  FieldMetadata,
-  GlobalFilterState
+  FieldMetadata
 } from "./types";
 
 import * as d3 from "d3";
@@ -24,31 +23,11 @@ export const actions = writable<Action.Any[]>(initial_actions, (set) => {
   }
 });
 
-export function dispatch_action(action: Action.Any) {
-  actions.update(($actions) => [...$actions, action]);
-}
-
-export const filter_state = writable<GlobalFilterState>(
-  {} as GlobalFilterState,
-  (set) => {
-    const state = get_data_from_url<GlobalFilterState>(`filters`);
-    if (state) {
-      log(`Setting filter state from URL:`, state);
-      set(state);
-    }
-  }
-);
-
 actions.subscribe((actions) => log(`All actions:`, actions));
 
 debounce_store(actions, 500).subscribe((actions) => {
   if (actions.length === 0) return;
   store_data_in_url(actions, `actions`);
-});
-
-debounce_store(filter_state, 500).subscribe((filters) => {
-  if (Object.keys(filters).length === 0) return;
-  store_data_in_url(filters, `filters`);
 });
 
 export const catalog_query_by_catalog_id = writable(
@@ -118,8 +97,9 @@ function store_data_in_url<T>(data: T, key: string) {
   window.history.replaceState({}, ``, url.toString());
   const url_length = url.toString().length;
   // log(`URL Length:`, url_length);
-  if (url_length > 2000) {
-    throw new Error(`URL is too long!`);
+  if (url_length > 5000) {
+    // throw new Error(`URL is too long!`);
+    console.error(`URL is too long!`);
   }
 }
 

@@ -10,7 +10,9 @@ import type {
 
 import React from "react";
 import { get } from "svelte/store";
-import * as immer from "immer";
+import lodash_merge from "lodash.merge";
+
+import * as controller from "./components/AppController";
 
 import {
   assert_numeric_field_stats,
@@ -36,21 +38,10 @@ export function useStore<T>(store: Readable<T>) {
   );
   return state;
 }
-export function useActions(): Action.Any[] {
-  return useStore(stores.actions);
-}
 
 export function useCatalogID(): string {
   const catalog_cell_id = useCatalogCellID();
-  const all_actions = useActions();
-  const catalog_id = all_actions
-    .filter((action): action is Action.SetCatalog => {
-      return (
-        action.type === `set_catalog` &&
-        action.catalog_cell_id === catalog_cell_id
-      );
-    })
-    .at(-1)?.catalog_id;
+  const catalog_id = controller.useState()?.set_catalog?.[catalog_cell_id];
   return catalog_id;
 }
 
@@ -62,31 +53,9 @@ export function useCatalogMetadata(): CatalogMetadataWrapper {
   return catalog_metadata;
 }
 
-export function useFilterValueSetter() {
-  const catalog_cell_id = useCatalogCellID();
-  const field_node = useFieldNode();
-  const field_id = field_node.data.name;
-  const set_filter_value = (filter_value: FilterValueRaw) => {
-    log(`Setting filter value:`, catalog_cell_id, field_id, filter_value);
-    stores.filter_state.update((fitler_state_object) => {
-      return immer.produce(fitler_state_object, (draft) => {
-        draft[catalog_cell_id] = draft[catalog_cell_id] || {};
-        draft[catalog_cell_id][field_id] = filter_value;
-      });
-    });
-  };
-  return set_filter_value;
-}
-
 export function useDarkModeValue(): DarkModeValue {
-  const all_actions = useStore(stores.actions);
-  const dark_mode_actions = all_actions.filter(
-    (action): action is Action.SetDarkMode => {
-      return action.type === `set_dark_mode`;
-    }
-  );
-  const latest = dark_mode_actions.at(-1);
-  return latest?.value ?? `system`;
+  const dark_mode_value = controller.useState()?.dark_mode;
+  return dark_mode_value ?? `system`;
 }
 
 function useSystemDarkMode(): boolean {
@@ -179,11 +148,8 @@ export function useFilters(): Filters {
     catalog_hierarchy
   );
   const filter_state: Filters =
-    useStore(stores.filter_state)?.[catalog_cell_id] ?? {};
-  const filters = {
-    ...initial_filters,
-    ...filter_state
-  };
+    controller.useState()?.filter_value?.[catalog_cell_id]?.[catalog_id];
+  const filters = lodash_merge(initial_filters, filter_state);
   return filters;
 }
 

@@ -1,36 +1,9 @@
-import type { Cell } from "../types";
-
-import React from "react";
 import { Providers } from "../contexts";
-import * as hooks from "../hooks";
 import CatalogCell from "./CatalogCell";
+import * as controller from "./AppController";
 
 export default function Cells() {
-  const actions = hooks.useActions();
-
-  const cells = React.useMemo(() => {
-    let _cells: Cell.Any[] = [];
-    for (const action of actions) {
-      switch (action.type) {
-        case `add_catalog_cell`:
-          _cells.push({
-            type: `catalog`,
-            id: action.catalog_cell_id
-          });
-          break;
-        case `add_comparison_cell`:
-          _cells.push({
-            type: `comparison`,
-            id: action.comparison_cell_id
-          });
-          break;
-        case `remove_cell`:
-          _cells = _cells.filter((cell) => cell.id !== action.cell_id);
-          break;
-      }
-    }
-    return _cells;
-  }, [actions]);
+  const cells = controller.useState()?.add_cell ?? [];
 
   return (
     <>

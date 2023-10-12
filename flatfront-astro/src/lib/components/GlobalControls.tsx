@@ -2,35 +2,27 @@ import type { DarkModeValue } from "../types";
 
 import React from "react";
 import * as hooks from "../hooks";
-import { dispatch_action } from "../stores";
-import { log } from "../shared";
 import { CellWrapper, BigButton, RadioGroup } from "./Primitives";
+import * as controller from "./AppController";
 
 export default function GlobalControls(): React.JSX.Element {
+  const number_of_cells = controller.useState()?.add_cell?.length ?? 0;
+  const dispatch = controller.useDispatch();
   return (
     <CellWrapper className="grid items-center gap-y-4">
       <BigButton
         onClick={() => {
-          dispatch_action({
-            type: `add_catalog_cell`,
-            catalog_cell_id: `catalog_cell_${Date.now()}`
+          dispatch([`add_cell`, number_of_cells.toString()], {
+            type: `catalog`,
+            id: `catalog_cell_${number_of_cells}`
           });
         }}
       >
         Add Catalog
       </BigButton>
-      <BigButton
-        disabled
-        onClick={() => {
-          dispatch_action({
-            type: `add_comparison_cell`,
-            comparison_cell_id: `comparison_cell_${Date.now()}`
-          });
-        }}
-      >
+      <BigButton disabled onClick={() => {}}>
         Add Comparison
       </BigButton>
-      {/* <DarkModeToggle /> */}
       <DarkModeSelect />
     </CellWrapper>
   );
@@ -39,12 +31,10 @@ export default function GlobalControls(): React.JSX.Element {
 function DarkModeSelect() {
   const current_value = hooks.useDarkModeValue();
 
+  const dispatch = controller.useDispatch();
+
   const on_change = (value: DarkModeValue) => {
-    log(`DarkModeSelect.on_change`, { value });
-    dispatch_action({
-      type: `set_dark_mode`,
-      value
-    });
+    dispatch([`dark_mode`], value);
   };
 
   return (

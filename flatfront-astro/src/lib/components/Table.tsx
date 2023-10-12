@@ -40,16 +40,17 @@ function Table() {
 
   const catalog_metadata_wrapper = hooks.useCatalogMetadata();
   const catalog_hierarchy = catalog_metadata_wrapper?.hierarchy;
-  const all_actions = hooks.useActions();
 
-  const table_actions = all_actions.filter(
-    (action): action is Action.AddTableColumn | Action.RemoveTableColumn =>
-      action.type === `add_table_column` ||
-      action.type === `remove_table_column`
-  );
+  // const table_actions = all_actions.filter(
+  //   (action): action is Action.AddTableColumn | Action.RemoveTableColumn =>
+  //     action.type === `add_table_column` ||
+  //     action.type === `remove_table_column`
+  // );
+
+  const column_actions = [];
 
   const column_ids_set = catalog_hierarchy
-    ? get_column_ids(catalog_hierarchy, table_actions)
+    ? get_column_ids(catalog_hierarchy, column_actions)
     : new Set<string>();
 
   const fields = Array.from(column_ids_set);
@@ -169,6 +170,8 @@ function TablePrimitive({ data }: { data: Array<DataRow> }) {
   const catalog_hierarchy = catalog_metadata_wrapper?.hierarchy;
 
   const columns = construct_table_columns(data, catalog_hierarchy);
+
+  if (!columns) return null;
 
   const table = useReactTable({
     data,
@@ -318,7 +321,11 @@ function construct_table_columns(
     }
   };
   const root = next(catalog_field_hierarchy);
-  if (root === null) throw new Error(`root is null`);
+  // if (root === null) throw new Error(`root is null`);
+  if (root === null) {
+    console.error(`construct_table_columns: root is null`);
+    return null;
+  }
   if (!("columns" in root)) throw new Error(`root.columns is not defined`);
   const columns = root?.columns ?? [];
   return columns;

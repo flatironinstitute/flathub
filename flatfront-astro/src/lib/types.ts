@@ -2,6 +2,16 @@ import type * as schema from "./flathub-schema";
 
 export type { schema };
 
+export type AppState = {
+  dark_mode?: DarkModeValue;
+  add_cell?: Cell.Any[];
+  filter_value?: any;
+  set_catalog?: Record<CellID.Catalog, CatalogID>;
+  add_plot?: Record<CellID.Catalog, Array<PlotID>>;
+  set_plot_type?: Record<PlotID, PlotType>;
+  set_plot_control?: Record<PlotID, Record<string, any>>;
+};
+
 export type DataResponse = Array<DataRow>;
 export type DataRow = Record<string, any>;
 
@@ -17,7 +27,7 @@ export type FieldType =
 
 export type GlobalFilterState = Record<
   CellID.Catalog,
-  Record<string, FilterValueRaw>
+  Record<CatalogID, Record<string, FilterValueRaw>>
 >;
 
 export type CatalogMetadataWrapper = {
@@ -29,15 +39,6 @@ export type CatalogMetadataWrapper = {
 export type CatalogHierarchyNode = d3.HierarchyNode<FieldMetadata>;
 
 export namespace Action {
-  export type AddCatalogCell = ActionBase<
-    `add_catalog_cell`,
-    { catalog_cell_id: CellID.Catalog }
-  >;
-  export type AddComparisonCell = ActionBase<
-    `add_comparison_cell`,
-    { comparison_cell_id: CellID.Comparison }
-  >;
-  export type RemoveCell = ActionBase<`remove_cell`, { cell_id: CellID.Any }>;
   export type AddFilter = ActionBase<
     `add_filter`,
     { catalog_cell_id: CellID.Catalog; field_id: string }
@@ -45,18 +46,6 @@ export namespace Action {
   export type RemoveFilter = ActionBase<
     `remove_filter`,
     { catalog_cell_id: CellID.Catalog; field_id: string }
-  >;
-  export type AddPlot = ActionBase<
-    `add_plot`,
-    { catalog_cell_id: CellID.Catalog; plot_id: PlotID }
-  >;
-  export type RemovePlot = ActionBase<
-    `remove_plot`,
-    { catalog_cell_id: CellID.Catalog; plot_id: PlotID }
-  >;
-  export type SetCatalog = ActionBase<
-    `set_catalog`,
-    { catalog_cell_id: CellID.Catalog; catalog_id: string }
   >;
   export type AddTableColumn = ActionBase<
     `add_table_column`,
@@ -82,14 +71,8 @@ export namespace Action {
     { plot_id: PlotID; key: string; value: any }
   >;
   export type Any =
-    | AddCatalogCell
-    | AddComparisonCell
-    | RemoveCell
     | AddFilter
     | RemoveFilter
-    | AddPlot
-    | RemovePlot
-    | SetCatalog
     | AddTableColumn
     | RemoveTableColumn
     | SetDarkMode
@@ -117,6 +100,9 @@ export namespace Cell {
   };
   export type Any = Catalog | Comparison;
 }
+
+export type FieldID = string;
+export type CatalogID = string;
 
 export namespace CellID {
   export type Catalog = `catalog_cell_${number}`;

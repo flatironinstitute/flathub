@@ -13,7 +13,6 @@ import { Providers } from "../contexts";
 import * as hooks from "../hooks";
 import { fetch_api_get, assert_catalog_cell_id } from "../shared";
 import * as stores from "../stores";
-import { dispatch_action } from "../stores";
 import {
   BigButton,
   CellSection,
@@ -25,6 +24,7 @@ import {
 import TableSection from "./Table";
 import PlotSection from "./Plot";
 import FieldCard from "./FieldCard";
+import * as controller from "./AppController";
 
 export default function CatalogCell() {
   const catalog_cell_id = hooks.useCatalogCellID();
@@ -66,15 +66,19 @@ export default function CatalogCell() {
     </>
   );
 
+  const number_of_plots =
+    controller.useState()?.add_plot?.[catalog_cell_id]?.length ?? 0;
+
+  const dispatch = controller.useDispatch();
+
   const add_buttons = (
     <>
       <BigButton
         onClick={() => {
-          dispatch_action({
-            type: `add_plot`,
-            plot_id: `plot_${Date.now()}`,
-            catalog_cell_id
-          });
+          dispatch(
+            [`add_plot`, catalog_cell_id, number_of_plots],
+            `plot_${number_of_plots}`
+          );
         }}
       >
         Add Plot
@@ -82,38 +86,12 @@ export default function CatalogCell() {
     </>
   );
 
-  const actions = hooks.useActions();
+  const plot_ids = controller.useState()?.add_plot?.[catalog_cell_id] ?? [];
 
-  const plot_actions = actions.filter(
-    (action): action is Action.AddPlot | Action.RemovePlot => {
-      return (
-        (action.type === `add_plot` || action.type === `remove_plot`) &&
-        action.catalog_cell_id === catalog_cell_id
-      );
-    }
-  );
-
-  const plots = React.useMemo(() => {
-    let _plots: Array<{ id: PlotID }> = [];
-    for (const action of plot_actions) {
-      switch (action.type) {
-        case `add_plot`:
-          _plots.push({
-            id: action.plot_id
-          });
-          break;
-        case `remove_plot`:
-          _plots = _plots.filter((plot) => plot.id !== action.plot_id);
-          break;
-      }
-    }
-    return _plots;
-  }, [plot_actions]);
-
-  const plot_components = plots.map((plot) => {
+  const plot_components = plot_ids.map((plot_id) => {
     return (
-      <Providers.PlotIDProvider key={plot.id} value={plot.id}>
-        <PlotSection key={plot.id} />
+      <Providers.PlotIDProvider key={plot_id} value={plot_id}>
+        <PlotSection key={plot_id} />
       </Providers.PlotIDProvider>
     );
   });
@@ -158,6 +136,7 @@ function CatalogSelect() {
   const catalog_list = d3.sort(catalog_list_unsorted, get_title);
   const ready = catalog_list.length > 0;
   const selected = catalog_list.find((d) => d.name === catalog_id);
+  const dispatch = controller.useDispatch();
   return (
     <div data-type="CatalogSelect">
       <Select
@@ -168,11 +147,8 @@ function CatalogSelect() {
         disabled={!ready}
         value={selected}
         onValueChange={(d) => {
-          dispatch_action({
-            type: `set_catalog`,
-            catalog_cell_id,
-            catalog_id: d?.name
-          } as Action.SetCatalog);
+          const catalog_id = d?.name;
+          dispatch([`set_catalog`, catalog_cell_id], catalog_id);
         }}
       />
     </div>

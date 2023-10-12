@@ -9,13 +9,17 @@ import {
   log
 } from "../shared";
 import { RangeSlider, TextInput, Select } from "./Primitives";
+import * as controller from "./AppController";
 
 export function RangeFilterControl() {
-  const filters = hooks.useFilters();
   const field_node = hooks.useFieldNode();
   const metadata = field_node.data;
   assert_numeric_field_stats(metadata);
   const field_id = metadata.name;
+  const filters = hooks.useFilters();
+
+  const dispatch = controller.useDispatch();
+
   const filter_value_raw: FilterValueRaw = filters[field_id];
   assert_numeric_filter_value(filter_value_raw);
 
@@ -24,7 +28,10 @@ export function RangeFilterControl() {
 
   const value = [low, high];
 
-  const set_filter_value = hooks.useFilterValueSetter();
+  const catalog_cell_id = hooks.useCatalogCellID();
+  const catalog_id = hooks.useCatalogID();
+
+  const action_key = [`filter_value`, catalog_cell_id, catalog_id, field_id];
 
   const slider = (
     <RangeSlider
@@ -32,10 +39,12 @@ export function RangeFilterControl() {
       max={max}
       value={value}
       onValueChange={([new_low, new_high]) => {
-        set_filter_value({
-          gte: new_low,
-          lte: new_high
-        });
+        if (new_low !== low) {
+          dispatch([...action_key, `gte`], new_low);
+        }
+        if (new_high !== high) {
+          dispatch([...action_key, `lte`], new_high);
+        }
       }}
     />
   );
@@ -51,6 +60,7 @@ export function RangeFilterControl() {
           const number = Number(string);
           if (!Number.isFinite(number)) return `Invalid number`;
           if (number < min) return `Must be greater than ${min.toString()}`;
+          if (number > high) return `Must be less than ${high.toString()}`;
           return null;
         }}
         onStringInput={(string: string) => {
@@ -60,10 +70,7 @@ export function RangeFilterControl() {
             log(`Not updating filter because it didn't change:`, string, low);
             return;
           }
-          set_filter_value({
-            gte: number,
-            lte: high
-          });
+          dispatch([...action_key, `gte`], number);
         }}
       />
       <TextInput
@@ -72,6 +79,7 @@ export function RangeFilterControl() {
           const number = Number(string);
           if (!Number.isFinite(number)) return `Invalid number`;
           if (number > max) return `Must be less than ${max.toString()}`;
+          if (number < low) return `Must be greater than ${low.toString()}`;
           return null;
         }}
         onStringInput={(string: string) => {
@@ -81,10 +89,7 @@ export function RangeFilterControl() {
             log(`Not updating filter because it didn't change:`, string, high);
             return;
           }
-          set_filter_value({
-            gte: low,
-            lte: number
-          });
+          dispatch([...action_key, `lte`], number);
         }}
       />
       <div className="col-span-2">
@@ -104,7 +109,11 @@ export function SelectFilterControl() {
   const values = join_enums(metadata);
   const value = values.find((d) => d.value === filter_value_raw);
 
-  const set_filter_value = hooks.useFilterValueSetter();
+  const catalog_cell_id = hooks.useCatalogCellID();
+  const catalog_id = hooks.useCatalogID();
+
+  const dispatch = controller.useDispatch();
+  const action_key = [`filter_value`, catalog_cell_id, catalog_id, field_id];
 
   return (
     <Select
@@ -116,7 +125,7 @@ export function SelectFilterControl() {
         return `${d.text} (${format.commas(d.count)} rows)`;
       }}
       onValueChange={({ value }) => {
-        set_filter_value(value);
+        dispatch(action_key, value);
       }}
     />
   );

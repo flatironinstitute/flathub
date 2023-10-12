@@ -247,18 +247,18 @@ export function Label({
 export function Select<T>({
   placeholder,
   options = [],
+  value = undefined,
   getKey = (d) => d?.toString(),
   getDisplayName = (d) => d?.toString(),
   disabled = false,
-  value = undefined,
   onValueChange = undefined
 }: {
   placeholder?: string;
   options: T[];
+  value?: T;
   getKey?: (option: T) => string;
   getDisplayName?: (option: T) => React.ReactNode;
   disabled?: boolean;
-  value?: T;
   onValueChange?: (value: T) => void;
 }) {
   return (
@@ -289,7 +289,7 @@ export function Select<T>({
         </RadixSelect.Icon>
       </RadixSelect.Trigger>
       <RadixSelect.Portal>
-        <RadixSelect.Content position="popper" sideOffset={10}>
+        <RadixSelect.Content position="item-aligned" sideOffset={10}>
           <RadixSelect.Viewport
             className={clsx(
               `w-[var(--radix-select-trigger-width)] rounded-lg`,
@@ -362,47 +362,3 @@ export function RadioGroup<T extends string>(
     </RadixRadioGroup.Root>
   );
 }
-
-// function DarkModeToggle() {
-//   const dark_mode = hooks.useIsDarkMode();
-
-//   // const set_dark_mode = (value: boolean) => {
-//   //   if (value) {
-//   //     document.documentElement.classList.add("dark");
-//   //   } else {
-//   //     document.documentElement.classList.remove("dark");
-//   //   }
-//   // };
-
-//   return (
-//     <div data-type="DarkModeToggle" className="flex h-20 items-center gap-x-4">
-//       <div>Dark Mode</div>
-//       <RadixSwitch.Root
-//         className={clsx(
-//           `relative h-[30px] w-[50px] cursor-pointer rounded-full`,
-//           `transition-colors duration-200 ease-in-out`,
-//           `data-[state=checked]:bg-simons-gray-1/100 data-[state=unchecked]:bg-simons-gray-1/50`,
-//           `focus:outline-none focus-visible:ring-4 focus-visible:ring-white`
-//         )}
-//         checked={dark_mode}
-//         onCheckedChange={(value: boolean) => {
-//           // set_dark_mode(value);
-//           dispatch_action({
-//             type: `set_dark_mode`,
-//             value,
-//             cell_id: null
-//           });
-//         }}
-//       >
-//         <RadixSwitch.Thumb
-//           className={clsx(
-//             `pointer-events-none absolute block h-[20px] w-[20px] rounded-full bg-white shadow-lg ring-0`,
-//             `-translate-y-1/2 transform`,
-//             `transition-all duration-200 ease-in-out`,
-//             `data-[state=checked]:left-[calc(100%-25px)] data-[state=unchecked]:left-[5px]`
-//           )}
-//         />
-//       </RadixSwitch.Root>
-//     </div>
-//   );
-// }

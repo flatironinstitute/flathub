@@ -1,51 +1,26 @@
-import type {
-  Action,
-  DataPostRequestBody,
-  DataResponse,
-  PlotType
-} from "../types";
+import type { DataPostRequestBody, DataResponse, PlotType } from "../types";
 
 import * as hooks from "../hooks";
-import { log, fetch_api_post } from "../shared";
-import { dispatch_action } from "../stores";
+import { log, fetch_api_post, get_field_type } from "../shared";
 import Highcharts from "highcharts";
 import HighchartsExporting from "highcharts/modules/exporting";
 import HighchartsExportData from "highcharts/modules/export-data";
 import HighchartsReact from "highcharts-react-official";
 import { useQuery } from "@tanstack/react-query";
 import { CellSection, Placeholder, Select } from "./Primitives";
+import * as controller from "./AppController";
 
 HighchartsExporting(Highcharts);
 HighchartsExportData(Highcharts);
 
-function usePlotActions() {
-  const all_actions = hooks.useActions();
+function usePlotType() {
   const plot_id = hooks.usePlotID();
-  const plot_actions = all_actions.filter(
-    (action): action is Action.SetPlotType | Action.SetPlotControl => {
-      if (
-        !(action.type === `set_plot_type` || action.type === `set_plot_control`)
-      )
-        return false;
-      return action.plot_id === plot_id;
-    }
-  );
-  return plot_actions;
+  const plot_type = controller.useState().set_plot_type[plot_id];
+  return plot_type;
 }
 
 export default function PlotSection() {
-  const plot_actions = usePlotActions();
-  const plot_id = hooks.usePlotID();
-  const plot_type = plot_actions
-    .filter(
-      (action): action is Action.SetPlotType => action.type === `set_plot_type`
-    )
-    .at(-1)?.plot_type;
-  const plot_type_options = [
-    { key: `scatterplot` as PlotType, label: `Scatterplot` },
-    { key: `heatmap` as PlotType, label: `Heatmap` }
-  ];
-  const value = plot_type_options.find((d) => d.key === plot_type);
+  const plot_type = usePlotType();
   const plot_component = (() => {
     switch (plot_type) {
       case `scatterplot`:
@@ -58,26 +33,99 @@ export default function PlotSection() {
   })();
   return (
     <CellSection label="plot" className="space-y-4">
-      <div className="flex items-center gap-x-4">
-        <label className="whitespace-nowrap">Plot Type:</label>
-        <Select
-          placeholder="Choose plot type..."
-          options={plot_type_options}
-          getKey={(d) => d.key}
-          getDisplayName={(d) => d.label}
-          value={value}
-          onValueChange={(d) => {
-            const action: Action.SetPlotType = {
-              type: `set_plot_type`,
-              plot_id,
-              plot_type: d?.key
-            };
-            dispatch_action(action);
-          }}
-        />
-      </div>
+      <PlotControls />
       {plot_component}
     </CellSection>
+  );
+}
+
+function PlotTypeSelect() {
+  const plot_id = hooks.usePlotID();
+  const plot_type = usePlotType();
+  const plot_type_options = [
+    { key: `scatterplot` as PlotType, label: `Scatterplot` },
+    { key: `heatmap` as PlotType, label: `Heatmap` }
+  ];
+  const value = plot_type_options.find((d) => d.key === plot_type);
+  const dispatch = controller.useDispatch();
+  return (
+    <Select
+      placeholder="Choose plot type..."
+      options={plot_type_options}
+      getKey={(d) => d.key}
+      getDisplayName={(d) => d.label}
+      value={value}
+      onValueChange={(d) => {
+        const plot_type = d?.key;
+        dispatch([`set_plot_type`, plot_id], plot_type);
+      }}
+    />
+  );
+}
+
+function PlotControls() {
+  const plot_type = usePlotType();
+  const scatterplot_controls = (
+    <>
+      <label>X-axis</label>
+      <PlotControl plot_control_key="x_axis" placeholder="Choose X-Axis..." />
+      <label>Y-axis</label>
+      <PlotControl plot_control_key="y_axis" placeholder="Choose Y-Axis..." />
+    </>
+  );
+  const controls = (() => {
+    switch (plot_type) {
+      case `scatterplot`:
+        return scatterplot_controls;
+      case `heatmap`:
+        return <Placeholder>Heatmap Controls</Placeholder>;
+      default:
+        return <Placeholder>Choose a plot type</Placeholder>;
+    }
+  })();
+  return (
+    <div className="grid grid-cols-[max-content_1fr] items-center gap-x-4 gap-y-4">
+      <label className="whitespace-nowrap">Plot Type:</label>
+      <PlotTypeSelect />
+      {controls}
+    </div>
+  );
+}
+
+function PlotControl({
+  plot_control_key,
+  placeholder
+}: {
+  plot_control_key: `x_axis` | `y_axis`;
+  placeholder?: string;
+}) {
+  const plot_id = hooks.usePlotID();
+  const catalog_metadata = hooks.useCatalogMetadata();
+  const all_leaf_nodes = catalog_metadata?.hierarchy?.leaves() ?? [];
+  const numeric_nodes = all_leaf_nodes.filter((d) => {
+    const type = get_field_type(d.data);
+    return type === `INTEGER` || type === `FLOAT`;
+  });
+
+  const field_id =
+    controller.useState().set_plot_control?.[plot_id]?.[plot_control_key];
+
+  const dispatch = controller.useDispatch();
+
+  const value = numeric_nodes.find((d) => d.data.name === field_id);
+
+  return (
+    <Select
+      placeholder={placeholder}
+      options={numeric_nodes}
+      value={value}
+      getKey={(d) => d.data.name}
+      getDisplayName={(d) => d.data.name}
+      onValueChange={(d) => {
+        const value = d?.data.name;
+        dispatch([`set_plot_control`, plot_id, plot_control_key], value);
+      }}
+    />
   );
 }
 
@@ -85,15 +133,12 @@ function Scatterplot() {
   const catalog_id = hooks.useCatalogID();
   const filters = hooks.useFilters();
 
-  const plot_state = {
-    x_axis: `Group_MassType_gas`,
-    y_axis: `Group_MassType_dm`,
-    count: 1e3
-  };
+  const plot_id = hooks.usePlotID();
+  const plot_state = controller.useState().set_plot_control?.[plot_id];
 
   const x_axis_field_id = plot_state.x_axis;
   const y_axis_field_id = plot_state.y_axis;
-  const count = plot_state.count;
+  const count = plot_state.count ?? 3e3;
 
   const request_body: DataPostRequestBody = {
     object: true,
@@ -112,7 +157,7 @@ function Scatterplot() {
     Boolean(catalog_id) && Boolean(x_axis_field_id) && Boolean(y_axis_field_id);
 
   const query = useQuery({
-    queryKey: [`plot-data`],
+    queryKey: [`plot-data`, query_config],
     queryFn: async (): Promise<DataResponse> => {
       return fetch_api_post<DataPostRequestBody, DataResponse>(
         query_config.path,
@@ -172,23 +217,15 @@ function Scatterplot() {
       {
         type: `scatter`,
         data: data_munged
-        // className: `blarm`
-        // color: `red`
       }
     ],
     plotOptions: {
       scatter: {
         marker: {
-          radius: 3,
+          radius: 2,
           symbol: `circle`
         },
         animation: false
-        // opacity: 0.5
-        // color: `red`
-        // opacity: 0.5,
-        // colorIndex: 3
-        // color: `blue`
-        // className: `[&_path]:fill-white [&_path]:stroke-none`
       }
     }
   };
