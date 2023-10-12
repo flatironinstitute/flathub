@@ -1,11 +1,13 @@
 import React from "react";
 import clsx from "clsx";
 import * as d3 from "d3";
+import * as RadixIcons from "@radix-ui/react-icons";
 import * as RadixSlider from "@radix-ui/react-slider";
 import * as RadixDialog from "@radix-ui/react-dialog";
-import * as RadixIcons from "@radix-ui/react-icons";
 import * as RadixSelect from "@radix-ui/react-select";
 import * as RadixRadioGroup from "@radix-ui/react-radio-group";
+import * as RadixSwitch from "@radix-ui/react-switch";
+import * as RadixCheckbox from "@radix-ui/react-checkbox";
 
 export function CellWrapper({
   children,
@@ -251,7 +253,9 @@ export function Select<T>({
   getKey = (d) => d?.toString(),
   getDisplayName = (d) => d?.toString(),
   disabled = false,
-  onValueChange = undefined
+  onValueChange = undefined,
+  contentPosition = "item-aligned",
+  size = `large`
 }: {
   placeholder?: string;
   options: T[];
@@ -260,7 +264,13 @@ export function Select<T>({
   getDisplayName?: (option: T) => React.ReactNode;
   disabled?: boolean;
   onValueChange?: (value: T) => void;
+  contentPosition?: RadixSelect.SelectContentProps["position"];
+  size?: `small` | `large`;
 }) {
+  const size_classes =
+    size === `large`
+      ? { trigger: `text-md py-3 pl-3 pr-4`, icon: `h-6 w-6` }
+      : { trigger: `text-sm py-1 pl-2 pr-2`, icon: `h-4 w-4` };
   return (
     <RadixSelect.Root
       data-type="Select"
@@ -277,22 +287,23 @@ export function Select<T>({
       <RadixSelect.Trigger
         className={clsx(
           `relative flex w-full items-center justify-between`,
-          `cursor-pointer py-3 pl-3 pr-4 text-left`,
+          `cursor-pointer text-left`,
           `disabled:cursor-wait disabled:opacity-50`,
           `rounded-md ring-1 ring-black dark:ring-white`,
-          `focus:outline-none focus-visible:ring-4`
+          `focus:outline-none focus-visible:ring-4`,
+          size_classes.trigger
         )}
       >
         <RadixSelect.Value placeholder={placeholder}></RadixSelect.Value>
         <RadixSelect.Icon>
-          <RadixIcons.ChevronDownIcon className="h-6 w-6" />
+          <RadixIcons.ChevronDownIcon className={size_classes.icon} />
         </RadixSelect.Icon>
       </RadixSelect.Trigger>
       <RadixSelect.Portal>
-        <RadixSelect.Content position="item-aligned" sideOffset={10}>
+        <RadixSelect.Content position={contentPosition} sideOffset={10}>
           <RadixSelect.Viewport
             className={clsx(
-              `w-[var(--radix-select-trigger-width)] rounded-lg`,
+              `w-[var(--radix-select-trigger-width)] rounded-md`,
               `bg-white shadow-2xl dark:bg-black`,
               `ring-1 ring-black dark:ring-white`
             )}
@@ -305,8 +316,8 @@ export function Select<T>({
                   value={key}
                   className={clsx(
                     `cursor-pointer select-none focus:outline-none`,
-                    `py-2 pl-3`,
-                    `focus:bg-black/10 dark:focus:bg-white/40`
+                    `focus:bg-black/10 dark:focus:bg-white/40`,
+                    size_classes.trigger
                   )}
                 >
                   <RadixSelect.ItemText>
@@ -360,5 +371,50 @@ export function RadioGroup<T extends string>(
         ))}
       </div>
     </RadixRadioGroup.Root>
+  );
+}
+
+export function Switch() {
+  const size = 15;
+  const style = {
+    "--size": `${size}px`,
+    "--tx": `calc(var(--size) - 2px)`,
+    "--oh": `calc(var(--size) + 6px)`,
+    "--ow": `calc(var(--size) * 2)`
+  } as any;
+  return (
+    <RadixSwitch.Root
+      style={style}
+      className={clsx(
+        `relative h-[var(--oh)] w-[var(--ow)] cursor-pointer rounded-full`,
+        `bg-black outline-none`,
+        `focus:shadow-[0_0_0_2px] focus:shadow-black data-[state=checked]:bg-black`
+      )}
+    >
+      <RadixSwitch.Thumb
+        className={clsx(
+          `block h-[var(--size)] w-[var(--size)] translate-x-[3px]`,
+          `rounded-full bg-white`,
+          `transition-transform duration-100 will-change-transform data-[state=checked]:translate-x-[var(--tx)]`
+        )}
+      />
+    </RadixSwitch.Root>
+  );
+}
+
+export function Checkbox(props: RadixCheckbox.CheckboxProps) {
+  return (
+    <RadixCheckbox.Root
+      className={clsx(
+        `flex h-5 w-5 appearance-none items-center justify-center rounded-md`,
+        `bg-white outline outline-black dark:bg-black dark:outline-white`
+      )}
+      defaultChecked
+      {...props}
+    >
+      <RadixCheckbox.Indicator>
+        <RadixIcons.CheckIcon className="h-4 w-4" />
+      </RadixCheckbox.Indicator>
+    </RadixCheckbox.Root>
   );
 }

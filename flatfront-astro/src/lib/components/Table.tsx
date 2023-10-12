@@ -6,20 +6,24 @@ import type {
   DataRow,
   FieldMetadata
 } from "../types";
-import type {
-  AccessorColumnDef,
-  ColumnDef,
-  GroupColumnDef
-} from "@tanstack/react-table";
 
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
+  type AccessorColumnDef,
+  type ColumnDef,
+  type GroupColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable
 } from "@tanstack/react-table";
-import { fetch_api_post, get_field_type, is_leaf_node } from "../shared";
+import {
+  fetch_api_post,
+  get_field_type,
+  log,
+  is_leaf_node,
+  is_root_node
+} from "../shared";
 import * as hooks from "../hooks";
 import { BigButton, CellSection, Placeholder } from "./Primitives";
 import Katex from "./Katex";
@@ -171,7 +175,7 @@ function TablePrimitive({ data }: { data: Array<DataRow> }) {
 
   const columns = construct_table_columns(data, catalog_hierarchy);
 
-  if (!columns) return null;
+  log(`columns`, columns);
 
   const table = useReactTable({
     data,
@@ -260,8 +264,10 @@ function construct_table_columns(
   if (data.length === 0) return [];
   if (!catalog_field_hierarchy)
     throw new Error(`catalog_field_hierarchy is null`);
-  // Get field IDs based on keys in data
-  const field_ids_set = new Set(Object.keys(data[0] ?? {}));
+  // Get IDs of the leaf fields based on keys in data
+  const leaf_column_ids_set = new Set(Object.keys(data[0] ?? {}));
+
+  // log(`field_ids_set`, field_ids_set)
 
   // Recursively construct column definitions
   const next = (
@@ -270,11 +276,12 @@ function construct_table_columns(
     // Include this node if:
     // - It is a leaf node, and is one of the fields in field_ids_set
     // - It is the ancestor of one of the fields in field_ids_set
-    const is_field = is_leaf_node(node) && field_ids_set.has(node.data.name);
+    const is_visible_leaf_field =
+      is_leaf_node(node) && leaf_column_ids_set.has(node.data.name);
     const is_ancestor_of_field = node
       .leaves()
-      .some((child) => field_ids_set.has(child.data.name));
-    const include = is_field || is_ancestor_of_field;
+      .some((child) => leaf_column_ids_set.has(child.data.name));
+    const include = is_visible_leaf_field || is_ancestor_of_field;
     if (!include) return null;
 
     const child_columns: ColumnDef<DataRow>[] = [];
@@ -286,7 +293,23 @@ function construct_table_columns(
       }
     }
 
-    const field_id = node.data.name;
+    let field_id = node.data.name;
+
+    if (field_id?.length === 0) {
+      field_id = node.data.title;
+    }
+
+    if (is_root_node(node)) {
+      field_id = `root`;
+    }
+
+    if (!field_id || field_id.length === 0) {
+      console.error(
+        `construct_table_columns: field_id is empty for node:`,
+        node
+      );
+      throw new Error(`field_id is empty`);
+    }
 
     const column_base: ColumnDef<DataRow> = {
       id: field_id,

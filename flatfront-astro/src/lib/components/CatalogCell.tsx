@@ -113,7 +113,7 @@ export default function CatalogCell() {
       <div className="space-y-4 desktop:col-span-2 desktop:col-start-1">
         {top_sections}
       </div>
-      <CellSection className="flex flex-col gap-y-4 desktop:col-span-4 desktop:col-start-3 desktop:row-start-1">
+      <CellSection className="flex flex-col gap-y-20 desktop:col-span-4 desktop:col-start-3 desktop:row-start-1">
         {add_buttons}
         {plot_components}
         {bottom_sections}

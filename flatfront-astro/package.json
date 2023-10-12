@@ -18,6 +18,7 @@
     "@astrojs/tailwind": "latest",
     "@observablehq/plot": "latest",
     "@radix-ui/react-accordion": "latest",
+    "@radix-ui/react-checkbox": "latest",
     "@radix-ui/react-dialog": "latest",
     "@radix-ui/react-form": "latest",
     "@radix-ui/react-icons": "latest",

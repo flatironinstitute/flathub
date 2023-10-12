@@ -67,7 +67,7 @@ export function RangeFilterControl() {
           const number = Number(string);
           if (!Number.isFinite(number)) return;
           if (string === low.toString()) {
-            log(`Not updating filter because it didn't change:`, string, low);
+            // log(`Not updating filter because it didn't change:`, string, low);
             return;
           }
           dispatch([...action_key, `gte`], number);
@@ -86,7 +86,7 @@ export function RangeFilterControl() {
           const number = Number(string);
           if (!Number.isFinite(number)) return;
           if (string === high.toString()) {
-            log(`Not updating filter because it didn't change:`, string, high);
+            // log(`Not updating filter because it didn't change:`, string, high);
             return;
           }
           dispatch([...action_key, `lte`], number);
