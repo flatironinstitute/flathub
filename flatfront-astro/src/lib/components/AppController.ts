@@ -15,7 +15,7 @@ export function useSaveAndRestoreState() {
   React.useEffect(() => {
     const app_state = get_data_from_url<any>(`app_state`);
     if (app_state) {
-      log(`Setting actions from URL:`, app_state);
+      log(`Setting app state from URL:`, app_state);
       set_app_state(app_state);
     }
   }, []);

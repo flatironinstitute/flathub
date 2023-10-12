@@ -1,7 +1,6 @@
 import type { QueryObserverResult } from "@tanstack/react-query";
 import type { Readable } from "svelte/store";
 import type {
-  Action,
   CatalogHierarchyNode,
   CatalogMetadataWrapper,
   CatalogResponse,
@@ -10,25 +9,7 @@ import type {
 
 import * as d3 from "d3";
 import { writable, derived, get } from "svelte/store";
-import * as lzstring from "lz-string";
 import { get_field_type, log } from "./shared";
-
-const initial_actions: Action.Any[] = [];
-
-export const actions = writable<Action.Any[]>(initial_actions, (set) => {
-  const actions = get_data_from_url<Action.Any[]>(`actions`);
-  if (actions) {
-    log(`Setting actions from URL:`, actions);
-    set(actions);
-  }
-});
-
-actions.subscribe((actions) => log(`All actions:`, actions));
-
-debounce_store(actions, 500).subscribe((actions) => {
-  if (actions.length === 0) return;
-  store_data_in_url(actions, `actions`);
-});
 
 export const catalog_query_by_catalog_id = writable(
   {} as Record<string, QueryObserverResult<CatalogResponse>>
@@ -84,60 +65,4 @@ function tiny_json_hash(object: any) {
     hash = (hash * 33) ^ text.charCodeAt(--index);
   }
   return (hash >>> 0).toString(16);
-}
-
-// =========================================
-// FUNCTIONS
-
-function store_data_in_url<T>(data: T, key: string) {
-  log(`Storing ${key} data in URL:`, data);
-  const compressed = compress_data(data);
-  const url = new URL(window.location.href);
-  url.searchParams.set(key, compressed);
-  window.history.replaceState({}, ``, url.toString());
-  const url_length = url.toString().length;
-  // log(`URL Length:`, url_length);
-  if (url_length > 5000) {
-    // throw new Error(`URL is too long!`);
-    console.error(`URL is too long!`);
-  }
-}
-
-function get_data_from_url<T>(key: string): T | undefined {
-  const url = new URL(window.location.href);
-  const compressed = url.searchParams.get(key);
-  if (compressed && compressed.length > 0) {
-    const data = decompress_data<T>(compressed);
-    return data;
-  }
-  return undefined;
-}
-
-function compress_data<T>(data: T): string {
-  const compressed = lzstring.compressToEncodedURIComponent(
-    JSON.stringify(data)
-  );
-  return compressed;
-}
-
-function decompress_data<T>(compressed: string): T {
-  const restored = JSON.parse(
-    lzstring.decompressFromEncodedURIComponent(compressed)
-  );
-  return restored;
-}
-
-function debounce_store<T>(store: Readable<T>, delay: number): Readable<T> {
-  return derived(
-    store,
-    ($store, set) => {
-      const timeout = setTimeout(() => {
-        set($store);
-      }, delay);
-      return () => {
-        clearTimeout(timeout);
-      };
-    },
-    get(store)
-  );
 }

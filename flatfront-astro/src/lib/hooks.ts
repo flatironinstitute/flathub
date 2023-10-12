@@ -139,6 +139,7 @@ export function useFilters(): Filters {
     catalog_id
   ];
   const catalog_hierarchy = catalog_metadata?.hierarchy;
+  // TODO: Add and remove filters
   const filter_actions = [];
   const filter_names_set = catalog_hierarchy
     ? get_filter_names(catalog_hierarchy, filter_actions)
