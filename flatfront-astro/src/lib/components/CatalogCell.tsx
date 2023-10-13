@@ -1,24 +1,25 @@
 import type {
   TopResponseEntry,
-  Action,
   TopResponse,
   CatalogResponse,
-  PlotID,
+  CellID,
+  FieldMetadata,
   CatalogHierarchyNode,
-  CellID
+  CatalogMetadataWrapper
 } from "../types";
 
 import React from "react";
 import * as d3 from "d3";
-import { useQuery } from "@tanstack/react-query";
-import * as controller from "../app_state";
+import { useQuery, type UseQueryResult } from "@tanstack/react-query";
+import * as controller from "../app-state";
 import * as hooks from "../hooks";
 import {
   fetch_api_get,
   assert_catalog_cell_id,
-  create_context_helper
+  log,
+  is_root_node,
+  get_field_type
 } from "../shared";
-import * as stores from "../stores";
 import {
   BigButton,
   CellSection,
@@ -30,11 +31,26 @@ import {
 import TableSection from "./Table";
 import PlotSection from "./Plot";
 import FieldCard from "./FieldCard";
+import CatalogMetadataProvider, { useCatalogMetadata } from "./CatalogMetadata";
 
-const [useCatalogCellID, CatalogCellIDProvider] =
-  create_context_helper<CellID.Catalog>(`CatalogCellID`);
+const CatalogCellIDContext = React.createContext<CellID.Catalog | undefined>(
+  undefined
+);
 
-export { useCatalogCellID };
+export function useCatalogCellID() {
+  const catalog_cell_id = React.useContext(CatalogCellIDContext);
+  if (catalog_cell_id === null) {
+    throw new Error(`useCatalogCellID: value is null`);
+  }
+  assert_catalog_cell_id(catalog_cell_id);
+  return catalog_cell_id;
+}
+
+export function useCatalogID(): string {
+  const catalog_cell_id = useCatalogCellID();
+  const catalog_id = controller.useState()?.set_catalog?.[catalog_cell_id];
+  return catalog_id;
+}
 
 export default function CatalogCell({
   id: catalog_cell_id
@@ -43,31 +59,18 @@ export default function CatalogCell({
 }) {
   assert_catalog_cell_id(catalog_cell_id);
   return (
-    <CatalogCellIDProvider value={catalog_cell_id}>
-      <CatalogCellContents />
-    </CatalogCellIDProvider>
+    <CatalogCellIDContext.Provider value={catalog_cell_id}>
+      <CatalogMetadataProvider>
+        <CatalogCellContents />
+      </CatalogMetadataProvider>
+    </CatalogCellIDContext.Provider>
   );
 }
 
 function CatalogCellContents() {
   const catalog_cell_id = useCatalogCellID();
-  assert_catalog_cell_id(catalog_cell_id);
 
-  const catalog_id = hooks.useCatalogID();
-
-  const catalog_query = useQuery({
-    queryKey: [`catalog`, catalog_id],
-    queryFn: (): Promise<CatalogResponse> => fetch_api_get(`/${catalog_id}`),
-    enabled: !!catalog_id,
-    staleTime: Infinity
-  });
-
-  React.useEffect(() => {
-    if (!catalog_id) return;
-    stores.catalog_query_by_catalog_id.update((old) => {
-      return { ...old, [catalog_id]: catalog_query };
-    });
-  }, [catalog_query]);
+  const catalog_id = useCatalogID();
 
   const top_sections = (
     <>
@@ -86,26 +89,6 @@ function CatalogCellContents() {
         <div>fraction</div>
         <div>seed</div>
       </CellSection>
-    </>
-  );
-
-  const number_of_plots =
-    controller.useState()?.add_plot?.[catalog_cell_id]?.length ?? 0;
-
-  const dispatch = controller.useDispatch();
-
-  const add_buttons = (
-    <>
-      <BigButton
-        onClick={() => {
-          dispatch(
-            [`add_plot`, catalog_cell_id, number_of_plots],
-            `plot_${number_of_plots}`
-          );
-        }}
-      >
-        Add Plot
-      </BigButton>
     </>
   );
 
@@ -128,25 +111,41 @@ function CatalogCellContents() {
   );
 
   return (
-    <CatalogCellIDProvider value={catalog_cell_id}>
-      <CellWrapper className="grid gap-x-8 gap-y-4 desktop:grid-cols-6">
-        <div className="space-y-4 desktop:col-span-2 desktop:col-start-1">
-          {top_sections}
-        </div>
-        <CellSection className="flex flex-col gap-y-20 desktop:col-span-4 desktop:col-start-3 desktop:row-start-1">
-          {add_buttons}
-          {plot_components}
-          {bottom_sections}
-        </CellSection>
-      </CellWrapper>
-    </CatalogCellIDProvider>
+    <CellWrapper className="grid gap-x-8 gap-y-4 desktop:grid-cols-6">
+      <div className="space-y-4 desktop:col-span-2 desktop:col-start-1">
+        {top_sections}
+      </div>
+      <CellSection className="flex flex-col gap-y-20 desktop:col-span-4 desktop:col-start-3 desktop:row-start-1">
+        <AddPlotButton />
+        {plot_components}
+        {bottom_sections}
+      </CellSection>
+    </CellWrapper>
+  );
+}
+
+function AddPlotButton() {
+  const catalog_cell_id = useCatalogCellID();
+  const number_of_plots =
+    controller.useState()?.add_plot?.[catalog_cell_id]?.length ?? 0;
+  const dispatch = controller.useDispatch();
+  return (
+    <BigButton
+      onClick={() => {
+        dispatch(
+          [`add_plot`, catalog_cell_id, number_of_plots],
+          `plot_${number_of_plots}`
+        );
+      }}
+    >
+      Add Plot
+    </BigButton>
   );
 }
 
 function CatalogSelect() {
   const catalog_cell_id = useCatalogCellID();
-  assert_catalog_cell_id(catalog_cell_id);
-  const catalog_id = hooks.useCatalogID();
+  const catalog_id = useCatalogID();
   const get_title = (d: TopResponseEntry) => d?.title;
   const catalog_list_query = useQuery({
     staleTime: Infinity,
@@ -180,9 +179,9 @@ function BrowseFieldsDialog() {
   const catalog_cell_id = useCatalogCellID();
   assert_catalog_cell_id(catalog_cell_id);
 
-  const catalog_id = hooks.useCatalogID();
+  const catalog_id = useCatalogID();
 
-  const catalog_metadata = hooks.useCatalogMetadata();
+  const catalog_metadata = useCatalogMetadata();
 
   const all_field_nodes = catalog_metadata?.depth_first ?? [];
 
@@ -201,7 +200,7 @@ function BrowseFieldsDialog() {
 }
 
 function FilterControls() {
-  const catalog_metadata = hooks.useCatalogMetadata();
+  const catalog_metadata = useCatalogMetadata();
   const filters = hooks.useFilters();
   const all_field_nodes = catalog_metadata?.depth_first ?? [];
   const filter_and_ancestor_nodes = all_field_nodes.filter((node) => {
@@ -223,4 +222,39 @@ function FilterControls() {
       {debug}
     </div>
   );
+}
+
+function wrap_catalog_metadata(catalog_query: UseQueryResult<CatalogResponse>) {
+  const catalog_response = catalog_query.data;
+  if (!catalog_response) return undefined;
+  log(`Creating metadata for ${catalog_response.name}...`);
+  const root = {
+    sub: catalog_response.fields
+  } as FieldMetadata;
+  const hierarchy: CatalogHierarchyNode = d3.hierarchy<FieldMetadata>(
+    root,
+    (d) => d?.sub ?? []
+  );
+  const depth_first: Array<CatalogHierarchyNode> = [];
+  hierarchy.eachBefore((d) => {
+    d.data.__hash = tiny_json_hash(d.data);
+    if (!is_root_node(d)) depth_first.push(d);
+    get_field_type(d.data);
+  });
+  const wrapper: CatalogMetadataWrapper = {
+    response: catalog_response,
+    hierarchy,
+    depth_first
+  };
+  return wrapper;
+}
+
+function tiny_json_hash(object: any) {
+  const text = JSON.stringify(object);
+  let hash = 5381;
+  let index = text.length;
+  while (index) {
+    hash = (hash * 33) ^ text.charCodeAt(--index);
+  }
+  return (hash >>> 0).toString(16);
 }

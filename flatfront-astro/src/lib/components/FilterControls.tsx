@@ -1,6 +1,6 @@
 import type { FilterValueRaw } from "../types";
 
-import * as controller from "../app_state";
+import * as controller from "../app-state";
 import * as hooks from "../hooks";
 import {
   format,
@@ -11,7 +11,7 @@ import {
 } from "../shared";
 import { RangeSlider, TextInput, Select } from "./Primitives";
 import { useFieldNode } from "./FieldCard";
-import { useCatalogCellID } from "./CatalogCell";
+import { useCatalogCellID, useCatalogID } from "./CatalogCell";
 
 export function RangeFilterControl() {
   const field_node = useFieldNode();
@@ -31,7 +31,7 @@ export function RangeFilterControl() {
   const value = [low, high];
 
   const catalog_cell_id = useCatalogCellID();
-  const catalog_id = hooks.useCatalogID();
+  const catalog_id = useCatalogID();
 
   const action_key = [`filter_value`, catalog_cell_id, catalog_id, field_id];
 
@@ -112,7 +112,7 @@ export function SelectFilterControl() {
   const value = values.find((d) => d.value === filter_value_raw);
 
   const catalog_cell_id = useCatalogCellID();
-  const catalog_id = hooks.useCatalogID();
+  const catalog_id = useCatalogID();
 
   const dispatch = controller.useDispatch();
   const action_key = [`filter_value`, catalog_cell_id, catalog_id, field_id];

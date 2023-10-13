@@ -27,6 +27,8 @@ import {
 import * as hooks from "../hooks";
 import { BigButton, CellSection, Placeholder } from "./Primitives";
 import Katex from "./Katex";
+import { useCatalogID } from "./CatalogCell";
+import { useCatalogMetadata } from "./CatalogMetadata";
 
 export default function TableSection() {
   return (
@@ -40,9 +42,9 @@ export default function TableSection() {
 }
 
 function Table() {
-  const catalog_id = hooks.useCatalogID();
+  const catalog_id = useCatalogID();
 
-  const catalog_metadata_wrapper = hooks.useCatalogMetadata();
+  const catalog_metadata_wrapper = useCatalogMetadata();
   const catalog_hierarchy = catalog_metadata_wrapper?.hierarchy;
 
   // const table_actions = all_actions.filter(
@@ -170,7 +172,7 @@ function get_column_ids(
 }
 
 function TablePrimitive({ data }: { data: Array<DataRow> }) {
-  const catalog_metadata_wrapper = hooks.useCatalogMetadata();
+  const catalog_metadata_wrapper = useCatalogMetadata();
   const catalog_hierarchy = catalog_metadata_wrapper?.hierarchy;
 
   const columns = construct_table_columns(data, catalog_hierarchy);

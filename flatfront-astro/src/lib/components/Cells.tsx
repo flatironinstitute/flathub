@@ -1,5 +1,5 @@
 import CatalogCell from "./CatalogCell";
-import * as controller from "../app_state";
+import * as controller from "../app-state";
 import type { CellID } from "../types";
 
 export default function Cells() {

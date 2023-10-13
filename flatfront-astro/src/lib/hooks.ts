@@ -12,7 +12,7 @@ import React from "react";
 import { get } from "svelte/store";
 import lodash_merge from "lodash.merge";
 
-import * as controller from "./app_state";
+import * as controller from "./app-state";
 
 import {
   assert_numeric_field_stats,
@@ -20,8 +20,8 @@ import {
   has_numeric_field_stats,
   log
 } from "./shared";
-import * as stores from "./stores";
-import { useCatalogCellID } from "./components/CatalogCell";
+import { useCatalogCellID, useCatalogID } from "./components/CatalogCell";
+import { useCatalogMetadata } from "./components/CatalogMetadata";
 
 export function useStore<T>(store: Readable<T>) {
   const [state, setState] = React.useState<T>(get(store));
@@ -33,54 +33,6 @@ export function useStore<T>(store: Readable<T>) {
     [store]
   );
   return state;
-}
-
-export function useCatalogID(): string {
-  const catalog_cell_id = useCatalogCellID();
-  const catalog_id = controller.useState()?.set_catalog?.[catalog_cell_id];
-  return catalog_id;
-}
-
-export function useCatalogMetadata(): CatalogMetadataWrapper {
-  const catalog_id = useCatalogID();
-  const catalog_metadata = useStore(stores.catalog_metadata_by_catalog_id)?.[
-    catalog_id
-  ];
-  return catalog_metadata;
-}
-
-export function useDarkModeValue(): DarkModeValue {
-  const dark_mode_value = controller.useState()?.dark_mode;
-  return dark_mode_value ?? `system`;
-}
-
-function useSystemDarkMode(): boolean {
-  const [is_dark_mode, set_is_dark_mode] = React.useState<boolean>(() => {
-    const system_dark_mode = window.matchMedia(
-      "(prefers-color-scheme: dark)"
-    ).matches;
-    return system_dark_mode;
-  });
-  React.useEffect(() => {
-    const system_dark_mode = window.matchMedia("(prefers-color-scheme: dark)");
-    const listener = (event: MediaQueryListEvent) => {
-      log(`System dark mode changed:`, event.matches);
-      set_is_dark_mode(event.matches);
-    };
-    system_dark_mode.addEventListener("change", listener);
-    return () => {
-      system_dark_mode.removeEventListener("change", listener);
-    };
-  }, []);
-  return is_dark_mode;
-}
-
-export function useIsDarkMode(): boolean {
-  const dark_mode_value = useDarkModeValue();
-  const system_dark_mode = useSystemDarkMode();
-  if (dark_mode_value === `system`) return system_dark_mode;
-  const is_dark_mode = dark_mode_value === `dark`;
-  return is_dark_mode;
 }
 
 export function useDebouncedValue<T>(value: T, delay: number): T {
@@ -115,25 +67,10 @@ export function useDebouncedValue<T>(value: T, delay: number): T {
   return debounced;
 }
 
-export function useToggleDarkMode(): void {
-  const is_dark_mode = useIsDarkMode();
-  React.useEffect(() => {
-    const has_dark_mode_class =
-      document.documentElement.classList.contains("dark");
-    if (is_dark_mode && !has_dark_mode_class) {
-      document.documentElement.classList.add("dark");
-    } else if (!is_dark_mode && has_dark_mode_class) {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [is_dark_mode]);
-}
-
 export function useFilters(): Filters {
   const catalog_cell_id = useCatalogCellID();
   const catalog_id = useCatalogID();
-  const catalog_metadata = useStore(stores.catalog_metadata_by_catalog_id)[
-    catalog_id
-  ];
+  const catalog_metadata = useCatalogMetadata();
   const catalog_hierarchy = catalog_metadata?.hierarchy;
   // TODO: Add and remove filters
   const filter_actions = [];

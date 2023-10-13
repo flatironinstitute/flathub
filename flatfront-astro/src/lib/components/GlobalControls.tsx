@@ -1,8 +1,8 @@
 import type { DarkModeValue } from "../types";
 
 import React from "react";
-import * as controller from "../app_state";
-import * as hooks from "../hooks";
+import * as controller from "../app-state";
+import { useDarkModeValue } from "../dark-mode";
 import { CellWrapper, BigButton, RadioGroup } from "./Primitives";
 
 export default function GlobalControls(): React.JSX.Element {
@@ -29,7 +29,7 @@ export default function GlobalControls(): React.JSX.Element {
 }
 
 function DarkModeSelect() {
-  const current_value = hooks.useDarkModeValue();
+  const current_value = useDarkModeValue();
 
   const dispatch = controller.useDispatch();
 

@@ -17,8 +17,11 @@ import {
   create_context_helper
 } from "../shared";
 import * as hooks from "../hooks";
-import * as controller from "../app_state";
+import * as controller from "../app-state";
 import { CellSection, Placeholder, Select, Checkbox } from "./Primitives";
+import { useCatalogID } from "./CatalogCell";
+import { useIsDarkMode } from "../dark-mode";
+import { useCatalogMetadata } from "./CatalogMetadata";
 
 HighchartsExporting(Highcharts);
 HighchartsExportData(Highcharts);
@@ -167,7 +170,7 @@ function PlotControl({
   showLogSwitch?: boolean;
 }) {
   const plot_id = usePlotID();
-  const catalog_metadata = hooks.useCatalogMetadata();
+  const catalog_metadata = useCatalogMetadata();
   const all_leaf_nodes = catalog_metadata?.hierarchy?.leaves() ?? [];
   const numeric_nodes = all_leaf_nodes.filter((d) => {
     const type = get_field_type(d.data);
@@ -216,7 +219,7 @@ function PlotControl({
 }
 
 function Scatterplot() {
-  const catalog_id = hooks.useCatalogID();
+  const catalog_id = useCatalogID();
   const filters = hooks.useFilters();
 
   const plot_id = usePlotID();
@@ -316,7 +319,7 @@ function Scatterplot() {
     }
   };
 
-  const dark_mode = hooks.useIsDarkMode();
+  const dark_mode = useIsDarkMode();
 
   const className = dark_mode ? `highcharts-dark` : `highcharts-light`;
 

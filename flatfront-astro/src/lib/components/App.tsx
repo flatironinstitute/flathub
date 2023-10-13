@@ -4,9 +4,10 @@ import * as hooks from "../hooks";
 import {
   Provider as AppControllerProvider,
   useSaveAndRestoreState
-} from "../app_state";
+} from "../app-state";
 import GlobalControls from "./GlobalControls";
 import Cells from "./Cells";
+import { useToggleDarkMode } from "../dark-mode";
 
 const query_client = new QueryClient();
 
@@ -21,7 +22,7 @@ export default function App() {
 }
 
 function Main() {
-  hooks.useToggleDarkMode();
+  useToggleDarkMode();
   useSaveAndRestoreState();
   return (
     <main

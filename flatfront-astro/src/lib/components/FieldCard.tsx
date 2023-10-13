@@ -26,6 +26,7 @@ import ObservablePlot from "./ObservablePlot";
 import Katex from "./Katex";
 import { Placeholder } from "./Primitives";
 import { RangeFilterControl, SelectFilterControl } from "./FilterControls";
+import { useCatalogID } from "./CatalogCell";
 
 const [useFieldNode, FieldNodeProvider] =
   create_context_helper<CatalogHierarchyNode>(`FieldNode`);
@@ -227,7 +228,7 @@ function EnumerableFieldStats() {
 }
 
 function NumericFieldHistogram() {
-  const catalog_id = hooks.useCatalogID();
+  const catalog_id = useCatalogID();
 
   const field_node = useFieldNode();
   const metadata = field_node.data;
