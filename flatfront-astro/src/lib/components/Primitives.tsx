@@ -254,7 +254,7 @@ export function Select<T>({
   getDisplayName = (d) => d?.toString(),
   disabled = false,
   onValueChange = undefined,
-  contentPosition = "item-aligned",
+  contentPosition = "popper",
   size = `large`
 }: {
   placeholder?: string;
@@ -303,6 +303,7 @@ export function Select<T>({
         <RadixSelect.Content position={contentPosition} sideOffset={10}>
           <RadixSelect.Viewport
             className={clsx(
+              `max-h-[var(--radix-select-content-available-height)] overflow-scroll`,
               `w-[var(--radix-select-trigger-width)] rounded-md`,
               `bg-white shadow-2xl dark:bg-black`,
               `ring-1 ring-black dark:ring-white`

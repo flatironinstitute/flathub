@@ -1,6 +1,6 @@
-import { Providers } from "../contexts";
 import CatalogCell from "./CatalogCell";
-import * as controller from "./AppController";
+import * as controller from "../app_state";
+import type { CellID } from "../types";
 
 export default function Cells() {
   const cells = controller.useState()?.add_cell ?? [];
@@ -11,13 +11,9 @@ export default function Cells() {
         const component = (() => {
           switch (cell.type) {
             case `catalog`:
-              return (
-                <Providers.CatalogCellIDProvider key={cell.id} value={cell.id}>
-                  <CatalogCell />
-                </Providers.CatalogCellIDProvider>
-              );
+              return <CatalogCell key={cell.id} id={cell.id} />;
             case `comparison`:
-              return <ComparisonCell />;
+              return <ComparisonCell key={cell.id} id={cell.id} />;
             default:
               cell satisfies never;
           }
@@ -28,6 +24,6 @@ export default function Cells() {
   );
 }
 
-function ComparisonCell() {
+function ComparisonCell({ id }: { id: CellID.Comparison }) {
   return <div>comparison</div>;
 }

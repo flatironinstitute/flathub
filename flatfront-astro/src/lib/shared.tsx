@@ -6,6 +6,7 @@ import type {
   FilterValueRaw
 } from "./types";
 
+import React from "react";
 import * as d3 from "d3";
 
 const FLATHUB_API_BASE_URL = `https://flathub.flatironinstitute.org`;
@@ -213,4 +214,16 @@ export function join_enums(
     has_enum ? (d) => -d.count : (d) => Number(d.text)
   );
   return sorted;
+}
+
+export function create_context_helper<T>(name: string) {
+  const context = React.createContext<T | null>(null);
+  const useContext = (): T => {
+    const value: T | null = React.useContext(context);
+    if (value === null) {
+      throw new Error(`useContextHelper: ${name}: value is null`);
+    }
+    return value;
+  };
+  return [useContext, context.Provider] as const;
 }

@@ -1,4 +1,5 @@
 import type {
+  CatalogHierarchyNode,
   schema,
   HistogramPostRequestBody,
   HistogramResponse
@@ -12,6 +13,7 @@ import * as Plot from "@observablehq/plot";
 import * as hooks from "../hooks";
 import {
   assert_numeric_field_stats,
+  create_context_helper,
   fetch_api_post,
   format,
   get_field_type,
@@ -25,9 +27,19 @@ import Katex from "./Katex";
 import { Placeholder } from "./Primitives";
 import { RangeFilterControl, SelectFilterControl } from "./FilterControls";
 
-export default function FieldCard({ filter }: { filter?: boolean }) {
+const [useFieldNode, FieldNodeProvider] =
+  create_context_helper<CatalogHierarchyNode>(`FieldNode`);
+
+export { useFieldNode };
+
+export default function FieldCard({
+  filter,
+  fieldNode: field_node
+}: {
+  filter?: boolean;
+  fieldNode: CatalogHierarchyNode;
+}) {
   const [show_details, set_show_details] = React.useState(!filter);
-  const field_node = hooks.useFieldNode();
 
   const metadata = field_node.data;
 
@@ -123,7 +135,11 @@ export default function FieldCard({ filter }: { filter?: boolean }) {
     </div>
   );
 
-  return <FieldCardWrapper>{contents}</FieldCardWrapper>;
+  return (
+    <FieldNodeProvider value={field_node}>
+      <FieldCardWrapper>{contents}</FieldCardWrapper>
+    </FieldNodeProvider>
+  );
 }
 
 function FieldCardWrapper({
@@ -133,7 +149,7 @@ function FieldCardWrapper({
   children: React.ReactNode;
   className?: string;
 }): React.JSX.Element {
-  const field_node = hooks.useFieldNode();
+  const field_node = useFieldNode();
   const node_depth = (field_node?.depth ?? 0) - 1;
   return (
     <div
@@ -153,7 +169,7 @@ FieldCardWrapper.className = clsx(
 );
 
 function NumericFieldStats() {
-  const field_node = hooks.useFieldNode();
+  const field_node = useFieldNode();
   const metadata = field_node.data;
   assert_numeric_field_stats(metadata);
 
@@ -185,7 +201,7 @@ function NumericFieldStats() {
 }
 
 function EnumerableFieldStats() {
-  const field_node = hooks.useFieldNode();
+  const field_node = useFieldNode();
   const metadata = field_node.data;
 
   const joined = join_enums(metadata);
@@ -213,7 +229,7 @@ function EnumerableFieldStats() {
 function NumericFieldHistogram() {
   const catalog_id = hooks.useCatalogID();
 
-  const field_node = hooks.useFieldNode();
+  const field_node = useFieldNode();
   const metadata = field_node.data;
   assert_numeric_field_stats(metadata);
 
@@ -306,7 +322,7 @@ function NumericFieldHistogram() {
 }
 
 // function NumericFieldStats() {
-//   const field_node = hooks.useFieldNode();
+//   const field_node = useFieldNode()();
 
 //   const metadata = field_node.data;
 

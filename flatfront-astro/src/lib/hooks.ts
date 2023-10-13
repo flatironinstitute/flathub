@@ -12,7 +12,7 @@ import React from "react";
 import { get } from "svelte/store";
 import lodash_merge from "lodash.merge";
 
-import * as controller from "./components/AppController";
+import * as controller from "./app_state";
 
 import {
   assert_numeric_field_stats,
@@ -21,11 +21,7 @@ import {
   log
 } from "./shared";
 import * as stores from "./stores";
-import { hooks as context_hooks } from "./contexts";
-
-const { useFieldNode, useCatalogCellID, usePlotID } = context_hooks;
-
-export { useFieldNode, useCatalogCellID, usePlotID };
+import { useCatalogCellID } from "./components/CatalogCell";
 
 export function useStore<T>(store: Readable<T>) {
   const [state, setState] = React.useState<T>(get(store));

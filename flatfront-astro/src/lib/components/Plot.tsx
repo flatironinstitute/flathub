@@ -1,25 +1,48 @@
-import type { DataPostRequestBody, DataResponse, PlotType } from "../types";
+import type {
+  DataPostRequestBody,
+  DataResponse,
+  PlotID,
+  PlotType
+} from "../types";
 
-import * as hooks from "../hooks";
-import { log, fetch_api_post, get_field_type } from "../shared";
 import Highcharts from "highcharts";
 import HighchartsExporting from "highcharts/modules/exporting";
 import HighchartsExportData from "highcharts/modules/export-data";
 import HighchartsReact from "highcharts-react-official";
 import { useQuery } from "@tanstack/react-query";
+import {
+  log,
+  fetch_api_post,
+  get_field_type,
+  create_context_helper
+} from "../shared";
+import * as hooks from "../hooks";
+import * as controller from "../app_state";
 import { CellSection, Placeholder, Select, Checkbox } from "./Primitives";
-import * as controller from "./AppController";
 
 HighchartsExporting(Highcharts);
 HighchartsExportData(Highcharts);
 
+const [usePlotID, PlotIDProvider] = create_context_helper<PlotID>(`PlotID`);
+
 function usePlotType() {
-  const plot_id = hooks.usePlotID();
+  const plot_id = usePlotID();
   const plot_type = controller.useState()?.set_plot_type?.[plot_id];
   return plot_type;
 }
 
-export default function PlotSection() {
+export default function PlotSection({ id }: { id: PlotID }) {
+  return (
+    <PlotIDProvider value={id}>
+      <CellSection className="space-y-4">
+        <PlotComponent />
+        <PlotControls />
+      </CellSection>
+    </PlotIDProvider>
+  );
+}
+
+function PlotComponent() {
   const plot_type = usePlotType();
   const plot_component = (() => {
     switch (plot_type) {
@@ -31,12 +54,7 @@ export default function PlotSection() {
         return <Placeholder>Choose a plot type</Placeholder>;
     }
   })();
-  return (
-    <CellSection className="space-y-4">
-      {plot_component}
-      <PlotControls />
-    </CellSection>
-  );
+  return plot_component;
 }
 
 function PlotControls() {
@@ -115,7 +133,7 @@ function LabelledControl({
 }
 
 function PlotTypeSelect() {
-  const plot_id = hooks.usePlotID();
+  const plot_id = usePlotID();
   const plot_type = usePlotType();
   const plot_type_options = [
     { key: `scatterplot` as PlotType, label: `Scatterplot` },
@@ -148,7 +166,7 @@ function PlotControl({
   placeholder?: string;
   showLogSwitch?: boolean;
 }) {
-  const plot_id = hooks.usePlotID();
+  const plot_id = usePlotID();
   const catalog_metadata = hooks.useCatalogMetadata();
   const all_leaf_nodes = catalog_metadata?.hierarchy?.leaves() ?? [];
   const numeric_nodes = all_leaf_nodes.filter((d) => {
@@ -201,7 +219,7 @@ function Scatterplot() {
   const catalog_id = hooks.useCatalogID();
   const filters = hooks.useFilters();
 
-  const plot_id = hooks.usePlotID();
+  const plot_id = usePlotID();
   const plot_state = controller.useState()?.set_plot_control?.[plot_id];
 
   const x_axis_field_id = plot_state?.x_axis;

@@ -1,9 +1,9 @@
 import type { DarkModeValue } from "../types";
 
 import React from "react";
+import * as controller from "../app_state";
 import * as hooks from "../hooks";
 import { CellWrapper, BigButton, RadioGroup } from "./Primitives";
-import * as controller from "./AppController";
 
 export default function GlobalControls(): React.JSX.Element {
   const number_of_cells = controller.useState()?.add_cell?.length ?? 0;

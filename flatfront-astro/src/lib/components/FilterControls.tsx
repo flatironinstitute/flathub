@@ -1,5 +1,6 @@
 import type { FilterValueRaw } from "../types";
 
+import * as controller from "../app_state";
 import * as hooks from "../hooks";
 import {
   format,
@@ -9,10 +10,11 @@ import {
   log
 } from "../shared";
 import { RangeSlider, TextInput, Select } from "./Primitives";
-import * as controller from "./AppController";
+import { useFieldNode } from "./FieldCard";
+import { useCatalogCellID } from "./CatalogCell";
 
 export function RangeFilterControl() {
-  const field_node = hooks.useFieldNode();
+  const field_node = useFieldNode();
   const metadata = field_node.data;
   assert_numeric_field_stats(metadata);
   const field_id = metadata.name;
@@ -28,7 +30,7 @@ export function RangeFilterControl() {
 
   const value = [low, high];
 
-  const catalog_cell_id = hooks.useCatalogCellID();
+  const catalog_cell_id = useCatalogCellID();
   const catalog_id = hooks.useCatalogID();
 
   const action_key = [`filter_value`, catalog_cell_id, catalog_id, field_id];
@@ -101,7 +103,7 @@ export function RangeFilterControl() {
 }
 
 export function SelectFilterControl() {
-  const field_node = hooks.useFieldNode();
+  const field_node = useFieldNode();
   const metadata = field_node.data;
   const field_id = metadata.name;
   const filters = hooks.useFilters();
@@ -109,7 +111,7 @@ export function SelectFilterControl() {
   const values = join_enums(metadata);
   const value = values.find((d) => d.value === filter_value_raw);
 
-  const catalog_cell_id = hooks.useCatalogCellID();
+  const catalog_cell_id = useCatalogCellID();
   const catalog_id = hooks.useCatalogID();
 
   const dispatch = controller.useDispatch();

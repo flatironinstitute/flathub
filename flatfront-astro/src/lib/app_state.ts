@@ -1,10 +1,10 @@
-import type { AppState } from "../types";
+import type { AppState } from "./types";
 import React from "react";
 import { createStateContext } from "react-use";
 import * as lzstring from "lz-string";
 import lodash_set from "lodash.set";
 import { useDebounce } from "react-use";
-import { log } from "../shared";
+import { log } from "./shared";
 
 const [useContext, Provider] = createStateContext<AppState>({});
 

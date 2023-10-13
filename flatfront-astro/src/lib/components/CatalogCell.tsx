@@ -3,15 +3,21 @@ import type {
   Action,
   TopResponse,
   CatalogResponse,
-  PlotID
+  PlotID,
+  CatalogHierarchyNode,
+  CellID
 } from "../types";
 
 import React from "react";
 import * as d3 from "d3";
 import { useQuery } from "@tanstack/react-query";
-import { Providers } from "../contexts";
+import * as controller from "../app_state";
 import * as hooks from "../hooks";
-import { fetch_api_get, assert_catalog_cell_id } from "../shared";
+import {
+  fetch_api_get,
+  assert_catalog_cell_id,
+  create_context_helper
+} from "../shared";
 import * as stores from "../stores";
 import {
   BigButton,
@@ -24,10 +30,27 @@ import {
 import TableSection from "./Table";
 import PlotSection from "./Plot";
 import FieldCard from "./FieldCard";
-import * as controller from "./AppController";
 
-export default function CatalogCell() {
-  const catalog_cell_id = hooks.useCatalogCellID();
+const [useCatalogCellID, CatalogCellIDProvider] =
+  create_context_helper<CellID.Catalog>(`CatalogCellID`);
+
+export { useCatalogCellID };
+
+export default function CatalogCell({
+  id: catalog_cell_id
+}: {
+  id: CellID.Catalog;
+}) {
+  assert_catalog_cell_id(catalog_cell_id);
+  return (
+    <CatalogCellIDProvider value={catalog_cell_id}>
+      <CatalogCellContents />
+    </CatalogCellIDProvider>
+  );
+}
+
+function CatalogCellContents() {
+  const catalog_cell_id = useCatalogCellID();
   assert_catalog_cell_id(catalog_cell_id);
 
   const catalog_id = hooks.useCatalogID();
@@ -89,11 +112,7 @@ export default function CatalogCell() {
   const plot_ids = controller.useState()?.add_plot?.[catalog_cell_id] ?? [];
 
   const plot_components = plot_ids.map((plot_id) => {
-    return (
-      <Providers.PlotIDProvider key={plot_id} value={plot_id}>
-        <PlotSection key={plot_id} />
-      </Providers.PlotIDProvider>
-    );
+    return <PlotSection key={plot_id} id={plot_id} />;
   });
 
   const bottom_sections = (
@@ -109,21 +128,23 @@ export default function CatalogCell() {
   );
 
   return (
-    <CellWrapper className="grid gap-x-8 gap-y-4 desktop:grid-cols-6">
-      <div className="space-y-4 desktop:col-span-2 desktop:col-start-1">
-        {top_sections}
-      </div>
-      <CellSection className="flex flex-col gap-y-20 desktop:col-span-4 desktop:col-start-3 desktop:row-start-1">
-        {add_buttons}
-        {plot_components}
-        {bottom_sections}
-      </CellSection>
-    </CellWrapper>
+    <CatalogCellIDProvider value={catalog_cell_id}>
+      <CellWrapper className="grid gap-x-8 gap-y-4 desktop:grid-cols-6">
+        <div className="space-y-4 desktop:col-span-2 desktop:col-start-1">
+          {top_sections}
+        </div>
+        <CellSection className="flex flex-col gap-y-20 desktop:col-span-4 desktop:col-start-3 desktop:row-start-1">
+          {add_buttons}
+          {plot_components}
+          {bottom_sections}
+        </CellSection>
+      </CellWrapper>
+    </CatalogCellIDProvider>
   );
 }
 
 function CatalogSelect() {
-  const catalog_cell_id = hooks.useCatalogCellID();
+  const catalog_cell_id = useCatalogCellID();
   assert_catalog_cell_id(catalog_cell_id);
   const catalog_id = hooks.useCatalogID();
   const get_title = (d: TopResponseEntry) => d?.title;
@@ -156,7 +177,7 @@ function CatalogSelect() {
 }
 
 function BrowseFieldsDialog() {
-  const catalog_cell_id = hooks.useCatalogCellID();
+  const catalog_cell_id = useCatalogCellID();
   assert_catalog_cell_id(catalog_cell_id);
 
   const catalog_id = hooks.useCatalogID();
@@ -172,9 +193,7 @@ function BrowseFieldsDialog() {
       </div>
       <div className="max-h-[80dvh] w-[80dvw] max-w-[600px] space-y-3 overflow-x-visible overflow-y-scroll p-4 text-xs">
         {all_field_nodes.map((node) => (
-          <Providers.FieldNodeProvider value={node} key={node.data.__hash}>
-            <FieldCard />
-          </Providers.FieldNodeProvider>
+          <FieldCard fieldNode={node} key={node.data.__hash} />
         ))}
       </div>
     </Dialog>
@@ -199,9 +218,7 @@ function FilterControls() {
   return (
     <div className="space-y-3 text-xs">
       {filter_and_ancestor_nodes.map((node) => (
-        <Providers.FieldNodeProvider value={node} key={node.data.__hash}>
-          <FieldCard filter />
-        </Providers.FieldNodeProvider>
+        <FieldCard filter fieldNode={node} key={node.data.__hash} />
       ))}
       {debug}
     </div>
