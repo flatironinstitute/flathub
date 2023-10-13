@@ -20,6 +20,7 @@ import {
   has_numeric_field_stats,
   is_leaf_node,
   join_enums,
+  log,
   should_use_log_scale
 } from "../shared";
 import ObservablePlot from "./ObservablePlot";
@@ -234,11 +235,7 @@ function NumericFieldHistogram() {
   const metadata = field_node.data;
   assert_numeric_field_stats(metadata);
 
-  const delay = 1e3;
-
-  const ref = React.useRef<HTMLDivElement>(null);
-
-  const should_fetch = useDelayVisible(ref, delay);
+  const { ref, visible: should_fetch } = useDelayVisible();
 
   const { min, max, avg } = metadata.stats;
   const should_use_log = should_use_log_scale(min, max, avg);
@@ -322,37 +319,23 @@ function NumericFieldHistogram() {
   return <div ref={ref}>{contents}</div>;
 }
 
-function useDelayVisible(
-  ref: React.RefObject<HTMLElement>,
-  delay: number
-): boolean {
-  // const [ref2, on_screen] = useIntersectionObserver();
-  const [visible, setVisible] = React.useState(false);
+function useDelayVisible() {
+  const [visible, set_visible] = React.useState(false);
+  const [ref, entry] = useIntersectionObserver();
+  const on_screen = entry?.isIntersecting;
+  const timeout_ref = React.useRef<number | undefined>(undefined);
+  // If on_screen is `true` for at least one second, set visible to true.
   React.useEffect(() => {
-    let timeout: number;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          timeout = window.setTimeout(() => {
-            setVisible(true);
-          }, delay);
-        }
-        if (!entries[0].isIntersecting) {
-          clearTimeout(timeout);
-        }
-      },
-      { threshold: 0.5 }
-    );
-    if (ref.current) {
-      observer.observe(ref.current);
+    if (on_screen) {
+      timeout_ref.current = window.setTimeout(() => {
+        set_visible(true);
+      }, 1000);
     }
     return () => {
-      if (ref.current) {
-        observer.unobserve(ref.current);
-      }
+      clearTimeout(timeout_ref.current);
     };
-  }, [ref, delay]);
-  return visible;
+  }, [on_screen]);
+  return { ref: ref as React.RefObject<HTMLDivElement>, visible };
 }
 
 // function NumericFieldStats() {
