@@ -25,6 +25,7 @@ import {
   is_root_node
 } from "../shared";
 import * as hooks from "../hooks";
+import { useFilters } from "../filters";
 import { BigButton, CellSection, Placeholder } from "./Primitives";
 import Katex from "./Katex";
 import { useCatalogID } from "./CatalogCell";
@@ -61,7 +62,7 @@ function Table() {
 
   const fields = Array.from(column_ids_set);
 
-  const filters = hooks.useFilters();
+  const filters = useFilters();
 
   const [rows_per_page] = React.useState(25);
   const [offset, set_offset] = React.useState(0);

@@ -16,12 +16,12 @@ import {
   get_field_type,
   create_context_helper
 } from "../shared";
-import * as hooks from "../hooks";
 import * as controller from "../app-state";
 import { CellSection, Placeholder, Select, Checkbox } from "./Primitives";
 import { useCatalogID } from "./CatalogCell";
 import { useIsDarkMode } from "../dark-mode";
 import { useCatalogMetadata } from "./CatalogMetadata";
+import { useFilters } from "../filters";
 
 HighchartsExporting(Highcharts);
 HighchartsExportData(Highcharts);
@@ -180,7 +180,7 @@ function PlotControl({
   const plot_config = controller.useState().set_plot_control?.[plot_id];
 
   const field_id = plot_config?.[plot_control_key];
-  const is_log_mode = plot_config?.[`${plot_control_key}_log_mode`] ?? false;
+  // const is_log_mode = plot_config?.[`${plot_control_key}_log_mode`] ?? false;
 
   const dispatch = controller.useDispatch();
 
@@ -220,7 +220,7 @@ function PlotControl({
 
 function Scatterplot() {
   const catalog_id = useCatalogID();
-  const filters = hooks.useFilters();
+  const filters = useFilters();
 
   const plot_id = usePlotID();
   const plot_state = controller.useState()?.set_plot_control?.[plot_id];

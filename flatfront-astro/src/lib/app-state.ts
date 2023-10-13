@@ -18,7 +18,7 @@ export function useState() {
 export function useDispatch() {
   const [, set_app_state] = useContext();
   const dispatch = React.useCallback(
-    (keys: Array<string | number>, value) => {
+    (keys: Array<string | number>, value: any) => {
       set_app_state((obj) => {
         const new_obj = { ...obj };
         lodash_set(new_obj, keys, value);

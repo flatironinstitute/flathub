@@ -1,24 +1,23 @@
 import type { FilterValueRaw } from "../types";
 
 import * as controller from "../app-state";
-import * as hooks from "../hooks";
 import {
   format,
   assert_numeric_field_stats,
   assert_numeric_filter_value,
-  join_enums,
-  log
+  join_enums
 } from "../shared";
 import { RangeSlider, TextInput, Select } from "./Primitives";
 import { useFieldNode } from "./FieldCard";
 import { useCatalogCellID, useCatalogID } from "./CatalogCell";
+import { useFilters } from "../filters";
 
 export function RangeFilterControl() {
   const field_node = useFieldNode();
   const metadata = field_node.data;
   assert_numeric_field_stats(metadata);
   const field_id = metadata.name;
-  const filters = hooks.useFilters();
+  const filters = useFilters();
 
   const dispatch = controller.useDispatch();
 
@@ -106,7 +105,7 @@ export function SelectFilterControl() {
   const field_node = useFieldNode();
   const metadata = field_node.data;
   const field_id = metadata.name;
-  const filters = hooks.useFilters();
+  const filters = useFilters();
   const filter_value_raw: FilterValueRaw = filters[field_id];
   const values = join_enums(metadata);
   const value = values.find((d) => d.value === filter_value_raw);

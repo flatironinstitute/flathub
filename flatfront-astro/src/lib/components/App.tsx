@@ -1,6 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import clsx from "clsx";
-import * as hooks from "../hooks";
 import {
   Provider as AppControllerProvider,
   useSaveAndRestoreState

@@ -25,5 +25,6 @@ export default function Cells() {
 }
 
 function ComparisonCell({ id }: { id: CellID.Comparison }) {
+  id;
   return <div>comparison</div>;
 }

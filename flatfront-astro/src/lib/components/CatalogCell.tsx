@@ -1,25 +1,10 @@
-import type {
-  TopResponseEntry,
-  TopResponse,
-  CatalogResponse,
-  CellID,
-  FieldMetadata,
-  CatalogHierarchyNode,
-  CatalogMetadataWrapper
-} from "../types";
+import type { TopResponseEntry, TopResponse, CellID } from "../types";
 
 import React from "react";
 import * as d3 from "d3";
-import { useQuery, type UseQueryResult } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import * as controller from "../app-state";
-import * as hooks from "../hooks";
-import {
-  fetch_api_get,
-  assert_catalog_cell_id,
-  log,
-  is_root_node,
-  get_field_type
-} from "../shared";
+import { fetch_api_get, assert_catalog_cell_id } from "../shared";
 import {
   BigButton,
   CellSection,
@@ -32,6 +17,7 @@ import TableSection from "./Table";
 import PlotSection from "./Plot";
 import FieldCard from "./FieldCard";
 import CatalogMetadataProvider, { useCatalogMetadata } from "./CatalogMetadata";
+import { useFilters } from "../filters";
 
 const CatalogCellIDContext = React.createContext<CellID.Catalog | undefined>(
   undefined
@@ -92,23 +78,13 @@ function CatalogCellContents() {
     </>
   );
 
-  const plot_ids = controller.useState()?.add_plot?.[catalog_cell_id] ?? [];
+  const plot_ids = d3.reverse(
+    controller.useState()?.add_plot?.[catalog_cell_id] ?? []
+  );
 
   const plot_components = plot_ids.map((plot_id) => {
     return <PlotSection key={plot_id} id={plot_id} />;
   });
-
-  const bottom_sections = (
-    <>
-      <TableSection />
-      <CellSection label="python" className="space-y-4">
-        <Placeholder>TODO: Python</Placeholder>
-      </CellSection>
-      <CellSection label="download" className="space-y-4">
-        <Placeholder>TODO: Download Data</Placeholder>
-      </CellSection>
-    </>
-  );
 
   return (
     <CellWrapper className="grid gap-x-8 gap-y-4 desktop:grid-cols-6">
@@ -118,7 +94,13 @@ function CatalogCellContents() {
       <CellSection className="flex flex-col gap-y-20 desktop:col-span-4 desktop:col-start-3 desktop:row-start-1">
         <AddPlotButton />
         {plot_components}
-        {bottom_sections}
+        <TableSection />
+        <CellSection label="python" className="space-y-4">
+          <Placeholder>TODO: Python</Placeholder>
+        </CellSection>
+        <CellSection label="download" className="space-y-4">
+          <Placeholder>TODO: Download Data</Placeholder>
+        </CellSection>
       </CellSection>
     </CellWrapper>
   );
@@ -201,7 +183,7 @@ function BrowseFieldsDialog() {
 
 function FilterControls() {
   const catalog_metadata = useCatalogMetadata();
-  const filters = hooks.useFilters();
+  const filters = useFilters();
   const all_field_nodes = catalog_metadata?.depth_first ?? [];
   const filter_and_ancestor_nodes = all_field_nodes.filter((node) => {
     // Exclude if is root node
@@ -222,39 +204,4 @@ function FilterControls() {
       {debug}
     </div>
   );
-}
-
-function wrap_catalog_metadata(catalog_query: UseQueryResult<CatalogResponse>) {
-  const catalog_response = catalog_query.data;
-  if (!catalog_response) return undefined;
-  log(`Creating metadata for ${catalog_response.name}...`);
-  const root = {
-    sub: catalog_response.fields
-  } as FieldMetadata;
-  const hierarchy: CatalogHierarchyNode = d3.hierarchy<FieldMetadata>(
-    root,
-    (d) => d?.sub ?? []
-  );
-  const depth_first: Array<CatalogHierarchyNode> = [];
-  hierarchy.eachBefore((d) => {
-    d.data.__hash = tiny_json_hash(d.data);
-    if (!is_root_node(d)) depth_first.push(d);
-    get_field_type(d.data);
-  });
-  const wrapper: CatalogMetadataWrapper = {
-    response: catalog_response,
-    hierarchy,
-    depth_first
-  };
-  return wrapper;
-}
-
-function tiny_json_hash(object: any) {
-  const text = JSON.stringify(object);
-  let hash = 5381;
-  let index = text.length;
-  while (index) {
-    hash = (hash * 33) ^ text.charCodeAt(--index);
-  }
-  return (hash >>> 0).toString(16);
 }
