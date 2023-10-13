@@ -42,6 +42,5 @@ module.exports = {
         desktop: defaults.screens["md"]
       }
     }
-  },
-  plugins: [require("tailwindcss-radix")]
+  }
 };

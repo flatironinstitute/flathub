@@ -46,7 +46,6 @@
     "react-use": "latest",
     "svelte": "latest",
     "tailwindcss": "latest",
-    "tailwindcss-radix": "latest",
     "typescript": "5"
   },
   "prettier": {
