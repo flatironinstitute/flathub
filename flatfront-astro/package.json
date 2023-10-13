@@ -57,6 +57,8 @@
     "@types/d3": "latest",
     "@types/katex": "latest",
     "@types/lodash": "latest",
+    "@types/lodash.merge": "latest",
+    "@types/lodash.set": "latest",
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
