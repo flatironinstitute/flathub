@@ -6,7 +6,7 @@ import { useDarkModeValue } from "../dark-mode";
 import { CellWrapper, BigButton, RadioGroup } from "./Primitives";
 
 export default function GlobalControls(): React.JSX.Element {
-  const number_of_cells = controller.useState()?.add_cell?.length ?? 0;
+  const number_of_cells = controller.useAppState()?.add_cell?.length ?? 0;
   const dispatch = controller.useDispatch();
   return (
     <CellWrapper className="grid items-center gap-y-4">

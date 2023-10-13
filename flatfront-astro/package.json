@@ -30,6 +30,7 @@
     "@tanstack/query-core": "latest",
     "@tanstack/react-query": "latest",
     "@tanstack/react-table": "latest",
+    "@uidotdev/usehooks": "latest",
     "astro": "latest",
     "autoprefixer": "latest",
     "clsx": "latest",
@@ -43,7 +44,6 @@
     "postcss": "latest",
     "react": "18",
     "react-dom": "18",
-    "react-use": "latest",
     "tailwindcss": "latest",
     "typescript": "5"
   },

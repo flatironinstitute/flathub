@@ -30,7 +30,7 @@ const [usePlotID, PlotIDProvider] = create_context_helper<PlotID>(`PlotID`);
 
 function usePlotType() {
   const plot_id = usePlotID();
-  const plot_type = controller.useState()?.set_plot_type?.[plot_id];
+  const plot_type = controller.useAppState()?.set_plot_type?.[plot_id];
   return plot_type;
 }
 
@@ -177,7 +177,7 @@ function PlotControl({
     return type === `INTEGER` || type === `FLOAT`;
   });
 
-  const plot_config = controller.useState().set_plot_control?.[plot_id];
+  const plot_config = controller.useAppState().set_plot_control?.[plot_id];
 
   const field_id = plot_config?.[plot_control_key];
   // const is_log_mode = plot_config?.[`${plot_control_key}_log_mode`] ?? false;
@@ -223,7 +223,7 @@ function Scatterplot() {
   const filters = useFilters();
 
   const plot_id = usePlotID();
-  const plot_state = controller.useState()?.set_plot_control?.[plot_id];
+  const plot_state = controller.useAppState()?.set_plot_control?.[plot_id];
 
   const x_axis_field_id = plot_state?.x_axis;
   const y_axis_field_id = plot_state?.y_axis;

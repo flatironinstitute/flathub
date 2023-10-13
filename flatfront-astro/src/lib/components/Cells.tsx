@@ -3,7 +3,7 @@ import * as controller from "../app-state";
 import type { CellID } from "../types";
 
 export default function Cells() {
-  const cells = controller.useState()?.add_cell ?? [];
+  const cells = controller.useAppState()?.add_cell ?? [];
 
   return (
     <>

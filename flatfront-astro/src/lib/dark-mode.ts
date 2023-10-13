@@ -5,7 +5,7 @@ import * as controller from "./app-state";
 import { log } from "./shared";
 
 export function useDarkModeValue(): DarkModeValue {
-  const dark_mode_value = controller.useState()?.dark_mode;
+  const dark_mode_value = controller.useAppState()?.dark_mode;
   return dark_mode_value ?? `system`;
 }
 

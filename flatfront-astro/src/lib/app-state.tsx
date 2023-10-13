@@ -1,22 +1,44 @@
 import type { AppState } from "./types";
 import React from "react";
-import { createStateContext } from "react-use";
+import { useDebounce } from "@uidotdev/usehooks";
 import * as lzstring from "lz-string";
 import lodash_set from "lodash.set";
-import { useDebounce } from "react-use";
 import { log } from "./shared";
 
-const [useContext, Provider] = createStateContext<AppState>({});
+const AppStateContext = React.createContext<AppState>({});
+const DispatchContext = React.createContext<
+  React.Dispatch<React.SetStateAction<AppState>> | undefined
+>(undefined);
 
-export { Provider };
+export function Provider({ children }) {
+  const [app_state, set_app_state] = React.useState<AppState>({});
+  return (
+    <AppStateContext.Provider value={app_state}>
+      <DispatchContext.Provider value={set_app_state}>
+        {children}
+      </DispatchContext.Provider>
+    </AppStateContext.Provider>
+  );
+}
 
-export function useState() {
-  const [app_state] = useContext();
+export function useAppState() {
+  const app_state = React.useContext(AppStateContext);
+  if (app_state === undefined) {
+    throw new Error(`useAppState must be used within a Provider`);
+  }
   return app_state;
 }
 
+function useSetAppState() {
+  const set_app_state = React.useContext(DispatchContext);
+  if (set_app_state === undefined) {
+    throw new Error(`useSetAppState must be used within a Provider`);
+  }
+  return set_app_state;
+}
+
 export function useDispatch() {
-  const [, set_app_state] = useContext();
+  const set_app_state = useSetAppState();
   const dispatch = React.useCallback(
     (keys: Array<string | number>, value: any) => {
       set_app_state((obj) => {
@@ -31,7 +53,8 @@ export function useDispatch() {
 }
 
 export function useSaveAndRestoreState() {
-  const [app_state, set_app_state] = useContext();
+  const app_state = useAppState();
+  const set_app_state = useSetAppState();
   React.useEffect(() => {
     const app_state = get_data_from_url<any>(`app_state`);
     if (app_state) {
@@ -39,14 +62,11 @@ export function useSaveAndRestoreState() {
       set_app_state(app_state);
     }
   }, []);
-  useDebounce(
-    () => {
-      if (Object.keys(app_state).length === 0) return;
-      store_data_in_url(app_state, `app_state`);
-    },
-    1000,
-    [app_state]
-  );
+  const debounced = useDebounce(app_state, 1000);
+  React.useEffect(() => {
+    if (Object.keys(debounced).length === 0) return;
+    store_data_in_url(debounced, `app_state`);
+  }, [debounced]);
 }
 
 function store_data_in_url<T>(data: T, key: string) {

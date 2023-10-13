@@ -27,7 +27,7 @@ export function useFilters(): Filters {
     catalog_hierarchy
   );
   const filter_state: Filters =
-    controller.useState()?.filter_value?.[catalog_cell_id]?.[catalog_id];
+    controller.useAppState()?.filter_value?.[catalog_cell_id]?.[catalog_id];
   const filters = lodash_merge(initial_filters, filter_state);
   return filters;
 }

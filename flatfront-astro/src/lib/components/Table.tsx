@@ -24,7 +24,6 @@ import {
   is_leaf_node,
   is_root_node
 } from "../shared";
-import * as hooks from "../hooks";
 import { useFilters } from "../filters";
 import { BigButton, CellSection, Placeholder } from "./Primitives";
 import Katex from "./Katex";
@@ -85,12 +84,10 @@ function Table() {
     body: request_body
   };
 
-  const debounced_query_config = hooks.useDebouncedValue(query_config, 500);
-
   const enable_request = !!catalog_id && fields.length > 0;
 
   const query = useQuery({
-    queryKey: [`table-data`, debounced_query_config],
+    queryKey: [`table-data`, query_config],
     queryFn: async (): Promise<DataResponse> => {
       return fetch_api_post<DataPostRequestBody, DataResponse>(
         query_config.path,

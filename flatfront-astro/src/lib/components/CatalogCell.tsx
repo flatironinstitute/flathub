@@ -34,7 +34,7 @@ export function useCatalogCellID() {
 
 export function useCatalogID(): string {
   const catalog_cell_id = useCatalogCellID();
-  const catalog_id = controller.useState()?.set_catalog?.[catalog_cell_id];
+  const catalog_id = controller.useAppState()?.set_catalog?.[catalog_cell_id];
   return catalog_id;
 }
 
@@ -79,7 +79,7 @@ function CatalogCellContents() {
   );
 
   const plot_ids = d3.reverse(
-    controller.useState()?.add_plot?.[catalog_cell_id] ?? []
+    controller.useAppState()?.add_plot?.[catalog_cell_id] ?? []
   );
 
   const plot_components = plot_ids.map((plot_id) => {
@@ -109,7 +109,7 @@ function CatalogCellContents() {
 function AddPlotButton() {
   const catalog_cell_id = useCatalogCellID();
   const number_of_plots =
-    controller.useState()?.add_plot?.[catalog_cell_id]?.length ?? 0;
+    controller.useAppState()?.add_plot?.[catalog_cell_id]?.length ?? 0;
   const dispatch = controller.useDispatch();
   return (
     <BigButton
