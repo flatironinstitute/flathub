@@ -9,11 +9,12 @@ import * as RadixRadioGroup from "@radix-ui/react-radio-group";
 import * as RadixSwitch from "@radix-ui/react-switch";
 import * as RadixCheckbox from "@radix-ui/react-checkbox";
 import * as RadixSeparator from "@radix-ui/react-separator";
+import type { UseQueryResult } from "@tanstack/react-query";
 
 export function Separator({ orientation }: RadixSeparator.SeparatorProps) {
   return (
     <RadixSeparator.Root
-      className="h-1 my-4 bg-black/40 dark:bg-white/10"
+      className="my-4 h-1 bg-black/40 dark:bg-white/10"
       orientation={orientation}
     />
   );
@@ -425,5 +426,36 @@ export function Checkbox(props: RadixCheckbox.CheckboxProps) {
         <RadixIcons.CheckIcon className="h-4 w-4" />
       </RadixCheckbox.Indicator>
     </RadixCheckbox.Root>
+  );
+}
+
+export function PlotWrapper({
+  children,
+  query,
+  isLoading = false
+}: {
+  children: React.ReactNode;
+  query: UseQueryResult;
+  isLoading?: boolean;
+}) {
+  let status_box = null;
+  if (isLoading || query.isLoading || query.isFetching) {
+    status_box = (
+      <div
+        className={clsx(
+          "absolute left-1/2 top-1/2 z-10 rounded-lg bg-white p-4",
+          "-translate-x-1/2 -translate-y-full transform",
+          "ring-2 ring-black dark:bg-black dark:ring-white"
+        )}
+      >
+        Loading...
+      </div>
+    );
+  }
+  return (
+    <div className="relative">
+      {status_box}
+      {children}
+    </div>
   );
 }

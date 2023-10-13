@@ -8,12 +8,7 @@ import type {
   PlotType
 } from "../types";
 
-import Highcharts from "highcharts";
-import HighchartsExporting from "highcharts/modules/exporting";
-import HighchartsExportData from "highcharts/modules/export-data";
-import HighchartsHeatmap from "highcharts/modules/heatmap";
-import HighchartsReact from "highcharts-react-official";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import {
   log,
   fetch_api_post,
@@ -21,15 +16,19 @@ import {
   create_context_helper
 } from "../shared";
 import * as controller from "../app-state";
-import { CellSection, Placeholder, Select, Checkbox } from "./Primitives";
-import { useCatalogID } from "./CatalogContext";
 import { useIsDarkMode } from "../dark-mode";
-import { useCatalogMetadata } from "./CatalogMetadata";
 import { useFilters } from "../filters";
-
-HighchartsExporting(Highcharts);
-HighchartsExportData(Highcharts);
-HighchartsHeatmap(Highcharts);
+import { useCatalogMetadata } from "./CatalogMetadata";
+import {
+  CellSection,
+  Placeholder,
+  Select,
+  Checkbox,
+  PlotWrapper
+} from "./Primitives";
+import { useCatalogID } from "./CatalogContext";
+import HighchartsPlot from "./HighchartsPlot";
+import clsx from "clsx";
 
 const [usePlotID, PlotIDProvider] = create_context_helper<PlotID>(`PlotID`);
 
@@ -271,24 +270,12 @@ function Scatterplot() {
     if (!x_axis_field_id) return [];
     if (!y_axis_field_id) return [];
     return data.map((datum) => {
-      return [datum[x_axis_field_id], datum[y_axis_field_id]];
+      return [+datum[x_axis_field_id], +datum[y_axis_field_id]];
     });
   })();
 
   const options: Highcharts.Options = {
-    chart: {
-      animation: false,
-      styledMode: true
-    },
-    legend: {
-      enabled: false
-    },
-    title: {
-      text: undefined
-    },
-    credits: {
-      enabled: false
-    },
+    ...get_highcharts_options(),
     xAxis: {
       title: {
         text: x_axis_field_id
@@ -300,39 +287,22 @@ function Scatterplot() {
         text: y_axis_field_id
       }
     },
-    tooltip: {
-      animation: false
-    },
-    exporting: {
-      enabled: true
-    },
     series: [
       {
         type: `scatter`,
-        data: data_munged
-      }
-    ],
-    plotOptions: {
-      scatter: {
         marker: {
-          radius: 2,
-          symbol: `circle`
+          radius: 1
         },
-        animation: false
+        data: data_munged,
+        boostThreshold: 1
       }
-    }
+    ]
   };
 
-  const dark_mode = useIsDarkMode();
-
-  const className = dark_mode ? `highcharts-dark` : `highcharts-light`;
-
   return (
-    <HighchartsReact
-      highcharts={Highcharts}
-      options={options}
-      containerProps={{ className }}
-    />
+    <PlotWrapper query={query}>
+      <HighchartsPlot options={options} />
+    </PlotWrapper>
   );
 }
 
@@ -392,26 +362,10 @@ function Heatmap() {
     });
   })();
 
+  const is_dark_mode = useIsDarkMode();
+
   const options: Highcharts.Options = {
-    chart: {
-      animation: false,
-      styledMode: true
-    },
-    tooltip: {
-      animation: false
-    },
-    exporting: {
-      enabled: true
-    },
-    legend: {
-      enabled: false
-    },
-    title: {
-      text: undefined
-    },
-    credits: {
-      enabled: false
-    },
+    ...get_highcharts_options(),
     xAxis: {
       title: {
         text: x_axis_field_id
@@ -424,8 +378,8 @@ function Heatmap() {
       }
     },
     colorAxis: {
-      minColor: `#FFFFFF`,
-      maxColor: `#000000`
+      minColor: is_dark_mode ? `black` : `white`,
+      maxColor: is_dark_mode ? `white` : `black`
     },
     series: [
       {
@@ -437,17 +391,38 @@ function Heatmap() {
     ]
   };
 
-  return <HighchartsChart options={options} />;
+  return (
+    <PlotWrapper query={query}>
+      <HighchartsPlot options={options} />
+    </PlotWrapper>
+  );
 }
 
-function HighchartsChart({ options }: { options: Highcharts.Options }) {
-  const dark_mode = useIsDarkMode();
-  const className = dark_mode ? `highcharts-dark` : `highcharts-light`;
-  return (
-    <HighchartsReact
-      highcharts={Highcharts}
-      options={options}
-      containerProps={{ className }}
-    />
-  );
+function get_highcharts_options(): Highcharts.Options {
+  return {
+    chart: {
+      animation: false,
+      styledMode: true
+    },
+    legend: {
+      enabled: false
+    },
+    title: {
+      text: undefined
+    },
+    credits: {
+      enabled: false
+    },
+    tooltip: {
+      animation: false
+    },
+    exporting: {
+      enabled: true
+    },
+    boost: {
+      enabled: true,
+      useGPUTranslations: false,
+      usePreallocated: true
+    }
+  };
 }

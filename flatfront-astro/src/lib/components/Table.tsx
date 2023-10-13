@@ -25,7 +25,7 @@ import {
   is_root_node
 } from "../shared";
 import { useFilters } from "../filters";
-import { BigButton, Placeholder } from "./Primitives";
+import { BigButton, Placeholder, PlotWrapper } from "./Primitives";
 import Katex from "./Katex";
 import { useCatalogID } from "./CatalogContext";
 import { useCatalogMetadata } from "./CatalogMetadata";
@@ -101,7 +101,9 @@ function Table() {
 
   const component =
     query.data && query.data.length > 0 && catalog_hierarchy ? (
-      <TablePrimitive data={query.data} />
+      <PlotWrapper query={query} isLoading={!catalog_hierarchy}>
+        <TablePrimitive data={query.data} />
+      </PlotWrapper>
     ) : query.data && query.data.length === 0 ? (
       <Placeholder className="m-2">Empty Response</Placeholder>
     ) : (
