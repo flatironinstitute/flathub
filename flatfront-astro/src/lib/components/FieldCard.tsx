@@ -10,7 +10,7 @@ import clsx from "clsx";
 import * as d3 from "d3";
 import { useQuery } from "@tanstack/react-query";
 import * as Plot from "@observablehq/plot";
-import * as hooks from "../hooks";
+import { useIntersectionObserver } from "@uidotdev/usehooks";
 import {
   assert_numeric_field_stats,
   create_context_helper,
@@ -238,7 +238,7 @@ function NumericFieldHistogram() {
 
   const ref = React.useRef<HTMLDivElement>(null);
 
-  const should_fetch = hooks.useDelayVisible(ref, delay);
+  const should_fetch = useDelayVisible(ref, delay);
 
   const { min, max, avg } = metadata.stats;
   const should_use_log = should_use_log_scale(min, max, avg);
@@ -266,7 +266,7 @@ function NumericFieldHistogram() {
   const histogram_size = histogram_query.data?.sizes[0];
 
   const histogram_data = (histogram_query.data?.buckets ?? []).map((d) => ({
-    x: d.key[0],
+    x: +d.key[0],
     y: d.count
   }));
 
@@ -320,6 +320,39 @@ function NumericFieldHistogram() {
   );
 
   return <div ref={ref}>{contents}</div>;
+}
+
+function useDelayVisible(
+  ref: React.RefObject<HTMLElement>,
+  delay: number
+): boolean {
+  // const [ref2, on_screen] = useIntersectionObserver();
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => {
+    let timeout: number;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          timeout = window.setTimeout(() => {
+            setVisible(true);
+          }, delay);
+        }
+        if (!entries[0].isIntersecting) {
+          clearTimeout(timeout);
+        }
+      },
+      { threshold: 0.5 }
+    );
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+    return () => {
+      if (ref.current) {
+        observer.unobserve(ref.current);
+      }
+    };
+  }, [ref, delay]);
+  return visible;
 }
 
 // function NumericFieldStats() {
