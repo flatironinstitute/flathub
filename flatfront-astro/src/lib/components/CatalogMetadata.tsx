@@ -1,8 +1,5 @@
 import type {
-  TopResponseEntry,
-  TopResponse,
   CatalogResponse,
-  CellID,
   FieldMetadata,
   CatalogHierarchyNode,
   CatalogMetadataWrapper
@@ -11,27 +8,8 @@ import type {
 import React from "react";
 import * as d3 from "d3";
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
-import * as controller from "../app-state";
-import * as hooks from "../hooks";
-import {
-  fetch_api_get,
-  assert_catalog_cell_id,
-  log,
-  is_root_node,
-  get_field_type
-} from "../shared";
-import {
-  BigButton,
-  CellSection,
-  CellWrapper,
-  Placeholder,
-  Dialog,
-  Select
-} from "./Primitives";
-import TableSection from "./Table";
-import PlotSection from "./Plot";
-import FieldCard from "./FieldCard";
-import { useCatalogCellID, useCatalogID } from "./CatalogCell";
+import { fetch_api_get, log, is_root_node, get_field_type } from "../shared";
+import { useCatalogID } from "./CatalogCell";
 
 const CatalogMetadataContext = React.createContext<
   CatalogMetadataWrapper | undefined

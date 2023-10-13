@@ -1,15 +1,6 @@
-import type { Readable } from "svelte/store";
-import type {
-  Action,
-  CatalogMetadataWrapper,
-  DarkModeValue,
-  FieldMetadata,
-  FilterValueRaw,
-  Filters
-} from "./types";
+import type { Action, FieldMetadata, FilterValueRaw, Filters } from "./types";
 
 import React from "react";
-import { get } from "svelte/store";
 import lodash_merge from "lodash.merge";
 
 import * as controller from "./app-state";
@@ -22,18 +13,6 @@ import {
 } from "./shared";
 import { useCatalogCellID, useCatalogID } from "./components/CatalogCell";
 import { useCatalogMetadata } from "./components/CatalogMetadata";
-
-export function useStore<T>(store: Readable<T>) {
-  const [state, setState] = React.useState<T>(get(store));
-  React.useEffect(
-    () =>
-      store.subscribe((value) => {
-        setState(value);
-      }),
-    [store]
-  );
-  return state;
-}
 
 export function useDebouncedValue<T>(value: T, delay: number): T {
   const [debounced, set_debounced] = React.useState(value);

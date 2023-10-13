@@ -44,7 +44,6 @@
     "react": "18",
     "react-dom": "18",
     "react-use": "latest",
-    "svelte": "latest",
     "tailwindcss": "latest",
     "typescript": "5"
   },
