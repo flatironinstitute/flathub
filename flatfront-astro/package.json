@@ -25,6 +25,7 @@
     "@radix-ui/react-label": "latest",
     "@radix-ui/react-radio-group": "latest",
     "@radix-ui/react-select": "latest",
+    "@radix-ui/react-separator": "latest",
     "@radix-ui/react-slider": "latest",
     "@radix-ui/react-switch": "latest",
     "@tanstack/query-core": "latest",

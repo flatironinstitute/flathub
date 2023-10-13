@@ -25,19 +25,19 @@ import {
   is_root_node
 } from "../shared";
 import { useFilters } from "../filters";
-import { BigButton, CellSection, Placeholder } from "./Primitives";
+import { BigButton, Placeholder } from "./Primitives";
 import Katex from "./Katex";
-import { useCatalogID } from "./CatalogCell";
+import { useCatalogID } from "./CatalogContext";
 import { useCatalogMetadata } from "./CatalogMetadata";
 
 export default function TableSection() {
   return (
-    <CellSection label="table" className="space-y-4">
+    <>
       <div className="grid">
         <BigButton className="w-full">Select Columns</BigButton>
       </div>
       <Table />
-    </CellSection>
+    </>
   );
 }
 
@@ -186,7 +186,7 @@ function TablePrimitive({ data }: { data: Array<DataRow> }) {
   const header_groups = table.getHeaderGroups();
   const skip_rendering = new Set();
   return (
-    <table className="text-xs">
+    <table>
       <thead>
         {header_groups.map((headerGroup) => (
           <tr key={headerGroup.id}>

@@ -27,7 +27,7 @@ import ObservablePlot from "./ObservablePlot";
 import Katex from "./Katex";
 import { Placeholder } from "./Primitives";
 import { RangeFilterControl, SelectFilterControl } from "./FilterControls";
-import { useCatalogID } from "./CatalogCell";
+import { useCatalogID } from "./CatalogContext";
 
 const [useFieldNode, FieldNodeProvider] =
   create_context_helper<CatalogHierarchyNode>(`FieldNode`);
@@ -57,11 +57,11 @@ export default function FieldCard({
 
   const title_and_units = (
     <div>
-      <div className="flex space-x-2 text-lg">
+      <div className="flex space-x-2">
         {field_title}
         {field_units}
       </div>
-      <div className="text-xs opacity-40">{metadata.name}</div>
+      <div className="opacity-40">{metadata.name}</div>
     </div>
   );
 
@@ -84,7 +84,7 @@ export default function FieldCard({
   const details = (() => {
     if (!show_details) return null;
     const field_description = metadata.descr ? (
-      <div className="overflow-hidden text-xs opacity-80">
+      <div className="overflow-hidden opacity-80">
         <Katex>{metadata.descr}</Katex>
       </div>
     ) : null;
@@ -166,7 +166,7 @@ function FieldCardWrapper({
   );
 }
 FieldCardWrapper.className = clsx(
-  `rounded-md text-md px-4 pt-3 py-5 overflow-hidden`,
+  `rounded-md px-4 pt-3 py-5 overflow-hidden`,
   `ring-1 ring-black/30 dark:ring-white/30`
 );
 
@@ -193,7 +193,7 @@ function NumericFieldStats() {
   ].map(([number, label]: [number, string]) => {
     return (
       <div key={label}>
-        <div className="text-center text-lg">{format(number)}</div>
+        <div className="text-center">{format(number)}</div>
         <div className="text-center uppercase opacity-50">{label}</div>
       </div>
     );
@@ -213,7 +213,7 @@ function EnumerableFieldStats() {
     return (
       <div
         key={index}
-        className={`rounded-full px-2 py-0.5 text-xs ring-1 ring-black/30 dark:ring-white/30`}
+        className={`rounded-full px-2 py-0.5 ring-1 ring-black/30 dark:ring-white/30`}
       >
         {text} {count_string}
       </div>
@@ -222,7 +222,7 @@ function EnumerableFieldStats() {
 
   return (
     <>
-      <div className="text-xs uppercase">values</div>
+      <div className="uppercase">values</div>
       <div className="flex flex-wrap gap-x-2 gap-y-2">{pills}</div>
     </>
   );
@@ -275,7 +275,7 @@ function NumericFieldHistogram() {
     style: {
       background: `transparent`,
       overflow: `visible`,
-      fontSize: `20px`
+      fontSize: `100%`
     },
     y: {
       label: null,

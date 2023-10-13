@@ -8,6 +8,16 @@ import * as RadixSelect from "@radix-ui/react-select";
 import * as RadixRadioGroup from "@radix-ui/react-radio-group";
 import * as RadixSwitch from "@radix-ui/react-switch";
 import * as RadixCheckbox from "@radix-ui/react-checkbox";
+import * as RadixSeparator from "@radix-ui/react-separator";
+
+export function Separator({ orientation }: RadixSeparator.SeparatorProps) {
+  return (
+    <RadixSeparator.Root
+      className="h-1 my-4 bg-black/40 dark:bg-white/10"
+      orientation={orientation}
+    />
+  );
+}
 
 export function CellWrapper({
   children,
@@ -50,7 +60,7 @@ export function BigButton({
   );
 }
 BigButton.className = clsx(
-  `block rounded-lg py-3 font-bold text-xl`,
+  `block rounded-lg py-3 font-bold`,
   `ring-1 ring-black dark:ring-white`,
   `focus:outline-none focus-visible:ring-4`,
   `disabled:opacity-50 disabled:cursor-not-allowed`
@@ -80,7 +90,7 @@ export function SimpleLabel({
   children: React.ReactNode;
   className?: string;
 }): React.JSX.Element {
-  return <div className={clsx(`text-sm uppercase`, className)}>{children}</div>;
+  return <div className={clsx(`uppercase`, className)}>{children}</div>;
 }
 
 export function Placeholder({
@@ -240,9 +250,7 @@ export function Label({
   className?: string;
 }) {
   return (
-    <label className={clsx(`block text-xs uppercase`, className)}>
-      {children}
-    </label>
+    <label className={clsx(`block uppercase`, className)}>{children}</label>
   );
 }
 
@@ -269,8 +277,8 @@ export function Select<T>({
 }) {
   const size_classes =
     size === `large`
-      ? { trigger: `text-md py-3 pl-3 pr-4`, icon: `h-6 w-6` }
-      : { trigger: `text-sm py-1 pl-2 pr-2`, icon: `h-4 w-4` };
+      ? { trigger: `py-3 pl-3 pr-4`, icon: `h-6 w-6` }
+      : { trigger: `py-1 pl-2 pr-2`, icon: `h-4 w-4` };
   return (
     <RadixSelect.Root
       data-type="Select"
@@ -364,7 +372,7 @@ export function RadioGroup<T extends string>(
             </RadixRadioGroup.Item>
             <label
               htmlFor={item.value}
-              className="block cursor-pointer text-sm font-medium"
+              className="block cursor-pointer font-medium"
             >
               {item.text}
             </label>

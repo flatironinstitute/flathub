@@ -1,6 +1,5 @@
 import type { TopResponseEntry, TopResponse, CellID } from "../types";
 
-import React from "react";
 import * as d3 from "d3";
 import { useQuery } from "@tanstack/react-query";
 import * as controller from "../app-state";
@@ -11,45 +10,32 @@ import {
   CellWrapper,
   Placeholder,
   Dialog,
-  Select
+  Select,
+  SimpleLabel
 } from "./Primitives";
 import TableSection from "./Table";
 import PlotSection from "./Plot";
 import FieldCard from "./FieldCard";
 import CatalogMetadataProvider, { useCatalogMetadata } from "./CatalogMetadata";
 import { useFilters } from "../filters";
-
-const CatalogCellIDContext = React.createContext<CellID.Catalog | undefined>(
-  undefined
-);
-
-export function useCatalogCellID() {
-  const catalog_cell_id = React.useContext(CatalogCellIDContext);
-  if (catalog_cell_id === null) {
-    throw new Error(`useCatalogCellID: value is null`);
-  }
-  assert_catalog_cell_id(catalog_cell_id);
-  return catalog_cell_id;
-}
-
-export function useCatalogID(): string {
-  const catalog_cell_id = useCatalogCellID();
-  const catalog_id = controller.useAppState()?.set_catalog?.[catalog_cell_id];
-  return catalog_id;
-}
+import {
+  CatalogCellIDContextProvider,
+  useCatalogCellID,
+  useCatalogID
+} from "./CatalogContext";
 
 export default function CatalogCell({
   id: catalog_cell_id
 }: {
   id: CellID.Catalog;
 }) {
-  assert_catalog_cell_id(catalog_cell_id);
+  // assert_catalog_cell_id(catalog_cell_id);
   return (
-    <CatalogCellIDContext.Provider value={catalog_cell_id}>
+    <CatalogCellIDContextProvider value={catalog_cell_id}>
       <CatalogMetadataProvider>
         <CatalogCellContents />
       </CatalogMetadataProvider>
-    </CatalogCellIDContext.Provider>
+    </CatalogCellIDContextProvider>
   );
 }
 
@@ -83,7 +69,15 @@ function CatalogCellContents() {
   );
 
   const plot_components = plot_ids.map((plot_id) => {
-    return <PlotSection key={plot_id} id={plot_id} />;
+    return (
+      <CellSection
+        key={plot_id}
+        label="plot"
+        className="space-y-4 rounded-md p-4 ring-1 ring-black/20"
+      >
+        <PlotSection id={plot_id} />
+      </CellSection>
+    );
   });
 
   return (
@@ -91,14 +85,28 @@ function CatalogCellContents() {
       <div className="space-y-4 desktop:col-span-2 desktop:col-start-1">
         {top_sections}
       </div>
-      <CellSection className="flex flex-col gap-y-20 desktop:col-span-4 desktop:col-start-3 desktop:row-start-1">
-        <AddPlotButton />
+      <CellSection className="flex flex-col gap-y-4 desktop:col-span-4 desktop:col-start-3 desktop:row-start-1">
+        <div className="flex flex-col gap-y-4">
+          <SimpleLabel>plots</SimpleLabel>
+          <AddPlotButton />
+        </div>
         {plot_components}
-        <TableSection />
-        <CellSection label="python" className="space-y-4">
+        <CellSection
+          label="table"
+          className="space-y-4 rounded-md p-4 ring-1 ring-black/20"
+        >
+          <TableSection />
+        </CellSection>
+        <CellSection
+          label="python"
+          className="space-y-4 rounded-md p-4 ring-1 ring-black/20"
+        >
           <Placeholder>TODO: Python</Placeholder>
         </CellSection>
-        <CellSection label="download" className="space-y-4">
+        <CellSection
+          label="download"
+          className="space-y-4 rounded-md p-4 ring-1 ring-black/20"
+        >
           <Placeholder>TODO: Download Data</Placeholder>
         </CellSection>
       </CellSection>
@@ -159,7 +167,7 @@ function CatalogSelect() {
 
 function BrowseFieldsDialog() {
   const catalog_cell_id = useCatalogCellID();
-  assert_catalog_cell_id(catalog_cell_id);
+  // assert_catalog_cell_id(catalog_cell_id);
 
   const catalog_id = useCatalogID();
 
@@ -172,7 +180,7 @@ function BrowseFieldsDialog() {
       <div className="h-10 border-b border-b-black/20">
         some controls go here
       </div>
-      <div className="max-h-[80dvh] w-[80dvw] max-w-[600px] space-y-3 overflow-x-visible overflow-y-scroll p-4 text-xs">
+      <div className="max-h-[80dvh] w-[80dvw] max-w-[600px] space-y-3 overflow-x-visible overflow-y-scroll p-4">
         {all_field_nodes.map((node) => (
           <FieldCard fieldNode={node} key={node.data.__hash} />
         ))}
@@ -197,7 +205,7 @@ function FilterControls() {
   });
   const debug = <pre>{JSON.stringify(filters, null, 2)}</pre>;
   return (
-    <div className="space-y-3 text-xs">
+    <div className="space-y-3">
       {filter_and_ancestor_nodes.map((node) => (
         <FieldCard filter fieldNode={node} key={node.data.__hash} />
       ))}

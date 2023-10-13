@@ -9,7 +9,7 @@ import React from "react";
 import * as d3 from "d3";
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { fetch_api_get, log, is_root_node, get_field_type } from "../shared";
-import { useCatalogID } from "./CatalogCell";
+import { useCatalogID } from "./CatalogContext";
 
 const CatalogMetadataContext = React.createContext<
   CatalogMetadataWrapper | undefined

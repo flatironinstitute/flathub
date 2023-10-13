@@ -1,6 +1,9 @@
 import type {
+  schema,
   DataPostRequestBody,
+  HistogramPostRequestBody,
   DataResponse,
+  HistogramResponse,
   PlotID,
   PlotType
 } from "../types";
@@ -8,6 +11,7 @@ import type {
 import Highcharts from "highcharts";
 import HighchartsExporting from "highcharts/modules/exporting";
 import HighchartsExportData from "highcharts/modules/export-data";
+import HighchartsHeatmap from "highcharts/modules/heatmap";
 import HighchartsReact from "highcharts-react-official";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -18,13 +22,14 @@ import {
 } from "../shared";
 import * as controller from "../app-state";
 import { CellSection, Placeholder, Select, Checkbox } from "./Primitives";
-import { useCatalogID } from "./CatalogCell";
+import { useCatalogID } from "./CatalogContext";
 import { useIsDarkMode } from "../dark-mode";
 import { useCatalogMetadata } from "./CatalogMetadata";
 import { useFilters } from "../filters";
 
 HighchartsExporting(Highcharts);
 HighchartsExportData(Highcharts);
+HighchartsHeatmap(Highcharts);
 
 const [usePlotID, PlotIDProvider] = create_context_helper<PlotID>(`PlotID`);
 
@@ -37,10 +42,8 @@ function usePlotType() {
 export default function PlotSection({ id }: { id: PlotID }) {
   return (
     <PlotIDProvider value={id}>
-      <CellSection className="space-y-4">
-        <PlotComponent />
-        <PlotControls />
-      </CellSection>
+      <PlotComponent />
+      <PlotControls />
     </PlotIDProvider>
   );
 }
@@ -52,7 +55,7 @@ function PlotComponent() {
       case `scatterplot`:
         return <Scatterplot />;
       case `heatmap`:
-        return <Placeholder>Heatmap</Placeholder>;
+        return <Heatmap />;
       default:
         return <Placeholder>Choose a plot type</Placeholder>;
     }
@@ -128,8 +131,8 @@ function LabelledControl({
   children: React.ReactNode;
 }) {
   return (
-    <div data-type="LabelledControl" className="space-y-1">
-      <label className="block text-sm uppercase">{label}</label>
+    <div data-type="LabelledControl" className="space-y-2">
+      <label className="block uppercase">{label}</label>
       {children}
     </div>
   );
@@ -191,7 +194,7 @@ function PlotControl({
   if (showLogSwitch) {
     log_switch = (
       <div className="relative">
-        <label className="absolute left-1/2 top-0 -translate-x-1/2 translate-y-[calc(-100%-5px)] text-xs uppercase leading-none">
+        <label className="absolute left-1/2 top-0 -translate-x-1/2 translate-y-[calc(-100%-5px)] uppercase leading-none">
           log
         </label>
         <Checkbox />
@@ -227,7 +230,7 @@ function Scatterplot() {
 
   const x_axis_field_id = plot_state?.x_axis;
   const y_axis_field_id = plot_state?.y_axis;
-  const count = plot_state?.count ?? 1e3;
+  const count = plot_state?.count ?? 3e3;
 
   const enable_request =
     Boolean(catalog_id) && Boolean(x_axis_field_id) && Boolean(y_axis_field_id);
@@ -236,7 +239,8 @@ function Scatterplot() {
     object: true,
     fields: [x_axis_field_id, y_axis_field_id],
     ...filters,
-    count
+    count,
+    sample: 0.42
     // ...query_parameters
   };
 
@@ -323,6 +327,122 @@ function Scatterplot() {
 
   const className = dark_mode ? `highcharts-dark` : `highcharts-light`;
 
+  return (
+    <HighchartsReact
+      highcharts={Highcharts}
+      options={options}
+      containerProps={{ className }}
+    />
+  );
+}
+
+function Heatmap() {
+  const catalog_id = useCatalogID();
+  const filters = useFilters();
+
+  const plot_id = usePlotID();
+  const plot_state = controller.useAppState()?.set_plot_control?.[plot_id];
+
+  const x_axis_field_id = plot_state?.x_axis;
+  const y_axis_field_id = plot_state?.y_axis;
+
+  const enable_request =
+    Boolean(catalog_id) && Boolean(x_axis_field_id) && Boolean(y_axis_field_id);
+
+  const fields: any = [
+    { field: x_axis_field_id, size: 30 },
+    { field: y_axis_field_id, size: 30 }
+  ];
+
+  const request_body: HistogramPostRequestBody = {
+    fields,
+    ...filters
+    // ...query_parameters
+  };
+
+  const query_config = {
+    path: `/${catalog_id}/histogram`,
+    body: request_body
+  };
+
+  const query = useQuery({
+    queryKey: [`plot-data`, query_config],
+    queryFn: async (): Promise<HistogramResponse> => {
+      return fetch_api_post<HistogramPostRequestBody, HistogramResponse>(
+        query_config.path,
+        query_config.body
+      ).then((response) => {
+        log(`query response`, response);
+        return response;
+      });
+    },
+    enabled: enable_request,
+    keepPreviousData: true,
+    staleTime: Infinity
+  });
+
+  const data = query.data;
+
+  const data_munged = (() => {
+    if (!x_axis_field_id) return [];
+    if (!y_axis_field_id) return [];
+    if (!data) return [];
+    return data.buckets.map(({ key, count }) => {
+      return [key[0], key[1], count];
+    });
+  })();
+
+  const options: Highcharts.Options = {
+    chart: {
+      animation: false,
+      styledMode: true
+    },
+    tooltip: {
+      animation: false
+    },
+    exporting: {
+      enabled: true
+    },
+    legend: {
+      enabled: false
+    },
+    title: {
+      text: undefined
+    },
+    credits: {
+      enabled: false
+    },
+    xAxis: {
+      title: {
+        text: x_axis_field_id
+      },
+      gridLineWidth: 1
+    },
+    yAxis: {
+      title: {
+        text: y_axis_field_id
+      }
+    },
+    colorAxis: {
+      minColor: `#FFFFFF`,
+      maxColor: `#000000`
+    },
+    series: [
+      {
+        type: `heatmap`,
+        data: data_munged,
+        colsize: data?.sizes[0],
+        rowsize: data?.sizes[1]
+      }
+    ]
+  };
+
+  return <HighchartsChart options={options} />;
+}
+
+function HighchartsChart({ options }: { options: Highcharts.Options }) {
+  const dark_mode = useIsDarkMode();
+  const className = dark_mode ? `highcharts-dark` : `highcharts-light`;
   return (
     <HighchartsReact
       highcharts={Highcharts}

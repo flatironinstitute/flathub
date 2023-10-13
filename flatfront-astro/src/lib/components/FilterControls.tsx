@@ -9,7 +9,7 @@ import {
 } from "../shared";
 import { RangeSlider, TextInput, Select } from "./Primitives";
 import { useFieldNode } from "./FieldCard";
-import { useCatalogCellID, useCatalogID } from "./CatalogCell";
+import { useCatalogCellID, useCatalogID } from "./CatalogContext";
 import { useFilters } from "../filters";
 
 export function RangeFilterControl() {

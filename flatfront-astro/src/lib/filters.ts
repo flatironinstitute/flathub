@@ -9,7 +9,7 @@ import {
   get_field_type,
   has_numeric_field_stats
 } from "./shared";
-import { useCatalogCellID, useCatalogID } from "./components/CatalogCell";
+import { useCatalogCellID, useCatalogID } from "./components/CatalogContext";
 import { useCatalogMetadata } from "./components/CatalogMetadata";
 
 export function useFilters(): Filters {
