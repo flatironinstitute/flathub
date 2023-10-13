@@ -10,25 +10,6 @@ const [useContext, Provider] = createStateContext<AppState>({});
 
 export { Provider };
 
-export function useSaveAndRestoreState() {
-  const [app_state, set_app_state] = useContext();
-  React.useEffect(() => {
-    const app_state = get_data_from_url<any>(`app_state`);
-    if (app_state) {
-      log(`Setting app state from URL:`, app_state);
-      set_app_state(app_state);
-    }
-  }, []);
-  useDebounce(
-    () => {
-      if (Object.keys(app_state).length === 0) return;
-      store_data_in_url(app_state, `app_state`);
-    },
-    1000,
-    [app_state]
-  );
-}
-
 export function useState() {
   const [app_state] = useContext();
   return app_state;
@@ -47,6 +28,25 @@ export function useDispatch() {
     [set_app_state]
   );
   return dispatch;
+}
+
+export function useSaveAndRestoreState() {
+  const [app_state, set_app_state] = useContext();
+  React.useEffect(() => {
+    const app_state = get_data_from_url<any>(`app_state`);
+    if (app_state) {
+      log(`Setting app state from URL:`, app_state);
+      set_app_state(app_state);
+    }
+  }, []);
+  useDebounce(
+    () => {
+      if (Object.keys(app_state).length === 0) return;
+      store_data_in_url(app_state, `app_state`);
+    },
+    1000,
+    [app_state]
+  );
 }
 
 function store_data_in_url<T>(data: T, key: string) {
