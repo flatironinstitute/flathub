@@ -16,6 +16,7 @@
     "@astrojs/check": "latest",
     "@astrojs/react": "latest",
     "@astrojs/tailwind": "latest",
+    "@headlessui/react": "latest",
     "@observablehq/plot": "latest",
     "@radix-ui/react-accordion": "latest",
     "@radix-ui/react-checkbox": "latest",
@@ -28,6 +29,7 @@
     "@radix-ui/react-separator": "latest",
     "@radix-ui/react-slider": "latest",
     "@radix-ui/react-switch": "latest",
+    "@tailwindcss/container-queries": "latest",
     "@tanstack/query-core": "latest",
     "@tanstack/react-query": "latest",
     "@tanstack/react-table": "latest",
@@ -38,6 +40,7 @@
     "d3": "latest",
     "highcharts": "latest",
     "highcharts-react-official": "latest",
+    "immer": "latest",
     "katex": "latest",
     "lodash.merge": "latest",
     "lodash.set": "latest",
@@ -46,7 +49,8 @@
     "react": "18",
     "react-dom": "18",
     "tailwindcss": "latest",
-    "typescript": "5"
+    "typescript": "5",
+    "use-immer": "latest"
   },
   "prettier": {
     "plugins": [

@@ -9,19 +9,10 @@ module.exports = {
   content: ["./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}"],
   theme: {
     fontSize: {
-      xs: ["0.75rem", { lineHeight: "1" }],
-      sm: ["0.875rem", { lineHeight: "1" }],
-      base: ["0.5rem", { lineHeight: "1" }],
-      lg: ["1.125rem", { lineHeight: "1" }],
-      xl: ["1.25rem", { lineHeight: "1" }],
-      "2xl": ["1.5rem", { lineHeight: "1" }],
-      "3xl": ["1.875rem", { lineHeight: "1" }],
-      "4xl": ["2.25rem", { lineHeight: "1" }],
-      "5xl": ["3rem", { lineHeight: "1" }],
-      "6xl": ["3.75rem", { lineHeight: "1" }],
-      "7xl": ["4.5rem", { lineHeight: "1" }],
-      "8xl": ["6rem", { lineHeight: "1" }],
-      "9xl": ["8rem", { lineHeight: "1" }]
+      xs: ["0.5rem", { lineHeight: "1" }],
+      sm: ["0.6rem", { lineHeight: "1" }],
+      base: ["0.7rem", { lineHeight: "1" }],
+      lg: ["1rem", { lineHeight: "1" }]
     },
     extend: {
       colors: {
@@ -57,5 +48,6 @@ module.exports = {
         desktop: defaults.screens["md"]
       }
     }
-  }
+  },
+  plugins: [require("@tailwindcss/container-queries")]
 };
