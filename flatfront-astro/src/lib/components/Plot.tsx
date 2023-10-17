@@ -17,7 +17,13 @@ import * as controller from "../app-state";
 import { useIsDarkMode } from "../dark-mode";
 import { useFilters } from "../filters";
 import { useCatalogMetadata } from "./CatalogMetadata";
-import { Placeholder, Select, Checkbox, PlotWrapper } from "./Primitives";
+import {
+  Placeholder,
+  Select,
+  Checkbox,
+  PlotWrapper,
+  SimpleLabel
+} from "./Primitives";
 import { useCatalogID } from "./CatalogContext";
 import HighchartsPlot from "./HighchartsPlot";
 import { useRemovePlot } from "../plot-hooks";
@@ -34,7 +40,15 @@ export default function PlotSection({ id }: { id: PlotID }) {
   const remove_plot = useRemovePlot(id);
   return (
     <PlotIDProvider value={id}>
-      <button onClick={() => remove_plot()}>remove</button>
+      <div className="flex justify-between">
+        <SimpleLabel>plot</SimpleLabel>
+        <button
+          className="cursor-pointer uppercase underline"
+          onClick={() => remove_plot()}
+        >
+          remove
+        </button>
+      </div>
       <PlotComponent />
       <PlotControls />
     </PlotIDProvider>
@@ -45,6 +59,8 @@ function PlotComponent() {
   const plot_type = usePlotType();
   const plot_component = (() => {
     switch (plot_type) {
+      case `histogram`:
+        return <Histogram />;
       case `scatterplot`:
         return <Scatterplot />;
       case `heatmap`:
@@ -60,20 +76,30 @@ function PlotControls() {
   const plot_type = usePlotType();
 
   const [x_axis_control, y_axis_control, z_axis_control, sort_control] = [
-    [`X-Axis`, `x_axis`, `Choose X-Axis...`],
-    [`Y-Axis`, `y_axis`, `Choose Y-Axis...`],
-    [`Z-Axis`, `z_axis`, `Choose Z-Axis...`],
-    [`Sort`, `sort`, `Choose sort variable...`]
-  ].map(([label, plot_control_key, placeholder]) => {
-    return (
-      <Labelled label={label} key={plot_control_key}>
-        <PlotControl
-          plotControlkey={plot_control_key}
-          placeholder={placeholder}
-        />
-      </Labelled>
-    );
-  });
+    [`X-Axis`, `x_axis`, `Choose X-Axis...`, true],
+    [`Y-Axis`, `y_axis`, `Choose Y-Axis...`, true],
+    [`Z-Axis`, `z_axis`, `Choose Z-Axis...`, true],
+    [`Sort`, `sort`, `Choose sort variable...`, false]
+  ].map(
+    ([label, plot_control_key, placeholder, showLogSwitch]: [
+      string,
+      string,
+      string,
+      boolean
+    ]) => {
+      return (
+        <Labelled label={label} key={plot_control_key}>
+          <PlotControl
+            plotControlkey={plot_control_key}
+            placeholder={placeholder}
+            showLogSwitch={showLogSwitch}
+          />
+        </Labelled>
+      );
+    }
+  );
+
+  const histogram_controls = <>{x_axis_control}</>;
 
   const scatterplot_controls = (
     <>
@@ -93,6 +119,8 @@ function PlotControls() {
 
   const controls = (() => {
     switch (plot_type) {
+      case `histogram`:
+        return histogram_controls;
       case `scatterplot`:
         return scatterplot_controls;
       case `heatmap`:
@@ -186,7 +214,7 @@ function PlotControl({
         <label className="absolute left-1/2 top-0 -translate-x-1/2 translate-y-[calc(-100%-5px)] uppercase leading-none">
           log
         </label>
-        <Checkbox />
+        <Checkbox disabled checked={false} />
       </div>
     );
   }
@@ -207,6 +235,86 @@ function PlotControl({
       />
       {log_switch}
     </div>
+  );
+}
+
+function Histogram() {
+  const catalog_id = useCatalogID();
+  const filters = useFilters();
+
+  const plot_id = usePlotID();
+  const plot_state = controller.useAppState()?.set_plot_control?.[plot_id];
+
+  const x_axis_field_id = plot_state?.x_axis;
+
+  const enable_request = Boolean(catalog_id) && Boolean(x_axis_field_id);
+
+  const fields: any = [{ field: x_axis_field_id, size: 100 }];
+
+  const request_body: HistogramPostRequestBody = {
+    fields,
+    ...filters
+  };
+
+  const query_config = {
+    path: `/${catalog_id}/histogram`,
+    body: request_body
+  };
+
+  const query = useQuery({
+    queryKey: [`plot-data`, query_config],
+    queryFn: async (): Promise<HistogramResponse> => {
+      return fetch_api_post<HistogramPostRequestBody, HistogramResponse>(
+        query_config.path,
+        query_config.body
+      ).then((response) => {
+        log(`Histogram query response`, response);
+        return response;
+      });
+    },
+    enabled: enable_request,
+    staleTime: Infinity,
+    // @ts-ignore
+    keepPreviousData: true
+  });
+
+  const data = query.data;
+
+  const data_munged = (() => {
+    if (!x_axis_field_id) return [];
+    if (!data) return [];
+    return data.buckets.map(({ key, count }) => {
+      return [...key, count];
+    });
+  })();
+
+  log(`data_munged`, data_munged);
+
+  const options: Highcharts.Options = {
+    ...get_highcharts_options(),
+    xAxis: {
+      type: `linear`,
+      title: {
+        text: x_axis_field_id
+      },
+      gridLineWidth: 1
+    },
+    series: [
+      {
+        type: `column`,
+        data: data_munged,
+        animation: false,
+        pointPadding: 0.2,
+        pointRange: (data?.sizes?.[0] ?? 0) * 2,
+        borderRadius: 0
+      }
+    ]
+  };
+
+  return (
+    <PlotWrapper query={query}>
+      <HighchartsPlot options={options} />
+    </PlotWrapper>
   );
 }
 
@@ -354,7 +462,7 @@ function Heatmap() {
     if (!y_axis_field_id) return [];
     if (!data) return [];
     return data.buckets.map(({ key, count }) => {
-      return [key[0], key[1], count];
+      return [...key, count];
     });
   })();
 

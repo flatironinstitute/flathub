@@ -72,7 +72,6 @@ function CatalogCellContents() {
     return (
       <CellSection
         key={plot_id}
-        label="plot"
         className="space-y-4 rounded-md p-4 ring-1 ring-black/20 dark:ring-white/30"
       >
         <PlotSection id={plot_id} />
