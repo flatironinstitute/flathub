@@ -77,7 +77,7 @@ export function CellSection({
   className?: string;
 }): React.JSX.Element {
   return (
-    <div data-type="CellSection" className={className}>
+    <div data-type="CellSection" className={clsx(`@container`, className)}>
       {label && <SimpleLabel>{label}</SimpleLabel>}
       {children}
     </div>
@@ -255,94 +255,6 @@ export function Label({
   );
 }
 
-export function Select<T>({
-  placeholder,
-  options = [],
-  value = undefined,
-  getKey = (d) => d?.toString(),
-  getDisplayName = (d) => d?.toString(),
-  disabled = false,
-  onValueChange = undefined,
-  contentPosition = "popper",
-  size = `large`
-}: {
-  placeholder?: string;
-  options: T[];
-  value?: T;
-  getKey?: (option: T) => string;
-  getDisplayName?: (option: T) => React.ReactNode;
-  disabled?: boolean;
-  onValueChange?: (value: T) => void;
-  contentPosition?: RadixSelect.SelectContentProps["position"];
-  size?: `small` | `large`;
-}) {
-  const size_classes =
-    size === `large`
-      ? { trigger: `py-3 pl-3 pr-4`, icon: `h-6 w-6` }
-      : { trigger: `py-1 pl-2 pr-2`, icon: `h-4 w-4` };
-  return (
-    <RadixSelect.Root
-      data-type="Select"
-      disabled={disabled}
-      value={value ? getKey(value) : undefined}
-      onValueChange={(key) => {
-        const option = options.find((option) => getKey(option) === key);
-        if (option === undefined) {
-          throw new Error(`Could not find option for key: ${key}`);
-        }
-        onValueChange?.(option);
-      }}
-    >
-      <RadixSelect.Trigger
-        className={clsx(
-          `relative flex w-full items-center justify-between`,
-          `cursor-pointer text-left`,
-          `disabled:cursor-wait disabled:opacity-50`,
-          `rounded-md ring-1 ring-black dark:ring-white`,
-          `focus:outline-none focus-visible:ring-4`,
-          size_classes.trigger
-        )}
-      >
-        <RadixSelect.Value placeholder={placeholder}></RadixSelect.Value>
-        <RadixSelect.Icon>
-          <RadixIcons.ChevronDownIcon className={size_classes.icon} />
-        </RadixSelect.Icon>
-      </RadixSelect.Trigger>
-      <RadixSelect.Portal>
-        <RadixSelect.Content position={contentPosition} sideOffset={10}>
-          <RadixSelect.Viewport
-            className={clsx(
-              `max-h-[var(--radix-select-content-available-height)] overflow-scroll`,
-              `w-[var(--radix-select-trigger-width)] rounded-md`,
-              `bg-white shadow-2xl dark:bg-black`,
-              `ring-1 ring-black dark:ring-white`
-            )}
-          >
-            {options.map((option) => {
-              const key = getKey(option);
-              return (
-                <RadixSelect.Item
-                  key={key}
-                  value={key}
-                  className={clsx(
-                    `cursor-pointer select-none focus:outline-none`,
-                    `focus:bg-black/10 dark:focus:bg-white/40`,
-                    size_classes.trigger
-                  )}
-                >
-                  <RadixSelect.ItemText>
-                    {getDisplayName(option)}
-                  </RadixSelect.ItemText>
-                </RadixSelect.Item>
-              );
-            })}
-          </RadixSelect.Viewport>
-        </RadixSelect.Content>
-      </RadixSelect.Portal>
-    </RadixSelect.Root>
-  );
-}
-
 export function RadioGroup<T extends string>(
   props: RadixRadioGroup.RadioGroupProps & {
     items: Array<{ value: T; text: string }>;
@@ -459,3 +371,183 @@ export function PlotWrapper({
     </div>
   );
 }
+
+export function Select<T>({
+  placeholder,
+  options = [],
+  value = undefined,
+  getKey = (d) => d?.toString(),
+  getDisplayName = (d) => d?.toString(),
+  getDisabled = (d) => false,
+  disabled = false,
+  onValueChange = undefined,
+  contentPosition = "popper",
+  size = `large`
+}: {
+  placeholder?: string;
+  options: T[];
+  value?: T;
+  getKey?: (option: T) => string;
+  getDisplayName?: (option: T) => React.ReactNode;
+  getDisabled?: (option: T) => boolean;
+  disabled?: boolean;
+  onValueChange?: (value: T) => void;
+  contentPosition?: RadixSelect.SelectContentProps["position"];
+  size?: `small` | `large`;
+}) {
+  const size_classes =
+    size === `large`
+      ? { trigger: `py-2 pl-3 pr-4`, icon: `h-5 w-5` }
+      : { trigger: `py-1 pl-2 pr-2`, icon: `h-4 w-4` };
+  return (
+    <RadixSelect.Root
+      data-type="Select"
+      disabled={disabled}
+      value={value ? getKey(value) : undefined}
+      onValueChange={(key) => {
+        const option = options.find((option) => getKey(option) === key);
+        if (option === undefined) {
+          throw new Error(`Could not find option for key: ${key}`);
+        }
+        onValueChange?.(option);
+      }}
+    >
+      <RadixSelect.Trigger
+        className={clsx(
+          `relative flex w-full items-center justify-between`,
+          `cursor-pointer text-left`,
+          `disabled:cursor-wait disabled:opacity-50`,
+          `rounded-md ring-1 ring-black dark:ring-white`,
+          `focus:outline-none focus-visible:ring-4`,
+          size_classes.trigger
+        )}
+      >
+        <RadixSelect.Value placeholder={placeholder}></RadixSelect.Value>
+        <RadixSelect.Icon>
+          <RadixIcons.ChevronDownIcon className={size_classes.icon} />
+        </RadixSelect.Icon>
+      </RadixSelect.Trigger>
+      <RadixSelect.Portal>
+        <RadixSelect.Content position={contentPosition} sideOffset={10}>
+          <RadixSelect.Viewport
+            className={clsx(
+              `max-h-[var(--radix-select-content-available-height)] overflow-scroll`,
+              `w-[var(--radix-select-trigger-width)] rounded-md`,
+              `bg-white shadow-2xl dark:bg-black`,
+              `ring-1 ring-black dark:ring-white`
+            )}
+          >
+            {options.map((option) => {
+              const key = getKey(option);
+              return (
+                <RadixSelect.Item
+                  key={key}
+                  value={key}
+                  className={clsx(
+                    `cursor-pointer select-none focus:outline-none`,
+                    `focus:bg-black/10 dark:focus:bg-white/40`,
+                    `data-[disabled]:pointer-events-none data-[disabled]:opacity-40`,
+                    size_classes.trigger
+                  )}
+                  disabled={getDisabled(option)}
+                >
+                  <RadixSelect.ItemText>
+                    {getDisplayName(option)}
+                  </RadixSelect.ItemText>
+                </RadixSelect.Item>
+              );
+            })}
+          </RadixSelect.Viewport>
+        </RadixSelect.Content>
+      </RadixSelect.Portal>
+    </RadixSelect.Root>
+  );
+}
+
+type SelectProps = Parameters<typeof Select>[0];
+
+export function Combobox({ ...props }: SelectProps) {
+  return <Select {...props} />;
+}
+
+// const people = [
+//   { id: 1, name: "Wade Cooper" },
+//   { id: 2, name: "Arlene Mccoy" },
+//   { id: 3, name: "Devon Webb" },
+//   { id: 4, name: "Tom Cook" },
+//   { id: 5, name: "Tanya Fox" },
+//   { id: 6, name: "Hellen Schmidt" }
+// ];
+
+// export function Combobox() {
+//   const [selected, setSelected] = useState(people[0]);
+//   const [query, setQuery] = useState("");
+
+//   const filteredPeople =
+//     query === ""
+//       ? people
+//       : people.filter((person) =>
+//           person.name
+//             .toLowerCase()
+//             .replace(/\s+/g, "")
+//             .includes(query.toLowerCase().replace(/\s+/g, ""))
+//         );
+
+//   return (
+//     <HeadlessCombobox value={selected} onChange={setSelected}>
+//       <div className="relative">
+//         <div className="relative w-full cursor-default overflow-hidden rounded-lg bg-white text-left shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-300 sm:text-sm">
+//           <HeadlessCombobox.Input
+//             className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:ring-0"
+//             displayValue={(person: any) => person.name}
+//             onChange={(event) => setQuery(event.target.value)}
+//           />
+//           <HeadlessCombobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
+//             updon
+//           </HeadlessCombobox.Button>
+//         </div>
+
+//         <HeadlessCombobox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+//           {filteredPeople.length === 0 && query !== "" ? (
+//             <div className="relative cursor-default select-none px-4 py-2 text-gray-700">
+//               Nothing found.
+//             </div>
+//           ) : (
+//             filteredPeople.map((person) => (
+//               <HeadlessCombobox.Option
+//                 key={person.id}
+//                 className={({ active }) =>
+//                   `relative cursor-default select-none py-2 pl-10 pr-4 ${
+//                     active ? "bg-teal-600 text-white" : "text-gray-900"
+//                   }`
+//                 }
+//                 value={person}
+//               >
+//                 {({ selected, active }) => (
+//                   <>
+//                     <span
+//                       className={`block truncate ${
+//                         selected ? "font-medium" : "font-normal"
+//                       }`}
+//                     >
+//                       {person.name}
+//                     </span>
+//                     {selected ? (
+//                       <span
+//                         className={`absolute inset-y-0 left-0 flex items-center pl-3 ${
+//                           active ? "text-white" : "text-teal-600"
+//                         }`}
+//                       >
+//                         check
+//                       </span>
+//                     ) : null}
+//                   </>
+//                 )}
+//               </HeadlessCombobox.Option>
+//             ))
+//           )}
+//         </HeadlessCombobox.Options>
+//       </div>
+//     </HeadlessCombobox>
+//   );
+// }

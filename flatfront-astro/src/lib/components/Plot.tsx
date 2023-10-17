@@ -1,5 +1,4 @@
 import type {
-  schema,
   DataPostRequestBody,
   HistogramPostRequestBody,
   DataResponse,
@@ -7,8 +6,7 @@ import type {
   PlotID,
   PlotType
 } from "../types";
-
-import { useQuery, type UseQueryResult } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
   log,
   fetch_api_post,
@@ -19,16 +17,10 @@ import * as controller from "../app-state";
 import { useIsDarkMode } from "../dark-mode";
 import { useFilters } from "../filters";
 import { useCatalogMetadata } from "./CatalogMetadata";
-import {
-  CellSection,
-  Placeholder,
-  Select,
-  Checkbox,
-  PlotWrapper
-} from "./Primitives";
+import { Placeholder, Select, Checkbox, PlotWrapper } from "./Primitives";
 import { useCatalogID } from "./CatalogContext";
 import HighchartsPlot from "./HighchartsPlot";
-import clsx from "clsx";
+import { useRemovePlot } from "../plot-hooks";
 
 const [usePlotID, PlotIDProvider] = create_context_helper<PlotID>(`PlotID`);
 
@@ -39,8 +31,10 @@ function usePlotType() {
 }
 
 export default function PlotSection({ id }: { id: PlotID }) {
+  const remove_plot = useRemovePlot(id);
   return (
     <PlotIDProvider value={id}>
+      <button onClick={() => remove_plot()}>remove</button>
       <PlotComponent />
       <PlotControls />
     </PlotIDProvider>
@@ -65,40 +59,35 @@ function PlotComponent() {
 function PlotControls() {
   const plot_type = usePlotType();
 
+  const [x_axis_control, y_axis_control, z_axis_control, sort_control] = [
+    [`X-Axis`, `x_axis`, `Choose X-Axis...`],
+    [`Y-Axis`, `y_axis`, `Choose Y-Axis...`],
+    [`Z-Axis`, `z_axis`, `Choose Z-Axis...`],
+    [`Sort`, `sort`, `Choose sort variable...`]
+  ].map(([label, plot_control_key, placeholder]) => {
+    return (
+      <Labelled label={label} key={plot_control_key}>
+        <PlotControl
+          plotControlkey={plot_control_key}
+          placeholder={placeholder}
+        />
+      </Labelled>
+    );
+  });
+
   const scatterplot_controls = (
     <>
-      <LabelledControl label="X-axis">
-        <PlotControl
-          plotControlkey="x_axis"
-          placeholder="Choose X-Axis..."
-          showLogSwitch
-        />
-      </LabelledControl>
-      <LabelledControl label="Y-axis">
-        <PlotControl
-          plotControlkey="y_axis"
-          placeholder="Choose Y-Axis..."
-          showLogSwitch
-        />
-      </LabelledControl>
-      <LabelledControl label="Z-axis">
-        <PlotControl
-          plotControlkey="z_axis"
-          placeholder="Choose Z-Axis..."
-          showLogSwitch
-        />
-      </LabelledControl>
+      {x_axis_control}
+      {y_axis_control}
+      {z_axis_control}
+      {sort_control}
     </>
   );
 
   const heatmap_controls = (
     <>
-      <LabelledControl label="X-axis">
-        <PlotControl plotControlkey="x_axis" placeholder="Choose X-Axis..." />
-      </LabelledControl>
-      <LabelledControl label="Y-axis">
-        <PlotControl plotControlkey="y_axis" placeholder="Choose Y-Axis..." />
-      </LabelledControl>
+      {x_axis_control}
+      {y_axis_control}
     </>
   );
 
@@ -114,15 +103,15 @@ function PlotControls() {
   })();
   return (
     <div className="grid grid-cols-1 items-center gap-x-8 gap-y-4 desktop:grid-cols-3">
-      <LabelledControl label="Plot Type">
+      <Labelled label="Plot Type">
         <PlotTypeSelect />
-      </LabelledControl>
+      </Labelled>
       {controls}
     </div>
   );
 }
 
-function LabelledControl({
+function Labelled({
   label,
   children
 }: {
@@ -130,7 +119,7 @@ function LabelledControl({
   children: React.ReactNode;
 }) {
   return (
-    <div data-type="LabelledControl" className="space-y-2">
+    <div data-type="Labelled" className="space-y-2">
       <label className="block uppercase">{label}</label>
       {children}
     </div>
@@ -141,6 +130,7 @@ function PlotTypeSelect() {
   const plot_id = usePlotID();
   const plot_type = usePlotType();
   const plot_type_options = [
+    { key: `histogram` as PlotType, label: `Histogram` },
     { key: `scatterplot` as PlotType, label: `Scatterplot` },
     { key: `heatmap` as PlotType, label: `Heatmap` }
   ];
@@ -167,7 +157,7 @@ function PlotControl({
   placeholder,
   showLogSwitch = false
 }: {
-  plotControlkey: `x_axis` | `y_axis` | `z_axis`;
+  plotControlkey: string;
   placeholder?: string;
   showLogSwitch?: boolean;
 }) {
@@ -229,7 +219,9 @@ function Scatterplot() {
 
   const x_axis_field_id = plot_state?.x_axis;
   const y_axis_field_id = plot_state?.y_axis;
-  const count = plot_state?.count ?? 3e3;
+  // const count = plot_state?.count ?? 5e3;
+  const count = plot_state?.count ?? 2e3;
+  const sort = plot_state?.sort ?? null;
 
   const enable_request =
     Boolean(catalog_id) && Boolean(x_axis_field_id) && Boolean(y_axis_field_id);
@@ -239,7 +231,9 @@ function Scatterplot() {
     fields: [x_axis_field_id, y_axis_field_id],
     ...filters,
     count,
-    sample: 0.42
+    sort: sort ? [sort] : undefined
+    // sample: 0.42,
+    // seed: 12345
     // ...query_parameters
   };
 
@@ -260,8 +254,9 @@ function Scatterplot() {
       });
     },
     enabled: enable_request,
-    keepPreviousData: true,
-    staleTime: Infinity
+    staleTime: Infinity,
+    //@ts-ignore
+    keepPreviousData: true
   });
 
   const data = query.data ?? [];
@@ -347,8 +342,9 @@ function Heatmap() {
       });
     },
     enabled: enable_request,
-    keepPreviousData: true,
-    staleTime: Infinity
+    staleTime: Infinity,
+    // @ts-ignore
+    keepPreviousData: true
   });
 
   const data = query.data;
@@ -386,7 +382,8 @@ function Heatmap() {
         type: `heatmap`,
         data: data_munged,
         colsize: data?.sizes[0],
-        rowsize: data?.sizes[1]
+        rowsize: data?.sizes[1],
+        boostThreshold: 1
       }
     ]
   };

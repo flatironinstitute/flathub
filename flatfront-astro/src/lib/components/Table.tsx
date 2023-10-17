@@ -32,12 +32,12 @@ import { useCatalogMetadata } from "./CatalogMetadata";
 
 export default function TableSection() {
   return (
-    <>
+    <div className="space-y-4 @container">
       <div className="grid">
         <BigButton className="w-full">Select Columns</BigButton>
       </div>
       <Table />
-    </>
+    </div>
   );
 }
 
@@ -95,8 +95,7 @@ function Table() {
       );
     },
     enabled: enable_request,
-    keepPreviousData: true,
-    staleTime: Infinity
+    staleTime: Infinity,
   });
 
   const component =
@@ -112,9 +111,7 @@ function Table() {
 
   return (
     <>
-      <div className="max-w-[80dvw] overflow-x-scroll desktop:max-w-none">
-        {component}
-      </div>
+      <div className="overflow-x-scroll desktop:max-w-none">{component}</div>
       <div>offset: {offset}</div>
       <button
         onClick={() => {

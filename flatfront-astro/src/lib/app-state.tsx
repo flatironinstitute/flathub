@@ -3,6 +3,7 @@ import React from "react";
 import { useDebounce } from "@uidotdev/usehooks";
 import * as lzstring from "lz-string";
 import lodash_set from "lodash.set";
+import { useImmer } from "use-immer";
 import { log } from "./shared";
 
 const AppStateContext = React.createContext<AppState>({});
@@ -11,7 +12,7 @@ const DispatchContext = React.createContext<
 >(undefined);
 
 export function Provider({ children }) {
-  const [app_state, set_app_state] = React.useState<AppState>({});
+  const [app_state, set_app_state] = useImmer<AppState>({});
   return (
     <AppStateContext.Provider value={app_state}>
       <DispatchContext.Provider value={set_app_state}>
@@ -29,7 +30,7 @@ export function useAppState() {
   return app_state;
 }
 
-function useSetAppState() {
+export function useSetAppState() {
   const set_app_state = React.useContext(DispatchContext);
   if (set_app_state === undefined) {
     throw new Error(`useSetAppState must be used within a Provider`);
@@ -39,16 +40,9 @@ function useSetAppState() {
 
 export function useDispatch() {
   const set_app_state = useSetAppState();
-  const dispatch = React.useCallback(
-    (keys: Array<string | number>, value: any) => {
-      set_app_state((obj) => {
-        const new_obj = { ...obj };
-        lodash_set(new_obj, keys, value);
-        return new_obj;
-      });
-    },
-    [set_app_state]
-  );
+  const dispatch = (keys: Array<string | number>, value: any) => {
+    set_app_state((obj) => lodash_set(obj, keys, value));
+  };
   return dispatch;
 }
 

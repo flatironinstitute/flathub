@@ -1,13 +1,20 @@
-import type { TopResponseEntry, TopResponse, CellID } from "../types";
+import type {
+  TopResponseEntry,
+  TopResponse,
+  CellID,
+  CatalogHierarchyNode,
+  PlotID
+} from "../types";
 
 import * as d3 from "d3";
 import { useQuery } from "@tanstack/react-query";
 import * as controller from "../app-state";
-import { fetch_api_get, assert_catalog_cell_id } from "../shared";
+import { fetch_api_get, get_field_titles } from "../shared";
 import {
   BigButton,
   CellSection,
   CellWrapper,
+  Combobox,
   Placeholder,
   Dialog,
   Select,
@@ -23,6 +30,8 @@ import {
   useCatalogCellID,
   useCatalogID
 } from "./CatalogContext";
+import Katex from "./Katex";
+import { useAddPlot, usePlotIDs } from "../plot-hooks";
 
 export default function CatalogCell({
   id: catalog_cell_id
@@ -40,8 +49,6 @@ export default function CatalogCell({
 }
 
 function CatalogCellContents() {
-  const catalog_cell_id = useCatalogCellID();
-
   const catalog_id = useCatalogID();
 
   const top_sections = (
@@ -51,12 +58,7 @@ function CatalogCellContents() {
         <BigButton disabled={!catalog_id}>About</BigButton>
         <BrowseFieldsDialog />
       </CellSection>
-      <CellSection label="filters" className="flex flex-col gap-y-4">
-        <BigButton disabled={!catalog_id} className="desktop:hidden">
-          Edit Filters
-        </BigButton>
-        <FilterControls />
-      </CellSection>
+      <FilterSection />
       <CellSection label="random sample" className="flex flex-col gap-y-4">
         <div>fraction</div>
         <div>seed</div>
@@ -64,16 +66,14 @@ function CatalogCellContents() {
     </>
   );
 
-  const plot_ids = d3.reverse(
-    controller.useAppState()?.add_plot?.[catalog_cell_id] ?? []
-  );
+  const plot_ids: PlotID[] = usePlotIDs();
 
   const plot_components = plot_ids.map((plot_id) => {
     return (
       <CellSection
         key={plot_id}
         label="plot"
-        className="space-y-4 rounded-md p-4 ring-1 ring-black/20"
+        className="space-y-4 rounded-md p-4 ring-1 ring-black/20 dark:ring-white/30"
       >
         <PlotSection id={plot_id} />
       </CellSection>
@@ -115,22 +115,8 @@ function CatalogCellContents() {
 }
 
 function AddPlotButton() {
-  const catalog_cell_id = useCatalogCellID();
-  const number_of_plots =
-    controller.useAppState()?.add_plot?.[catalog_cell_id]?.length ?? 0;
-  const dispatch = controller.useDispatch();
-  return (
-    <BigButton
-      onClick={() => {
-        dispatch(
-          [`add_plot`, catalog_cell_id, number_of_plots],
-          `plot_${number_of_plots}`
-        );
-      }}
-    >
-      Add Plot
-    </BigButton>
-  );
+  const add_plot = useAddPlot();
+  return <BigButton onClick={() => add_plot()}>Add Plot</BigButton>;
 }
 
 function CatalogSelect() {
@@ -186,6 +172,54 @@ function BrowseFieldsDialog() {
         ))}
       </div>
     </Dialog>
+  );
+}
+
+function FilterSection() {
+  const catalog_cell_id = useCatalogCellID();
+  const catalog_id = useCatalogID();
+
+  const catalog_metadata = useCatalogMetadata();
+
+  const leaves = catalog_metadata?.hierarchy?.leaves() ?? [];
+
+  const filters = useFilters();
+
+  const dispatch = controller.useDispatch();
+
+  return (
+    <CellSection label="filters" className="flex flex-col gap-y-4">
+      <Combobox
+        placeholder="Add a filter..."
+        options={leaves}
+        getKey={(d: CatalogHierarchyNode) => d.data.__hash}
+        getDisplayName={(d: CatalogHierarchyNode) => {
+          const titles = get_field_titles(d);
+          return <FieldTitles titles={titles} />;
+        }}
+        getDisabled={(d: CatalogHierarchyNode) => {
+          return d.data.name in filters;
+        }}
+        onValueChange={(d: CatalogHierarchyNode) => {
+          const field_id = d.data.name;
+          dispatch([`add_filter`, catalog_cell_id, catalog_id, field_id], true);
+        }}
+      />
+      <BigButton disabled={!catalog_id} className="desktop:hidden">
+        Edit Filters
+      </BigButton>
+      <FilterControls />
+    </CellSection>
+  );
+}
+
+function FieldTitles({ titles }: { titles: string[] }) {
+  return (
+    <div className="flex gap-x-2">
+      {titles.map((title) => (
+        <Katex key={title}>{title}</Katex>
+      ))}
+    </div>
   );
 }
 

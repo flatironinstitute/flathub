@@ -1,4 +1,4 @@
-import type { Action, FieldMetadata, FilterValueRaw, Filters } from "./types";
+import type { FieldID, FieldMetadata, FilterValueRaw, Filters } from "./types";
 
 import lodash_merge from "lodash.merge";
 
@@ -17,10 +17,11 @@ export function useFilters(): Filters {
   const catalog_id = useCatalogID();
   const catalog_metadata = useCatalogMetadata();
   const catalog_hierarchy = catalog_metadata?.hierarchy;
-  // TODO: Add and remove filters
-  const filter_actions = [];
+  const app_state = controller.useAppState();
+  const show_filters_config: Record<FieldID, boolean> =
+    app_state?.add_filter?.[catalog_cell_id]?.[catalog_id] ?? {};
   const filter_names_set = catalog_hierarchy
-    ? get_filter_names(catalog_hierarchy, filter_actions)
+    ? get_filter_names(catalog_hierarchy, show_filters_config)
     : new Set<string>();
   const initial_filters: Filters = get_initial_cell_filters(
     filter_names_set,
@@ -34,28 +35,18 @@ export function useFilters(): Filters {
 
 export function get_filter_names(
   hierarchy: d3.HierarchyNode<FieldMetadata>,
-  actions: Action.Any[]
+  show_filters_config: Record<FieldID, boolean>
 ) {
   const nodes = hierarchy.descendants();
   const initial_filter_names = nodes
     .filter((node) => node.height === 0 && `required` in node.data)
     .map((node) => node.data.name);
   const filter_names_set: Set<string> = new Set(initial_filter_names);
-  const filter_list_actions = actions.filter(
-    (action): action is Action.AddFilter | Action.RemoveFilter => {
-      return action.type === `add_filter` || action.type === `remove_filter`;
-    }
-  );
-  for (const action of filter_list_actions) {
-    switch (action.type) {
-      case `remove_filter`:
-        filter_names_set.delete(action.field_id);
-        break;
-      case `add_filter`:
-        filter_names_set.add(action.field_id);
-        break;
-      default:
-        action satisfies never;
+  for (const [key, value] of Object.entries(show_filters_config)) {
+    if (value) {
+      filter_names_set.add(key);
+    } else {
+      filter_names_set.delete(key);
     }
   }
   return filter_names_set;

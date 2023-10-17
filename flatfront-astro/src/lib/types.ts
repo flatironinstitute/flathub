@@ -5,9 +5,13 @@ export type { schema };
 export type AppState = {
   dark_mode?: DarkModeValue;
   add_cell?: Cell.Any[];
+  add_filter?: Record<
+    CellID.Catalog,
+    Record<CatalogID, Record<FieldID, boolean>>
+  >;
   filter_value?: any;
   set_catalog?: Record<CellID.Catalog, CatalogID>;
-  add_plot?: Record<CellID.Catalog, Array<PlotID>>;
+  add_plot?: Record<CellID.Catalog, Record<PlotID, boolean>>;
   set_plot_type?: Record<PlotID, PlotType>;
   set_plot_control?: Record<PlotID, Record<string, any>>;
 };

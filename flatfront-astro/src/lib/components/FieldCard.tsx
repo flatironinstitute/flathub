@@ -23,11 +23,12 @@ import {
   log,
   should_use_log_scale
 } from "../shared";
+import * as controller from "../app-state";
 import ObservablePlot from "./ObservablePlot";
 import Katex from "./Katex";
 import { Placeholder } from "./Primitives";
 import { RangeFilterControl, SelectFilterControl } from "./FilterControls";
-import { useCatalogID } from "./CatalogContext";
+import { useCatalogCellID, useCatalogID } from "./CatalogContext";
 
 const [useFieldNode, FieldNodeProvider] =
   create_context_helper<CatalogHierarchyNode>(`FieldNode`);
@@ -41,7 +42,11 @@ export default function FieldCard({
   filter?: boolean;
   fieldNode: CatalogHierarchyNode;
 }) {
+  const catalog_cell_id = useCatalogCellID();
+  const catalog_id = useCatalogID();
   const [show_details, set_show_details] = React.useState(!filter);
+
+  const field_id = field_node.data.name;
 
   const metadata = field_node.data;
 
@@ -55,13 +60,26 @@ export default function FieldCard({
     </div>
   ) : null;
 
+  const dispatch = controller.useDispatch();
+
+  const remove_button = is_leaf_node(field_node) ? (
+    <button
+      className="cursor-pointer uppercase underline"
+      onClick={() => {
+        dispatch([`add_filter`, catalog_cell_id, catalog_id, field_id], false);
+      }}
+    >
+      remove
+    </button>
+  ) : null;
+
   const title_and_units = (
-    <div>
+    <div className="flex justify-between">
       <div className="flex space-x-2">
         {field_title}
         {field_units}
       </div>
-      <div className="opacity-40">{metadata.name}</div>
+      {remove_button}
     </div>
   );
 
@@ -83,6 +101,7 @@ export default function FieldCard({
 
   const details = (() => {
     if (!show_details) return null;
+    const variable_name = <div>{metadata.name}</div>;
     const field_description = metadata.descr ? (
       <div className="overflow-hidden opacity-80">
         <Katex>{metadata.descr}</Katex>
@@ -114,6 +133,7 @@ export default function FieldCard({
     );
     return (
       <>
+        {variable_name}
         {field_description}
         {stats}
         {chart}
@@ -222,7 +242,7 @@ function EnumerableFieldStats() {
 
   return (
     <>
-      <div className="uppercase">values</div>
+      {/* <div className="uppercase">values</div> */}
       <div className="flex flex-wrap gap-x-2 gap-y-2">{pills}</div>
     </>
   );
