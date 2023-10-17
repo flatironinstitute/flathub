@@ -261,12 +261,7 @@ export function RangeSlider({
   max,
   value,
   onValueChange
-}: {
-  min: number;
-  max: number;
-  value: number[];
-  onValueChange: (value: number[]) => void;
-}) {
+}: RadixSlider.SliderProps) {
   const step = d3.tickStep(min, max, 100);
 
   const thumb_class = clsx(
