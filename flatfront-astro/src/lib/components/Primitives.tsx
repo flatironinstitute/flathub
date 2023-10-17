@@ -423,7 +423,8 @@ export function Checkbox(props: RadixCheckbox.CheckboxProps) {
     <RadixCheckbox.Root
       className={clsx(
         `flex h-5 w-5 appearance-none items-center justify-center rounded-md`,
-        `bg-white outline outline-black dark:bg-black dark:outline-white`
+        `bg-white outline outline-black dark:bg-black dark:outline-white`,
+        `data-[disabled]:opacity-20 data-[disabled]:cursor-not-allowed`
       )}
       defaultChecked
       {...props}
