@@ -1,3 +1,4 @@
+import type { UseQueryResult } from "@tanstack/react-query";
 import React from "react";
 import clsx from "clsx";
 import * as d3 from "d3";
@@ -9,7 +10,7 @@ import * as RadixRadioGroup from "@radix-ui/react-radio-group";
 import * as RadixSwitch from "@radix-ui/react-switch";
 import * as RadixCheckbox from "@radix-ui/react-checkbox";
 import * as RadixSeparator from "@radix-ui/react-separator";
-import type { UseQueryResult } from "@tanstack/react-query";
+import { useDebounce } from "@uidotdev/usehooks";
 
 export function Separator({ orientation }: RadixSeparator.SeparatorProps) {
   return (
@@ -154,6 +155,104 @@ export function Dialog({
         </RadixDialog.Content>
       </RadixDialog.Portal>
     </RadixDialog.Root>
+  );
+}
+
+export function RangeSliderWithText(props: {
+  min: number;
+  max: number;
+  low: number;
+  high: number;
+  debounce?: number;
+  onValueChange?: (value: [number, number]) => void;
+  onLowChange?: (value: number) => void;
+  onHighChange?: (value: number) => void;
+}) {
+  const { min, max, onValueChange, onLowChange, onHighChange, debounce } =
+    props;
+  const [internal_low, set_internal_low] = React.useState<number>(props.low);
+  const [internal_high, set_internal_high] = React.useState<number>(props.high);
+  const debounced_low = useDebounce(internal_low, debounce ?? 0);
+  const debounced_high = useDebounce(internal_high, debounce ?? 0);
+
+  React.useEffect(() => {
+    set_internal_low(props.low);
+  }, [props.low]);
+  React.useEffect(() => {
+    set_internal_high(props.high);
+  }, [props.high]);
+
+  React.useEffect(() => {
+    onValueChange?.([debounced_low, debounced_high]);
+  }, [debounced_low, debounced_high]);
+  React.useEffect(() => {
+    onLowChange?.(debounced_low);
+  }, [debounced_low]);
+  React.useEffect(() => {
+    onHighChange?.(debounced_high);
+  }, [debounced_high]);
+
+  return (
+    <div
+      data-type="RangeSliderWithText"
+      className="mt-[9px] grid grid-cols-2 items-center gap-x-4 gap-y-2"
+    >
+      <TextInput
+        value={internal_low.toString()}
+        getValidityMessage={(string) => {
+          const number = Number(string);
+          if (!Number.isFinite(number)) return `Invalid number`;
+          if (number < min) return `Must be greater than ${min.toString()}`;
+          if (number > internal_high)
+            return `Must be less than ${internal_high.toString()}`;
+          return null;
+        }}
+        onStringInput={(string: string) => {
+          const number = Number(string);
+          if (!Number.isFinite(number)) return;
+          if (string === internal_low.toString()) {
+            // Not updating filter because it didn't change
+            return;
+          }
+          set_internal_low(number);
+        }}
+      />
+      <TextInput
+        value={internal_high.toString()}
+        getValidityMessage={(string) => {
+          const number = Number(string);
+          if (!Number.isFinite(number)) return `Invalid number`;
+          if (number > max) return `Must be less than ${max.toString()}`;
+          if (number < internal_low)
+            return `Must be greater than ${internal_low.toString()}`;
+          return null;
+        }}
+        onStringInput={(string: string) => {
+          const number = Number(string);
+          if (!Number.isFinite(number)) return;
+          if (string === internal_high.toString()) {
+            // Not updating filter because it didn't change
+            return;
+          }
+          set_internal_high(number);
+        }}
+      />
+      <div className="col-span-2">
+        <RangeSlider
+          min={min}
+          max={max}
+          value={[internal_low, internal_high]}
+          onValueChange={([new_low, new_high]) => {
+            if (new_low !== internal_low) {
+              set_internal_low(new_low);
+            }
+            if (new_high !== internal_high) {
+              set_internal_high(new_high);
+            }
+          }}
+        />
+      </div>
+    </div>
   );
 }
 

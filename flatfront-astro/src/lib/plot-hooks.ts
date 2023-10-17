@@ -4,17 +4,9 @@ import { useAppState, useDispatch } from "./app-state";
 import { useCatalogCellID } from "./components/CatalogContext";
 import { assert_plot_id } from "./shared";
 
-function usePlotsConfig(): Record<PlotID, boolean> {
-  const catalog_cell_id = useCatalogCellID();
-  const plots_config = useAppState()?.add_plot?.[catalog_cell_id] ?? {};
-  return plots_config;
-}
-
 export function useAddPlot() {
   const catalog_cell_id = useCatalogCellID();
-  const plots_config = usePlotsConfig();
-  const number_of_plots = Object.values(plots_config).filter(Boolean).length;
-  const next_id: PlotID = `plot_${number_of_plots}`;
+  const next_id: PlotID = `plot_${Date.now()}`;
   const dispatch = useDispatch();
   return () => {
     dispatch([`add_plot`, catalog_cell_id, next_id], true);

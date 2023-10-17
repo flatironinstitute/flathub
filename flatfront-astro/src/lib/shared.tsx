@@ -31,7 +31,7 @@ export async function fetch_api_get<T>(path: string): Promise<T> {
 
 export async function fetch_api_post<T, U>(path: string, body: T): Promise<U> {
   const url = new URL(`/api${path}`, FLATHUB_API_BASE_URL);
-  log(`💥 Fetching:`, url.toString());
+  log(`💥 Fetching:`, url.toString(), body);
   const response = await fetch(url.toString(), {
     method: `POST`,
     headers: new Headers({
