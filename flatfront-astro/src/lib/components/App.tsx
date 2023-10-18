@@ -1,12 +1,15 @@
+import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import clsx from "clsx";
 import {
   Provider as AppControllerProvider,
-  useSaveAndRestoreState
+  useSaveAndRestoreState,
+  useAppState
 } from "../app-state";
+import { useToggleDarkMode } from "../dark-mode";
+import { log } from "../shared";
 import GlobalControls from "./GlobalControls";
 import Cells from "./Cells";
-import { useToggleDarkMode } from "../dark-mode";
 
 const query_client = new QueryClient();
 
@@ -23,6 +26,10 @@ export default function App() {
 function Main() {
   useToggleDarkMode();
   useSaveAndRestoreState();
+  const app_state = useAppState();
+  React.useEffect(() => {
+    log(`app_state`, app_state);
+  }, [app_state]);
   return (
     <main
       className={clsx(`mb-10 me-auto ms-auto mt-10`, `flex flex-col gap-y-10`)}
