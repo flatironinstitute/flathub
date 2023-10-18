@@ -5,7 +5,8 @@ import {
   format,
   assert_numeric_field_stats,
   assert_numeric_filter_value,
-  join_enums
+  join_enums,
+  log
 } from "../shared";
 import { Select, RangeSliderWithText } from "./Primitives";
 import { useFieldNode } from "./FieldCard";
@@ -64,11 +65,13 @@ export function SelectFilterControl() {
   const dispatch = controller.useDispatch();
   const action_key = [`filter_value`, catalog_cell_id, catalog_id, field_id];
 
+  const get_key = (d) => d?.text;
+
   return (
     <Select
       value={value}
       options={values}
-      getKey={(d) => d?.value?.toString()}
+      getKey={get_key}
       getDisplayName={(d) => {
         if (!d.count) return d.text;
         return `${d.text} (${format.commas(d.count)} rows)`;
