@@ -319,7 +319,7 @@ queryStats cat StatsArgs{..} =
     $  "track_total_hits" J..= False
     <> "size" J..= (0 :: Count)
     <> "aggs" .=* foldMap (\f -> JK.fromText (fieldName f) .=* (if fieldUseTerms f
-      then "terms" .=* (field f <> "size" J..= (if fieldTerms f then 32 else 4 :: Int))
+      then "terms" .=* (field f <> "size" J..= (if fieldTerms f then 256 else 16 :: Int))
       else "stats" .=* field f)) statsFields
     <> filterQuery statsFilters
   where

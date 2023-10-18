@@ -150,6 +150,7 @@ data Field = Field
   , fieldIngest :: Maybe T.Text -- ^special handling on ingest (interpretation depends on format)
   , fieldMissing :: [BS.ByteString] -- ^values to treat as missing on ingest
   , fieldAttachment :: Maybe Attachment
+  , fieldCondition :: [(T.Text, J.Value)]
   , fieldStats :: Maybe (TypeValue FieldStats)
   , fieldSub :: Maybe Fields
   }
@@ -184,6 +185,7 @@ instance Default Field where
     , fieldWildcard = False
     , fieldSize = 8
     , fieldLength = 1
+    , fieldCondition = []
     , fieldStats = Nothing
     }
 
@@ -218,6 +220,7 @@ instance J.ToJSON Field where
     , ("scale" J..=) <$> fieldScale
     , ("reversed" J..= fieldReversed) <$ guard fieldReversed
     , ("attachment" J..= True) <$ fieldAttachment
+    , ("condition" J..= fieldCondition) <$ guard (not $ null fieldCondition)
     , ("store" J..= fieldStore) <$ guard (or fieldStore)
     ]
 
@@ -258,6 +261,7 @@ parseField dict stats = parseFieldDefs def where
     fieldWildcard <- dv fieldWildcard "wildcard"
     fieldSize <- dv fieldSize "size"
     fieldLength <- dv fieldLength "length"
+    fieldCondition <- map (first JK.toText) . JM.toList <$> f J..:? "condition" J..!= JM.empty
     fieldStats <- traverse (\j -> traverseTypeValue (\Proxy -> J.parseJSON1 j) fieldType)
       $ JM.lookup (JK.fromText fieldName) stats 
     let rf = Field{ fieldSub = Nothing, .. }

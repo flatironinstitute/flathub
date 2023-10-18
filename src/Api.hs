@@ -248,6 +248,7 @@ fieldsJSON = JE.list fieldJSON . V.toList where
     <> foldMap ("scale" J..=) fieldScale
     <> mwhen fieldReversed ("reversed" J..= fieldReversed)
     <> mwhen (isJust fieldAttachment) ("attachment" J..= True)
+    <> mwhen (not $ null fieldCondition) ("condition" `JE.pair` J.pairs (foldMap (uncurry ((J..=) . JK.fromText)) fieldCondition))
     <> foldMap ("stats" J..=) fieldStats
     <> foldMap (JE.pair "sub" . fieldsJSON) fieldSub
 
@@ -260,6 +261,7 @@ typeSchema = define "Type" $ mempty
 
 fieldGroupSchema :: OpenApiM (OA.Referenced OA.Schema)
 fieldGroupSchema = do
+  fv <- fieldValueSchema
   fs <- fieldStatsSchema
   ft <- typeSchema
   defineRec "FieldGroup" $ \ref -> objectSchema
@@ -285,6 +287,11 @@ fieldGroupSchema = do
     , ("reversed", OA.Inline $ schemaDescOf fieldReversed "display axes and ranges in reverse (high-low)", False)
     , ("attachment", OA.Inline $ schemaDescOf isJust "this is a meta field for a downloadable attachment (type boolean, indicating presence)", False)
     , ("wildcard", OA.Inline $ schemaDescOf fieldWildcard "allow wildcard prefix searching on keyword field (\"xy*\")", False)
+    , ("condition", OA.Inline $ mempty
+        & OA.description ?~ "this field is only available if some other fields have specific values"
+        & OA.type_ ?~ OA.OpenApiObject
+        & OA.additionalProperties ?~ OA.AdditionalPropertiesSchema fv
+        , False)
     , ("stats", fs, False)
     , ("sub", OA.Inline $ arraySchema ref
         & OA.title ?~ "child fields"
