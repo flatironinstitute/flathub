@@ -6,10 +6,11 @@ import type {
   PlotID
 } from "../types";
 
+import React from "react";
 import * as d3 from "d3";
 import { useQuery } from "@tanstack/react-query";
 import * as controller from "../app-state";
-import { fetch_api_get, get_field_titles } from "../shared";
+import { fetch_api_get, get_field_titles, log } from "../shared";
 import {
   BigButton,
   CellSection,
@@ -24,7 +25,7 @@ import TableSection from "./Table";
 import PlotSection from "./Plot";
 import FieldCard from "./FieldCard";
 import CatalogMetadataProvider, { useCatalogMetadata } from "./CatalogMetadata";
-import { useFilters } from "../filters";
+import { FiltersProvider, useFilters } from "../filters";
 import {
   CatalogCellIDContextProvider,
   useCatalogCellID,
@@ -42,7 +43,9 @@ export default function CatalogCell({
   return (
     <CatalogCellIDContextProvider value={catalog_cell_id}>
       <CatalogMetadataProvider>
-        <CatalogCellContents />
+        <FiltersProvider>
+          <CatalogCellContents />
+        </FiltersProvider>
       </CatalogMetadataProvider>
     </CatalogCellIDContextProvider>
   );

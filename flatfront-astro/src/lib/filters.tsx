@@ -1,9 +1,8 @@
 import type { FieldID, FieldMetadata, FilterValueRaw, Filters } from "./types";
 
+import React from "react";
 import lodash_merge from "lodash.merge";
-
 import * as controller from "./app-state";
-
 import {
   assert_numeric_field_stats,
   get_field_type,
@@ -12,7 +11,9 @@ import {
 import { useCatalogCellID, useCatalogID } from "./components/CatalogContext";
 import { useCatalogMetadata } from "./components/CatalogMetadata";
 
-export function useFilters(): Filters {
+const FiltersContext = React.createContext(null);
+
+export function FiltersProvider({ children }) {
   const catalog_cell_id = useCatalogCellID();
   const catalog_id = useCatalogID();
   const catalog_metadata = useCatalogMetadata();
@@ -30,6 +31,18 @@ export function useFilters(): Filters {
   const filter_state: Filters =
     controller.useAppState()?.filter_value?.[catalog_cell_id]?.[catalog_id];
   const filters = lodash_merge(initial_filters, filter_state);
+  return (
+    <FiltersContext.Provider value={filters}>
+      {children}
+    </FiltersContext.Provider>
+  );
+}
+
+export function useFilters(): Filters {
+  const filters = React.useContext(FiltersContext);
+  if (filters === null) {
+    throw new Error(`useFilters must be used within a FilterProvider`);
+  }
   return filters;
 }
 
