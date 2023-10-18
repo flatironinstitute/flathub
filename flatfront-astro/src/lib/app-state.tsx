@@ -3,13 +3,13 @@ import React from "react";
 import { useDebounce } from "@uidotdev/usehooks";
 import * as lzstring from "lz-string";
 import lodash_set from "lodash.set";
-import { useImmer } from "use-immer";
+import { useImmer, type Updater } from "use-immer";
 import { log } from "./shared";
 
 const AppStateContext = React.createContext<AppState>({});
-const DispatchContext = React.createContext<
-  React.Dispatch<React.SetStateAction<AppState>> | undefined
->(undefined);
+const DispatchContext = React.createContext<Updater<AppState> | undefined>(
+  undefined
+);
 
 export function Provider({ children }) {
   const [app_state, set_app_state] = useImmer<AppState>({});
