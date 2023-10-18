@@ -11,6 +11,8 @@ import * as d3 from "d3";
 import { useQuery } from "@tanstack/react-query";
 import * as Plot from "@observablehq/plot";
 import { useIntersectionObserver } from "@uidotdev/usehooks";
+import lodash_unset from "lodash.unset";
+import lodash_set from "lodash.set";
 import {
   assert_numeric_field_stats,
   create_context_helper,
@@ -29,11 +31,35 @@ import Katex from "./Katex";
 import { Placeholder } from "./Primitives";
 import { RangeFilterControl, SelectFilterControl } from "./FilterControls";
 import { useCatalogCellID, useCatalogID } from "./CatalogContext";
+import { useFilters } from "../filters";
 
 const [useFieldNode, FieldNodeProvider] =
   create_context_helper<CatalogHierarchyNode>(`FieldNode`);
 
 export { useFieldNode };
+
+function useRemoveFilter() {
+  const field_node = useFieldNode();
+  const field_id = field_node.data.name;
+  const catalog_cell_id = useCatalogCellID();
+  const catalog_id = useCatalogID();
+  const set_app_state = controller.useSetAppState();
+  return () => {
+    set_app_state((obj) => {
+      lodash_set(
+        obj,
+        [`add_filter`, catalog_cell_id, catalog_id, field_id],
+        false
+      );
+      lodash_unset(obj, [
+        `filter_value`,
+        catalog_cell_id,
+        catalog_id,
+        field_id
+      ]);
+    });
+  };
+}
 
 export default function FieldCard({
   filter,
@@ -42,36 +68,40 @@ export default function FieldCard({
   filter?: boolean;
   fieldNode: CatalogHierarchyNode;
 }) {
-  const catalog_cell_id = useCatalogCellID();
-  const catalog_id = useCatalogID();
-  const [show_details, set_show_details] = React.useState(!filter);
+  return (
+    <FieldNodeProvider value={field_node}>
+      <FieldCardWrapper>
+        <FieldCardContents filter={filter} />
+      </FieldCardWrapper>
+    </FieldNodeProvider>
+  );
+}
 
-  const field_id = field_node.data.name;
-
+function FieldCardContents({ filter: filter_mode }: { filter?: boolean }) {
+  const field_node = useFieldNode();
+  const [show_details, set_show_details] = React.useState(!filter_mode);
+  const [show_debug, set_show_debug] = React.useState(false);
   const metadata = field_node.data;
-
   const field_type = get_field_type(metadata);
-
   const field_title = <Katex>{metadata.title}</Katex>;
-
   const field_units = metadata.units ? (
     <div>
       [<Katex>{metadata.units}</Katex>]
     </div>
   ) : null;
 
-  const dispatch = controller.useDispatch();
-
-  const remove_button = is_leaf_node(field_node) ? (
-    <button
-      className="cursor-pointer uppercase underline"
-      onClick={() => {
-        dispatch([`add_filter`, catalog_cell_id, catalog_id, field_id], false);
-      }}
-    >
-      remove
-    </button>
-  ) : null;
+  const remove_filter = useRemoveFilter();
+  const is_active_filter = useFilters()[metadata.name] !== undefined;
+  const can_remove = metadata.required !== true;
+  const remove_button =
+    is_leaf_node(field_node) && is_active_filter && can_remove ? (
+      <button
+        className="cursor-pointer uppercase underline"
+        onClick={() => remove_filter()}
+      >
+        {filter_mode ? `remove` : `remove filter`}
+      </button>
+    ) : null;
 
   const title_and_units = (
     <div className="flex justify-between">
@@ -84,7 +114,7 @@ export default function FieldCard({
   );
 
   const filter_control = (() => {
-    if (!filter) return null;
+    if (!filter_mode) return null;
     if (!is_leaf_node(field_node)) return null;
     switch (field_type) {
       case `INTEGER`:
@@ -125,18 +155,26 @@ export default function FieldCard({
     const chart = has_numeric_field_stats(metadata) ? (
       <NumericFieldHistogram />
     ) : null;
-    const debug_section = (
+    const debug_section = show_debug ? (
       <>
         <div>{field_type}</div>
         <pre>{JSON.stringify({ ...metadata, sub: undefined }, null, 2)}</pre>
       </>
-    );
+    ) : null;
     return (
       <>
         {variable_name}
         {field_description}
         {stats}
         {chart}
+        {!show_debug && (
+          <button
+            className="cursor-pointer underline"
+            onClick={() => set_show_debug(true)}
+          >
+            Show debug details
+          </button>
+        )}
         {debug_section}
       </>
     );
@@ -148,19 +186,13 @@ export default function FieldCard({
     </button>
   );
 
-  const contents = (
+  return (
     <div className="space-y-4">
       {title_and_units}
       {filter_control}
       {details}
       {show_details_button}
     </div>
-  );
-
-  return (
-    <FieldNodeProvider value={field_node}>
-      <FieldCardWrapper>{contents}</FieldCardWrapper>
-    </FieldNodeProvider>
   );
 }
 
@@ -330,11 +362,12 @@ function NumericFieldHistogram() {
     ]
   });
 
-  const contents = histogram_query.isLoading ? (
-    <Placeholder>Loading histogram...</Placeholder>
-  ) : (
-    <ObservablePlot plot={plot} />
-  );
+  const contents =
+    histogram_query.isLoading || !histogram_query.data ? (
+      <Placeholder>Loading histogram...</Placeholder>
+    ) : (
+      <ObservablePlot plot={plot} />
+    );
 
   return <div ref={ref}>{contents}</div>;
 }
