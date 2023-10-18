@@ -178,40 +178,46 @@ function BrowseFieldsDialog() {
 }
 
 function FilterSection() {
-  const catalog_cell_id = useCatalogCellID();
   const catalog_id = useCatalogID();
-
-  const catalog_metadata = useCatalogMetadata();
-
-  const leaves = catalog_metadata?.hierarchy?.leaves() ?? [];
-
-  const filters = useFilters();
-
-  const dispatch = controller.useDispatch();
-
   return (
     <CellSection label="filters" className="flex flex-col gap-y-4">
-      <Combobox
-        placeholder="Add a filter..."
-        options={leaves}
-        getKey={(d: CatalogHierarchyNode) => d.data.__hash}
-        getDisplayName={(d: CatalogHierarchyNode) => {
-          const titles = get_field_titles(d);
-          return <FieldTitles titles={titles} />;
-        }}
-        getDisabled={(d: CatalogHierarchyNode) => {
-          return d.data.name in filters;
-        }}
-        onValueChange={(d: CatalogHierarchyNode) => {
-          const field_id = d.data.name;
-          dispatch([`add_filter`, catalog_cell_id, catalog_id, field_id], true);
-        }}
-      />
+      <AddFilterSelect />
       <BigButton disabled={!catalog_id} className="desktop:hidden">
         Edit Filters
       </BigButton>
       <FilterControls />
     </CellSection>
+  );
+}
+
+function AddFilterSelect() {
+  const catalog_cell_id = useCatalogCellID();
+  const catalog_id = useCatalogID();
+  const catalog_metadata = useCatalogMetadata();
+  const leaves = catalog_metadata?.hierarchy?.leaves() ?? [];
+  const filters = useFilters();
+  const dispatch = controller.useDispatch();
+  const [value, set_value] = React.useState(undefined);
+  return (
+    <Combobox
+      placeholder="Add a filter..."
+      options={leaves}
+      value={value}
+      getKey={(d: CatalogHierarchyNode) => d.data.__hash}
+      getDisplayName={(d: CatalogHierarchyNode) => {
+        const titles = get_field_titles(d);
+        return <FieldTitles titles={titles} />;
+      }}
+      getDisabled={(d: CatalogHierarchyNode) => {
+        return d.data.name in filters;
+      }}
+      onValueChange={(d: CatalogHierarchyNode) => {
+        const field_id = d.data.name;
+        dispatch([`add_filter`, catalog_cell_id, catalog_id, field_id], true);
+        set_value(undefined);
+      }}
+      debug
+    />
   );
 }
 
