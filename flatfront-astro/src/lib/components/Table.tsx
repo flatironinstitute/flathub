@@ -25,7 +25,7 @@ import {
   is_root_node
 } from "../shared";
 import { useFilters } from "../filters";
-import { BigButton, Placeholder, PlotWrapper } from "./Primitives";
+import { BigButton, Placeholder } from "./Primitives";
 import Katex from "./Katex";
 import { useCatalogID } from "./CatalogContext";
 import { useCatalogMetadata } from "./CatalogMetadata";
@@ -95,23 +95,26 @@ function Table() {
       );
     },
     enabled: enable_request,
-    staleTime: Infinity,
+    staleTime: Infinity
   });
 
-  const component =
-    query.data && query.data.length > 0 && catalog_hierarchy ? (
-      <PlotWrapper query={query} isLoading={!catalog_hierarchy}>
-        <TablePrimitive data={query.data} />
-      </PlotWrapper>
-    ) : query.data && query.data.length === 0 ? (
-      <Placeholder className="m-2">Empty Response</Placeholder>
-    ) : (
-      <Placeholder className="m-2">Loading...</Placeholder>
-    );
+  const component = (() => {
+    if (!query.data) {
+      return <Placeholder className="h-[400px]">Loading...</Placeholder>;
+    } else if (query.data && query.data.length === 0) {
+      return <Placeholder className="h-[400px]">Empty response.</Placeholder>;
+    } else if (query.data && query.data.length > 0) {
+      return (
+        <div className="overflow-x-scroll desktop:max-w-none">
+          <TablePrimitive data={query.data} />
+        </div>
+      );
+    }
+  })();
 
   return (
     <>
-      <div className="overflow-x-scroll desktop:max-w-none">{component}</div>
+      {component}
       <div>offset: {offset}</div>
       <button
         onClick={() => {

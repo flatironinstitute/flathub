@@ -21,8 +21,8 @@ import {
   Placeholder,
   Select,
   Checkbox,
-  PlotWrapper,
-  SimpleLabel
+  SimpleLabel,
+  StatusBox
 } from "./Primitives";
 import { useCatalogID } from "./CatalogContext";
 import HighchartsPlot from "./HighchartsPlot";
@@ -273,9 +273,7 @@ function Histogram() {
       });
     },
     enabled: enable_request,
-    staleTime: Infinity,
-    // @ts-ignore
-    keepPreviousData: true
+    staleTime: Infinity
   });
 
   const data = query.data;
@@ -311,10 +309,120 @@ function Histogram() {
     ]
   };
 
+  const has_data = data_munged.length > 0;
+
+  const status = query.isFetching
+    ? `Loading...`
+    : !has_data
+    ? `No data.`
+    : null;
+
   return (
-    <PlotWrapper query={query}>
+    <div className="relative">
+      {status && <StatusBox>{status}</StatusBox>}
       <HighchartsPlot options={options} />
-    </PlotWrapper>
+    </div>
+  );
+}
+
+function Heatmap() {
+  const catalog_id = useCatalogID();
+  const filters = useFilters();
+
+  const plot_id = usePlotID();
+  const plot_state = controller.useAppState()?.set_plot_control?.[plot_id];
+
+  const x_axis_field_id = plot_state?.x_axis;
+  const y_axis_field_id = plot_state?.y_axis;
+
+  const enable_request =
+    Boolean(catalog_id) && Boolean(x_axis_field_id) && Boolean(y_axis_field_id);
+
+  const fields: any = [
+    { field: x_axis_field_id, size: 30 },
+    { field: y_axis_field_id, size: 30 }
+  ];
+
+  const request_body: HistogramPostRequestBody = {
+    fields,
+    ...filters
+    // ...query_parameters
+  };
+
+  const query_config = {
+    path: `/${catalog_id}/histogram`,
+    body: request_body
+  };
+
+  const query = useQuery({
+    queryKey: [`plot-data`, query_config],
+    queryFn: async (): Promise<HistogramResponse> => {
+      return fetch_api_post<HistogramPostRequestBody, HistogramResponse>(
+        query_config.path,
+        query_config.body
+      ).then((response) => {
+        log(`query response`, response);
+        return response;
+      });
+    },
+    enabled: enable_request,
+    staleTime: Infinity
+  });
+
+  const data = query.data;
+
+  const data_munged = (() => {
+    if (!x_axis_field_id) return [];
+    if (!y_axis_field_id) return [];
+    if (!data) return [];
+    return data.buckets.map(({ key, count }) => {
+      return [...key, count];
+    });
+  })();
+
+  const is_dark_mode = useIsDarkMode();
+
+  const options: Highcharts.Options = {
+    ...get_highcharts_options(),
+    xAxis: {
+      title: {
+        text: x_axis_field_id
+      },
+      gridLineWidth: 1
+    },
+    yAxis: {
+      title: {
+        text: y_axis_field_id
+      }
+    },
+    colorAxis: {
+      minColor: is_dark_mode ? `black` : `white`,
+      maxColor: is_dark_mode ? `white` : `black`
+    },
+    series: [
+      {
+        type: `heatmap`,
+        data: data_munged,
+        colsize: data?.sizes[0],
+        rowsize: data?.sizes[1],
+        boostThreshold: 1
+      }
+    ]
+  };
+
+  const has_data = data_munged.length > 0;
+
+  const status = query.isFetching
+    ? `Loading...`
+    : !has_data
+    ? `No data.`
+    : null;
+
+  return (
+    <div className="relative">
+      {status && <StatusBox>{status}</StatusBox>}
+      <HighchartsPlot options={options} />
+    </div>
   );
 }
 
@@ -362,9 +470,7 @@ function Scatterplot() {
       });
     },
     enabled: enable_request,
-    staleTime: Infinity,
-    //@ts-ignore
-    keepPreviousData: true
+    staleTime: Infinity
   });
 
   const data = query.data ?? [];
@@ -402,104 +508,19 @@ function Scatterplot() {
     ]
   };
 
-  return (
-    <PlotWrapper query={query}>
-      <HighchartsPlot options={options} />
-    </PlotWrapper>
-  );
-}
+  const has_data = data_munged.length > 0;
 
-function Heatmap() {
-  const catalog_id = useCatalogID();
-  const filters = useFilters();
-
-  const plot_id = usePlotID();
-  const plot_state = controller.useAppState()?.set_plot_control?.[plot_id];
-
-  const x_axis_field_id = plot_state?.x_axis;
-  const y_axis_field_id = plot_state?.y_axis;
-
-  const enable_request =
-    Boolean(catalog_id) && Boolean(x_axis_field_id) && Boolean(y_axis_field_id);
-
-  const fields: any = [
-    { field: x_axis_field_id, size: 30 },
-    { field: y_axis_field_id, size: 30 }
-  ];
-
-  const request_body: HistogramPostRequestBody = {
-    fields,
-    ...filters
-    // ...query_parameters
-  };
-
-  const query_config = {
-    path: `/${catalog_id}/histogram`,
-    body: request_body
-  };
-
-  const query = useQuery({
-    queryKey: [`plot-data`, query_config],
-    queryFn: async (): Promise<HistogramResponse> => {
-      return fetch_api_post<HistogramPostRequestBody, HistogramResponse>(
-        query_config.path,
-        query_config.body
-      ).then((response) => {
-        log(`query response`, response);
-        return response;
-      });
-    },
-    enabled: enable_request,
-    staleTime: Infinity,
-    // @ts-ignore
-    keepPreviousData: true
-  });
-
-  const data = query.data;
-
-  const data_munged = (() => {
-    if (!x_axis_field_id) return [];
-    if (!y_axis_field_id) return [];
-    if (!data) return [];
-    return data.buckets.map(({ key, count }) => {
-      return [...key, count];
-    });
-  })();
-
-  const is_dark_mode = useIsDarkMode();
-
-  const options: Highcharts.Options = {
-    ...get_highcharts_options(),
-    xAxis: {
-      title: {
-        text: x_axis_field_id
-      },
-      gridLineWidth: 1
-    },
-    yAxis: {
-      title: {
-        text: y_axis_field_id
-      }
-    },
-    colorAxis: {
-      minColor: is_dark_mode ? `black` : `white`,
-      maxColor: is_dark_mode ? `white` : `black`
-    },
-    series: [
-      {
-        type: `heatmap`,
-        data: data_munged,
-        colsize: data?.sizes[0],
-        rowsize: data?.sizes[1],
-        boostThreshold: 1
-      }
-    ]
-  };
+  const status = query.isFetching
+    ? `Loading...`
+    : !has_data
+    ? `No data.`
+    : null;
 
   return (
-    <PlotWrapper query={query}>
+    <div className="relative">
+      {status && <StatusBox>{status}</StatusBox>}
       <HighchartsPlot options={options} />
-    </PlotWrapper>
+    </div>
   );
 }
 
@@ -526,7 +547,7 @@ function get_highcharts_options(): Highcharts.Options {
     },
     boost: {
       enabled: true,
-      useGPUTranslations: false,
+      useGPUTranslations: true,
       usePreallocated: true
     }
   };

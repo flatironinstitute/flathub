@@ -11,6 +11,7 @@ import * as RadixSwitch from "@radix-ui/react-switch";
 import * as RadixCheckbox from "@radix-ui/react-checkbox";
 import * as RadixSeparator from "@radix-ui/react-separator";
 import { useDebounce } from "@uidotdev/usehooks";
+import { log } from "../shared";
 
 export function Separator({ orientation }: RadixSeparator.SeparatorProps) {
   return (
@@ -424,7 +425,7 @@ export function Checkbox(props: RadixCheckbox.CheckboxProps) {
       className={clsx(
         `flex h-5 w-5 appearance-none items-center justify-center rounded-md`,
         `bg-white outline outline-black dark:bg-black dark:outline-white`,
-        `data-[disabled]:opacity-20 data-[disabled]:cursor-not-allowed`
+        `data-[disabled]:cursor-not-allowed data-[disabled]:opacity-20`
       )}
       defaultChecked
       {...props}
@@ -436,32 +437,15 @@ export function Checkbox(props: RadixCheckbox.CheckboxProps) {
   );
 }
 
-export function PlotWrapper({
-  children,
-  query,
-  isLoading = false
-}: {
-  children: React.ReactNode;
-  query: UseQueryResult;
-  isLoading?: boolean;
-}) {
-  let status_box = null;
-  if (isLoading || query.isLoading || query.isFetching) {
-    status_box = (
-      <div
-        className={clsx(
-          "absolute left-1/2 top-1/2 z-10 rounded-lg bg-white p-4",
-          "-translate-x-1/2 -translate-y-full transform",
-          "ring-2 ring-black dark:bg-black dark:ring-white"
-        )}
-      >
-        Loading...
-      </div>
-    );
-  }
+export function StatusBox({ children }) {
   return (
-    <div className="relative">
-      {status_box}
+    <div
+      className={clsx(
+        "absolute left-1/2 top-1/2 z-10 rounded-lg bg-white p-4",
+        "-translate-x-1/2 -translate-y-full transform",
+        "ring-2 ring-black dark:bg-black dark:ring-white"
+      )}
+    >
       {children}
     </div>
   );
@@ -477,7 +461,8 @@ export function Select<T>({
   disabled = false,
   onValueChange = undefined,
   contentPosition = "popper",
-  size = `large`
+  size = `large`,
+  debug = false
 }: {
   placeholder?: string;
   options: T[];
@@ -489,6 +474,7 @@ export function Select<T>({
   onValueChange?: (value: T) => void;
   contentPosition?: RadixSelect.SelectContentProps["position"];
   size?: `small` | `large`;
+  debug?: boolean;
 }) {
   const size_classes =
     size === `large`
@@ -517,7 +503,9 @@ export function Select<T>({
           size_classes.trigger
         )}
       >
-        <RadixSelect.Value placeholder={placeholder}></RadixSelect.Value>
+        <RadixSelect.Value placeholder={placeholder}>
+          {value ? getDisplayName(value) : placeholder}
+        </RadixSelect.Value>
         <RadixSelect.Icon>
           <RadixIcons.ChevronDownIcon className={size_classes.icon} />
         </RadixSelect.Icon>
