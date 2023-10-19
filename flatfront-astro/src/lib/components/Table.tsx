@@ -1,10 +1,8 @@
 import type {
-  Action,
   CatalogHierarchyNode,
   DataPostRequestBody,
   DataResponse,
-  DataRow,
-  FieldMetadata
+  DataRow
 } from "../types";
 
 import React from "react";
@@ -29,6 +27,7 @@ import { BigButton, CollapsibleSection, Placeholder } from "./Primitives";
 import Katex from "./Katex";
 import { useCatalogID } from "./CatalogContext";
 import { useCatalogMetadata } from "./CatalogMetadata";
+import { useCurrentColumnIDs } from "../columns";
 
 export default function TableSection() {
   return (
@@ -46,31 +45,12 @@ export default function TableSection() {
 function Table() {
   const catalog_id = useCatalogID();
 
-  const catalog_metadata_wrapper = useCatalogMetadata();
-  const catalog_hierarchy = catalog_metadata_wrapper?.hierarchy;
-
-  // const table_actions = all_actions.filter(
-  //   (action): action is Action.AddTableColumn | Action.RemoveTableColumn =>
-  //     action.type === `add_table_column` ||
-  //     action.type === `remove_table_column`
-  // );
-
-  const column_actions = [];
-
-  const column_ids_set = catalog_hierarchy
-    ? get_column_ids(catalog_hierarchy, column_actions)
-    : new Set<string>();
-
-  const fields = Array.from(column_ids_set);
+  const fields = Array.from(useCurrentColumnIDs());
 
   const filters = useFilters();
 
   const [rows_per_page] = React.useState(25);
   const [offset, set_offset] = React.useState(0);
-
-  // const query_parameters = {
-  //   seed: 243523423
-  // }
 
   const request_body: DataPostRequestBody = {
     object: true,
@@ -127,50 +107,6 @@ function Table() {
       </button>
     </>
   );
-}
-
-function get_column_ids(
-  hierarchy: d3.HierarchyNode<FieldMetadata>,
-  actions: Action.Any[]
-): Set<string> {
-  const nodes = hierarchy.descendants();
-  const initial_column_ids = nodes
-    .filter((node) => node.height === 0 && node.data.disp === true)
-    .map((node) => node.data.name);
-  const column_ids_set: Set<string> = new Set(initial_column_ids);
-  actions;
-  // const column_list_actions = actions.filter(
-  //   (action): action is Action.TableColumnAction =>
-  //     action.type === `add_table_column` ||
-  //     action.type === `remove_table_column`
-  // );
-  // for (const action of column_list_actions) {
-  //   switch (action.type) {
-  //     case `remove_table_column`:
-  //       column_ids_set.delete(action.field_id);
-  //       break;
-  //     case `add_table_column`:
-  //       column_ids_set.add(action.field_id);
-  //       break;
-  //     // case `remove_child_columns`:
-  //     //   const node = nodes.find(
-  //     //     (node) => get_field_id(node.data) === action.field_id
-  //     //   );
-  //     //   if (!node) {
-  //     //     throw new Error(
-  //     //       `Could not find node for column ${action.field_id} in hierarchy`
-  //     //     );
-  //     //   }
-  //     //   const to_remove = node.leaves().map((node) => get_field_id(node.data));
-  //     //   for (const id of to_remove) {
-  //     //     column_ids_set.delete(id);
-  //     //   }
-  //     //   break;
-  //     default:
-  //       action satisfies never;
-  //   }
-  // }
-  return column_ids_set;
 }
 
 function TablePrimitive({ data }: { data: Array<DataRow> }) {
