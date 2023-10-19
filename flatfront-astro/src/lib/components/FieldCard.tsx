@@ -11,79 +11,48 @@ import * as d3 from "d3";
 import { useQuery } from "@tanstack/react-query";
 import * as Plot from "@observablehq/plot";
 import { useIntersectionObserver } from "@uidotdev/usehooks";
-import lodash_unset from "lodash.unset";
-import lodash_set from "lodash.set";
 import {
   assert_numeric_field_stats,
-  create_context_helper,
   fetch_api_post,
   format,
+  get_field_titles,
   get_field_type,
-  has_numeric_field_stats,
   is_leaf_node,
   join_enums,
-  log,
   should_use_log_scale
 } from "../shared";
-import * as controller from "../app-state";
 import ObservablePlot from "./ObservablePlot";
 import Katex from "./Katex";
-import { Placeholder } from "./Primitives";
+import { FieldTitles, Placeholder } from "./Primitives";
 import { RangeFilterControl, SelectFilterControl } from "./FilterControls";
-import { useCatalogCellID, useCatalogID } from "./CatalogContext";
-import { useFilters } from "../filters";
-
-const [useFieldNode, FieldNodeProvider] =
-  create_context_helper<CatalogHierarchyNode>(`FieldNode`);
-
-export { useFieldNode };
-
-function useRemoveFilter() {
-  const field_node = useFieldNode();
-  const field_id = field_node.data.name;
-  const catalog_cell_id = useCatalogCellID();
-  const catalog_id = useCatalogID();
-  const set_app_state = controller.useSetAppState();
-  return () => {
-    set_app_state((obj) => {
-      lodash_set(
-        obj,
-        [`add_filter`, catalog_cell_id, catalog_id, field_id],
-        false
-      );
-      lodash_unset(obj, [
-        `filter_value`,
-        catalog_cell_id,
-        catalog_id,
-        field_id
-      ]);
-    });
-  };
-}
+import { useCatalogID } from "./CatalogContext";
+import { useFilters, useRemoveFilter } from "../filters";
+import {
+  useFieldNode,
+  Provider as FieldNodeProvider
+} from "./FieldNodeContext";
 
 export default function FieldCard({
-  filter,
   fieldNode: field_node
 }: {
-  filter?: boolean;
   fieldNode: CatalogHierarchyNode;
 }) {
   return (
     <FieldNodeProvider value={field_node}>
       <FieldCardWrapper>
-        <FieldCardContents filter={filter} />
+        <FieldCardContents />
       </FieldCardWrapper>
     </FieldNodeProvider>
   );
 }
 
-function FieldCardContents({ filter: filter_mode }: { filter?: boolean }) {
+function FieldCardContents() {
   const field_node = useFieldNode();
-  const [show_details, set_show_details] = React.useState(!filter_mode);
-  const [show_debug, set_show_debug] = React.useState(false);
   const metadata = field_node.data;
   const field_type = get_field_type(metadata);
-  const field_title = <Katex>{metadata.title}</Katex>;
+  const titles = get_field_titles(field_node);
+  const field_titles = <FieldTitles titles={titles} />;
+
   const field_units = metadata.units ? (
     <div>
       [<Katex>{metadata.units}</Katex>]
@@ -96,17 +65,17 @@ function FieldCardContents({ filter: filter_mode }: { filter?: boolean }) {
   const remove_button =
     is_leaf_node(field_node) && is_active_filter && can_remove ? (
       <button
-        className="cursor-pointer uppercase underline"
-        onClick={() => remove_filter()}
+        className="cursor-pointer underline"
+        onClick={() => remove_filter(field_node)}
       >
-        {filter_mode ? `remove` : `remove filter`}
+        Remove
       </button>
     ) : null;
 
   const title_and_units = (
     <div className="flex justify-between">
       <div className="flex space-x-2">
-        {field_title}
+        {field_titles}
         {field_units}
       </div>
       {remove_button}
@@ -114,7 +83,6 @@ function FieldCardContents({ filter: filter_mode }: { filter?: boolean }) {
   );
 
   const filter_control = (() => {
-    if (!filter_mode) return null;
     if (!is_leaf_node(field_node)) return null;
     switch (field_type) {
       case `INTEGER`:
@@ -129,69 +97,10 @@ function FieldCardContents({ filter: filter_mode }: { filter?: boolean }) {
     }
   })();
 
-  const details = (() => {
-    if (!show_details) return null;
-    const variable_name = <div>{metadata.name}</div>;
-    const field_description = metadata.descr ? (
-      <div className="overflow-hidden opacity-80">
-        <Katex>{metadata.descr}</Katex>
-      </div>
-    ) : null;
-    const stats = (() => {
-      if (!metadata.stats) return null;
-      switch (field_type) {
-        case `INTEGER`:
-        case `FLOAT`:
-          if (!has_numeric_field_stats(metadata)) return null;
-          return <NumericFieldStats />;
-        case `ENUMERABLE_INTEGER`:
-        case `LABELLED_ENUMERABLE_INTEGER`:
-        case `LABELLED_ENUMERABLE_BOOLEAN`:
-          return <EnumerableFieldStats />;
-        default:
-          return null;
-      }
-    })();
-    const chart = has_numeric_field_stats(metadata) ? (
-      <NumericFieldHistogram />
-    ) : null;
-    const debug_section = show_debug ? (
-      <>
-        <div>{field_type}</div>
-        <pre>{JSON.stringify({ ...metadata, sub: undefined }, null, 2)}</pre>
-      </>
-    ) : null;
-    return (
-      <>
-        {variable_name}
-        {field_description}
-        {stats}
-        {chart}
-        {!show_debug && (
-          <button
-            className="cursor-pointer underline"
-            onClick={() => set_show_debug(true)}
-          >
-            Show debug details
-          </button>
-        )}
-        {debug_section}
-      </>
-    );
-  })();
-
-  const show_details_button = !show_details && (
-    <button className="underline" onClick={() => set_show_details(true)}>
-      Show details
-    </button>
-  );
-
   return (
     <div className="space-y-4">
       {title_and_units}
       {filter_control}
-      {details}
-      {show_details_button}
     </div>
   );
 }
@@ -203,23 +112,18 @@ function FieldCardWrapper({
   children: React.ReactNode;
   className?: string;
 }): React.JSX.Element {
-  const field_node = useFieldNode();
-  const node_depth = (field_node?.depth ?? 0) - 1;
   return (
     <div
       data-type="FieldCardWrapper"
       className={clsx(FieldCardWrapper.className, className)}
-      style={{
-        marginLeft: `${node_depth * 2}ch`
-      }}
     >
       {children}
     </div>
   );
 }
 FieldCardWrapper.className = clsx(
-  `rounded-md px-4 pt-3 py-5 overflow-hidden`,
-  `ring-1 ring-black/30 dark:ring-white/30`
+  `rounded-md px-px py-2 overflow-hidden`
+  // `ring-1 ring-black/30 dark:ring-white/30`
 );
 
 function NumericFieldStats() {

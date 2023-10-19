@@ -25,19 +25,21 @@ import {
   is_root_node
 } from "../shared";
 import { useFilters } from "../filters";
-import { BigButton, Placeholder } from "./Primitives";
+import { BigButton, CollapsibleSection, Placeholder } from "./Primitives";
 import Katex from "./Katex";
 import { useCatalogID } from "./CatalogContext";
 import { useCatalogMetadata } from "./CatalogMetadata";
 
 export default function TableSection() {
   return (
-    <div className="space-y-4 @container">
-      <div className="grid">
-        <BigButton className="w-full">Select Columns</BigButton>
+    <CollapsibleSection label="table">
+      <div className="space-y-4">
+        <div className="grid">
+          <BigButton className="w-full">Select Columns</BigButton>
+        </div>
+        <Table />
       </div>
-      <Table />
-    </div>
+    </CollapsibleSection>
   );
 }
 

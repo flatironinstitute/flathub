@@ -12,11 +12,12 @@ import * as RadixSeparator from "@radix-ui/react-separator";
 import * as RadixCollapsible from "@radix-ui/react-collapsible";
 import { useDebounce } from "@uidotdev/usehooks";
 import { log } from "../shared";
+import Katex from "./Katex";
 
 export function Separator({ orientation }: RadixSeparator.SeparatorProps) {
   return (
     <RadixSeparator.Root
-      className="my-4 h-1 bg-black/40 dark:bg-white/10"
+      className="my-4 h-px bg-black/40 dark:bg-white/10"
       orientation={orientation}
     />
   );
@@ -578,5 +579,15 @@ export function CollapsibleSection({
         <RadixCollapsible.Content>{children}</RadixCollapsible.Content>
       </div>
     </RadixCollapsible.Root>
+  );
+}
+
+export function FieldTitles({ titles }: { titles: string[] }) {
+  return (
+    <div className="flex gap-x-2">
+      {titles.map((title) => (
+        <Katex key={title}>{title}</Katex>
+      ))}
+    </div>
   );
 }

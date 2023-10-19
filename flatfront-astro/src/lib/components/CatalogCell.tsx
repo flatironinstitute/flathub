@@ -16,9 +16,10 @@ import {
   CellSection,
   CellWrapper,
   Combobox,
+  FieldTitles,
   Placeholder,
-  Dialog,
   Select,
+  Separator,
   SimpleLabel
 } from "./Primitives";
 import TableSection from "./Table";
@@ -31,8 +32,8 @@ import {
   useCatalogCellID,
   useCatalogID
 } from "./CatalogContext";
-import Katex from "./Katex";
 import { useAddPlot, usePlotIDs } from "../plot-hooks";
+import BrowseFieldsDialog from "./BrowseFieldsDialog";
 
 export default function CatalogCell({
   id: catalog_cell_id
@@ -93,10 +94,7 @@ function CatalogCellContents() {
           <AddPlotButton />
         </div>
         {plot_components}
-        <CellSection
-          label="table"
-          className="space-y-4 rounded-md p-4 ring-1 ring-black/20"
-        >
+        <CellSection className="rounded-md p-4 ring-1 ring-black/20">
           <TableSection />
         </CellSection>
         <CellSection
@@ -153,30 +151,6 @@ function CatalogSelect() {
   );
 }
 
-function BrowseFieldsDialog() {
-  const catalog_cell_id = useCatalogCellID();
-  // assert_catalog_cell_id(catalog_cell_id);
-
-  const catalog_id = useCatalogID();
-
-  const catalog_metadata = useCatalogMetadata();
-
-  const all_field_nodes = catalog_metadata?.depth_first ?? [];
-
-  return (
-    <Dialog disabled={!catalog_id} label="Browse Fields">
-      <div className="h-10 border-b border-b-black/20">
-        some controls go here
-      </div>
-      <div className="max-h-[80dvh] w-[80dvw] max-w-[600px] space-y-3 overflow-x-visible overflow-y-scroll p-4">
-        {all_field_nodes.map((node) => (
-          <FieldCard fieldNode={node} key={node.data.__hash} />
-        ))}
-      </div>
-    </Dialog>
-  );
-}
-
 function FilterSection() {
   const catalog_id = useCatalogID();
   return (
@@ -221,21 +195,12 @@ function AddFilterSelect() {
   );
 }
 
-function FieldTitles({ titles }: { titles: string[] }) {
-  return (
-    <div className="flex gap-x-2">
-      {titles.map((title) => (
-        <Katex key={title}>{title}</Katex>
-      ))}
-    </div>
-  );
-}
-
 function FilterControls() {
   const catalog_metadata = useCatalogMetadata();
   const filters = useFilters();
   const all_field_nodes = catalog_metadata?.depth_first ?? [];
-  const filter_and_ancestor_nodes = all_field_nodes.filter((node) => {
+  const leaves = catalog_metadata?.hierarchy?.leaves() ?? [];
+  const filter_and_ancestor_nodes = leaves.filter((node) => {
     // Exclude if is root node
     if (node.depth === 0) return false;
     // Include if this node is in the filters list
@@ -248,10 +213,12 @@ function FilterControls() {
   const debug = <pre>{JSON.stringify(filters, null, 2)}</pre>;
   return (
     <div className="space-y-3">
-      {filter_and_ancestor_nodes.map((node) => (
-        <FieldCard filter fieldNode={node} key={node.data.__hash} />
+      {filter_and_ancestor_nodes.map((node, index) => (
+        <>
+          {index === 0 ? null : <Separator></Separator>}
+          <FieldCard fieldNode={node} key={node.data.__hash} />
+        </>
       ))}
-      {debug}
     </div>
   );
 }
