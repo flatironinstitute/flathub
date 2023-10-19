@@ -1,4 +1,3 @@
-import type { UseQueryResult } from "@tanstack/react-query";
 import React from "react";
 import clsx from "clsx";
 import * as d3 from "d3";
@@ -10,6 +9,7 @@ import * as RadixRadioGroup from "@radix-ui/react-radio-group";
 import * as RadixSwitch from "@radix-ui/react-switch";
 import * as RadixCheckbox from "@radix-ui/react-checkbox";
 import * as RadixSeparator from "@radix-ui/react-separator";
+import * as RadixCollapsible from "@radix-ui/react-collapsible";
 import { useDebounce } from "@uidotdev/usehooks";
 import { log } from "../shared";
 
@@ -117,13 +117,15 @@ export function Placeholder({
 export function Dialog({
   label,
   children,
-  buttonClassName,
-  disabled = false
+  disabled = false,
+  className,
+  buttonClassName
 }: {
   label: string;
   children: React.ReactNode;
-  buttonClassName?: string;
   disabled?: boolean;
+  className?: string;
+  buttonClassName?: string;
 }): React.JSX.Element {
   return (
     <RadixDialog.Root>
@@ -141,7 +143,8 @@ export function Dialog({
             `max-h-[95dvh] max-w-[95dvw]`,
             `left-[50%] top-[50%] -translate-x-[50%] -translate-y-[50%]`,
             `bg-white dark:bg-black`,
-            `ring-1 ring-black dark:ring-white`
+            `ring-1 ring-black dark:ring-white`,
+            className
           )}
         >
           {children}
@@ -553,84 +556,27 @@ export function Combobox({ ...props }: SelectProps) {
   return <Select {...props} />;
 }
 
-// const people = [
-//   { id: 1, name: "Wade Cooper" },
-//   { id: 2, name: "Arlene Mccoy" },
-//   { id: 3, name: "Devon Webb" },
-//   { id: 4, name: "Tom Cook" },
-//   { id: 5, name: "Tanya Fox" },
-//   { id: 6, name: "Hellen Schmidt" }
-// ];
+export { RadixCollapsible as Collapsible };
 
-// export function Combobox() {
-//   const [selected, setSelected] = useState(people[0]);
-//   const [query, setQuery] = useState("");
-
-//   const filteredPeople =
-//     query === ""
-//       ? people
-//       : people.filter((person) =>
-//           person.name
-//             .toLowerCase()
-//             .replace(/\s+/g, "")
-//             .includes(query.toLowerCase().replace(/\s+/g, ""))
-//         );
-
-//   return (
-//     <HeadlessCombobox value={selected} onChange={setSelected}>
-//       <div className="relative">
-//         <div className="relative w-full cursor-default overflow-hidden rounded-lg bg-white text-left shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-300 sm:text-sm">
-//           <HeadlessCombobox.Input
-//             className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:ring-0"
-//             displayValue={(person: any) => person.name}
-//             onChange={(event) => setQuery(event.target.value)}
-//           />
-//           <HeadlessCombobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
-//             updon
-//           </HeadlessCombobox.Button>
-//         </div>
-
-//         <HeadlessCombobox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-//           {filteredPeople.length === 0 && query !== "" ? (
-//             <div className="relative cursor-default select-none px-4 py-2 text-gray-700">
-//               Nothing found.
-//             </div>
-//           ) : (
-//             filteredPeople.map((person) => (
-//               <HeadlessCombobox.Option
-//                 key={person.id}
-//                 className={({ active }) =>
-//                   `relative cursor-default select-none py-2 pl-10 pr-4 ${
-//                     active ? "bg-teal-600 text-white" : "text-gray-900"
-//                   }`
-//                 }
-//                 value={person}
-//               >
-//                 {({ selected, active }) => (
-//                   <>
-//                     <span
-//                       className={`block truncate ${
-//                         selected ? "font-medium" : "font-normal"
-//                       }`}
-//                     >
-//                       {person.name}
-//                     </span>
-//                     {selected ? (
-//                       <span
-//                         className={`absolute inset-y-0 left-0 flex items-center pl-3 ${
-//                           active ? "text-white" : "text-teal-600"
-//                         }`}
-//                       >
-//                         check
-//                       </span>
-//                     ) : null}
-//                   </>
-//                 )}
-//               </HeadlessCombobox.Option>
-//             ))
-//           )}
-//         </HeadlessCombobox.Options>
-//       </div>
-//     </HeadlessCombobox>
-//   );
-// }
+export function CollapsibleSection({
+  label,
+  children
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  const [open, set_open] = React.useState(true);
+  return (
+    <RadixCollapsible.Root open={open} onOpenChange={set_open}>
+      <div className="space-y-4 @container">
+        <div className="flex justify-between">
+          <SimpleLabel>{label}</SimpleLabel>
+          <RadixCollapsible.Trigger className="cursor-pointer uppercase underline">
+            {open ? `collapse` : `expand`}
+          </RadixCollapsible.Trigger>
+        </div>
+        <RadixCollapsible.Content>{children}</RadixCollapsible.Content>
+      </div>
+    </RadixCollapsible.Root>
+  );
+}
