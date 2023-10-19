@@ -3,24 +3,21 @@ import * as RadixIcons from "@radix-ui/react-icons";
 import { Dialog } from "./Primitives";
 import FieldCard from "./FieldCard";
 import { useCatalogMetadata } from "./CatalogMetadata";
-import { useCatalogCellID, useCatalogID } from "./CatalogContext";
+import { useCatalogID } from "./CatalogContext";
 import {
-  type Column,
-  type Table,
   type ExpandedState,
   type ColumnDef,
   useReactTable,
   getCoreRowModel,
-  getPaginationRowModel,
-  getFilteredRowModel,
   getExpandedRowModel,
   flexRender
 } from "@tanstack/react-table";
 import type { CatalogHierarchyNode } from "../types";
 import clsx from "clsx";
-import { is_leaf_node, log } from "../shared";
+import { is_leaf_node } from "../shared";
 import Katex from "./Katex";
 import { useAddFilter, useFilters, useRemoveFilter } from "../filters";
+import { useAddColumn, useCurrentColumnIDs, useRemoveColumn } from "../columns";
 
 export default function BrowseFieldsDialog() {
   const catalog_id = useCatalogID();
@@ -84,6 +81,11 @@ function FieldsTable() {
       header: `Filter`,
       accessorFn: (node: CatalogHierarchyNode) => node,
       cell: ({ getValue }) => <AddRemoveFilterButton node={getValue()} />
+    },
+    {
+      header: `Column`,
+      accessorFn: (node: CatalogHierarchyNode) => node,
+      cell: ({ getValue }) => <AddRemoveColumnButton node={getValue()} />
     }
   ];
 
@@ -173,6 +175,24 @@ function AddRemoveFilterButton({ node }: { node: CatalogHierarchyNode }) {
     ? () => remove_filter(node)
     : () => add_filter(node);
   const text = is_active_filter ? `Remove` : `Add`;
+  return (
+    <button className="underline" onClick={on_click}>
+      {text}
+    </button>
+  );
+}
+
+function AddRemoveColumnButton({ node }: { node: CatalogHierarchyNode }) {
+  const metadata = node.data;
+  const is_leaf = is_leaf_node(node);
+  const is_active_column = useCurrentColumnIDs().has(metadata.name);
+  const remove_column = useRemoveColumn();
+  const add_column = useAddColumn();
+  if (!is_leaf) return null;
+  const on_click = is_active_column
+    ? () => remove_column(node)
+    : () => add_column(node);
+  const text = is_active_column ? `Remove` : `Add`;
   return (
     <button className="underline" onClick={on_click}>
       {text}
