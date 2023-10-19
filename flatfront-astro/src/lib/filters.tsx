@@ -1,7 +1,15 @@
-import type { FieldID, FieldMetadata, FilterValueRaw, Filters } from "./types";
+import type {
+  CatalogHierarchyNode,
+  FieldID,
+  FieldMetadata,
+  FilterValueRaw,
+  Filters
+} from "./types";
 
 import React from "react";
 import lodash_merge from "lodash.merge";
+import lodash_set from "lodash.set";
+import lodash_unset from "lodash.unset";
 import * as controller from "./app-state";
 import {
   assert_numeric_field_stats,
@@ -10,6 +18,7 @@ import {
 } from "./shared";
 import { useCatalogCellID, useCatalogID } from "./components/CatalogContext";
 import { useCatalogMetadata } from "./components/CatalogMetadata";
+import { useFieldNode } from "./components/FieldNodeContext";
 
 const FiltersContext = React.createContext(null);
 
@@ -116,4 +125,36 @@ function get_initial_cell_filters(
     })
   );
   return initial_filter_object;
+}
+
+export function useRemoveFilter() {
+  const catalog_cell_id = useCatalogCellID();
+  const catalog_id = useCatalogID();
+  const set_app_state = controller.useSetAppState();
+  return (node: CatalogHierarchyNode) => {
+    const field_id = node.data.name;
+    set_app_state((obj) => {
+      lodash_set(
+        obj,
+        [`add_filter`, catalog_cell_id, catalog_id, field_id],
+        false
+      );
+      lodash_unset(obj, [
+        `filter_value`,
+        catalog_cell_id,
+        catalog_id,
+        field_id
+      ]);
+    });
+  };
+}
+
+export function useAddFilter() {
+  const catalog_cell_id = useCatalogCellID();
+  const catalog_id = useCatalogID();
+  const dispatch = controller.useDispatch();
+  return (node: CatalogHierarchyNode) => {
+    const field_id = node.data.name;
+    dispatch([`add_filter`, catalog_cell_id, catalog_id, field_id], true);
+  };
 }
