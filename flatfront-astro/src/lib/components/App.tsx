@@ -11,7 +11,14 @@ import { log } from "../shared";
 import GlobalControls from "./GlobalControls";
 import Cells from "./Cells";
 
-const query_client = new QueryClient();
+const query_client = new QueryClient({
+  defaultOptions: {
+    queries: {
+      structuralSharing: false,
+      staleTime: Infinity
+    }
+  }
+});
 
 export default function App() {
   return (

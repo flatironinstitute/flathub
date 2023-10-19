@@ -124,7 +124,6 @@ function CatalogSelect() {
   const catalog_id = useCatalogID();
   const get_title = (d: TopResponseEntry) => d?.title;
   const catalog_list_query = useQuery({
-    staleTime: Infinity,
     queryKey: ["top"],
     queryFn: async (): Promise<TopResponse> => fetch_api_get<TopResponse>(`/`)
   });

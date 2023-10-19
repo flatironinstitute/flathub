@@ -212,7 +212,6 @@ function NumericFieldHistogram() {
         request_body
       );
     },
-    staleTime: Infinity,
     enabled: should_fetch
   });
 

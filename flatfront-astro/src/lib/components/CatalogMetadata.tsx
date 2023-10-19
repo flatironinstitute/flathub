@@ -25,8 +25,7 @@ export default function CatalogMetadataProvider({ children }) {
   const catalog_query = useQuery({
     queryKey: [`catalog`, catalog_id],
     queryFn: (): Promise<CatalogResponse> => fetch_api_get(`/${catalog_id}`),
-    enabled: !!catalog_id,
-    staleTime: Infinity
+    enabled: !!catalog_id
   });
   const catalog_metadata = wrap_catalog_metadata(catalog_query);
   return (

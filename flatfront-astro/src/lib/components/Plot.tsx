@@ -281,8 +281,7 @@ function Histogram() {
         return response;
       });
     },
-    enabled: enable_request,
-    staleTime: Infinity
+    enabled: enable_request
   });
 
   const data = query.data;
@@ -373,8 +372,7 @@ function Heatmap() {
         return response;
       });
     },
-    enabled: enable_request,
-    staleTime: Infinity
+    enabled: enable_request
   });
 
   const data = query.data;
@@ -477,8 +475,7 @@ function Scatterplot() {
         return response;
       });
     },
-    enabled: enable_request,
-    staleTime: Infinity
+    enabled: enable_request
   });
 
   const data = query.data ?? [];

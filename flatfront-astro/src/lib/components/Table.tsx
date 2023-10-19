@@ -76,8 +76,7 @@ function Table() {
         query_config.body
       );
     },
-    enabled: enable_request,
-    staleTime: Infinity
+    enabled: enable_request
   });
 
   const component = (() => {
