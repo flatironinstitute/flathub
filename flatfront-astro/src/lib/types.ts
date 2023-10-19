@@ -14,83 +14,10 @@ export type AppState = {
   add_plot?: Record<CellID.Catalog, Record<PlotID, boolean>>;
   set_plot_type?: Record<PlotID, PlotType>;
   set_plot_control?: Record<PlotID, Record<string, any>>;
-};
-
-export type DataResponse = Array<DataRow>;
-export type DataRow = Record<string, any>;
-
-export type FieldType =
-  | `ROOT`
-  | `INTEGER`
-  | `FLOAT`
-  | `LABELLED_ENUMERABLE_BOOLEAN`
-  | `LABELLED_ENUMERABLE_INTEGER`
-  | `ENUMERABLE_INTEGER`
-  | `ARRAY`
-  | `STRING`;
-
-export type GlobalFilterState = Record<
-  CellID.Catalog,
-  Record<CatalogID, Record<string, FilterValueRaw>>
->;
-
-export type CatalogMetadataWrapper = {
-  response: CatalogResponse;
-  hierarchy: CatalogHierarchyNode;
-  depth_first: Array<CatalogHierarchyNode>;
-};
-
-export type CatalogHierarchyNode = d3.HierarchyNode<FieldMetadata>;
-
-export namespace Action {
-  export type AddFilter = ActionBase<
-    `add_filter`,
-    { catalog_cell_id: CellID.Catalog; field_id: string }
+  show_columns?: Record<
+    CellID.Catalog,
+    Record<CatalogID, Record<FieldID, boolean>>
   >;
-  export type RemoveFilter = ActionBase<
-    `remove_filter`,
-    { catalog_cell_id: CellID.Catalog; field_id: string }
-  >;
-  export type AddTableColumn = ActionBase<
-    `add_table_column`,
-    { catalog_cell_id: CellID.Catalog; field_id: string }
-  >;
-  export type RemoveTableColumn = ActionBase<
-    `remove_table_column`,
-    { catalog_cell_id: CellID.Catalog; field_id: string }
-  >;
-  export type SetDarkMode = ActionBase<
-    `set_dark_mode`,
-    { value: DarkModeValue }
-  >;
-  export type SetPlotType = ActionBase<
-    `set_plot_type`,
-    {
-      plot_id: PlotID;
-      plot_type: PlotType;
-    }
-  >;
-  export type SetPlotControl = ActionBase<
-    `set_plot_control`,
-    { plot_id: PlotID; key: string; value: any }
-  >;
-  export type Any =
-    | AddFilter
-    | RemoveFilter
-    | AddTableColumn
-    | RemoveTableColumn
-    | SetDarkMode
-    | SetPlotType
-    | SetPlotControl;
-}
-
-export type PlotType = `histogram` | `scatterplot` | `heatmap`;
-export type PlotID = `plot_${number}`;
-
-export type DarkModeValue = `system` | `light` | `dark`;
-
-type ActionBase<T extends string, U> = U & {
-  type: T;
 };
 
 export namespace Cell {
@@ -105,14 +32,39 @@ export namespace Cell {
   export type Any = Catalog | Comparison;
 }
 
-export type FieldID = string;
-export type CatalogID = string;
-
 export namespace CellID {
   export type Catalog = `catalog_cell_${number}`;
   export type Comparison = `comparison_cell_${number}`;
   export type Any = Catalog | Comparison;
 }
+
+export type FieldType =
+  | `ROOT`
+  | `INTEGER`
+  | `FLOAT`
+  | `LABELLED_ENUMERABLE_BOOLEAN`
+  | `LABELLED_ENUMERABLE_INTEGER`
+  | `ENUMERABLE_INTEGER`
+  | `ARRAY`
+  | `STRING`;
+
+export type CatalogMetadataWrapper = {
+  response: CatalogResponse;
+  hierarchy: CatalogHierarchyNode;
+  depth_first: Array<CatalogHierarchyNode>;
+};
+
+export type CatalogHierarchyNode = d3.HierarchyNode<FieldMetadata>;
+
+export type PlotType = `histogram` | `scatterplot` | `heatmap`;
+export type PlotID = `plot_${number}`;
+export type FieldID = string;
+export type CatalogID = string;
+
+export type DarkModeValue = `system` | `light` | `dark`;
+
+export type DataResponse = Array<DataRow>;
+export type DataRow = Record<string, any>;
 
 // ===========================================
 // SCHEMA
