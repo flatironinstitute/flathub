@@ -198,7 +198,7 @@ function AddFilterSelect() {
 function FilterControls() {
   const catalog_metadata = useCatalogMetadata();
   const filters = useFilters();
-  const all_field_nodes = catalog_metadata?.depth_first ?? [];
+  // const all_field_nodes = catalog_metadata?.depth_first ?? [];
   const leaves = catalog_metadata?.hierarchy?.leaves() ?? [];
   const filter_and_ancestor_nodes = leaves.filter((node) => {
     // Exclude if is root node
@@ -214,10 +214,10 @@ function FilterControls() {
   return (
     <div className="space-y-3">
       {filter_and_ancestor_nodes.map((node, index) => (
-        <>
+        <React.Fragment key={node.data.__hash}>
           {index === 0 ? null : <Separator></Separator>}
-          <FieldCard fieldNode={node} key={node.data.__hash} />
-        </>
+          <FieldCard fieldNode={node} />
+        </React.Fragment>
       ))}
     </div>
   );
