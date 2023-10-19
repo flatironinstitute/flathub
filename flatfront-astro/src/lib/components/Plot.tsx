@@ -43,10 +43,10 @@ export default function PlotSection({ id }: { id: PlotID }) {
       <div className="flex justify-between">
         <SimpleLabel>plot</SimpleLabel>
         <button
-          className="cursor-pointer uppercase underline"
+          className="cursor-pointer underline"
           onClick={() => remove_plot()}
         >
-          remove
+          Remove
         </button>
       </div>
       <PlotComponent />
@@ -200,7 +200,6 @@ function PlotControl({
   const plot_config = controller.useAppState().set_plot_control?.[plot_id];
 
   const field_id = plot_config?.[plot_control_key];
-  // const is_log_mode = plot_config?.[`${plot_control_key}_log_mode`] ?? false;
 
   const dispatch = controller.useDispatch();
 
@@ -209,12 +208,19 @@ function PlotControl({
   let log_switch = null;
 
   if (showLogSwitch) {
+    const log_mode_key = `${plot_control_key}_log_mode`;
+    const is_log_mode = plot_config?.[log_mode_key] ?? false;
     log_switch = (
       <div className="relative">
         <label className="absolute left-1/2 top-0 -translate-x-1/2 translate-y-[calc(-100%-5px)] uppercase leading-none">
           log
         </label>
-        <Checkbox disabled checked={false} />
+        <Checkbox
+          checked={is_log_mode}
+          onCheckedChange={(checked) => {
+            dispatch([`set_plot_control`, plot_id, log_mode_key], checked);
+          }}
+        />
       </div>
     );
   }
@@ -246,10 +252,13 @@ function Histogram() {
   const plot_state = controller.useAppState()?.set_plot_control?.[plot_id];
 
   const x_axis_field_id = plot_state?.x_axis;
+  const x_axis_log_mode = plot_state?.x_axis_log_mode ?? false;
 
   const enable_request = Boolean(catalog_id) && Boolean(x_axis_field_id);
 
-  const fields: any = [{ field: x_axis_field_id, size: 100 }];
+  const fields: any = [
+    { field: x_axis_field_id, size: 100, log: x_axis_log_mode }
+  ];
 
   const request_body: HistogramPostRequestBody = {
     fields,
@@ -291,19 +300,18 @@ function Histogram() {
   const options: Highcharts.Options = {
     ...get_highcharts_options(),
     xAxis: {
-      type: `linear`,
+      type: x_axis_log_mode ? `logarithmic` : `linear`,
       title: {
         text: x_axis_field_id
-      },
-      gridLineWidth: 1
+      }
     },
     series: [
       {
         type: `column`,
         data: data_munged,
         animation: false,
-        pointPadding: 0.2,
-        pointRange: (data?.sizes?.[0] ?? 0) * 2,
+        // pointWidth: 5,
+        // pointPadding: -0.1,
         borderRadius: 0
       }
     ]

@@ -431,7 +431,6 @@ export function Checkbox(props: RadixCheckbox.CheckboxProps) {
         `bg-white outline outline-black dark:bg-black dark:outline-white`,
         `data-[disabled]:cursor-not-allowed data-[disabled]:opacity-20`
       )}
-      defaultChecked
       {...props}
     >
       <RadixCheckbox.Indicator>
@@ -572,8 +571,8 @@ export function CollapsibleSection({
       <div className="space-y-4 @container">
         <div className="flex justify-between">
           <SimpleLabel>{label}</SimpleLabel>
-          <RadixCollapsible.Trigger className="cursor-pointer uppercase underline">
-            {open ? `collapse` : `expand`}
+          <RadixCollapsible.Trigger className="cursor-pointer underline">
+            {open ? `Collapse` : `Expand`}
           </RadixCollapsible.Trigger>
         </div>
         <RadixCollapsible.Content>{children}</RadixCollapsible.Content>
