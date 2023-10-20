@@ -29,7 +29,11 @@ export async function fetch_api_get<T>(path: string): Promise<T> {
   return json;
 }
 
-export async function fetch_api_post<T, U>(path: string, body: T): Promise<U> {
+export async function fetch_api_post<T, U>(
+  path: string,
+  body: T,
+  options: RequestInit = {}
+): Promise<U> {
   const url = new URL(`/api${path}`, FLATHUB_API_BASE_URL);
   log(`💥 Fetching:`, url.toString(), body);
   const response = await fetch(url.toString(), {
@@ -37,7 +41,8 @@ export async function fetch_api_post<T, U>(path: string, body: T): Promise<U> {
     headers: new Headers({
       "Content-Type": `application/json`
     }),
-    body: JSON.stringify(body)
+    body: JSON.stringify(body),
+    ...options
   });
   log(`💥 Got Response:`, url.toString());
   if (!response.ok) {

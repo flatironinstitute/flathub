@@ -130,7 +130,7 @@ function PlotControls() {
     }
   })();
   return (
-    <div className="grid grid-cols-1 items-center gap-x-8 gap-y-4 desktop:grid-cols-3">
+    <div className="tablet:grid-cols-2 bigdesktop:grid-cols-3 grid grid-cols-1 items-center gap-x-8 gap-y-4 desktop:grid-cols-2">
       <Labelled label="Plot Type">
         <PlotTypeSelect />
       </Labelled>
@@ -265,22 +265,10 @@ function Histogram() {
     ...filters
   };
 
-  const query_config = {
+  const query = usePlotQuery<HistogramPostRequestBody, HistogramResponse>({
     path: `/${catalog_id}/histogram`,
-    body: request_body
-  };
-
-  const query = useQuery({
-    queryKey: [`plot-data`, query_config],
-    queryFn: async (): Promise<HistogramResponse> => {
-      return fetch_api_post<HistogramPostRequestBody, HistogramResponse>(
-        query_config.path,
-        query_config.body
-      ).then((response) => {
-        log(`Histogram query response`, response);
-        return response;
-      });
-    },
+    body: request_body,
+    label: `Histogram`,
     enabled: enable_request
   });
 
@@ -356,22 +344,10 @@ function Heatmap() {
     // ...query_parameters
   };
 
-  const query_config = {
+  const query = usePlotQuery<HistogramPostRequestBody, HistogramResponse>({
     path: `/${catalog_id}/histogram`,
-    body: request_body
-  };
-
-  const query = useQuery({
-    queryKey: [`plot-data`, query_config],
-    queryFn: async (): Promise<HistogramResponse> => {
-      return fetch_api_post<HistogramPostRequestBody, HistogramResponse>(
-        query_config.path,
-        query_config.body
-      ).then((response) => {
-        log(`query response`, response);
-        return response;
-      });
-    },
+    body: request_body,
+    label: `Heatmap`,
     enabled: enable_request
   });
 
@@ -459,22 +435,10 @@ function Scatterplot() {
     // ...query_parameters
   };
 
-  const query_config = {
+  const query = usePlotQuery<DataPostRequestBody, DataResponse>({
     path: `/${catalog_id}/data`,
-    body: request_body
-  };
-
-  const query = useQuery({
-    queryKey: [`plot-data`, query_config],
-    queryFn: async (): Promise<DataResponse> => {
-      return fetch_api_post<DataPostRequestBody, DataResponse>(
-        query_config.path,
-        query_config.body
-      ).then((response) => {
-        log(`query response`, response);
-        return response;
-      });
-    },
+    body: request_body,
+    label: `Scatterplot`,
     enabled: enable_request
   });
 
@@ -556,4 +520,32 @@ function get_highcharts_options(): Highcharts.Options {
       usePreallocated: true
     }
   };
+}
+
+function usePlotQuery<RequestType, ResponseType>({
+  path,
+  body,
+  label,
+  enabled
+}: {
+  path: string;
+  body: RequestType;
+  label: string;
+  enabled: boolean;
+}) {
+  return useQuery({
+    queryKey: [`plot-data`, path, body],
+    queryFn: async ({ signal }): Promise<ResponseType> => {
+      const response = await fetch_api_post<RequestType, ResponseType>(
+        path,
+        body,
+        {
+          signal
+        }
+      );
+      log(`${label} query response`, response);
+      return response;
+    },
+    enabled
+  });
 }

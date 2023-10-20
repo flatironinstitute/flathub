@@ -70,10 +70,11 @@ function Table() {
 
   const query = useQuery({
     queryKey: [`table-data`, query_config],
-    queryFn: async (): Promise<DataResponse> => {
+    queryFn: async ({ signal }): Promise<DataResponse> => {
       return fetch_api_post<DataPostRequestBody, DataResponse>(
         query_config.path,
-        query_config.body
+        query_config.body,
+        { signal }
       );
     },
     enabled: enable_request
