@@ -17,6 +17,7 @@ import {
   CellWrapper,
   Combobox,
   FieldTitles,
+  Header,
   Placeholder,
   Select,
   Separator,
@@ -57,16 +58,14 @@ function CatalogCellContents() {
 
   const top_sections = (
     <>
-      <CellSection label="catalog" className="flex flex-col gap-y-4">
-        <CatalogSelect />
-        <BigButton disabled={!catalog_id}>About</BigButton>
-        <BrowseFieldsDialog />
-      </CellSection>
+      <Header>Catalog</Header>
+      <CatalogSelect />
+      <BigButton disabled={!catalog_id}>About</BigButton>
+      <BrowseFieldsDialog />
       <FilterSection />
-      <CellSection label="random sample" className="flex flex-col gap-y-4">
-        <div>fraction</div>
-        <div>seed</div>
-      </CellSection>
+      <Header>Random Sample</Header>
+      <div>fraction</div>
+      <div>seed</div>
     </>
   );
 
@@ -89,10 +88,8 @@ function CatalogCellContents() {
         {top_sections}
       </div>
       <CellSection className="flex flex-col gap-y-4 desktop:col-span-4 desktop:col-start-3 desktop:row-start-1">
-        <div className="flex flex-col gap-y-4">
-          <SimpleLabel>plots</SimpleLabel>
-          <AddPlotButton />
-        </div>
+        <Header>Results</Header>
+        <AddPlotButton />
         {plot_components}
         <CellSection className="rounded-md p-4 ring-1 ring-black/20">
           <TableSection />
@@ -153,13 +150,14 @@ function CatalogSelect() {
 function FilterSection() {
   const catalog_id = useCatalogID();
   return (
-    <CellSection label="filters" className="flex flex-col gap-y-4">
+    <>
+      <Header>Filters</Header>
       <AddFilterSelect />
       <BigButton disabled={!catalog_id} className="desktop:hidden">
         Edit Filters
       </BigButton>
       <FilterControls />
-    </CellSection>
+    </>
   );
 }
 

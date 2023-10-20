@@ -69,13 +69,14 @@ function FieldsTable() {
       }
     },
     {
-      header: `Variable`,
-      accessorFn: (node: CatalogHierarchyNode) => node.data.name
-    },
-    {
       header: `Units`,
       accessorFn: (node: CatalogHierarchyNode) => node.data.units,
       cell: ({ getValue }) => <Katex>{getValue()}</Katex>
+    },
+    {
+      header: `Description`,
+      accessorFn: (node: CatalogHierarchyNode) => node.data.descr,
+      cell: ({ getValue }) => <div className="max-w-[30cqi]">{getValue()}</div>
     },
     {
       header: `Filter`,
@@ -119,7 +120,7 @@ function FieldsTable() {
   return (
     <>
       {expand_all_button}
-      <div className="max-h-[80dvh] w-[min(80dvw,800px)] overflow-x-scroll overflow-y-scroll">
+      <div className="max-h-[80dvh] w-[min(80dvw,800px)] overflow-x-scroll overflow-y-scroll @container">
         <table className="w-full">
           <thead className="sticky top-0 h-10 -translate-y-px bg-white dark:bg-black">
             <tr>
@@ -143,7 +144,7 @@ function FieldsTable() {
                 >
                   {row.getVisibleCells().map((cell) => {
                     return (
-                      <td key={cell.id} className="pe-2">
+                      <td key={cell.id} className="pe-2 align-top pb-2">
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()

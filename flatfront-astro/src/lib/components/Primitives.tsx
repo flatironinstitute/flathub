@@ -14,6 +14,10 @@ import { useDebounce } from "@uidotdev/usehooks";
 import { log } from "../shared";
 import Katex from "./Katex";
 
+export function Header({ children }) {
+  return <h2 className="text-xl">{children}</h2>;
+}
+
 export function Separator({ orientation }: RadixSeparator.SeparatorProps) {
   return (
     <RadixSeparator.Root
@@ -64,7 +68,7 @@ export function BigButton({
   );
 }
 BigButton.className = clsx(
-  `block rounded-lg py-3 font-bold`,
+  `block w-full rounded-lg py-3 font-bold`,
   `ring-1 ring-black dark:ring-white`,
   `focus:outline-none focus-visible:ring-4`,
   `disabled:opacity-50 disabled:cursor-not-allowed`
