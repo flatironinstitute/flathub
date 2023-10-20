@@ -12,7 +12,8 @@ module.exports = {
       xs: ["0.5rem", { lineHeight: "1" }],
       sm: ["0.6rem", { lineHeight: "1" }],
       base: ["0.7rem", { lineHeight: "1" }],
-      lg: ["1rem", { lineHeight: "1" }]
+      lg: ["1rem", { lineHeight: "1" }],
+      xl: ["1.25rem", { lineHeight: "1" }]
     },
     extend: {
       colors: {
@@ -45,7 +46,9 @@ module.exports = {
         "scc-theme": "#8F8F8F"
       },
       screens: {
-        desktop: defaults.screens["md"]
+        // tablet: defaults.screens.md,
+        desktop: defaults.screens.md,
+        bigdesktop: defaults.screens[`2xl`]
       }
     }
   },
