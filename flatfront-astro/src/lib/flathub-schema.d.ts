@@ -178,6 +178,10 @@ export interface components {
        * @enum {string}
        */
       base: "f" | "i" | "b" | "s" | "v";
+      /** @description this field is only available if some other fields have specific values */
+      condition?: {
+        [key: string]: components["schemas"]["FieldValue"];
+      };
       /** @description description of field within the group */
       descr?: string;
       /** @description unique key index to global field dictionary (for compare) */
