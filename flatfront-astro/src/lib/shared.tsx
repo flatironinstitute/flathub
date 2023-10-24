@@ -21,11 +21,11 @@ export async function fetch_api_get<T>(path: string): Promise<T> {
       "Content-Type": `application/json`
     })
   });
-  log(`💥 Got Response:`, url.toString());
   if (!response.ok) {
     throw new Error(`API Fetch Error: ${response.status}`);
   }
   const json: T = await response.json();
+  log(`💥 Got Response:`, url.toString(), json);
   return json;
 }
 
@@ -44,11 +44,11 @@ export async function fetch_api_post<T, U>(
     body: JSON.stringify(body),
     ...options
   });
-  log(`💥 Got Response:`, url.toString());
   if (!response.ok) {
     throw new Error(`API Fetch Error: ${response.status}`);
   }
   const json: U = await response.json();
+  log(`💥 Got Response:`, url.toString(), json);
   return json;
 }
 
@@ -195,26 +195,31 @@ export function join_enums(
   const has_enum = metadata.enum && metadata.enum.length > 0 ? true : false;
   const has_terms =
     metadata.stats?.terms && metadata.stats.terms.length > 0 ? true : false;
-  if (has_enum && !has_terms) {
-    throw new Error(`Has enum but no terms: ${metadata.name}`);
-  }
-  const joined = has_enum
-    ? metadata.enum.map((text, index) => {
+  const joined: { text: string; count?: number; value: any }[] = (() => {
+    if (has_enum && has_terms) {
+      return metadata.enum.map((text, index) => {
         const found = metadata.stats.terms.find((term) => {
           const value_as_number = Number(term.value);
           if (Number.isNaN(value_as_number)) return false;
           return value_as_number === index;
         });
 
-        const count = found?.count ?? null;
-        const value = found?.value ?? null;
         return {
           text,
-          count,
-          value
+          count: found?.count ?? null,
+          value: index
         };
-      })
-    : metadata.stats.terms.map(({ value, count }) => {
+      });
+    } else if (has_enum && !has_terms) {
+      return metadata.enum.map((text, index) => {
+        return {
+          text,
+          count: null,
+          value: index
+        };
+      });
+    } else if (!has_enum && has_terms) {
+      return metadata.stats.terms.map(({ value, count }) => {
         const text = value.toString();
         return {
           text,
@@ -222,6 +227,11 @@ export function join_enums(
           value
         };
       });
+    } else {
+      console.error(metadata);
+      throw new Error(`No enum or terms: ${metadata.name}`);
+    }
+  })();
   const sorted = d3.sort(
     joined,
     has_enum ? (d) => -d.count : (d) => Number(d.text)
