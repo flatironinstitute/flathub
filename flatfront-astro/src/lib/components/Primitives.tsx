@@ -14,7 +14,7 @@ import { useDebounce } from "@uidotdev/usehooks";
 import { log } from "../shared";
 import Katex from "./Katex";
 
-export function Header({ children }) {
+export function Heading({ children }) {
   return <h2 className="text-xl">{children}</h2>;
 }
 
@@ -73,23 +73,6 @@ BigButton.className = clsx(
   `focus:outline-none focus-visible:ring-4`,
   `disabled:opacity-50 disabled:cursor-not-allowed`
 );
-
-export function CellSection({
-  label,
-  children = null,
-  className
-}: {
-  label?: string;
-  children?: React.ReactNode;
-  className?: string;
-}): React.JSX.Element {
-  return (
-    <div data-type="CellSection" className={clsx(`@container`, className)}>
-      {label && <SimpleLabel>{label}</SimpleLabel>}
-      {children}
-    </div>
-  );
-}
 
 export function SimpleLabel({
   children,
@@ -588,8 +571,8 @@ export function CollapsibleSection({
 export function FieldTitles({ titles }: { titles: string[] }) {
   return (
     <div className="flex gap-x-2">
-      {titles.map((title) => (
-        <Katex key={title}>{title}</Katex>
+      {titles.map((title, index) => (
+        <Katex key={`${title}-${index}`}>{title}</Katex>
       ))}
     </div>
   );

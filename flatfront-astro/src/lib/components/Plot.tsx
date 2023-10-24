@@ -130,7 +130,7 @@ function PlotControls() {
     }
   })();
   return (
-    <div className="tablet:grid-cols-2 bigdesktop:grid-cols-3 grid grid-cols-1 items-center gap-x-8 gap-y-4 desktop:grid-cols-2">
+    <div className="tablet:grid-cols-2 grid grid-cols-1 items-center gap-x-8 gap-y-4 desktop:grid-cols-2 bigdesktop:grid-cols-3">
       <Labelled label="Plot Type">
         <PlotTypeSelect />
       </Labelled>
@@ -183,11 +183,13 @@ function PlotTypeSelect() {
 function PlotControl({
   plotControlkey: plot_control_key,
   placeholder,
-  showLogSwitch = false
+  showLogSwitch = false,
+  debug = false
 }: {
   plotControlkey: string;
   placeholder?: string;
   showLogSwitch?: boolean;
+  debug?: boolean;
 }) {
   const plot_id = usePlotID();
   const catalog_metadata = useCatalogMetadata();
@@ -295,6 +297,7 @@ function Histogram() {
     series: [
       {
         type: `column`,
+        name: `Count`,
         data: data_munged,
         animation: false,
         // pointWidth: 5,

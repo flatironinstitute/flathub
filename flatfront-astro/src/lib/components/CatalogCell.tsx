@@ -10,14 +10,14 @@ import React from "react";
 import * as d3 from "d3";
 import { useQuery } from "@tanstack/react-query";
 import * as controller from "../app-state";
-import { fetch_api_get, get_field_titles, log } from "../shared";
+import { fetch_api_get, format, get_field_titles, log } from "../shared";
 import {
   BigButton,
-  CellSection,
   CellWrapper,
   Combobox,
+  Dialog,
   FieldTitles,
-  Header,
+  Heading,
   Placeholder,
   Select,
   Separator,
@@ -35,13 +35,13 @@ import {
 } from "./CatalogContext";
 import { useAddPlot, usePlotIDs } from "../plot-hooks";
 import BrowseFieldsDialog from "./BrowseFieldsDialog";
+import Katex from "./Katex";
 
 export default function CatalogCell({
   id: catalog_cell_id
 }: {
   id: CellID.Catalog;
 }) {
-  // assert_catalog_cell_id(catalog_cell_id);
   return (
     <CatalogCellIDContextProvider value={catalog_cell_id}>
       <CatalogMetadataProvider>
@@ -56,64 +56,38 @@ export default function CatalogCell({
 function CatalogCellContents() {
   const catalog_id = useCatalogID();
 
-  const top_sections = (
-    <>
-      <Header>Catalog</Header>
-      <CatalogSelect />
-      <BigButton disabled={!catalog_id}>About</BigButton>
-      <BrowseFieldsDialog />
-      <FilterSection />
-      <Header>Random Sample</Header>
-      <div>fraction</div>
-      <div>seed</div>
-    </>
-  );
-
-  const plot_ids: PlotID[] = usePlotIDs();
-
-  const plot_components = plot_ids.map((plot_id) => {
-    return (
-      <CellSection
-        key={plot_id}
-        className="space-y-4 rounded-md p-4 ring-1 ring-black/20 dark:ring-white/30"
-      >
-        <PlotSection id={plot_id} />
-      </CellSection>
-    );
-  });
-
   return (
     <CellWrapper className="grid gap-x-8 gap-y-4 desktop:grid-cols-6">
       <div className="space-y-4 desktop:col-span-2 desktop:col-start-1">
-        {top_sections}
+        <Heading>Catalog</Heading>
+        <CatalogSelect />
+        <AboutThisCatalog />
+        <BrowseFieldsDialog />
+        <Heading>Filters</Heading>
+        <AddFilterSelect />
+        <FilterControls />
+        <Heading>Random Sample</Heading>
+        <div>fraction</div>
+        <div>seed</div>
       </div>
-      <CellSection className="flex flex-col gap-y-4 desktop:col-span-4 desktop:col-start-3 desktop:row-start-1">
-        <Header>Results</Header>
+      <div className="flex flex-col gap-y-4 desktop:col-span-4 desktop:col-start-3 desktop:row-start-1">
+        <Heading>Results</Heading>
         <AddPlotButton />
-        {plot_components}
-        <CellSection className="rounded-md p-4 ring-1 ring-black/20">
+        <Plots />
+        <div className="rounded-md p-4 ring-1 ring-black/20">
           <TableSection />
-        </CellSection>
-        <CellSection
-          label="python"
-          className="space-y-4 rounded-md p-4 ring-1 ring-black/20"
-        >
+        </div>
+        <div className="space-y-4 rounded-md p-4 ring-1 ring-black/20">
+          <SimpleLabel>python</SimpleLabel>
           <Placeholder>TODO: Python</Placeholder>
-        </CellSection>
-        <CellSection
-          label="download"
-          className="space-y-4 rounded-md p-4 ring-1 ring-black/20"
-        >
+        </div>
+        <div className="space-y-4 rounded-md p-4 ring-1 ring-black/20">
+          <SimpleLabel>download</SimpleLabel>
           <Placeholder>TODO: Download Data</Placeholder>
-        </CellSection>
-      </CellSection>
+        </div>
+      </div>
     </CellWrapper>
   );
-}
-
-function AddPlotButton() {
-  const add_plot = useAddPlot();
-  return <BigButton onClick={() => add_plot()}>Add Plot</BigButton>;
 }
 
 function CatalogSelect() {
@@ -147,18 +121,58 @@ function CatalogSelect() {
   );
 }
 
-function FilterSection() {
+function AboutThisCatalog() {
   const catalog_id = useCatalogID();
+  const catalog_metadata = useCatalogMetadata();
+  const hierarchy = catalog_metadata?.hierarchy;
+  const { title, descr, count } = catalog_metadata?.response ?? {};
+  const contents = (() => {
+    if (!catalog_metadata) return null;
+    const nodes = catalog_metadata.depth_first.length;
+    const h = hierarchy.height;
+    const ess = h > 1 ? `s` : ``;
+    const hierarchy_info = `Hierarchy: ${nodes} nodes, nested ${h} level${ess} deep`;
+    return (
+      <>
+        <Heading>{title}</Heading>
+        <Katex className="space-y-4 leading-[1.4] [&_a]:underline [&_ul]:pb-3 [&_ul]:list-disc [&_ul]:space-y-4 [&_ul]:ps-10">
+          {descr}
+        </Katex>
+        <p>Rows: {format.commas(count)}</p>
+        <p>Variables: {hierarchy.leaves().length}</p>
+        <p>{hierarchy_info}</p>
+      </>
+    );
+  })();
   return (
-    <>
-      <Header>Filters</Header>
-      <AddFilterSelect />
-      <BigButton disabled={!catalog_id} className="desktop:hidden">
-        Edit Filters
-      </BigButton>
-      <FilterControls />
-    </>
+    <Dialog
+      disabled={!catalog_id || !catalog_metadata}
+      label="About This Catalog"
+      className="flex max-h-[80dvh] w-[min(80dvw,800px)] flex-col gap-y-4 p-8"
+    >
+      {contents}
+    </Dialog>
   );
+}
+
+function AddPlotButton() {
+  const add_plot = useAddPlot();
+  return <BigButton onClick={() => add_plot()}>Add Plot</BigButton>;
+}
+
+function Plots() {
+  const plot_ids: PlotID[] = usePlotIDs();
+  const plot_components = plot_ids.map((plot_id) => {
+    return (
+      <div
+        key={plot_id}
+        className="space-y-4 rounded-md p-4 ring-1 ring-black/20 dark:ring-white/30"
+      >
+        <PlotSection id={plot_id} />
+      </div>
+    );
+  });
+  return <>{plot_components}</>;
 }
 
 function AddFilterSelect() {

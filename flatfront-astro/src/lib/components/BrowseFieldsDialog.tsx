@@ -19,10 +19,14 @@ import Katex from "./Katex";
 import { useAddFilter, useFilters, useRemoveFilter } from "../filters";
 import { useAddColumn, useCurrentColumnIDs, useRemoveColumn } from "../columns";
 
-export default function BrowseFieldsDialog() {
+export default function BrowseFieldsDialog({
+  label = `Browse Fields`
+}: {
+  label?: string;
+}) {
   const catalog_id = useCatalogID();
   return (
-    <Dialog disabled={!catalog_id} label="Browse Fields" className="p-8">
+    <Dialog disabled={!catalog_id} label={label} className="p-8">
       <FieldsTable />
     </Dialog>
   );
@@ -144,7 +148,7 @@ function FieldsTable() {
                 >
                   {row.getVisibleCells().map((cell) => {
                     return (
-                      <td key={cell.id} className="pe-2 align-top pb-2">
+                      <td key={cell.id} className="pb-2 pe-2 align-top">
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()

@@ -28,14 +28,13 @@ import Katex from "./Katex";
 import { useCatalogID } from "./CatalogContext";
 import { useCatalogMetadata } from "./CatalogMetadata";
 import { useCurrentColumnIDs } from "../columns";
+import BrowseFieldsDialog from "./BrowseFieldsDialog";
 
 export default function TableSection() {
   return (
     <CollapsibleSection label="table">
       <div className="space-y-4">
-        <div className="grid">
-          <BigButton className="w-full">Select Columns</BigButton>
-        </div>
+        <BrowseFieldsDialog label="Select Columns" />
         <Table />
       </div>
     </CollapsibleSection>
@@ -114,8 +113,6 @@ function TablePrimitive({ data }: { data: Array<DataRow> }) {
   const catalog_hierarchy = catalog_metadata_wrapper?.hierarchy;
 
   const columns = construct_table_columns(data, catalog_hierarchy);
-
-  log(`columns`, columns);
 
   const table = useReactTable({
     data,
