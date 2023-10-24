@@ -9,7 +9,11 @@ export type AppState = {
     CellID.Catalog,
     Record<CatalogID, Record<FieldID, boolean>>
   >;
-  filter_value?: any;
+  set_filter_value?: Record<CellID.Catalog, Record<CatalogID, Filters>>;
+  set_random_sample?: Record<
+    CellID.Catalog,
+    Record<CatalogID, { sample?: number; seed?: number }>
+  >;
   set_catalog?: Record<CellID.Catalog, CatalogID>;
   add_plot?: Record<CellID.Catalog, Record<PlotID, boolean>>;
   set_plot_type?: Record<PlotID, PlotType>;

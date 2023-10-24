@@ -18,6 +18,7 @@ import {
 } from "../shared";
 import { useCatalogCellID, useCatalogID } from "./CatalogContext";
 import { useCatalogMetadata } from "./CatalogMetadataContext";
+import { useFieldNode } from "./FieldNodeContext";
 
 const FiltersContext = React.createContext(null);
 
@@ -37,7 +38,7 @@ export function FiltersProvider({ children }) {
     catalog_hierarchy
   );
   const filter_state: Filters =
-    controller.useAppState()?.filter_value?.[catalog_cell_id]?.[catalog_id];
+    controller.useAppState()?.set_filter_value?.[catalog_cell_id]?.[catalog_id];
   const filters = lodash_merge(initial_filters, filter_state);
   return (
     <FiltersContext.Provider value={filters}>
@@ -126,6 +127,24 @@ function get_initial_cell_filters(
   return initial_filter_object;
 }
 
+export function useSetFilterValue(
+  field_node: CatalogHierarchyNode = useFieldNode()
+) {
+  const field_id = field_node.data.name;
+  const catalog_cell_id = useCatalogCellID();
+  const catalog_id = useCatalogID();
+  const action_key_base = [
+    `set_filter_value`,
+    catalog_cell_id,
+    catalog_id,
+    field_id
+  ];
+  const dispatch = controller.useDispatch();
+  return (action_key: string[], value: FilterValueRaw) => {
+    dispatch([...action_key_base, ...action_key], value);
+  };
+}
+
 export function useRemoveFilter() {
   const catalog_cell_id = useCatalogCellID();
   const catalog_id = useCatalogID();
@@ -139,7 +158,7 @@ export function useRemoveFilter() {
         false
       );
       lodash_unset(obj, [
-        `filter_value`,
+        `set_filter_value`,
         catalog_cell_id,
         catalog_id,
         field_id

@@ -195,6 +195,7 @@ export function RangeSliderWithText(props: {
           const number = Number(string);
           if (!Number.isFinite(number)) return `Invalid number`;
           if (number < min) return `Must be greater than ${min.toString()}`;
+          if (number > max) return `Must be less than ${max.toString()}`;
           if (number > internal_high)
             return `Must be less than ${internal_high.toString()}`;
           return null;
@@ -214,6 +215,7 @@ export function RangeSliderWithText(props: {
         getValidityMessage={(string) => {
           const number = Number(string);
           if (!Number.isFinite(number)) return `Invalid number`;
+          if (number < min) return `Must be greater than ${min.toString()}`;
           if (number > max) return `Must be less than ${max.toString()}`;
           if (number < internal_low)
             return `Must be greater than ${internal_low.toString()}`;
@@ -230,7 +232,7 @@ export function RangeSliderWithText(props: {
         }}
       />
       <div className="col-span-2">
-        <RangeSlider
+        <Slider
           min={min}
           max={max}
           value={[internal_low, internal_high]}
@@ -248,12 +250,65 @@ export function RangeSliderWithText(props: {
   );
 }
 
-export function RangeSlider({
-  min,
-  max,
-  value,
-  onValueChange
-}: RadixSlider.SliderProps) {
+export function SliderWithText(props: {
+  min: number;
+  max: number;
+  value: number;
+  debounce?: number;
+  onValueChange?: (value: number) => void;
+}) {
+  const { min, max, onValueChange, debounce } = props;
+  const [internal_value, set_internal_value] = React.useState<number>(
+    props.value
+  );
+  const debounced_value = useDebounce(internal_value, debounce ?? 0);
+
+  React.useEffect(() => {
+    set_internal_value(props.value);
+  }, [props.value]);
+
+  React.useEffect(() => {
+    onValueChange?.(debounced_value);
+  }, [debounced_value]);
+
+  return (
+    <div data-type="SliderWithText" className="@container">
+      <div className="grid items-center gap-x-4 gap-y-2 @xs:grid-cols-2">
+        <TextInput
+          value={internal_value.toString()}
+          getValidityMessage={(string) => {
+            const number = Number(string);
+            if (!Number.isFinite(number)) return `Invalid number`;
+            if (number > max) return `Must be less than ${max.toString()}`;
+            if (number < min) return `Must be greater than ${min.toString()}`;
+            return null;
+          }}
+          onStringInput={(string: string) => {
+            const number = Number(string);
+            if (!Number.isFinite(number)) return;
+            if (string === internal_value.toString()) {
+              // Not updating filter because it didn't change
+              return;
+            }
+            set_internal_value(number);
+          }}
+        />
+        <Slider
+          min={min}
+          max={max}
+          value={[internal_value]}
+          onValueChange={([new_value]) => {
+            if (new_value !== internal_value) {
+              set_internal_value(new_value);
+            }
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function Slider({ min, max, value, onValueChange }: RadixSlider.SliderProps) {
   const step = d3.tickStep(min, max, 100);
 
   const thumb_class = clsx(
@@ -264,7 +319,7 @@ export function RangeSlider({
 
   return (
     <RadixSlider.Root
-      data-type="RangeSlider"
+      data-type="Slider"
       min={min}
       max={max}
       value={value}
@@ -276,7 +331,7 @@ export function RangeSlider({
         <RadixSlider.Range className="absolute h-full rounded-full bg-black/20 dark:bg-white/40" />
       </RadixSlider.Track>
       <RadixSlider.Thumb className={thumb_class} />
-      {value.length > 1 && <RadixSlider.Thumb className={thumb_class} />}
+      <RadixSlider.Thumb className={thumb_class} />
     </RadixSlider.Root>
   );
 }
@@ -452,7 +507,9 @@ export function Select<T>({
   onValueChange = undefined,
   contentPosition = "popper",
   size = `large`,
-  debug = false
+  debug = false,
+  triggerClassName = undefined,
+  valueClassName = undefined
 }: {
   placeholder?: string;
   options: T[];
@@ -465,6 +522,8 @@ export function Select<T>({
   contentPosition?: RadixSelect.SelectContentProps["position"];
   size?: `small` | `large`;
   debug?: boolean;
+  triggerClassName?: string;
+  valueClassName?: string;
 }) {
   const size_classes =
     size === `large`
@@ -490,11 +549,14 @@ export function Select<T>({
           `disabled:cursor-wait disabled:opacity-50`,
           `rounded-md ring-1 ring-black dark:ring-white`,
           `focus:outline-none focus-visible:ring-4`,
-          size_classes.trigger
+          size_classes.trigger,
+          triggerClassName
         )}
       >
-        <RadixSelect.Value placeholder={placeholder}>
-          {value ? getDisplayName(value) : placeholder}
+        <RadixSelect.Value placeholder={placeholder} asChild>
+          <span className={valueClassName}>
+            {value ? getDisplayName(value) : placeholder}
+          </span>
         </RadixSelect.Value>
         <RadixSelect.Icon>
           <RadixIcons.ChevronDownIcon className={size_classes.icon} />

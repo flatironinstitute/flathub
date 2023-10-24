@@ -91,7 +91,7 @@ function Table() {
       return <Placeholder className="h-[400px]">Empty response.</Placeholder>;
     } else if (query.data && query.data.length > 0) {
       return (
-        <div className="overflow-x-scroll desktop:max-w-none">
+        <div className="overflow-x-scroll">
           <TablePrimitive data={query.data} />
         </div>
       );
@@ -113,9 +113,11 @@ function Table() {
 
   const matching = useMatchingRows();
 
-  const from = offset + 1;
+  const from = query?.data?.length === 0 ? 0 : offset + 1;
   const to = offset + query?.data?.length ?? 0;
-  const tot = matching ? format.commas(matching) : `[Loading...]`;
+  const tot = Number.isFinite(matching)
+    ? format.commas(matching)
+    : `[Loading...]`;
 
   const info = (
     <div>

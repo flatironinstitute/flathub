@@ -11,7 +11,7 @@ import {
 import { Select, RangeSliderWithText } from "./Primitives";
 import { useFieldNode } from "../contexts/FieldNodeContext";
 import { useCatalogCellID, useCatalogID } from "../contexts/CatalogContext";
-import { useFilters } from "../contexts/FiltersContext";
+import { useFilters, useSetFilterValue } from "../contexts/FiltersContext";
 
 export function RangeFilterControl() {
   const field_node = useFieldNode();
@@ -20,18 +20,13 @@ export function RangeFilterControl() {
   const field_id = metadata.name;
   const filters = useFilters();
 
-  const dispatch = controller.useDispatch();
-
   const filter_value_raw: FilterValueRaw = filters[field_id];
   assert_numeric_filter_value(filter_value_raw);
 
   const { min, max } = metadata.stats;
   const { gte: low, lte: high } = filter_value_raw;
 
-  const catalog_cell_id = useCatalogCellID();
-  const catalog_id = useCatalogID();
-
-  const action_key = [`filter_value`, catalog_cell_id, catalog_id, field_id];
+  const set_filter_value = useSetFilterValue();
 
   return (
     <RangeSliderWithText
@@ -40,10 +35,10 @@ export function RangeFilterControl() {
       low={low}
       high={high}
       onLowChange={(number) => {
-        dispatch([...action_key, `gte`], number);
+        set_filter_value([`gte`], number);
       }}
       onHighChange={(number) => {
-        dispatch([...action_key, `lte`], number);
+        set_filter_value([`lte`], number);
       }}
       debounce={500}
     />
@@ -59,11 +54,7 @@ export function SelectFilterControl() {
   const values = join_enums(metadata);
   const value = values.find((d) => d.value === filter_value_raw);
 
-  const catalog_cell_id = useCatalogCellID();
-  const catalog_id = useCatalogID();
-
-  const dispatch = controller.useDispatch();
-  const action_key = [`filter_value`, catalog_cell_id, catalog_id, field_id];
+  const set_filter_value = useSetFilterValue();
 
   const get_key = (d) => d?.text;
 
@@ -77,7 +68,7 @@ export function SelectFilterControl() {
         return `${d.text} (${format.commas(d.count)} rows)`;
       }}
       onValueChange={({ value }) => {
-        dispatch(action_key, value);
+        set_filter_value([], value);
       }}
     />
   );

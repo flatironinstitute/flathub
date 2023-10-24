@@ -40,17 +40,19 @@ export default function PlotSection({ id }: { id: PlotID }) {
   const remove_plot = useRemovePlot(id);
   return (
     <PlotIDProvider value={id}>
-      <div className="flex justify-between">
-        <SimpleLabel>plot</SimpleLabel>
-        <button
-          className="cursor-pointer underline"
-          onClick={() => remove_plot()}
-        >
-          Remove
-        </button>
+      <div className="flex flex-col gap-y-4 @container/plot">
+        <div className="flex justify-between">
+          <SimpleLabel>plot</SimpleLabel>
+          <button
+            className="cursor-pointer underline"
+            onClick={() => remove_plot()}
+          >
+            Remove
+          </button>
+        </div>
+        <PlotComponent />
+        <PlotControls />
       </div>
-      <PlotComponent />
-      <PlotControls />
     </PlotIDProvider>
   );
 }
@@ -130,7 +132,7 @@ function PlotControls() {
     }
   })();
   return (
-    <div className="tablet:grid-cols-2 grid grid-cols-1 items-center gap-x-8 gap-y-4 desktop:grid-cols-2 bigdesktop:grid-cols-3">
+    <div className="grid grid-cols-1 items-center gap-x-8 gap-y-4 @xl/plot:grid-cols-2 @3xl/plot:grid-cols-3">
       <Labelled label="Plot Type">
         <PlotTypeSelect />
       </Labelled>
@@ -240,6 +242,8 @@ function PlotControl({
           const value = d?.data.name;
           dispatch([`set_plot_control`, plot_id, plot_control_key], value);
         }}
+        triggerClassName="overflow-hidden text-ellipsis"
+        valueClassName="overflow-hidden text-ellipsis"
       />
       {log_switch}
     </div>

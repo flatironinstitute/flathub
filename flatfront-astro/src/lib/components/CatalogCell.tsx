@@ -38,7 +38,8 @@ import {
   Placeholder,
   Select,
   Separator,
-  SimpleLabel
+  SimpleLabel,
+  SliderWithText
 } from "./Primitives";
 import TableSection from "./Table";
 import PlotSection from "./Plot";
@@ -60,34 +61,35 @@ export default function CatalogCell({
 
 function CatalogCellContents() {
   return (
-    <CellWrapper className="grid gap-x-8 gap-y-4 desktop:grid-cols-6">
-      <div className="space-y-4 desktop:col-span-2 desktop:col-start-1">
-        <Heading>Catalog</Heading>
-        <CatalogSelect />
-        <AboutThisCatalog />
-        <BrowseFieldsDialog />
-        <Heading>Filters</Heading>
-        <AddFilterSelect />
-        <FilterControls />
-        <Heading>Random Sample</Heading>
-        <div>fraction</div>
-        <div>seed</div>
-      </div>
-      <div className="flex flex-col gap-y-4 desktop:col-span-4 desktop:col-start-3 desktop:row-start-1">
-        <Heading>Results</Heading>
-        <MatchingRows />
-        <AddPlotButton />
-        <Plots />
-        <div className="rounded-md p-4 ring-1 ring-black/20">
-          <TableSection />
+    <CellWrapper className="@container/cell">
+      <div className="grid gap-x-8 gap-y-4 @2xl/cell:grid-cols-6">
+        <div className="space-y-4 @2xl/cell:col-span-2 @2xl/cell:col-start-1">
+          <Heading>Catalog</Heading>
+          <CatalogSelect />
+          <AboutThisCatalog />
+          <BrowseFieldsDialog />
+          <Heading>Filters</Heading>
+          <AddFilterSelect />
+          <FilterControls />
+          <Heading>Random Sample</Heading>
+          <RandomSampleControls />
         </div>
-        <div className="space-y-4 rounded-md p-4 ring-1 ring-black/20">
-          <SimpleLabel>python</SimpleLabel>
-          <Placeholder>TODO: Python</Placeholder>
-        </div>
-        <div className="space-y-4 rounded-md p-4 ring-1 ring-black/20">
-          <SimpleLabel>download</SimpleLabel>
-          <Placeholder>TODO: Download Data</Placeholder>
+        <div className="flex flex-col gap-y-4 @2xl/cell:col-span-4 @2xl/cell:col-start-3 @2xl/cell:row-start-1">
+          <Heading>Results</Heading>
+          <MatchingRows />
+          <AddPlotButton />
+          <Plots />
+          <div className="rounded-md p-4 ring-1 ring-black/20">
+            <TableSection />
+          </div>
+          <div className="space-y-4 rounded-md p-4 ring-1 ring-black/20">
+            <SimpleLabel>python</SimpleLabel>
+            <Placeholder>TODO: Python</Placeholder>
+          </div>
+          <div className="space-y-4 rounded-md p-4 ring-1 ring-black/20">
+            <SimpleLabel>download</SimpleLabel>
+            <Placeholder>TODO: Download Data</Placeholder>
+          </div>
         </div>
       </div>
     </CellWrapper>
@@ -182,7 +184,7 @@ function Plots() {
     return (
       <div
         key={plot_id}
-        className="space-y-4 rounded-md p-4 ring-1 ring-black/20 dark:ring-white/30"
+        className="rounded-md p-4 ring-1 ring-black/20 dark:ring-white/30"
       >
         <PlotSection id={plot_id} />
       </div>
@@ -247,5 +249,25 @@ function FilterControls() {
         </React.Fragment>
       ))}
     </div>
+  );
+}
+
+function RandomSampleControls() {
+  const dispatch = controller.useDispatch();
+
+  return (
+    <>
+      <div>fraction</div>
+      <SliderWithText
+        min={0}
+        max={1}
+        value={1}
+        debounce={500}
+        onValueChange={(new_value) => {
+          log(`new_value`, new_value);
+        }}
+      />
+      <div>seed</div>
+    </>
   );
 }
