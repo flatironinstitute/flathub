@@ -15,11 +15,6 @@ const CatalogMetadataContext = React.createContext<
   CatalogMetadataWrapper | undefined
 >(undefined);
 
-export function useCatalogMetadata(): CatalogMetadataWrapper | undefined {
-  const catalog_metadata = React.useContext(CatalogMetadataContext);
-  return catalog_metadata;
-}
-
 export function CatalogMetadataProvider({ children }) {
   const catalog_id = useCatalogID();
   const catalog_query = useQuery({
@@ -68,4 +63,9 @@ function tiny_json_hash(object: any) {
     hash = (hash * 33) ^ text.charCodeAt(--index);
   }
   return (hash >>> 0).toString(16);
+}
+
+export function useCatalogMetadata(): CatalogMetadataWrapper | undefined {
+  const catalog_metadata = React.useContext(CatalogMetadataContext);
+  return catalog_metadata;
 }
