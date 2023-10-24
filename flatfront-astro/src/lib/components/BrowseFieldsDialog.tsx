@@ -12,12 +12,16 @@ import {
 } from "@tanstack/react-table";
 import { is_leaf_node } from "../shared";
 import { useAddColumn, useCurrentColumnIDs, useRemoveColumn } from "../columns";
+import {
+  useAddFilter,
+  useFilters,
+  useRemoveFilter
+} from "../contexts/FiltersContext";
+import { useCatalogMetadata } from "../contexts/CatalogMetadataContext";
+import { useCatalogID } from "../contexts/CatalogContext";
 import { Dialog } from "./Primitives";
 import FieldCard from "./FieldCard";
-import { useCatalogID } from "./CatalogContext";
 import Katex from "./Katex";
-import { useAddFilter, useFilters, useRemoveFilter } from "./FiltersContext";
-import { useCatalogMetadata } from "./CatalogMetadataContext";
 
 export default function BrowseFieldsDialog({
   label = `Browse Fields`

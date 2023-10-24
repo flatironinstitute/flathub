@@ -1,7 +1,7 @@
 import type { PlotID } from "./types";
 import * as d3 from "d3";
 import { useAppState, useDispatch } from "./app-state";
-import { useCatalogCellID } from "./components/CatalogContext";
+import { useCatalogCellID } from "./contexts/CatalogContext";
 import { assert_plot_id } from "./shared";
 
 export function useAddPlot() {

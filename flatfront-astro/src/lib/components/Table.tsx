@@ -23,13 +23,13 @@ import {
   is_root_node,
   format
 } from "../shared";
-import { useFilters } from "./FiltersContext";
+import { useCatalogID, useMatchingRows } from "../contexts/CatalogContext";
+import { useFilters } from "../contexts/FiltersContext";
+import { useCatalogMetadata } from "../contexts/CatalogMetadataContext";
 import { BigButton, CollapsibleSection, Placeholder } from "./Primitives";
 import Katex from "./Katex";
-import { useCatalogID, useMatchingRows } from "./CatalogContext";
 import { useCurrentColumnIDs } from "../columns";
 import BrowseFieldsDialog from "./BrowseFieldsDialog";
-import { useCatalogMetadata } from "./CatalogMetadataContext";
 
 export default function TableSection() {
   return (

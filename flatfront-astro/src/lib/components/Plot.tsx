@@ -15,7 +15,10 @@ import {
 } from "../shared";
 import * as controller from "../app-state";
 import { useIsDarkMode } from "../dark-mode";
-import { useFilters } from "./FiltersContext";
+import { useRemovePlot } from "../plot-hooks";
+import { useFilters } from "../contexts/FiltersContext";
+import { useCatalogID } from "../contexts/CatalogContext";
+import { useCatalogMetadata } from "../contexts/CatalogMetadataContext";
 import {
   Placeholder,
   Select,
@@ -23,10 +26,7 @@ import {
   SimpleLabel,
   StatusBox
 } from "./Primitives";
-import { useCatalogID } from "./CatalogContext";
 import HighchartsPlot from "./HighchartsPlot";
-import { useRemovePlot } from "../plot-hooks";
-import { useCatalogMetadata } from "./CatalogMetadataContext";
 
 const [usePlotID, PlotIDProvider] = create_context_helper<PlotID>(`PlotID`);
 

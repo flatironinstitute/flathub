@@ -1,6 +1,6 @@
 import { useAppState, useDispatch, useSetAppState } from "./app-state";
-import { useCatalogCellID, useCatalogID } from "./components/CatalogContext";
-import { useCatalogMetadata } from "./components/CatalogMetadataContext";
+import { useCatalogCellID, useCatalogID } from "./contexts/CatalogContext";
+import { useCatalogMetadata } from "./contexts/CatalogMetadataContext";
 import type { CatalogHierarchyNode, FieldID, FieldMetadata } from "./types";
 
 export function useCurrentColumnIDs(): Set<string> {

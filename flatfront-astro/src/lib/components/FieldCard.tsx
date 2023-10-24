@@ -21,16 +21,16 @@ import {
   join_enums,
   should_use_log_scale
 } from "../shared";
+import { useCatalogID } from "../contexts/CatalogContext";
+import { useFilters, useRemoveFilter } from "../contexts/FiltersContext";
+import {
+  useFieldNode,
+  Provider as FieldNodeProvider
+} from "../contexts/FieldNodeContext";
 import ObservablePlot from "./ObservablePlot";
 import Katex from "./Katex";
 import { FieldTitles, Placeholder } from "./Primitives";
 import { RangeFilterControl, SelectFilterControl } from "./FilterControls";
-import { useCatalogID } from "./CatalogContext";
-import { useFilters, useRemoveFilter } from "./FiltersContext";
-import {
-  useFieldNode,
-  Provider as FieldNodeProvider
-} from "./FieldNodeContext";
 
 export default function FieldCard({
   fieldNode: field_node

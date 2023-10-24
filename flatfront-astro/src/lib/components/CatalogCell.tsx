@@ -20,7 +20,14 @@ import {
   log
 } from "../shared";
 import { useAddPlot, usePlotIDs } from "../plot-hooks";
-import { useFilters } from "./FiltersContext";
+import { useFilters } from "../contexts/FiltersContext";
+import { useCatalogMetadata } from "../contexts/CatalogMetadataContext";
+import {
+  CatalogProvider,
+  useCatalogCellID,
+  useCatalogID,
+  useMatchingRows
+} from "../contexts/CatalogContext";
 import {
   BigButton,
   CellWrapper,
@@ -36,15 +43,8 @@ import {
 import TableSection from "./Table";
 import PlotSection from "./Plot";
 import FieldCard from "./FieldCard";
-import {
-  CatalogProvider,
-  useCatalogCellID,
-  useCatalogID,
-  useMatchingRows
-} from "./CatalogContext";
 import BrowseFieldsDialog from "./BrowseFieldsDialog";
 import Katex from "./Katex";
-import { useCatalogMetadata } from "./CatalogMetadataContext";
 
 export default function CatalogCell({
   id: catalog_cell_id
