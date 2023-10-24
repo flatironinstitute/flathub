@@ -6,11 +6,11 @@ import type {
 } from "../types";
 
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import * as controller from "../app-state";
 import { assert_catalog_cell_id, fetch_api_post } from "../shared";
 import { FiltersProvider, useFilters } from "./FiltersContext";
 import { CatalogMetadataProvider } from "./CatalogMetadataContext";
-import { useQuery } from "@tanstack/react-query";
 
 const CatalogCellIDContext = React.createContext<CellID.Catalog | undefined>(
   undefined

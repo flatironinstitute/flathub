@@ -20,12 +20,13 @@ import {
   get_field_type,
   log,
   is_leaf_node,
-  is_root_node
+  is_root_node,
+  format
 } from "../shared";
 import { useFilters } from "./FiltersContext";
 import { BigButton, CollapsibleSection, Placeholder } from "./Primitives";
 import Katex from "./Katex";
-import { useCatalogID } from "./CatalogContext";
+import { useCatalogID, useMatchingRows } from "./CatalogContext";
 import { useCurrentColumnIDs } from "../columns";
 import BrowseFieldsDialog from "./BrowseFieldsDialog";
 import { useCatalogMetadata } from "./CatalogMetadataContext";
@@ -50,6 +51,10 @@ function Table() {
 
   const [rows_per_page, set_rows_per_page] = React.useState(25);
   const [offset, set_offset] = React.useState(0);
+
+  React.useEffect(() => {
+    set_offset(0);
+  }, [JSON.stringify(filters)]);
 
   const request_body: DataPostRequestBody = {
     object: true,
@@ -106,18 +111,45 @@ function Table() {
     </select>
   );
 
+  const matching = useMatchingRows();
+
+  const from = offset + 1;
+  const to = offset + query?.data?.length ?? 0;
+  const tot = matching ? format.commas(matching) : `[Loading...]`;
+
+  const info = (
+    <div>
+      Showing {from} to {to} of {tot} rows
+    </div>
+  );
+
+  const button_class = `disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ring-1 ring-black/80 rounded-sm px-2 py-1`;
+
+  const prev_next = (
+    <div className="flex gap-x-4">
+      <button
+        onClick={() => set_offset(offset - rows_per_page)}
+        disabled={offset === 0}
+        className={button_class}
+      >
+        Previous
+      </button>
+      <button
+        onClick={() => set_offset(offset + rows_per_page)}
+        disabled={to >= matching}
+        className={button_class}
+      >
+        Next
+      </button>
+    </div>
+  );
+
   return (
     <>
       {component}
       <div>Show {rows_select} rows</div>
-      <div>offset: {offset}</div>
-      <button
-        onClick={() => {
-          set_offset(offset + rows_per_page);
-        }}
-      >
-        add {rows_per_page} to offset
-      </button>
+      {info}
+      {prev_next}
     </>
   );
 }
