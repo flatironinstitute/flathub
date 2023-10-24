@@ -1,9 +1,7 @@
+import type { CatalogHierarchyNode } from "../types";
 import React from "react";
+import clsx from "clsx";
 import * as RadixIcons from "@radix-ui/react-icons";
-import { Dialog } from "./Primitives";
-import FieldCard from "./FieldCard";
-import { useCatalogMetadata } from "./CatalogMetadata";
-import { useCatalogID } from "./CatalogContext";
 import {
   type ExpandedState,
   type ColumnDef,
@@ -12,12 +10,14 @@ import {
   getExpandedRowModel,
   flexRender
 } from "@tanstack/react-table";
-import type { CatalogHierarchyNode } from "../types";
-import clsx from "clsx";
 import { is_leaf_node } from "../shared";
-import Katex from "./Katex";
-import { useAddFilter, useFilters, useRemoveFilter } from "../filters";
 import { useAddColumn, useCurrentColumnIDs, useRemoveColumn } from "../columns";
+import { Dialog } from "./Primitives";
+import FieldCard from "./FieldCard";
+import { useCatalogID } from "./CatalogContext";
+import Katex from "./Katex";
+import { useAddFilter, useFilters, useRemoveFilter } from "./FiltersContext";
+import { useCatalogMetadata } from "./CatalogMetadataContext";
 
 export default function BrowseFieldsDialog({
   label = `Browse Fields`

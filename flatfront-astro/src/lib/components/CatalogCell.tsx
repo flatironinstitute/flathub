@@ -1,16 +1,26 @@
 import type {
-  TopResponseEntry,
-  TopResponse,
-  CellID,
   CatalogHierarchyNode,
-  PlotID
+  CellID,
+  CountRequestBody,
+  CountResponse,
+  PlotID,
+  TopResponse,
+  TopResponseEntry
 } from "../types";
 
 import React from "react";
 import * as d3 from "d3";
 import { useQuery } from "@tanstack/react-query";
 import * as controller from "../app-state";
-import { fetch_api_get, format, get_field_titles, log } from "../shared";
+import {
+  fetch_api_get,
+  fetch_api_post,
+  format,
+  get_field_titles,
+  log
+} from "../shared";
+import { useAddPlot, usePlotIDs } from "../plot-hooks";
+import { useFilters } from "./FiltersContext";
 import {
   BigButton,
   CellWrapper,
@@ -26,16 +36,15 @@ import {
 import TableSection from "./Table";
 import PlotSection from "./Plot";
 import FieldCard from "./FieldCard";
-import CatalogMetadataProvider, { useCatalogMetadata } from "./CatalogMetadata";
-import { FiltersProvider, useFilters } from "../filters";
 import {
-  CatalogCellIDContextProvider,
+  CatalogProvider,
   useCatalogCellID,
-  useCatalogID
+  useCatalogID,
+  useMatchingRows
 } from "./CatalogContext";
-import { useAddPlot, usePlotIDs } from "../plot-hooks";
 import BrowseFieldsDialog from "./BrowseFieldsDialog";
 import Katex from "./Katex";
+import { useCatalogMetadata } from "./CatalogMetadataContext";
 
 export default function CatalogCell({
   id: catalog_cell_id
@@ -43,19 +52,13 @@ export default function CatalogCell({
   id: CellID.Catalog;
 }) {
   return (
-    <CatalogCellIDContextProvider value={catalog_cell_id}>
-      <CatalogMetadataProvider>
-        <FiltersProvider>
-          <CatalogCellContents />
-        </FiltersProvider>
-      </CatalogMetadataProvider>
-    </CatalogCellIDContextProvider>
+    <CatalogProvider value={catalog_cell_id}>
+      <CatalogCellContents />
+    </CatalogProvider>
   );
 }
 
 function CatalogCellContents() {
-  const catalog_id = useCatalogID();
-
   return (
     <CellWrapper className="grid gap-x-8 gap-y-4 desktop:grid-cols-6">
       <div className="space-y-4 desktop:col-span-2 desktop:col-start-1">
@@ -72,6 +75,7 @@ function CatalogCellContents() {
       </div>
       <div className="flex flex-col gap-y-4 desktop:col-span-4 desktop:col-start-3 desktop:row-start-1">
         <Heading>Results</Heading>
+        <MatchingRows />
         <AddPlotButton />
         <Plots />
         <div className="rounded-md p-4 ring-1 ring-black/20">
@@ -135,7 +139,7 @@ function AboutThisCatalog() {
     return (
       <>
         <Heading>{title}</Heading>
-        <Katex className="space-y-4 leading-[1.4] [&_a]:underline [&_ul]:pb-3 [&_ul]:list-disc [&_ul]:space-y-4 [&_ul]:ps-10">
+        <Katex className="space-y-4 leading-[1.4] [&_a]:underline [&_ul]:list-disc [&_ul]:space-y-4 [&_ul]:pb-3 [&_ul]:ps-10">
           {descr}
         </Katex>
         <p>Rows: {format.commas(count)}</p>
@@ -153,6 +157,18 @@ function AboutThisCatalog() {
       {contents}
     </Dialog>
   );
+}
+
+function MatchingRows() {
+  const catalog_metadata = useCatalogMetadata();
+  const total_rows = catalog_metadata?.response?.count;
+  const matching = useMatchingRows();
+  const r = Number.isFinite(matching)
+    ? format.commas(matching)
+    : `[Loading...]`;
+  const t = total_rows ? format.commas(total_rows) : `[Loading...]`;
+  const text = `Filtered to ${r} out of ${t} total rows`;
+  return <div>{text}</div>;
 }
 
 function AddPlotButton() {

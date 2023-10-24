@@ -15,8 +15,7 @@ import {
 } from "../shared";
 import * as controller from "../app-state";
 import { useIsDarkMode } from "../dark-mode";
-import { useFilters } from "../filters";
-import { useCatalogMetadata } from "./CatalogMetadata";
+import { useFilters } from "./FiltersContext";
 import {
   Placeholder,
   Select,
@@ -27,6 +26,7 @@ import {
 import { useCatalogID } from "./CatalogContext";
 import HighchartsPlot from "./HighchartsPlot";
 import { useRemovePlot } from "../plot-hooks";
+import { useCatalogMetadata } from "./CatalogMetadataContext";
 
 const [usePlotID, PlotIDProvider] = create_context_helper<PlotID>(`PlotID`);
 

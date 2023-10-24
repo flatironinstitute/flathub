@@ -1,8 +1,8 @@
 import type {
+  CatalogMetadataWrapper,
   CatalogResponse,
   FieldMetadata,
-  CatalogHierarchyNode,
-  CatalogMetadataWrapper
+  CatalogHierarchyNode
 } from "../types";
 
 import React from "react";
@@ -20,7 +20,7 @@ export function useCatalogMetadata(): CatalogMetadataWrapper | undefined {
   return catalog_metadata;
 }
 
-export default function CatalogMetadataProvider({ children }) {
+export function CatalogMetadataProvider({ children }) {
   const catalog_id = useCatalogID();
   const catalog_query = useQuery({
     queryKey: [`catalog`, catalog_id],

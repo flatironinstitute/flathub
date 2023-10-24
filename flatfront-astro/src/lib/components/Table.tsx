@@ -22,13 +22,13 @@ import {
   is_leaf_node,
   is_root_node
 } from "../shared";
-import { useFilters } from "../filters";
+import { useFilters } from "./FiltersContext";
 import { BigButton, CollapsibleSection, Placeholder } from "./Primitives";
 import Katex from "./Katex";
 import { useCatalogID } from "./CatalogContext";
-import { useCatalogMetadata } from "./CatalogMetadata";
 import { useCurrentColumnIDs } from "../columns";
 import BrowseFieldsDialog from "./BrowseFieldsDialog";
+import { useCatalogMetadata } from "./CatalogMetadataContext";
 
 export default function TableSection() {
   return (
@@ -48,7 +48,7 @@ function Table() {
 
   const filters = useFilters();
 
-  const [rows_per_page] = React.useState(25);
+  const [rows_per_page, set_rows_per_page] = React.useState(25);
   const [offset, set_offset] = React.useState(0);
 
   const request_body: DataPostRequestBody = {
@@ -93,9 +93,23 @@ function Table() {
     }
   })();
 
+  const rows_select = (
+    <select
+      onChange={(event) => {
+        const value = event.target.value;
+        set_rows_per_page(Number(value));
+      }}
+    >
+      <option value={25}>25</option>
+      <option value={50}>50</option>
+      <option value={100}>100</option>
+    </select>
+  );
+
   return (
     <>
       {component}
+      <div>Show {rows_select} rows</div>
       <div>offset: {offset}</div>
       <button
         onClick={() => {
@@ -170,7 +184,7 @@ function TablePrimitive({ data }: { data: Array<DataRow> }) {
       </thead>
       <tbody>
         {table.getRowModel().rows.map((row) => (
-          <tr key={row.id}>
+          <tr key={row.id} className="odd:bg-gray-100 dark:odd:bg-white/20">
             {row.getVisibleCells().map((cell) => (
               <td
                 key={cell.id}

@@ -70,6 +70,10 @@ export type DataRow = Record<string, any>;
 // SCHEMA
 // ===========================================
 
+export type CountRequestBody = NonNullable<
+  schema.operations["countPOST"]["requestBody"]
+>["content"]["application/json"];
+
 export type DataPostRequestBody = NonNullable<
   schema.operations["dataPOST"]["requestBody"]
 >["content"]["application/json"];
@@ -77,6 +81,9 @@ export type DataPostRequestBody = NonNullable<
 export type HistogramPostRequestBody = NonNullable<
   schema.operations["histogramPOST"]["requestBody"]
 >["content"]["application/json"];
+
+export type CountResponse =
+  schema.components["responses"]["count"]["content"]["application/json"];
 
 export type HistogramResponse =
   schema.components["responses"]["histogram"]["content"]["application/json"];

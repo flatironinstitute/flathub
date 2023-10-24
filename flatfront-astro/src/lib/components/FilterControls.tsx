@@ -11,7 +11,7 @@ import {
 import { Select, RangeSliderWithText } from "./Primitives";
 import { useFieldNode } from "./FieldNodeContext";
 import { useCatalogCellID, useCatalogID } from "./CatalogContext";
-import { useFilters } from "../filters";
+import { useFilters } from "./FiltersContext";
 
 export function RangeFilterControl() {
   const field_node = useFieldNode();

@@ -4,21 +4,20 @@ import type {
   FieldMetadata,
   FilterValueRaw,
   Filters
-} from "./types";
+} from "../types";
 
 import React from "react";
 import lodash_merge from "lodash.merge";
 import lodash_set from "lodash.set";
 import lodash_unset from "lodash.unset";
-import * as controller from "./app-state";
+import * as controller from "../app-state";
 import {
   assert_numeric_field_stats,
   get_field_type,
   has_numeric_field_stats
-} from "./shared";
-import { useCatalogCellID, useCatalogID } from "./components/CatalogContext";
-import { useCatalogMetadata } from "./components/CatalogMetadata";
-import { useFieldNode } from "./components/FieldNodeContext";
+} from "../shared";
+import { useCatalogCellID, useCatalogID } from "./CatalogContext";
+import { useCatalogMetadata } from "./CatalogMetadataContext";
 
 const FiltersContext = React.createContext(null);
 

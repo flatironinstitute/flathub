@@ -26,7 +26,7 @@ import Katex from "./Katex";
 import { FieldTitles, Placeholder } from "./Primitives";
 import { RangeFilterControl, SelectFilterControl } from "./FilterControls";
 import { useCatalogID } from "./CatalogContext";
-import { useFilters, useRemoveFilter } from "../filters";
+import { useFilters, useRemoveFilter } from "./FiltersContext";
 import {
   useFieldNode,
   Provider as FieldNodeProvider
