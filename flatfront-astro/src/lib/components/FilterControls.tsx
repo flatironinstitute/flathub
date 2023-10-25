@@ -69,10 +69,7 @@ export function SelectFilterControl() {
         if (!d.count) return d.text;
         return `${d.text} (${format.commas(d.count)} rows)`;
       }}
-      onValueChange={({ value }) => {
-        // set_filter_value([], value);
-        set_filter_value(value);
-      }}
+      onValueChange={({ value }) => set_filter_value(value)}
     />
   );
 }
