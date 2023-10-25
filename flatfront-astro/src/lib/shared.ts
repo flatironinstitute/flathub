@@ -207,7 +207,7 @@ export function join_enums(
         return {
           text,
           count: found?.count ?? null,
-          value: index
+          value: found?.value ?? index
         };
       });
     } else if (has_enum && !has_terms) {
