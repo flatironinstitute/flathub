@@ -69,6 +69,7 @@ export type CatalogMetadataWrapper = {
   response: CatalogResponse;
   hierarchy: CatalogHierarchyNode;
   depth_first: Array<CatalogHierarchyNode>;
+  hash_map: Map<CatalogHierarchyNode, string>;
 };
 
 export type CatalogHierarchyNode = d3.HierarchyNode<FieldMetadata>;
@@ -109,9 +110,7 @@ export type FilterValueRaw = Filters[string];
 
 export type Filters = schema.components["schemas"]["Filters"];
 
-export type FieldMetadata = schema.components["schemas"]["FieldGroup"] & {
-  __hash?: string;
-};
+export type FieldMetadata = schema.components["schemas"]["FieldGroup"];
 
 export type CatalogResponse =
   schema.components["responses"]["catalog"]["content"]["application/json"];

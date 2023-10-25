@@ -160,7 +160,6 @@ function AboutThisCatalog() {
 
 function MatchingRows() {
   const catalog_id = useCatalogID();
-  if (!catalog_id) return <div>Select a catalog</div>;
   const catalog_metadata = useCatalogMetadata();
   const total_rows = catalog_metadata?.response?.count;
   const matching = useMatchingRows();
@@ -169,6 +168,7 @@ function MatchingRows() {
     : `[Loading...]`;
   const t = total_rows ? format.commas(total_rows) : `[Loading...]`;
   const text = `Filtered to ${r} out of ${t} total rows`;
+  if (!catalog_id) return <div>Select a catalog</div>;
   return <div>{text}</div>;
 }
 
@@ -202,10 +202,11 @@ function AddFilterSelect() {
   const [value, set_value] = React.useState(undefined);
   return (
     <Combobox
+      disabled={!catalog_id || !catalog_metadata}
       placeholder="Add a filter..."
       options={leaves}
       value={value}
-      getKey={(d: CatalogHierarchyNode) => d.data.__hash}
+      getKey={(d: CatalogHierarchyNode) => catalog_metadata.hash_map.get(d)}
       getDisplayName={(d: CatalogHierarchyNode) => {
         const titles = get_field_titles(d);
         return <FieldTitles titles={titles} />;
@@ -250,7 +251,7 @@ function FilterControls() {
   return (
     <div className="space-y-3">
       {filter_and_ancestor_nodes.map((node, index) => (
-        <React.Fragment key={node.data.__hash}>
+        <React.Fragment key={catalog_metadata.hash_map.get(node)}>
           {index === 0 ? null : <Separator></Separator>}
           <FieldCard fieldNode={node} />
         </React.Fragment>
@@ -266,7 +267,7 @@ function RandomSampleControls() {
     <>
       <div>Sample</div>
       <SliderWithText
-        min={0}
+        min={1e-9}
         max={1}
         value={1}
         debounce={500}

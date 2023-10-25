@@ -22,17 +22,22 @@ export function CatalogMetadataProvider({ children }) {
     queryFn: (): Promise<CatalogResponse> => fetch_api_get(`/${catalog_id}`),
     enabled: !!catalog_id
   });
-  const catalog_metadata = wrap_catalog_metadata(catalog_query);
+  const wrapped = React.useMemo(
+    () =>
+      catalog_query.data
+        ? wrap_catalog_response(catalog_query.data)
+        : undefined,
+    [catalog_query.data]
+  );
+
   return (
-    <CatalogMetadataContext.Provider value={catalog_metadata}>
+    <CatalogMetadataContext.Provider value={wrapped}>
       {children}
     </CatalogMetadataContext.Provider>
   );
 }
 
-function wrap_catalog_metadata(catalog_query: UseQueryResult<CatalogResponse>) {
-  const catalog_response = catalog_query.data;
-  if (!catalog_response) return undefined;
+function wrap_catalog_response(catalog_response: CatalogResponse) {
   log(`Creating metadata for ${catalog_response.name}...`);
   const root = {
     sub: catalog_response.fields
@@ -41,16 +46,17 @@ function wrap_catalog_metadata(catalog_query: UseQueryResult<CatalogResponse>) {
     root,
     (d) => d?.sub ?? []
   );
+  const hash_map = new Map<CatalogHierarchyNode, string>();
   const depth_first: Array<CatalogHierarchyNode> = [];
-  hierarchy.eachBefore((d) => {
-    d.data.__hash = tiny_json_hash(d.data);
-    if (!is_root_node(d)) depth_first.push(d);
-    get_field_type(d.data);
+  hierarchy.eachBefore((node) => {
+    hash_map.set(node, tiny_json_hash(node.data));
+    if (!is_root_node(node)) depth_first.push(node);
   });
   const wrapper: CatalogMetadataWrapper = {
     response: catalog_response,
     hierarchy,
-    depth_first
+    depth_first,
+    hash_map
   };
   return wrapper;
 }
