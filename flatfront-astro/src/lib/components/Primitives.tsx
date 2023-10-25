@@ -189,47 +189,17 @@ export function RangeSliderWithText(props: {
       data-type="RangeSliderWithText"
       className="mt-[9px] grid grid-cols-2 items-center gap-x-4 gap-y-2"
     >
-      <TextInput
+      <NumberInput
         value={internal_low.toString()}
-        getValidityMessage={(string) => {
-          const number = Number(string);
-          if (!Number.isFinite(number)) return `Invalid number`;
-          if (number < min) return `Must be greater than ${min.toString()}`;
-          if (number > max) return `Must be less than ${max.toString()}`;
-          if (number > internal_high)
-            return `Must be less than ${internal_high.toString()}`;
-          return null;
-        }}
-        onStringInput={(string: string) => {
-          const number = Number(string);
-          if (!Number.isFinite(number)) return;
-          if (string === internal_low.toString()) {
-            // Not updating filter because it didn't change
-            return;
-          }
-          set_internal_low(number);
-        }}
+        min={min}
+        max={Math.min(internal_high, max)}
+        onNumberInput={(value) => set_internal_low(value)}
       />
-      <TextInput
+      <NumberInput
         value={internal_high.toString()}
-        getValidityMessage={(string) => {
-          const number = Number(string);
-          if (!Number.isFinite(number)) return `Invalid number`;
-          if (number < min) return `Must be greater than ${min.toString()}`;
-          if (number > max) return `Must be less than ${max.toString()}`;
-          if (number < internal_low)
-            return `Must be greater than ${internal_low.toString()}`;
-          return null;
-        }}
-        onStringInput={(string: string) => {
-          const number = Number(string);
-          if (!Number.isFinite(number)) return;
-          if (string === internal_high.toString()) {
-            // Not updating filter because it didn't change
-            return;
-          }
-          set_internal_high(number);
-        }}
+        min={Math.max(internal_low, min)}
+        max={max}
+        onNumberInput={(value) => set_internal_high(value)}
       />
       <div className="col-span-2">
         <Slider
@@ -274,24 +244,11 @@ export function SliderWithText(props: {
   return (
     <div data-type="SliderWithText" className="@container">
       <div className="grid items-center gap-x-4 gap-y-2 @xs:grid-cols-2">
-        <TextInput
+        <NumberInput
           value={internal_value.toString()}
-          getValidityMessage={(string) => {
-            const number = Number(string);
-            if (!Number.isFinite(number)) return `Invalid number`;
-            if (number > max) return `Must be less than ${max.toString()}`;
-            if (number < min) return `Must be greater than ${min.toString()}`;
-            return null;
-          }}
-          onStringInput={(string: string) => {
-            const number = Number(string);
-            if (!Number.isFinite(number)) return;
-            if (string === internal_value.toString()) {
-              // Not updating filter because it didn't change
-              return;
-            }
-            set_internal_value(number);
-          }}
+          min={min}
+          max={max}
+          onNumberInput={(value) => set_internal_value(value)}
         />
         <Slider
           min={min}
@@ -308,9 +265,13 @@ export function SliderWithText(props: {
   );
 }
 
-function Slider({ min, max, value, onValueChange }: RadixSlider.SliderProps) {
-  const step = d3.tickStep(min, max, 100);
-
+function Slider({
+  min,
+  max,
+  value,
+  onValueChange,
+  step = d3.tickStep(min, max, 100)
+}: RadixSlider.SliderProps) {
   const thumb_class = clsx(
     `block h-2 w-2 rounded-full`,
     `bg-black dark:bg-white`,
@@ -336,16 +297,54 @@ function Slider({ min, max, value, onValueChange }: RadixSlider.SliderProps) {
   );
 }
 
+export function NumberInput({
+  value,
+  min,
+  max,
+  onNumberInput,
+  ...rest
+}: TextInputProps & {
+  min: number;
+  max: number;
+  onNumberInput?: (value: number) => void;
+}) {
+  return (
+    <TextInput
+      type="number"
+      step="any"
+      value={value.toString()}
+      getValidityMessage={(string) => {
+        const number = Number(string);
+        if (!Number.isFinite(number)) return `Invalid number`;
+        if (number < min) return `Must be greater than ${min.toString()}`;
+        if (number > max) return `Must be less than ${max.toString()}`;
+        return null;
+      }}
+      onStringInput={(string: string) => {
+        const number = Number(string);
+        if (!Number.isFinite(number)) return;
+        if (string.toString() === value.toString()) {
+          // Not updating filter because it didn't change
+          return;
+        }
+        onNumberInput?.(number);
+      }}
+      {...rest}
+    />
+  );
+}
+
+type TextInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
+  onStringInput?: (value: string) => void;
+  getValidityMessage?: (value: string) => string | null;
+};
+
 export function TextInput({
   value,
   onStringInput = () => null,
   getValidityMessage = () => null,
   ...rest
-}: React.InputHTMLAttributes<HTMLInputElement> & {
-  value?: string;
-  onStringInput?: (value: string) => void;
-  getValidityMessage?: (value: string) => string | null;
-}) {
+}: TextInputProps) {
   const ref = React.useRef<HTMLInputElement>(null);
   const [internal, set_internal] = React.useState(value ?? ``);
 
@@ -362,7 +361,7 @@ export function TextInput({
   };
 
   React.useEffect(() => {
-    on_input(value ?? ``);
+    on_input(value.toString() ?? ``);
   }, [value]);
 
   return (
