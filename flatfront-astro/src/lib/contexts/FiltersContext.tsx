@@ -8,9 +8,7 @@ import type {
 
 import React from "react";
 import lodash_merge from "lodash.merge";
-import lodash_set from "lodash.set";
-import lodash_unset from "lodash.unset";
-import * as controller from "../app-state";
+import * as controller from "./AppStateContext";
 import {
   assert_numeric_field_stats,
   get_field_type,
@@ -152,17 +150,15 @@ export function useRemoveFilter() {
   return (node: CatalogHierarchyNode) => {
     const field_id = node.data.name;
     set_app_state((obj) => {
-      lodash_set(
-        obj,
-        [`add_filter`, catalog_cell_id, catalog_id, field_id],
-        false
-      );
-      lodash_unset(obj, [
-        `set_filter_value`,
-        catalog_cell_id,
-        catalog_id,
-        field_id
-      ]);
+      obj.add_filter ??= {};
+      obj.add_filter[catalog_cell_id] ??= {};
+      obj.add_filter[catalog_cell_id][catalog_id] ??= {};
+      obj.add_filter[catalog_cell_id][catalog_id][field_id] = false;
+
+      obj.set_filter_value ??= {};
+      obj.set_filter_value[catalog_cell_id] ??= {};
+      obj.set_filter_value[catalog_cell_id][catalog_id] ??= {};
+      delete obj.set_filter_value[catalog_cell_id][catalog_id][field_id];
     });
   };
 }

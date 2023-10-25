@@ -30,6 +30,7 @@ import { BigButton, CollapsibleSection, Placeholder } from "./Primitives";
 import Katex from "./Katex";
 import { useCurrentColumnIDs } from "../columns";
 import BrowseFieldsDialog from "./BrowseFieldsDialog";
+import { useRandomConfig } from "../contexts/RandomContext";
 
 export default function TableSection() {
   return (
@@ -48,6 +49,7 @@ function Table() {
   const fields = Array.from(useCurrentColumnIDs());
 
   const filters = useFilters();
+  const random_config = useRandomConfig();
 
   const [rows_per_page, set_rows_per_page] = React.useState(25);
   const [offset, set_offset] = React.useState(0);
@@ -61,8 +63,8 @@ function Table() {
     fields: fields,
     ...filters,
     count: rows_per_page,
-    offset
-    // ...query_parameters
+    offset,
+    ...random_config
   };
 
   const query_config = {
@@ -114,16 +116,15 @@ function Table() {
   const matching = useMatchingRows();
 
   const from = query?.data?.length === 0 ? 0 : offset + 1;
-  const to = offset + query?.data?.length ?? 0;
-  const tot = Number.isFinite(matching)
-    ? format.commas(matching)
-    : `[Loading...]`;
+  const to = offset + (query?.data?.length ?? 0);
 
-  const info = (
-    <div>
-      Showing {from} to {to} of {tot} rows
-    </div>
-  );
+  const info_text = (() => {
+    if (query?.status === `pending`) return `Loading...`;
+    const total = Number.isFinite(matching)
+      ? format.commas(matching)
+      : `[Loading...]`;
+    return `Showing ${from} to ${to} of ${total} rows`;
+  })();
 
   const button_class = `disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ring-1 ring-black/80 rounded-sm px-2 py-1`;
 
@@ -150,7 +151,7 @@ function Table() {
     <>
       {component}
       <div>Show {rows_select} rows</div>
-      {info}
+      <div>{info_text}</div>
       {prev_next}
     </>
   );

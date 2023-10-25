@@ -1,10 +1,10 @@
-import type { AppState } from "./types";
+import type { AppState } from "../types";
 import React from "react";
 import { useDebounce } from "@uidotdev/usehooks";
 import * as lzstring from "lz-string";
 import lodash_set from "lodash.set";
 import { useImmer, type Updater } from "use-immer";
-import { log } from "./shared";
+import { log } from "../shared";
 
 const AppStateContext = React.createContext<AppState>({});
 const DispatchContext = React.createContext<Updater<AppState> | undefined>(
@@ -44,6 +44,21 @@ export function useDispatch() {
     set_app_state((obj) => lodash_set(obj, keys, value));
   };
   return dispatch;
+}
+
+function merge<T>(obj: T, to_merge: T) {
+  for (const key in to_merge) {
+    if (typeof obj[key] === `object`) {
+      merge(obj[key], to_merge[key]);
+    } else {
+      obj[key] = to_merge[key];
+    }
+  }
+}
+
+export function useMergeState() {
+  const set_app_state = useSetAppState();
+  return (next: AppState) => set_app_state((prev) => merge(prev, next));
 }
 
 export function useSaveAndRestoreState() {

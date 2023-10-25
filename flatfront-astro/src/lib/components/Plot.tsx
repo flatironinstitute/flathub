@@ -13,7 +13,7 @@ import {
   get_field_type,
   create_context_helper
 } from "../shared";
-import * as controller from "../app-state";
+import * as controller from "../contexts/AppStateContext";
 import { useIsDarkMode } from "../dark-mode";
 import { useRemovePlot } from "../plot-hooks";
 import { useFilters } from "../contexts/FiltersContext";

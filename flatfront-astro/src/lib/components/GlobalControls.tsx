@@ -1,7 +1,7 @@
 import type { DarkModeValue } from "../types";
 
 import React from "react";
-import * as controller from "../app-state";
+import * as controller from "../contexts/AppStateContext";
 import { useDarkModeValue } from "../dark-mode";
 import { CellWrapper, BigButton, RadioGroup } from "./Primitives";
 

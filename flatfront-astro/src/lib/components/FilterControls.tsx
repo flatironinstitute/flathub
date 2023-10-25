@@ -1,6 +1,5 @@
 import type { FilterValueRaw } from "../types";
 
-import * as controller from "../app-state";
 import {
   format,
   assert_numeric_field_stats,
@@ -10,7 +9,6 @@ import {
 } from "../shared";
 import { Select, RangeSliderWithText } from "./Primitives";
 import { useFieldNode } from "../contexts/FieldNodeContext";
-import { useCatalogCellID, useCatalogID } from "../contexts/CatalogContext";
 import { useFilters, useSetFilterValue } from "../contexts/FiltersContext";
 
 export function RangeFilterControl() {

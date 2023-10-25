@@ -5,7 +5,7 @@ import {
   Provider as AppControllerProvider,
   useSaveAndRestoreState,
   useAppState
-} from "../app-state";
+} from "../contexts/AppStateContext";
 import { useToggleDarkMode } from "../dark-mode";
 import { log } from "../shared";
 import GlobalControls from "./GlobalControls";

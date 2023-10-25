@@ -1,15 +1,25 @@
 import type { PlotID } from "./types";
 import * as d3 from "d3";
-import { useAppState, useDispatch } from "./app-state";
+import {
+  useAppState,
+  useDispatch,
+  useMergeState
+} from "./contexts/AppStateContext";
 import { useCatalogCellID } from "./contexts/CatalogContext";
 import { assert_plot_id } from "./shared";
 
 export function useAddPlot() {
   const catalog_cell_id = useCatalogCellID();
   const next_id: PlotID = `plot_${Date.now()}`;
-  const dispatch = useDispatch();
+  const merge_state = useMergeState();
   return () => {
-    dispatch([`add_plot`, catalog_cell_id, next_id], true);
+    merge_state({
+      add_plot: {
+        [catalog_cell_id]: {
+          [next_id]: true
+        }
+      }
+    });
   };
 }
 

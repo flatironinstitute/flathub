@@ -11,7 +11,7 @@ import type {
 import React from "react";
 import * as d3 from "d3";
 import { useQuery } from "@tanstack/react-query";
-import * as controller from "../app-state";
+import * as controller from "../contexts/AppStateContext";
 import {
   fetch_api_get,
   fetch_api_post,
@@ -46,6 +46,7 @@ import PlotSection from "./Plot";
 import FieldCard from "./FieldCard";
 import BrowseFieldsDialog from "./BrowseFieldsDialog";
 import Katex from "./Katex";
+import { useSetRandomConfig } from "../contexts/RandomContext";
 
 export default function CatalogCell({
   id: catalog_cell_id
@@ -162,6 +163,8 @@ function AboutThisCatalog() {
 }
 
 function MatchingRows() {
+  const catalog_id = useCatalogID();
+  if (!catalog_id) return <div>Select a catalog</div>
   const catalog_metadata = useCatalogMetadata();
   const total_rows = catalog_metadata?.response?.count;
   const matching = useMatchingRows();
@@ -253,21 +256,26 @@ function FilterControls() {
 }
 
 function RandomSampleControls() {
-  const dispatch = controller.useDispatch();
+  const set_random_config = useSetRandomConfig();
 
   return (
     <>
-      <div>fraction</div>
+      <div>Sample</div>
       <SliderWithText
         min={0}
         max={1}
         value={1}
         debounce={500}
-        onValueChange={(new_value) => {
-          log(`new_value`, new_value);
-        }}
+        onValueChange={(new_value) => set_random_config(`sample`, new_value)}
       />
-      <div>seed</div>
+      <div>Seed</div>
+      <SliderWithText
+        min={0}
+        max={18446744073709552000}
+        value={1}
+        debounce={500}
+        onValueChange={(new_value) => set_random_config(`seed`, new_value)}
+      />
     </>
   );
 }

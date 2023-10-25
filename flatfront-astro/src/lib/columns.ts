@@ -1,4 +1,4 @@
-import { useAppState, useDispatch } from "./app-state";
+import { useAppState, useDispatch } from "./contexts/AppStateContext";
 import { useCatalogCellID, useCatalogID } from "./contexts/CatalogContext";
 import { useCatalogMetadata } from "./contexts/CatalogMetadataContext";
 import type { CatalogHierarchyNode, FieldID, FieldMetadata } from "./types";

@@ -7,10 +7,11 @@ import type {
 
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import * as controller from "../app-state";
+import * as controller from "./AppStateContext";
 import { assert_catalog_cell_id, fetch_api_post } from "../shared";
 import { FiltersProvider, useFilters } from "./FiltersContext";
 import { CatalogMetadataProvider } from "./CatalogMetadataContext";
+import { RandomProvider } from "./RandomContext";
 
 const CatalogCellIDContext = React.createContext<CellID.Catalog | undefined>(
   undefined
@@ -29,7 +30,9 @@ export function CatalogProvider({
     <CatalogCellIDContext.Provider value={catalog_cell_id}>
       <CatalogMetadataProvider>
         <FiltersProvider>
-          <MatchingRowsProvider>{children}</MatchingRowsProvider>
+          <RandomProvider>
+            <MatchingRowsProvider>{children}</MatchingRowsProvider>
+          </RandomProvider>
         </FiltersProvider>
       </CatalogMetadataProvider>
     </CatalogCellIDContext.Provider>
@@ -51,7 +54,8 @@ function MatchingRowsProvider({ children }: { children: React.ReactNode }) {
         { signal }
       );
       return response;
-    }
+    },
+    enabled: !!catalog_id
   });
   const result = query?.data ?? null;
   return (
