@@ -2,47 +2,27 @@ import type { AppState } from "../types";
 import React from "react";
 import { useDebounce } from "@uidotdev/usehooks";
 import * as lzstring from "lz-string";
-import lodash_set from "lodash.set";
 import lodash_merge from "lodash.merge";
-import { setAutoFreeze } from "immer";
 import { useImmer, type Updater } from "use-immer";
 import { log } from "../shared";
 
 const AppStateContext = React.createContext<AppState>({});
-const DispatchContext = React.createContext<Updater<AppState> | undefined>(
+const SetAppStateContext = React.createContext<Updater<AppState> | undefined>(
   undefined
 );
-
-// function autobuild<T extends object>(obj: T) {
-//   return new Proxy(obj, {
-//     get(target, property, receiver) {
-//       const is_symbol = typeof property === `symbol`;
-//       const is_to_json = property === `toJSON`;
-//       const misssing_property = !(property in target);
-//       const is_extensible = Object.isExtensible(target);
-//       const should_create_object =
-//         !is_symbol && !is_to_json && misssing_property && is_extensible;
-//       if (should_create_object) {
-//         target[property] = autobuild({});
-//       }
-//       return Reflect.get(target, property, receiver);
-//     }
-//   });
-// }
 
 export function Provider({ children }) {
   const [app_state, set_app_state] = useImmer<AppState>(() => {
     const app_state_from_url = get_data_from_url<any>(`app_state`);
     const initial_app_state: AppState = app_state_from_url ?? {};
     return initial_app_state;
-    // return autobuild(initial_app_state);
   });
   log(`AppState:`, app_state);
   return (
     <AppStateContext.Provider value={app_state}>
-      <DispatchContext.Provider value={set_app_state}>
+      <SetAppStateContext.Provider value={set_app_state}>
         {children}
-      </DispatchContext.Provider>
+      </SetAppStateContext.Provider>
     </AppStateContext.Provider>
   );
 }
@@ -56,7 +36,7 @@ export function useAppState() {
 }
 
 export function useSetAppState() {
-  const set_app_state = React.useContext(DispatchContext);
+  const set_app_state = React.useContext(SetAppStateContext);
   if (set_app_state === undefined) {
     throw new Error(`useSetAppState must be used within a Provider`);
   }
@@ -68,7 +48,7 @@ export function useMergeState() {
   return (next: AppState) => set_app_state((prev) => lodash_merge(prev, next));
 }
 
-export function useSaveAndRestoreState() {
+export function useSaveStateInURL() {
   const app_state = useAppState();
   const debounced = useDebounce(app_state, 1000);
   React.useEffect(() => {

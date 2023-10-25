@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import clsx from "clsx";
 import {
   Provider as AppControllerProvider,
-  useSaveAndRestoreState,
+  useSaveStateInURL,
   useAppState
 } from "../contexts/AppStateContext";
 import { useToggleDarkMode } from "../dark-mode";
@@ -32,7 +32,7 @@ export default function App() {
 
 function Main() {
   useToggleDarkMode();
-  useSaveAndRestoreState();
+  useSaveStateInURL();
   const app_state = useAppState();
   React.useEffect(() => {
     log(`app_state`, app_state);
