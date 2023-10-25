@@ -62,10 +62,6 @@ function MatchingRowsProvider({ children }: { children: React.ReactNode }) {
 
 export function useCatalogCellID() {
   const catalog_cell_id = React.useContext(CatalogCellIDContext);
-  if (catalog_cell_id === null) {
-    throw new Error(`useCatalogCellID: value is null`);
-  }
-  assert_catalog_cell_id(catalog_cell_id);
   return catalog_cell_id;
 }
 

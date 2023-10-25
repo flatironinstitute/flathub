@@ -47,9 +47,6 @@ export function FiltersProvider({ children }) {
 
 export function useFilters(): Filters {
   const filters = React.useContext(FiltersContext);
-  if (filters === null) {
-    throw new Error(`useFilters must be used within a FilterProvider`);
-  }
   return filters;
 }
 
