@@ -3,6 +3,8 @@ import React from "react";
 import { useDebounce } from "@uidotdev/usehooks";
 import * as lzstring from "lz-string";
 import lodash_set from "lodash.set";
+import lodash_merge from "lodash.merge";
+import { setAutoFreeze } from "immer";
 import { useImmer, type Updater } from "use-immer";
 import { log } from "../shared";
 
@@ -11,8 +13,31 @@ const DispatchContext = React.createContext<Updater<AppState> | undefined>(
   undefined
 );
 
+// function autobuild<T extends object>(obj: T) {
+//   return new Proxy(obj, {
+//     get(target, property, receiver) {
+//       const is_symbol = typeof property === `symbol`;
+//       const is_to_json = property === `toJSON`;
+//       const misssing_property = !(property in target);
+//       const is_extensible = Object.isExtensible(target);
+//       const should_create_object =
+//         !is_symbol && !is_to_json && misssing_property && is_extensible;
+//       if (should_create_object) {
+//         target[property] = autobuild({});
+//       }
+//       return Reflect.get(target, property, receiver);
+//     }
+//   });
+// }
+
 export function Provider({ children }) {
-  const [app_state, set_app_state] = useImmer<AppState>({});
+  const [app_state, set_app_state] = useImmer<AppState>(() => {
+    const app_state_from_url = get_data_from_url<any>(`app_state`);
+    const initial_app_state: AppState = app_state_from_url ?? {};
+    return initial_app_state;
+    // return autobuild(initial_app_state);
+  });
+  log(`AppState:`, app_state);
   return (
     <AppStateContext.Provider value={app_state}>
       <DispatchContext.Provider value={set_app_state}>
@@ -38,39 +63,13 @@ export function useSetAppState() {
   return set_app_state;
 }
 
-export function useDispatch() {
-  const set_app_state = useSetAppState();
-  const dispatch = (keys: Array<string | number>, value: any) => {
-    set_app_state((obj) => lodash_set(obj, keys, value));
-  };
-  return dispatch;
-}
-
-function merge<T>(obj: T, to_merge: T) {
-  for (const key in to_merge) {
-    if (typeof obj[key] === `object`) {
-      merge(obj[key], to_merge[key]);
-    } else {
-      obj[key] = to_merge[key];
-    }
-  }
-}
-
 export function useMergeState() {
   const set_app_state = useSetAppState();
-  return (next: AppState) => set_app_state((prev) => merge(prev, next));
+  return (next: AppState) => set_app_state((prev) => lodash_merge(prev, next));
 }
 
 export function useSaveAndRestoreState() {
   const app_state = useAppState();
-  const set_app_state = useSetAppState();
-  React.useEffect(() => {
-    const app_state = get_data_from_url<any>(`app_state`);
-    if (app_state) {
-      log(`Setting app state from URL:`, app_state);
-      set_app_state(app_state);
-    }
-  }, []);
   const debounced = useDebounce(app_state, 1000);
   React.useEffect(() => {
     if (Object.keys(debounced).length === 0) return;

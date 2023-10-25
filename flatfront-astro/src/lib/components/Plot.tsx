@@ -13,7 +13,6 @@ import {
   get_field_type,
   create_context_helper
 } from "../shared";
-import * as controller from "../contexts/AppStateContext";
 import { useIsDarkMode } from "../dark-mode";
 import { useRemovePlot } from "../plot-hooks";
 import { useFilters } from "../contexts/FiltersContext";
@@ -27,12 +26,13 @@ import {
   StatusBox
 } from "./Primitives";
 import HighchartsPlot from "./HighchartsPlot";
+import { useAppState, useMergeState } from "../contexts/AppStateContext";
 
 const [usePlotID, PlotIDProvider] = create_context_helper<PlotID>(`PlotID`);
 
 function usePlotType() {
   const plot_id = usePlotID();
-  const plot_type = controller.useAppState()?.set_plot_type?.[plot_id];
+  const plot_type = useAppState()?.set_plot_type?.[plot_id];
   return plot_type;
 }
 
@@ -165,7 +165,7 @@ function PlotTypeSelect() {
     { key: `heatmap` as PlotType, label: `Heatmap` }
   ];
   const value = plot_type_options.find((d) => d.key === plot_type);
-  const dispatch = controller.useDispatch();
+  const merge_state = useMergeState();
   return (
     <Select
       placeholder="Choose plot type..."
@@ -175,7 +175,11 @@ function PlotTypeSelect() {
       value={value}
       onValueChange={(d) => {
         const plot_type = d?.key;
-        dispatch([`set_plot_type`, plot_id], plot_type);
+        merge_state({
+          set_plot_type: {
+            [plot_id]: plot_type
+          }
+        });
       }}
       size="small"
     />
@@ -201,11 +205,11 @@ function PlotControl({
     return type === `INTEGER` || type === `FLOAT`;
   });
 
-  const plot_config = controller.useAppState().set_plot_control?.[plot_id];
+  const plot_config = useAppState().set_plot_control?.[plot_id];
 
   const field_id = plot_config?.[plot_control_key];
 
-  const dispatch = controller.useDispatch();
+  const merge_state = useMergeState();
 
   const value = numeric_nodes.find((d) => d.data.name === field_id);
 
@@ -222,7 +226,13 @@ function PlotControl({
         <Checkbox
           checked={is_log_mode}
           onCheckedChange={(checked) => {
-            dispatch([`set_plot_control`, plot_id, log_mode_key], checked);
+            merge_state({
+              set_plot_control: {
+                [plot_id]: {
+                  [log_mode_key]: checked
+                }
+              }
+            });
           }}
         />
       </div>
@@ -240,7 +250,13 @@ function PlotControl({
         getDisplayName={(d) => d.data.name}
         onValueChange={(d) => {
           const value = d?.data.name;
-          dispatch([`set_plot_control`, plot_id, plot_control_key], value);
+          merge_state({
+            set_plot_control: {
+              [plot_id]: {
+                [plot_control_key]: value
+              }
+            }
+          });
         }}
         triggerClassName="overflow-hidden text-ellipsis"
         valueClassName="overflow-hidden text-ellipsis"
@@ -255,7 +271,7 @@ function Histogram() {
   const filters = useFilters();
 
   const plot_id = usePlotID();
-  const plot_state = controller.useAppState()?.set_plot_control?.[plot_id];
+  const plot_state = useAppState()?.set_plot_control?.[plot_id];
 
   const x_axis_field_id = plot_state?.x_axis;
   const x_axis_log_mode = plot_state?.x_axis_log_mode ?? false;
@@ -332,7 +348,7 @@ function Heatmap() {
   const filters = useFilters();
 
   const plot_id = usePlotID();
-  const plot_state = controller.useAppState()?.set_plot_control?.[plot_id];
+  const plot_state = useAppState()?.set_plot_control?.[plot_id];
 
   const x_axis_field_id = plot_state?.x_axis;
   const y_axis_field_id = plot_state?.y_axis;
@@ -420,7 +436,7 @@ function Scatterplot() {
   const filters = useFilters();
 
   const plot_id = usePlotID();
-  const plot_state = controller.useAppState()?.set_plot_control?.[plot_id];
+  const plot_state = useAppState()?.set_plot_control?.[plot_id];
 
   const x_axis_field_id = plot_state?.x_axis;
   const y_axis_field_id = plot_state?.y_axis;
@@ -436,8 +452,9 @@ function Scatterplot() {
     fields: [x_axis_field_id, y_axis_field_id],
     ...filters,
     count,
-    sort: sort ? [sort] : undefined
-    // sample: 0.42,
+    sort: sort ? [sort] : undefined,
+    // TODO: Make this optional
+    sample: 0.42
     // seed: 12345
     // ...query_parameters
   };

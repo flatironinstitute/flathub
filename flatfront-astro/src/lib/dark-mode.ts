@@ -1,11 +1,11 @@
 import type { DarkModeValue } from "./types";
 
 import React from "react";
-import * as controller from "./contexts/AppStateContext";
 import { log } from "./shared";
+import { useAppState } from "./contexts/AppStateContext";
 
 export function useDarkModeValue(): DarkModeValue {
-  const dark_mode_value = controller.useAppState()?.dark_mode;
+  const dark_mode_value = useAppState()?.dark_mode;
   return dark_mode_value ?? `system`;
 }
 

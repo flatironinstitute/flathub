@@ -1,8 +1,6 @@
 import type {
   CatalogHierarchyNode,
   CellID,
-  CountRequestBody,
-  CountResponse,
   PlotID,
   TopResponse,
   TopResponseEntry
@@ -11,14 +9,7 @@ import type {
 import React from "react";
 import * as d3 from "d3";
 import { useQuery } from "@tanstack/react-query";
-import * as controller from "../contexts/AppStateContext";
-import {
-  fetch_api_get,
-  fetch_api_post,
-  format,
-  get_field_titles,
-  log
-} from "../shared";
+import { fetch_api_get, format, get_field_titles } from "../shared";
 import { useAddPlot, usePlotIDs } from "../plot-hooks";
 import { useFilters } from "../contexts/FiltersContext";
 import { useCatalogMetadata } from "../contexts/CatalogMetadataContext";
@@ -47,6 +38,7 @@ import FieldCard from "./FieldCard";
 import BrowseFieldsDialog from "./BrowseFieldsDialog";
 import Katex from "./Katex";
 import { useSetRandomConfig } from "../contexts/RandomContext";
+import { useMergeState } from "../contexts/AppStateContext";
 
 export default function CatalogCell({
   id: catalog_cell_id
@@ -109,7 +101,7 @@ function CatalogSelect() {
   const catalog_list = d3.sort(catalog_list_unsorted, get_title);
   const ready = catalog_list.length > 0;
   const selected = catalog_list.find((d) => d.name === catalog_id);
-  const dispatch = controller.useDispatch();
+  const merge_state = useMergeState();
   return (
     <div data-type="CatalogSelect">
       <Select
@@ -121,7 +113,11 @@ function CatalogSelect() {
         value={selected}
         onValueChange={(d) => {
           const catalog_id = d?.name;
-          dispatch([`set_catalog`, catalog_cell_id], catalog_id);
+          merge_state({
+            set_catalog: {
+              [catalog_cell_id]: catalog_id
+            }
+          });
         }}
       />
     </div>
@@ -164,7 +160,7 @@ function AboutThisCatalog() {
 
 function MatchingRows() {
   const catalog_id = useCatalogID();
-  if (!catalog_id) return <div>Select a catalog</div>
+  if (!catalog_id) return <div>Select a catalog</div>;
   const catalog_metadata = useCatalogMetadata();
   const total_rows = catalog_metadata?.response?.count;
   const matching = useMatchingRows();
@@ -202,7 +198,7 @@ function AddFilterSelect() {
   const catalog_metadata = useCatalogMetadata();
   const leaves = catalog_metadata?.hierarchy?.leaves() ?? [];
   const filters = useFilters();
-  const dispatch = controller.useDispatch();
+  const merge_state = useMergeState();
   const [value, set_value] = React.useState(undefined);
   return (
     <Combobox
@@ -219,7 +215,15 @@ function AddFilterSelect() {
       }}
       onValueChange={(d: CatalogHierarchyNode) => {
         const field_id = d.data.name;
-        dispatch([`add_filter`, catalog_cell_id, catalog_id, field_id], true);
+        merge_state({
+          add_filter: {
+            [catalog_cell_id]: {
+              [catalog_id]: {
+                [field_id]: true
+              }
+            }
+          }
+        });
         set_value(undefined);
       }}
       debug

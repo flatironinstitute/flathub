@@ -1,20 +1,25 @@
 import type { DarkModeValue } from "../types";
 
 import React from "react";
-import * as controller from "../contexts/AppStateContext";
 import { useDarkModeValue } from "../dark-mode";
 import { CellWrapper, BigButton, RadioGroup } from "./Primitives";
+import { useAppState, useMergeState } from "../contexts/AppStateContext";
 
 export default function GlobalControls(): React.JSX.Element {
-  const number_of_cells = controller.useAppState()?.add_cell?.length ?? 0;
-  const dispatch = controller.useDispatch();
+  const cells_object = useAppState()?.add_cell ?? {};
+  const number_of_cells = Object.keys(cells_object).length ?? 0;
+  const merge_state = useMergeState();
   return (
     <CellWrapper className="grid items-center gap-y-4">
       <BigButton
         onClick={() => {
-          dispatch([`add_cell`, number_of_cells.toString()], {
-            type: `catalog`,
-            id: `catalog_cell_${number_of_cells}`
+          merge_state({
+            add_cell: {
+              [number_of_cells]: {
+                type: `catalog`,
+                id: `catalog_cell_${number_of_cells}`
+              }
+            }
           });
         }}
       >
@@ -31,10 +36,10 @@ export default function GlobalControls(): React.JSX.Element {
 function DarkModeSelect() {
   const current_value = useDarkModeValue();
 
-  const dispatch = controller.useDispatch();
+  const merge_state = useMergeState();
 
   const on_change = (value: DarkModeValue) => {
-    dispatch([`dark_mode`], value);
+    merge_state({ dark_mode: value });
   };
 
   return (

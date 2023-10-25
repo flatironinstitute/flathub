@@ -33,10 +33,14 @@ export function RangeFilterControl() {
       low={low}
       high={high}
       onLowChange={(number) => {
-        set_filter_value([`gte`], number);
+        set_filter_value({
+          gte: number
+        });
       }}
       onHighChange={(number) => {
-        set_filter_value([`lte`], number);
+        set_filter_value({
+          lte: number
+        });
       }}
       debounce={500}
     />
@@ -66,7 +70,8 @@ export function SelectFilterControl() {
         return `${d.text} (${format.commas(d.count)} rows)`;
       }}
       onValueChange={({ value }) => {
-        set_filter_value([], value);
+        // set_filter_value([], value);
+        set_filter_value(value);
       }}
     />
   );

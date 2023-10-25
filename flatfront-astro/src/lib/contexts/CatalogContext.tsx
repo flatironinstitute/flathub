@@ -1,17 +1,12 @@
-import type {
-  CatalogMetadataWrapper,
-  CellID,
-  CountRequestBody,
-  CountResponse
-} from "../types";
+import type { CellID, CountRequestBody, CountResponse } from "../types";
 
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import * as controller from "./AppStateContext";
 import { assert_catalog_cell_id, fetch_api_post } from "../shared";
 import { FiltersProvider, useFilters } from "./FiltersContext";
 import { CatalogMetadataProvider } from "./CatalogMetadataContext";
 import { RandomProvider } from "./RandomContext";
+import { useAppState } from "./AppStateContext";
 
 const CatalogCellIDContext = React.createContext<CellID.Catalog | undefined>(
   undefined
@@ -76,7 +71,7 @@ export function useCatalogCellID() {
 
 export function useCatalogID(): string {
   const catalog_cell_id = useCatalogCellID();
-  const catalog_id = controller.useAppState()?.set_catalog?.[catalog_cell_id];
+  const catalog_id = useAppState()?.set_catalog?.[catalog_cell_id];
   return catalog_id;
 }
 

@@ -1,6 +1,6 @@
 import React from "react";
-import * as controller from "./AppStateContext";
 import { useCatalogCellID, useCatalogID } from "./CatalogContext";
+import { useAppState, useMergeState } from "./AppStateContext";
 
 const RandomContext = React.createContext<
   | {
@@ -13,7 +13,7 @@ const RandomContext = React.createContext<
 export function RandomProvider({ children }) {
   const catalog_cell_id = useCatalogCellID();
   const catalog_id = useCatalogID();
-  const app_state = controller.useAppState();
+  const app_state = useAppState();
   const random_config =
     app_state?.set_random_sample?.[catalog_cell_id]?.[catalog_id];
 
@@ -32,9 +32,17 @@ export function useRandomConfig() {
 export function useSetRandomConfig() {
   const catalog_cell_id = useCatalogCellID();
   const catalog_id = useCatalogID();
-  const dispatch = controller.useDispatch();
+  const merge_state = useMergeState();
   return (key: `sample` | `seed`, value: number) => {
-    dispatch([`set_random_sample`, catalog_cell_id, catalog_id, key], value);
+    merge_state({
+      set_random_sample: {
+        [catalog_cell_id]: {
+          [catalog_id]: {
+            [key]: value
+          }
+        }
+      }
+    });
     // dispatch({
     //   set_random_sample: {
     //     [catalog_cell_id]: {

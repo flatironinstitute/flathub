@@ -4,7 +4,7 @@ export type { schema };
 
 export type AppState = {
   dark_mode?: DarkModeValue;
-  add_cell?: Cell.Any[];
+  add_cell?: Record<number, Cell.Any>;
   add_filter?: Record<
     CellID.Catalog,
     Record<CatalogID, Record<FieldID, boolean>>

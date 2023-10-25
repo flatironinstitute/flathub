@@ -1,4 +1,4 @@
-import { useAppState, useDispatch } from "./contexts/AppStateContext";
+import { useAppState, useMergeState } from "./contexts/AppStateContext";
 import { useCatalogCellID, useCatalogID } from "./contexts/CatalogContext";
 import { useCatalogMetadata } from "./contexts/CatalogMetadataContext";
 import type { CatalogHierarchyNode, FieldID, FieldMetadata } from "./types";
@@ -39,19 +39,35 @@ function get_column_ids(
 export function useAddColumn() {
   const catalog_cell_id = useCatalogCellID();
   const catalog_id = useCatalogID();
-  const dispatch = useDispatch();
+  const merge_state = useMergeState();
   return (node: CatalogHierarchyNode) => {
     const field_id = node.data.name;
-    dispatch([`show_columns`, catalog_cell_id, catalog_id, field_id], true);
+    merge_state({
+      show_columns: {
+        [catalog_cell_id]: {
+          [catalog_id]: {
+            [field_id]: true
+          }
+        }
+      }
+    });
   };
 }
 
 export function useRemoveColumn() {
   const catalog_cell_id = useCatalogCellID();
   const catalog_id = useCatalogID();
-  const dispatch = useDispatch();
+  const merge_state = useMergeState();
   return (node: CatalogHierarchyNode) => {
     const field_id = node.data.name;
-    dispatch([`show_columns`, catalog_cell_id, catalog_id, field_id], false);
+    merge_state({
+      show_columns: {
+        [catalog_cell_id]: {
+          [catalog_id]: {
+            [field_id]: false
+          }
+        }
+      }
+    });
   };
 }

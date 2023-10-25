@@ -8,7 +8,6 @@ import type {
 
 import React from "react";
 import lodash_merge from "lodash.merge";
-import * as controller from "./AppStateContext";
 import {
   assert_numeric_field_stats,
   get_field_type,
@@ -17,6 +16,7 @@ import {
 import { useCatalogCellID, useCatalogID } from "./CatalogContext";
 import { useCatalogMetadata } from "./CatalogMetadataContext";
 import { useFieldNode } from "./FieldNodeContext";
+import { useAppState, useMergeState, useSetAppState } from "./AppStateContext";
 
 const FiltersContext = React.createContext(null);
 
@@ -25,7 +25,7 @@ export function FiltersProvider({ children }) {
   const catalog_id = useCatalogID();
   const catalog_metadata = useCatalogMetadata();
   const catalog_hierarchy = catalog_metadata?.hierarchy;
-  const app_state = controller.useAppState();
+  const app_state = useAppState();
   const show_filters_config: Record<FieldID, boolean> =
     app_state?.add_filter?.[catalog_cell_id]?.[catalog_id] ?? {};
   const filter_names_set = catalog_hierarchy
@@ -36,7 +36,7 @@ export function FiltersProvider({ children }) {
     catalog_hierarchy
   );
   const filter_state: Filters =
-    controller.useAppState()?.set_filter_value?.[catalog_cell_id]?.[catalog_id];
+    app_state?.set_filter_value?.[catalog_cell_id]?.[catalog_id];
   const filters = lodash_merge(initial_filters, filter_state);
   return (
     <FiltersContext.Provider value={filters}>
@@ -131,33 +131,43 @@ export function useSetFilterValue(
   const field_id = field_node.data.name;
   const catalog_cell_id = useCatalogCellID();
   const catalog_id = useCatalogID();
-  const action_key_base = [
-    `set_filter_value`,
-    catalog_cell_id,
-    catalog_id,
-    field_id
-  ];
-  const dispatch = controller.useDispatch();
-  return (action_key: string[], value: FilterValueRaw) => {
-    dispatch([...action_key_base, ...action_key], value);
+  const merge_state = useMergeState();
+  return (value: FilterValueRaw) => {
+    merge_state({
+      set_filter_value: {
+        [catalog_cell_id]: {
+          [catalog_id]: {
+            [field_id]: value
+          }
+        }
+      }
+    });
   };
 }
 
 export function useRemoveFilter() {
   const catalog_cell_id = useCatalogCellID();
   const catalog_id = useCatalogID();
-  const set_app_state = controller.useSetAppState();
+  const set_app_state = useSetAppState();
   return (node: CatalogHierarchyNode) => {
     const field_id = node.data.name;
     set_app_state((obj) => {
-      obj.add_filter ??= {};
-      obj.add_filter[catalog_cell_id] ??= {};
-      obj.add_filter[catalog_cell_id][catalog_id] ??= {};
-      obj.add_filter[catalog_cell_id][catalog_id][field_id] = false;
-
-      obj.set_filter_value ??= {};
-      obj.set_filter_value[catalog_cell_id] ??= {};
-      obj.set_filter_value[catalog_cell_id][catalog_id] ??= {};
+      lodash_merge(obj, {
+        add_filter: {
+          [catalog_cell_id]: {
+            [catalog_id]: {
+              [field_id]: false
+            }
+          }
+        },
+        set_filter_value: {
+          [catalog_cell_id]: {
+            [catalog_id]: {
+              [field_id]: null
+            }
+          }
+        }
+      });
       delete obj.set_filter_value[catalog_cell_id][catalog_id][field_id];
     });
   };
@@ -166,9 +176,18 @@ export function useRemoveFilter() {
 export function useAddFilter() {
   const catalog_cell_id = useCatalogCellID();
   const catalog_id = useCatalogID();
-  const dispatch = controller.useDispatch();
+  const merge_state = useMergeState();
+
   return (node: CatalogHierarchyNode) => {
     const field_id = node.data.name;
-    dispatch([`add_filter`, catalog_cell_id, catalog_id, field_id], true);
+    merge_state({
+      add_filter: {
+        [catalog_cell_id]: {
+          [catalog_id]: {
+            [field_id]: true
+          }
+        }
+      }
+    });
   };
 }
