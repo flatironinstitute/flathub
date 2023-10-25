@@ -20,7 +20,6 @@ import {
 import { useCatalogMetadata } from "../contexts/CatalogMetadataContext";
 import { useCatalogID } from "../contexts/CatalogContext";
 import { Dialog } from "./Primitives";
-import FieldCard from "./FieldCard";
 import Katex from "./Katex";
 
 export default function BrowseFieldsDialog({
@@ -206,17 +205,5 @@ function AddRemoveColumnButton({ node }: { node: CatalogHierarchyNode }) {
     <button className="underline" onClick={on_click}>
       {text}
     </button>
-  );
-}
-
-function FieldCards() {
-  const catalog_metadata = useCatalogMetadata();
-  const all_field_nodes = catalog_metadata?.depth_first ?? [];
-  return (
-    <>
-      {all_field_nodes.map((node) => (
-        <FieldCard fieldNode={node} key={node.data.__hash} />
-      ))}
-    </>
   );
 }
