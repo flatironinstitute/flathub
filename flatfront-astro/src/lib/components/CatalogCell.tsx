@@ -26,6 +26,7 @@ import {
   Dialog,
   FieldTitles,
   Heading,
+  NumberInput,
   Placeholder,
   Select,
   Separator,
@@ -37,8 +38,9 @@ import PlotSection from "./Plot";
 import FieldCard from "./FieldCard";
 import BrowseFieldsDialog from "./BrowseFieldsDialog";
 import Katex from "./Katex";
-import { useSetRandomConfig } from "../contexts/RandomContext";
+import { useRandomConfig, useSetRandomConfig } from "../contexts/RandomContext";
 import { useMergeState } from "../contexts/AppStateContext";
+import { useDebounce } from "@uidotdev/usehooks";
 
 export default function CatalogCell({
   id: catalog_cell_id
@@ -262,6 +264,12 @@ function FilterControls() {
 
 function RandomSampleControls() {
   const set_random_config = useSetRandomConfig();
+  const random_config = useRandomConfig();
+  const [seed, set_seed] = React.useState(random_config.seed);
+  const debounced_seed = useDebounce(seed, 500);
+  React.useEffect(() => {
+    set_random_config(`seed`, debounced_seed);
+  }, [debounced_seed]);
 
   return (
     <>
@@ -269,17 +277,16 @@ function RandomSampleControls() {
       <SliderWithText
         min={1e-9}
         max={1}
-        value={1}
+        value={random_config.sample}
         debounce={500}
         onValueChange={(new_value) => set_random_config(`sample`, new_value)}
       />
       <div>Seed</div>
-      <SliderWithText
+      <NumberInput
+        value={seed}
         min={0}
         max={18446744073709552000}
-        value={1}
-        debounce={500}
-        onValueChange={(new_value) => set_random_config(`seed`, new_value)}
+        onNumberInput={(new_value) => set_seed(new_value)}
       />
     </>
   );
