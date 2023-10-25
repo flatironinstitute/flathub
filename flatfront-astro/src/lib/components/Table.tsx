@@ -150,9 +150,11 @@ function Table() {
   return (
     <>
       {component}
-      <div>Show {rows_select} rows</div>
-      <div>{info_text}</div>
-      {prev_next}
+      <div className="flex justify-between">
+        <div>Show {rows_select} rows</div>
+        <div>{info_text}</div>
+        {prev_next}
+      </div>
     </>
   );
 }
