@@ -43,8 +43,6 @@
     "immer": "latest",
     "katex": "latest",
     "lodash.merge": "latest",
-    "lodash.set": "latest",
-    "lodash.unset": "latest",
     "lz-string": "latest",
     "postcss": "latest",
     "react": "18",
