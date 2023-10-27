@@ -43,14 +43,5 @@ export function useSetRandomConfig() {
         }
       }
     });
-    // dispatch({
-    //   set_random_sample: {
-    //     [catalog_cell_id]: {
-    //       [catalog_id]: {
-    //         [key]: value
-    //       }
-    //     }
-    //   }
-    // });
   };
 }

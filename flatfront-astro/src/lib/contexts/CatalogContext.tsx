@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { assert_catalog_cell_id, fetch_api_post } from "../shared";
 import { FiltersProvider, useFilters } from "./FiltersContext";
 import { CatalogMetadataProvider } from "./CatalogMetadataContext";
-import { RandomProvider } from "./RandomContext";
+import { RandomProvider, useRandomConfig } from "./RandomContext";
 import { useAppState } from "./AppStateContext";
 
 const CatalogCellIDContext = React.createContext<CellID.Catalog | undefined>(
@@ -37,8 +37,10 @@ export function CatalogProvider({
 function MatchingRowsProvider({ children }: { children: React.ReactNode }) {
   const catalog_id = useCatalogID();
   const filters = useFilters();
+  const random_config = useRandomConfig();
   const request_body: CountRequestBody = {
-    ...filters
+    ...filters,
+    ...random_config
   };
   const query = useQuery({
     queryKey: [`count`, request_body],

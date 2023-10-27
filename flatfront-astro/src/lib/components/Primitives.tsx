@@ -190,13 +190,13 @@ export function RangeSliderWithText(props: {
       className="mt-[9px] grid grid-cols-2 items-center gap-x-4 gap-y-2"
     >
       <NumberInput
-        value={internal_low.toString()}
+        value={internal_low?.toString()}
         min={min}
         max={Math.min(internal_high, max)}
         onNumberInput={(value) => set_internal_low(value)}
       />
       <NumberInput
-        value={internal_high.toString()}
+        value={internal_high?.toString()}
         min={Math.max(internal_low, min)}
         max={max}
         onNumberInput={(value) => set_internal_high(value)}
@@ -245,7 +245,7 @@ export function SliderWithText(props: {
     <div data-type="SliderWithText" className="@container">
       <div className="grid items-center gap-x-4 gap-y-2 @xs:grid-cols-2">
         <NumberInput
-          value={internal_value.toString()}
+          value={internal_value?.toString()}
           min={min}
           max={max}
           onNumberInput={(value) => set_internal_value(value)}
@@ -304,26 +304,25 @@ export function NumberInput({
   onNumberInput,
   ...rest
 }: TextInputProps & {
-  min: number;
-  max: number;
   onNumberInput?: (value: number) => void;
 }) {
   return (
     <TextInput
       type="number"
       step="any"
-      value={value.toString()}
+      value={value?.toString()}
       getValidityMessage={(string) => {
         const number = Number(string);
         if (!Number.isFinite(number)) return `Invalid number`;
-        if (number < min) return `Must be greater than ${min.toString()}`;
-        if (number > max) return `Must be less than ${max.toString()}`;
+        if (number < Number(min))
+          return `Must be greater than ${min.toString()}`;
+        if (number > Number(max)) return `Must be less than ${max.toString()}`;
         return null;
       }}
       onStringInput={(string: string) => {
         const number = Number(string);
         if (!Number.isFinite(number)) return;
-        if (string.toString() === value.toString()) {
+        if (string?.toString() === value?.toString()) {
           // Not updating filter because it didn't change
           return;
         }
@@ -361,7 +360,7 @@ export function TextInput({
   };
 
   React.useEffect(() => {
-    on_input(value.toString() ?? ``);
+    on_input(value?.toString() ?? ``);
   }, [value]);
 
   return (
@@ -465,14 +464,16 @@ export function Switch() {
 }
 
 export function Checkbox(props: RadixCheckbox.CheckboxProps) {
+  const { className, ...rest } = props;
   return (
     <RadixCheckbox.Root
       className={clsx(
-        `flex h-5 w-5 appearance-none items-center justify-center rounded-md`,
-        `bg-white outline outline-black dark:bg-black dark:outline-white`,
-        `data-[disabled]:cursor-not-allowed data-[disabled]:opacity-20`
+        `flex h-6 w-6 appearance-none items-center justify-center rounded-md`,
+        `bg-white ring-1 ring-black dark:bg-black dark:outline-white dark:ring-white`,
+        `data-[disabled]:cursor-not-allowed data-[disabled]:opacity-20`,
+        className
       )}
-      {...props}
+      {...rest}
     >
       <RadixCheckbox.Indicator>
         <RadixIcons.CheckIcon className="h-4 w-4" />

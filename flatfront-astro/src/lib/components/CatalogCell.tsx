@@ -265,7 +265,7 @@ function FilterControls() {
 function RandomSampleControls() {
   const set_random_config = useSetRandomConfig();
   const random_config = useRandomConfig();
-  const [seed, set_seed] = React.useState(random_config.seed);
+  const [seed, set_seed] = React.useState(random_config?.seed ?? 0);
   const debounced_seed = useDebounce(seed, 500);
   React.useEffect(() => {
     set_random_config(`seed`, debounced_seed);
@@ -277,15 +277,15 @@ function RandomSampleControls() {
       <SliderWithText
         min={1e-9}
         max={1}
-        value={random_config.sample}
+        value={random_config?.sample ?? 1}
         debounce={500}
         onValueChange={(new_value) => set_random_config(`sample`, new_value)}
       />
       <div>Seed</div>
       <NumberInput
         value={seed}
-        min={0}
-        max={18446744073709552000}
+        min={"0"}
+        max={`18446744073709552000`}
         onNumberInput={(new_value) => set_seed(new_value)}
       />
     </>

@@ -27,6 +27,7 @@ import {
 } from "./Primitives";
 import HighchartsPlot from "./HighchartsPlot";
 import { useAppState, useMergeState } from "../contexts/AppStateContext";
+import { useRandomConfig } from "../contexts/RandomContext";
 
 const [usePlotID, PlotIDProvider] = create_context_helper<PlotID>(`PlotID`);
 
@@ -63,10 +64,12 @@ function PlotComponent() {
     switch (plot_type) {
       case `histogram`:
         return <Histogram />;
-      case `scatterplot`:
-        return <Scatterplot />;
       case `heatmap`:
         return <Heatmap />;
+      case `scatterplot`:
+        return <Scatterplot />;
+      case `scatterplot_3d`:
+        return <Scatterplot3D />;
       default:
         return <Placeholder>Choose a plot type</Placeholder>;
     }
@@ -77,38 +80,39 @@ function PlotComponent() {
 function PlotControls() {
   const plot_type = usePlotType();
 
-  const [x_axis_control, y_axis_control, z_axis_control, sort_control] = [
-    [`X-Axis`, `x_axis`, `Choose X-Axis...`, true],
-    [`Y-Axis`, `y_axis`, `Choose Y-Axis...`, true],
-    [`Z-Axis`, `z_axis`, `Choose Z-Axis...`, true],
-    [`Sort`, `sort`, `Choose sort variable...`, false]
-  ].map(
-    ([label, plot_control_key, placeholder, showLogSwitch]: [
-      string,
-      string,
-      string,
-      boolean
-    ]) => {
-      return (
-        <Labelled label={label} key={plot_control_key}>
-          <PlotControl
-            plotControlkey={plot_control_key}
-            placeholder={placeholder}
-            showLogSwitch={showLogSwitch}
-          />
-        </Labelled>
-      );
-    }
+  const log_count_switch = (
+    <Labelled label="Count: Log Scale">
+      <LogModeCheckbox plotControlkey="count" />
+    </Labelled>
   );
 
-  const histogram_controls = <>{x_axis_control}</>;
+  const x_axis_control = (
+    <LabelledPlotControl
+      label="X-Axis"
+      plotControlKey="x_axis"
+      placeholder="Choose X-Axis..."
+      showLogSwitch={true}
+    />
+  );
 
-  const scatterplot_controls = (
+  const y_axis_control = (
+    <LabelledPlotControl
+      label="Y-Axis"
+      plotControlKey="y_axis"
+      placeholder="Choose Y-Axis..."
+      showLogSwitch={true}
+    />
+  );
+
+  const histogram_controls = (
     <>
-      {x_axis_control}
-      {y_axis_control}
-      {z_axis_control}
-      {sort_control}
+      <LabelledPlotControl
+        label="Field"
+        plotControlKey="field"
+        placeholder="Choose field..."
+        showLogSwitch={true}
+      />
+      {log_count_switch}
     </>
   );
 
@@ -119,14 +123,36 @@ function PlotControls() {
     </>
   );
 
+  const scatterplot_controls = (
+    <>
+      {x_axis_control}
+      {y_axis_control}
+    </>
+  );
+
+  const scatterplot_3d_controls = (
+    <>
+      {x_axis_control}
+      {y_axis_control}
+      <LabelledPlotControl
+        label="Z-Axis"
+        plotControlKey="z_axis"
+        placeholder="Choose Z-Axis..."
+        showLogSwitch={true}
+      />
+    </>
+  );
+
   const controls = (() => {
     switch (plot_type) {
       case `histogram`:
         return histogram_controls;
-      case `scatterplot`:
-        return scatterplot_controls;
       case `heatmap`:
         return heatmap_controls;
+      case `scatterplot`:
+        return scatterplot_controls;
+      case `scatterplot_3d`:
+        return scatterplot_3d_controls;
       default:
         return null;
     }
@@ -138,6 +164,28 @@ function PlotControls() {
       </Labelled>
       {controls}
     </div>
+  );
+}
+
+function LabelledPlotControl({
+  label,
+  plotControlKey: plot_control_key,
+  placeholder,
+  showLogSwitch = false
+}: {
+  label: string;
+  plotControlKey: string;
+  placeholder: string;
+  showLogSwitch: boolean;
+}) {
+  return (
+    <Labelled label={label}>
+      <PlotControl
+        plotControlkey={plot_control_key}
+        placeholder={placeholder}
+        showLogSwitch={showLogSwitch}
+      />
+    </Labelled>
   );
 }
 
@@ -161,8 +209,9 @@ function PlotTypeSelect() {
   const plot_type = usePlotType();
   const plot_type_options = [
     { key: `histogram` as PlotType, label: `Histogram` },
+    { key: `heatmap` as PlotType, label: `Heatmap` },
     { key: `scatterplot` as PlotType, label: `Scatterplot` },
-    { key: `heatmap` as PlotType, label: `Heatmap` }
+    { key: `scatterplot_3d` as PlotType, label: `3D Scatterplot` }
   ];
   const value = plot_type_options.find((d) => d.key === plot_type);
   const merge_state = useMergeState();
@@ -216,25 +265,12 @@ function PlotControl({
   let log_switch = null;
 
   if (showLogSwitch) {
-    const log_mode_key = `${plot_control_key}_log_mode`;
-    const is_log_mode = plot_config?.[log_mode_key] ?? false;
     log_switch = (
       <div className="relative">
         <label className="absolute left-1/2 top-0 -translate-x-1/2 translate-y-[calc(-100%-5px)] uppercase leading-none">
           log
         </label>
-        <Checkbox
-          checked={is_log_mode}
-          onCheckedChange={(checked) => {
-            merge_state({
-              set_plot_control: {
-                [plot_id]: {
-                  [log_mode_key]: checked
-                }
-              }
-            });
-          }}
-        />
+        <LogModeCheckbox plotControlkey={plot_control_key} />
       </div>
     );
   }
@@ -266,52 +302,87 @@ function PlotControl({
   );
 }
 
+function LogModeCheckbox({
+  plotControlkey: plot_control_key
+}: {
+  plotControlkey: string;
+}) {
+  const plot_id = usePlotID();
+  const plot_config = useAppState().set_plot_control?.[plot_id];
+  const log_mode_key = `${plot_control_key}_log_mode`;
+  const is_log_mode = plot_config?.[log_mode_key] ?? false;
+  const merge_state = useMergeState();
+  return (
+    <Checkbox
+      checked={is_log_mode}
+      onCheckedChange={(checked) => {
+        merge_state({
+          set_plot_control: {
+            [plot_id]: {
+              [log_mode_key]: checked
+            }
+          }
+        });
+      }}
+    />
+  );
+}
+
 function Histogram() {
   const catalog_id = useCatalogID();
   const filters = useFilters();
+  const random_config = useRandomConfig();
+  const plot_state = usePlotState();
+  const is_log_allowed = useGetIsLogAllowed();
 
-  const plot_id = usePlotID();
-  const plot_state = useAppState()?.set_plot_control?.[plot_id];
+  const field_id = plot_state?.field;
+  const log_mode = plot_state?.field_log_mode ?? false;
+  const count_log_mode = plot_state?.count_log_mode ?? false;
 
-  const x_axis_field_id = plot_state?.x_axis;
-  const x_axis_log_mode = plot_state?.x_axis_log_mode ?? false;
+  const can_use_log_mode = is_log_allowed(field_id);
 
-  const enable_request = Boolean(catalog_id) && Boolean(x_axis_field_id);
+  const log_mode_error = log_mode && !can_use_log_mode;
 
-  const fields: any = [
-    { field: x_axis_field_id, size: 100, log: x_axis_log_mode }
-  ];
-
-  const request_body: HistogramPostRequestBody = {
-    fields,
-    ...filters
-  };
+  const enable_request =
+    Boolean(catalog_id) && Boolean(field_id) && !log_mode_error;
 
   const query = usePlotQuery<HistogramPostRequestBody, HistogramResponse>({
     path: `/${catalog_id}/histogram`,
-    body: request_body,
+    body: {
+      fields: [
+        {
+          field: field_id,
+          size: 100,
+          log: log_mode
+        }
+      ] as any,
+      ...filters,
+      ...random_config
+    },
     label: `Histogram`,
     enabled: enable_request
   });
 
-  const data = query.data;
-
   const data_munged = (() => {
-    if (!x_axis_field_id) return [];
-    if (!data) return [];
-    return data.buckets.map(({ key, count }) => {
+    if (!field_id) return [];
+    if (!query.data) return [];
+    return query.data.buckets.map(({ key, count }) => {
       return [...key, count];
     });
   })();
 
-  log(`data_munged`, data_munged);
-
   const options: Highcharts.Options = {
     ...get_highcharts_options(),
     xAxis: {
-      type: x_axis_log_mode ? `logarithmic` : `linear`,
+      type: log_mode ? `logarithmic` : `linear`,
       title: {
-        text: x_axis_field_id
+        text: field_id
+      }
+    },
+    yAxis: {
+      type: count_log_mode ? `logarithmic` : `linear`,
+      title: {
+        text: `Count`
       }
     },
     series: [
@@ -320,20 +391,22 @@ function Histogram() {
         name: `Count`,
         data: data_munged,
         animation: false,
-        // pointWidth: 5,
-        // pointPadding: -0.1,
         borderRadius: 0
       }
     ]
   };
 
-  const has_data = data_munged.length > 0;
-
-  const status = query.isFetching
-    ? `Loading...`
-    : !has_data
-    ? `No data.`
-    : null;
+  const status = (() => {
+    if (log_mode_error) {
+      return `Log mode not allowed because "${field_id}" values cross zero.`;
+    } else if (query.isFetching) {
+      return `Loading...`;
+    } else if (!(data_munged.length > 0)) {
+      return `No data.`;
+    } else {
+      return null;
+    }
+  })();
 
   return (
     <div className="relative">
@@ -346,9 +419,8 @@ function Histogram() {
 function Heatmap() {
   const catalog_id = useCatalogID();
   const filters = useFilters();
-
-  const plot_id = usePlotID();
-  const plot_state = useAppState()?.set_plot_control?.[plot_id];
+  const random_config = useRandomConfig();
+  const plot_state = usePlotState();
 
   const x_axis_field_id = plot_state?.x_axis;
   const y_axis_field_id = plot_state?.y_axis;
@@ -363,8 +435,8 @@ function Heatmap() {
 
   const request_body: HistogramPostRequestBody = {
     fields,
-    ...filters
-    // ...query_parameters
+    ...filters,
+    ...random_config
   };
 
   const query = usePlotQuery<HistogramPostRequestBody, HistogramResponse>({
@@ -434,44 +506,54 @@ function Heatmap() {
 function Scatterplot() {
   const catalog_id = useCatalogID();
   const filters = useFilters();
-
-  const plot_id = usePlotID();
-  const plot_state = useAppState()?.set_plot_control?.[plot_id];
+  const plot_state = usePlotState();
+  const is_log_allowed = useGetIsLogAllowed();
 
   const x_axis_field_id = plot_state?.x_axis;
   const y_axis_field_id = plot_state?.y_axis;
-  // const count = plot_state?.count ?? 5e3;
+
+  const x_axis_log_mode = plot_state?.x_axis_log_mode ?? false;
+  const y_axis_log_mode = plot_state?.y_axis_log_mode ?? false;
+
+  const x_axis_can_use_log_mode = is_log_allowed(x_axis_field_id);
+  const y_axis_can_use_log_mode = is_log_allowed(y_axis_field_id);
+
+  const x_axis_log_mode_error = x_axis_log_mode && !x_axis_can_use_log_mode;
+  const y_axis_log_mode_error = y_axis_log_mode && !y_axis_can_use_log_mode;
+
   const count = plot_state?.count ?? 2e3;
-  const sort = plot_state?.sort ?? null;
+
+  // TODO: What's the best way of doing this
+  // const total_rows = useCatalogMetadata()?.response?.count;
+  // const sample = Math.min((count * 10) / total_rows, 1);
+  const sample = 0.9999;
 
   const enable_request =
-    Boolean(catalog_id) && Boolean(x_axis_field_id) && Boolean(y_axis_field_id);
-
-  const request_body: DataPostRequestBody = {
-    object: true,
-    fields: [x_axis_field_id, y_axis_field_id],
-    ...filters,
-    count,
-    sort: sort ? [sort] : undefined,
-    // TODO: Make this optional
-    sample: 0.42
-    // seed: 12345
-    // ...query_parameters
-  };
+    Boolean(catalog_id) &&
+    Boolean(x_axis_field_id) &&
+    Boolean(y_axis_field_id) &&
+    Number.isFinite(sample) &&
+    !x_axis_log_mode_error &&
+    !y_axis_log_mode_error;
 
   const query = usePlotQuery<DataPostRequestBody, DataResponse>({
     path: `/${catalog_id}/data`,
-    body: request_body,
+    body: {
+      object: true,
+      fields: [x_axis_field_id, y_axis_field_id],
+      ...filters,
+      count,
+      sample
+    },
     label: `Scatterplot`,
     enabled: enable_request
   });
 
-  const data = query.data ?? [];
-
   const data_munged = (() => {
     if (!x_axis_field_id) return [];
     if (!y_axis_field_id) return [];
-    return data.map((datum) => {
+    if (!query.data) return [];
+    return query.data.map((datum) => {
       return [+datum[x_axis_field_id], +datum[y_axis_field_id]];
     });
   })();
@@ -479,12 +561,16 @@ function Scatterplot() {
   const options: Highcharts.Options = {
     ...get_highcharts_options(),
     xAxis: {
+      type:
+        x_axis_log_mode && x_axis_can_use_log_mode ? `logarithmic` : `linear`,
       title: {
         text: x_axis_field_id
       },
       gridLineWidth: 1
     },
     yAxis: {
+      type:
+        y_axis_log_mode && y_axis_can_use_log_mode ? `logarithmic` : `linear`,
       title: {
         text: y_axis_field_id
       }
@@ -501,14 +587,159 @@ function Scatterplot() {
     ]
   };
 
-  const has_data = data_munged.length > 0;
+  const status = (() => {
+    if (x_axis_log_mode_error) {
+      return `Log mode not allowed because "${x_axis_field_id}" values cross zero.`;
+    } else if (y_axis_log_mode_error) {
+      return `Log mode not allowed because "${y_axis_field_id}" values cross zero.`;
+    } else if (query.isFetching) {
+      return `Loading...`;
+    } else if (!(data_munged.length > 0)) {
+      return `No data.`;
+    } else {
+      return null;
+    }
+  })();
 
-  const status = query.isFetching
-    ? `Loading...`
-    : !has_data
-    ? `No data.`
-    : null;
+  return <StatusWrapper status={status} options={options} />;
+}
 
+function Scatterplot3D() {
+  const catalog_id = useCatalogID();
+  const filters = useFilters();
+  const random_config = useRandomConfig();
+  const plot_state = usePlotState();
+  const is_log_allowed = useGetIsLogAllowed();
+
+  const x_axis_field_id = plot_state?.x_axis;
+  const y_axis_field_id = plot_state?.y_axis;
+  const z_axis_field_id = plot_state?.z_axis;
+
+  const x_axis_log_mode = plot_state?.x_axis_log_mode ?? false;
+  const y_axis_log_mode = plot_state?.y_axis_log_mode ?? false;
+  const z_axis_log_mode = plot_state?.z_axis_log_mode ?? false;
+
+  const x_axis_can_use_log_mode = is_log_allowed(x_axis_field_id);
+  const y_axis_can_use_log_mode = is_log_allowed(y_axis_field_id);
+  const z_axis_can_use_log_mode = is_log_allowed(z_axis_field_id);
+
+  const x_axis_log_mode_error = x_axis_log_mode && !x_axis_can_use_log_mode;
+  const y_axis_log_mode_error = y_axis_log_mode && !y_axis_can_use_log_mode;
+  const z_axis_log_mode_error = z_axis_log_mode && !z_axis_can_use_log_mode;
+
+  const count = plot_state?.count ?? 2e3;
+
+  // TODO: What's the best way of doing this
+  // const total_rows = useCatalogMetadata()?.response?.count;
+  // const sample = Math.min((count * 10) / total_rows, 1);
+  const sample = 0.9999;
+
+  const enable_request =
+    Boolean(catalog_id) &&
+    Boolean(x_axis_field_id) &&
+    Boolean(y_axis_field_id) &&
+    Boolean(z_axis_field_id) &&
+    Number.isFinite(sample) &&
+    !x_axis_log_mode_error &&
+    !y_axis_log_mode_error &&
+    !z_axis_log_mode_error;
+
+  const query = usePlotQuery<DataPostRequestBody, DataResponse>({
+    path: `/${catalog_id}/data`,
+    body: {
+      object: true,
+      fields: [x_axis_field_id, y_axis_field_id, z_axis_field_id],
+      ...filters,
+      count,
+      sample
+    },
+    label: `3D Scatterplot`,
+    enabled: enable_request
+  });
+
+  const data_munged = (() => {
+    if (!x_axis_field_id) return [];
+    if (!y_axis_field_id) return [];
+    if (!z_axis_field_id) return [];
+    if (!query.data) return [];
+    return query.data.map((datum) => {
+      return [
+        +datum[x_axis_field_id],
+        +datum[y_axis_field_id],
+        +datum[z_axis_field_id]
+      ];
+    });
+  })();
+
+  const options: Highcharts.Options = {
+    ...get_highcharts_options(),
+    xAxis: {
+      type:
+        x_axis_log_mode && x_axis_can_use_log_mode ? `logarithmic` : `linear`,
+      title: {
+        text: x_axis_field_id
+      },
+      gridLineWidth: 1
+    },
+    yAxis: {
+      type:
+        y_axis_log_mode && y_axis_can_use_log_mode ? `logarithmic` : `linear`,
+      title: {
+        text: y_axis_field_id
+      }
+    },
+    zAxis: {
+      type:
+        z_axis_log_mode && z_axis_can_use_log_mode ? `logarithmic` : `linear`,
+      title: {
+        text: z_axis_field_id
+      }
+    },
+    series: [
+      {
+        type: `scatter3d`,
+        marker: {
+          radius: 1
+        },
+        data: data_munged,
+        turboThreshold: 0
+      }
+    ]
+  };
+
+  options.chart.options3d = {
+    enabled: true,
+    alpha: 10,
+    beta: 20,
+    depth: 400
+  };
+
+  const status = (() => {
+    if (x_axis_log_mode_error) {
+      return `Log mode not allowed because "${x_axis_field_id}" values cross zero.`;
+    } else if (y_axis_log_mode_error) {
+      return `Log mode not allowed because "${y_axis_field_id}" values cross zero.`;
+    } else if (z_axis_log_mode_error) {
+      return `Log mode not allowed because "${z_axis_field_id}" values cross zero.`;
+    } else if (query.isFetching) {
+      return `Loading...`;
+    } else if (!(data_munged.length > 0)) {
+      return `No data.`;
+    } else {
+      return null;
+    }
+  })();
+
+  return <StatusWrapper status={status} options={options} />;
+}
+
+function StatusWrapper({
+  status,
+  options
+}: {
+  status: React.ReactNode;
+  options: Highcharts.Options;
+}) {
   return (
     <div className="relative">
       {status && <StatusBox>{status}</StatusBox>}
@@ -517,7 +748,9 @@ function Scatterplot() {
   );
 }
 
-function get_highcharts_options(): Highcharts.Options {
+function get_highcharts_options(opts?: {
+  chart: Highcharts.Options["chart"];
+}): Highcharts.Options {
   return {
     chart: {
       animation: false,
@@ -543,6 +776,62 @@ function get_highcharts_options(): Highcharts.Options {
       useGPUTranslations: true,
       usePreallocated: true
     }
+  };
+}
+
+function usePlotState() {
+  const plot_id = usePlotID();
+  const plot_state = useAppState()?.set_plot_control?.[plot_id];
+  return plot_state;
+}
+
+function useGetIsLogAllowed(): (field_id: string) => boolean {
+  const get_current_min = useGetCurrentMin();
+  const get_current_max = useGetCurrentMax();
+  return (field_id: string) => {
+    const current_min = get_current_min(field_id);
+    const current_max = get_current_max(field_id);
+    if (!field_id) return true;
+    if (current_min > 0 && current_max > 0) return true;
+    return false;
+  };
+}
+
+function useGetCurrentMin(): (field_id: string) => number | null {
+  const filters = useFilters();
+  const catalog_metadata = useCatalogMetadata();
+  return (field_id: string) => {
+    const filter_value = filters[field_id];
+    const field_stats = catalog_metadata?.hierarchy?.find(
+      (d) => d.data.name === field_id
+    )?.data?.stats;
+    if (!field_id) return null;
+    if (!catalog_metadata) return null;
+    if (typeof filter_value === `object` && `gte` in filter_value) {
+      return Number(filter_value.gte);
+    } else if (field_stats && "min" in field_stats) {
+      return Number(field_stats.min);
+    }
+    throw new Error(`Could not get min for ${field_id}`);
+  };
+}
+
+function useGetCurrentMax(): (field_id: string) => number | null {
+  const filters = useFilters();
+  const catalog_metadata = useCatalogMetadata();
+  return (field_id: string) => {
+    const filter_value = filters[field_id];
+    const field_stats = catalog_metadata?.hierarchy?.find(
+      (d) => d.data.name === field_id
+    )?.data?.stats;
+    if (!field_id) return null;
+    if (!catalog_metadata) return null;
+    if (typeof filter_value === `object` && `lte` in filter_value) {
+      return Number(filter_value.lte);
+    } else if (field_stats && "max" in field_stats) {
+      return Number(field_stats.max);
+    }
+    throw new Error(`Could not get max for ${field_id}`);
   };
 }
 
