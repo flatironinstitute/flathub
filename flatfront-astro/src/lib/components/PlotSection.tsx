@@ -703,7 +703,10 @@ function Scatterplot3D() {
     enabled: true,
     alpha: 10,
     beta: 20,
-    depth: 400
+    depth: 400,
+    drag: {
+      enabled: true
+    }
   };
 
   const status = (() => {

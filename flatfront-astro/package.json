@@ -39,6 +39,7 @@
     "clsx": "latest",
     "d3": "latest",
     "highcharts": "latest",
+    "highcharts-draggable-3d": "latest",
     "highcharts-react-official": "latest",
     "immer": "latest",
     "katex": "latest",
