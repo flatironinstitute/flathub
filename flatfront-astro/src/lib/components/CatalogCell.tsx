@@ -10,7 +10,7 @@ import React from "react";
 import * as d3 from "d3";
 import { useQuery } from "@tanstack/react-query";
 import { fetch_api_get, format, get_field_titles } from "../shared";
-import { useAddPlot, usePlotIDs } from "../plot-hooks";
+import { useAddPlot, usePlotIDs } from "../contexts/PlotContext";
 import { useFilters } from "../contexts/FiltersContext";
 import { useCatalogMetadata } from "../contexts/CatalogMetadataContext";
 import {
@@ -34,7 +34,7 @@ import {
   SliderWithText
 } from "./Primitives";
 import TableSection from "./Table";
-import PlotSection from "./Plot";
+import PlotSection from "./PlotSection";
 import FieldCard from "./FieldCard";
 import BrowseFieldsDialog from "./BrowseFieldsDialog";
 import Katex from "./Katex";

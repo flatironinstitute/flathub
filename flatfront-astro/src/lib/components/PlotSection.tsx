@@ -1,41 +1,34 @@
 import type {
   DataPostRequestBody,
-  HistogramPostRequestBody,
   DataResponse,
+  HistogramPostRequestBody,
   HistogramResponse,
   PlotID,
   PlotType
 } from "../types";
+import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  log,
-  fetch_api_post,
-  get_field_type,
-  create_context_helper
-} from "../shared";
+import { log, fetch_api_post, get_field_type } from "../shared";
 import { useIsDarkMode } from "../dark-mode";
-import { useRemovePlot } from "../plot-hooks";
-import { useFilters } from "../contexts/FiltersContext";
 import { useCatalogID } from "../contexts/CatalogContext";
+import { useRandomConfig } from "../contexts/RandomContext";
+import { useFilters } from "../contexts/FiltersContext";
 import { useCatalogMetadata } from "../contexts/CatalogMetadataContext";
+import { useAppState, useMergeState } from "../contexts/AppStateContext";
 import {
-  Placeholder,
+  PlotIDProvider,
+  useRemovePlot,
+  usePlotID,
+  usePlotType
+} from "../contexts/PlotContext";
+import {
   Select,
   Checkbox,
+  Placeholder,
   SimpleLabel,
   StatusBox
 } from "./Primitives";
 import HighchartsPlot from "./HighchartsPlot";
-import { useAppState, useMergeState } from "../contexts/AppStateContext";
-import { useRandomConfig } from "../contexts/RandomContext";
-
-const [usePlotID, PlotIDProvider] = create_context_helper<PlotID>(`PlotID`);
-
-function usePlotType() {
-  const plot_id = usePlotID();
-  const plot_type = useAppState()?.set_plot_type?.[plot_id];
-  return plot_type;
-}
 
 export default function PlotSection({ id }: { id: PlotID }) {
   const remove_plot = useRemovePlot(id);
@@ -52,7 +45,12 @@ export default function PlotSection({ id }: { id: PlotID }) {
           </button>
         </div>
         <PlotComponent />
-        <PlotControls />
+        <div className="grid grid-cols-1 items-center gap-x-8 gap-y-4 @xl/plot:grid-cols-2 @3xl/plot:grid-cols-3">
+          <Labelled label="Plot Type">
+            <PlotTypeSelect />
+          </Labelled>
+          <PlotControls />
+        </div>
       </div>
     </PlotIDProvider>
   );
@@ -157,14 +155,8 @@ function PlotControls() {
         return null;
     }
   })();
-  return (
-    <div className="grid grid-cols-1 items-center gap-x-8 gap-y-4 @xl/plot:grid-cols-2 @3xl/plot:grid-cols-3">
-      <Labelled label="Plot Type">
-        <PlotTypeSelect />
-      </Labelled>
-      {controls}
-    </div>
-  );
+
+  return controls;
 }
 
 function LabelledPlotControl({

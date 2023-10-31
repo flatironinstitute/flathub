@@ -66,9 +66,18 @@ export function is_plot_id(id: string): id is PlotID {
   return id?.match(/^plot_\d+/) ? true : false;
 }
 
+export function is_defined(value: any): boolean {
+  return typeof value !== `undefined`;
+}
+
+export function assert_defined<T>(value: T | undefined): asserts value is T {
+  if (!is_defined(value)) throw new Error(`Expected value to be defined`);
+}
+
 export function assert_catalog_cell_id(
-  cell_id: CellID.Any
+  cell_id: CellID.Any | undefined
 ): asserts cell_id is CellID.Catalog {
+  assert_defined(cell_id);
   if (!is_catalog_cell_id(cell_id))
     throw new Error(`${cell_id} is not a catalog cell id`);
 }
