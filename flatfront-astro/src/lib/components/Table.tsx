@@ -15,12 +15,14 @@ import {
   getCoreRowModel,
   useReactTable
 } from "@tanstack/react-table";
+import * as RadixIcons from "@radix-ui/react-icons";
 import {
   fetch_api_post,
   get_field_type,
   is_leaf_node,
   is_root_node,
-  format
+  format,
+  log
 } from "../shared";
 import { useCatalogID, useMatchingRows } from "../contexts/CatalogContext";
 import { useFilters } from "../contexts/FiltersContext";
@@ -30,6 +32,7 @@ import Katex from "./Katex";
 import { useCurrentColumnIDs } from "../columns";
 import BrowseFieldsDialog from "./BrowseFieldsDialog";
 import { useRandomConfig } from "../contexts/RandomContext";
+import clsx from "clsx";
 
 export default function TableSection() {
   return (
@@ -50,13 +53,19 @@ function Table() {
   const filters = useFilters();
   const random_config = useRandomConfig();
 
-  const [rows_per_page, set_rows_per_page] = React.useState(25);
-  const [offset, set_offset] = React.useState(0);
-  const [sort, set_sort] = React.useState([]);
+  const [rows_per_page, set_rows_per_page] = React.useState<number>(25);
+  const [offset, set_offset] = React.useState<number>(0);
+  const [sort, set_sort] = React.useState<
+    { field: string; order: `asc` | `desc` }[]
+  >([]);
 
   React.useEffect(() => {
     set_offset(0);
   }, [JSON.stringify(filters), sort, catalog_id]);
+
+  React.useEffect(() => {
+    set_sort([]);
+  }, [catalog_id]);
 
   const request_body: DataPostRequestBody = {
     object: true,
@@ -64,6 +73,7 @@ function Table() {
     ...filters,
     count: rows_per_page,
     offset,
+    sort: sort as any,
     ...random_config
   };
 
@@ -94,7 +104,33 @@ function Table() {
     } else if (query.data && query.data.length > 0) {
       return (
         <div className="overflow-x-scroll">
-          <TablePrimitive data={query.data} />
+          <TablePrimitive
+            data={query.data}
+            isSorted={(id) => {
+              if (sort[0]?.field === id) return sort[0]?.order;
+              return false;
+            }}
+            onSortChange={(id) => {
+              set_sort((previous_sort) => {
+                const index = previous_sort.findIndex((d) => d.field === id);
+                if (index === -1) {
+                  // Add it
+                  return [{ field: id, order: `asc` }, ...previous_sort];
+                } else if (index === 0) {
+                  // Flip the order
+                  const [head, ...tail] = previous_sort;
+                  const new_order = head.order === `asc` ? `desc` : `asc`;
+                  return [{ ...head, order: new_order }, ...tail];
+                } else if (index > 0) {
+                  // Move it to the front
+                  const found = previous_sort[index];
+                  const filtered = previous_sort.filter((d) => d.field !== id);
+                  return [found, ...filtered];
+                }
+                return previous_sort;
+              });
+            }}
+          />
         </div>
       );
     }
@@ -159,7 +195,15 @@ function Table() {
   );
 }
 
-function TablePrimitive({ data }: { data: Array<DataRow> }) {
+function TablePrimitive({
+  data,
+  onSortChange: on_sort_change,
+  isSorted: check_if_sorted
+}: {
+  data: Array<DataRow>;
+  onSortChange?: (id: string) => void;
+  isSorted?: (id: string) => `asc` | `desc` | false;
+}) {
   const catalog_metadata_wrapper = useCatalogMetadata();
   const catalog_hierarchy = catalog_metadata_wrapper?.hierarchy;
 
@@ -179,11 +223,13 @@ function TablePrimitive({ data }: { data: Array<DataRow> }) {
         {header_groups.map((headerGroup) => (
           <tr key={headerGroup.id}>
             {headerGroup.headers.map((header) => {
-              let row_span = 1;
               if (skip_rendering.has(header.column.id)) return null;
+              // Get the row span, accounting for placeholders
               // If it's a placeholder:
               // - Skip rendering any future headers
               // - Set row span based on the depth of non-placeholder header
+              let row_span = 1;
+              let is_leaf = header.subHeaders.length === 0;
               if (header.isPlaceholder) {
                 skip_rendering.add(header.column.id);
                 const leaves = header.getLeafHeaders();
@@ -196,13 +242,20 @@ function TablePrimitive({ data }: { data: Array<DataRow> }) {
                   );
                 }
                 row_span = 1 + non_placeholder_header.depth - header.depth;
+                is_leaf = true;
               }
+              const set_sort = () => on_sort_change?.(header.column.id);
+              const is_sorted = check_if_sorted?.(header.column.id);
               return (
                 <th
-                  className="border-2 px-2 py-1 "
+                  className={clsx(
+                    "border-2 px-2 py-1",
+                    is_leaf && `cursor-pointer`
+                  )}
                   key={header.id}
                   colSpan={header.colSpan}
                   rowSpan={row_span}
+                  onClick={is_leaf ? set_sort : undefined}
                 >
                   {
                     <div>
@@ -210,6 +263,16 @@ function TablePrimitive({ data }: { data: Array<DataRow> }) {
                         header.column.columnDef.header,
                         header.getContext()
                       )}
+                      {
+                        {
+                          asc: (
+                            <RadixIcons.TriangleUpIcon className="inline-block" />
+                          ),
+                          desc: (
+                            <RadixIcons.TriangleDownIcon className="inline-block" />
+                          )
+                        }[is_sorted ? is_sorted : undefined]
+                      }
                     </div>
                   }
                 </th>
