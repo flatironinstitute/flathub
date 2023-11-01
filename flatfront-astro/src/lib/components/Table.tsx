@@ -18,7 +18,6 @@ import {
 import {
   fetch_api_post,
   get_field_type,
-  log,
   is_leaf_node,
   is_root_node,
   format
@@ -26,7 +25,7 @@ import {
 import { useCatalogID, useMatchingRows } from "../contexts/CatalogContext";
 import { useFilters } from "../contexts/FiltersContext";
 import { useCatalogMetadata } from "../contexts/CatalogMetadataContext";
-import { BigButton, CollapsibleSection, Placeholder } from "./Primitives";
+import { CollapsibleSection, Placeholder } from "./Primitives";
 import Katex from "./Katex";
 import { useCurrentColumnIDs } from "../columns";
 import BrowseFieldsDialog from "./BrowseFieldsDialog";
@@ -53,10 +52,11 @@ function Table() {
 
   const [rows_per_page, set_rows_per_page] = React.useState(25);
   const [offset, set_offset] = React.useState(0);
+  const [sort, set_sort] = React.useState([]);
 
   React.useEffect(() => {
     set_offset(0);
-  }, [JSON.stringify(filters)]);
+  }, [JSON.stringify(filters), sort, catalog_id]);
 
   const request_body: DataPostRequestBody = {
     object: true,
@@ -178,8 +178,7 @@ function TablePrimitive({ data }: { data: Array<DataRow> }) {
       <thead>
         {header_groups.map((headerGroup) => (
           <tr key={headerGroup.id}>
-            {headerGroup.headers.map((header_initial) => {
-              let header = header_initial;
+            {headerGroup.headers.map((header) => {
               let row_span = 1;
               if (skip_rendering.has(header.column.id)) return null;
               // If it's a placeholder:

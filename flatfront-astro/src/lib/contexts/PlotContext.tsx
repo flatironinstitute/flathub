@@ -3,7 +3,7 @@ import type { PlotID } from "../types";
 import React from "react";
 import * as d3 from "d3";
 import { useAppState, useMergeState } from "./AppStateContext";
-import { useCatalogCellID } from "./CatalogContext";
+import { useCatalogCellID, useCatalogID } from "./CatalogContext";
 import { assert_plot_id, assert_catalog_cell_id } from "../shared";
 
 const PlotIDContext = React.createContext<PlotID | undefined>(undefined);
@@ -32,6 +32,30 @@ export function usePlotType() {
   const plot_id = usePlotID();
   const plot_type = useAppState()?.set_plot_type?.[plot_id];
   return plot_type;
+}
+
+export function usePlotState() {
+  const plot_id = usePlotID();
+  const catalog_id = useCatalogID();
+  const plot_state = useAppState()?.set_plot_control?.[plot_id]?.[catalog_id];
+  return plot_state;
+}
+
+export function useSetPlotControl() {
+  const plot_id = usePlotID();
+  const catalog_id = useCatalogID();
+  const merge_state = useMergeState();
+  return (plot_control_key: string, value: any) => {
+    merge_state({
+      set_plot_control: {
+        [plot_id]: {
+          [catalog_id]: {
+            [plot_control_key]: value
+          }
+        }
+      }
+    });
+  };
 }
 
 export function useAddPlot() {

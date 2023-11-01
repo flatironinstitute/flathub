@@ -12,8 +12,7 @@ import { useCatalogID } from "../contexts/CatalogContext";
 import { useRandomConfig } from "../contexts/RandomContext";
 import { useFilters } from "../contexts/FiltersContext";
 import { useCatalogMetadata } from "../contexts/CatalogMetadataContext";
-import { useAppState } from "../contexts/AppStateContext";
-import { usePlotID } from "../contexts/PlotContext";
+import { usePlotState } from "../contexts/PlotContext";
 import { StatusBox } from "./Primitives";
 import {
   LabelledPlotControl,
@@ -126,29 +125,40 @@ export const Heatmap = {
     const filters = useFilters();
     const random_config = useRandomConfig();
     const plot_state = usePlotState();
+    const is_log_allowed = useGetIsLogAllowed();
 
     const x_axis_field_id = plot_state?.x_axis;
     const y_axis_field_id = plot_state?.y_axis;
 
+    const x_axis_log_mode = plot_state?.x_axis_log_mode ?? false;
+    const y_axis_log_mode = plot_state?.y_axis_log_mode ?? false;
+
+    const x_axis_can_use_log_mode = is_log_allowed(x_axis_field_id);
+    const y_axis_can_use_log_mode = is_log_allowed(y_axis_field_id);
+
+    const x_axis_log_mode_error = x_axis_log_mode && !x_axis_can_use_log_mode;
+    const y_axis_log_mode_error = y_axis_log_mode && !y_axis_can_use_log_mode;
+
+    const x_log = x_axis_log_mode && x_axis_can_use_log_mode;
+    const y_log = y_axis_log_mode && y_axis_can_use_log_mode;
+
     const enable_request =
       Boolean(catalog_id) &&
       Boolean(x_axis_field_id) &&
-      Boolean(y_axis_field_id);
-
-    const fields: any = [
-      { field: x_axis_field_id, size: 30 },
-      { field: y_axis_field_id, size: 30 }
-    ];
-
-    const request_body: HistogramPostRequestBody = {
-      fields,
-      ...filters,
-      ...random_config
-    };
+      Boolean(y_axis_field_id) &&
+      !x_axis_log_mode_error &&
+      !y_axis_log_mode_error;
 
     const query = usePlotQuery<HistogramPostRequestBody, HistogramResponse>({
       path: `/${catalog_id}/histogram`,
-      body: request_body,
+      body: {
+        fields: [
+          { field: x_axis_field_id, size: 20, log: x_axis_log_mode },
+          { field: y_axis_field_id, size: 20, log: y_axis_log_mode }
+        ] as any,
+        ...filters,
+        ...random_config
+      },
       label: `Heatmap`,
       enabled: enable_request
     });
@@ -169,12 +179,14 @@ export const Heatmap = {
     const options: Highcharts.Options = {
       ...get_highcharts_options(),
       xAxis: {
+        type: x_log ? `logarithmic` : `linear`,
         title: {
           text: x_axis_field_id
         },
         gridLineWidth: 1
       },
       yAxis: {
+        type: y_log ? `logarithmic` : `linear`,
         title: {
           text: y_axis_field_id
         }
@@ -547,12 +559,6 @@ function get_highcharts_options(opts?: {
       usePreallocated: true
     }
   };
-}
-
-function usePlotState() {
-  const plot_id = usePlotID();
-  const plot_state = useAppState()?.set_plot_control?.[plot_id];
-  return plot_state;
 }
 
 function useGetIsLogAllowed(): (field_id: string) => boolean {

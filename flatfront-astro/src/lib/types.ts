@@ -17,25 +17,12 @@ export type AppState = {
   set_catalog?: Record<CellID.Catalog, CatalogID>;
   add_plot?: Record<CellID.Catalog, Record<PlotID, boolean>>;
   set_plot_type?: Record<PlotID, PlotType>;
-  set_plot_control?: Record<PlotID, Record<string, any>>;
+  set_plot_control?: Record<PlotID, Record<CatalogID, Record<string, any>>>;
   show_columns?: Record<
     CellID.Catalog,
     Record<CatalogID, Record<FieldID, boolean>>
   >;
 };
-
-// function test<
-//   T,
-//   K1 extends keyof T,
-//   K2 extends keyof T[K1],
-//   K3 extends keyof T[K1][K2],
-//   K4 extends keyof T[K1][K2][K3],
-//   K5 extends keyof T[K1][K2][K3][K4]
-// >(value, object: T, k1: K1, k2?: K2, k3?: K3, k4?: K4, k5?: K5) {}
-
-// const appy: AppState = {};
-
-// test(12, appy, `add_filter`, `catalog_cell_1`, `catalog_1`, `field_1`);
 
 export namespace Cell {
   export type Catalog = {

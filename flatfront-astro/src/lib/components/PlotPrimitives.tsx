@@ -1,8 +1,7 @@
 import React from "react";
 import { get_field_type } from "../shared";
 import { useCatalogMetadata } from "../contexts/CatalogMetadataContext";
-import { useAppState, useMergeState } from "../contexts/AppStateContext";
-import { usePlotID } from "../contexts/PlotContext";
+import { usePlotState, useSetPlotControl } from "../contexts/PlotContext";
 import { Select, Checkbox } from "./Primitives";
 
 export function LabelledPlotControl({
@@ -53,7 +52,6 @@ function PlotControl({
   showLogSwitch?: boolean;
   debug?: boolean;
 }) {
-  const plot_id = usePlotID();
   const catalog_metadata = useCatalogMetadata();
   const all_leaf_nodes = catalog_metadata?.hierarchy?.leaves() ?? [];
   const numeric_nodes = all_leaf_nodes.filter((d) => {
@@ -61,11 +59,10 @@ function PlotControl({
     return type === `INTEGER` || type === `FLOAT`;
   });
 
-  const plot_config = useAppState().set_plot_control?.[plot_id];
+  const plot_state = usePlotState();
+  const set_plot_control = useSetPlotControl();
 
-  const field_id = plot_config?.[plot_control_key];
-
-  const merge_state = useMergeState();
+  const field_id = plot_state?.[plot_control_key];
 
   const value = numeric_nodes.find((d) => d.data.name === field_id);
 
@@ -93,13 +90,7 @@ function PlotControl({
         getDisplayName={(d) => d.data.name}
         onValueChange={(d) => {
           const value = d?.data.name;
-          merge_state({
-            set_plot_control: {
-              [plot_id]: {
-                [plot_control_key]: value
-              }
-            }
-          });
+          set_plot_control(plot_control_key, value);
         }}
         triggerClassName="overflow-hidden text-ellipsis"
         valueClassName="overflow-hidden text-ellipsis"
@@ -114,22 +105,15 @@ export function LogModeCheckbox({
 }: {
   plotControlkey: string;
 }) {
-  const plot_id = usePlotID();
-  const plot_config = useAppState().set_plot_control?.[plot_id];
+  const plot_config = usePlotState();
   const log_mode_key = `${plot_control_key}_log_mode`;
   const is_log_mode = plot_config?.[log_mode_key] ?? false;
-  const merge_state = useMergeState();
+  const set_plot_control = useSetPlotControl();
   return (
     <Checkbox
       checked={is_log_mode}
       onCheckedChange={(checked) => {
-        merge_state({
-          set_plot_control: {
-            [plot_id]: {
-              [log_mode_key]: checked
-            }
-          }
-        });
+        set_plot_control(log_mode_key, checked);
       }}
     />
   );
