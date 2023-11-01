@@ -5,7 +5,11 @@ import type {
   HistogramResponse
 } from "../types";
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
+import {
+  useQuery,
+  useQueryClient,
+  type UseQueryOptions
+} from "@tanstack/react-query";
 import { log, fetch_api_post } from "../shared";
 import { useIsDarkMode } from "../dark-mode";
 import { useCatalogID } from "../contexts/CatalogContext";
@@ -94,7 +98,7 @@ export const Histogram = {
       if (log_mode_error) {
         return `Log mode not allowed because "${field_id}" values cross zero.`;
       } else if (query.isFetching) {
-        return `Loading...`;
+        return <LoadingBox />;
       } else if (!(data_munged.length > 0)) {
         return `No data.`;
       } else {
@@ -206,13 +210,19 @@ export const Heatmap = {
       ]
     };
 
-    const has_data = data_munged.length > 0;
-
-    const status = query.isFetching
-      ? `Loading...`
-      : !has_data
-      ? `No data.`
-      : null;
+    const status = (() => {
+      if (x_axis_log_mode_error) {
+        return `Log mode not allowed because "${x_axis_field_id}" values cross zero.`;
+      } else if (y_axis_log_mode_error) {
+        return `Log mode not allowed because "${y_axis_field_id}" values cross zero.`;
+      } else if (query.isFetching) {
+        return <LoadingBox />;
+      } else if (!(data_munged.length > 0)) {
+        return `No data.`;
+      } else {
+        return null;
+      }
+    })();
 
     return <StatusWrapper status={status} options={options} />;
   },
@@ -317,7 +327,7 @@ export const Scatterplot = {
       } else if (y_axis_log_mode_error) {
         return `Log mode not allowed because "${y_axis_field_id}" values cross zero.`;
       } else if (query.isFetching) {
-        return `Loading...`;
+        return <LoadingBox />;
       } else if (!(data_munged.length > 0)) {
         return `No data.`;
       } else {
@@ -459,7 +469,7 @@ export const Scatterplot3D = {
       } else if (z_axis_log_mode_error) {
         return `Log mode not allowed because "${z_axis_field_id}" values cross zero.`;
       } else if (query.isFetching) {
-        return `Loading...`;
+        return <LoadingBox />;
       } else if (!(data_munged.length > 0)) {
         return `No data.`;
       } else {
@@ -512,6 +522,27 @@ function LogCountControl() {
     <Labelled label="Count: Log Scale">
       <LogModeCheckbox plotControlkey="count" />
     </Labelled>
+  );
+}
+
+function LoadingBox({
+  queryKey: query_key = [`plot-data`]
+}: {
+  queryKey?: UseQueryOptions[`queryKey`];
+}) {
+  const query_client = useQueryClient();
+  return (
+    <div className="space-y-2">
+      <div>Loading...</div>
+      <button
+        onClick={() => {
+          query_client.cancelQueries({ queryKey: query_key });
+        }}
+        className="cursor-pointer underline"
+      >
+        Cancel
+      </button>
+    </div>
   );
 }
 
