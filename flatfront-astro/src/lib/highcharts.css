@@ -1,7 +1,7 @@
 @import "highcharts/css/highcharts.css";
 
 .highcharts-point {
-  stroke: none !important;
+  /* stroke: none !important; */
 }
 
 .highcharts-light {

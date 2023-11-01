@@ -1,4 +1,5 @@
 import Highcharts from "highcharts";
+import HighchartsMore from "highcharts/highcharts-more";
 import Highcharts3D from "highcharts/highcharts-3d";
 import HighchartsExporting from "highcharts/modules/exporting";
 import HighchartsExportData from "highcharts/modules/export-data";
@@ -25,6 +26,7 @@ declare module "highcharts" {
   }
 }
 
+HighchartsMore(Highcharts);
 Highcharts3D(Highcharts);
 HighchartsDraggable3D(Highcharts);
 HighchartsExporting(Highcharts);

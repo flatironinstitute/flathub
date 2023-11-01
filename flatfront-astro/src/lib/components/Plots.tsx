@@ -2,7 +2,8 @@ import type {
   DataPostRequestBody,
   DataResponse,
   HistogramPostRequestBody,
-  HistogramResponse
+  HistogramResponse,
+  PlotWrapper
 } from "../types";
 import React from "react";
 import {
@@ -25,7 +26,9 @@ import {
 } from "./PlotPrimitives";
 import HighchartsPlot from "./HighchartsPlot";
 
-export const Histogram = {
+export const Histogram: PlotWrapper = {
+  key: `histogram`,
+  label: `Histogram`,
   Plot() {
     const catalog_id = useCatalogID();
     const filters = useFilters();
@@ -64,8 +67,8 @@ export const Histogram = {
     const data_munged = (() => {
       if (!field_id) return [];
       if (!query.data) return [];
-      return query.data.buckets.map(({ key, count }) => {
-        return [...key, count];
+      return query.data.buckets.map(({ key: [value], count }) => {
+        return [value, count];
       });
     })();
 
@@ -123,7 +126,9 @@ export const Histogram = {
   }
 };
 
-export const Heatmap = {
+export const Heatmap: PlotWrapper = {
+  key: `heatmap`,
+  label: `Heatmap`,
   Plot() {
     const catalog_id = useCatalogID();
     const filters = useFilters();
@@ -167,14 +172,12 @@ export const Heatmap = {
       enabled: enable_request
     });
 
-    const data = query.data;
-
     const data_munged = (() => {
       if (!x_axis_field_id) return [];
       if (!y_axis_field_id) return [];
-      if (!data) return [];
-      return data.buckets.map(({ key, count }) => {
-        return [...key, count];
+      if (!query.data) return [];
+      return query.data.buckets.map(({ key: [x, y], count }) => {
+        return [x, y, count];
       });
     })();
 
@@ -203,8 +206,8 @@ export const Heatmap = {
         {
           type: `heatmap`,
           data: data_munged,
-          colsize: data?.sizes[0],
-          rowsize: data?.sizes[1],
+          colsize: query?.data?.sizes[0],
+          rowsize: query?.data?.sizes[1],
           boostThreshold: 1
         }
       ]
@@ -236,7 +239,119 @@ export const Heatmap = {
   }
 };
 
-export const Scatterplot = {
+export const BoxPlot: PlotWrapper = {
+  key: `boxplot`,
+  label: `Box Plot`,
+  Plot() {
+    const catalog_id = useCatalogID();
+    const filters = useFilters();
+    const random_config = useRandomConfig();
+    const plot_state = usePlotState();
+    const is_log_allowed = useGetIsLogAllowed();
+
+    const x_axis_field_id = plot_state?.x_axis;
+    const y_axis_field_id = plot_state?.y_axis;
+
+    const x_axis_log_mode = plot_state?.x_axis_log_mode ?? false;
+    const y_axis_log_mode = plot_state?.y_axis_log_mode ?? false;
+
+    const x_axis_can_use_log_mode = is_log_allowed(x_axis_field_id);
+    const y_axis_can_use_log_mode = is_log_allowed(y_axis_field_id);
+
+    const x_axis_log_mode_error = x_axis_log_mode && !x_axis_can_use_log_mode;
+    const y_axis_log_mode_error = y_axis_log_mode && !y_axis_can_use_log_mode;
+
+    const x_log = x_axis_log_mode && x_axis_can_use_log_mode;
+    const y_log = y_axis_log_mode && y_axis_can_use_log_mode;
+
+    const enable_request =
+      Boolean(catalog_id) &&
+      Boolean(x_axis_field_id) &&
+      Boolean(y_axis_field_id) &&
+      !x_axis_log_mode_error &&
+      !y_axis_log_mode_error;
+
+    const query = usePlotQuery<HistogramPostRequestBody, HistogramResponse>({
+      path: `/${catalog_id}/histogram`,
+      body: {
+        fields: [
+          { field: x_axis_field_id, size: 60, log: x_axis_log_mode }
+        ] as any,
+        quartiles: y_axis_field_id?.toString() as any,
+        ...filters,
+        ...random_config
+      },
+      label: `Boxplot`,
+      enabled: enable_request
+    });
+
+    const data_munged = (() => {
+      if (!x_axis_field_id) return [];
+      if (!y_axis_field_id) return [];
+      if (!query.data) return [];
+      return query.data.buckets.map(({ key: [x, y], count, quartiles }) => {
+        // return [...key, count];
+        // x,low,q1,median,q3,high
+        return [x, ...quartiles];
+      });
+    })();
+
+    const options: Highcharts.Options = {
+      ...get_highcharts_options(),
+      xAxis: {
+        type: x_log ? `logarithmic` : `linear`,
+        title: {
+          text: x_axis_field_id
+        }
+      },
+      yAxis: {
+        type: y_log ? `logarithmic` : `linear`,
+        title: {
+          text: y_axis_field_id
+        }
+      },
+      series: [
+        {
+          type: `boxplot`,
+          data: data_munged,
+          keys: [`x`, `low`, `q1`, `median`, `q3`, `high`]
+        },
+        {
+          type: `line`,
+          data: data_munged.map((d) => [d[0], d[3]])
+        }
+      ]
+    };
+
+    const status = (() => {
+      if (x_axis_log_mode_error) {
+        return `Log mode not allowed because "${x_axis_field_id}" values cross zero.`;
+      } else if (y_axis_log_mode_error) {
+        return `Log mode not allowed because "${y_axis_field_id}" values cross zero.`;
+      } else if (query.isFetching) {
+        return <LoadingBox />;
+      } else if (!(data_munged.length > 0)) {
+        return `No data.`;
+      } else {
+        return null;
+      }
+    })();
+
+    return <StatusWrapper status={status} options={options} />;
+  },
+  Controls() {
+    return (
+      <>
+        <XAxisControl />
+        <YAxisControl />
+      </>
+    );
+  }
+};
+
+export const Scatterplot: PlotWrapper = {
+  key: `scatterplot`,
+  label: `Scatterplot`,
   Plot() {
     const catalog_id = useCatalogID();
     const filters = useFilters();
@@ -347,7 +462,9 @@ export const Scatterplot = {
   }
 };
 
-export const Scatterplot3D = {
+export const Scatterplot3D: PlotWrapper = {
+  key: `scatterplot_3d`,
+  label: `3D Scatterplot`,
   Plot() {
     const catalog_id = useCatalogID();
     const filters = useFilters();
@@ -561,9 +678,7 @@ function StatusWrapper({
   );
 }
 
-function get_highcharts_options(opts?: {
-  chart: Highcharts.Options["chart"];
-}): Highcharts.Options {
+function get_highcharts_options(): Highcharts.Options {
   return {
     chart: {
       animation: false,

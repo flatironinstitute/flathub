@@ -61,12 +61,19 @@ export type CatalogMetadataWrapper = {
 
 export type CatalogHierarchyNode = d3.HierarchyNode<FieldMetadata>;
 
+export type PlotWrapper = {
+  key: PlotType;
+  label: string;
+  Plot: React.FC;
+  Controls: React.FC;
+};
+
 export type PlotType =
   | `histogram`
   | `heatmap`
+  | `boxplot`
   | `scatterplot`
-  | `scatterplot_3d`
-  | `conditional`;
+  | `scatterplot_3d`;
 export type PlotID = `plot_${number}`;
 export type FieldID = string;
 export type CatalogID = string;

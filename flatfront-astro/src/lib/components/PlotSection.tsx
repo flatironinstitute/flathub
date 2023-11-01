@@ -39,11 +39,12 @@ export default function PlotSection({ id }: { id: PlotID }) {
 function PlotTypeSelect() {
   const plot_id = usePlotID();
   const plot_type = usePlotType();
-  const plot_type_options = [
-    { key: `histogram` as PlotType, label: `Histogram` },
-    { key: `heatmap` as PlotType, label: `Heatmap` },
-    { key: `scatterplot` as PlotType, label: `Scatterplot` },
-    { key: `scatterplot_3d` as PlotType, label: `3D Scatterplot` }
+  const plot_type_options: { key: PlotType; label: string }[] = [
+    { key: Plots.Histogram.key, label: Plots.Histogram.label },
+    { key: Plots.Heatmap.key, label: Plots.Heatmap.label },
+    { key: Plots.BoxPlot.key, label: Plots.BoxPlot.label },
+    { key: Plots.Scatterplot.key, label: Plots.Scatterplot.label },
+    { key: Plots.Scatterplot3D.key, label: Plots.Scatterplot3D.label }
   ];
   const value = plot_type_options.find((d) => d.key === plot_type);
   const merge_state = useMergeState();
@@ -70,13 +71,15 @@ function PlotTypeSelect() {
 function PlotComponent() {
   const plot_type = usePlotType();
   switch (plot_type) {
-    case `histogram`:
+    case Plots.Histogram.key:
       return <Plots.Histogram.Plot />;
-    case `heatmap`:
+    case Plots.Heatmap.key:
       return <Plots.Heatmap.Plot />;
-    case `scatterplot`:
+    case Plots.BoxPlot.key:
+      return <Plots.BoxPlot.Plot />;
+    case Plots.Scatterplot.key:
       return <Plots.Scatterplot.Plot />;
-    case `scatterplot_3d`:
+    case Plots.Scatterplot3D.key:
       return <Plots.Scatterplot3D.Plot />;
     default:
       return <Placeholder>Choose a plot type</Placeholder>;
@@ -86,13 +89,15 @@ function PlotComponent() {
 function PlotControls() {
   const plot_type = usePlotType();
   switch (plot_type) {
-    case `histogram`:
+    case Plots.Histogram.key:
       return <Plots.Histogram.Controls />;
-    case `heatmap`:
+    case Plots.Heatmap.key:
       return <Plots.Heatmap.Controls />;
-    case `scatterplot`:
+    case Plots.BoxPlot.key:
+      return <Plots.BoxPlot.Controls />;
+    case Plots.Scatterplot.key:
       return <Plots.Scatterplot.Controls />;
-    case `scatterplot_3d`:
+    case Plots.Scatterplot3D.key:
       return <Plots.Scatterplot3D.Controls />;
     default:
       return null;
