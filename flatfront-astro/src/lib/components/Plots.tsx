@@ -11,6 +11,7 @@ import {
   useQueryClient,
   type UseQueryOptions
 } from "@tanstack/react-query";
+import lodash_merge from "lodash.merge";
 import { log, fetch_api_post } from "../shared";
 import { useIsDarkMode } from "../dark-mode";
 import { useCatalogID } from "../contexts/CatalogContext";
@@ -64,31 +65,6 @@ export const Histogram: PlotWrapper = {
       });
     })();
 
-    const options: Highcharts.Options = {
-      ...get_highcharts_options(),
-      xAxis: {
-        type: field_config.log_mode ? `logarithmic` : `linear`,
-        title: {
-          text: field_config.field_id
-        }
-      },
-      yAxis: {
-        type: count_config.log_mode ? `logarithmic` : `linear`,
-        title: {
-          text: `Count`
-        }
-      },
-      series: [
-        {
-          type: `column`,
-          name: `Count`,
-          data: data_munged,
-          animation: false,
-          borderRadius: 0
-        }
-      ]
-    };
-
     const status = (() => {
       if (field_config.log_mode_error_message) {
         return field_config.log_mode_error_message;
@@ -101,7 +77,35 @@ export const Histogram: PlotWrapper = {
       }
     })();
 
-    return <StatusWrapper status={status} options={options} />;
+    return (
+      <StatusWrapper status={status}>
+        <HighchartsPlot
+          options={get_highcharts_options({
+            xAxis: {
+              type: field_config.log_mode ? `logarithmic` : `linear`,
+              title: {
+                text: field_config.field_id
+              }
+            },
+            yAxis: {
+              type: count_config.log_mode ? `logarithmic` : `linear`,
+              title: {
+                text: `Count`
+              }
+            },
+            series: [
+              {
+                type: `column`,
+                name: `Count`,
+                data: data_munged,
+                animation: false,
+                borderRadius: 0
+              }
+            ]
+          })}
+        />
+      </StatusWrapper>
+    );
   },
   Controls() {
     return (
@@ -155,38 +159,6 @@ export const Heatmap: PlotWrapper = {
       });
     })();
 
-    const is_dark_mode = useIsDarkMode();
-
-    const options: Highcharts.Options = {
-      ...get_highcharts_options(),
-      xAxis: {
-        type: x_axis.log_mode ? `logarithmic` : `linear`,
-        title: {
-          text: x_axis.field_id
-        },
-        gridLineWidth: 1
-      },
-      yAxis: {
-        type: y_axis.log_mode ? `logarithmic` : `linear`,
-        title: {
-          text: y_axis.field_id
-        }
-      },
-      colorAxis: {
-        minColor: is_dark_mode ? `black` : `white`,
-        maxColor: is_dark_mode ? `white` : `black`
-      },
-      series: [
-        {
-          type: `heatmap`,
-          data: data_munged,
-          colsize: query?.data?.sizes[0],
-          rowsize: query?.data?.sizes[1],
-          boostThreshold: 1
-        }
-      ]
-    };
-
     const status = (() => {
       if (x_axis.log_mode_error_message) {
         return x_axis.log_mode_error_message;
@@ -201,7 +173,42 @@ export const Heatmap: PlotWrapper = {
       }
     })();
 
-    return <StatusWrapper status={status} options={options} />;
+    const is_dark_mode = useIsDarkMode();
+
+    return (
+      <StatusWrapper status={status}>
+        <HighchartsPlot
+          options={get_highcharts_options({
+            xAxis: {
+              type: x_axis.log_mode ? `logarithmic` : `linear`,
+              title: {
+                text: x_axis.field_id
+              },
+              gridLineWidth: 1
+            },
+            yAxis: {
+              type: y_axis.log_mode ? `logarithmic` : `linear`,
+              title: {
+                text: y_axis.field_id
+              }
+            },
+            colorAxis: {
+              minColor: is_dark_mode ? `black` : `white`,
+              maxColor: is_dark_mode ? `white` : `black`
+            },
+            series: [
+              {
+                type: `heatmap`,
+                data: data_munged,
+                colsize: query?.data?.sizes[0],
+                rowsize: query?.data?.sizes[1],
+                boostThreshold: 1
+              }
+            ]
+          })}
+        />
+      </StatusWrapper>
+    );
   },
   Controls() {
     return (
@@ -251,33 +258,6 @@ export const BoxPlot: PlotWrapper = {
       });
     })();
 
-    const options: Highcharts.Options = {
-      ...get_highcharts_options(),
-      xAxis: {
-        type: x_axis.log_mode ? `logarithmic` : `linear`,
-        title: {
-          text: x_axis.field_id
-        }
-      },
-      yAxis: {
-        type: y_axis.log_mode ? `logarithmic` : `linear`,
-        title: {
-          text: y_axis.field_id
-        }
-      },
-      series: [
-        {
-          type: `boxplot`,
-          data: data_munged,
-          keys: [`x`, `low`, `q1`, `median`, `q3`, `high`]
-        },
-        {
-          type: `line`,
-          data: data_munged.map((d) => [d[0], d[3]])
-        }
-      ]
-    };
-
     const status = (() => {
       if (x_axis.log_mode_error_message) {
         return x_axis.log_mode_error_message;
@@ -292,7 +272,37 @@ export const BoxPlot: PlotWrapper = {
       }
     })();
 
-    return <StatusWrapper status={status} options={options} />;
+    return (
+      <StatusWrapper status={status}>
+        <HighchartsPlot
+          options={get_highcharts_options({
+            xAxis: {
+              type: x_axis.log_mode ? `logarithmic` : `linear`,
+              title: {
+                text: x_axis.field_id
+              }
+            },
+            yAxis: {
+              type: y_axis.log_mode ? `logarithmic` : `linear`,
+              title: {
+                text: y_axis.field_id
+              }
+            },
+            series: [
+              {
+                type: `boxplot`,
+                data: data_munged,
+                keys: [`x`, `low`, `q1`, `median`, `q3`, `high`]
+              },
+              {
+                type: `line`,
+                data: data_munged.map((d) => [d[0], d[3]])
+              }
+            ]
+          })}
+        />
+      </StatusWrapper>
+    );
   },
   Controls() {
     return (
@@ -349,33 +359,6 @@ export const Scatterplot: PlotWrapper = {
       });
     })();
 
-    const options: Highcharts.Options = {
-      ...get_highcharts_options(),
-      xAxis: {
-        type: x_axis.log_mode ? `logarithmic` : `linear`,
-        title: {
-          text: x_axis.field_id
-        },
-        gridLineWidth: 1
-      },
-      yAxis: {
-        type: y_axis.log_mode ? `logarithmic` : `linear`,
-        title: {
-          text: y_axis.field_id
-        }
-      },
-      series: [
-        {
-          type: `scatter`,
-          marker: {
-            radius: 1
-          },
-          data: data_munged,
-          boostThreshold: 1
-        }
-      ]
-    };
-
     const status = (() => {
       if (x_axis.log_mode_error_message) {
         return x_axis.log_mode_error_message;
@@ -390,7 +373,37 @@ export const Scatterplot: PlotWrapper = {
       }
     })();
 
-    return <StatusWrapper status={status} options={options} />;
+    return (
+      <StatusWrapper status={status}>
+        <HighchartsPlot
+          options={get_highcharts_options({
+            xAxis: {
+              type: x_axis.log_mode ? `logarithmic` : `linear`,
+              title: {
+                text: x_axis.field_id
+              },
+              gridLineWidth: 1
+            },
+            yAxis: {
+              type: y_axis.log_mode ? `logarithmic` : `linear`,
+              title: {
+                text: y_axis.field_id
+              }
+            },
+            series: [
+              {
+                type: `scatter`,
+                marker: {
+                  radius: 1
+                },
+                data: data_munged,
+                boostThreshold: 1
+              }
+            ]
+          })}
+        />
+      </StatusWrapper>
+    );
   },
   Controls() {
     return (
@@ -455,49 +468,6 @@ export const Scatterplot3D: PlotWrapper = {
       });
     })();
 
-    const options: Highcharts.Options = {
-      ...get_highcharts_options(),
-      xAxis: {
-        type: x_axis.log_mode ? `logarithmic` : `linear`,
-        title: {
-          text: x_axis.field_id
-        },
-        gridLineWidth: 1
-      },
-      yAxis: {
-        type: y_axis.log_mode ? `logarithmic` : `linear`,
-        title: {
-          text: y_axis.field_id
-        }
-      },
-      zAxis: {
-        type: z_axis.log_mode ? `logarithmic` : `linear`,
-        title: {
-          text: z_axis.field_id
-        }
-      },
-      series: [
-        {
-          type: `scatter3d`,
-          marker: {
-            radius: 1
-          },
-          data: data_munged,
-          turboThreshold: 0
-        }
-      ]
-    };
-
-    options.chart.options3d = {
-      enabled: true,
-      alpha: 10,
-      beta: 20,
-      depth: 400,
-      drag: {
-        enabled: true
-      }
-    };
-
     const status = (() => {
       if (x_axis.log_mode_error_message) {
         return x_axis.log_mode_error_message;
@@ -514,7 +484,54 @@ export const Scatterplot3D: PlotWrapper = {
       }
     })();
 
-    return <StatusWrapper status={status} options={options} />;
+    return (
+      <StatusWrapper status={status}>
+        <HighchartsPlot
+          options={get_highcharts_options({
+            chart: {
+              options3d: {
+                enabled: true,
+                alpha: 10,
+                beta: 20,
+                depth: 400,
+                drag: {
+                  enabled: true
+                }
+              }
+            },
+            xAxis: {
+              type: x_axis.log_mode ? `logarithmic` : `linear`,
+              title: {
+                text: x_axis.field_id
+              },
+              gridLineWidth: 1
+            },
+            yAxis: {
+              type: y_axis.log_mode ? `logarithmic` : `linear`,
+              title: {
+                text: y_axis.field_id
+              }
+            },
+            zAxis: {
+              type: z_axis.log_mode ? `logarithmic` : `linear`,
+              title: {
+                text: z_axis.field_id
+              }
+            },
+            series: [
+              {
+                type: `scatter3d`,
+                marker: {
+                  radius: 1
+                },
+                data: data_munged,
+                turboThreshold: 0
+              }
+            ]
+          })}
+        />
+      </StatusWrapper>
+    );
   },
   Controls() {
     return (
@@ -585,24 +602,31 @@ function LoadingBox({
 
 function StatusWrapper({
   status,
-  options
+  children
 }: {
   status: React.ReactNode;
-  options: Highcharts.Options;
+  children: React.ReactNode;
 }) {
   return (
     <div className="relative">
       {status && <StatusBox>{status}</StatusBox>}
-      <HighchartsPlot options={options} />
+      {children}
     </div>
   );
 }
 
-function get_highcharts_options(): Highcharts.Options {
-  return {
+function get_highcharts_options(
+  opts: Highcharts.Options = {}
+): Highcharts.Options {
+  const base: Highcharts.Options = {
     chart: {
       animation: false,
       styledMode: true
+    },
+    plotOptions: {
+      series: {
+        animation: false
+      }
     },
     legend: {
       enabled: false
@@ -625,6 +649,7 @@ function get_highcharts_options(): Highcharts.Options {
       usePreallocated: true
     }
   };
+  return lodash_merge(base, opts);
 }
 
 function useAxisConfig(
