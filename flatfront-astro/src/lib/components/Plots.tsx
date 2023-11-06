@@ -33,28 +33,21 @@ export const Histogram: PlotWrapper = {
     const catalog_id = useCatalogID();
     const filters = useFilters();
     const random_config = useRandomConfig();
-    const plot_state = usePlotState();
-    const is_log_allowed = useGetIsLogAllowed();
 
-    const field_id = plot_state?.field;
-    const log_mode = plot_state?.field_log_mode ?? false;
-    const count_log_mode = plot_state?.count_log_mode ?? false;
-
-    const can_use_log_mode = is_log_allowed(field_id);
-
-    const log_mode_error = log_mode && !can_use_log_mode;
+    const field_config = useAxisConfig(`field`);
+    const count_config = useAxisConfig(`count`);
 
     const enable_request =
-      Boolean(catalog_id) && Boolean(field_id) && !log_mode_error;
+      Boolean(catalog_id) && field_config.ready_for_request;
 
     const query = usePlotQuery<HistogramPostRequestBody, HistogramResponse>({
       path: `/${catalog_id}/histogram`,
       body: {
         fields: [
           {
-            field: field_id,
+            field: field_config.field_id,
             size: 100,
-            log: log_mode
+            log: field_config.log_mode
           }
         ] as any,
         ...filters,
@@ -65,7 +58,6 @@ export const Histogram: PlotWrapper = {
     });
 
     const data_munged = (() => {
-      if (!field_id) return [];
       if (!query.data) return [];
       return query.data.buckets.map(({ key: [value], count }) => {
         return [value, count];
@@ -75,13 +67,13 @@ export const Histogram: PlotWrapper = {
     const options: Highcharts.Options = {
       ...get_highcharts_options(),
       xAxis: {
-        type: log_mode ? `logarithmic` : `linear`,
+        type: field_config.log_mode ? `logarithmic` : `linear`,
         title: {
-          text: field_id
+          text: field_config.field_id
         }
       },
       yAxis: {
-        type: count_log_mode ? `logarithmic` : `linear`,
+        type: count_config.log_mode ? `logarithmic` : `linear`,
         title: {
           text: `Count`
         }
@@ -98,8 +90,8 @@ export const Histogram: PlotWrapper = {
     };
 
     const status = (() => {
-      if (log_mode_error) {
-        return `Log mode not allowed because "${field_id}" values cross zero.`;
+      if (field_config.log_mode_error_message) {
+        return field_config.log_mode_error_message;
       } else if (query.isFetching) {
         return <LoadingBox />;
       } else if (!(data_munged.length > 0)) {
@@ -133,37 +125,21 @@ export const Heatmap: PlotWrapper = {
     const catalog_id = useCatalogID();
     const filters = useFilters();
     const random_config = useRandomConfig();
-    const plot_state = usePlotState();
-    const is_log_allowed = useGetIsLogAllowed();
 
-    const x_axis_field_id = plot_state?.x_axis;
-    const y_axis_field_id = plot_state?.y_axis;
-
-    const x_axis_log_mode = plot_state?.x_axis_log_mode ?? false;
-    const y_axis_log_mode = plot_state?.y_axis_log_mode ?? false;
-
-    const x_axis_can_use_log_mode = is_log_allowed(x_axis_field_id);
-    const y_axis_can_use_log_mode = is_log_allowed(y_axis_field_id);
-
-    const x_axis_log_mode_error = x_axis_log_mode && !x_axis_can_use_log_mode;
-    const y_axis_log_mode_error = y_axis_log_mode && !y_axis_can_use_log_mode;
-
-    const x_log = x_axis_log_mode && x_axis_can_use_log_mode;
-    const y_log = y_axis_log_mode && y_axis_can_use_log_mode;
+    const x_axis = useAxisConfig(`x_axis`);
+    const y_axis = useAxisConfig(`y_axis`);
 
     const enable_request =
       Boolean(catalog_id) &&
-      Boolean(x_axis_field_id) &&
-      Boolean(y_axis_field_id) &&
-      !x_axis_log_mode_error &&
-      !y_axis_log_mode_error;
+      x_axis.ready_for_request &&
+      y_axis.ready_for_request;
 
     const query = usePlotQuery<HistogramPostRequestBody, HistogramResponse>({
       path: `/${catalog_id}/histogram`,
       body: {
         fields: [
-          { field: x_axis_field_id, size: 20, log: x_axis_log_mode },
-          { field: y_axis_field_id, size: 20, log: y_axis_log_mode }
+          { field: x_axis.field_id, size: 20, log: x_axis.log_mode },
+          { field: y_axis.field_id, size: 20, log: y_axis.log_mode }
         ] as any,
         ...filters,
         ...random_config
@@ -173,8 +149,6 @@ export const Heatmap: PlotWrapper = {
     });
 
     const data_munged = (() => {
-      if (!x_axis_field_id) return [];
-      if (!y_axis_field_id) return [];
       if (!query.data) return [];
       return query.data.buckets.map(({ key: [x, y], count }) => {
         return [x, y, count];
@@ -186,16 +160,16 @@ export const Heatmap: PlotWrapper = {
     const options: Highcharts.Options = {
       ...get_highcharts_options(),
       xAxis: {
-        type: x_log ? `logarithmic` : `linear`,
+        type: x_axis.log_mode ? `logarithmic` : `linear`,
         title: {
-          text: x_axis_field_id
+          text: x_axis.field_id
         },
         gridLineWidth: 1
       },
       yAxis: {
-        type: y_log ? `logarithmic` : `linear`,
+        type: y_axis.log_mode ? `logarithmic` : `linear`,
         title: {
-          text: y_axis_field_id
+          text: y_axis.field_id
         }
       },
       colorAxis: {
@@ -214,10 +188,10 @@ export const Heatmap: PlotWrapper = {
     };
 
     const status = (() => {
-      if (x_axis_log_mode_error) {
-        return `Log mode not allowed because "${x_axis_field_id}" values cross zero.`;
-      } else if (y_axis_log_mode_error) {
-        return `Log mode not allowed because "${y_axis_field_id}" values cross zero.`;
+      if (x_axis.log_mode_error_message) {
+        return x_axis.log_mode_error_message;
+      } else if (y_axis.log_mode_error_message) {
+        return y_axis.log_mode_error_message;
       } else if (query.isFetching) {
         return <LoadingBox />;
       } else if (!(data_munged.length > 0)) {
@@ -246,38 +220,22 @@ export const BoxPlot: PlotWrapper = {
     const catalog_id = useCatalogID();
     const filters = useFilters();
     const random_config = useRandomConfig();
-    const plot_state = usePlotState();
-    const is_log_allowed = useGetIsLogAllowed();
 
-    const x_axis_field_id = plot_state?.x_axis;
-    const y_axis_field_id = plot_state?.y_axis;
-
-    const x_axis_log_mode = plot_state?.x_axis_log_mode ?? false;
-    const y_axis_log_mode = plot_state?.y_axis_log_mode ?? false;
-
-    const x_axis_can_use_log_mode = is_log_allowed(x_axis_field_id);
-    const y_axis_can_use_log_mode = is_log_allowed(y_axis_field_id);
-
-    const x_axis_log_mode_error = x_axis_log_mode && !x_axis_can_use_log_mode;
-    const y_axis_log_mode_error = y_axis_log_mode && !y_axis_can_use_log_mode;
-
-    const x_log = x_axis_log_mode && x_axis_can_use_log_mode;
-    const y_log = y_axis_log_mode && y_axis_can_use_log_mode;
+    const x_axis = useAxisConfig(`x_axis`);
+    const y_axis = useAxisConfig(`y_axis`);
 
     const enable_request =
       Boolean(catalog_id) &&
-      Boolean(x_axis_field_id) &&
-      Boolean(y_axis_field_id) &&
-      !x_axis_log_mode_error &&
-      !y_axis_log_mode_error;
+      x_axis.ready_for_request &&
+      y_axis.ready_for_request;
 
     const query = usePlotQuery<HistogramPostRequestBody, HistogramResponse>({
       path: `/${catalog_id}/histogram`,
       body: {
         fields: [
-          { field: x_axis_field_id, size: 60, log: x_axis_log_mode }
+          { field: x_axis.field_id, size: 60, log: x_axis.log_mode }
         ] as any,
-        quartiles: y_axis_field_id?.toString() as any,
+        quartiles: y_axis.field_id?.toString(),
         ...filters,
         ...random_config
       },
@@ -286,12 +244,9 @@ export const BoxPlot: PlotWrapper = {
     });
 
     const data_munged = (() => {
-      if (!x_axis_field_id) return [];
-      if (!y_axis_field_id) return [];
       if (!query.data) return [];
       return query.data.buckets.map(({ key: [x, y], count, quartiles }) => {
-        // return [...key, count];
-        // x,low,q1,median,q3,high
+        // x, low, q1, median, q3, high
         return [x, ...quartiles];
       });
     })();
@@ -299,15 +254,15 @@ export const BoxPlot: PlotWrapper = {
     const options: Highcharts.Options = {
       ...get_highcharts_options(),
       xAxis: {
-        type: x_log ? `logarithmic` : `linear`,
+        type: x_axis.log_mode ? `logarithmic` : `linear`,
         title: {
-          text: x_axis_field_id
+          text: x_axis.field_id
         }
       },
       yAxis: {
-        type: y_log ? `logarithmic` : `linear`,
+        type: y_axis.log_mode ? `logarithmic` : `linear`,
         title: {
-          text: y_axis_field_id
+          text: y_axis.field_id
         }
       },
       series: [
@@ -324,10 +279,10 @@ export const BoxPlot: PlotWrapper = {
     };
 
     const status = (() => {
-      if (x_axis_log_mode_error) {
-        return `Log mode not allowed because "${x_axis_field_id}" values cross zero.`;
-      } else if (y_axis_log_mode_error) {
-        return `Log mode not allowed because "${y_axis_field_id}" values cross zero.`;
+      if (x_axis.log_mode_error_message) {
+        return x_axis.log_mode_error_message;
+      } else if (y_axis.log_mode_error_message) {
+        return y_axis.log_mode_error_message;
       } else if (query.isFetching) {
         return <LoadingBox />;
       } else if (!(data_munged.length > 0)) {
@@ -356,19 +311,9 @@ export const Scatterplot: PlotWrapper = {
     const catalog_id = useCatalogID();
     const filters = useFilters();
     const plot_state = usePlotState();
-    const is_log_allowed = useGetIsLogAllowed();
 
-    const x_axis_field_id = plot_state?.x_axis;
-    const y_axis_field_id = plot_state?.y_axis;
-
-    const x_axis_log_mode = plot_state?.x_axis_log_mode ?? false;
-    const y_axis_log_mode = plot_state?.y_axis_log_mode ?? false;
-
-    const x_axis_can_use_log_mode = is_log_allowed(x_axis_field_id);
-    const y_axis_can_use_log_mode = is_log_allowed(y_axis_field_id);
-
-    const x_axis_log_mode_error = x_axis_log_mode && !x_axis_can_use_log_mode;
-    const y_axis_log_mode_error = y_axis_log_mode && !y_axis_can_use_log_mode;
+    const x_axis = useAxisConfig(`x_axis`);
+    const y_axis = useAxisConfig(`y_axis`);
 
     const count = plot_state?.count ?? 2e3;
 
@@ -379,17 +324,14 @@ export const Scatterplot: PlotWrapper = {
 
     const enable_request =
       Boolean(catalog_id) &&
-      Boolean(x_axis_field_id) &&
-      Boolean(y_axis_field_id) &&
-      Number.isFinite(sample) &&
-      !x_axis_log_mode_error &&
-      !y_axis_log_mode_error;
+      x_axis.ready_for_request &&
+      y_axis.ready_for_request;
 
     const query = usePlotQuery<DataPostRequestBody, DataResponse>({
       path: `/${catalog_id}/data`,
       body: {
         object: true,
-        fields: [x_axis_field_id, y_axis_field_id],
+        fields: [x_axis.field_id, y_axis.field_id],
         ...filters,
         count,
         sample
@@ -399,29 +341,27 @@ export const Scatterplot: PlotWrapper = {
     });
 
     const data_munged = (() => {
-      if (!x_axis_field_id) return [];
-      if (!y_axis_field_id) return [];
+      if (!x_axis.field_id) return [];
+      if (!y_axis.field_id) return [];
       if (!query.data) return [];
       return query.data.map((datum) => {
-        return [+datum[x_axis_field_id], +datum[y_axis_field_id]];
+        return [+datum[x_axis.field_id], +datum[y_axis.field_id]];
       });
     })();
 
     const options: Highcharts.Options = {
       ...get_highcharts_options(),
       xAxis: {
-        type:
-          x_axis_log_mode && x_axis_can_use_log_mode ? `logarithmic` : `linear`,
+        type: x_axis.log_mode ? `logarithmic` : `linear`,
         title: {
-          text: x_axis_field_id
+          text: x_axis.field_id
         },
         gridLineWidth: 1
       },
       yAxis: {
-        type:
-          y_axis_log_mode && y_axis_can_use_log_mode ? `logarithmic` : `linear`,
+        type: y_axis.log_mode ? `logarithmic` : `linear`,
         title: {
-          text: y_axis_field_id
+          text: y_axis.field_id
         }
       },
       series: [
@@ -437,10 +377,10 @@ export const Scatterplot: PlotWrapper = {
     };
 
     const status = (() => {
-      if (x_axis_log_mode_error) {
-        return `Log mode not allowed because "${x_axis_field_id}" values cross zero.`;
-      } else if (y_axis_log_mode_error) {
-        return `Log mode not allowed because "${y_axis_field_id}" values cross zero.`;
+      if (x_axis.log_mode_error_message) {
+        return x_axis.log_mode_error_message;
+      } else if (y_axis.log_mode_error_message) {
+        return y_axis.log_mode_error_message;
       } else if (query.isFetching) {
         return <LoadingBox />;
       } else if (!(data_munged.length > 0)) {
@@ -470,23 +410,10 @@ export const Scatterplot3D: PlotWrapper = {
     const filters = useFilters();
     const random_config = useRandomConfig();
     const plot_state = usePlotState();
-    const is_log_allowed = useGetIsLogAllowed();
 
-    const x_axis_field_id = plot_state?.x_axis;
-    const y_axis_field_id = plot_state?.y_axis;
-    const z_axis_field_id = plot_state?.z_axis;
-
-    const x_axis_log_mode = plot_state?.x_axis_log_mode ?? false;
-    const y_axis_log_mode = plot_state?.y_axis_log_mode ?? false;
-    const z_axis_log_mode = plot_state?.z_axis_log_mode ?? false;
-
-    const x_axis_can_use_log_mode = is_log_allowed(x_axis_field_id);
-    const y_axis_can_use_log_mode = is_log_allowed(y_axis_field_id);
-    const z_axis_can_use_log_mode = is_log_allowed(z_axis_field_id);
-
-    const x_axis_log_mode_error = x_axis_log_mode && !x_axis_can_use_log_mode;
-    const y_axis_log_mode_error = y_axis_log_mode && !y_axis_can_use_log_mode;
-    const z_axis_log_mode_error = z_axis_log_mode && !z_axis_can_use_log_mode;
+    const x_axis = useAxisConfig(`x_axis`);
+    const y_axis = useAxisConfig(`y_axis`);
+    const z_axis = useAxisConfig(`z_axis`);
 
     const count = plot_state?.count ?? 2e3;
 
@@ -497,19 +424,15 @@ export const Scatterplot3D: PlotWrapper = {
 
     const enable_request =
       Boolean(catalog_id) &&
-      Boolean(x_axis_field_id) &&
-      Boolean(y_axis_field_id) &&
-      Boolean(z_axis_field_id) &&
-      Number.isFinite(sample) &&
-      !x_axis_log_mode_error &&
-      !y_axis_log_mode_error &&
-      !z_axis_log_mode_error;
+      x_axis.ready_for_request &&
+      y_axis.ready_for_request &&
+      z_axis.ready_for_request;
 
     const query = usePlotQuery<DataPostRequestBody, DataResponse>({
       path: `/${catalog_id}/data`,
       body: {
         object: true,
-        fields: [x_axis_field_id, y_axis_field_id, z_axis_field_id],
+        fields: [x_axis.field_id, y_axis.field_id, z_axis.field_id],
         ...filters,
         count,
         sample
@@ -519,15 +442,15 @@ export const Scatterplot3D: PlotWrapper = {
     });
 
     const data_munged = (() => {
-      if (!x_axis_field_id) return [];
-      if (!y_axis_field_id) return [];
-      if (!z_axis_field_id) return [];
+      if (!x_axis.field_id) return [];
+      if (!y_axis.field_id) return [];
+      if (!z_axis.field_id) return [];
       if (!query.data) return [];
       return query.data.map((datum) => {
         return [
-          +datum[x_axis_field_id],
-          +datum[y_axis_field_id],
-          +datum[z_axis_field_id]
+          +datum[x_axis.field_id],
+          +datum[y_axis.field_id],
+          +datum[z_axis.field_id]
         ];
       });
     })();
@@ -535,25 +458,22 @@ export const Scatterplot3D: PlotWrapper = {
     const options: Highcharts.Options = {
       ...get_highcharts_options(),
       xAxis: {
-        type:
-          x_axis_log_mode && x_axis_can_use_log_mode ? `logarithmic` : `linear`,
+        type: x_axis.log_mode ? `logarithmic` : `linear`,
         title: {
-          text: x_axis_field_id
+          text: x_axis.field_id
         },
         gridLineWidth: 1
       },
       yAxis: {
-        type:
-          y_axis_log_mode && y_axis_can_use_log_mode ? `logarithmic` : `linear`,
+        type: y_axis.log_mode ? `logarithmic` : `linear`,
         title: {
-          text: y_axis_field_id
+          text: y_axis.field_id
         }
       },
       zAxis: {
-        type:
-          z_axis_log_mode && z_axis_can_use_log_mode ? `logarithmic` : `linear`,
+        type: z_axis.log_mode ? `logarithmic` : `linear`,
         title: {
-          text: z_axis_field_id
+          text: z_axis.field_id
         }
       },
       series: [
@@ -579,12 +499,12 @@ export const Scatterplot3D: PlotWrapper = {
     };
 
     const status = (() => {
-      if (x_axis_log_mode_error) {
-        return `Log mode not allowed because "${x_axis_field_id}" values cross zero.`;
-      } else if (y_axis_log_mode_error) {
-        return `Log mode not allowed because "${y_axis_field_id}" values cross zero.`;
-      } else if (z_axis_log_mode_error) {
-        return `Log mode not allowed because "${z_axis_field_id}" values cross zero.`;
+      if (x_axis.log_mode_error_message) {
+        return x_axis.log_mode_error_message;
+      } else if (y_axis.log_mode_error_message) {
+        return y_axis.log_mode_error_message;
+      } else if (z_axis.log_mode_error_message) {
+        return z_axis.log_mode_error_message;
       } else if (query.isFetching) {
         return <LoadingBox />;
       } else if (!(data_munged.length > 0)) {
@@ -707,13 +627,36 @@ function get_highcharts_options(): Highcharts.Options {
   };
 }
 
+function useAxisConfig(
+  key: `x_axis` | `y_axis` | `z_axis` | `count` | `field`
+) {
+  const plot_state = usePlotState();
+  const is_log_allowed = useGetIsLogAllowed();
+  const field_id = plot_state?.[key];
+  const log_mode_requested = plot_state?.[`${key}_log_mode`] ?? false;
+  const log_mode_allowed = is_log_allowed(field_id);
+  const log_mode_error = log_mode_requested && !log_mode_allowed;
+  const log_mode = log_mode_requested && log_mode_allowed;
+  const ready_for_request = Boolean(field_id) && !log_mode_error;
+  const log_mode_error_message = log_mode_error
+    ? `Log mode not allowed because "${field_id}" values cross zero.`
+    : null;
+  return {
+    field_id,
+    log_mode,
+    log_mode_error_message,
+    ready_for_request
+  };
+}
+
 function useGetIsLogAllowed(): (field_id: string) => boolean {
   const get_current_min = useGetCurrentMin();
   const get_current_max = useGetCurrentMax();
-  return (field_id: string) => {
+  return (field_id: string): boolean => {
+    if (!field_id) return true;
+    if (field_id === `count`) return true;
     const current_min = get_current_min(field_id);
     const current_max = get_current_max(field_id);
-    if (!field_id) return true;
     if (current_min > 0 && current_max > 0) return true;
     return false;
   };
@@ -722,7 +665,7 @@ function useGetIsLogAllowed(): (field_id: string) => boolean {
 function useGetCurrentMin(): (field_id: string) => number | null {
   const filters = useFilters();
   const catalog_metadata = useCatalogMetadata();
-  return (field_id: string) => {
+  return (field_id: string): number | null => {
     const filter_value = filters[field_id];
     const field_stats = catalog_metadata?.hierarchy?.find(
       (d) => d.data.name === field_id
@@ -741,7 +684,7 @@ function useGetCurrentMin(): (field_id: string) => number | null {
 function useGetCurrentMax(): (field_id: string) => number | null {
   const filters = useFilters();
   const catalog_metadata = useCatalogMetadata();
-  return (field_id: string) => {
+  return (field_id: string): number | null => {
     const filter_value = filters[field_id];
     const field_stats = catalog_metadata?.hierarchy?.find(
       (d) => d.data.name === field_id
