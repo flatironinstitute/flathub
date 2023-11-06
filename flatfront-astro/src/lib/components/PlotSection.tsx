@@ -42,6 +42,7 @@ function PlotTypeSelect() {
   const plot_type_options: { key: PlotType; label: string }[] = [
     { key: Plots.Histogram.key, label: Plots.Histogram.label },
     { key: Plots.Heatmap.key, label: Plots.Heatmap.label },
+    { key: Plots.HeatmapObservable.key, label: Plots.HeatmapObservable.label },
     { key: Plots.BoxPlot.key, label: Plots.BoxPlot.label },
     { key: Plots.Scatterplot.key, label: Plots.Scatterplot.label },
     { key: Plots.Scatterplot3D.key, label: Plots.Scatterplot3D.label }
@@ -75,6 +76,8 @@ function PlotComponent() {
       return <Plots.Histogram.Plot />;
     case Plots.Heatmap.key:
       return <Plots.Heatmap.Plot />;
+    case Plots.HeatmapObservable.key:
+      return <Plots.HeatmapObservable.Plot />;
     case Plots.BoxPlot.key:
       return <Plots.BoxPlot.Plot />;
     case Plots.Scatterplot.key:
@@ -93,6 +96,8 @@ function PlotControls() {
       return <Plots.Histogram.Controls />;
     case Plots.Heatmap.key:
       return <Plots.Heatmap.Controls />;
+    case Plots.HeatmapObservable.key:
+      return <Plots.HeatmapObservable.Controls />;
     case Plots.BoxPlot.key:
       return <Plots.BoxPlot.Controls />;
     case Plots.Scatterplot.key:

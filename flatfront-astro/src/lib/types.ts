@@ -71,6 +71,7 @@ export type PlotWrapper = {
 export type PlotType =
   | `histogram`
   | `heatmap`
+  | `heatmap_observable`
   | `boxplot`
   | `scatterplot`
   | `scatterplot_3d`;

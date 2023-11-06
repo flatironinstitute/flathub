@@ -11,6 +11,8 @@ import {
   useQueryClient,
   type UseQueryOptions
 } from "@tanstack/react-query";
+import * as d3 from "d3";
+import * as Plot from "@observablehq/plot";
 import lodash_merge from "lodash.merge";
 import { log, fetch_api_post } from "../shared";
 import { useIsDarkMode } from "../dark-mode";
@@ -26,6 +28,7 @@ import {
   LogModeCheckbox
 } from "./PlotPrimitives";
 import HighchartsPlot from "./HighchartsPlot";
+import ObservablePlot from "./ObservablePlot";
 
 export const Histogram: PlotWrapper = {
   key: `histogram`,
@@ -207,6 +210,120 @@ export const Heatmap: PlotWrapper = {
             ]
           })}
         />
+      </StatusWrapper>
+    );
+  },
+  Controls() {
+    return (
+      <>
+        <XAxisControl />
+        <YAxisControl />
+      </>
+    );
+  }
+};
+
+export const HeatmapObservable: PlotWrapper = {
+  key: `heatmap_observable`,
+  label: `Heatmap v2`,
+  Plot() {
+    const catalog_id = useCatalogID();
+    const filters = useFilters();
+    const random_config = useRandomConfig();
+
+    const x_axis = useAxisConfig(`x_axis`);
+    const y_axis = useAxisConfig(`y_axis`);
+
+    const enable_request =
+      Boolean(catalog_id) &&
+      x_axis.ready_for_request &&
+      y_axis.ready_for_request;
+
+    const query = usePlotQuery<HistogramPostRequestBody, HistogramResponse>({
+      path: `/${catalog_id}/histogram`,
+      body: {
+        fields: [
+          { field: x_axis.field_id, size: 20, log: x_axis.log_mode },
+          { field: y_axis.field_id, size: 20, log: y_axis.log_mode }
+        ] as any,
+        ...filters,
+        ...random_config
+      },
+      label: `Heatmap`,
+      enabled: enable_request
+    });
+
+    const sizes = query.data?.sizes ?? [0, 0];
+
+    const data_munged = (() => {
+      if (!query.data) return [];
+      return query.data.buckets.map(({ key: [x, y], count }) => {
+        const x1 = +x;
+        const y1 = +y;
+        const x2 = x_axis.log_mode ? x1 * sizes[0] : x1 + sizes[0];
+        const y2 = y_axis.log_mode ? y1 * sizes[1] : y1 + sizes[1];
+        return { x1, y1, x2, y2, count };
+      });
+    })();
+
+    log(`data_munged`, query.data?.sizes, data_munged);
+
+    const status = (() => {
+      if (x_axis.log_mode_error_message) {
+        return x_axis.log_mode_error_message;
+      } else if (y_axis.log_mode_error_message) {
+        return y_axis.log_mode_error_message;
+      } else if (query.isFetching) {
+        return <LoadingBox />;
+      } else if (!(data_munged.length > 0)) {
+        return `No data.`;
+      } else {
+        return null;
+      }
+    })();
+
+    const is_dark_mode = useIsDarkMode();
+
+    const plot = Plot.plot({
+      style: {
+        background: `transparent`,
+        width: `100%`
+      },
+      color: {
+        legend: true,
+        scheme: `Greys`,
+        reverse: is_dark_mode,
+        domain: [-2, d3.max(data_munged, (d) => d.count)]
+      },
+      x: {
+        label: x_axis.field_id,
+        type: x_axis.log_mode ? `log` : `linear`,
+        tickFormat: x_axis.log_mode ? `.3~f` : undefined,
+        grid: true
+      },
+      y: {
+        label: y_axis.field_id,
+        type: y_axis.log_mode ? `log` : `linear`,
+        tickFormat: y_axis.log_mode ? `.3~f` : undefined,
+        grid: true
+      },
+      marks: [
+        Plot.rect(data_munged, {
+          x1: `x1`,
+          x2: `x2`,
+          y1: `y1`,
+          y2: `y2`,
+          fill: `count`,
+          stroke: `currentColor`,
+          strokeOpacity: 0.2,
+          tip: true
+        })
+      ]
+    });
+
+    return (
+      <StatusWrapper status={status}>
+        <ObservablePlot plot={plot} />
       </StatusWrapper>
     );
   },
