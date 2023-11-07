@@ -2,7 +2,7 @@ import type { CellID, CountRequestBody, CountResponse } from "../types";
 
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { assert_catalog_cell_id, fetch_api_post } from "../shared";
+import { fetch_api_post } from "../shared";
 import { FiltersProvider, useFilters } from "./FiltersContext";
 import { CatalogMetadataProvider } from "./CatalogMetadataContext";
 import { RandomProvider, useRandomConfig } from "./RandomContext";
