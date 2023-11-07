@@ -47,6 +47,12 @@ export function RangeFilterControl() {
   );
 }
 
+/**
+ * Type is either:
+ * - ENUMERABLE_INTEGER
+ * - LABELLED_ENUMERABLE_INTEGER
+ * - LABELLED_ENUMERABLE_BOOLEAN
+ */
 export function SelectFilterControl() {
   const field_node = useFieldNode();
   const metadata = field_node.data;

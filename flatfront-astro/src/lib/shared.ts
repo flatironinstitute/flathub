@@ -198,49 +198,53 @@ export const format = {
   }
 };
 
+/**
+ * Type is either:
+ * - ENUMERABLE_INTEGER
+ * - LABELLED_ENUMERABLE_INTEGER
+ * - LABELLED_ENUMERABLE_BOOLEAN
+ */
 export function join_enums(
   metadata: FieldMetadata
 ): Array<{ text: string; count?: number; value: FilterValueRaw }> {
-  const has_enum = metadata.enum && metadata.enum.length > 0 ? true : false;
-  const has_terms =
-    metadata.stats?.terms && metadata.stats.terms.length > 0 ? true : false;
-  const joined: { text: string; count?: number; value: any }[] = (() => {
-    if (has_enum && has_terms) {
-      return metadata.enum.map((text, index) => {
-        const found = metadata.stats.terms.find((term) => {
-          const value_as_number = Number(term.value);
-          if (Number.isNaN(value_as_number)) return false;
-          return value_as_number === index;
-        });
-
+  const field_type = get_field_type(metadata);
+  const joined: { text: string; value: any; count?: number }[] = (() => {
+    if (field_type === `LABELLED_ENUMERABLE_BOOLEAN`) {
+      return [false, true].map((value, index) => {
+        const text = metadata.enum?.[index] ?? value.toString();
+        const found = metadata.stats?.terms?.find((t) => t.value === value);
+        const count = found?.count ?? null;
         return {
           text,
-          count: found?.count ?? null,
-          value: found?.value ?? index
+          value,
+          count
         };
       });
-    } else if (has_enum && !has_terms) {
-      return metadata.enum.map((text, index) => {
+    } else if (field_type === `LABELLED_ENUMERABLE_INTEGER`) {
+      return metadata.enum?.map((text, value) => {
+        const found = metadata.stats?.terms?.find((t) => t.value === value);
+        const count = found?.count ?? null;
         return {
           text,
-          count: null,
-          value: index
+          value,
+          count
         };
       });
-    } else if (!has_enum && has_terms) {
-      return metadata.stats.terms.map(({ value, count }) => {
+    } else if (field_type === `ENUMERABLE_INTEGER`) {
+      return metadata.stats?.terms?.map(({ value, count }) => {
         const text = value.toString();
         return {
           text,
-          count,
-          value
+          value,
+          count
         };
       });
     } else {
-      console.error(metadata);
-      throw new Error(`No enum or terms: ${metadata.name}`);
+      log(`hee haw`, metadata);
+      throw new Error(`Not implemented: ${field_type}`);
     }
   })();
+  const has_enum = metadata.enum && metadata.enum.length > 0 ? true : false;
   const sorted = d3.sort(
     joined,
     has_enum ? (d) => -d.count : (d) => Number(d.text)
