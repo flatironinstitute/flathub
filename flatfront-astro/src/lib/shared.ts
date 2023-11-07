@@ -10,7 +10,7 @@ import type {
 import React from "react";
 import * as d3 from "d3";
 
-const FLATHUB_API_BASE_URL = `https://flathub.flatironinstitute.org`;
+export const FLATHUB_API_BASE_URL = `https://flathub.flatironinstitute.org`;
 
 export async function fetch_api_get<T>(path: string): Promise<T> {
   const url = new URL(`/api${path}`, FLATHUB_API_BASE_URL);

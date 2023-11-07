@@ -18,10 +18,11 @@ import {
 import * as RadixIcons from "@radix-ui/react-icons";
 import {
   fetch_api_post,
+  FLATHUB_API_BASE_URL,
+  format,
   get_field_type,
   is_leaf_node,
   is_root_node,
-  format,
   log
 } from "../shared";
 import { useCatalogID, useMatchingRows } from "../contexts/CatalogContext";
@@ -48,7 +49,7 @@ export default function TableSection() {
 function Table() {
   const catalog_id = useCatalogID();
 
-  const fields = Array.from(useCurrentColumnIDs());
+  const column_ids = useCurrentColumnIDs();
 
   const filters = useFilters();
   const random_config = useRandomConfig();
@@ -69,7 +70,7 @@ function Table() {
 
   const request_body: DataPostRequestBody = {
     object: true,
-    fields: fields,
+    fields: [`_id`, ...column_ids],
     ...filters,
     count: rows_per_page,
     offset,
@@ -82,7 +83,7 @@ function Table() {
     body: request_body
   };
 
-  const enable_request = !!catalog_id && fields.length > 0;
+  const enable_request = !!catalog_id && column_ids.size > 0;
 
   const query = useQuery({
     queryKey: [`table-data`, query_config],
@@ -106,6 +107,7 @@ function Table() {
         <div className="overflow-x-scroll">
           <TablePrimitive
             data={query.data}
+            columnIDs={column_ids}
             isSorted={(id) => {
               if (sort[0]?.field === id) return sort[0]?.order;
               return false;
@@ -197,17 +199,16 @@ function Table() {
 
 function TablePrimitive({
   data,
+  columnIDs: column_ids,
   onSortChange: on_sort_change,
   isSorted: check_if_sorted
 }: {
   data: Array<DataRow>;
+  columnIDs: Set<string>;
   onSortChange?: (id: string) => void;
   isSorted?: (id: string) => `asc` | `desc` | false;
 }) {
-  const catalog_metadata_wrapper = useCatalogMetadata();
-  const catalog_hierarchy = catalog_metadata_wrapper?.hierarchy;
-
-  const columns = construct_table_columns(data, catalog_hierarchy);
+  const columns = useTableColumns(column_ids);
 
   const table = useReactTable({
     data,
@@ -307,30 +308,24 @@ function TablePrimitive({
  * @param catalog_field_hierarchy The complete field hierarchy for this catalog
  * @returns An array of column definitions for use with react-table
  */
-function construct_table_columns(
-  data: DataResponse,
-  catalog_field_hierarchy: CatalogHierarchyNode
-): ColumnDef<DataRow>[] {
-  if (data.length === 0) return [];
-  if (!catalog_field_hierarchy)
-    throw new Error(`catalog_field_hierarchy is null`);
-  // Get IDs of the leaf fields based on keys in data
-  const leaf_column_ids_set = new Set(Object.keys(data[0] ?? {}));
-
-  // log(`field_ids_set`, field_ids_set)
+function useTableColumns(column_ids: Set<string>): ColumnDef<DataRow>[] {
+  const catalog_id = useCatalogID();
+  const catalog_hierarchy = useCatalogMetadata()?.hierarchy;
+  if (!catalog_hierarchy) throw new Error(`catalog_field_hierarchy is null`);
 
   // Recursively construct column definitions
   const next = (
     node: CatalogHierarchyNode
   ): GroupColumnDef<DataRow> | AccessorColumnDef<DataRow> | null => {
+    const metadata = node.data;
     // Include this node if:
     // - It is a leaf node, and is one of the fields in field_ids_set
     // - It is the ancestor of one of the fields in field_ids_set
     const is_visible_leaf_field =
-      is_leaf_node(node) && leaf_column_ids_set.has(node.data.name);
+      is_leaf_node(node) && column_ids.has(metadata.name);
     const is_ancestor_of_field = node
       .leaves()
-      .some((child) => leaf_column_ids_set.has(child.data.name));
+      .some((child) => column_ids.has(child.data.name));
     const include = is_visible_leaf_field || is_ancestor_of_field;
     if (!include) return null;
 
@@ -343,10 +338,10 @@ function construct_table_columns(
       }
     }
 
-    let field_id = node.data.name;
+    let field_id = metadata.name;
 
     if (field_id?.length === 0) {
-      field_id = node.data.title;
+      field_id = metadata.title;
     }
 
     if (is_root_node(node)) {
@@ -363,7 +358,7 @@ function construct_table_columns(
 
     const column_base: ColumnDef<DataRow> = {
       id: field_id,
-      header: () => <Katex>{node.data.title ?? node.data.name}</Katex>
+      header: () => <Katex>{metadata.title ?? metadata.name}</Katex>
     };
 
     if (child_columns.length === 0) {
@@ -371,13 +366,26 @@ function construct_table_columns(
         ...column_base,
         accessorFn: (row) => {
           const value = row[field_id];
-          const field_type = get_field_type(node.data);
-          if (
+          const field_type = get_field_type(metadata);
+          if (metadata.attachment && value === true) {
+            const url = new URL(
+              `/api/${catalog_id}/attachment/${field_id}/${row._id}`,
+              FLATHUB_API_BASE_URL
+            );
+            return (
+              <a
+                className="flex items-center justify-center"
+                href={url.toString()}
+              >
+                <RadixIcons.DownloadIcon />
+              </a>
+            );
+          } else if (
             field_type === `LABELLED_ENUMERABLE_INTEGER` ||
             field_type === `LABELLED_ENUMERABLE_BOOLEAN`
           ) {
             const index = typeof value === "number" ? value : Number(value);
-            const text = node.data.enum[index];
+            const text = metadata.enum[index];
             return text;
           }
           return value;
@@ -393,8 +401,7 @@ function construct_table_columns(
       return column;
     }
   };
-  const root = next(catalog_field_hierarchy);
-  // if (root === null) throw new Error(`root is null`);
+  const root = next(catalog_hierarchy);
   if (root === null) {
     console.error(`construct_table_columns: root is null`);
     return null;
