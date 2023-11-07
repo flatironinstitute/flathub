@@ -9,16 +9,30 @@ import type {
 import React from "react";
 import * as d3 from "d3";
 import { useQuery } from "@tanstack/react-query";
+import { useDebounce } from "@uidotdev/usehooks";
 import { fetch_api_get, format, get_field_titles } from "../shared";
-import { useAddPlot, usePlotIDs } from "../contexts/PlotContext";
-import { useFilters } from "../contexts/FiltersContext";
-import { useCatalogMetadata } from "../contexts/CatalogMetadataContext";
 import {
   CatalogProvider,
   useCatalogCellID,
-  useCatalogID,
-  useMatchingRows
+  useCatalogID
 } from "../contexts/CatalogContext";
+import { useAddPlot, usePlotIDs } from "../contexts/PlotContext";
+import { FiltersProvider, useFilters } from "../contexts/FiltersContext";
+import {
+  CatalogMetadataProvider,
+  useCatalogMetadata
+} from "../contexts/CatalogMetadataContext";
+import {
+  RandomProvider,
+  useRandomConfig,
+  useSetRandomConfig
+} from "../contexts/RandomContext";
+import { useMergeState } from "../contexts/AppStateContext";
+import { ColumnsProvider } from "../contexts/ColumnsContext";
+import {
+  MatchingRowsProvider,
+  useMatchingRows
+} from "../contexts/MatchingRowsContext";
 import {
   BigButton,
   CellWrapper,
@@ -38,10 +52,6 @@ import PlotSection from "./PlotSection";
 import FieldCard from "./FieldCard";
 import BrowseFieldsDialog from "./BrowseFieldsDialog";
 import Katex from "./Katex";
-import { useRandomConfig, useSetRandomConfig } from "../contexts/RandomContext";
-import { useMergeState } from "../contexts/AppStateContext";
-import { useDebounce } from "@uidotdev/usehooks";
-import { ColumnsProvider } from "../contexts/ColumnsContext";
 
 export default function CatalogCell({
   id: catalog_cell_id
@@ -50,9 +60,17 @@ export default function CatalogCell({
 }) {
   return (
     <CatalogProvider value={catalog_cell_id}>
-      <ColumnsProvider>
-        <CatalogCellContents />
-      </ColumnsProvider>
+      <CatalogMetadataProvider>
+        <FiltersProvider>
+          <RandomProvider>
+            <MatchingRowsProvider>
+              <ColumnsProvider>
+                <CatalogCellContents />
+              </ColumnsProvider>
+            </MatchingRowsProvider>
+          </RandomProvider>
+        </FiltersProvider>
+      </CatalogMetadataProvider>
     </CatalogProvider>
   );
 }

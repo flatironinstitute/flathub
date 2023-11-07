@@ -25,7 +25,8 @@ import {
   is_root_node,
   log
 } from "../shared";
-import { useCatalogID, useMatchingRows } from "../contexts/CatalogContext";
+import { useMatchingRows } from "../contexts/MatchingRowsContext";
+import { useCatalogID } from "../contexts/CatalogContext";
 import { useFilters } from "../contexts/FiltersContext";
 import { useCatalogMetadata } from "../contexts/CatalogMetadataContext";
 import { useColumns } from "../contexts/ColumnsContext";
