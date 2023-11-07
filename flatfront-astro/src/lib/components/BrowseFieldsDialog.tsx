@@ -11,7 +11,11 @@ import {
   flexRender
 } from "@tanstack/react-table";
 import { is_leaf_node } from "../shared";
-import { useAddColumn, useCurrentColumnIDs, useRemoveColumn } from "../columns";
+import {
+  useAddColumn,
+  useColumns,
+  useRemoveColumn
+} from "../contexts/ColumnsContext";
 import {
   useAddFilter,
   useFilters,
@@ -193,7 +197,7 @@ function AddRemoveFilterButton({ node }: { node: CatalogHierarchyNode }) {
 function AddRemoveColumnButton({ node }: { node: CatalogHierarchyNode }) {
   const metadata = node.data;
   const is_leaf = is_leaf_node(node);
-  const is_active_column = useCurrentColumnIDs().has(metadata.name);
+  const is_active_column = useColumns().has(metadata.name);
   const remove_column = useRemoveColumn();
   const add_column = useAddColumn();
   if (!is_leaf) return null;

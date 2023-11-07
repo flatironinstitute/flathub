@@ -41,6 +41,7 @@ import Katex from "./Katex";
 import { useRandomConfig, useSetRandomConfig } from "../contexts/RandomContext";
 import { useMergeState } from "../contexts/AppStateContext";
 import { useDebounce } from "@uidotdev/usehooks";
+import { ColumnsProvider } from "../contexts/ColumnsContext";
 
 export default function CatalogCell({
   id: catalog_cell_id
@@ -49,7 +50,9 @@ export default function CatalogCell({
 }) {
   return (
     <CatalogProvider value={catalog_cell_id}>
-      <CatalogCellContents />
+      <ColumnsProvider>
+        <CatalogCellContents />
+      </ColumnsProvider>
     </CatalogProvider>
   );
 }

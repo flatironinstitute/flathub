@@ -1,9 +1,14 @@
-import { useAppState, useMergeState } from "./contexts/AppStateContext";
-import { useCatalogCellID, useCatalogID } from "./contexts/CatalogContext";
-import { useCatalogMetadata } from "./contexts/CatalogMetadataContext";
-import type { CatalogHierarchyNode, FieldID, FieldMetadata } from "./types";
+import type { CatalogHierarchyNode, FieldID, FieldMetadata } from "../types";
 
-export function useCurrentColumnIDs(): Set<string> {
+import React from "react";
+import { useAppState, useMergeState } from "./AppStateContext";
+import { useCatalogCellID, useCatalogID } from "./CatalogContext";
+import { useCatalogMetadata } from "./CatalogMetadataContext";
+import { log } from "../shared";
+
+const ColumnsContext = React.createContext<Set<string>>(new Set());
+
+export function ColumnsProvider({ children }) {
   const catalog_id = useCatalogID();
   const catalog_cell_id = useCatalogCellID();
   const catalog_metadata_wrapper = useCatalogMetadata();
@@ -14,7 +19,11 @@ export function useCurrentColumnIDs(): Set<string> {
   const column_ids_set = catalog_hierarchy
     ? get_column_ids(catalog_hierarchy, user_selected_columns)
     : new Set<string>();
-  return column_ids_set;
+  return (
+    <ColumnsContext.Provider value={column_ids_set}>
+      {children}
+    </ColumnsContext.Provider>
+  );
 }
 
 function get_column_ids(
@@ -34,6 +43,11 @@ function get_column_ids(
     }
   }
   return column_ids_set;
+}
+
+export function useColumns(): Set<string> {
+  const columns = React.useContext(ColumnsContext);
+  return columns;
 }
 
 export function useAddColumn() {

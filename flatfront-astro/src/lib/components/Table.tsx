@@ -28,9 +28,9 @@ import {
 import { useCatalogID, useMatchingRows } from "../contexts/CatalogContext";
 import { useFilters } from "../contexts/FiltersContext";
 import { useCatalogMetadata } from "../contexts/CatalogMetadataContext";
+import { useColumns } from "../contexts/ColumnsContext";
 import { CollapsibleSection, Placeholder } from "./Primitives";
 import Katex from "./Katex";
-import { useCurrentColumnIDs } from "../columns";
 import BrowseFieldsDialog from "./BrowseFieldsDialog";
 import { useRandomConfig } from "../contexts/RandomContext";
 import clsx from "clsx";
@@ -49,7 +49,7 @@ export default function TableSection() {
 function Table() {
   const catalog_id = useCatalogID();
 
-  const column_ids = useCurrentColumnIDs();
+  const column_ids = useColumns();
 
   const filters = useFilters();
   const random_config = useRandomConfig();
