@@ -20,10 +20,10 @@ npm run dev
 - [TanStack Query](https://tanstack.com/query/latest): Query management and caching.
 - [d3](https://d3js.org/): A staple of any dataviz project.
 - [Highcharts](https://www.highcharts.com/docs/index): Charts.
+- [Observable Plot](https://observablehq.com/plot/): More charts.
 - [immer](https://immerjs.github.io/immer/): Immutable state management.
 - [Katex](https://katex.org/): Math typesetting.
 - [lz-string](https://github.com/pieroxy/lz-string): LZ-based compression, used to store and retrieve application state in the URL.
-- [Svelte stores](https://svelte.dev/docs/svelte-store): Observable-like data structures for managing application state.
 
 ## To Do
 
