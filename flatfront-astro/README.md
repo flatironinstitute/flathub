@@ -1,4 +1,4 @@
-# Flatfront (Next.js)
+# Flatfront (Astro)
 
 This is a new frontend for FlatHub built with [Astro](https://astro.build/).
 
