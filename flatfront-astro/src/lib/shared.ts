@@ -240,7 +240,6 @@ export function join_enums(
         };
       });
     } else {
-      log(`hee haw`, metadata);
       throw new Error(`Not implemented: ${field_type}`);
     }
   })();
@@ -249,7 +248,12 @@ export function join_enums(
     joined,
     has_enum ? (d) => -d.count : (d) => Number(d.text)
   );
-  return sorted;
+  const has_count = sorted.some((d) => d.count > 0);
+  let filtered = sorted;
+  if (has_count) {
+    filtered = sorted.filter((d) => d.count > 0);
+  }
+  return filtered;
 }
 
 export function create_context_helper<T>(name: string) {
