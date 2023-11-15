@@ -1,5 +1,6 @@
 title: Illustris Subfind Subhalos
 index: illustris_sub
+visible: false
 count: 1175372132
 descr: >
   <a href='https://www.illustris-project.org/'>Illustris</a> <a href='https://www.illustris-project.org/data/docs/specifications/#sec2b'>Subfind Subhalo catalog</a> derived with the Subfind algorithm.
