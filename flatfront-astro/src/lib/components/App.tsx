@@ -35,7 +35,7 @@ function Main() {
   useSaveStateInURL();
   const app_state = useAppState();
   React.useEffect(() => {
-    log(`app_state`, app_state);
+    log(`🌳 Current app state:`, app_state);
   }, [app_state]);
   return (
     <main

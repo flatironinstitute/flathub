@@ -112,21 +112,24 @@ export function assert_numeric_field_stats(metadata: FieldMetadata) {
   }
 }
 
+export function is_numeric_filter_value(
+  filter_value: FilterValueRaw
+): filter_value is { gte: number; lte: number } {
+  if (typeof filter_value !== `object`) return false;
+  if (!(`gte` in filter_value) || !(`lte` in filter_value)) return false;
+  if (
+    typeof filter_value.gte !== `number` ||
+    typeof filter_value.lte !== `number`
+  )
+    return false;
+  return true;
+}
+
 export function assert_numeric_filter_value(
   filter_value: FilterValueRaw
 ): asserts filter_value is { gte: number; lte: number } {
-  if (typeof filter_value !== `object`) {
-    throw new Error(`Expected filter state to be an object`);
-  }
-  if (!(`gte` in filter_value) || !(`lte` in filter_value)) {
-    throw new Error(`Expected filter state to have gte andlte properties`);
-  }
-  const low = filter_value.gte;
-  const high = filter_value.lte;
-  if (typeof low !== `number` || typeof high !== `number`) {
-    throw new Error(
-      `Expected filter state to have gte and lte properties of type number`
-    );
+  if (!is_numeric_filter_value(filter_value)) {
+    throw new Error(`Expected filter state to be numeric`);
   }
 }
 

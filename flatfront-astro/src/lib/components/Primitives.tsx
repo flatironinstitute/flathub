@@ -178,9 +178,11 @@ export function RangeSliderWithText(props: {
     onValueChange?.([debounced_low, debounced_high]);
   }, [debounced_low, debounced_high]);
   React.useEffect(() => {
+    if (debounced_low === props.low) return;
     onLowChange?.(debounced_low);
   }, [debounced_low]);
   React.useEffect(() => {
+    if (debounced_high === props.high) return;
     onHighChange?.(debounced_high);
   }, [debounced_high]);
 

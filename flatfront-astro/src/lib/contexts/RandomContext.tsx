@@ -34,6 +34,7 @@ export function useSetRandomConfig() {
   const catalog_id = useCatalogID();
   const merge_state = useMergeState();
   return (key: `sample` | `seed`, value: number) => {
+    if (!catalog_id) return;
     merge_state({
       set_random_sample: {
         [catalog_cell_id]: {

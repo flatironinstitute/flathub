@@ -3,12 +3,12 @@ import type { CatalogHierarchyNode, FilterValueRaw } from "../types";
 import {
   format,
   assert_numeric_field_stats,
-  assert_numeric_filter_value,
   join_enums,
   log,
   is_leaf_node,
   get_field_type,
-  get_field_titles
+  get_field_titles,
+  is_numeric_filter_value
 } from "../shared";
 import {
   Select,
@@ -126,17 +126,16 @@ function RangeFilterControl() {
   const field_id = metadata.name;
   const filters = useFilterValues();
 
-  let filter_value_raw: FilterValueRaw = filters[field_id];
-  if (typeof filter_value_raw === `undefined` || filter_value_raw === null) {
-    filter_value_raw = {
-      gte: metadata.stats.min,
-      lte: metadata.stats.max
-    };
-  }
-  assert_numeric_filter_value(filter_value_raw);
-
+  const filter_value_raw: FilterValueRaw = filters[field_id];
   const { min, max } = metadata.stats;
-  const { gte: low, lte: high } = filter_value_raw;
+
+  const low = is_numeric_filter_value(filter_value_raw)
+    ? filter_value_raw.gte
+    : min;
+
+  const high = is_numeric_filter_value(filter_value_raw)
+    ? filter_value_raw.lte
+    : max;
 
   const set_filter_value = useSetFilterValue(field_node);
 
@@ -146,16 +145,16 @@ function RangeFilterControl() {
       max={max}
       low={low}
       high={high}
-      onLowChange={(number) => {
+      onLowChange={(number) =>
         set_filter_value({
           gte: number
-        });
-      }}
-      onHighChange={(number) => {
+        })
+      }
+      onHighChange={(number) =>
         set_filter_value({
           lte: number
-        });
-      }}
+        })
+      }
       debounce={500}
     />
   );
