@@ -17,7 +17,7 @@ import {
   useCatalogID
 } from "../contexts/CatalogContext";
 import { useAddPlot, usePlotIDs } from "../contexts/PlotContext";
-import { FiltersProvider, useFilters } from "../contexts/FiltersContext";
+import { FiltersProvider, useFilterValues } from "../contexts/FiltersContext";
 import {
   CatalogMetadataProvider,
   useCatalogMetadata
@@ -31,7 +31,7 @@ import { useMergeState } from "../contexts/AppStateContext";
 import { ColumnsProvider } from "../contexts/ColumnsContext";
 import {
   MatchingRowsProvider,
-  useMatchingRows
+  useMatchingRowsText
 } from "../contexts/MatchingRowsContext";
 import {
   BigButton,
@@ -92,7 +92,7 @@ function CatalogCellContents() {
         </div>
         <div className="flex flex-col gap-y-4 @2xl/cell:col-span-4 @2xl/cell:col-start-3 @2xl/cell:row-start-1">
           <Heading>Results</Heading>
-          <MatchingRows />
+          <div>{useMatchingRowsText()}</div>
           <AddPlotButton />
           <Plots />
           <div className="rounded-md p-4 ring-1 ring-black/20">
@@ -101,10 +101,6 @@ function CatalogCellContents() {
           <div className="space-y-4 rounded-md p-4 ring-1 ring-black/20">
             <SimpleLabel>python</SimpleLabel>
             <Placeholder>TODO: Python</Placeholder>
-          </div>
-          <div className="space-y-4 rounded-md p-4 ring-1 ring-black/20">
-            <SimpleLabel>download</SimpleLabel>
-            <Placeholder>TODO: Download Data</Placeholder>
           </div>
         </div>
       </div>
@@ -181,20 +177,6 @@ function AboutThisCatalog() {
   );
 }
 
-function MatchingRows() {
-  const catalog_id = useCatalogID();
-  const catalog_metadata = useCatalogMetadata();
-  const total_rows = catalog_metadata?.response?.count;
-  const matching = useMatchingRows();
-  const r = Number.isFinite(matching)
-    ? format.commas(matching)
-    : `[Loading...]`;
-  const t = total_rows ? format.commas(total_rows) : `[Loading...]`;
-  const text = `Filtered to ${r} out of ${t} total rows`;
-  if (!catalog_id) return <div>Select a catalog</div>;
-  return <div>{text}</div>;
-}
-
 function AddPlotButton() {
   const add_plot = useAddPlot();
   return <BigButton onClick={() => add_plot()}>Add Plot</BigButton>;
@@ -220,7 +202,7 @@ function AddFilterSelect() {
   const catalog_id = useCatalogID();
   const catalog_metadata = useCatalogMetadata();
   const leaves = catalog_metadata?.hierarchy?.leaves() ?? [];
-  const filters = useFilters();
+  const filters = useFilterValues();
   const merge_state = useMergeState();
   const [value, set_value] = React.useState(undefined);
   return (
@@ -257,7 +239,7 @@ function AddFilterSelect() {
 
 function FilterControls() {
   const catalog_metadata = useCatalogMetadata();
-  const filters = useFilters();
+  const filters = useFilterValues();
   // const all_field_nodes = catalog_metadata?.depth_first ?? [];
   const leaves = catalog_metadata?.hierarchy?.leaves() ?? [];
   const filter_and_ancestor_nodes = leaves.filter((node) => {

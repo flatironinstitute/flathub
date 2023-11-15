@@ -2,10 +2,11 @@ import type { CountRequestBody, CountResponse } from "../types";
 
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetch_api_post } from "../shared";
+import { fetch_api_post, format } from "../shared";
 import { useCatalogID } from "./CatalogContext";
-import { useFilters } from "./FiltersContext";
+import { useFilterValues } from "./FiltersContext";
 import { useRandomConfig } from "./RandomContext";
+import { useCatalogMetadata } from "./CatalogMetadataContext";
 
 const MatchingRowsContext = React.createContext<number | undefined>(undefined);
 
@@ -15,7 +16,7 @@ export function MatchingRowsProvider({
   children: React.ReactNode;
 }) {
   const catalog_id = useCatalogID();
-  const filters = useFilters();
+  const filters = useFilterValues();
   const random_config = useRandomConfig();
   const request_body: CountRequestBody = {
     ...filters,
@@ -44,4 +45,18 @@ export function MatchingRowsProvider({
 export function useMatchingRows(): number | undefined {
   const matching_rows = React.useContext(MatchingRowsContext);
   return matching_rows;
+}
+
+export function useMatchingRowsText(): string {
+  const catalog_id = useCatalogID();
+  const catalog_metadata = useCatalogMetadata();
+  const total_rows = catalog_metadata?.response?.count;
+  const matching = useMatchingRows();
+  const r = Number.isFinite(matching)
+    ? format.commas(matching)
+    : `[Loading...]`;
+  const t = total_rows ? format.commas(total_rows) : `[Loading...]`;
+  const text = `Filtered to ${r} out of ${t} total rows`;
+  if (!catalog_id) return `Select a catalog`;
+  return text;
 }

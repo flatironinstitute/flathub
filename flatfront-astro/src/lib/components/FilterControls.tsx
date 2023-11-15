@@ -9,14 +9,14 @@ import {
 } from "../shared";
 import { Select, RangeSliderWithText } from "./Primitives";
 import { useFieldNode } from "../contexts/FieldNodeContext";
-import { useFilters, useSetFilterValue } from "../contexts/FiltersContext";
+import { useFilterValues, useSetFilterValue } from "../contexts/FiltersContext";
 
 export function RangeFilterControl() {
   const field_node = useFieldNode();
   const metadata = field_node.data;
   assert_numeric_field_stats(metadata);
   const field_id = metadata.name;
-  const filters = useFilters();
+  const filters = useFilterValues();
 
   const filter_value_raw: FilterValueRaw = filters[field_id];
   assert_numeric_filter_value(filter_value_raw);
@@ -57,7 +57,7 @@ export function SelectFilterControl() {
   const field_node = useFieldNode();
   const metadata = field_node.data;
   const field_id = metadata.name;
-  const filters = useFilters();
+  const filters = useFilterValues();
   const filter_value_raw: FilterValueRaw = filters[field_id];
   const values = join_enums(metadata);
   const value = values.find((d) => d.value === filter_value_raw);

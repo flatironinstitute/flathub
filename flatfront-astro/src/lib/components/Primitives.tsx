@@ -68,7 +68,7 @@ export function BigButton({
   );
 }
 BigButton.className = clsx(
-  `block w-full rounded-lg py-3 font-bold`,
+  `block w-full rounded-lg py-3 font-bold text-center`,
   `ring-1 ring-black dark:ring-white`,
   `focus:outline-none focus-visible:ring-4`,
   `disabled:opacity-50 disabled:cursor-not-allowed`
@@ -609,10 +609,12 @@ export { RadixCollapsible as Collapsible };
 
 export function CollapsibleSection({
   label,
-  children
+  children,
+  className
 }: {
   label: string;
   children: React.ReactNode;
+  className?: string;
 }) {
   const [open, set_open] = React.useState(true);
   return (
@@ -624,7 +626,9 @@ export function CollapsibleSection({
             {open ? `Collapse` : `Expand`}
           </RadixCollapsible.Trigger>
         </div>
-        <RadixCollapsible.Content>{children}</RadixCollapsible.Content>
+        <RadixCollapsible.Content className={className}>
+          {children}
+        </RadixCollapsible.Content>
       </div>
     </RadixCollapsible.Root>
   );

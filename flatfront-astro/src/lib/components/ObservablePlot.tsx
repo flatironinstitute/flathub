@@ -2,16 +2,23 @@ import type * as Plot from "@observablehq/plot";
 
 import React from "react";
 
-type ObservablePlotType = ReturnType<typeof Plot.plot>;
+type ObservablePlotType = ReturnType<typeof Plot.plot | typeof Plot.legend>;
 
-export default function ObservablePlot({ plot }: { plot: ObservablePlotType }) {
+export default function ObservablePlot({
+  plot,
+  ...rest
+}: { plot: ObservablePlotType } & React.HTMLAttributes<HTMLDivElement>) {
   const ref = React.useRef<HTMLDivElement>(null);
+  useObservablePlot(ref, plot);
+  return <div ref={ref} {...rest} />;
+}
+
+export function useObservablePlot(
+  ref: React.MutableRefObject<any>,
+  plot: ObservablePlotType
+) {
   React.useEffect(() => {
-    for (const svg of plot.querySelectorAll(`svg`)) {
-      svg.style.background = `transparent`;
-    }
-    ref.current.append(plot);
+    ref.current?.append(plot);
     return () => plot.remove();
-  }, [plot]);
-  return <div ref={ref} />;
+  }, [ref.current, plot]);
 }

@@ -18,7 +18,7 @@ import { log, fetch_api_post } from "../shared";
 import { useIsDarkMode } from "../dark-mode";
 import { useCatalogID } from "../contexts/CatalogContext";
 import { useRandomConfig } from "../contexts/RandomContext";
-import { useFilters } from "../contexts/FiltersContext";
+import { useFilterValues } from "../contexts/FiltersContext";
 import { useCatalogMetadata } from "../contexts/CatalogMetadataContext";
 import { usePlotState } from "../contexts/PlotContext";
 import { StatusBox } from "./Primitives";
@@ -35,7 +35,7 @@ export const Histogram: PlotWrapper = {
   label: `Histogram`,
   Plot() {
     const catalog_id = useCatalogID();
-    const filters = useFilters();
+    const filters = useFilterValues();
     const random_config = useRandomConfig();
 
     const field_config = useAxisConfig(`field`);
@@ -130,7 +130,7 @@ export const Heatmap: PlotWrapper = {
   label: `Heatmap`,
   Plot() {
     const catalog_id = useCatalogID();
-    const filters = useFilters();
+    const filters = useFilterValues();
     const random_config = useRandomConfig();
 
     const x_axis = useAxisConfig(`x_axis`);
@@ -228,7 +228,7 @@ export const HeatmapObservable: PlotWrapper = {
   label: `Heatmap v2`,
   Plot() {
     const catalog_id = useCatalogID();
-    const filters = useFilters();
+    const filters = useFilterValues();
     const random_config = useRandomConfig();
 
     const x_axis = useAxisConfig(`x_axis`);
@@ -266,8 +266,6 @@ export const HeatmapObservable: PlotWrapper = {
       });
     })();
 
-    log(`data_munged`, query.data?.sizes, data_munged);
-
     const status = (() => {
       if (x_axis.log_mode_error_message) {
         return x_axis.log_mode_error_message;
@@ -284,28 +282,35 @@ export const HeatmapObservable: PlotWrapper = {
 
     const is_dark_mode = useIsDarkMode();
 
-    const plot = Plot.plot({
+    const aspect = 640 / 400;
+
+    const width = 900;
+
+    const plot_options: Plot.PlotOptions = {
+      width,
+      height: width / aspect,
       style: {
         background: `transparent`,
         width: `100%`
       },
       color: {
-        legend: true,
+        type: `sequential`,
+        label: `Count`,
         scheme: `Greys`,
         reverse: is_dark_mode,
-        domain: [-2, d3.max(data_munged, (d) => d.count)]
+        domain: d3.extent(data_munged, (d) => d.count)
       },
       x: {
         label: x_axis.field_id,
         type: x_axis.log_mode ? `log` : `linear`,
         tickFormat: x_axis.log_mode ? `.3~f` : undefined,
-        grid: true
+        grid: true,
       },
       y: {
         label: y_axis.field_id,
         type: y_axis.log_mode ? `log` : `linear`,
         tickFormat: y_axis.log_mode ? `.3~f` : undefined,
-        grid: true
+        grid: true,
       },
       marks: [
         Plot.rect(data_munged, {
@@ -319,11 +324,18 @@ export const HeatmapObservable: PlotWrapper = {
           tip: true
         })
       ]
+    };
+
+    const plot = Plot.plot(plot_options);
+
+    const legend = Plot.legend({
+      color: plot_options.color
     });
 
     return (
       <StatusWrapper status={status}>
         <ObservablePlot plot={plot} />
+        <ObservablePlot className="flex justify-center" plot={legend} />
       </StatusWrapper>
     );
   },
@@ -342,7 +354,7 @@ export const BoxPlot: PlotWrapper = {
   label: `Box Plot`,
   Plot() {
     const catalog_id = useCatalogID();
-    const filters = useFilters();
+    const filters = useFilterValues();
     const random_config = useRandomConfig();
 
     const x_axis = useAxisConfig(`x_axis`);
@@ -436,7 +448,7 @@ export const Scatterplot: PlotWrapper = {
   label: `Scatterplot`,
   Plot() {
     const catalog_id = useCatalogID();
-    const filters = useFilters();
+    const filters = useFilterValues();
     const plot_state = usePlotState();
 
     const x_axis = useAxisConfig(`x_axis`);
@@ -537,7 +549,7 @@ export const Scatterplot3D: PlotWrapper = {
   label: `3D Scatterplot`,
   Plot() {
     const catalog_id = useCatalogID();
-    const filters = useFilters();
+    const filters = useFilterValues();
     const random_config = useRandomConfig();
     const plot_state = usePlotState();
 
@@ -805,7 +817,7 @@ function useGetIsLogAllowed(): (field_id: string) => boolean {
 }
 
 function useGetCurrentMin(): (field_id: string) => number | null {
-  const filters = useFilters();
+  const filters = useFilterValues();
   const catalog_metadata = useCatalogMetadata();
   return (field_id: string): number | null => {
     const filter_value = filters[field_id];
@@ -824,7 +836,7 @@ function useGetCurrentMin(): (field_id: string) => number | null {
 }
 
 function useGetCurrentMax(): (field_id: string) => number | null {
-  const filters = useFilters();
+  const filters = useFilterValues();
   const catalog_metadata = useCatalogMetadata();
   return (field_id: string): number | null => {
     const filter_value = filters[field_id];

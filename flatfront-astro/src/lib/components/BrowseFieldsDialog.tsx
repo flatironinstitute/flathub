@@ -18,7 +18,7 @@ import {
 } from "../contexts/ColumnsContext";
 import {
   useAddFilter,
-  useFilters,
+  useFilterValues,
   useRemoveFilter
 } from "../contexts/FiltersContext";
 import { useCatalogMetadata } from "../contexts/CatalogMetadataContext";
@@ -177,7 +177,7 @@ function AddRemoveFilterButton({ node }: { node: CatalogHierarchyNode }) {
   const metadata = node.data;
   const is_leaf = is_leaf_node(node);
   const can_remove = metadata.required !== true;
-  const is_active_filter = useFilters()[metadata.name] !== undefined;
+  const is_active_filter = useFilterValues()[metadata.name] !== undefined;
   const remove_filter = useRemoveFilter();
   const add_filter = useAddFilter();
 

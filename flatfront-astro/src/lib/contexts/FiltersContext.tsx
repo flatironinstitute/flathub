@@ -11,7 +11,8 @@ import lodash_merge from "lodash.merge";
 import {
   assert_numeric_field_stats,
   get_field_type,
-  has_numeric_field_stats
+  has_numeric_field_stats,
+  log
 } from "../shared";
 import { useCatalogCellID, useCatalogID } from "./CatalogContext";
 import { useCatalogMetadata } from "./CatalogMetadataContext";
@@ -45,7 +46,7 @@ export function FiltersProvider({ children }) {
   );
 }
 
-export function useFilters(): Filters {
+export function useFilterValues(): Filters {
   const filters = React.useContext(FiltersContext);
   return filters;
 }

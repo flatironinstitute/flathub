@@ -27,7 +27,7 @@ import {
 } from "../shared";
 import { useMatchingRows } from "../contexts/MatchingRowsContext";
 import { useCatalogID } from "../contexts/CatalogContext";
-import { useFilters } from "../contexts/FiltersContext";
+import { useFilterValues } from "../contexts/FiltersContext";
 import { useCatalogMetadata } from "../contexts/CatalogMetadataContext";
 import { useColumns } from "../contexts/ColumnsContext";
 import { CollapsibleSection, Placeholder } from "./Primitives";
@@ -35,15 +35,20 @@ import Katex from "./Katex";
 import BrowseFieldsDialog from "./BrowseFieldsDialog";
 import { useRandomConfig } from "../contexts/RandomContext";
 import clsx from "clsx";
+import { SortProvider, useSetSort, useSort } from "../contexts/SortContext";
+import DownloadSection from "./DownloadSection";
 
 export default function TableSection() {
   return (
-    <CollapsibleSection label="table">
-      <div className="space-y-4">
-        <BrowseFieldsDialog label="Select Columns" />
-        <Table />
-      </div>
-    </CollapsibleSection>
+    <SortProvider>
+      <CollapsibleSection label="table">
+        <div className="space-y-4">
+          <BrowseFieldsDialog label="Select Columns" />
+          <Table />
+          <DownloadSection />
+        </div>
+      </CollapsibleSection>
+    </SortProvider>
   );
 }
 
@@ -52,14 +57,14 @@ function Table() {
 
   const column_ids = useColumns();
 
-  const filters = useFilters();
+  const filters = useFilterValues();
   const random_config = useRandomConfig();
 
   const [rows_per_page, set_rows_per_page] = React.useState<number>(25);
   const [offset, set_offset] = React.useState<number>(0);
-  const [sort, set_sort] = React.useState<
-    { field: string; order: `asc` | `desc` }[]
-  >([]);
+
+  const sort = useSort();
+  const set_sort = useSetSort();
 
   React.useEffect(() => {
     set_offset(0);
