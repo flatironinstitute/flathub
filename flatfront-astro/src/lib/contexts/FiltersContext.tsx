@@ -8,15 +8,8 @@ import type {
 
 import React from "react";
 import lodash_merge from "lodash.merge";
-import {
-  assert_numeric_field_stats,
-  get_field_type,
-  has_numeric_field_stats,
-  log
-} from "../shared";
 import { useCatalogCellID, useCatalogID } from "./CatalogContext";
 import { useCatalogMetadata } from "./CatalogMetadataContext";
-import { useFieldNode } from "./FieldNodeContext";
 import { useAppState, useMergeState, useSetAppState } from "./AppStateContext";
 
 const FilterValuesContext = React.createContext(null);
@@ -33,16 +26,11 @@ export function FiltersProvider({ children }) {
   const filter_names_set: Set<string> = catalog_hierarchy
     ? get_filter_names(catalog_hierarchy, show_filters_config)
     : new Set<string>();
-  const initial_filters: Filters = get_initial_cell_filters(
-    filter_names_set,
-    catalog_hierarchy
-  );
   const filter_state: Filters =
-    app_state?.set_filter_value?.[catalog_cell_id]?.[catalog_id];
-  const filters = lodash_merge(initial_filters, filter_state);
+    app_state?.set_filter_value?.[catalog_cell_id]?.[catalog_id] ?? {};
   return (
     <FilterNamesContext.Provider value={filter_names_set}>
-      <FilterValuesContext.Provider value={filters}>
+      <FilterValuesContext.Provider value={filter_state}>
         {children}
       </FilterValuesContext.Provider>
     </FilterNamesContext.Provider>
@@ -78,67 +66,12 @@ export function get_filter_names(
   return filter_names_set;
 }
 
-function get_initial_cell_filters(
-  filter_names: Set<string>,
-  catalog_field_hierarchy?: d3.HierarchyNode<FieldMetadata>
-): Filters {
-  if (!catalog_field_hierarchy) return {};
-  const initial_filter_object: Filters = Object.fromEntries(
-    Array.from(filter_names).map((filter_name) => {
-      const metadata = catalog_field_hierarchy.find(
-        (node) => node.data.name === filter_name
-      )?.data;
-
-      if (!metadata) {
-        throw new Error(`Could not find metadata for filter ${filter_name}`);
-      }
-
-      const field_type = get_field_type(metadata);
-
-      const initial_value: FilterValueRaw = (() => {
-        switch (field_type) {
-          case `ROOT`:
-            throw new Error(`Root field should not be a filter`);
-          case `INTEGER`:
-          case `FLOAT`:
-            if (!has_numeric_field_stats(metadata)) {
-              throw new Error(
-                `Field ${metadata.name} does not have numeric field stats`
-              );
-            }
-            assert_numeric_field_stats(metadata);
-            return {
-              gte: metadata.stats.min,
-              lte: metadata.stats.max
-            };
-          case `LABELLED_ENUMERABLE_BOOLEAN`:
-            return false;
-          case `LABELLED_ENUMERABLE_INTEGER`:
-          case `ENUMERABLE_INTEGER`:
-            return 0;
-          case `ARRAY`:
-            return null;
-          case `STRING`:
-            return ``;
-          default:
-            field_type satisfies never;
-        }
-      })();
-
-      return [filter_name, initial_value];
-    })
-  );
-  return initial_filter_object;
-}
-
-export function useSetFilterValue(
-  field_node: CatalogHierarchyNode = useFieldNode()
-) {
-  const field_id = field_node.data.name;
+export function useSetFilterValue(node: CatalogHierarchyNode) {
   const catalog_cell_id = useCatalogCellID();
   const catalog_id = useCatalogID();
   const merge_state = useMergeState();
   return (value: FilterValueRaw) => {
+    const field_id = node.data.name;
     merge_state({
       set_filter_value: {
         [catalog_cell_id]: {
@@ -151,11 +84,32 @@ export function useSetFilterValue(
   };
 }
 
-export function useRemoveFilter() {
+export function useClearFilterValue(node: CatalogHierarchyNode) {
   const catalog_cell_id = useCatalogCellID();
   const catalog_id = useCatalogID();
   const set_app_state = useSetAppState();
-  return (node: CatalogHierarchyNode) => {
+  return () => {
+    const field_id = node.data.name;
+    set_app_state((obj) => {
+      lodash_merge(obj, {
+        set_filter_value: {
+          [catalog_cell_id]: {
+            [catalog_id]: {
+              [field_id]: null
+            }
+          }
+        }
+      });
+      delete obj.set_filter_value[catalog_cell_id][catalog_id][field_id];
+    });
+  };
+}
+
+export function useRemoveFilter(node: CatalogHierarchyNode) {
+  const catalog_cell_id = useCatalogCellID();
+  const catalog_id = useCatalogID();
+  const set_app_state = useSetAppState();
+  return () => {
     const field_id = node.data.name;
     set_app_state((obj) => {
       lodash_merge(obj, {
@@ -179,12 +133,12 @@ export function useRemoveFilter() {
   };
 }
 
-export function useAddFilter() {
+export function useAddFilter(node: CatalogHierarchyNode) {
   const catalog_cell_id = useCatalogCellID();
   const catalog_id = useCatalogID();
   const merge_state = useMergeState();
 
-  return (node: CatalogHierarchyNode) => {
+  return () => {
     const field_id = node.data.name;
     merge_state({
       add_filter: {

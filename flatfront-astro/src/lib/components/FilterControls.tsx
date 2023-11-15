@@ -18,6 +18,7 @@ import {
 } from "./Primitives";
 import { FieldNodeProvider, useFieldNode } from "../contexts/FieldNodeContext";
 import {
+  useClearFilterValue,
   useFilterNames,
   useFilterValues,
   useSetFilterValue
@@ -125,13 +126,19 @@ function RangeFilterControl() {
   const field_id = metadata.name;
   const filters = useFilterValues();
 
-  const filter_value_raw: FilterValueRaw = filters[field_id];
+  let filter_value_raw: FilterValueRaw = filters[field_id];
+  if (typeof filter_value_raw === `undefined` || filter_value_raw === null) {
+    filter_value_raw = {
+      gte: metadata.stats.min,
+      lte: metadata.stats.max
+    };
+  }
   assert_numeric_filter_value(filter_value_raw);
 
   const { min, max } = metadata.stats;
   const { gte: low, lte: high } = filter_value_raw;
 
-  const set_filter_value = useSetFilterValue();
+  const set_filter_value = useSetFilterValue(field_node);
 
   return (
     <RangeSliderWithText
@@ -165,24 +172,27 @@ function SelectFilterControl() {
   const metadata = field_node.data;
   const field_id = metadata.name;
   const filters = useFilterValues();
-  const filter_value_raw: FilterValueRaw = filters[field_id];
-  const values = join_enums(metadata);
-  const value = values.find((d) => d.value === filter_value_raw);
+  const filter_value_raw: FilterValueRaw = filters[field_id] ?? null;
+  const options = [{ text: `All`, value: null }, ...join_enums(metadata)];
+  const value = options.find((d) => d.value === filter_value_raw);
 
-  const set_filter_value = useSetFilterValue();
+  const set_filter_value = useSetFilterValue(field_node);
+  const clear_filter_value = useClearFilterValue(field_node);
 
   const get_key = (d) => d?.text;
 
   return (
     <Select
       value={value}
-      options={values}
+      options={options}
       getKey={get_key}
       getDisplayName={(d) => {
         if (!d.count) return d.text;
         return `${d.text} (${format.commas(d.count)} rows)`;
       }}
-      onValueChange={({ value }) => set_filter_value(value)}
+      onValueChange={({ value }) =>
+        value === null ? clear_filter_value() : set_filter_value(value)
+      }
     />
   );
 }
