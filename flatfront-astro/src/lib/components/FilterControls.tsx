@@ -123,6 +123,7 @@ function RangeFilterControl() {
   const field_node = useFieldNode();
   const metadata = field_node.data;
   assert_numeric_field_stats(metadata);
+  const field_type = get_field_type(metadata);
   const field_id = metadata.name;
   const filters = useFilterValues();
 
@@ -147,12 +148,12 @@ function RangeFilterControl() {
       high={high}
       onLowChange={(number) =>
         set_filter_value({
-          gte: number
+          gte: field_type === `INTEGER` ? Math.round(number) : number
         })
       }
       onHighChange={(number) =>
         set_filter_value({
-          lte: number
+          lte: field_type === `INTEGER` ? Math.round(number) : number
         })
       }
       debounce={500}
