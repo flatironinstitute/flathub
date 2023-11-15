@@ -11,13 +11,12 @@ const SetAppStateContext = React.createContext<Updater<AppState> | undefined>(
   undefined
 );
 
-export function Provider({ children }) {
+export function AppStateProvider({ children }) {
   const [app_state, set_app_state] = useImmer<AppState>(() => {
     const app_state_from_url = get_data_from_url<any>(`app_state`);
     const initial_app_state: AppState = app_state_from_url ?? {};
     return initial_app_state;
   });
-  log(`AppState:`, app_state);
   return (
     <AppStateContext.Provider value={app_state}>
       <SetAppStateContext.Provider value={set_app_state}>

@@ -2,7 +2,7 @@ import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import clsx from "clsx";
 import {
-  Provider as AppControllerProvider,
+  AppStateProvider,
   useSaveStateInURL,
   useAppState
 } from "../contexts/AppStateContext";
@@ -23,9 +23,9 @@ const query_client = new QueryClient({
 export default function App() {
   return (
     <QueryClientProvider client={query_client}>
-      <AppControllerProvider>
+      <AppStateProvider>
         <Main />
-      </AppControllerProvider>
+      </AppStateProvider>
     </QueryClientProvider>
   );
 }
