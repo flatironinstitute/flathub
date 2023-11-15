@@ -250,6 +250,7 @@ fieldsJSON = JE.list fieldJSON . V.toList where
     <> mwhen (isJust fieldAttachment) ("attachment" J..= True)
     <> mwhen (not $ null fieldCondition) ("condition" `JE.pair` J.pairs (foldMap (uncurry ((J..=) . JK.fromText)) fieldCondition))
     <> foldMap ("stats" J..=) fieldStats
+    <> foldMap ("default" J..=) fieldDefault
     <> foldMap (JE.pair "sub" . fieldsJSON) fieldSub
 
 typeSchema :: OpenApiM (OA.Referenced OA.Schema)
@@ -293,6 +294,7 @@ fieldGroupSchema = do
         & OA.additionalProperties ?~ OA.AdditionalPropertiesSchema fv
         , False)
     , ("stats", fs, False)
+    , ("default", fv, False)
     , ("sub", OA.Inline $ arraySchema ref
         & OA.title ?~ "child fields"
         & OA.description ?~ "if this is present, this is a pseudo grouping field which does not exist itself, but its properties apply to its children"
