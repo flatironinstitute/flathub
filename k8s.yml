@@ -11,14 +11,6 @@ spec:
       labels:
         name: flathub
     spec:
-      initContainers:
-      - name: wait-es
-        image: busybox
-        imagePullPolicy: IfNotPresent
-        command:
-          - sh
-          - '-c'
-          - until wget http://flathub-es:9200/ ; do sleep 5 ; done
       containers:
       - image: docker-registry:25703/flathub
         name: flathub

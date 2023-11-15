@@ -1,4 +1,4 @@
-FROM fpco/stack-build-small:lts-19.33 AS base
+FROM fpco/stack-build-small:lts-20.26 AS base
 RUN useradd -u 999 -m flathub
 COPY --chown=flathub stack.yaml *.cabal Setup.hs COPYING /home/flathub/flathub/
 WORKDIR /home/flathub/flathub

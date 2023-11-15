@@ -1,5 +1,6 @@
 title: Illustris FoF Halos
 index: illustris
+visible: false
 count: 1259309875
 descr: >
   <a href='https://www.illustris-project.org/'>Illustris</a> <a href='https://www.illustris-project.org/data/docs/specifications/#sec2a'>FoF Halo catalog</a> derived with a standard friends-of-friends (FoF) algorithm.

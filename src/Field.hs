@@ -152,6 +152,7 @@ data Field = Field
   , fieldAttachment :: Maybe Attachment
   , fieldCondition :: [(T.Text, J.Value)]
   , fieldStats :: Maybe (TypeValue FieldStats)
+  , fieldDefault :: Maybe Value
   , fieldSub :: Maybe Fields
   }
 
@@ -187,6 +188,7 @@ instance Default Field where
     , fieldLength = 1
     , fieldCondition = []
     , fieldStats = Nothing
+    , fieldDefault = Nothing
     }
 
 numpyFieldSize :: Field -> Word
@@ -264,6 +266,7 @@ parseField dict stats = parseFieldDefs def where
     fieldCondition <- map (first JK.toText) . JM.toList <$> f J..:? "condition" J..!= JM.empty
     fieldStats <- traverse (\j -> traverseTypeValue (\Proxy -> J.parseJSON1 j) fieldType)
       $ JM.lookup (JK.fromText fieldName) stats 
+    fieldDefault <- J.explicitParseFieldMaybe (\j -> traverseTypeValue (\Proxy -> J.parseJSON1 j) fieldType) f "default"
     let rf = Field{ fieldSub = Nothing, .. }
     fieldSub <- J.explicitParseFieldMaybe' (J.withArray "subfields" $ V.mapM $
         parseFieldDefs rf -- don't inherit title/descr (see subField)

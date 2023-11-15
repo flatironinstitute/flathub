@@ -19,6 +19,7 @@ fields:
     type: byte
     descr: "e.g. 'Illustris-1' or 'Illustris-2-Dark'."
     flag: required
+    default: 14
     enum:
       - Illustris-1 # L75n1820FP
       - Illustris-1-Dark # L75n1820DM
@@ -55,6 +56,7 @@ fields:
     flag: top
     descr: 'snapshot number'
     terms: true
+    default: 99
   - name: time
     type: float
     descr: 'Scalefactor of the snapshot corresponding to this group catalog.'
