@@ -19,7 +19,8 @@ import { useCatalogMetadata } from "./CatalogMetadataContext";
 import { useFieldNode } from "./FieldNodeContext";
 import { useAppState, useMergeState, useSetAppState } from "./AppStateContext";
 
-const FiltersContext = React.createContext(null);
+const FilterValuesContext = React.createContext(null);
+const FilterNamesContext = React.createContext<Set<string>>(new Set());
 
 export function FiltersProvider({ children }) {
   const catalog_cell_id = useCatalogCellID();
@@ -29,7 +30,7 @@ export function FiltersProvider({ children }) {
   const app_state = useAppState();
   const show_filters_config: Record<FieldID, boolean> =
     app_state?.add_filter?.[catalog_cell_id]?.[catalog_id] ?? {};
-  const filter_names_set = catalog_hierarchy
+  const filter_names_set: Set<string> = catalog_hierarchy
     ? get_filter_names(catalog_hierarchy, show_filters_config)
     : new Set<string>();
   const initial_filters: Filters = get_initial_cell_filters(
@@ -40,14 +41,21 @@ export function FiltersProvider({ children }) {
     app_state?.set_filter_value?.[catalog_cell_id]?.[catalog_id];
   const filters = lodash_merge(initial_filters, filter_state);
   return (
-    <FiltersContext.Provider value={filters}>
-      {children}
-    </FiltersContext.Provider>
+    <FilterNamesContext.Provider value={filter_names_set}>
+      <FilterValuesContext.Provider value={filters}>
+        {children}
+      </FilterValuesContext.Provider>
+    </FilterNamesContext.Provider>
   );
 }
 
+export function useFilterNames() {
+  const filter_names = React.useContext(FilterNamesContext);
+  return filter_names;
+}
+
 export function useFilterValues(): Filters {
-  const filters = React.useContext(FiltersContext);
+  const filters = React.useContext(FilterValuesContext);
   return filters;
 }
 

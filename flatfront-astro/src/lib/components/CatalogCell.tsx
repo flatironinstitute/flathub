@@ -17,7 +17,7 @@ import {
   useCatalogID
 } from "../contexts/CatalogContext";
 import { useAddPlot, usePlotIDs } from "../contexts/PlotContext";
-import { FiltersProvider, useFilterValues } from "../contexts/FiltersContext";
+import { FiltersProvider, useFilterNames } from "../contexts/FiltersContext";
 import {
   CatalogMetadataProvider,
   useCatalogMetadata
@@ -43,15 +43,14 @@ import {
   NumberInput,
   Placeholder,
   Select,
-  Separator,
   SimpleLabel,
   SliderWithText
 } from "./Primitives";
 import TableSection from "./Table";
 import PlotSection from "./PlotSection";
-import FieldCard from "./FieldCard";
 import BrowseFieldsDialog from "./BrowseFieldsDialog";
 import Katex from "./Katex";
+import FilterControls from "./FilterControls";
 
 export default function CatalogCell({
   id: catalog_cell_id
@@ -202,7 +201,7 @@ function AddFilterSelect() {
   const catalog_id = useCatalogID();
   const catalog_metadata = useCatalogMetadata();
   const leaves = catalog_metadata?.hierarchy?.leaves() ?? [];
-  const filters = useFilterValues();
+  const filter_names = useFilterNames();
   const merge_state = useMergeState();
   const [value, set_value] = React.useState(undefined);
   return (
@@ -212,13 +211,10 @@ function AddFilterSelect() {
       options={leaves}
       value={value}
       getKey={(d: CatalogHierarchyNode) => catalog_metadata.hash_map.get(d)}
-      getDisplayName={(d: CatalogHierarchyNode) => {
-        const titles = get_field_titles(d);
-        return <FieldTitles titles={titles} />;
-      }}
-      getDisabled={(d: CatalogHierarchyNode) => {
-        return d.data.name in filters;
-      }}
+      getDisplayName={(d: CatalogHierarchyNode) => (
+        <FieldTitles titles={get_field_titles(d)} />
+      )}
+      getDisabled={(d: CatalogHierarchyNode) => filter_names.has(d.data.name)}
       onValueChange={(d: CatalogHierarchyNode) => {
         const field_id = d.data.name;
         merge_state({
@@ -234,34 +230,6 @@ function AddFilterSelect() {
       }}
       debug
     />
-  );
-}
-
-function FilterControls() {
-  const catalog_metadata = useCatalogMetadata();
-  const filters = useFilterValues();
-  // const all_field_nodes = catalog_metadata?.depth_first ?? [];
-  const leaves = catalog_metadata?.hierarchy?.leaves() ?? [];
-  const filter_and_ancestor_nodes = leaves.filter((node) => {
-    // Exclude if is root node
-    if (node.depth === 0) return false;
-    // Include if this node is in the filters list
-    if (node.data.name in filters) return true;
-    // Include if this node is an ancestor of a node in the filter list
-    if (node.leaves().some((leaf) => leaf.data.name in filters)) return true;
-    // Exclude otherwise
-    return false;
-  });
-  const debug = <pre>{JSON.stringify(filters, null, 2)}</pre>;
-  return (
-    <div className="space-y-3">
-      {filter_and_ancestor_nodes.map((node, index) => (
-        <React.Fragment key={catalog_metadata.hash_map.get(node)}>
-          {index === 0 ? null : <Separator></Separator>}
-          <FieldCard fieldNode={node} />
-        </React.Fragment>
-      ))}
-    </div>
   );
 }
 
