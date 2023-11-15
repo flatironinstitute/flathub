@@ -1,8 +1,9 @@
 import React from "react";
-import { get_field_type } from "../shared";
+import { get_field_titles, get_field_type } from "../shared";
 import { useCatalogMetadata } from "../contexts/CatalogMetadataContext";
 import { usePlotState, useSetPlotControl } from "../contexts/PlotContext";
-import { Select, Checkbox } from "./Primitives";
+import { Select, Checkbox, FieldTitles } from "./Primitives";
+import type { CatalogHierarchyNode } from "../types";
 
 export function LabelledPlotControl({
   label,
@@ -54,7 +55,8 @@ function PlotControl({
 }) {
   const catalog_metadata = useCatalogMetadata();
   const all_leaf_nodes = catalog_metadata?.hierarchy?.leaves() ?? [];
-  const numeric_nodes = all_leaf_nodes.filter((d) => {
+
+  const options = all_leaf_nodes.filter((d) => {
     const type = get_field_type(d.data);
     return type === `INTEGER` || type === `FLOAT`;
   });
@@ -64,7 +66,7 @@ function PlotControl({
 
   const field_id = plot_state?.[plot_control_key];
 
-  const value = numeric_nodes.find((d) => d.data.name === field_id);
+  const value = options.find((d) => d.data.name === field_id);
 
   let log_switch = null;
 
@@ -84,10 +86,12 @@ function PlotControl({
       <Select
         size="small"
         placeholder={placeholder}
-        options={numeric_nodes}
+        options={options}
         value={value}
         getKey={(d) => d.data.name}
-        getDisplayName={(d) => d.data.name}
+        getDisplayName={(d: CatalogHierarchyNode) => (
+          <FieldTitles titles={get_field_titles(d)} />
+        )}
         onValueChange={(d) => {
           const value = d?.data.name;
           set_plot_control(plot_control_key, value);
