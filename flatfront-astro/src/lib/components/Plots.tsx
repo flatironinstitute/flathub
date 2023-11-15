@@ -33,6 +33,7 @@ import ObservablePlot from "./ObservablePlot";
 export const Histogram: PlotWrapper = {
   key: `histogram`,
   label: `Histogram`,
+  order: 0,
   Plot() {
     const catalog_id = useCatalogID();
     const filters = useFilterValues();
@@ -61,10 +62,14 @@ export const Histogram: PlotWrapper = {
       enabled: enable_request
     });
 
+    const sizes = query.data?.sizes ?? [0, 0];
+
     const data_munged = (() => {
       if (!query.data) return [];
-      return query.data.buckets.map(({ key: [value], count }) => {
-        return [value, count];
+      return query.data.buckets.map(({ key: [x], count }) => {
+        const x1 = +x;
+        const x2 = field_config.log_mode ? x1 * sizes[0] : x1 + sizes[0];
+        return { x1, x2, count };
       });
     })();
 
@@ -80,33 +85,46 @@ export const Histogram: PlotWrapper = {
       }
     })();
 
+    const aspect = 640 / 400;
+
+    const width = 900;
+
+    const plot_options: Plot.PlotOptions = {
+      width,
+      height: width / aspect,
+      style: {
+        background: `transparent`,
+        width: `100%`
+      },
+      x: {
+        label: field_config.field_id,
+        type: field_config.log_mode ? `log` : `linear`,
+        tickFormat: field_config.log_mode ? `.3~f` : undefined,
+        grid: true
+      },
+      y: {
+        label: `Count`,
+        type: count_config.log_mode ? `log` : `linear`,
+        tickFormat: count_config.log_mode ? `.3~f` : undefined,
+        grid: true
+      },
+      marks: [
+        Plot.rectY(data_munged, {
+          x1: `x1`,
+          x2: `x2`,
+          y: `count`,
+          insetRight: 1,
+          insetLeft: 1,
+          tip: true
+        })
+      ]
+    };
+
+    const plot = Plot.plot(plot_options);
+
     return (
       <StatusWrapper status={status}>
-        <HighchartsPlot
-          options={get_highcharts_options({
-            xAxis: {
-              type: field_config.log_mode ? `logarithmic` : `linear`,
-              title: {
-                text: field_config.field_id
-              }
-            },
-            yAxis: {
-              type: count_config.log_mode ? `logarithmic` : `linear`,
-              title: {
-                text: `Count`
-              }
-            },
-            series: [
-              {
-                type: `column`,
-                name: `Count`,
-                data: data_munged,
-                animation: false,
-                borderRadius: 0
-              }
-            ]
-          })}
-        />
+        <ObservablePlot plot={plot} />
       </StatusWrapper>
     );
   },
@@ -128,104 +146,7 @@ export const Histogram: PlotWrapper = {
 export const Heatmap: PlotWrapper = {
   key: `heatmap`,
   label: `Heatmap`,
-  Plot() {
-    const catalog_id = useCatalogID();
-    const filters = useFilterValues();
-    const random_config = useRandomConfig();
-
-    const x_axis = useAxisConfig(`x_axis`);
-    const y_axis = useAxisConfig(`y_axis`);
-
-    const enable_request =
-      Boolean(catalog_id) &&
-      x_axis.ready_for_request &&
-      y_axis.ready_for_request;
-
-    const query = usePlotQuery<HistogramPostRequestBody, HistogramResponse>({
-      path: `/${catalog_id}/histogram`,
-      body: {
-        fields: [
-          { field: x_axis.field_id, size: 20, log: x_axis.log_mode },
-          { field: y_axis.field_id, size: 20, log: y_axis.log_mode }
-        ] as any,
-        ...filters,
-        ...random_config
-      },
-      label: `Heatmap`,
-      enabled: enable_request
-    });
-
-    const data_munged = (() => {
-      if (!query.data) return [];
-      return query.data.buckets.map(({ key: [x, y], count }) => {
-        return [x, y, count];
-      });
-    })();
-
-    const status = (() => {
-      if (x_axis.log_mode_error_message) {
-        return x_axis.log_mode_error_message;
-      } else if (y_axis.log_mode_error_message) {
-        return y_axis.log_mode_error_message;
-      } else if (query.isFetching) {
-        return <LoadingBox />;
-      } else if (!(data_munged.length > 0)) {
-        return `No data.`;
-      } else {
-        return null;
-      }
-    })();
-
-    const is_dark_mode = useIsDarkMode();
-
-    return (
-      <StatusWrapper status={status}>
-        <HighchartsPlot
-          options={get_highcharts_options({
-            xAxis: {
-              type: x_axis.log_mode ? `logarithmic` : `linear`,
-              title: {
-                text: x_axis.field_id
-              },
-              gridLineWidth: 1
-            },
-            yAxis: {
-              type: y_axis.log_mode ? `logarithmic` : `linear`,
-              title: {
-                text: y_axis.field_id
-              }
-            },
-            colorAxis: {
-              minColor: is_dark_mode ? `black` : `white`,
-              maxColor: is_dark_mode ? `white` : `black`
-            },
-            series: [
-              {
-                type: `heatmap`,
-                data: data_munged,
-                colsize: query?.data?.sizes[0],
-                rowsize: query?.data?.sizes[1],
-                boostThreshold: 1
-              }
-            ]
-          })}
-        />
-      </StatusWrapper>
-    );
-  },
-  Controls() {
-    return (
-      <>
-        <XAxisControl />
-        <YAxisControl />
-      </>
-    );
-  }
-};
-
-export const HeatmapObservable: PlotWrapper = {
-  key: `heatmap_observable`,
-  label: `Heatmap v2`,
+  order: 2,
   Plot() {
     const catalog_id = useCatalogID();
     const filters = useFilterValues();
@@ -304,13 +225,13 @@ export const HeatmapObservable: PlotWrapper = {
         label: x_axis.field_id,
         type: x_axis.log_mode ? `log` : `linear`,
         tickFormat: x_axis.log_mode ? `.3~f` : undefined,
-        grid: true,
+        grid: true
       },
       y: {
         label: y_axis.field_id,
         type: y_axis.log_mode ? `log` : `linear`,
         tickFormat: y_axis.log_mode ? `.3~f` : undefined,
-        grid: true,
+        grid: true
       },
       marks: [
         Plot.rect(data_munged, {
@@ -352,6 +273,7 @@ export const HeatmapObservable: PlotWrapper = {
 export const BoxPlot: PlotWrapper = {
   key: `boxplot`,
   label: `Box Plot`,
+  order: 3.1,
   Plot() {
     const catalog_id = useCatalogID();
     const filters = useFilterValues();
@@ -382,9 +304,26 @@ export const BoxPlot: PlotWrapper = {
     const data_munged = (() => {
       if (!query.data) return [];
       return query.data.buckets.map(({ key: [x, y], count, quartiles }) => {
-        // x, low, q1, median, q3, high
-        return [x, ...quartiles];
+        const [low, q1, median, q3, high] = quartiles;
+        return {
+          x,
+          y,
+          count,
+          low,
+          q1,
+          median,
+          q3,
+          high
+        };
       });
+    })();
+
+    const rect_width = (() => {
+      const [first, second] = data_munged;
+      if (!first) return 0;
+      if (!second) return 0;
+      const distance = Math.abs(+first?.x - +second?.x);
+      return distance * 0.25;
     })();
 
     const status = (() => {
@@ -401,35 +340,79 @@ export const BoxPlot: PlotWrapper = {
       }
     })();
 
+    const aspect = 640 / 400;
+
+    const width = 700;
+
+    const is_dark_mode = useIsDarkMode();
+
+    const plot_options: Plot.PlotOptions = {
+      width,
+      height: width / aspect,
+      insetLeft: 10,
+      insetRight: 10,
+      insetBottom: 20,
+      style: {
+        background: `transparent`,
+        width: `100%`
+      },
+      x: {
+        label: x_axis.field_id,
+        type: x_axis.log_mode ? `log` : `linear`,
+        tickFormat: x_axis.log_mode ? `.3~f` : undefined,
+        grid: true
+      },
+      y: {
+        label: y_axis.field_id,
+        type: y_axis.log_mode ? `log` : `linear`,
+        tickFormat: y_axis.log_mode ? `.3~f` : undefined,
+        grid: true,
+        ticks: 5
+      },
+      marks: [
+        Plot.ruleX(data_munged, {
+          x: `x`,
+          y1: `low`,
+          y2: `high`,
+          marker: `dot`,
+          opacity: 0.5
+        }),
+        Plot.rect(data_munged, {
+          x1: (d) => d.x - rect_width,
+          x2: (d) => d.x + rect_width,
+          y1: `q1`,
+          y2: `q3`,
+          fill: is_dark_mode ? `black` : `white`,
+          stroke: `currentColor`,
+          strokeOpacity: 0.5
+        }),
+        Plot.dot(data_munged, {
+          x: `x`,
+          y: `median`,
+          tip: true
+        }),
+        Plot.line(data_munged, {
+          x: `x`,
+          y: `median`
+        })
+        // Plot.rect(data_munged, {
+        //   x1: `x`,
+        //   x2: (d) => d.x + 1,
+        //   y1: `low`,
+        //   y2: `high`,
+        //   fill: `currentColor`,
+        //   stroke: `red`,
+        //   strokeOpacity: 0.2,
+        //   tip: true
+        // })
+      ]
+    };
+
+    const plot = Plot.plot(plot_options);
+
     return (
       <StatusWrapper status={status}>
-        <HighchartsPlot
-          options={get_highcharts_options({
-            xAxis: {
-              type: x_axis.log_mode ? `logarithmic` : `linear`,
-              title: {
-                text: x_axis.field_id
-              }
-            },
-            yAxis: {
-              type: y_axis.log_mode ? `logarithmic` : `linear`,
-              title: {
-                text: y_axis.field_id
-              }
-            },
-            series: [
-              {
-                type: `boxplot`,
-                data: data_munged,
-                keys: [`x`, `low`, `q1`, `median`, `q3`, `high`]
-              },
-              {
-                type: `line`,
-                data: data_munged.map((d) => [d[0], d[3]])
-              }
-            ]
-          })}
-        />
+        <ObservablePlot plot={plot} />
       </StatusWrapper>
     );
   },
@@ -446,6 +429,7 @@ export const BoxPlot: PlotWrapper = {
 export const Scatterplot: PlotWrapper = {
   key: `scatterplot`,
   label: `Scatterplot`,
+  order: 5,
   Plot() {
     const catalog_id = useCatalogID();
     const filters = useFilterValues();
@@ -484,7 +468,7 @@ export const Scatterplot: PlotWrapper = {
       if (!y_axis.field_id) return [];
       if (!query.data) return [];
       return query.data.map((datum) => {
-        return [+datum[x_axis.field_id], +datum[y_axis.field_id]];
+        return { x: +datum[x_axis.field_id], y: +datum[y_axis.field_id] };
       });
     })();
 
@@ -502,35 +486,48 @@ export const Scatterplot: PlotWrapper = {
       }
     })();
 
+    const aspect = 640 / 400;
+
+    const width = 700;
+
+    const plot_options: Plot.PlotOptions = {
+      width,
+      height: width / aspect,
+      style: {
+        background: `transparent`,
+        width: `100%`
+      },
+      x: {
+        label: x_axis.field_id,
+        type: x_axis.log_mode ? `log` : `linear`,
+        tickFormat: x_axis.log_mode ? `.3~f` : undefined,
+        grid: true
+      },
+      y: {
+        label: y_axis.field_id,
+        type: y_axis.log_mode ? `log` : `linear`,
+        tickFormat: y_axis.log_mode ? `.3~f` : undefined,
+        grid: true,
+        ticks: 5
+      },
+      marks: [
+        Plot.dot(data_munged, {
+          x: `x`,
+          y: `y`,
+          r: 1,
+          fill: `currentColor`,
+          stroke: `currentColor`,
+          strokeOpacity: 0.2,
+          tip: true
+        })
+      ]
+    };
+
+    const plot = Plot.plot(plot_options);
+
     return (
       <StatusWrapper status={status}>
-        <HighchartsPlot
-          options={get_highcharts_options({
-            xAxis: {
-              type: x_axis.log_mode ? `logarithmic` : `linear`,
-              title: {
-                text: x_axis.field_id
-              },
-              gridLineWidth: 1
-            },
-            yAxis: {
-              type: y_axis.log_mode ? `logarithmic` : `linear`,
-              title: {
-                text: y_axis.field_id
-              }
-            },
-            series: [
-              {
-                type: `scatter`,
-                marker: {
-                  radius: 1
-                },
-                data: data_munged,
-                boostThreshold: 1
-              }
-            ]
-          })}
-        />
+        <ObservablePlot plot={plot} />
       </StatusWrapper>
     );
   },
@@ -547,6 +544,7 @@ export const Scatterplot: PlotWrapper = {
 export const Scatterplot3D: PlotWrapper = {
   key: `scatterplot_3d`,
   label: `3D Scatterplot`,
+  order: 6,
   Plot() {
     const catalog_id = useCatalogID();
     const filters = useFilterValues();

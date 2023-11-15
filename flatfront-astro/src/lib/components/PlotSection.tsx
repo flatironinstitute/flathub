@@ -1,4 +1,5 @@
 import type { PlotID, PlotType } from "../types";
+import * as d3 from "d3";
 import { useMergeState } from "../contexts/AppStateContext";
 import {
   PlotIDProvider,
@@ -36,17 +37,13 @@ export default function PlotSection({ id }: { id: PlotID }) {
   );
 }
 
+const plot_wrappers = d3.sort(Object.values(Plots), (d) => d.order);
+
 function PlotTypeSelect() {
   const plot_id = usePlotID();
   const plot_type = usePlotType();
-  const plot_type_options: { key: PlotType; label: string }[] = [
-    { key: Plots.Histogram.key, label: Plots.Histogram.label },
-    { key: Plots.Heatmap.key, label: Plots.Heatmap.label },
-    { key: Plots.HeatmapObservable.key, label: Plots.HeatmapObservable.label },
-    { key: Plots.BoxPlot.key, label: Plots.BoxPlot.label },
-    { key: Plots.Scatterplot.key, label: Plots.Scatterplot.label },
-    { key: Plots.Scatterplot3D.key, label: Plots.Scatterplot3D.label }
-  ];
+  const plot_type_options: { key: PlotType; label: string }[] =
+    plot_wrappers.map(({ key, label }) => ({ key, label }));
   const value = plot_type_options.find((d) => d.key === plot_type);
   const merge_state = useMergeState();
   return (
@@ -71,40 +68,16 @@ function PlotTypeSelect() {
 
 function PlotComponent() {
   const plot_type = usePlotType();
-  switch (plot_type) {
-    case Plots.Histogram.key:
-      return <Plots.Histogram.Plot />;
-    case Plots.Heatmap.key:
-      return <Plots.Heatmap.Plot />;
-    case Plots.HeatmapObservable.key:
-      return <Plots.HeatmapObservable.Plot />;
-    case Plots.BoxPlot.key:
-      return <Plots.BoxPlot.Plot />;
-    case Plots.Scatterplot.key:
-      return <Plots.Scatterplot.Plot />;
-    case Plots.Scatterplot3D.key:
-      return <Plots.Scatterplot3D.Plot />;
-    default:
-      return <Placeholder>Choose a plot type</Placeholder>;
+  for (const { key, Plot } of plot_wrappers) {
+    if (plot_type === key) return <Plot />;
   }
+  return <Placeholder>Choose a plot type</Placeholder>;
 }
 
 function PlotControls() {
   const plot_type = usePlotType();
-  switch (plot_type) {
-    case Plots.Histogram.key:
-      return <Plots.Histogram.Controls />;
-    case Plots.Heatmap.key:
-      return <Plots.Heatmap.Controls />;
-    case Plots.HeatmapObservable.key:
-      return <Plots.HeatmapObservable.Controls />;
-    case Plots.BoxPlot.key:
-      return <Plots.BoxPlot.Controls />;
-    case Plots.Scatterplot.key:
-      return <Plots.Scatterplot.Controls />;
-    case Plots.Scatterplot3D.key:
-      return <Plots.Scatterplot3D.Controls />;
-    default:
-      return null;
+  for (const { key, Controls } of plot_wrappers) {
+    if (plot_type === key) return <Controls />;
   }
+  return null;
 }
