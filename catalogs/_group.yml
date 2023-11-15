@@ -7,12 +7,7 @@
 - name: cosmo-hydro
   title: Cosmological Galaxy Formation Simulations
   children:
-    - &illustris
-      name: illustris
-      title: Illustris
-      children:
-        - illustris_fof
-        - illustris_sub
+    - illustris
     - tng
     #- simba
     - eagle
@@ -21,7 +16,7 @@
   title: Cosmological Dark Matter-Only Simulations
   children:
     - quijote
-    - *illustris
+    - illustris
     - tng
 - name: candels
   title: CANDELS
