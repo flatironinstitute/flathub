@@ -146,6 +146,7 @@ function Table() {
 
   const rows_select = (
     <select
+      className="bg-white dark:bg-black"
       onChange={(event) => {
         const value = event.target.value;
         set_rows_per_page(Number(value));
