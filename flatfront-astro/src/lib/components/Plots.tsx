@@ -250,6 +250,9 @@ export const Heatmap: PlotWrapper = {
     const plot = Plot.plot(plot_options);
 
     const legend = Plot.legend({
+      style: {
+        background: `transparent`
+      },
       color: plot_options.color
     });
 
