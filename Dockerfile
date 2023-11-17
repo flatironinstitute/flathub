@@ -28,7 +28,7 @@ RUN apt-key add /tmp/nodesource.gpg.key && \
 EXPOSE 8092
 ENTRYPOINT ["/home/flathub/.local/bin/flathub"]
 CMD []
-ENV LD_LIBRARY_PATH=/home/stackage/.stack/programs/x86_64-linux/ghc-9.0.2/lib/ghc-9.0.2/rts
+ENV LD_LIBRARY_PATH=/home/stackage/.stack/programs/x86_64-linux/ghc-9.2.5/lib/ghc-9.2.5/rts
 USER flathub
 
 COPY --chown=flathub web ./web
