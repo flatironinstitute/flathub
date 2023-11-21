@@ -56,7 +56,7 @@ import           Data.Typeable (cast)
 import qualified Data.Vector as V
 import qualified Network.HTTP.Client.Conduit as HTTP hiding (httpSource)
 import qualified Network.HTTP.Simple as HTTP
-import           Network.HTTP.Types.Header (hAcceptEncoding, hAccept, hContentType)
+import           Network.HTTP.Types.Header (hAcceptEncoding, hContentType)
 import           Network.HTTP.Types.Method (StdMethod(GET, PUT, POST), renderStdMethod)
 import qualified Network.URI as URI
 import           System.IO (stderr)
@@ -81,7 +81,6 @@ initServer conf = do
   return req
     { HTTP.requestHeaders =
         [ (hAcceptEncoding, " ") -- disable gzip
-        , (hAccept, "application/json")
         ]
     , HTTP.responseTimeout = HTTP.responseTimeoutNone
     }
