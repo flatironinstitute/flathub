@@ -11,8 +11,8 @@ type XOR<T, U> = T | U extends object
 type OneOf<T extends any[]> = T extends [infer Only]
   ? Only
   : T extends [infer A, infer B, ...infer Rest]
-  ? OneOf<[XOR<A, B>, ...Rest]>
-  : never;
+    ? OneOf<[XOR<A, B>, ...Rest]>
+    : never;
 
 export interface paths {
   "/": {
@@ -182,6 +182,7 @@ export interface components {
       condition?: {
         [key: string]: components["schemas"]["FieldValue"];
       };
+      default?: components["schemas"]["FieldValue"];
       /** @description description of field within the group */
       descr?: string;
       /** @description unique key index to global field dictionary (for compare) */
