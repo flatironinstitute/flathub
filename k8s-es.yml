@@ -1,3 +1,28 @@
+# This has been generalized and moved to scc-containers/sdsc/es.yaml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flathub-es-trans
+spec:
+  selector:
+    name: flathub-es
+  publishNotReadyAddresses: true
+  ports:
+  - name: transport
+    port: 9300
+  clusterIP: None
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flathub-es
+spec:
+  selector:
+    name: flathub-es
+  ports:
+  - name: http
+    port: 9200
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -158,27 +183,3 @@ spec:
         runAsUser: 1000
         runAsGroup: 1000
         fsGroup: 1000
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: flathub-es-trans
-spec:
-  selector:
-    name: flathub-es
-  publishNotReadyAddresses: true
-  ports:
-  - name: transport
-    port: 9300
-  clusterIP: None
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: flathub-es
-spec:
-  selector:
-    name: flathub-es
-  ports:
-  - name: http
-    port: 9200

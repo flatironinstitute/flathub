@@ -30,6 +30,8 @@ spec:
       labels:
         name: flathub
         elkes: "true"
+      annotations:
+        co.elastic.logs/pipeline: waimwork-access
     spec:
       containers:
       - image: docker-registry:25703/flathub
