@@ -164,8 +164,8 @@ export const Heatmap: PlotWrapper = {
       path: `/${catalog_id}/histogram`,
       body: {
         fields: [
-          { field: x_axis.field_id, size: 20, log: x_axis.log_mode },
-          { field: y_axis.field_id, size: 20, log: y_axis.log_mode }
+          { field: x_axis.field_id, size: 40, log: x_axis.log_mode },
+          { field: y_axis.field_id, size: 40, log: y_axis.log_mode }
         ] as any,
         ...filters,
         ...random_config
