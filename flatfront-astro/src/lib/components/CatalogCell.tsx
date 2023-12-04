@@ -10,6 +10,7 @@ import React from "react";
 import * as d3 from "d3";
 import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "@uidotdev/usehooks";
+import clsx from "clsx";
 import { fetch_api_get, format, get_field_titles } from "../shared";
 import {
   CatalogProvider,
@@ -43,6 +44,7 @@ import {
   NumberInput,
   Placeholder,
   Select,
+  Separator,
   SimpleLabel,
   SliderWithText
 } from "./Primitives";
@@ -51,6 +53,7 @@ import PlotSection from "./PlotSection";
 import BrowseFieldsDialog from "./BrowseFieldsDialog";
 import Katex from "./Katex";
 import FilterControls from "./FilterControls";
+import { ScrollArea } from "./ScrollArea";
 
 export default function CatalogCell({
   id: catalog_cell_id
@@ -73,31 +76,40 @@ export default function CatalogCell({
     </CatalogProvider>
   );
 }
-
 function CatalogCellContents() {
   return (
     <CellWrapper className="@container/cell">
       <div className="grid gap-x-8 gap-y-4 @2xl/cell:grid-cols-6">
-        <div className="space-y-4 @2xl/cell:col-span-2 @2xl/cell:col-start-1">
-          <Heading>Catalog</Heading>
-          <CatalogSelect />
-          <AboutThisCatalog />
-          <BrowseFieldsDialog />
-          <Heading>Filters</Heading>
-          <AddFilterSelect />
+        <CatalogSelect className="@2xl/cell:col-span-2" />
+        <AboutThisCatalog className="@2xl/cell:col-span-2" />
+        <Heading className="@2xl/cell:col-span-6 @2xl/cell:col-start-1">
+          Fields
+        </Heading>
+        <BrowseFieldsDialog className="@2xl/cell:col-span-2" />
+        <Heading className="@2xl/cell:col-span-6 @2xl/cell:col-start-1">
+          Filters
+        </Heading>
+        <AddFilterSelect className="@2xl/cell:col-span-2" />
+        <div className="grid gap-4 @2xl/cell:col-span-6 @2xl/cell:grid-cols-3">
           <FilterControls />
-          <Heading>Random Sample</Heading>
+        </div>
+        <Heading className="@2xl/cell:col-span-6 @2xl/cell:col-start-1">
+          Random Sample
+        </Heading>
+        <div className="grid gap-4 @2xl/cell:col-span-6 @2xl/cell:grid-cols-3">
           <RandomSampleControls />
         </div>
-        <div className="flex flex-col gap-y-4 @2xl/cell:col-span-4 @2xl/cell:col-start-3 @2xl/cell:row-start-1">
-          <Heading>Results</Heading>
-          <div>{useMatchingRowsText()}</div>
-          <AddPlotButton />
+        <Heading className="@2xl/cell:col-span-6 @2xl/cell:col-start-1">
+          Results
+        </Heading>
+        <div className="@2xl/cell:col-span-6">{useMatchingRowsText()}</div>
+        <AddPlotButton className="@2xl/cell:col-span-2" />
+        <div className="@2xl/cell:col-span-6">
           <Plots />
-          <div className="rounded-md p-4 ring-1 ring-black/20">
-            <TableSection />
-          </div>
-          <div className="space-y-4 rounded-md p-4 ring-1 ring-black/20">
+          <Separator />
+          <TableSection />
+          <Separator />
+          <div className="space-y-4">
             <SimpleLabel>python</SimpleLabel>
             <Placeholder>TODO: Python</Placeholder>
           </div>
@@ -107,7 +119,7 @@ function CatalogCellContents() {
   );
 }
 
-function CatalogSelect() {
+function CatalogSelect({ className }: { className?: string }) {
   const catalog_cell_id = useCatalogCellID();
   const catalog_id = useCatalogID();
   const get_title = (d: TopResponseEntry) => d?.title;
@@ -121,28 +133,27 @@ function CatalogSelect() {
   const selected = catalog_list.find((d) => d.name === catalog_id);
   const merge_state = useMergeState();
   return (
-    <div data-type="CatalogSelect">
-      <Select
-        placeholder={ready ? "Select a catalog..." : "Loading catalogs..."}
-        options={catalog_list}
-        getKey={(d) => d?.name}
-        getDisplayName={get_title}
-        disabled={!ready}
-        value={selected}
-        onValueChange={(d) => {
-          const catalog_id = d?.name;
-          merge_state({
-            set_catalog: {
-              [catalog_cell_id]: catalog_id
-            }
-          });
-        }}
-      />
-    </div>
+    <Select
+      placeholder={ready ? "Select a catalog..." : "Loading catalogs..."}
+      options={catalog_list}
+      getKey={(d) => d?.name}
+      getDisplayName={get_title}
+      disabled={!ready}
+      value={selected}
+      onValueChange={(d) => {
+        const catalog_id = d?.name;
+        merge_state({
+          set_catalog: {
+            [catalog_cell_id]: catalog_id
+          }
+        });
+      }}
+      triggerClassName={className}
+    />
   );
 }
 
-function AboutThisCatalog() {
+function AboutThisCatalog({ className }: { className?: string }) {
   const catalog_id = useCatalogID();
   const catalog_metadata = useCatalogMetadata();
   const hierarchy = catalog_metadata?.hierarchy;
@@ -169,34 +180,41 @@ function AboutThisCatalog() {
     <Dialog
       disabled={!catalog_id || !catalog_metadata}
       label="About This Catalog"
-      className="flex max-h-[80dvh] w-[min(80dvw,800px)] flex-col gap-y-4 p-8"
+      className={clsx(
+        `flex max-h-[80dvh] w-[min(80dvw,800px)] flex-col gap-y-4 p-8`
+      )}
+      buttonClassName={className}
     >
       {contents}
     </Dialog>
   );
 }
 
-function AddPlotButton() {
+function AddPlotButton({ className }: { className?: string }) {
   const add_plot = useAddPlot();
-  return <BigButton onClick={() => add_plot()}>Add Plot</BigButton>;
+  return (
+    <BigButton onClick={() => add_plot()} className={className}>
+      Add Plot
+    </BigButton>
+  );
 }
 
 function Plots() {
   const plot_ids: PlotID[] = usePlotIDs();
-  const plot_components = plot_ids.map((plot_id) => {
+  const plot_components = plot_ids.map((plot_id, index) => {
     return (
-      <div
-        key={plot_id}
-        className="rounded-md p-4 ring-1 ring-black/20 dark:ring-white/30"
-      >
-        <PlotSection id={plot_id} />
-      </div>
+      <>
+        {index === 0 ? null : <Separator />}
+        <div key={plot_id}>
+          <PlotSection id={plot_id} />
+        </div>
+      </>
     );
   });
   return <>{plot_components}</>;
 }
 
-function AddFilterSelect() {
+function AddFilterSelect({ className }: { className: string }) {
   const catalog_cell_id = useCatalogCellID();
   const catalog_id = useCatalogID();
   const catalog_metadata = useCatalogMetadata();
@@ -229,6 +247,7 @@ function AddFilterSelect() {
         set_value(undefined);
       }}
       debug
+      triggerClassName={className}
     />
   );
 }
@@ -244,21 +263,25 @@ function RandomSampleControls() {
 
   return (
     <>
-      <div>Sample</div>
-      <SliderWithText
-        min={1e-9}
-        max={1}
-        value={random_config?.sample ?? 1}
-        debounce={500}
-        onValueChange={(new_value) => set_random_config(`sample`, new_value)}
-      />
-      <div>Seed</div>
-      <NumberInput
-        value={seed}
-        min={"0"}
-        max={`18446744073709552000`}
-        onNumberInput={(new_value) => set_seed(new_value)}
-      />
+      <div className="space-y-4 rounded-md bg-black/5 p-4">
+        <div>Sample</div>
+        <SliderWithText
+          min={1e-9}
+          max={1}
+          value={random_config?.sample ?? 1}
+          debounce={500}
+          onValueChange={(new_value) => set_random_config(`sample`, new_value)}
+        />
+      </div>
+      <div className="space-y-4 rounded-md bg-black/5 p-4">
+        <div>Seed</div>
+        <NumberInput
+          value={seed}
+          min={"0"}
+          max={`18446744073709552000`}
+          onNumberInput={(new_value) => set_seed(new_value)}
+        />
+      </div>
     </>
   );
 }

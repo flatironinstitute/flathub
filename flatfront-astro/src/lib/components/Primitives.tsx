@@ -14,8 +14,14 @@ import { useDebounce } from "@uidotdev/usehooks";
 import { log } from "../shared";
 import Katex from "./Katex";
 
-export function Heading({ children }) {
-  return <h2 className="text-xl">{children}</h2>;
+export function Heading({
+  children,
+  className
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return <h2 className={clsx(`text-xl`, className)}>{children}</h2>;
 }
 
 export function Separator({ orientation }: RadixSeparator.SeparatorProps) {
@@ -68,7 +74,7 @@ export function BigButton({
   );
 }
 BigButton.className = clsx(
-  `block w-full rounded-lg py-3 font-bold text-center`,
+  `block w-full rounded-lg py-3 font-bold text-center max-h-10 whitespace-nowrap`,
   `ring-1 ring-black dark:ring-white`,
   `focus:outline-none focus-visible:ring-4`,
   `disabled:opacity-50 disabled:cursor-not-allowed`
@@ -546,7 +552,7 @@ export function Select<T>({
     >
       <RadixSelect.Trigger
         className={clsx(
-          `relative flex w-full items-center justify-between`,
+          `relative flex max-h-10 w-full items-center justify-between`,
           `cursor-pointer text-left`,
           `disabled:cursor-wait disabled:opacity-50`,
           `rounded-md ring-1 ring-black dark:ring-white`,

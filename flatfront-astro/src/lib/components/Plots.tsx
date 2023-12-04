@@ -93,6 +93,7 @@ export const Histogram: PlotWrapper = {
       width,
       height: width / aspect,
       style: {
+        overflow: `visible`,
         background: `transparent`,
         width: `100%`
       },
@@ -211,6 +212,7 @@ export const Heatmap: PlotWrapper = {
       width,
       height: width / aspect,
       style: {
+        overflow: `visible`,
         background: `transparent`,
         width: `100%`
       },
@@ -356,6 +358,7 @@ export const BoxPlot: PlotWrapper = {
       insetRight: 10,
       insetBottom: 20,
       style: {
+        overflow: `visible`,
         background: `transparent`,
         width: `100%`
       },
@@ -497,6 +500,7 @@ export const Scatterplot: PlotWrapper = {
       width,
       height: width / aspect,
       style: {
+        overflow: `visible`,
         background: `transparent`,
         width: `100%`
       },

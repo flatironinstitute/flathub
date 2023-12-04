@@ -25,6 +25,7 @@
     "@radix-ui/react-icons": "latest",
     "@radix-ui/react-label": "latest",
     "@radix-ui/react-radio-group": "latest",
+    "@radix-ui/react-scroll-area": "latest",
     "@radix-ui/react-select": "latest",
     "@radix-ui/react-separator": "latest",
     "@radix-ui/react-slider": "latest",
@@ -49,6 +50,7 @@
     "react": "18",
     "react-dom": "18",
     "tailwindcss": "latest",
+    "tailwind-merge": "latest",
     "typescript": "5",
     "use-immer": "latest"
   },

@@ -47,7 +47,7 @@ export function useMatchingRows(): number | undefined {
   return matching_rows;
 }
 
-export function useMatchingRowsText(): string {
+export function useMatchingRowsText(): string | null {
   const catalog_id = useCatalogID();
   const catalog_metadata = useCatalogMetadata();
   const total_rows = catalog_metadata?.response?.count;
@@ -57,6 +57,6 @@ export function useMatchingRowsText(): string {
     : `[Loading...]`;
   const t = total_rows ? format.commas(total_rows) : `[Loading...]`;
   const text = `Filtered to ${r} out of ${t} total rows`;
-  if (!catalog_id) return `Select a catalog`;
+  if (!catalog_id) return null;
   return text;
 }

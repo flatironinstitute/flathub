@@ -23,13 +23,19 @@ import Katex from "./Katex";
 import AddRemoveFilterButton from "./AddRemoveFilterButton";
 
 export default function BrowseFieldsDialog({
-  label = `Browse Fields`
+  label = `Browse Fields`,
+  className
 }: {
   label?: string;
+  className?: string;
 }) {
   const catalog_id = useCatalogID();
   return (
-    <Dialog disabled={!catalog_id} label={label} className="p-8">
+    <Dialog
+      disabled={!catalog_id}
+      label={label}
+      buttonClassName={clsx("p-8", className)}
+    >
       <FieldsTable />
     </Dialog>
   );

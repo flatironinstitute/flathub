@@ -45,27 +45,30 @@ export default function FilterControls() {
     return false;
   });
   return (
-    <div className="space-y-3">
+    <>
       {filter_and_ancestor_nodes.map((node, index) => (
-        <React.Fragment key={catalog_metadata.hash_map.get(node)}>
-          {index === 0 ? null : <Separator></Separator>}
-          <FilterCard fieldNode={node} />
-        </React.Fragment>
+        <FilterCard
+          className="space-y-4 rounded-md bg-black/5 p-4"
+          fieldNode={node}
+          key={catalog_metadata.hash_map.get(node)}
+        />
       ))}
-    </div>
+    </>
   );
 }
 
 function FilterCard({
-  fieldNode: field_node
+  fieldNode: field_node,
+  className
 }: {
   fieldNode: CatalogHierarchyNode;
+  className?: string;
 }) {
   return (
     <FieldNodeProvider value={field_node}>
       <div
         data-type="FilterCard"
-        className={clsx(`overflow-visible rounded-md px-px py-2`)}
+        className={clsx(`overflow-visible`, className)}
       >
         <FieldCardContents />
       </div>

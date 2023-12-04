@@ -9,6 +9,8 @@ import type {
 
 import React from "react";
 import * as d3 from "d3";
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export const FLATHUB_API_BASE_URL = `https://flathub.flatironinstitute.org`;
 
@@ -283,4 +285,8 @@ export function get_field_titles<T extends { title?: string }>(
     current_node = current_node.parent;
   }
   return titles.reverse();
+}
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
 }

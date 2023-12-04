@@ -43,7 +43,6 @@ export default function TableSection() {
     <SortProvider>
       <CollapsibleSection label="table">
         <div className="space-y-4">
-          <BrowseFieldsDialog label="Select Columns" />
           <Table />
           <DownloadSection />
         </div>
