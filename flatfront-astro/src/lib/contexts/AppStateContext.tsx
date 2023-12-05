@@ -63,6 +63,7 @@ function store_data_in_url<T>(data: T, key: string) {
   url.searchParams.set(key, compressed);
   window.history.replaceState({}, ``, url.toString());
   const url_length = url.toString().length;
+  log(`URL length: ${url_length}`);
   if (url_length > 5000) {
     console.error(`URL is too long!`);
   }
