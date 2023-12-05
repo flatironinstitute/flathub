@@ -10,8 +10,9 @@ export default function GlobalControls(): React.JSX.Element {
   const number_of_cells = Object.keys(cells_object).length ?? 0;
   const merge_state = useMergeState();
   return (
-    <CellWrapper className="grid items-center gap-y-4">
+    <CellWrapper className="mx-auto grid max-w-[400px] items-center gap-y-4">
       <BigButton
+        className="max-w-[400px]"
         onClick={() => {
           merge_state({
             add_cell: {
@@ -24,9 +25,6 @@ export default function GlobalControls(): React.JSX.Element {
         }}
       >
         Add Catalog
-      </BigButton>
-      <BigButton disabled onClick={() => {}}>
-        Add Comparison
       </BigButton>
       <DarkModeSelect />
     </CellWrapper>
