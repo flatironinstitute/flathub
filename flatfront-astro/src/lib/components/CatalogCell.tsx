@@ -50,7 +50,7 @@ import {
 } from "./Primitives";
 import TableSection from "./Table";
 import PlotSection from "./PlotSection";
-import BrowseFieldsDialog from "./BrowseFieldsDialog";
+import BrowseFieldsDialog, { FieldsTable } from "./BrowseFieldsDialog";
 import Katex from "./Katex";
 import FilterControls from "./FilterControls";
 import { ScrollArea } from "./ScrollArea";
@@ -85,33 +85,36 @@ function CatalogCellContents() {
         <Heading className="@2xl/cell:col-span-6 @2xl/cell:col-start-1">
           Fields
         </Heading>
-        <BrowseFieldsDialog className="@2xl/cell:col-span-2" />
-        <Heading className="@2xl/cell:col-span-6 @2xl/cell:col-start-1">
-          Filters
-        </Heading>
-        <AddFilterSelect className="@2xl/cell:col-span-2" />
-        <div className="grid gap-4 @2xl/cell:col-span-6 @2xl/cell:grid-cols-3">
-          <FilterControls />
+        <FieldsTable />
+        <div className="@2xl/cell:col-span-2 @2xl/cell:col-start-1 space-y-4">
+          <Heading className="@2xl/cell:col-span-2 @2xl/cell:col-start-1">
+            Filters
+          </Heading>
+          <AddFilterSelect className="@2xl/cell:col-span-2 @2xl/cell:col-start-1" />
+          <div className="grid gap-4 @2xl/cell:col-span-2 @2xl/cell:col-start-1 @2xl/cell:grid-cols-1">
+            <FilterControls />
+          </div>
+          <Heading className="@2xl/cell:col-span-2 @2xl/cell:col-start-1">
+            Random Sample
+          </Heading>
+          <div className="grid gap-4 @2xl/cell:col-span-2 @2xl/cell:col-start-1 @2xl/cell:grid-cols-1">
+            <RandomSampleControls />
+          </div>
         </div>
-        <Heading className="@2xl/cell:col-span-6 @2xl/cell:col-start-1">
-          Random Sample
-        </Heading>
-        <div className="grid gap-4 @2xl/cell:col-span-6 @2xl/cell:grid-cols-3">
-          <RandomSampleControls />
-        </div>
-        <Heading className="@2xl/cell:col-span-6 @2xl/cell:col-start-1">
-          Results
-        </Heading>
-        <div className="@2xl/cell:col-span-6">{useMatchingRowsText()}</div>
-        <AddPlotButton className="@2xl/cell:col-span-2" />
-        <div className="@2xl/cell:col-span-6">
-          <Plots />
-          <Separator />
-          <TableSection />
-          <Separator />
-          <div className="space-y-4">
-            <SimpleLabel>python</SimpleLabel>
-            <Placeholder>TODO: Python</Placeholder>
+
+        <div className="space-y-4 @2xl/cell:col-span-4 @2xl/cell:col-start-3 @2xl/cell:row-start-4">
+          <Heading>Results</Heading>
+          <div className="@2xl/cell:col-span-6">{useMatchingRowsText()}</div>
+          <AddPlotButton className="@2xl/cell:col-span-2" />
+          <div className="@2xl/cell:col-span-6">
+            <Plots />
+            <Separator />
+            <TableSection />
+            <Separator />
+            <div className="space-y-4">
+              <SimpleLabel>python</SimpleLabel>
+              <Placeholder>TODO: Python</Placeholder>
+            </div>
           </div>
         </div>
       </div>
