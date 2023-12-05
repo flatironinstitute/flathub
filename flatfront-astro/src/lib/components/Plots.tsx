@@ -85,29 +85,15 @@ export const Histogram: PlotWrapper = {
       }
     })();
 
-    const aspect = 640 / 400;
-
-    const width = 900;
-
-    const plot_options: Plot.PlotOptions = {
-      width,
-      height: width / aspect,
-      style: {
-        overflow: `visible`,
-        background: `transparent`,
-        width: `100%`
-      },
+    const plot_options: Plot.PlotOptions = get_observable_options({
       x: {
         label: field_config.field_id,
         type: field_config.log_mode ? `log` : `linear`,
-        tickFormat: field_config.log_mode ? `.3~f` : undefined,
-        grid: true
+        tickFormat: field_config.log_mode ? `.3~f` : undefined
       },
       y: {
         label: `Count`,
-        type: count_config.log_mode ? `log` : `linear`,
-        tickFormat: count_config.log_mode ? `.3~f` : undefined,
-        grid: true
+        type: count_config.log_mode ? `log` : `linear`
       },
       marks: [
         Plot.rectY(data_munged, {
@@ -119,7 +105,7 @@ export const Histogram: PlotWrapper = {
           tip: true
         })
       ]
-    };
+    });
 
     const plot = Plot.plot(plot_options);
 
@@ -204,18 +190,7 @@ export const Heatmap: PlotWrapper = {
 
     const is_dark_mode = useIsDarkMode();
 
-    const aspect = 640 / 400;
-
-    const width = 900;
-
-    const plot_options: Plot.PlotOptions = {
-      width,
-      height: width / aspect,
-      style: {
-        overflow: `visible`,
-        background: `transparent`,
-        width: `100%`
-      },
+    const plot_options: Plot.PlotOptions = get_observable_options({
       color: {
         type: `sequential`,
         label: `Count`,
@@ -226,14 +201,11 @@ export const Heatmap: PlotWrapper = {
       x: {
         label: x_axis.field_id,
         type: x_axis.log_mode ? `log` : `linear`,
-        tickFormat: x_axis.log_mode ? `.3~f` : undefined,
-        grid: true
+        tickFormat: x_axis.log_mode ? `.3~f` : undefined
       },
       y: {
         label: y_axis.field_id,
-        type: y_axis.log_mode ? `log` : `linear`,
-        tickFormat: y_axis.log_mode ? `.3~f` : undefined,
-        grid: true
+        type: y_axis.log_mode ? `log` : `linear`
       },
       marks: [
         Plot.rect(data_munged, {
@@ -247,7 +219,7 @@ export const Heatmap: PlotWrapper = {
           tip: true
         })
       ]
-    };
+    });
 
     const plot = Plot.plot(plot_options);
 
@@ -345,35 +317,20 @@ export const BoxPlot: PlotWrapper = {
       }
     })();
 
-    const aspect = 640 / 400;
-
-    const width = 700;
-
     const is_dark_mode = useIsDarkMode();
 
-    const plot_options: Plot.PlotOptions = {
-      width,
-      height: width / aspect,
+    const plot_options: Plot.PlotOptions = get_observable_options({
       insetLeft: 10,
       insetRight: 10,
       insetBottom: 20,
-      style: {
-        overflow: `visible`,
-        background: `transparent`,
-        width: `100%`
-      },
       x: {
         label: x_axis.field_id,
         type: x_axis.log_mode ? `log` : `linear`,
-        tickFormat: x_axis.log_mode ? `.3~f` : undefined,
-        grid: true
+        tickFormat: x_axis.log_mode ? `.3~f` : undefined
       },
       y: {
         label: y_axis.field_id,
-        type: y_axis.log_mode ? `log` : `linear`,
-        tickFormat: y_axis.log_mode ? `.3~f` : undefined,
-        grid: true,
-        ticks: 5
+        type: y_axis.log_mode ? `log` : `linear`
       },
       marks: [
         Plot.ruleX(data_munged, {
@@ -412,7 +369,7 @@ export const BoxPlot: PlotWrapper = {
         //   tip: true
         // })
       ]
-    };
+    });
 
     const plot = Plot.plot(plot_options);
 
@@ -492,30 +449,15 @@ export const Scatterplot: PlotWrapper = {
       }
     })();
 
-    const aspect = 640 / 400;
-
-    const width = 700;
-
-    const plot_options: Plot.PlotOptions = {
-      width,
-      height: width / aspect,
-      style: {
-        overflow: `visible`,
-        background: `transparent`,
-        width: `100%`
-      },
+    const plot_options: Plot.PlotOptions = get_observable_options({
       x: {
         label: x_axis.field_id,
         type: x_axis.log_mode ? `log` : `linear`,
-        tickFormat: x_axis.log_mode ? `.3~f` : undefined,
-        grid: true
+        tickFormat: x_axis.log_mode ? `.3~f` : undefined
       },
       y: {
         label: y_axis.field_id,
-        type: y_axis.log_mode ? `log` : `linear`,
-        tickFormat: y_axis.log_mode ? `.3~f` : undefined,
-        grid: true,
-        ticks: 5
+        type: y_axis.log_mode ? `log` : `linear`
       },
       marks: [
         Plot.dot(data_munged, {
@@ -528,7 +470,7 @@ export const Scatterplot: PlotWrapper = {
           tip: true
         })
       ]
-    };
+    });
 
     const plot = Plot.plot(plot_options);
 
@@ -747,6 +689,27 @@ function StatusWrapper({
       {children}
     </div>
   );
+}
+
+function get_observable_options(opts: Plot.PlotOptions = {}): Plot.PlotOptions {
+  const aspect = 640 / 400;
+  const width = 700;
+  const height = width / aspect;
+  const base: Plot.PlotOptions = {
+    width,
+    height,
+    style: {
+      overflow: `visible`,
+      background: `transparent`,
+      width: `100%`
+    },
+    grid: true,
+    y: {
+      tickFormat: `.2~s`,
+      ticks: 5
+    }
+  };
+  return lodash_merge(base, opts);
 }
 
 function get_highcharts_options(
