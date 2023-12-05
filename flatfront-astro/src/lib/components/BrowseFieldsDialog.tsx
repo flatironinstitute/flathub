@@ -41,7 +41,7 @@ export default function BrowseFieldsDialog({
   );
 }
 
-function FieldsTable() {
+export function FieldsTable() {
   const catalog_metadata = useCatalogMetadata();
   const root_node_children = catalog_metadata?.hierarchy?.children ?? [];
   const columns: ColumnDef<CatalogHierarchyNode, any>[] = [
@@ -131,9 +131,9 @@ function FieldsTable() {
   })();
 
   return (
-    <>
+    <div>
       {expand_all_button}
-      <div className="max-h-[80dvh] w-[min(80dvw,800px)] overflow-x-scroll overflow-y-scroll @container">
+      <div className="h-[20rem] w-[min(80dvw,800px)] overflow-x-scroll overflow-y-scroll @container">
         <table className="w-full">
           <thead className="sticky top-0 h-10 -translate-y-px bg-white dark:bg-black">
             <tr>
@@ -171,7 +171,7 @@ function FieldsTable() {
           </tbody>
         </table>
       </div>
-    </>
+    </div>
   );
 }
 
