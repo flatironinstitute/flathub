@@ -86,7 +86,7 @@ function CatalogCellContents() {
           Fields
         </Heading>
         <FieldsTable />
-        <div className="@2xl/cell:col-span-2 @2xl/cell:col-start-1 space-y-4">
+        <div className="space-y-4 @2xl/cell:col-span-2 @2xl/cell:col-start-1">
           <Heading className="@2xl/cell:col-span-2 @2xl/cell:col-start-1">
             Filters
           </Heading>
@@ -206,12 +206,12 @@ function Plots() {
   const plot_ids: PlotID[] = usePlotIDs();
   const plot_components = plot_ids.map((plot_id, index) => {
     return (
-      <>
+      <React.Fragment key={plot_id}>
         {index === 0 ? null : <Separator />}
-        <div key={plot_id}>
+        <div>
           <PlotSection id={plot_id} />
         </div>
-      </>
+      </React.Fragment>
     );
   });
   return <>{plot_components}</>;
@@ -266,7 +266,7 @@ function RandomSampleControls() {
 
   return (
     <>
-      <div className="space-y-4 rounded-md bg-black/5 p-4">
+      <div className="space-y-4 rounded-md bg-black/5 p-4 dark:bg-white/20">
         <div>Sample</div>
         <SliderWithText
           min={1e-9}
@@ -276,7 +276,7 @@ function RandomSampleControls() {
           onValueChange={(new_value) => set_random_config(`sample`, new_value)}
         />
       </div>
-      <div className="space-y-4 rounded-md bg-black/5 p-4">
+      <div className="space-y-4 rounded-md bg-black/5 p-4 dark:bg-white/20">
         <div>Seed</div>
         <NumberInput
           value={seed}
