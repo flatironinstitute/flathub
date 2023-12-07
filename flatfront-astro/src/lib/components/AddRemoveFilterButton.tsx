@@ -1,8 +1,8 @@
 import type { CatalogHierarchyNode } from "../types";
-import { is_leaf_node } from "../shared";
+import { is_leaf_node, log } from "../shared";
 import {
   useAddFilter,
-  useFilterValues,
+  useFilterNames,
   useRemoveFilter
 } from "../contexts/FiltersContext";
 
@@ -14,7 +14,8 @@ export default function AddRemoveFilterButton({
   const metadata = node.data;
   const is_leaf = is_leaf_node(node);
   const can_remove = metadata.required !== true;
-  const is_active_filter = useFilterValues()[metadata.name] !== undefined;
+  const filter_names = useFilterNames();
+  const is_active_filter = filter_names.has(metadata.name);
   const remove_filter = useRemoveFilter(node);
   const add_filter = useAddFilter(node);
 
