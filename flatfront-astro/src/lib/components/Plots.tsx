@@ -88,8 +88,7 @@ export const Histogram: PlotWrapper = {
     const plot_options: Plot.PlotOptions = get_observable_options({
       x: {
         label: field_config.field_id,
-        type: field_config.log_mode ? `log` : `linear`,
-        tickFormat: field_config.log_mode ? `.3~f` : undefined
+        type: field_config.log_mode ? `log` : `linear`
       },
       y: {
         label: `Count`,
@@ -200,8 +199,7 @@ export const Heatmap: PlotWrapper = {
       },
       x: {
         label: x_axis.field_id,
-        type: x_axis.log_mode ? `log` : `linear`,
-        tickFormat: x_axis.log_mode ? `.3~f` : undefined
+        type: x_axis.log_mode ? `log` : `linear`
       },
       y: {
         label: y_axis.field_id,
@@ -325,8 +323,7 @@ export const BoxPlot: PlotWrapper = {
       insetBottom: 20,
       x: {
         label: x_axis.field_id,
-        type: x_axis.log_mode ? `log` : `linear`,
-        tickFormat: x_axis.log_mode ? `.3~f` : undefined
+        type: x_axis.log_mode ? `log` : `linear`
       },
       y: {
         label: y_axis.field_id,
@@ -452,8 +449,7 @@ export const Scatterplot: PlotWrapper = {
     const plot_options: Plot.PlotOptions = get_observable_options({
       x: {
         label: x_axis.field_id,
-        type: x_axis.log_mode ? `log` : `linear`,
-        tickFormat: x_axis.log_mode ? `.3~f` : undefined
+        type: x_axis.log_mode ? `log` : `linear`
       },
       y: {
         label: y_axis.field_id,
@@ -704,6 +700,9 @@ function get_observable_options(opts: Plot.PlotOptions = {}): Plot.PlotOptions {
       width: `100%`
     },
     grid: true,
+    x: {
+      // tickFormat: `.2~e`
+    },
     y: {
       tickFormat: `.2~s`,
       ticks: 5
