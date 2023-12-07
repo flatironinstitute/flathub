@@ -1,7 +1,7 @@
 import type { CatalogHierarchyNode, FieldID, FieldMetadata } from "../types";
 
 import React from "react";
-import { useAppState, useMergeState } from "./AppStateContext";
+import { useAppState, useMergeState, useSetAppState } from "./AppStateContext";
 import { useCatalogCellID, useCatalogID } from "./CatalogContext";
 import { useCatalogMetadata } from "./CatalogMetadataContext";
 import { log } from "../shared";
@@ -80,6 +80,46 @@ export function useRemoveColumn() {
           [catalog_id]: {
             [field_id]: false
           }
+        }
+      }
+    });
+  };
+}
+
+export function useAddAllLeafColumns() {
+  const catalog_cell_id = useCatalogCellID();
+  const catalog_id = useCatalogID();
+  const merge_state = useMergeState();
+  return (node: CatalogHierarchyNode) => {
+    const leaves = node.leaves();
+    const field_ids = leaves.map((leaf) => leaf.data.name);
+    const field_state = Object.fromEntries(
+      field_ids.map((field_id) => [field_id, true])
+    );
+    merge_state({
+      show_columns: {
+        [catalog_cell_id]: {
+          [catalog_id]: field_state
+        }
+      }
+    });
+  };
+}
+
+export function useRemoveAllLeafColumns() {
+  const catalog_cell_id = useCatalogCellID();
+  const catalog_id = useCatalogID();
+  const merge_state = useMergeState();
+  return (node: CatalogHierarchyNode) => {
+    const leaves = node.leaves();
+    const field_ids = leaves.map((leaf) => leaf.data.name);
+    const field_state = Object.fromEntries(
+      field_ids.map((field_id) => [field_id, false])
+    );
+    merge_state({
+      show_columns: {
+        [catalog_cell_id]: {
+          [catalog_id]: field_state
         }
       }
     });

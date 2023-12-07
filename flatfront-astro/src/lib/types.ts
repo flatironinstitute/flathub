@@ -56,7 +56,8 @@ export type CatalogMetadataWrapper = {
   response: CatalogResponse;
   hierarchy: CatalogHierarchyNode;
   depth_first: Array<CatalogHierarchyNode>;
-  hash_map: Map<CatalogHierarchyNode, string>;
+  get_hash_from_node: (node: CatalogHierarchyNode) => string;
+  get_node_from_hash: (hash: string) => CatalogHierarchyNode;
 };
 
 export type CatalogHierarchyNode = d3.HierarchyNode<FieldMetadata>;

@@ -77,6 +77,8 @@ export default function CatalogCell({
   );
 }
 function CatalogCellContents() {
+  const catalog_id = useCatalogID();
+
   return (
     <CellWrapper className="@container/cell">
       <div className="grid gap-x-8 gap-y-4 @2xl/cell:grid-cols-6">
@@ -85,7 +87,9 @@ function CatalogCellContents() {
         <Heading className="@2xl/cell:col-span-6 @2xl/cell:col-start-1">
           Fields
         </Heading>
-        <FieldsTable />
+        <div className="@2xl/cell:col-span-6">
+          <FieldsTable key={catalog_id} />
+        </div>
         <div className="space-y-4 @2xl/cell:col-span-2 @2xl/cell:col-start-1">
           <Heading className="@2xl/cell:col-span-2 @2xl/cell:col-start-1">
             Filters
@@ -168,7 +172,7 @@ function AboutThisCatalog({ className }: { className?: string }) {
     const ess = h > 1 ? `s` : ``;
     const hierarchy_info = `Hierarchy: ${nodes} nodes, nested ${h} level${ess} deep`;
     return (
-      <>
+      <div className="flex max-h-[80dvh] w-[min(80dvw,800px)] flex-col gap-y-4 overflow-y-scroll p-4">
         <Heading>{title}</Heading>
         <Katex className="space-y-4 leading-[1.4] [&_a]:underline [&_ul]:list-disc [&_ul]:space-y-4 [&_ul]:pb-3 [&_ul]:ps-10">
           {descr}
@@ -176,16 +180,13 @@ function AboutThisCatalog({ className }: { className?: string }) {
         <p>Rows: {format.commas(count)}</p>
         <p>Variables: {hierarchy.leaves().length}</p>
         <p>{hierarchy_info}</p>
-      </>
+      </div>
     );
   })();
   return (
     <Dialog
       disabled={!catalog_id || !catalog_metadata}
       label="About This Catalog"
-      className={clsx(
-        `flex max-h-[80dvh] w-[min(80dvw,800px)] flex-col gap-y-4 p-8`
-      )}
       buttonClassName={className}
     >
       {contents}
@@ -231,7 +232,9 @@ function AddFilterSelect({ className }: { className: string }) {
       placeholder="Add a filter..."
       options={leaves}
       value={value}
-      getKey={(d: CatalogHierarchyNode) => catalog_metadata.hash_map.get(d)}
+      getKey={(node: CatalogHierarchyNode) =>
+        catalog_metadata.get_hash_from_node(node)
+      }
       getDisplayName={(d: CatalogHierarchyNode) => (
         <FieldTitles titles={get_field_titles(d)} />
       )}

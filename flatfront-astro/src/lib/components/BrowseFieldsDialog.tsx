@@ -5,15 +5,19 @@ import * as RadixIcons from "@radix-ui/react-icons";
 import {
   type ExpandedState,
   type ColumnDef,
+  type Row,
   useReactTable,
   getCoreRowModel,
   getExpandedRowModel,
-  flexRender
+  flexRender,
+  type RowSelectionState
 } from "@tanstack/react-table";
-import { is_leaf_node } from "../shared";
+import { is_leaf_node, log } from "../shared";
 import {
+  useAddAllLeafColumns,
   useAddColumn,
   useColumns,
+  useRemoveAllLeafColumns,
   useRemoveColumn
 } from "../contexts/ColumnsContext";
 import { useCatalogMetadata } from "../contexts/CatalogMetadataContext";
@@ -43,78 +47,68 @@ export default function BrowseFieldsDialog({
 
 export function FieldsTable() {
   const catalog_metadata = useCatalogMetadata();
+
   const root_node_children = catalog_metadata?.hierarchy?.children ?? [];
   const columns: ColumnDef<CatalogHierarchyNode, any>[] = [
     {
       header: `Field`,
       accessorFn: (node: CatalogHierarchyNode) => node.data.title,
       cell: ({ row, getValue }) => {
-        const icon_class = `h-4 w-4`;
-        const can_expand = row.getCanExpand();
-        const expand_handler = row.getToggleExpandedHandler();
-        const expand_button = (
-          <button className="cursor-pointer">
-            {row.getIsExpanded() ? (
-              <RadixIcons.ChevronDownIcon className={icon_class} />
-            ) : (
-              <RadixIcons.ChevronRightIcon className={icon_class} />
-            )}
-          </button>
-        );
-        const placeholder = <div className={icon_class} />;
+        const style = {
+          "--depth": row.depth
+        } as React.CSSProperties;
         return (
           <div
-            style={
-              {
-                "--depth": row.depth
-              } as React.CSSProperties
-            }
-            onClick={can_expand ? expand_handler : undefined}
-            className={clsx(
-              "flex items-center pl-[calc(var(--depth)*1rem)]",
-              can_expand && "cursor-pointer"
-            )}
+            style={style}
+            className={clsx("flex items-center pl-[calc(var(--depth)*1rem)]")}
           >
-            {can_expand ? expand_button : placeholder}
+            <RowExpandButton row={row} />
+            &ensp;
+            <ColumnCheckbox row={row} />
+            &ensp;
             <Katex>{getValue()}</Katex>
           </div>
         );
       }
-    },
-    {
-      header: `Units`,
-      accessorFn: (node: CatalogHierarchyNode) => node.data.units,
-      cell: ({ getValue }) => <Katex>{getValue()}</Katex>
-    },
-    {
-      header: `Description`,
-      accessorFn: (node: CatalogHierarchyNode) => node.data.descr,
-      cell: ({ getValue }) => <div className="max-w-[30cqi]">{getValue()}</div>
-    },
-    {
-      header: `Filter`,
-      accessorFn: (node: CatalogHierarchyNode) => node,
-      cell: ({ getValue }) => <AddRemoveFilterButton node={getValue()} />
-    },
-    {
-      header: `Column`,
-      accessorFn: (node: CatalogHierarchyNode) => node,
-      cell: ({ getValue }) => <AddRemoveColumnButton node={getValue()} />
     }
+    // {
+    //   header: `Units`,
+    //   accessorFn: (node: CatalogHierarchyNode) => node.data.units,
+    //   cell: ({ getValue }) => <Katex>{getValue()}</Katex>
+    // },
+    // {
+    //   header: `Description`,
+    //   accessorFn: (node: CatalogHierarchyNode) => node.data.descr,
+    //   cell: ({ getValue }) => <div className="max-w-[30cqi]">{getValue()}</div>
+    // },
+    // {
+    //   header: `Filter`,
+    //   accessorFn: (node: CatalogHierarchyNode) => node,
+    //   cell: ({ getValue }) => <AddRemoveFilterButton node={getValue()} />
+    // },
+    // {
+    //   header: `Column`,
+    //   accessorFn: (node: CatalogHierarchyNode) => node,
+    //   cell: ({ getValue }) => <AddRemoveColumnButton node={getValue()} />
+    // }
   ];
 
   const [expanded, set_expanded] = React.useState<ExpandedState>({});
+  const [selected, set_selected] = React.useState<RowSelectionState>({});
 
   const table = useReactTable({
     data: root_node_children,
     columns,
     state: {
-      expanded
+      expanded,
+      rowSelection: selected
     },
+    getRowId: (row, index, parent) => catalog_metadata?.get_hash_from_node(row),
+    getSubRows: (row) => row.children,
     getCoreRowModel: getCoreRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
     onExpandedChange: set_expanded,
-    getSubRows: (row) => row.children
+    onRowSelectionChange: set_selected
   });
 
   const expand_all_button = (() => {
@@ -133,21 +127,8 @@ export function FieldsTable() {
   return (
     <div>
       {expand_all_button}
-      <div className="h-[20rem] w-[min(80dvw,800px)] overflow-x-scroll overflow-y-scroll @container">
+      <div className="max-h-[500px] w-full overflow-x-scroll overflow-y-scroll @container">
         <table className="w-full">
-          <thead className="sticky top-0 h-10 -translate-y-px bg-white dark:bg-black">
-            <tr>
-              {table.getLeafHeaders().map((header) => (
-                <th key={header.id} className="relative text-left">
-                  {flexRender(
-                    header.column.columnDef.header,
-                    header.getContext()
-                  )}
-                  <div className="absolute bottom-0 w-full border-b border-b-black dark:border-b-white"></div>
-                </th>
-              ))}
-            </tr>
-          </thead>
           <tbody>
             {table.getRowModel().rows.map((row) => {
               return (
@@ -172,6 +153,87 @@ export function FieldsTable() {
         </table>
       </div>
     </div>
+  );
+}
+
+function RowExpandButton<T>({ row }: { row: Row<T> }) {
+  const icon_class = `h-4 w-4`;
+  const can_expand = row.getCanExpand();
+  const expand_handler = row.getToggleExpandedHandler();
+  const expand_button = (
+    <button
+      className="cursor-pointer"
+      onClick={can_expand ? expand_handler : undefined}
+    >
+      {row.getIsExpanded() ? (
+        <RadixIcons.ChevronDownIcon className={icon_class} />
+      ) : (
+        <RadixIcons.ChevronRightIcon className={icon_class} />
+      )}
+    </button>
+  );
+  const placeholder = <div className={icon_class} />;
+  return can_expand ? expand_button : placeholder;
+}
+
+function ColumnCheckbox({ row }: { row: Row<CatalogHierarchyNode> }) {
+  const node = row.original;
+  // const metadata = node.data;
+  const is_leaf = row.subRows.length === 0;
+  // const is_leaf = is_leaf_node(node);
+  const active_columns = useColumns();
+  const remove_column = useRemoveColumn();
+  const add_column = useAddColumn();
+  const add_all_leaf_columns = useAddAllLeafColumns();
+  const remove_all_leaf_columns = useRemoveAllLeafColumns();
+  const is_active_column = active_columns.has(row.original.data.name);
+  const leaves = node.leaves();
+  const num_active_leaves = leaves.filter((leaf) =>
+    active_columns.has(leaf.data.name)
+  ).length;
+  const all_leaves_active = num_active_leaves === leaves.length;
+  const checked = (() => {
+    if (is_leaf) return is_active_column;
+    if (all_leaves_active) return true;
+    return false;
+  })();
+
+  const indeterminate = (() => {
+    if (is_leaf) return false;
+    if (num_active_leaves === 0) return false;
+    if (all_leaves_active) return false;
+    return true;
+  })();
+
+  const ref = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    ref.current.indeterminate = indeterminate;
+  }, [ref, indeterminate]);
+  // const on_change = () => {
+  //   // if (!is_leaf) return;
+  //   // if (is_active_column) remove_column(node);
+  //   // else add_column(node);
+  //   return row.getToggleSelectedHandler()();
+  // };
+  const on_change = (() => {
+    if (!is_leaf)
+      return () => {
+        if (all_leaves_active) remove_all_leaf_columns(node);
+        else add_all_leaf_columns(node);
+      };
+    if (is_active_column) return () => remove_column(node);
+    return () => add_column(node);
+  })();
+  // log(`barney`, node);
+  return (
+    <input
+      type="checkbox"
+      className="cursor-pointer"
+      checked={checked}
+      onChange={on_change}
+      ref={ref}
+    />
   );
 }
 

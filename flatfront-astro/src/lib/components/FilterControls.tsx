@@ -48,9 +48,9 @@ export default function FilterControls() {
     <>
       {filter_and_ancestor_nodes.map((node, index) => (
         <FilterCard
-          className="space-y-4 rounded-md bg-black/5 dark:bg-white/20 p-4"
+          className="space-y-4 rounded-md bg-black/5 p-4 dark:bg-white/20"
           fieldNode={node}
-          key={catalog_metadata.hash_map.get(node)}
+          key={catalog_metadata.get_hash_from_node(node)}
         />
       ))}
     </>

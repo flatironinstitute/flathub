@@ -46,17 +46,24 @@ function wrap_catalog_response(catalog_response: CatalogResponse) {
     root,
     (d) => d?.sub ?? []
   );
-  const hash_map = new Map<CatalogHierarchyNode, string>();
+  const node_to_hash = new Map<CatalogHierarchyNode, string>();
+  const hash_to_node = new Map<string, CatalogHierarchyNode>();
   const depth_first: Array<CatalogHierarchyNode> = [];
   hierarchy.eachBefore((node) => {
-    hash_map.set(node, tiny_json_hash(node.data));
+    const hash = tiny_json_hash(node.data);
+    node_to_hash.set(node, hash);
+    hash_to_node.set(hash, node);
     if (!is_root_node(node)) depth_first.push(node);
   });
+  const get_hash_from_node = (node: CatalogHierarchyNode) =>
+    node_to_hash.get(node);
+  const get_node_from_hash = (hash: string) => hash_to_node.get(hash);
   const wrapper: CatalogMetadataWrapper = {
     response: catalog_response,
     hierarchy,
     depth_first,
-    hash_map
+    get_hash_from_node,
+    get_node_from_hash
   };
   return wrapper;
 }
