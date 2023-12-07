@@ -1,0 +1,39 @@
+---
+import "@/global.css";
+
+import App from "@/components/App"
+
+---
+
+
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/png" href="/icon.png" />
+		<meta name="viewport" content="width=device-width" />
+		<title>FlatHUB</title>
+	</head>
+	<body>
+		<App client:only="react" />
+
+		<script is:inline>
+			const getThemePreference = () => {
+				if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+					return localStorage.getItem('theme');
+				}
+				return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+			};
+			const isDark = getThemePreference() === 'dark';
+			document.documentElement.classList[isDark ? 'add' : 'remove']('dark');
+		 
+			if (typeof localStorage !== 'undefined') {
+				const observer = new MutationObserver(() => {
+					const isDark = document.documentElement.classList.contains('dark');
+					localStorage.setItem('theme', isDark ? 'dark' : 'light');
+				});
+				observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+			}
+		</script>
+	</body>
+</html>

@@ -1,0 +1,29 @@
+:root {
+  --sf-gray-1: #4d4d4d;
+  --sf-gray-2: #7f7f7f;
+  --sf-gray-3: #b3b3b3;
+  --sf-gray-4: #f6f6f6;
+  --sf-flatiron-blue: #537eba;
+  --sf-simons-blue: #1d2954;
+  --sf-simons-blue-lighter-1: #84a5df;
+  --sf-simons-blue-lighter-2: #d7e4fa;
+  --sf-simons-blue-lighter-3: #f1f3fc;
+  --sf-dawn-yellow: #ffd53d;
+  --sf-dawn-yellow-darker: #b4821d;
+  --sf-dawn-yellow-lighter-1: #ebd9aa;
+  --sf-dawn-yellow-lighter-2: #f8f5d6;
+  --sf-ember-orange: #ff9300;
+  --sf-ember-orange-darker: #a7522f;
+  --sf-ember-orange-lighter-1: #f9d8b6;
+  --sf-ember-orange-lighter-2: #fcf6f1;
+  --sf-fire-red: #ff4102;
+  --sf-fire-red-darker: #901e1d;
+  --sf-fire-red-lighter-1: #f6cac1;
+  --sf-fire-red-lighter-2: #fff4f2;
+  --sf-cca-theme: #ce3232;
+  --sf-ccb-theme: #81ad4a;
+  --sf-ccm-theme: #f6862d;
+  --sf-ccn-theme: #007f9d;
+  --sf-ccq-theme: #845b8e;
+  --sf-scc-theme: #8f8f8f;
+}
