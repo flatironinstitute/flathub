@@ -52,6 +52,7 @@ export type CatalogMetadataWrapper = {
   depth_first: Array<CatalogHierarchyNode>;
   get_hash_from_node: (node: CatalogHierarchyNode) => string;
   get_node_from_hash: (hash: string) => CatalogHierarchyNode;
+  initial_column_ids: Set<string>;
 };
 
 export type CatalogHierarchyNode = d3.HierarchyNode<FieldMetadata>;

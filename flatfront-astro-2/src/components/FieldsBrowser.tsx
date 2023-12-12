@@ -1,4 +1,7 @@
+import type { CatalogHierarchyNode } from "@/types";
 import React from "react";
+import clsx from "clsx";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import {
   type ExpandedState,
   type ColumnDef,
@@ -7,33 +10,35 @@ import {
   getCoreRowModel,
   getExpandedRowModel,
   flexRender,
-  type RowSelectionState
+  type RowSelectionState,
+  type Table as TableType,
+  getFilteredRowModel
 } from "@tanstack/react-table";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Katex } from "@/components/ui/katex";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHeader,
+  TableRow
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { useCatalogMetadata } from "@/components/contexts/CatalogMetadataContext";
-import { Katex } from "./ui/katex";
-import clsx from "clsx";
-import type { CatalogHierarchyNode } from "@/types";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import {
+  useColumns,
+  useSetColumns
+} from "@/components/contexts/ColumnsContext";
 import { log } from "@/utils";
 
 export function FieldsBrowser() {
-  return (
-    <div className="space-y-4">
-      <div>button</div>
-      <ScrollArea className="h-[500px] w-full rounded-md border p-4">
-        <FieldsTable />
-      </ScrollArea>
-    </div>
-  );
-}
-
-function FieldsTable() {
   const catalog_metadata = useCatalogMetadata();
   const root_node_children = catalog_metadata?.hierarchy?.children ?? [];
 
-  const columns: ColumnDef<CatalogHierarchyNode, any>[] = [
+  const table_columns: ColumnDef<CatalogHierarchyNode, any>[] = [
     {
       header: `Field`,
       accessorFn: (node: CatalogHierarchyNode) => node.data.title,
@@ -52,17 +57,22 @@ function FieldsTable() {
             &ensp;
             <ColumnCheckbox row={row} />
             &ensp;
-            <Katex className="pr-4">{getValue()}</Katex>
+            <Katex>{getValue()}</Katex>
           </div>
         );
       }
     },
     {
+      header: `Filter Toggle`,
+      id: `filter-toggle`,
+      cell: ({ row }) => <FilterCheckbox row={row} />
+    },
+    {
       header: `Description`,
       accessorFn: (node: CatalogHierarchyNode) => node.data.descr,
       cell: ({ getValue }) => (
-        <div className="max-w-[20cqi] overflow-hidden text-ellipsis whitespace-nowrap">
-          {getValue()}
+        <div className="flex">
+          <span className="max-w-[37cqi] truncate">{getValue()}</span>
         </div>
       )
     },
@@ -76,43 +86,150 @@ function FieldsTable() {
   ];
 
   const [expanded, set_expanded] = React.useState<ExpandedState>({});
-  const [selected, set_selected] = React.useState<RowSelectionState>({});
+  const [search_string, set_search_string] = React.useState("");
 
   const table = useReactTable({
     data: root_node_children,
-    columns,
+    columns: table_columns,
     state: {
       expanded,
-      rowSelection: selected
+      globalFilter: search_string
     },
     getRowId: (row) => catalog_metadata?.get_hash_from_node(row),
     getSubRows: (row) => row.children,
     getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
+    onGlobalFilterChange: set_search_string,
     onExpandedChange: set_expanded,
-    onRowSelectionChange: set_selected
+    globalFilterFn: `includesString`,
+    filterFromLeafRows: true,
+    autoResetExpanded: true
   });
 
+  const is_all_expanded = table.getIsAllRowsExpanded();
+  const expand_all_handler = table.getToggleAllRowsExpandedHandler();
+
+  React.useEffect(() => {
+    if (search_string.length === 0) return;
+    if (!is_all_expanded) table.toggleAllRowsExpanded(true);
+  }, [search_string]);
+
   return (
-    <table className="@container/table w-full">
-      <tbody>
-        {table.getRowModel().rows.map((row) => {
-          return (
-            <tr key={row.id} className="odd:bg-gray-100 dark:odd:bg-white/20">
-              {row.getVisibleCells().map((cell) => {
-                return (
-                  <td key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                );
-              })}
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
+    <div className="space-y-4">
+      <div className="flex gap-x-4">
+        <DebouncedInput
+          value={search_string ?? ""}
+          onChange={(value) => table.setGlobalFilter(String(value))}
+          className="max-w-[40ch]"
+          placeholder="Search..."
+        />
+        <Button variant="outline" onClick={expand_all_handler}>
+          {is_all_expanded ? `Collapse All` : `Expand All`}
+        </Button>
+      </div>
+      <ScrollArea
+        className="w-full rounded-md border p-4"
+        viewportClassName="max-h-[400px] @container/scrollarea"
+      >
+        <TablePrimitive table={table} />
+      </ScrollArea>
+    </div>
   );
 }
+
+function DebouncedInput({
+  value: initialValue,
+  onChange,
+  debounce = 500,
+  ...props
+}: {
+  value: string | number;
+  onChange: (value: string | number) => void;
+  debounce?: number;
+} & Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange">) {
+  const [value, setValue] = React.useState(initialValue);
+
+  React.useEffect(() => {
+    setValue(initialValue);
+  }, [initialValue]);
+
+  React.useEffect(() => {
+    const timeout = setTimeout(() => {
+      onChange(value);
+    }, debounce);
+
+    return () => clearTimeout(timeout);
+  }, [value]);
+
+  return (
+    <Input
+      {...props}
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+    />
+  );
+}
+
+function TablePrimitive({ table }: { table: TableType<CatalogHierarchyNode> }) {
+  return (
+    <Table>
+      <TableBody>
+        {table.getRowModel().rows.map((row) => (
+          <TableRow key={row.id}>
+            {row.getVisibleCells().map((cell) => (
+              <TableCell key={cell.id} className="px-2 py-1">
+                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+              </TableCell>
+            ))}
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+}
+
+// function TablePrimitive({ table }: { table: Table<CatalogHierarchyNode> }) {
+//   return (
+//     <div className="grid w-[100cqi] grid-cols-[min-content_1fr_min-content] gap-x-4">
+//       {table.getRowModel().rows.map((row) => {
+//         return (
+//           <React.Fragment key={row.id}>
+//             {row.getVisibleCells().map((cell) => {
+//               return (
+//                 <div key={cell.id}>
+//                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
+//                 </div>
+//               );
+//             })}
+//           </React.Fragment>
+//         );
+//       })}
+//     </div>
+//   );
+// }
+
+// function TablePrimitive({ table }: { table: Table<CatalogHierarchyNode> }) {
+//   return (
+//     <table className="w-full">
+//       <tbody>
+//         {table.getRowModel().rows.map((row) => {
+//           return (
+//             <tr key={row.id} className="odd:bg-gray-100 dark:odd:bg-white/20">
+//               {row.getVisibleCells().map((cell) => {
+//                 return (
+//                   <td key={cell.id} className="px-2">
+//                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
+//                   </td>
+//                 );
+//               })}
+//             </tr>
+//           );
+//         })}
+//       </tbody>
+//     </table>
+//   );
+// }
 
 function RowExpandButton<T>({ row }: { row: Row<T> }) {
   const icon_class = `h-4 w-4`;
@@ -136,12 +253,29 @@ function RowExpandButton<T>({ row }: { row: Row<T> }) {
 
 function ColumnCheckbox({ row }: { row: Row<CatalogHierarchyNode> }) {
   const is_leaf = row.subRows.length === 0;
-  const leaves_selected = get_leaves_selected(row);
-  const checked = is_leaf ? row.getIsSelected() : leaves_selected === `all`;
+  const columns = useColumns();
+  const set_columns = useSetColumns();
+  const leaves = row.getLeafRows().filter((d) => d.subRows.length === 0);
+  const leaves_selected = (() => {
+    if (leaves.length === 0) return `none`;
+    const num_selected = leaves.filter((leaf) => columns.has(leaf.id)).length;
+    if (num_selected === leaves.length) return `all`;
+    if (num_selected > 0) return `some`;
+    return `none`;
+  })();
+  const checked = is_leaf ? columns.has(row.id) : leaves_selected === `all`;
   const indeterminate = leaves_selected === `some`;
-  const toggle_handler = is_leaf
-    ? row.getToggleSelectedHandler()
-    : toggle_children(row, leaves_selected === `all` ? false : true);
+  const toggle_handler = () => {
+    if (is_leaf) {
+      set_columns({
+        [row.id]: checked ? false : true
+      });
+    } else {
+      const value = leaves_selected === `all` ? false : true;
+      const leaf_ids = leaves.map((d) => d.id);
+      set_columns(Object.fromEntries(leaf_ids.map((d) => [d, value])));
+    }
+  };
   return (
     <Checkbox
       checked={indeterminate ? `indeterminate` : checked}
@@ -150,27 +284,10 @@ function ColumnCheckbox({ row }: { row: Row<CatalogHierarchyNode> }) {
   );
 }
 
-function get_leaves_selected(
-  row: Row<CatalogHierarchyNode>
-): `all` | `some` | `none` {
-  const leaves = row.getLeafRows().filter((d) => d.subRows.length === 0);
-  if (leaves.length === 0) return `none`;
-  const num_selected = leaves.filter((leaf) => leaf.getIsSelected()).length;
-  if (num_selected === leaves.length) return `all`;
-  if (num_selected > 0) return `some`;
-  return `none`;
-}
-
-function toggle_children(row: Row<CatalogHierarchyNode>, value: boolean) {
-  const leaves = row.getLeafRows().filter((d) => d.subRows.length === 0);
-  return () => {
-    for (const leaf of leaves) {
-      leaf.toggleSelected(value);
-    }
-    // const is_selected = row.getIsSelected();
-    // const children = row.getVisibleChildren();
-    // children.forEach((child) => {
-    //   child.getToggleSelectedHandler()(!is_selected);
-    // });
-  };
+function FilterCheckbox({ row }: { row: Row<CatalogHierarchyNode> }) {
+  return (
+    <Badge variant="outline" className="cursor-pointer">
+      Filter
+    </Badge>
+  );
 }

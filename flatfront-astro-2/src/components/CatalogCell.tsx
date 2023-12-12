@@ -29,23 +29,26 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { Katex } from "@/components/ui/katex";
+import { Button } from "@/components/ui/button";
 import {
   CatalogCellIDProvider,
   useCatalogCellID,
   useCatalogID
 } from "@/components/contexts/CatalogCellIDContext";
 import { CatalogMetadataProvider } from "@/components/contexts/CatalogMetadataContext";
-import { fetch_api_get, format, log } from "@/utils";
 import { useMergeState } from "@/components/contexts/AppStateContext";
 import { useCatalogMetadata } from "@/components/contexts/CatalogMetadataContext";
-import { Button } from "./ui/button";
+import { ColumnsProvider } from "@/components/contexts/ColumnsContext";
 import { FieldsBrowser } from "./FieldsBrowser";
+import { fetch_api_get, format, log } from "@/utils";
 
 export function CatalogCell({ id: catalog_cell_id }: { id: CellID.Catalog }) {
   return (
     <CatalogCellIDProvider value={catalog_cell_id}>
       <CatalogMetadataProvider>
-        <CatalogCellContents />
+        <ColumnsProvider>
+          <CatalogCellContents />
+        </ColumnsProvider>
       </CatalogMetadataProvider>
     </CatalogCellIDProvider>
   );
@@ -68,7 +71,7 @@ function CatalogCellContents() {
         <CardTitle>Fields</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <FieldsBrowser />
+        <FieldsBrowser key={catalog_id} />
       </CardContent>
     </Card>
   );
@@ -126,7 +129,7 @@ function AboutThisCatalog() {
       <DialogTrigger asChild disabled={!catalog_metadata}>
         <Button variant="outline">About This Catalog</Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-[80dvh] overflow-y-scroll">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
