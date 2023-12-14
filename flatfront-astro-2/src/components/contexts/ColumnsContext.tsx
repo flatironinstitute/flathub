@@ -51,3 +51,12 @@ export function useSetColumns() {
     });
   };
 }
+
+export function useAddColumn() {
+  const set_columns = useSetColumns();
+  return (hash: string) => {
+    set_columns({
+      [hash]: true
+    });
+  };
+}

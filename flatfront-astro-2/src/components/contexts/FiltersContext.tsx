@@ -16,8 +16,8 @@ import {
 import { useCatalogMetadata } from "./CatalogMetadataContext";
 import { useAppState, useMergeState, useSetAppState } from "./AppStateContext";
 
+const FilterIDsContext = React.createContext<Set<string>>(new Set());
 const FilterValuesContext = React.createContext(null);
-const FilterNamesContext = React.createContext<Set<string>>(new Set());
 
 export function FiltersProvider({ children }) {
   const catalog_cell_id = useCatalogCellID();
@@ -38,16 +38,16 @@ export function FiltersProvider({ children }) {
   const filter_state: Filters =
     app_state?.filter_values?.[catalog_cell_id]?.[catalog_id] ?? {};
   return (
-    <FilterNamesContext.Provider value={filter_ids_set}>
+    <FilterIDsContext.Provider value={filter_ids_set}>
       <FilterValuesContext.Provider value={filter_state}>
         {children}
       </FilterValuesContext.Provider>
-    </FilterNamesContext.Provider>
+    </FilterIDsContext.Provider>
   );
 }
 
-export function useFilterNames() {
-  const filter_names = React.useContext(FilterNamesContext);
+export function useFilterIDs() {
+  const filter_names = React.useContext(FilterIDsContext);
   return filter_names;
 }
 
@@ -56,13 +56,13 @@ export function useFilterValues(): Filters {
   return filters;
 }
 
-export function useSetFilterValue(node: CatalogHierarchyNode) {
+export function useSetFilterValue() {
   const catalog_cell_id = useCatalogCellID();
   const catalog_id = useCatalogID();
   const merge_state = useMergeState();
   const catalog_metadata = useCatalogMetadata();
-  const field_hash = catalog_metadata.get_hash_from_node(node);
-  return (value: FilterValueRaw) => {
+  return (node: CatalogHierarchyNode, value: FilterValueRaw) => {
+    const field_hash = catalog_metadata.get_hash_from_node(node);
     merge_state({
       filter_values: {
         [catalog_cell_id]: {
@@ -75,13 +75,13 @@ export function useSetFilterValue(node: CatalogHierarchyNode) {
   };
 }
 
-export function useClearFilterValue(node: CatalogHierarchyNode) {
+export function useClearFilterValue() {
   const catalog_cell_id = useCatalogCellID();
   const catalog_id = useCatalogID();
   const set_app_state = useSetAppState();
   const catalog_metadata = useCatalogMetadata();
-  const field_hash = catalog_metadata.get_hash_from_node(node);
-  return () => {
+  return (node: CatalogHierarchyNode) => {
+    const field_hash = catalog_metadata.get_hash_from_node(node);
     set_app_state((obj) => {
       lodash_merge<AppState, AppState>(obj, {
         filter_values: {
@@ -97,13 +97,13 @@ export function useClearFilterValue(node: CatalogHierarchyNode) {
   };
 }
 
-export function useAddFilter(node: CatalogHierarchyNode) {
+export function useAddFilter() {
   const catalog_cell_id = useCatalogCellID();
   const catalog_id = useCatalogID();
   const merge_state = useMergeState();
   const catalog_metadata = useCatalogMetadata();
-  const field_hash = catalog_metadata.get_hash_from_node(node);
-  return () => {
+  return (node: CatalogHierarchyNode) => {
+    const field_hash = catalog_metadata.get_hash_from_node(node);
     merge_state({
       show_filters: {
         [catalog_cell_id]: {
@@ -116,13 +116,13 @@ export function useAddFilter(node: CatalogHierarchyNode) {
   };
 }
 
-export function useRemoveFilter(node: CatalogHierarchyNode) {
+export function useRemoveFilter() {
   const catalog_cell_id = useCatalogCellID();
   const catalog_id = useCatalogID();
   const set_app_state = useSetAppState();
   const catalog_metadata = useCatalogMetadata();
-  const field_hash = catalog_metadata.get_hash_from_node(node);
-  return () => {
+  return (node: CatalogHierarchyNode) => {
+    const field_hash = catalog_metadata.get_hash_from_node(node);
     set_app_state((obj) => {
       lodash_merge<AppState, AppState>(obj, {
         show_filters: {

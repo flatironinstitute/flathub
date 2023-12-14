@@ -1,10 +1,11 @@
 import type { CatalogHierarchyNode, FilterValueRaw } from "@/types";
 import React from "react";
 import { useDebounce } from "@uidotdev/usehooks";
-import { Trash2 } from "lucide-react";
+import { Check, ChevronsUpDown, Trash2 } from "lucide-react";
 import * as d3 from "d3";
 import {
   assert_numeric_field_stats,
+  cn,
   format,
   get_field_titles,
   get_field_type,
@@ -14,8 +15,9 @@ import {
 } from "@/utils";
 import { useCatalogMetadata } from "@/components/contexts/CatalogMetadataContext";
 import {
+  useAddFilter,
   useClearFilterValue,
-  useFilterNames,
+  useFilterIDs,
   useFilterValues,
   useRemoveFilter,
   useSetFilterValue
@@ -33,6 +35,23 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input, type InputProps } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList
+} from "@/components/ui/command";
+import {
+  useColumns,
+  useSetColumns
+} from "@/components/contexts/ColumnsContext";
 
 const FieldNodeContext = React.createContext(null);
 
@@ -45,11 +64,83 @@ const useFieldNode = () => {
 };
 
 export function AddFilterDropdown() {
-  return <div>quick add filter</div>;
+  const columns = useColumns();
+  const filter_ids = useFilterIDs();
+  const catalog_metadata = useCatalogMetadata();
+  const available_filters = [...columns]
+    .map((hash) => {
+      if (!catalog_metadata) return null;
+      const is_active = filter_ids.has(hash);
+      const node = catalog_metadata?.get_node_from_hash(hash);
+      const titles = get_field_titles(node);
+      return {
+        hash,
+        node,
+        label: titles.join(` `),
+        display_label: <FieldTitles titles={titles} />,
+        is_active
+      };
+    })
+    .filter(Boolean)
+    .filter((d) => !d.is_active);
+
+  const [open, setOpen] = React.useState(false);
+
+  const add_filter = useAddFilter();
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-[200px] justify-between"
+        >
+          Add a filter...
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        side="bottom"
+        align="start"
+        avoidCollisions={false}
+        className="p-0"
+      >
+        <Command
+          filter={(value, search) => {
+            if (value.includes(search.toLowerCase())) return 1;
+            return 0;
+          }}
+        >
+          <CommandInput placeholder="Search filters..." />
+          <CommandList>
+            <CommandEmpty>No filters found.</CommandEmpty>
+            <CommandGroup>
+              {available_filters.map(({ hash, node, label, display_label }) => (
+                <CommandItem
+                  key={hash}
+                  value={label}
+                  data-label={label}
+                  onSelect={() => {
+                    add_filter(node);
+                    setOpen(false);
+                  }}
+                  className="flex gap-x-2"
+                >
+                  {display_label}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
 }
 
 export function FilterSection() {
-  const names = useFilterNames();
+  const filter_ids = useFilterIDs();
   const catalog_metadata = useCatalogMetadata();
   const leaves = catalog_metadata?.hierarchy?.leaves() ?? [];
   const filter_nodes = leaves.filter((node) => {
@@ -57,7 +148,7 @@ export function FilterSection() {
     if (node.depth === 0) return false;
     const hash = catalog_metadata.get_hash_from_node(node);
     // Include if this node is in the filters list
-    if (names.has(hash)) return true;
+    if (filter_ids.has(hash)) return true;
     // Exclude otherwise
     return false;
   });
@@ -75,18 +166,22 @@ export function FilterSection() {
   );
 }
 
+function FieldTitles({ titles }: { titles: string[] }) {
+  return (
+    <>
+      {titles.map((title, index) => (
+        <Katex key={`${title}-${index}`}>{title}</Katex>
+      ))}
+    </>
+  );
+}
+
 function FilterCard() {
   const field_node = useFieldNode();
   const metadata = field_node.data;
   const field_type = get_field_type(metadata);
 
-  const titles = (
-    <>
-      {get_field_titles(field_node).map((title, index) => (
-        <Katex key={`${title}-${index}`}>{title}</Katex>
-      ))}
-    </>
-  );
+  const titles = <FieldTitles titles={get_field_titles(field_node)} />;
 
   const units = metadata.units ? (
     <span>
@@ -130,7 +225,7 @@ function RemoveFilterButton({ node }: { node: CatalogHierarchyNode }) {
   const metadata = node.data;
   const is_leaf = is_leaf_node(node);
   const can_remove = metadata.required !== true;
-  const remove_filter = useRemoveFilter(node);
+  const remove_filter = useRemoveFilter();
 
   if (!is_leaf) return null;
   if (!can_remove) return null;
@@ -139,8 +234,8 @@ function RemoveFilterButton({ node }: { node: CatalogHierarchyNode }) {
     <Button
       size="sm"
       variant="ghost"
-      className="h-5"
-      onClick={() => remove_filter()}
+      className="h-5 px-0"
+      onClick={() => remove_filter(node)}
     >
       <Trash2 className="h-4 w-4" />
     </Button>
@@ -166,7 +261,7 @@ function RangeFilterControl() {
     ? filter_value_raw.lte
     : max;
 
-  const set_filter_value = useSetFilterValue(field_node);
+  const set_filter_value = useSetFilterValue();
 
   const [internal_low, set_internal_low] = React.useState<number>(low);
   const [internal_high, set_internal_high] = React.useState<number>(high);
@@ -179,14 +274,14 @@ function RangeFilterControl() {
 
   React.useEffect(() => {
     if (debounced_low === low) return;
-    set_filter_value({
+    set_filter_value(field_node, {
       gte: is_integer ? Math.round(debounced_low) : debounced_low
     });
   }, [debounced_low]);
 
   React.useEffect(() => {
     if (debounced_high === high) return;
-    set_filter_value({
+    set_filter_value(field_node, {
       lte: is_integer ? Math.round(debounced_high) : debounced_high
     });
   }, [debounced_high]);
@@ -302,7 +397,7 @@ function SelectFilterControl() {
   const value = options.find((d) => d.value === filter_value_raw)
     ?.value_as_string;
 
-  const set_filter_value = useSetFilterValue(field_node);
+  const set_filter_value = useSetFilterValue();
 
   const items = options.map(({ text, count, value_as_string }) => {
     const label = count ? `${text} (${format.commas(count)} rows)` : text;
@@ -324,7 +419,7 @@ function SelectFilterControl() {
         const value = options.find((d) => d.value_as_string === value_as_string)
           ?.value;
         console.log({ value });
-        set_filter_value(value);
+        set_filter_value(field_node, value);
       }}
     >
       <SelectTrigger className="whitespace-nowrap text-[min(4.6cqi,1rem)]">
