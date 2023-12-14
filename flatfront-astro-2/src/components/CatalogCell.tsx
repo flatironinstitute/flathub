@@ -89,6 +89,20 @@ function CatalogCellContents() {
         <AddFilterDropdown />
         <FilterSection />
       </CardContent>
+      <Separator />
+      <CardHeader>
+        <CardTitle>Random Sample</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div>random</div>
+      </CardContent>
+      <Separator />
+      <CardHeader>
+        <CardTitle>Results</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div>results</div>
+      </CardContent>
     </Card>
   );
 }

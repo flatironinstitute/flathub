@@ -1,7 +1,7 @@
 import type { CatalogHierarchyNode, FilterValueRaw } from "@/types";
 import React from "react";
 import { useDebounce } from "@uidotdev/usehooks";
-import { Check, ChevronsUpDown, Trash2 } from "lucide-react";
+import { ChevronDown, Trash2 } from "lucide-react";
 import * as d3 from "d3";
 import {
   assert_numeric_field_stats,
@@ -95,10 +95,10 @@ export function AddFilterDropdown() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between"
+          className="w-[min(100%,40ch)] justify-between"
         >
           Add a filter...
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent
@@ -214,7 +214,7 @@ function FilterCard() {
     }
   })();
   return (
-    <Card className="h-[min-content] space-y-4 p-4 @container/filter">
+    <Card className="h-[min-content] space-y-4 bg-secondary p-4 @container/filter">
       {title_and_units}
       {filter_control}
     </Card>
@@ -315,6 +315,7 @@ function RangeFilterControl() {
           }
         }}
         step={step}
+        className="my-2"
       />
     </div>
   );
