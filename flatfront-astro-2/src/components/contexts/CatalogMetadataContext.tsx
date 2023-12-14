@@ -50,6 +50,7 @@ function wrap_catalog_response(catalog_response: CatalogResponse) {
   const hash_to_node = new Map<string, CatalogHierarchyNode>();
   const depth_first: Array<CatalogHierarchyNode> = [];
   const initial_column_ids: Set<string> = new Set();
+  const initial_filter_ids: Set<string> = new Set();
   hierarchy.eachBefore((node) => {
     const hash = tiny_json_hash(node.data);
     node_to_hash.set(node, hash);
@@ -57,6 +58,8 @@ function wrap_catalog_response(catalog_response: CatalogResponse) {
     if (!is_root_node(node)) depth_first.push(node);
     if (node.height === 0 && node.data.disp === true)
       initial_column_ids.add(hash);
+    if (node.height === 0 && `required` in node.data)
+      initial_filter_ids.add(hash);
   });
   const get_hash_from_node = (node: CatalogHierarchyNode) =>
     node_to_hash.get(node);
@@ -67,7 +70,8 @@ function wrap_catalog_response(catalog_response: CatalogResponse) {
     depth_first,
     get_hash_from_node,
     get_node_from_hash,
-    initial_column_ids
+    initial_column_ids,
+    initial_filter_ids
   };
   return wrapper;
 }

@@ -3,6 +3,7 @@ import * as d3 from "d3";
 import clsx from "clsx";
 
 import { useQuery } from "@tanstack/react-query";
+import { fetch_api_get, format, log } from "@/utils";
 import {
   CardContent,
   Card,
@@ -39,15 +40,19 @@ import { CatalogMetadataProvider } from "@/components/contexts/CatalogMetadataCo
 import { useMergeState } from "@/components/contexts/AppStateContext";
 import { useCatalogMetadata } from "@/components/contexts/CatalogMetadataContext";
 import { ColumnsProvider } from "@/components/contexts/ColumnsContext";
-import { FieldsBrowser } from "./FieldsBrowser";
-import { fetch_api_get, format, log } from "@/utils";
+import { FiltersProvider } from "@/components/contexts/FiltersContext";
+import { FieldsBrowser } from "@/components/FieldsBrowser";
+import { AddFilterDropdown, FilterSection } from "@/components/FilterSection";
+import { Trash2 } from "lucide-react";
 
 export function CatalogCell({ id: catalog_cell_id }: { id: CellID.Catalog }) {
   return (
     <CatalogCellIDProvider value={catalog_cell_id}>
       <CatalogMetadataProvider>
         <ColumnsProvider>
-          <CatalogCellContents />
+          <FiltersProvider>
+            <CatalogCellContents />
+          </FiltersProvider>
         </ColumnsProvider>
       </CatalogMetadataProvider>
     </CatalogCellIDProvider>
@@ -58,11 +63,14 @@ function CatalogCellContents() {
   const catalog_id = useCatalogID();
 
   return (
-    <Card className="w-[min(1000px,90dvw)]">
-      <CardHeader>
+    <Card className="w-[min(1000px,90dvw)] @container/cell">
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Catalog</CardTitle>
+        <Button variant="outline" className="flex flex-row gap-x-2">
+          <Trash2 /> Delete
+        </Button>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="flex flex-col gap-4 @md/cell:flex-row">
         <CatalogSelect />
         <AboutThisCatalog />
       </CardContent>
@@ -72,6 +80,14 @@ function CatalogCellContents() {
       </CardHeader>
       <CardContent className="space-y-4">
         <FieldsBrowser key={catalog_id} />
+      </CardContent>
+      <Separator />
+      <CardHeader>
+        <CardTitle>Filters</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <AddFilterDropdown />
+        <FilterSection />
       </CardContent>
     </Card>
   );
@@ -109,7 +125,7 @@ function CatalogSelect() {
         });
       }}
     >
-      <SelectTrigger className="w-[180px] disabled:cursor-wait">
+      <SelectTrigger className="max-w-[40ch] disabled:cursor-wait">
         <SelectValue
           placeholder={ready ? `Select a catalog...` : `Loading catalogs...`}
         />

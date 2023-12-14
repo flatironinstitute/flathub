@@ -33,6 +33,11 @@ import {
   useSetColumns
 } from "@/components/contexts/ColumnsContext";
 import { log } from "@/utils";
+import {
+  useAddFilter,
+  useFilterNames,
+  useRemoveFilter
+} from "@/components/contexts/FiltersContext";
 
 export function FieldsBrowser() {
   const catalog_metadata = useCatalogMetadata();
@@ -117,7 +122,7 @@ export function FieldsBrowser() {
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-x-4">
+      <div className="flex flex-col gap-4 @md/cell:flex-row">
         <DebouncedInput
           value={search_string ?? ""}
           onChange={(value) => table.setGlobalFilter(String(value))}
@@ -149,19 +154,15 @@ function DebouncedInput({
   debounce?: number;
 } & Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange">) {
   const [value, setValue] = React.useState(initialValue);
-
   React.useEffect(() => {
     setValue(initialValue);
   }, [initialValue]);
-
   React.useEffect(() => {
     const timeout = setTimeout(() => {
       onChange(value);
     }, debounce);
-
     return () => clearTimeout(timeout);
   }, [value]);
-
   return (
     <Input
       {...props}
@@ -285,9 +286,41 @@ function ColumnCheckbox({ row }: { row: Row<CatalogHierarchyNode> }) {
 }
 
 function FilterCheckbox({ row }: { row: Row<CatalogHierarchyNode> }) {
-  return (
-    <Badge variant="outline" className="cursor-pointer">
-      Filter
+  const is_leaf = row.subRows.length === 0;
+
+  const node = row.original;
+  const hash = useCatalogMetadata()?.get_hash_from_node(node);
+  const metadata = node.data;
+  const is_required = metadata.required === true;
+  const can_remove = !is_required;
+  const remove_filter = useRemoveFilter(node);
+  const add_filter = useAddFilter(node);
+
+  const names = useFilterNames();
+  const is_active = names.has(hash);
+
+  const on_click = () => {
+    if (is_active && can_remove) {
+      remove_filter();
+    } else {
+      add_filter();
+    }
+  };
+
+  const label = is_required
+    ? `Required Filter`
+    : is_active
+      ? `Remove Filter`
+      : `Add Filter`;
+
+  return is_leaf ? (
+    <Badge
+      variant="outline"
+      aria-disabled={is_required}
+      className="cursor-pointer whitespace-nowrap rounded-sm aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
+      onClick={on_click}
+    >
+      {label}
     </Badge>
-  );
+  ) : null;
 }

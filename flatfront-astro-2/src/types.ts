@@ -4,11 +4,11 @@ export type { schema };
 
 export type AppState = {
   cells?: Record<number, Cell.Any>;
-  add_filter?: Record<
+  show_filters?: Record<
     CellID.Catalog,
     Record<CatalogID, Record<FieldID, boolean>>
   >;
-  set_filter_value?: Record<CellID.Catalog, Record<CatalogID, Filters>>;
+  filter_values?: Record<CellID.Catalog, Record<CatalogID, Filters>>;
   set_random_sample?: Record<
     CellID.Catalog,
     Record<CatalogID, { sample?: number; seed?: number }>
@@ -53,9 +53,20 @@ export type CatalogMetadataWrapper = {
   get_hash_from_node: (node: CatalogHierarchyNode) => string;
   get_node_from_hash: (hash: string) => CatalogHierarchyNode;
   initial_column_ids: Set<string>;
+  initial_filter_ids: Set<string>;
 };
 
 export type CatalogHierarchyNode = d3.HierarchyNode<FieldMetadata>;
+
+export type FieldType =
+  | `ROOT`
+  | `INTEGER`
+  | `FLOAT`
+  | `LABELLED_ENUMERABLE_BOOLEAN`
+  | `LABELLED_ENUMERABLE_INTEGER`
+  | `ENUMERABLE_INTEGER`
+  | `ARRAY`
+  | `STRING`;
 
 // ===========================================
 // SCHEMA
