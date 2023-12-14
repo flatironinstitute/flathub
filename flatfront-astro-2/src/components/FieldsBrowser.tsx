@@ -29,13 +29,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useCatalogMetadata } from "@/components/contexts/CatalogMetadataContext";
 import {
+  useAddColumn,
   useColumns,
   useSetColumns
 } from "@/components/contexts/ColumnsContext";
 import { log } from "@/utils";
 import {
   useAddFilter,
-  useFilterNames,
+  useFilterIDs,
   useRemoveFilter
 } from "@/components/contexts/FiltersContext";
 
@@ -77,7 +78,7 @@ export function FieldsBrowser() {
       accessorFn: (node: CatalogHierarchyNode) => node.data.descr,
       cell: ({ getValue }) => (
         <div className="flex">
-          <span className="max-w-[37cqi] truncate">{getValue()}</span>
+          <span className="truncate">{getValue()}</span>
         </div>
       )
     },
@@ -174,10 +175,15 @@ function DebouncedInput({
 
 function TablePrimitive({ table }: { table: TableType<CatalogHierarchyNode> }) {
   return (
-    <Table>
-      <TableBody>
+    <Table
+      className="grid w-full gap-x-2"
+      style={{
+        gridTemplateColumns: `min-content min-content minmax(0,1fr) min-content`
+      }}
+    >
+      <TableBody className="contents">
         {table.getRowModel().rows.map((row) => (
-          <TableRow key={row.id}>
+          <TableRow key={row.id} className="contents">
             {row.getVisibleCells().map((cell) => (
               <TableCell key={cell.id} className="px-2 py-1">
                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -190,45 +196,21 @@ function TablePrimitive({ table }: { table: TableType<CatalogHierarchyNode> }) {
   );
 }
 
-// function TablePrimitive({ table }: { table: Table<CatalogHierarchyNode> }) {
+// function TablePrimitive({ table }: { table: TableType<CatalogHierarchyNode> }) {
 //   return (
-//     <div className="grid w-[100cqi] grid-cols-[min-content_1fr_min-content] gap-x-4">
-//       {table.getRowModel().rows.map((row) => {
-//         return (
-//           <React.Fragment key={row.id}>
-//             {row.getVisibleCells().map((cell) => {
-//               return (
-//                 <div key={cell.id}>
-//                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
-//                 </div>
-//               );
-//             })}
-//           </React.Fragment>
-//         );
-//       })}
-//     </div>
-//   );
-// }
-
-// function TablePrimitive({ table }: { table: Table<CatalogHierarchyNode> }) {
-//   return (
-//     <table className="w-full">
-//       <tbody>
-//         {table.getRowModel().rows.map((row) => {
-//           return (
-//             <tr key={row.id} className="odd:bg-gray-100 dark:odd:bg-white/20">
-//               {row.getVisibleCells().map((cell) => {
-//                 return (
-//                   <td key={cell.id} className="px-2">
-//                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
-//                   </td>
-//                 );
-//               })}
-//             </tr>
-//           );
-//         })}
-//       </tbody>
-//     </table>
+//     <Table>
+//       <TableBody>
+//         {table.getRowModel().rows.map((row) => (
+//           <TableRow key={row.id}>
+//             {row.getVisibleCells().map((cell) => (
+//               <TableCell key={cell.id} className="px-2 py-1">
+//                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
+//               </TableCell>
+//             ))}
+//           </TableRow>
+//         ))}
+//       </TableBody>
+//     </Table>
 //   );
 // }
 
@@ -293,17 +275,19 @@ function FilterCheckbox({ row }: { row: Row<CatalogHierarchyNode> }) {
   const metadata = node.data;
   const is_required = metadata.required === true;
   const can_remove = !is_required;
-  const remove_filter = useRemoveFilter(node);
-  const add_filter = useAddFilter(node);
+  const add_column = useAddColumn();
+  const add_filter = useAddFilter();
+  const remove_filter = useRemoveFilter();
 
-  const names = useFilterNames();
-  const is_active = names.has(hash);
+  const filter_ids = useFilterIDs();
+  const is_active = filter_ids.has(hash);
 
   const on_click = () => {
     if (is_active && can_remove) {
-      remove_filter();
+      remove_filter(node);
     } else {
-      add_filter();
+      add_column(hash);
+      add_filter(node);
     }
   };
 

@@ -63,7 +63,7 @@ function CatalogCellContents() {
   const catalog_id = useCatalogID();
 
   return (
-    <Card className="w-[min(1000px,90dvw)] @container/cell">
+    <Card className="w-[min(1500px,90dvw)] @container/cell">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Catalog</CardTitle>
         <Button variant="outline" className="flex flex-row gap-x-2">
