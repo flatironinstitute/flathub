@@ -46,30 +46,27 @@ function wrap_catalog_response(catalog_response: CatalogResponse) {
     root,
     (d) => d?.sub ?? []
   );
-  const node_to_hash = new Map<CatalogHierarchyNode, string>();
-  const hash_to_node = new Map<string, CatalogHierarchyNode>();
+  const node_to_id = new Map<CatalogHierarchyNode, string>();
+  const id_to_node = new Map<string, CatalogHierarchyNode>();
   const depth_first: Array<CatalogHierarchyNode> = [];
   const initial_column_ids: Set<string> = new Set();
   const initial_filter_ids: Set<string> = new Set();
   hierarchy.eachBefore((node) => {
-    const hash = tiny_json_hash(node.data);
-    node_to_hash.set(node, hash);
-    hash_to_node.set(hash, node);
+    const id = `${node.data.name}_${tiny_json_hash(node.data)}`;
+    node_to_id.set(node, id);
+    id_to_node.set(id, node);
     if (!is_root_node(node)) depth_first.push(node);
     if (node.height === 0 && node.data.disp === true)
-      initial_column_ids.add(hash);
+      initial_column_ids.add(id);
     if (node.height === 0 && `required` in node.data)
-      initial_filter_ids.add(hash);
+      initial_filter_ids.add(id);
   });
-  const get_hash_from_node = (node: CatalogHierarchyNode) =>
-    node_to_hash.get(node);
-  const get_node_from_hash = (hash: string) => hash_to_node.get(hash);
   const wrapper: CatalogMetadataWrapper = {
     response: catalog_response,
     hierarchy,
     depth_first,
-    get_hash_from_node,
-    get_node_from_hash,
+    get_id_from_node: (node) => node_to_id.get(node),
+    get_node_from_id: (id) => id_to_node.get(id),
     initial_column_ids,
     initial_filter_ids
   };

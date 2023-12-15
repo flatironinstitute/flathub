@@ -56,18 +56,31 @@ export function useFilterValues(): Filters {
   return filters;
 }
 
+export function useFilterValuesWithFieldNames(): Filters {
+  const catalog_metadata = useCatalogMetadata();
+  const filters = useFilterValues();
+  const filter_values_with_field_names: Filters = {};
+  for (const [field_id, value] of Object.entries(filters)) {
+    const node = catalog_metadata?.get_node_from_id(field_id);
+    if (node) {
+      filter_values_with_field_names[node.data.name] = value;
+    }
+  }
+  return filter_values_with_field_names;
+}
+
 export function useSetFilterValue() {
   const catalog_cell_id = useCatalogCellID();
   const catalog_id = useCatalogID();
   const merge_state = useMergeState();
   const catalog_metadata = useCatalogMetadata();
   return (node: CatalogHierarchyNode, value: FilterValueRaw) => {
-    const field_hash = catalog_metadata.get_hash_from_node(node);
+    const field_id = catalog_metadata.get_id_from_node(node);
     merge_state({
       filter_values: {
         [catalog_cell_id]: {
           [catalog_id]: {
-            [field_hash]: value
+            [field_id]: value
           }
         }
       }
@@ -81,18 +94,18 @@ export function useClearFilterValue() {
   const set_app_state = useSetAppState();
   const catalog_metadata = useCatalogMetadata();
   return (node: CatalogHierarchyNode) => {
-    const field_hash = catalog_metadata.get_hash_from_node(node);
+    const field_id = catalog_metadata.get_id_from_node(node);
     set_app_state((obj) => {
       lodash_merge<AppState, AppState>(obj, {
         filter_values: {
           [catalog_cell_id]: {
             [catalog_id]: {
-              [field_hash]: null
+              [field_id]: null
             }
           }
         }
       });
-      delete obj.filter_values[catalog_cell_id][catalog_id][field_hash];
+      delete obj.filter_values[catalog_cell_id][catalog_id][field_id];
     });
   };
 }
@@ -103,12 +116,12 @@ export function useAddFilter() {
   const merge_state = useMergeState();
   const catalog_metadata = useCatalogMetadata();
   return (node: CatalogHierarchyNode) => {
-    const field_hash = catalog_metadata.get_hash_from_node(node);
+    const field_id = catalog_metadata.get_id_from_node(node);
     merge_state({
       show_filters: {
         [catalog_cell_id]: {
           [catalog_id]: {
-            [field_hash]: true
+            [field_id]: true
           }
         }
       }
@@ -122,25 +135,25 @@ export function useRemoveFilter() {
   const set_app_state = useSetAppState();
   const catalog_metadata = useCatalogMetadata();
   return (node: CatalogHierarchyNode) => {
-    const field_hash = catalog_metadata.get_hash_from_node(node);
+    const field_id = catalog_metadata.get_id_from_node(node);
     set_app_state((obj) => {
       lodash_merge<AppState, AppState>(obj, {
         show_filters: {
           [catalog_cell_id]: {
             [catalog_id]: {
-              [field_hash]: false
+              [field_id]: false
             }
           }
         },
         filter_values: {
           [catalog_cell_id]: {
             [catalog_id]: {
-              [field_hash]: null
+              [field_id]: null
             }
           }
         }
       });
-      delete obj.filter_values[catalog_cell_id][catalog_id][field_hash];
+      delete obj.filter_values[catalog_cell_id][catalog_id][field_id];
     });
   };
 }

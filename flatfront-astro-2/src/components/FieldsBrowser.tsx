@@ -30,7 +30,7 @@ import { Badge } from "@/components/ui/badge";
 import { useCatalogMetadata } from "@/components/contexts/CatalogMetadataContext";
 import {
   useAddColumn,
-  useColumns,
+  useColumnIDs,
   useSetColumns
 } from "@/components/contexts/ColumnsContext";
 import { log } from "@/utils";
@@ -101,7 +101,7 @@ export function FieldsBrowser() {
       expanded,
       globalFilter: search_string
     },
-    getRowId: (row) => catalog_metadata?.get_hash_from_node(row),
+    getRowId: (row) => catalog_metadata?.get_id_from_node(row),
     getSubRows: (row) => row.children,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -236,17 +236,19 @@ function RowExpandButton<T>({ row }: { row: Row<T> }) {
 
 function ColumnCheckbox({ row }: { row: Row<CatalogHierarchyNode> }) {
   const is_leaf = row.subRows.length === 0;
-  const columns = useColumns();
+  const column_ids = useColumnIDs();
   const set_columns = useSetColumns();
   const leaves = row.getLeafRows().filter((d) => d.subRows.length === 0);
   const leaves_selected = (() => {
     if (leaves.length === 0) return `none`;
-    const num_selected = leaves.filter((leaf) => columns.has(leaf.id)).length;
+    const num_selected = leaves.filter((leaf) =>
+      column_ids.has(leaf.id)
+    ).length;
     if (num_selected === leaves.length) return `all`;
     if (num_selected > 0) return `some`;
     return `none`;
   })();
-  const checked = is_leaf ? columns.has(row.id) : leaves_selected === `all`;
+  const checked = is_leaf ? column_ids.has(row.id) : leaves_selected === `all`;
   const indeterminate = leaves_selected === `some`;
   const toggle_handler = () => {
     if (is_leaf) {
@@ -271,7 +273,7 @@ function FilterCheckbox({ row }: { row: Row<CatalogHierarchyNode> }) {
   const is_leaf = row.subRows.length === 0;
 
   const node = row.original;
-  const hash = useCatalogMetadata()?.get_hash_from_node(node);
+  const field_id = useCatalogMetadata()?.get_id_from_node(node);
   const metadata = node.data;
   const is_required = metadata.required === true;
   const can_remove = !is_required;
@@ -280,13 +282,13 @@ function FilterCheckbox({ row }: { row: Row<CatalogHierarchyNode> }) {
   const remove_filter = useRemoveFilter();
 
   const filter_ids = useFilterIDs();
-  const is_active = filter_ids.has(hash);
+  const is_active = filter_ids.has(field_id);
 
   const on_click = () => {
     if (is_active && can_remove) {
       remove_filter(node);
     } else {
-      add_column(hash);
+      add_column(field_id);
       add_filter(node);
     }
   };

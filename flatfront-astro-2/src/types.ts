@@ -50,8 +50,8 @@ export type CatalogMetadataWrapper = {
   response: CatalogResponse;
   hierarchy: CatalogHierarchyNode;
   depth_first: Array<CatalogHierarchyNode>;
-  get_hash_from_node: (node: CatalogHierarchyNode) => string;
-  get_node_from_hash: (hash: string) => CatalogHierarchyNode;
+  get_id_from_node: (node: CatalogHierarchyNode) => string;
+  get_node_from_id: (id: string) => CatalogHierarchyNode;
   initial_column_ids: Set<string>;
   initial_filter_ids: Set<string>;
 };
@@ -67,6 +67,9 @@ export type FieldType =
   | `ENUMERABLE_INTEGER`
   | `ARRAY`
   | `STRING`;
+
+export type DataResponse = Array<DataRow>;
+export type DataRow = Record<string, any>;
 
 // ===========================================
 // SCHEMA

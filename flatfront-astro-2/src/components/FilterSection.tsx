@@ -49,7 +49,7 @@ import {
   CommandList
 } from "@/components/ui/command";
 import {
-  useColumns,
+  useColumnIDs,
   useSetColumns
 } from "@/components/contexts/ColumnsContext";
 
@@ -64,17 +64,17 @@ const useFieldNode = () => {
 };
 
 export function AddFilterDropdown() {
-  const columns = useColumns();
+  const column_ids = useColumnIDs();
   const filter_ids = useFilterIDs();
   const catalog_metadata = useCatalogMetadata();
-  const available_filters = [...columns]
-    .map((hash) => {
+  const available_filters = [...column_ids]
+    .map((column_id) => {
       if (!catalog_metadata) return null;
-      const is_active = filter_ids.has(hash);
-      const node = catalog_metadata?.get_node_from_hash(hash);
+      const is_active = filter_ids.has(column_id);
+      const node = catalog_metadata?.get_node_from_id(column_id);
       const titles = get_field_titles(node);
       return {
-        hash,
+        column_id,
         node,
         label: titles.join(` `),
         display_label: <FieldTitles titles={titles} />,
@@ -117,20 +117,22 @@ export function AddFilterDropdown() {
           <CommandList>
             <CommandEmpty>No filters found.</CommandEmpty>
             <CommandGroup>
-              {available_filters.map(({ hash, node, label, display_label }) => (
-                <CommandItem
-                  key={hash}
-                  value={label}
-                  data-label={label}
-                  onSelect={() => {
-                    add_filter(node);
-                    setOpen(false);
-                  }}
-                  className="flex gap-x-2"
-                >
-                  {display_label}
-                </CommandItem>
-              ))}
+              {available_filters.map(
+                ({ column_id, node, label, display_label }) => (
+                  <CommandItem
+                    key={column_id}
+                    value={label}
+                    data-label={label}
+                    onSelect={() => {
+                      add_filter(node);
+                      setOpen(false);
+                    }}
+                    className="flex gap-x-2"
+                  >
+                    {display_label}
+                  </CommandItem>
+                )
+              )}
             </CommandGroup>
           </CommandList>
         </Command>
@@ -146,18 +148,18 @@ export function FilterSection() {
   const filter_nodes = leaves.filter((node) => {
     // Exclude if is root node
     if (node.depth === 0) return false;
-    const hash = catalog_metadata.get_hash_from_node(node);
+    const filter_id = catalog_metadata.get_id_from_node(node);
     // Include if this node is in the filters list
-    if (filter_ids.has(hash)) return true;
+    if (filter_ids.has(filter_id)) return true;
     // Exclude otherwise
     return false;
   });
   return (
     <div className="grid gap-4 @xl/cell:grid-cols-2 @4xl/cell:grid-cols-3">
       {filter_nodes.map((node, index) => {
-        const hash = catalog_metadata.get_hash_from_node(node);
+        const filter_id = catalog_metadata.get_id_from_node(node);
         return (
-          <FieldNodeContext.Provider value={node} key={hash}>
+          <FieldNodeContext.Provider value={node} key={filter_id}>
             <FilterCard />
           </FieldNodeContext.Provider>
         );
@@ -247,10 +249,10 @@ function RangeFilterControl() {
   const metadata = field_node.data;
   assert_numeric_field_stats(metadata);
   const field_type = get_field_type(metadata);
-  const field_id = metadata.name;
   const filters = useFilterValues();
+  const field_id = useCatalogMetadata().get_id_from_node(field_node);
+  const filter_value_raw: FilterValueRaw = filters[field_id] ?? null;
 
-  const filter_value_raw: FilterValueRaw = filters[field_id];
   const { min, max } = metadata.stats;
 
   const low = is_numeric_filter_value(filter_value_raw)
@@ -388,9 +390,9 @@ function NumberInput({
 function SelectFilterControl() {
   const field_node = useFieldNode();
   const metadata = field_node.data;
-  const field_hash = useCatalogMetadata().get_hash_from_node(field_node);
+  const field_id = useCatalogMetadata().get_id_from_node(field_node);
   const filters = useFilterValues();
-  const filter_value_raw: FilterValueRaw = filters[field_hash] ?? null;
+  const filter_value_raw: FilterValueRaw = filters[field_id] ?? null;
   const options = [
     { text: `All`, value: null, value_as_string: String(null) },
     ...join_enums(metadata)

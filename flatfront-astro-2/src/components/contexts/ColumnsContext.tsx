@@ -7,34 +7,47 @@ import {
 import { useCatalogMetadata } from "./CatalogMetadataContext";
 import type { RowSelectionState } from "@tanstack/react-table";
 
-const ColumnsContext = React.createContext<Set<string>>(new Set());
+const ColumnIDsContext = React.createContext<Set<string>>(new Set());
 
 export function ColumnsProvider({ children }) {
   const catalog_id = useCatalogID();
   const catalog_cell_id = useCatalogCellID();
   const catalog_metadata_wrapper = useCatalogMetadata();
   const app_state = useAppState();
-  const column_ids_set: Set<string> =
+  const column_ids: Set<string> =
     catalog_metadata_wrapper?.initial_column_ids ?? new Set();
   const user_selected_columns =
     app_state.show_columns?.[catalog_cell_id]?.[catalog_id] ?? {};
   for (const [field_id, selected] of Object.entries(user_selected_columns)) {
     if (selected) {
-      column_ids_set.add(field_id);
+      column_ids.add(field_id);
     } else {
-      column_ids_set.delete(field_id);
+      column_ids.delete(field_id);
     }
   }
   return (
-    <ColumnsContext.Provider value={column_ids_set}>
+    <ColumnIDsContext.Provider value={column_ids}>
       {children}
-    </ColumnsContext.Provider>
+    </ColumnIDsContext.Provider>
   );
 }
 
-export function useColumns(): Set<string> {
-  const columns = React.useContext(ColumnsContext);
-  return columns;
+export function useColumnIDs(): Set<string> {
+  const column_ids = React.useContext(ColumnIDsContext);
+  return column_ids;
+}
+
+export function useColumnNames(): Set<string> {
+  const catalog_metadata_wrapper = useCatalogMetadata();
+  const columns_ids = useColumnIDs();
+  const column_field_names = new Set<string>();
+  for (const column_id of columns_ids) {
+    const node = catalog_metadata_wrapper?.get_node_from_id(column_id);
+    if (node) {
+      column_field_names.add(node.data.name);
+    }
+  }
+  return column_field_names;
 }
 
 export function useSetColumns() {
@@ -54,9 +67,9 @@ export function useSetColumns() {
 
 export function useAddColumn() {
   const set_columns = useSetColumns();
-  return (hash: string) => {
+  return (field_id: string) => {
     set_columns({
-      [hash]: true
+      [field_id]: true
     });
   };
 }

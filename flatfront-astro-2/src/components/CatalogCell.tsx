@@ -3,7 +3,19 @@ import * as d3 from "d3";
 import clsx from "clsx";
 
 import { useQuery } from "@tanstack/react-query";
+import { Trash2 } from "lucide-react";
 import { fetch_api_get, format, log } from "@/utils";
+import {
+  CatalogCellIDProvider,
+  useCatalogCellID,
+  useCatalogID
+} from "@/components/contexts/CatalogCellIDContext";
+import { CatalogMetadataProvider } from "@/components/contexts/CatalogMetadataContext";
+import { useMergeState } from "@/components/contexts/AppStateContext";
+import { useCatalogMetadata } from "@/components/contexts/CatalogMetadataContext";
+import { ColumnsProvider } from "@/components/contexts/ColumnsContext";
+import { FiltersProvider } from "@/components/contexts/FiltersContext";
+import { RandomProvider } from "@/components/contexts/RandomContext";
 import {
   CardContent,
   Card,
@@ -31,19 +43,9 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Katex } from "@/components/ui/katex";
 import { Button } from "@/components/ui/button";
-import {
-  CatalogCellIDProvider,
-  useCatalogCellID,
-  useCatalogID
-} from "@/components/contexts/CatalogCellIDContext";
-import { CatalogMetadataProvider } from "@/components/contexts/CatalogMetadataContext";
-import { useMergeState } from "@/components/contexts/AppStateContext";
-import { useCatalogMetadata } from "@/components/contexts/CatalogMetadataContext";
-import { ColumnsProvider } from "@/components/contexts/ColumnsContext";
-import { FiltersProvider } from "@/components/contexts/FiltersContext";
 import { FieldsBrowser } from "@/components/FieldsBrowser";
 import { AddFilterDropdown, FilterSection } from "@/components/FilterSection";
-import { Trash2 } from "lucide-react";
+import { TableSection } from "@/components/TableSection";
 
 export function CatalogCell({ id: catalog_cell_id }: { id: CellID.Catalog }) {
   return (
@@ -51,7 +53,9 @@ export function CatalogCell({ id: catalog_cell_id }: { id: CellID.Catalog }) {
       <CatalogMetadataProvider>
         <ColumnsProvider>
           <FiltersProvider>
-            <CatalogCellContents />
+            <RandomProvider>
+              <CatalogCellContents />
+            </RandomProvider>
           </FiltersProvider>
         </ColumnsProvider>
       </CatalogMetadataProvider>
@@ -102,6 +106,7 @@ function CatalogCellContents() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div>results</div>
+        <TableSection />
       </CardContent>
     </Card>
   );
