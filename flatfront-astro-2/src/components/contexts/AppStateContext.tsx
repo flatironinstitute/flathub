@@ -74,6 +74,7 @@ function get_data_from_url<T>(key: string): T | undefined {
   const compressed = url.searchParams.get(key);
   if (compressed && compressed.length > 0) {
     const data = decompress_data<T>(compressed);
+    log(`Retrieved ${key} data from URL:`, data);
     return data;
   }
   return undefined;
