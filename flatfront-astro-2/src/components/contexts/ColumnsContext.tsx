@@ -3,7 +3,7 @@ import { useAppState, useMergeState } from "./AppStateContext";
 import {
   useCatalogCellID,
   useCatalogID
-} from "@/components/contexts/CatalogCellIDContext";
+} from "@/components/contexts/CatalogIDContext";
 import { useCatalogMetadata } from "./CatalogMetadataContext";
 import type { RowSelectionState } from "@tanstack/react-table";
 

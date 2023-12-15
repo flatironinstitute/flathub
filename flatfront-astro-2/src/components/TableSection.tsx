@@ -26,7 +26,7 @@ import {
   log
 } from "@/utils";
 
-import { useCatalogID } from "@/components/contexts/CatalogCellIDContext";
+import { useCatalogID } from "@/components/contexts/CatalogIDContext";
 import {
   useColumnNames,
   useColumnIDs

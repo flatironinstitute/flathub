@@ -12,7 +12,7 @@ import lodash_merge from "lodash.merge";
 import {
   useCatalogCellID,
   useCatalogID
-} from "@/components/contexts/CatalogCellIDContext";
+} from "@/components/contexts/CatalogIDContext";
 import { useCatalogMetadata } from "./CatalogMetadataContext";
 import { useAppState, useMergeState, useSetAppState } from "./AppStateContext";
 

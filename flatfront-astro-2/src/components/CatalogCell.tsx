@@ -6,10 +6,10 @@ import { useQuery } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
 import { fetch_api_get, format, log } from "@/utils";
 import {
-  CatalogCellIDProvider,
+  CatalogIDProvider,
   useCatalogCellID,
   useCatalogID
-} from "@/components/contexts/CatalogCellIDContext";
+} from "@/components/contexts/CatalogIDContext";
 import { CatalogMetadataProvider } from "@/components/contexts/CatalogMetadataContext";
 import { useMergeState } from "@/components/contexts/AppStateContext";
 import { useCatalogMetadata } from "@/components/contexts/CatalogMetadataContext";
@@ -49,7 +49,7 @@ import { TableSection } from "@/components/TableSection";
 
 export function CatalogCell({ id: catalog_cell_id }: { id: CellID.Catalog }) {
   return (
-    <CatalogCellIDProvider value={catalog_cell_id}>
+    <CatalogIDProvider value={catalog_cell_id}>
       <CatalogMetadataProvider>
         <ColumnsProvider>
           <FiltersProvider>
@@ -59,7 +59,7 @@ export function CatalogCell({ id: catalog_cell_id }: { id: CellID.Catalog }) {
           </FiltersProvider>
         </ColumnsProvider>
       </CatalogMetadataProvider>
-    </CatalogCellIDProvider>
+    </CatalogIDProvider>
   );
 }
 

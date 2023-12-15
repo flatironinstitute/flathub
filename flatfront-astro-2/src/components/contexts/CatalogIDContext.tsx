@@ -3,11 +3,11 @@ import type { CellID } from "@/types";
 import React from "react";
 import { useAppState } from "./AppStateContext";
 
-const CatalogCellIDContext = React.createContext<CellID.Catalog | undefined>(
+const CatalogIDContext = React.createContext<CellID.Catalog | undefined>(
   undefined
 );
 
-export function CatalogCellIDProvider({
+export function CatalogIDProvider({
   children,
   value: catalog_cell_id
 }: {
@@ -15,14 +15,14 @@ export function CatalogCellIDProvider({
   value: CellID.Catalog;
 }) {
   return (
-    <CatalogCellIDContext.Provider value={catalog_cell_id}>
+    <CatalogIDContext.Provider value={catalog_cell_id}>
       {children}
-    </CatalogCellIDContext.Provider>
+    </CatalogIDContext.Provider>
   );
 }
 
 export function useCatalogCellID() {
-  const catalog_cell_id = React.useContext(CatalogCellIDContext);
+  const catalog_cell_id = React.useContext(CatalogIDContext);
   return catalog_cell_id;
 }
 
