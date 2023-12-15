@@ -4,9 +4,12 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetch_api_post, format } from "@/utils";
 import { useCatalogID } from "@/components/contexts/CatalogIDContext";
-import { useFilterValues } from "./FiltersContext";
-import { useRandomConfig } from "./RandomContext";
-import { useCatalogMetadata } from "./CatalogMetadataContext";
+import {
+  useFilterValues,
+  useFilterValuesWithFieldNames
+} from "@/components/contexts/FiltersContext";
+import { useRandomConfig } from "@/components/contexts/RandomContext";
+import { useCatalogMetadata } from "@/components/contexts/CatalogMetadataContext";
 
 const MatchingRowsContext = React.createContext<number | undefined>(undefined);
 
@@ -16,7 +19,7 @@ export function MatchingRowsProvider({
   children: React.ReactNode;
 }) {
   const catalog_id = useCatalogID();
-  const filters = useFilterValues();
+  const filters = useFilterValuesWithFieldNames();
   const random_config = useRandomConfig();
   const request_body: CountRequestBody = {
     ...filters,

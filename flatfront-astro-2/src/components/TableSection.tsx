@@ -36,7 +36,10 @@ import {
   useFilterValuesWithFieldNames
 } from "@/components/contexts/FiltersContext";
 import { useRandomConfig } from "@/components/contexts/RandomContext";
-import { useMatchingRows } from "@/components/contexts/MatchingRowsContext";
+import {
+  useMatchingRows,
+  useMatchingRowsText
+} from "@/components/contexts/MatchingRowsContext";
 
 import { ScrollArea } from "./ui/scroll-area";
 import { ArrowDownAZ, ArrowUpAZ, Download, Info } from "lucide-react";
@@ -72,11 +75,12 @@ import {
 } from "./ui/select";
 
 export function TableSection() {
+  const matching_rows = useMatchingRowsText();
   return (
     <SortProvider>
       <div className="space-y-4">
+        <div>{matching_rows}</div>
         <TableParent />
-        {/* <DownloadSection /> */}
       </div>
     </SortProvider>
   );

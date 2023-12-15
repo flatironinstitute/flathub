@@ -14,8 +14,9 @@ export type AppState = {
     Record<CatalogID, { sample?: number; seed?: number }>
   >;
   set_catalog?: Record<CellID.Catalog, CatalogID>;
-  add_plot?: Record<CellID.Catalog, Record<PlotID, boolean>>;
-  set_plot_type?: Record<PlotID, PlotType>;
+  plots?: Record<CellID.Catalog, Record<PlotID, PlotType>>;
+  // add_plot?: Record<CellID.Catalog, Record<PlotID, boolean>>;
+  // set_plot_type?: Record<PlotID, PlotType>;
   set_plot_control?: Record<PlotID, Record<CatalogID, Record<string, any>>>;
   show_columns?: Record<
     CellID.Catalog,
@@ -40,6 +41,14 @@ export namespace CellID {
   export type Comparison = `comparison_cell_${number}`;
   export type Any = Catalog | Comparison;
 }
+
+export type PlotWrapper = {
+  key: PlotType;
+  label: string;
+  order: number;
+  Plot: React.FC;
+  Controls: React.FC;
+};
 
 export type PlotType = string;
 export type PlotID = `plot_${number}`;

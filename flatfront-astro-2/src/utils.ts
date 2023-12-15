@@ -3,9 +3,11 @@ import * as d3 from "d3";
 import { twMerge } from "tailwind-merge";
 import type {
   CatalogHierarchyNode,
+  CellID,
   FieldMetadata,
   FieldType,
-  FilterValueRaw
+  FilterValueRaw,
+  PlotID
 } from "@/types";
 
 export const FLATHUB_API_BASE_URL = `https://flathub.flatironinstitute.org`;
@@ -220,4 +222,34 @@ export function assert_numeric_field_stats(metadata: FieldMetadata) {
   if (metadata.stats.min === metadata.stats.max) {
     throw new Error(`Numeric field has min === max: ${metadata.name}`);
   }
+}
+
+export function is_catalog_cell_id(
+  cell_id: CellID.Any | null
+): cell_id is CellID.Catalog {
+  return cell_id?.match(/^catalog_cell_/) ? true : false;
+}
+
+export function is_plot_id(id: string): id is PlotID {
+  return id?.match(/^plot_\d+/) ? true : false;
+}
+
+export function is_defined(value: any): boolean {
+  return typeof value !== `undefined`;
+}
+
+export function assert_defined<T>(value: T | undefined): asserts value is T {
+  if (!is_defined(value)) throw new Error(`Expected value to be defined`);
+}
+
+export function assert_catalog_cell_id(
+  cell_id: CellID.Any | undefined
+): asserts cell_id is CellID.Catalog {
+  assert_defined(cell_id);
+  if (!is_catalog_cell_id(cell_id))
+    throw new Error(`${cell_id} is not a catalog cell id`);
+}
+
+export function assert_plot_id(id: string): asserts id is PlotID {
+  if (!is_plot_id(id)) throw new Error(`${id} is not a plot id`);
 }

@@ -16,6 +16,7 @@ import { useCatalogMetadata } from "@/components/contexts/CatalogMetadataContext
 import { ColumnsProvider } from "@/components/contexts/ColumnsContext";
 import { FiltersProvider } from "@/components/contexts/FiltersContext";
 import { RandomProvider } from "@/components/contexts/RandomContext";
+import { MatchingRowsProvider } from "./contexts/MatchingRowsContext";
 import {
   CardContent,
   Card,
@@ -46,6 +47,7 @@ import { Button } from "@/components/ui/button";
 import { FieldsBrowser } from "@/components/FieldsBrowser";
 import { AddFilterDropdown, FilterSection } from "@/components/FilterSection";
 import { TableSection } from "@/components/TableSection";
+import { PlotSection } from "@/components/PlotSection";
 
 export function CatalogCell({ id: catalog_cell_id }: { id: CellID.Catalog }) {
   return (
@@ -54,7 +56,9 @@ export function CatalogCell({ id: catalog_cell_id }: { id: CellID.Catalog }) {
         <ColumnsProvider>
           <FiltersProvider>
             <RandomProvider>
-              <CatalogCellContents />
+              <MatchingRowsProvider>
+                <CatalogCellContents />
+              </MatchingRowsProvider>
             </RandomProvider>
           </FiltersProvider>
         </ColumnsProvider>
@@ -105,8 +109,28 @@ function CatalogCellContents() {
         <CardTitle>Results</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div>results</div>
         <TableSection />
+      </CardContent>
+      <Separator />
+      <CardHeader>
+        <CardTitle>Plots</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <PlotSection />
+      </CardContent>
+      <Separator />
+      <CardHeader>
+        <CardTitle>Download</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div>download</div>
+      </CardContent>
+      <Separator />
+      <CardHeader>
+        <CardTitle>Python</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div>python</div>
       </CardContent>
     </Card>
   );
