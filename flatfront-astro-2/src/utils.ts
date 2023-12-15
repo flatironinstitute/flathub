@@ -221,17 +221,3 @@ export function assert_numeric_field_stats(metadata: FieldMetadata) {
     throw new Error(`Numeric field has min === max: ${metadata.name}`);
   }
 }
-
-export function is_numeric_filter_value(
-  filter_value: FilterValueRaw
-): filter_value is { gte: number; lte: number } {
-  if (filter_value === null) return false;
-  if (typeof filter_value !== `object`) return false;
-  if (!(`gte` in filter_value) || !(`lte` in filter_value)) return false;
-  if (
-    typeof filter_value.gte !== `number` ||
-    typeof filter_value.lte !== `number`
-  )
-    return false;
-  return true;
-}

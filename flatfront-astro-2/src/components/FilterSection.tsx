@@ -10,8 +10,8 @@ import {
   get_field_titles,
   get_field_type,
   is_leaf_node,
-  is_numeric_filter_value,
-  join_enums
+  join_enums,
+  log
 } from "@/utils";
 import { useCatalogMetadata } from "@/components/contexts/CatalogMetadataContext";
 import {
@@ -255,13 +255,15 @@ function RangeFilterControl() {
 
   const { min, max } = metadata.stats;
 
-  const low = is_numeric_filter_value(filter_value_raw)
-    ? filter_value_raw.gte
-    : min;
+  const low =
+    typeof filter_value_raw === `object` && `gte` in filter_value_raw
+      ? filter_value_raw.gte
+      : min;
 
-  const high = is_numeric_filter_value(filter_value_raw)
-    ? filter_value_raw.lte
-    : max;
+  const high =
+    typeof filter_value_raw === `object` && `lte` in filter_value_raw
+      ? filter_value_raw.lte
+      : max;
 
   const set_filter_value = useSetFilterValue();
 
