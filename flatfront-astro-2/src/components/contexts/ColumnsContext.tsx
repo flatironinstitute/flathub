@@ -1,23 +1,18 @@
 import React from "react";
 import { useAppState, useMergeState } from "./AppStateContext";
-import {
-  useCatalogCellID,
-  useCatalogID
-} from "@/components/contexts/CatalogIDContext";
+import { useCatalogCellID } from "@/components/contexts/CatalogIDContext";
 import { useCatalogMetadata } from "./CatalogMetadataContext";
 import type { RowSelectionState } from "@tanstack/react-table";
 
 const ColumnIDsContext = React.createContext<Set<string>>(new Set());
 
 export function ColumnsProvider({ children }) {
-  const catalog_id = useCatalogID();
   const catalog_cell_id = useCatalogCellID();
   const catalog_metadata_wrapper = useCatalogMetadata();
   const app_state = useAppState();
   const column_ids: Set<string> =
     catalog_metadata_wrapper?.initial_column_ids ?? new Set();
-  const user_selected_columns =
-    app_state.show_columns?.[catalog_cell_id]?.[catalog_id] ?? {};
+  const user_selected_columns = app_state.show_columns?.[catalog_cell_id] ?? {};
   for (const [field_id, selected] of Object.entries(user_selected_columns)) {
     if (selected) {
       column_ids.add(field_id);

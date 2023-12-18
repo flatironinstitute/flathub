@@ -245,7 +245,7 @@ function RangeFilterControl() {
   const field_type = get_field_type(metadata);
   const filters = useFilterValues();
   const field_id = useCatalogMetadata().get_id_from_node(field_node);
-  const filter_value_raw: FilterValueRaw = filters[field_id] ?? null;
+  const filter_value_raw: FilterValueRaw = filters[field_id] ?? undefined;
 
   const { min, max } = metadata.stats;
 

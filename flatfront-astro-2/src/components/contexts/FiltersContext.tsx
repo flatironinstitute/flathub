@@ -8,10 +8,7 @@ import type {
 
 import React from "react";
 import lodash_merge from "lodash.merge";
-import {
-  useCatalogCellID,
-  useCatalogID
-} from "@/components/contexts/CatalogIDContext";
+import { useCatalogCellID } from "@/components/contexts/CatalogIDContext";
 import { useCatalogMetadata } from "./CatalogMetadataContext";
 import { useAppState, useMergeState, useSetAppState } from "./AppStateContext";
 
@@ -69,7 +66,6 @@ export function useFilterValuesWithFieldNames(): Filters {
 
 export function useSetFilterValue() {
   const catalog_cell_id = useCatalogCellID();
-  const catalog_id = useCatalogID();
   const merge_state = useMergeState();
   const catalog_metadata = useCatalogMetadata();
   return (node: CatalogHierarchyNode, value: FilterValueRaw) => {
@@ -77,9 +73,7 @@ export function useSetFilterValue() {
     merge_state({
       filter_values: {
         [catalog_cell_id]: {
-          [catalog_id]: {
-            [field_id]: value
-          }
+          [field_id]: value
         }
       }
     });
@@ -88,7 +82,6 @@ export function useSetFilterValue() {
 
 export function useClearFilterValue() {
   const catalog_cell_id = useCatalogCellID();
-  const catalog_id = useCatalogID();
   const set_app_state = useSetAppState();
   const catalog_metadata = useCatalogMetadata();
   return (node: CatalogHierarchyNode) => {
@@ -97,13 +90,11 @@ export function useClearFilterValue() {
       lodash_merge<AppState, AppState>(obj, {
         filter_values: {
           [catalog_cell_id]: {
-            [catalog_id]: {
-              [field_id]: null
-            }
+            [field_id]: null
           }
         }
       });
-      delete obj.filter_values[catalog_cell_id][catalog_id][field_id];
+      delete obj.filter_values[catalog_cell_id][field_id];
     });
   };
 }
@@ -126,7 +117,6 @@ export function useAddFilter() {
 
 export function useRemoveFilter() {
   const catalog_cell_id = useCatalogCellID();
-  const catalog_id = useCatalogID();
   const set_app_state = useSetAppState();
   const catalog_metadata = useCatalogMetadata();
   return (node: CatalogHierarchyNode) => {
@@ -144,7 +134,7 @@ export function useRemoveFilter() {
           }
         }
       });
-      delete obj.filter_values[catalog_cell_id][catalog_id][field_id];
+      delete obj.filter_values[catalog_cell_id][field_id];
     });
   };
 }
