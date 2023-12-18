@@ -28,6 +28,6 @@ export function useCatalogCellID() {
 
 export function useCatalogID(): string {
   const catalog_cell_id = useCatalogCellID();
-  const catalog_id = useAppState()?.set_catalog?.[catalog_cell_id];
+  const catalog_id = useAppState()?.catalog_ids?.[catalog_cell_id];
   return catalog_id;
 }

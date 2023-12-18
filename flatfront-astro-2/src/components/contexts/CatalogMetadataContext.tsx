@@ -2,7 +2,8 @@ import type {
   CatalogMetadataWrapper,
   CatalogResponse,
   FieldMetadata,
-  CatalogHierarchyNode
+  CatalogHierarchyNode,
+  CatalogID
 } from "@/types";
 
 import React from "react";
@@ -17,11 +18,7 @@ const CatalogMetadataContext = React.createContext<
 
 export function CatalogMetadataProvider({ children }) {
   const catalog_id = useCatalogID();
-  const catalog_query = useQuery({
-    queryKey: [`catalog`, catalog_id],
-    queryFn: (): Promise<CatalogResponse> => fetch_api_get(`/${catalog_id}`),
-    enabled: !!catalog_id
-  });
+  const catalog_query = useCatalogQuery(catalog_id);
   const wrapped = React.useMemo(
     () =>
       catalog_query.data
@@ -35,6 +32,14 @@ export function CatalogMetadataProvider({ children }) {
       {children}
     </CatalogMetadataContext.Provider>
   );
+}
+
+export function useCatalogQuery(catalog_id: CatalogID) {
+  return useQuery({
+    queryKey: [`catalog`, catalog_id],
+    queryFn: (): Promise<CatalogResponse> => fetch_api_get(`/${catalog_id}`),
+    enabled: !!catalog_id
+  });
 }
 
 function wrap_catalog_response(catalog_response: CatalogResponse) {
