@@ -5,18 +5,15 @@ import { ChevronDown, Trash2 } from "lucide-react";
 import * as d3 from "d3";
 import {
   assert_numeric_field_stats,
-  cn,
   format,
   get_field_titles,
   get_field_type,
   is_leaf_node,
-  join_enums,
-  log
+  join_enums
 } from "@/utils";
 import { useCatalogMetadata } from "@/components/contexts/CatalogMetadataContext";
 import {
   useAddFilter,
-  useClearFilterValue,
   useFilterIDs,
   useFilterValues,
   useRemoveFilter,
@@ -48,10 +45,7 @@ import {
   CommandItem,
   CommandList
 } from "@/components/ui/command";
-import {
-  useColumnIDs,
-  useSetColumns
-} from "@/components/contexts/ColumnsContext";
+import { useColumnIDs } from "@/components/contexts/ColumnsContext";
 
 const FieldNodeContext = React.createContext(null);
 
@@ -156,7 +150,7 @@ export function FilterSection() {
   });
   return (
     <div className="grid gap-4 @xl/cell:grid-cols-2 @4xl/cell:grid-cols-3">
-      {filter_nodes.map((node, index) => {
+      {filter_nodes.map((node) => {
         const filter_id = catalog_metadata.get_id_from_node(node);
         return (
           <FieldNodeContext.Provider value={node} key={filter_id}>

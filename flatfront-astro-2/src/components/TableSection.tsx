@@ -22,8 +22,7 @@ import {
   format,
   get_field_type,
   is_leaf_node,
-  is_root_node,
-  log
+  is_root_node
 } from "@/utils";
 
 import { useCatalogID } from "@/components/contexts/CatalogIDContext";
@@ -31,10 +30,7 @@ import {
   useColumnNames,
   useColumnIDs
 } from "@/components/contexts/ColumnsContext";
-import {
-  useFilterValues,
-  useFilterValuesWithFieldNames
-} from "@/components/contexts/FiltersContext";
+import { useFilterValuesWithFieldNames } from "@/components/contexts/FiltersContext";
 import { useRandomConfig } from "@/components/contexts/RandomContext";
 import {
   useMatchingRows,
@@ -69,7 +65,6 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue
 } from "./ui/select";

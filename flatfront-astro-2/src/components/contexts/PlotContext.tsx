@@ -6,11 +6,8 @@ import {
   useAppState,
   useMergeState
 } from "@/components/contexts/AppStateContext";
-import {
-  useCatalogCellID,
-  useCatalogID
-} from "@/components/contexts/CatalogIDContext";
-import { assert_plot_id, assert_catalog_cell_id } from "@/utils";
+import { useCatalogCellID } from "@/components/contexts/CatalogIDContext";
+import { assert_catalog_cell_id } from "@/utils";
 
 const PlotIDContext = React.createContext<PlotID | undefined>(undefined);
 
@@ -42,22 +39,18 @@ export function usePlotType() {
 
 export function usePlotState() {
   const plot_id = usePlotID();
-  const catalog_id = useCatalogID();
-  const plot_state = useAppState()?.set_plot_control?.[plot_id]?.[catalog_id];
+  const plot_state = useAppState()?.plot_controls?.[plot_id];
   return plot_state;
 }
 
 export function useSetPlotControl() {
   const plot_id = usePlotID();
-  const catalog_id = useCatalogID();
   const merge_state = useMergeState();
   return (plot_control_key: string, value: any) => {
     merge_state({
-      set_plot_control: {
+      plot_controls: {
         [plot_id]: {
-          [catalog_id]: {
-            [plot_control_key]: value
-          }
+          [plot_control_key]: value
         }
       }
     });
@@ -83,9 +76,9 @@ export function useAddPlot() {
 export function useRemovePlot() {
   const catalog_cell_id = useCatalogCellID();
   assert_catalog_cell_id(catalog_cell_id);
-  const merge_state = useMergeState();
+  // const merge_state = useMergeState();
   return (id: PlotID) => {
-    console.log("delete cplot");
+    console.log("delete plot", id);
   };
   // merge_state({ add_plot: { [catalog_cell_id]: { [id]: false } } });
 }

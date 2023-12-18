@@ -15,10 +15,8 @@ const RandomContext = React.createContext<
 
 export function RandomProvider({ children }) {
   const catalog_cell_id = useCatalogCellID();
-  const catalog_id = useCatalogID();
   const app_state = useAppState();
-  const random_config =
-    app_state?.set_random_sample?.[catalog_cell_id]?.[catalog_id];
+  const random_config = app_state?.random_sample?.[catalog_cell_id];
 
   return (
     <RandomContext.Provider value={random_config}>
@@ -39,11 +37,9 @@ export function useSetRandomConfig() {
   return (key: `sample` | `seed`, value: number) => {
     if (!catalog_id) return;
     merge_state({
-      set_random_sample: {
+      random_sample: {
         [catalog_cell_id]: {
-          [catalog_id]: {
-            [key]: value
-          }
+          [key]: value
         }
       }
     });

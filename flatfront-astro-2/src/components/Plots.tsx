@@ -491,7 +491,7 @@ export const Scatterplot3D: PlotWrapper = {
   Plot() {
     const catalog_id = useCatalogID();
     const filters = useFilterValues();
-    const random_config = useRandomConfig();
+    // const random_config = useRandomConfig();
     const plot_state = usePlotState();
 
     const x_axis = useAxisConfig(`x_axis`);
@@ -848,10 +848,10 @@ function usePlotQuery<RequestType, ResponseType>({
 }
 
 function LabelledPlotControl({
-  label,
-  plotControlKey,
-  placeholder,
-  showLogSwitch
+  // label,
+  // plotControlKey,
+  // placeholder,
+  // showLogSwitch
 }: {
   label: string;
   plotControlKey: string;
@@ -862,6 +862,7 @@ function LabelledPlotControl({
 }
 
 function StatusBox({ children }: { children: React.ReactNode }) {
+  children;
   return <div>status box</div>;
 }
 
@@ -872,6 +873,8 @@ function Labelled({
   children: React.ReactNode;
   label: string;
 }) {
+  children;
+  label;
   return <div>labelled</div>;
 }
 

@@ -1,6 +1,5 @@
 import React from "react";
 import * as d3 from "d3";
-import type { PlotID } from "@/types";
 import {
   PlotIDProvider,
   useAddPlot,
@@ -11,16 +10,6 @@ import { Separator } from "./ui/separator";
 import { H4 } from "./ui/h4";
 import { Trash2 } from "lucide-react";
 import * as Plots from "./Plots";
-import { log } from "@/utils";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from "./ui/select";
-import { Label } from "./ui/label";
 import {
   Popover,
   PopoverClose,
@@ -40,7 +29,7 @@ export function PlotSection() {
 }
 
 function AddPlot() {
-  const add_plot = useAddPlot();
+  // const add_plot = useAddPlot();
   return (
     <Popover>
       <PopoverTrigger asChild>

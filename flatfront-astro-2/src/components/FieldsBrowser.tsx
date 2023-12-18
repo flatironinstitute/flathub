@@ -10,7 +10,6 @@ import {
   getCoreRowModel,
   getExpandedRowModel,
   flexRender,
-  type RowSelectionState,
   type Table as TableType,
   getFilteredRowModel
 } from "@tanstack/react-table";
@@ -19,13 +18,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Katex } from "@/components/ui/katex";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useCatalogMetadata } from "@/components/contexts/CatalogMetadataContext";
 import {
@@ -33,7 +26,6 @@ import {
   useColumnIDs,
   useSetColumns
 } from "@/components/contexts/ColumnsContext";
-import { log } from "@/utils";
 import {
   useAddFilter,
   useFilterIDs,

@@ -52,14 +52,11 @@ export function useColumnNames(): Set<string> {
 
 export function useSetColumns() {
   const catalog_cell_id = useCatalogCellID();
-  const catalog_id = useCatalogID();
   const merge_state = useMergeState();
   return (rows_object: RowSelectionState) => {
     merge_state({
       show_columns: {
-        [catalog_cell_id]: {
-          [catalog_id]: rows_object
-        }
+        [catalog_cell_id]: rows_object
       }
     });
   };

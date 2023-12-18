@@ -4,7 +4,7 @@ import renderMathInElement from "katex/contrib/auto-render";
 export const Katex = React.forwardRef<
   HTMLSpanElement,
   React.HTMLAttributes<HTMLSpanElement>
->(({ children, ...props }, forwarded_ref) => {
+>(({ children, ...props }) => {
   const ref = React.useRef<HTMLSpanElement>(null);
   React.useEffect(() => {
     if (ref.current !== null) {

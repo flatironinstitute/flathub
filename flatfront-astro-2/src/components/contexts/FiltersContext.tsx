@@ -2,7 +2,6 @@ import type {
   AppState,
   CatalogHierarchyNode,
   FieldID,
-  FieldMetadata,
   FilterValueRaw,
   Filters
 } from "@/types";
@@ -21,13 +20,12 @@ const FilterValuesContext = React.createContext(null);
 
 export function FiltersProvider({ children }) {
   const catalog_cell_id = useCatalogCellID();
-  const catalog_id = useCatalogID();
   const catalog_metadata = useCatalogMetadata();
   const app_state = useAppState();
   const filter_ids_set: Set<string> =
     catalog_metadata?.initial_filter_ids ?? new Set<string>();
   const show_filters_config: Record<FieldID, boolean> =
-    app_state?.show_filters?.[catalog_cell_id]?.[catalog_id] ?? {};
+    app_state?.show_filters?.[catalog_cell_id] ?? {};
   for (const [key, value] of Object.entries(show_filters_config)) {
     if (value) {
       filter_ids_set.add(key);
@@ -36,7 +34,7 @@ export function FiltersProvider({ children }) {
     }
   }
   const filter_state: Filters =
-    app_state?.filter_values?.[catalog_cell_id]?.[catalog_id] ?? {};
+    app_state?.filter_values?.[catalog_cell_id] ?? {};
   return (
     <FilterIDsContext.Provider value={filter_ids_set}>
       <FilterValuesContext.Provider value={filter_state}>
@@ -112,7 +110,6 @@ export function useClearFilterValue() {
 
 export function useAddFilter() {
   const catalog_cell_id = useCatalogCellID();
-  const catalog_id = useCatalogID();
   const merge_state = useMergeState();
   const catalog_metadata = useCatalogMetadata();
   return (node: CatalogHierarchyNode) => {
@@ -120,9 +117,7 @@ export function useAddFilter() {
     merge_state({
       show_filters: {
         [catalog_cell_id]: {
-          [catalog_id]: {
-            [field_id]: true
-          }
+          [field_id]: true
         }
       }
     });
@@ -140,16 +135,12 @@ export function useRemoveFilter() {
       lodash_merge<AppState, AppState>(obj, {
         show_filters: {
           [catalog_cell_id]: {
-            [catalog_id]: {
-              [field_id]: false
-            }
+            [field_id]: false
           }
         },
         filter_values: {
           [catalog_cell_id]: {
-            [catalog_id]: {
-              [field_id]: null
-            }
+            [field_id]: null
           }
         }
       });

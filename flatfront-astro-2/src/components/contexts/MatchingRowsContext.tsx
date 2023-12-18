@@ -4,10 +4,7 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetch_api_post, format } from "@/utils";
 import { useCatalogID } from "@/components/contexts/CatalogIDContext";
-import {
-  useFilterValues,
-  useFilterValuesWithFieldNames
-} from "@/components/contexts/FiltersContext";
+import { useFilterValuesWithFieldNames } from "@/components/contexts/FiltersContext";
 import { useRandomConfig } from "@/components/contexts/RandomContext";
 import { useCatalogMetadata } from "@/components/contexts/CatalogMetadataContext";
 
