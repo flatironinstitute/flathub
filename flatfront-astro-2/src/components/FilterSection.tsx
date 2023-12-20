@@ -57,6 +57,33 @@ const useFieldNode = () => {
   return field_node;
 };
 
+export function FilterSection() {
+  const filter_ids = useFilterIDs();
+  const catalog_metadata = useCatalogMetadata();
+  const leaves = catalog_metadata?.hierarchy?.leaves() ?? [];
+  const filter_nodes = leaves.filter((node) => {
+    // Exclude if is root node
+    if (node.depth === 0) return false;
+    const filter_id = catalog_metadata.get_id_from_node(node);
+    // Include if this node is in the filters list
+    if (filter_ids.has(filter_id)) return true;
+    // Exclude otherwise
+    return false;
+  });
+  return (
+    <div className="grid gap-4 @xl/cell:grid-cols-2 @4xl/cell:grid-cols-3">
+      {filter_nodes.map((node) => {
+        const filter_id = catalog_metadata.get_id_from_node(node);
+        return (
+          <FieldNodeContext.Provider value={node} key={filter_id}>
+            <FilterCard />
+          </FieldNodeContext.Provider>
+        );
+      })}
+    </div>
+  );
+}
+
 export function AddFilterDropdown() {
   const column_ids = useColumnIDs();
   const filter_ids = useFilterIDs();
@@ -132,33 +159,6 @@ export function AddFilterDropdown() {
         </Command>
       </PopoverContent>
     </Popover>
-  );
-}
-
-export function FilterSection() {
-  const filter_ids = useFilterIDs();
-  const catalog_metadata = useCatalogMetadata();
-  const leaves = catalog_metadata?.hierarchy?.leaves() ?? [];
-  const filter_nodes = leaves.filter((node) => {
-    // Exclude if is root node
-    if (node.depth === 0) return false;
-    const filter_id = catalog_metadata.get_id_from_node(node);
-    // Include if this node is in the filters list
-    if (filter_ids.has(filter_id)) return true;
-    // Exclude otherwise
-    return false;
-  });
-  return (
-    <div className="grid gap-4 @xl/cell:grid-cols-2 @4xl/cell:grid-cols-3">
-      {filter_nodes.map((node) => {
-        const filter_id = catalog_metadata.get_id_from_node(node);
-        return (
-          <FieldNodeContext.Provider value={node} key={filter_id}>
-            <FilterCard />
-          </FieldNodeContext.Provider>
-        );
-      })}
-    </div>
   );
 }
 
@@ -263,6 +263,9 @@ function RangeFilterControl() {
 
   const [internal_low, set_internal_low] = React.useState<number>(low);
   const [internal_high, set_internal_high] = React.useState<number>(high);
+
+  React.useEffect(() => set_internal_low(low), [low]);
+  React.useEffect(() => set_internal_high(high), [high]);
 
   const debounce = 500;
   const debounced_low = useDebounce(internal_low, debounce ?? 0);
@@ -421,7 +424,7 @@ function SelectFilterControl() {
         set_filter_value(field_node, value);
       }}
     >
-      <SelectTrigger className="whitespace-nowrap text-[min(4.6cqi,1rem)]">
+      <SelectTrigger className="whitespace-nowrap text-[clamp(0.8rem,4.6cqi,1rem)]">
         <SelectValue />
       </SelectTrigger>
       <SelectContent position="popper">
