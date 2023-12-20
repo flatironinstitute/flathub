@@ -1,23 +1,28 @@
 import React from "react";
+import { Trash2 } from "lucide-react";
 import * as d3 from "d3";
 import {
   PlotIDProvider,
   useAddPlot,
+  usePlotType,
   usePlotsArray
 } from "@/components/contexts/PlotContext";
 import { Button } from "@/components/ui/button";
-import { Separator } from "./ui/separator";
-import { H4 } from "./ui/h4";
-import { Trash2 } from "lucide-react";
-import * as Plots from "./Plots";
+import { Separator } from "@/components/ui/separator";
+import { H4 } from "@/components/ui/h4";
 import {
   Popover,
   PopoverClose,
   PopoverContent,
   PopoverTrigger
-} from "./ui/popover";
+} from "@/components/ui/popover";
+import * as Plots from "@/components/Plots";
 
 const plot_wrappers = d3.sort(Object.values(Plots), (d) => d.order);
+
+const plot_key_to_label = new Map(
+  plot_wrappers.map(({ key, label }) => [key, label])
+);
 
 export function PlotSection() {
   return (
@@ -29,7 +34,7 @@ export function PlotSection() {
 }
 
 function AddPlot() {
-  // const add_plot = useAddPlot();
+  const add_plot = useAddPlot();
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -40,13 +45,7 @@ function AddPlot() {
           {plot_wrappers.map(({ key, label }) => {
             return (
               <PopoverClose key={key} asChild>
-                <Button
-                  onClick={() => {
-                    console.log("haha");
-                  }}
-                >
-                  {label}
-                </Button>
+                <Button onClick={() => add_plot(key)}>{label}</Button>
               </PopoverClose>
             );
           })}
@@ -54,70 +53,6 @@ function AddPlot() {
       </PopoverContent>
     </Popover>
   );
-  //   <div className="space-y-2">
-  //   <Label>Add Plot</Label>
-  //   <div className="grid gap-4 @2xl/cell:grid-cols-5 ">
-  // {plot_wrappers.map(({ key, label }) => {
-  //   return <Button key={key}>{label}</Button>;
-  // })}
-  //   </div>
-  // </div>
-  // const items = plot_wrappers.map(({ key, label }) => {
-  //   return (
-  //     <SelectItem key={key} value={key}>
-  //       {label}
-  //     </SelectItem>
-  //   );
-  // });
-  // return (
-  //   <Select
-  //     value={value}
-  //     onValueChange={(plot_type) => {
-  //       // merge_state({
-  //       //   set_catalog: {
-  //       //     [catalog_cell_id]: catalog_id
-  //       //   }
-  //       // });
-  //       console.log({ plot_type });
-  //       set_value(undefined);
-  //     }}
-  //   >
-  //     <SelectTrigger className="max-w-[40ch]">
-  //       <SelectValue placeholder={`Add plot`} />
-  //     </SelectTrigger>
-  //     <SelectContent position="popper">
-  //       <SelectGroup>{items}</SelectGroup>
-  //     </SelectContent>
-  //   </Select>
-  // );
-  // return <div> add</div>;
-  // return (
-  //   <Select
-  //     disabled={!ready}
-  //     value={selected?.name}
-  //     onValueChange={(catalog_id) => {
-  //       merge_state({
-  //         set_catalog: {
-  //           [catalog_cell_id]: catalog_id
-  //         }
-  //       });
-  //     }}
-  //   >
-  //     <SelectTrigger className="max-w-[40ch] disabled:cursor-wait">
-  //       <SelectValue
-  //         placeholder={ready ? `Select a catalog...` : `Loading catalogs...`}
-  //       />
-  //     </SelectTrigger>
-  //     <SelectContent position="popper">
-  //       <SelectGroup>{items}</SelectGroup>
-  //     </SelectContent>
-  //   </Select>
-  // );
-  // return (
-  //   <Button variant="outline" onClick={() => add_plot()}>
-  //     Add Plot
-  //   </Button>
-  // );
 }
 
 function PlotsList() {
@@ -127,7 +62,7 @@ function PlotsList() {
       <React.Fragment key={plot_id}>
         {index === 0 ? null : <Separator />}
         <PlotIDProvider value={plot_id}>
-          <Plot index={index} />
+          <PlotWrapper index={index} />
         </PlotIDProvider>
       </React.Fragment>
     );
@@ -135,14 +70,24 @@ function PlotsList() {
   return <>{plot_components}</>;
 }
 
-function Plot({ index }: { index: number }) {
+function PlotWrapper({ index }: { index: number }) {
+  const plot_key = usePlotType();
+  const label = plot_key_to_label.get(plot_key);
+  const wrapper = plot_wrappers.find(({ key }) => key === plot_key);
+  const { Plot, Controls } = wrapper;
   return (
-    <div className="flex items-center justify-between">
-      <H4>Plot {index + 1}</H4>
-      <Button className="flex gap-x-2">
-        <Trash2 />
-        Remove
-      </Button>
-    </div>
+    <>
+      <div className="flex items-center justify-between">
+        <H4>
+          Plot {index + 1}: {label}
+        </H4>
+        <Button className="flex gap-x-2">
+          <Trash2 />
+          Remove
+        </Button>
+      </div>
+      <Controls />
+      <Plot />
+    </>
   );
 }

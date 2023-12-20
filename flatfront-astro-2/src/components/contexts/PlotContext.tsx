@@ -32,8 +32,9 @@ export function usePlotID() {
 }
 
 export function usePlotType() {
+  const catalog_cell_id = useCatalogCellID();
   const plot_id = usePlotID();
-  const plot_type = useAppState()?.plots?.[plot_id];
+  const plot_type = useAppState()?.plots?.[catalog_cell_id]?.[plot_id];
   return plot_type;
 }
 
