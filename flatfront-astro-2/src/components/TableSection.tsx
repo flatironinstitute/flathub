@@ -1,11 +1,15 @@
 import React from "react";
-
+import { ArrowDownAZ, ArrowUpAZ, Download } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import {
-  useQuery,
-  useQueryClient,
-  type UseQueryOptions,
-  type UseQueryResult
-} from "@tanstack/react-query";
+  useReactTable,
+  type AccessorColumnDef,
+  type ColumnDef,
+  type GroupColumnDef,
+  getCoreRowModel,
+  flexRender,
+  type RowData
+} from "@tanstack/react-table";
 
 import type {
   CatalogHierarchyNode,
@@ -32,23 +36,13 @@ import {
 } from "@/components/contexts/ColumnsContext";
 import { useFilterValuesWithFieldNames } from "@/components/contexts/FiltersContext";
 import { useRandomConfig } from "@/components/contexts/RandomContext";
+import { useCatalogMetadata } from "@/components/contexts/CatalogMetadataContext";
 import {
   useMatchingRows,
   useMatchingRowsText
 } from "@/components/contexts/MatchingRowsContext";
 
-import { ScrollArea } from "./ui/scroll-area";
-import { ArrowDownAZ, ArrowUpAZ, Download, Info } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
-import {
-  useReactTable,
-  type AccessorColumnDef,
-  type ColumnDef,
-  type GroupColumnDef,
-  getCoreRowModel,
-  flexRender,
-  type RowData
-} from "@tanstack/react-table";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Katex } from "@/components/ui/katex";
 import {
   Table,
@@ -58,8 +52,7 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
-import { useCatalogMetadata } from "./contexts/CatalogMetadataContext";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -67,7 +60,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue
-} from "./ui/select";
+} from "@/components/ui/select";
+import { StatusBox } from "@/components/StatusBox";
 
 export function TableSection() {
   const matching_rows = useMatchingRowsText();
@@ -451,38 +445,6 @@ function construct_table_columns({
   if (!("columns" in root)) throw new Error(`root.columns is not defined`);
   const columns = root?.columns ?? [];
   return columns;
-}
-
-function StatusBox({
-  query,
-  queryKey: query_key
-}: {
-  query: UseQueryResult;
-  queryKey: UseQueryOptions[`queryKey`];
-}) {
-  const query_client = useQueryClient();
-  const title = query.isFetching ? `Loading...` : `No Data`;
-  const description = query.isFetching ? (
-    <button
-      onClick={() => {
-        query_client.cancelQueries({ queryKey: query_key });
-      }}
-      className="cursor-pointer underline"
-    >
-      Cancel
-    </button>
-  ) : (
-    `There is no data to display.`
-  );
-  return (
-    <div className="grid h-[200px] items-center justify-center bg-secondary">
-      <Alert>
-        <Info className="h-4 w-4" />
-        <AlertTitle>{title}</AlertTitle>
-        <AlertDescription>{description}</AlertDescription>
-      </Alert>
-    </div>
-  );
 }
 
 type TableSort = { field: string; order: `asc` | `desc` };
