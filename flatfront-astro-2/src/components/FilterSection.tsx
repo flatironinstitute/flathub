@@ -46,6 +46,7 @@ import {
   CommandList
 } from "@/components/ui/command";
 import { useColumnIDs } from "@/components/contexts/ColumnsContext";
+import { FieldTitles } from "./FieldTitles";
 
 const FieldNodeContext = React.createContext(null);
 
@@ -159,16 +160,6 @@ export function AddFilterDropdown() {
         </Command>
       </PopoverContent>
     </Popover>
-  );
-}
-
-function FieldTitles({ titles }: { titles: string[] }) {
-  return (
-    <>
-      {titles.map((title, index) => (
-        <Katex key={`${title}-${index}`}>{title}</Katex>
-      ))}
-    </>
   );
 }
 
