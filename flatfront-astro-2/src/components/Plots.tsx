@@ -1,12 +1,5 @@
-import React from "react";
-import {
-  useQuery,
-  useQueryClient,
-  type UseQueryOptions
-} from "@tanstack/react-query";
 import * as d3 from "d3";
 import * as Plot from "@observablehq/plot";
-import lodash_merge from "lodash.merge";
 import type {
   DataPostRequestBody,
   DataResponse,
@@ -14,19 +7,25 @@ import type {
   HistogramResponse,
   PlotWrapper
 } from "@/types";
-import { log, fetch_api_post } from "@/utils";
 import { useCatalogID } from "@/components/contexts/CatalogIDContext";
 import { useRandomConfig } from "@/components/contexts/RandomContext";
-import { useFilterValues } from "@/components/contexts/FiltersContext";
-import { useCatalogMetadata } from "@/components/contexts/CatalogMetadataContext";
+import { useFilterValuesWithFieldNames } from "@/components/contexts/FiltersContext";
 import { usePlotState } from "@/components/contexts/PlotContext";
-// import {
-//   LabelledPlotControl,
-//   Labelled,
-//   LogModeCheckbox
-// } from "./PlotPrimitives";
+
 import { HighchartsPlot } from "./HighchartsPlot";
 import { ObservablePlot } from "./ObservablePlot";
+import {
+  get_highcharts_options,
+  get_observable_options,
+  LabelledPlotControl,
+  LogCountControl,
+  StatusWrapper,
+  StatusWrapper2,
+  useAxisConfig,
+  usePlotQuery,
+  XAxisControl,
+  YAxisControl
+} from "./PlotHelpers";
 
 export const Histogram: PlotWrapper = {
   key: `histogram`,
@@ -34,30 +33,27 @@ export const Histogram: PlotWrapper = {
   order: 0,
   Plot() {
     const catalog_id = useCatalogID();
-    const filters = useFilterValues();
+    const filters = useFilterValuesWithFieldNames();
     const random_config = useRandomConfig();
 
-    const field_config = useAxisConfig(`field`);
-    const count_config = useAxisConfig(`count`);
-
-    const enable_request =
-      Boolean(catalog_id) && field_config.ready_for_request;
+    const x_axis = useAxisConfig(`x_axis`);
+    const count_axis = useAxisConfig(`count`);
 
     const query = usePlotQuery<HistogramPostRequestBody, HistogramResponse>({
       path: `/${catalog_id}/histogram`,
       body: {
         fields: [
           {
-            field: field_config.field_id,
+            field: x_axis.field_id,
             size: 100,
-            log: field_config.log_mode
+            log: x_axis.log_mode
           }
         ] as any,
         ...filters,
         ...random_config
       },
       label: `Histogram`,
-      enabled: enable_request
+      enabled: x_axis.ready_for_request
     });
 
     const sizes = query.data?.sizes ?? [0, 0];
@@ -66,60 +62,61 @@ export const Histogram: PlotWrapper = {
       if (!query.data) return [];
       return query.data.buckets.map(({ key: [x], count }) => {
         const x1 = +x;
-        const x2 = field_config.log_mode ? x1 * sizes[0] : x1 + sizes[0];
-        return { x1, x2, count };
+        const x2 = x_axis.log_mode ? x1 * sizes[0] : x1 + sizes[0];
+        const mid = (x1 + x2) / 2;
+        return { x1, x2, x: mid, count };
       });
-    })();
-
-    const status = (() => {
-      if (field_config.log_mode_error_message) {
-        return field_config.log_mode_error_message;
-      } else if (query.isFetching) {
-        return <LoadingBox />;
-      } else if (!(data_munged.length > 0)) {
-        return `No data.`;
-      } else {
-        return null;
-      }
     })();
 
     const plot_options: Plot.PlotOptions = get_observable_options({
       x: {
-        label: field_config.field_id,
-        type: field_config.log_mode ? `log` : `linear`
+        label: x_axis.field_id,
+        type: x_axis.log_mode ? `log` : `linear`
       },
       y: {
         label: `Count`,
-        type: count_config.log_mode ? `log` : `linear`
+        type: count_axis.log_mode ? `log` : `linear`
       },
       marks: [
-        Plot.rectY(data_munged, {
-          x1: `x1`,
-          x2: `x2`,
-          y: `count`,
-          insetRight: 1,
-          insetLeft: 1,
-          tip: true
+        // Plot.rectY(data_munged, {
+        //   x1: `x1`,
+        //   x2: `x2`,
+        //   y1: 1,
+        //   y2: `count`,
+        //   insetRight: 1,
+        //   insetLeft: 1,
+        //   tip: true
+        // }),
+        Plot.dot(data_munged, {
+          x: `x`,
+          y: `count`
+        }),
+        Plot.line(data_munged, {
+          x: `x`,
+          y: `count`
         })
       ]
     });
 
-    const plot = Plot.plot(plot_options);
-
     return (
-      <StatusWrapper status={status}>
-        <ObservablePlot plot={plot} />
-      </StatusWrapper>
+      <StatusWrapper2
+        message={!x_axis.field_id && `Choose a field`}
+        axes={[x_axis]}
+        query={query}
+        noData={data_munged.length === 0}
+      >
+        <ObservablePlot plot={Plot.plot(plot_options)} />
+      </StatusWrapper2>
     );
   },
   Controls() {
     return (
       <>
         <LabelledPlotControl
-          label="Field"
-          plotControlKey="field"
+          label="X-Axis"
+          plotControlKey="x_axis"
           placeholder="Choose field..."
-          showLogSwitch={true}
+          showLogSwitch
         />
         <LogCountControl />
       </>
@@ -133,7 +130,7 @@ export const Heatmap: PlotWrapper = {
   order: 2,
   Plot() {
     const catalog_id = useCatalogID();
-    const filters = useFilterValues();
+    const filters = useFilterValuesWithFieldNames();
     const random_config = useRandomConfig();
 
     const x_axis = useAxisConfig(`x_axis`);
@@ -171,22 +168,6 @@ export const Heatmap: PlotWrapper = {
       });
     })();
 
-    const status = (() => {
-      if (x_axis.log_mode_error_message) {
-        return x_axis.log_mode_error_message;
-      } else if (y_axis.log_mode_error_message) {
-        return y_axis.log_mode_error_message;
-      } else if (query.isFetching) {
-        return <LoadingBox />;
-      } else if (!(data_munged.length > 0)) {
-        return `No data.`;
-      } else {
-        return null;
-      }
-    })();
-
-    // const is_dark_mode = useIsDarkMode();
-
     const plot_options: Plot.PlotOptions = get_observable_options({
       color: {
         type: `sequential`,
@@ -217,20 +198,23 @@ export const Heatmap: PlotWrapper = {
       ]
     });
 
-    const plot = Plot.plot(plot_options);
-
-    const legend = Plot.legend({
-      style: {
-        background: `transparent`
-      },
-      color: plot_options.color
-    });
-
     return (
-      <StatusWrapper status={status}>
-        <ObservablePlot plot={plot} />
-        <ObservablePlot className="flex justify-center" plot={legend} />
-      </StatusWrapper>
+      <StatusWrapper2
+        axes={[x_axis, y_axis]}
+        query={query}
+        noData={data_munged.length === 0}
+      >
+        <ObservablePlot plot={Plot.plot(plot_options)} />
+        <ObservablePlot
+          className="flex justify-center"
+          plot={Plot.legend({
+            style: {
+              background: `transparent`
+            },
+            color: plot_options.color
+          })}
+        />
+      </StatusWrapper2>
     );
   },
   Controls() {
@@ -249,7 +233,7 @@ export const BoxPlot: PlotWrapper = {
   order: 3.1,
   Plot() {
     const catalog_id = useCatalogID();
-    const filters = useFilterValues();
+    const filters = useFilterValuesWithFieldNames();
     const random_config = useRandomConfig();
 
     const x_axis = useAxisConfig(`x_axis`);
@@ -305,7 +289,7 @@ export const BoxPlot: PlotWrapper = {
       } else if (y_axis.log_mode_error_message) {
         return y_axis.log_mode_error_message;
       } else if (query.isFetching) {
-        return <LoadingBox />;
+        return `Loading...`;
       } else if (!(data_munged.length > 0)) {
         return `No data.`;
       } else {
@@ -369,7 +353,7 @@ export const BoxPlot: PlotWrapper = {
     const plot = Plot.plot(plot_options);
 
     return (
-      <StatusWrapper status={status}>
+      <StatusWrapper>
         <ObservablePlot plot={plot} />
       </StatusWrapper>
     );
@@ -390,7 +374,7 @@ export const Scatterplot: PlotWrapper = {
   order: 5,
   Plot() {
     const catalog_id = useCatalogID();
-    const filters = useFilterValues();
+    const filters = useFilterValuesWithFieldNames();
     const plot_state = usePlotState();
 
     const x_axis = useAxisConfig(`x_axis`);
@@ -436,7 +420,7 @@ export const Scatterplot: PlotWrapper = {
       } else if (y_axis.log_mode_error_message) {
         return y_axis.log_mode_error_message;
       } else if (query.isFetching) {
-        return <LoadingBox />;
+        return `Loading...`;
       } else if (!(data_munged.length > 0)) {
         return `No data.`;
       } else {
@@ -469,7 +453,7 @@ export const Scatterplot: PlotWrapper = {
     const plot = Plot.plot(plot_options);
 
     return (
-      <StatusWrapper status={status}>
+      <StatusWrapper>
         <ObservablePlot plot={plot} />
       </StatusWrapper>
     );
@@ -490,7 +474,7 @@ export const Scatterplot3D: PlotWrapper = {
   order: 6,
   Plot() {
     const catalog_id = useCatalogID();
-    const filters = useFilterValues();
+    const filters = useFilterValuesWithFieldNames();
     // const random_config = useRandomConfig();
     const plot_state = usePlotState();
 
@@ -546,7 +530,7 @@ export const Scatterplot3D: PlotWrapper = {
       } else if (z_axis.log_mode_error_message) {
         return z_axis.log_mode_error_message;
       } else if (query.isFetching) {
-        return <LoadingBox />;
+        return `Loading...`;
       } else if (!(data_munged.length > 0)) {
         return `No data.`;
       } else {
@@ -555,7 +539,7 @@ export const Scatterplot3D: PlotWrapper = {
     })();
 
     return (
-      <StatusWrapper status={status}>
+      <StatusWrapper>
         <HighchartsPlot
           options={get_highcharts_options({
             chart: {
@@ -618,266 +602,3 @@ export const Scatterplot3D: PlotWrapper = {
     );
   }
 };
-
-function XAxisControl() {
-  return (
-    <LabelledPlotControl
-      label="X-Axis"
-      plotControlKey="x_axis"
-      placeholder="Choose X-Axis..."
-      showLogSwitch={true}
-    />
-  );
-}
-
-function YAxisControl() {
-  return (
-    <LabelledPlotControl
-      label="Y-Axis"
-      plotControlKey="y_axis"
-      placeholder="Choose Y-Axis..."
-      showLogSwitch={true}
-    />
-  );
-}
-
-function LogCountControl() {
-  return (
-    <Labelled label="Count: Log Scale">
-      <LogModeCheckbox plotControlkey="count" />
-    </Labelled>
-  );
-}
-
-function LoadingBox({
-  queryKey: query_key = [`plot-data`]
-}: {
-  queryKey?: UseQueryOptions[`queryKey`];
-}) {
-  const query_client = useQueryClient();
-  return (
-    <div className="space-y-2">
-      <div>Loading...</div>
-      <button
-        onClick={() => {
-          query_client.cancelQueries({ queryKey: query_key });
-        }}
-        className="cursor-pointer underline"
-      >
-        Cancel
-      </button>
-    </div>
-  );
-}
-
-function StatusWrapper({
-  status,
-  children
-}: {
-  status: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="relative">
-      {status && <StatusBox>{status}</StatusBox>}
-      {children}
-    </div>
-  );
-}
-
-function get_observable_options(opts: Plot.PlotOptions = {}): Plot.PlotOptions {
-  const aspect = 640 / 400;
-  const width = 700;
-  const height = width / aspect;
-  const base: Plot.PlotOptions = {
-    width,
-    height,
-    style: {
-      overflow: `visible`,
-      background: `transparent`,
-      width: `100%`
-    },
-    grid: true,
-    x: {
-      // tickFormat: `.2~e`
-    },
-    y: {
-      tickFormat: `.2~s`,
-      ticks: 5
-    }
-  };
-  return lodash_merge(base, opts);
-}
-
-function get_highcharts_options(
-  opts: Highcharts.Options = {}
-): Highcharts.Options {
-  const base: Highcharts.Options = {
-    chart: {
-      animation: false,
-      styledMode: true
-    },
-    plotOptions: {
-      series: {
-        animation: false
-      }
-    },
-    legend: {
-      enabled: false
-    },
-    title: {
-      text: undefined
-    },
-    credits: {
-      enabled: false
-    },
-    tooltip: {
-      animation: false
-    },
-    exporting: {
-      enabled: true
-    },
-    boost: {
-      enabled: true,
-      useGPUTranslations: true,
-      usePreallocated: true
-    }
-  };
-  return lodash_merge(base, opts);
-}
-
-function useAxisConfig(
-  key: `x_axis` | `y_axis` | `z_axis` | `count` | `field`
-) {
-  const plot_state = usePlotState();
-  const is_log_allowed = useGetIsLogAllowed();
-  const field_id = plot_state?.[key];
-  const log_mode_requested = plot_state?.[`${key}_log_mode`] ?? false;
-  const log_mode_allowed = is_log_allowed(field_id);
-  const log_mode_error = log_mode_requested && !log_mode_allowed;
-  const log_mode = log_mode_requested && log_mode_allowed;
-  const ready_for_request = Boolean(field_id) && !log_mode_error;
-  const log_mode_error_message = log_mode_error
-    ? `Log mode not allowed because "${field_id}" values cross zero.`
-    : null;
-  return {
-    field_id,
-    log_mode,
-    log_mode_error_message,
-    ready_for_request
-  };
-}
-
-function useGetIsLogAllowed(): (field_id: string) => boolean {
-  const get_current_min = useGetCurrentMin();
-  const get_current_max = useGetCurrentMax();
-  return (field_id: string): boolean => {
-    if (!field_id) return true;
-    if (field_id === `count`) return true;
-    const current_min = get_current_min(field_id);
-    const current_max = get_current_max(field_id);
-    if (current_min > 0 && current_max > 0) return true;
-    return false;
-  };
-}
-
-function useGetCurrentMin(): (field_id: string) => number | null {
-  const filters = useFilterValues();
-  const catalog_metadata = useCatalogMetadata();
-  return (field_id: string): number | null => {
-    const filter_value = filters[field_id];
-    const field_stats = catalog_metadata?.hierarchy?.find(
-      (d) => d.data.name === field_id
-    )?.data?.stats;
-    if (!field_id) return null;
-    if (!catalog_metadata) return null;
-    if (typeof filter_value === `object` && `gte` in filter_value) {
-      return Number(filter_value.gte);
-    } else if (field_stats && "min" in field_stats) {
-      return Number(field_stats.min);
-    }
-    throw new Error(`Could not get min for ${field_id}`);
-  };
-}
-
-function useGetCurrentMax(): (field_id: string) => number | null {
-  const filters = useFilterValues();
-  const catalog_metadata = useCatalogMetadata();
-  return (field_id: string): number | null => {
-    const filter_value = filters[field_id];
-    const field_stats = catalog_metadata?.hierarchy?.find(
-      (d) => d.data.name === field_id
-    )?.data?.stats;
-    if (!field_id) return null;
-    if (!catalog_metadata) return null;
-    if (typeof filter_value === `object` && `lte` in filter_value) {
-      return Number(filter_value.lte);
-    } else if (field_stats && "max" in field_stats) {
-      return Number(field_stats.max);
-    }
-    throw new Error(`Could not get max for ${field_id}`);
-  };
-}
-
-function usePlotQuery<RequestType, ResponseType>({
-  path,
-  body,
-  label,
-  enabled
-}: {
-  path: string;
-  body: RequestType;
-  label: string;
-  enabled: boolean;
-}) {
-  return useQuery({
-    queryKey: [`plot-data`, path, body],
-    queryFn: async ({ signal }): Promise<ResponseType> => {
-      const response = await fetch_api_post<RequestType, ResponseType>(
-        path,
-        body,
-        {
-          signal
-        }
-      );
-      log(`${label} query response`, response);
-      return response;
-    },
-    enabled
-  });
-}
-
-function LabelledPlotControl({
-  // label,
-  // plotControlKey,
-  // placeholder,
-  // showLogSwitch
-}: {
-  label: string;
-  plotControlKey: string;
-  placeholder: string;
-  showLogSwitch: boolean;
-}) {
-  return <div>LabelledPlotControl</div>;
-}
-
-function StatusBox({ children }: { children: React.ReactNode }) {
-  children;
-  return <div>status box</div>;
-}
-
-function Labelled({
-  children,
-  label
-}: {
-  children: React.ReactNode;
-  label: string;
-}) {
-  children;
-  label;
-  return <div>labelled</div>;
-}
-
-function LogModeCheckbox({ plotControlkey }: { plotControlkey: string }) {
-  return <div>LogModeCheckbox</div>;
-}

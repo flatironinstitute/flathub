@@ -36,8 +36,8 @@ export function FloatingSection({
   }, []);
   const top = (() => {
     if (!rect) return null;
-    if (rect.height > results_rect.bottom)
-      return results_rect.bottom - rect.height;
+    // if (rect.height > results_rect.bottom)
+    //   return results_rect.bottom - rect.height;
     if (results_rect.top > 0) return results_rect.top;
     return 0;
   })();
@@ -48,7 +48,7 @@ export function FloatingSection({
   return (
     <div
       ref={ref}
-      className="fixed max-w-[500px] space-y-4 p-10"
+      className="fixed max-w-[500px] max-h-[95dvh] overflow-y-scroll space-y-4 p-10"
       style={{
         top: `${top}px`,
         left: `${left}px`,
