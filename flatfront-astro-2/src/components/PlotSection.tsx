@@ -86,7 +86,9 @@ function PlotWrapper({ index }: { index: number }) {
           Remove
         </Button>
       </div>
-      <Controls />
+      <div className="grid @2xl:grid-cols-2 gap-x-4">
+        <Controls />
+      </div>
       <Plot />
     </>
   );
