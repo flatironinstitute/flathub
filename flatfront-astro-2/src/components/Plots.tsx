@@ -19,13 +19,13 @@ import {
   get_observable_options,
   LabelledPlotControl,
   LogCountControl,
-  StatusWrapper,
-  StatusWrapper2,
+  PlotStatusWrapper,
   useAxisConfig,
   usePlotQuery,
   XAxisControl,
   YAxisControl
 } from "./PlotHelpers";
+import { StatusBoxFromQuery } from "./StatusBox";
 
 export const Histogram: PlotWrapper = {
   key: `histogram`,
@@ -39,7 +39,10 @@ export const Histogram: PlotWrapper = {
     const x_axis = useAxisConfig(`x_axis`);
     const count_axis = useAxisConfig(`count`);
 
-    const query = usePlotQuery<HistogramPostRequestBody, HistogramResponse>({
+    const [query, query_key] = usePlotQuery<
+      HistogramPostRequestBody,
+      HistogramResponse
+    >({
       path: `/${catalog_id}/histogram`,
       body: {
         fields: [
@@ -99,14 +102,19 @@ export const Histogram: PlotWrapper = {
     });
 
     return (
-      <StatusWrapper2
-        message={!x_axis.field_id && `Choose a field`}
-        axes={[x_axis]}
-        query={query}
-        noData={data_munged.length === 0}
+      <PlotStatusWrapper
+        status={
+          <StatusBoxFromQuery
+            message={!x_axis.field_id && `Choose a field`}
+            axes={[x_axis]}
+            query={query}
+            queryKey={query_key}
+            noData={data_munged.length === 0}
+          />
+        }
       >
         <ObservablePlot plot={Plot.plot(plot_options)} />
-      </StatusWrapper2>
+      </PlotStatusWrapper>
     );
   },
   Controls() {
@@ -141,7 +149,10 @@ export const Heatmap: PlotWrapper = {
       x_axis.ready_for_request &&
       y_axis.ready_for_request;
 
-    const query = usePlotQuery<HistogramPostRequestBody, HistogramResponse>({
+    const [query, query_key] = usePlotQuery<
+      HistogramPostRequestBody,
+      HistogramResponse
+    >({
       path: `/${catalog_id}/histogram`,
       body: {
         fields: [
@@ -199,10 +210,15 @@ export const Heatmap: PlotWrapper = {
     });
 
     return (
-      <StatusWrapper2
-        axes={[x_axis, y_axis]}
-        query={query}
-        noData={data_munged.length === 0}
+      <PlotStatusWrapper
+        status={
+          <StatusBoxFromQuery
+            axes={[x_axis, y_axis]}
+            query={query}
+            queryKey={query_key}
+            noData={data_munged.length === 0}
+          />
+        }
       >
         <ObservablePlot plot={Plot.plot(plot_options)} />
         <ObservablePlot
@@ -214,7 +230,7 @@ export const Heatmap: PlotWrapper = {
             color: plot_options.color
           })}
         />
-      </StatusWrapper2>
+      </PlotStatusWrapper>
     );
   },
   Controls() {
@@ -244,7 +260,10 @@ export const BoxPlot: PlotWrapper = {
       x_axis.ready_for_request &&
       y_axis.ready_for_request;
 
-    const query = usePlotQuery<HistogramPostRequestBody, HistogramResponse>({
+    const [query, query_key] = usePlotQuery<
+      HistogramPostRequestBody,
+      HistogramResponse
+    >({
       path: `/${catalog_id}/histogram`,
       body: {
         fields: [
@@ -282,22 +301,6 @@ export const BoxPlot: PlotWrapper = {
       const distance = Math.abs(+first?.x - +second?.x);
       return distance * 0.25;
     })();
-
-    const status = (() => {
-      if (x_axis.log_mode_error_message) {
-        return x_axis.log_mode_error_message;
-      } else if (y_axis.log_mode_error_message) {
-        return y_axis.log_mode_error_message;
-      } else if (query.isFetching) {
-        return `Loading...`;
-      } else if (!(data_munged.length > 0)) {
-        return `No data.`;
-      } else {
-        return null;
-      }
-    })();
-
-    // const is_dark_mode = useIsDarkMode();
 
     const plot_options: Plot.PlotOptions = get_observable_options({
       insetLeft: 10,
@@ -350,12 +353,19 @@ export const BoxPlot: PlotWrapper = {
       ]
     });
 
-    const plot = Plot.plot(plot_options);
-
     return (
-      <StatusWrapper>
-        <ObservablePlot plot={plot} />
-      </StatusWrapper>
+      <PlotStatusWrapper
+        status={
+          <StatusBoxFromQuery
+            axes={[x_axis, y_axis]}
+            query={query}
+            queryKey={query_key}
+            noData={data_munged.length === 0}
+          />
+        }
+      >
+        <ObservablePlot plot={Plot.plot(plot_options)} />
+      </PlotStatusWrapper>
     );
   },
   Controls() {
@@ -387,12 +397,9 @@ export const Scatterplot: PlotWrapper = {
     // const sample = Math.min((count * 10) / total_rows, 1);
     const sample = 0.9999;
 
-    const enable_request =
-      Boolean(catalog_id) &&
-      x_axis.ready_for_request &&
-      y_axis.ready_for_request;
+    const enable_request = x_axis.ready_for_request && y_axis.ready_for_request;
 
-    const query = usePlotQuery<DataPostRequestBody, DataResponse>({
+    const [query, query_key] = usePlotQuery<DataPostRequestBody, DataResponse>({
       path: `/${catalog_id}/data`,
       body: {
         object: true,
@@ -412,20 +419,6 @@ export const Scatterplot: PlotWrapper = {
       return query.data.map((datum) => {
         return { x: +datum[x_axis.field_id], y: +datum[y_axis.field_id] };
       });
-    })();
-
-    const status = (() => {
-      if (x_axis.log_mode_error_message) {
-        return x_axis.log_mode_error_message;
-      } else if (y_axis.log_mode_error_message) {
-        return y_axis.log_mode_error_message;
-      } else if (query.isFetching) {
-        return `Loading...`;
-      } else if (!(data_munged.length > 0)) {
-        return `No data.`;
-      } else {
-        return null;
-      }
     })();
 
     const plot_options: Plot.PlotOptions = get_observable_options({
@@ -450,12 +443,19 @@ export const Scatterplot: PlotWrapper = {
       ]
     });
 
-    const plot = Plot.plot(plot_options);
-
     return (
-      <StatusWrapper>
-        <ObservablePlot plot={plot} />
-      </StatusWrapper>
+      <PlotStatusWrapper
+        status={
+          <StatusBoxFromQuery
+            axes={[x_axis, y_axis]}
+            query={query}
+            queryKey={query_key}
+            noData={data_munged.length === 0}
+          />
+        }
+      >
+        <ObservablePlot plot={Plot.plot(plot_options)} />
+      </PlotStatusWrapper>
     );
   },
   Controls() {
@@ -490,12 +490,11 @@ export const Scatterplot3D: PlotWrapper = {
     const sample = 0.9999;
 
     const enable_request =
-      Boolean(catalog_id) &&
       x_axis.ready_for_request &&
       y_axis.ready_for_request &&
       z_axis.ready_for_request;
 
-    const query = usePlotQuery<DataPostRequestBody, DataResponse>({
+    const [query, query_key] = usePlotQuery<DataPostRequestBody, DataResponse>({
       path: `/${catalog_id}/data`,
       body: {
         object: true,
@@ -522,69 +521,62 @@ export const Scatterplot3D: PlotWrapper = {
       });
     })();
 
-    const status = (() => {
-      if (x_axis.log_mode_error_message) {
-        return x_axis.log_mode_error_message;
-      } else if (y_axis.log_mode_error_message) {
-        return y_axis.log_mode_error_message;
-      } else if (z_axis.log_mode_error_message) {
-        return z_axis.log_mode_error_message;
-      } else if (query.isFetching) {
-        return `Loading...`;
-      } else if (!(data_munged.length > 0)) {
-        return `No data.`;
-      } else {
-        return null;
-      }
-    })();
+    const options = get_highcharts_options({
+      chart: {
+        options3d: {
+          enabled: true,
+          alpha: 10,
+          beta: 20,
+          depth: 400,
+          drag: {
+            enabled: true
+          }
+        }
+      },
+      xAxis: {
+        type: x_axis.log_mode ? `logarithmic` : `linear`,
+        title: {
+          text: x_axis.field_id
+        },
+        gridLineWidth: 1
+      },
+      yAxis: {
+        type: y_axis.log_mode ? `logarithmic` : `linear`,
+        title: {
+          text: y_axis.field_id
+        }
+      },
+      zAxis: {
+        type: z_axis.log_mode ? `logarithmic` : `linear`,
+        title: {
+          text: z_axis.field_id
+        }
+      },
+      series: [
+        {
+          type: `scatter3d`,
+          marker: {
+            radius: 1
+          },
+          data: data_munged,
+          turboThreshold: 0
+        }
+      ]
+    });
 
     return (
-      <StatusWrapper>
-        <HighchartsPlot
-          options={get_highcharts_options({
-            chart: {
-              options3d: {
-                enabled: true,
-                alpha: 10,
-                beta: 20,
-                depth: 400,
-                drag: {
-                  enabled: true
-                }
-              }
-            },
-            xAxis: {
-              type: x_axis.log_mode ? `logarithmic` : `linear`,
-              title: {
-                text: x_axis.field_id
-              },
-              gridLineWidth: 1
-            },
-            yAxis: {
-              type: y_axis.log_mode ? `logarithmic` : `linear`,
-              title: {
-                text: y_axis.field_id
-              }
-            },
-            zAxis: {
-              type: z_axis.log_mode ? `logarithmic` : `linear`,
-              title: {
-                text: z_axis.field_id
-              }
-            },
-            series: [
-              {
-                type: `scatter3d`,
-                marker: {
-                  radius: 1
-                },
-                data: data_munged,
-                turboThreshold: 0
-              }
-            ]
-          })}
-        />
-      </StatusWrapper>
+      <PlotStatusWrapper
+        status={
+          <StatusBoxFromQuery
+            axes={[x_axis, y_axis, z_axis]}
+            query={query}
+            queryKey={query_key}
+            noData={data_munged.length === 0}
+          />
+        }
+      >
+        <HighchartsPlot options={options} />
+      </PlotStatusWrapper>
     );
   },
   Controls() {

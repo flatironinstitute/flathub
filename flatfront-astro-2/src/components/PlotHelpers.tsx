@@ -1,10 +1,4 @@
-import React from "react";
-import {
-  useQuery,
-  useQueryClient,
-  type UseQueryOptions,
-  type UseQueryResult
-} from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import * as Plot from "@observablehq/plot";
 import lodash_merge from "lodash.merge";
 import { log, fetch_api_post, get_field_type, get_field_titles } from "@/utils";
@@ -25,8 +19,26 @@ import {
   SelectTrigger,
   SelectValue
 } from "./ui/select";
-import { CancelQueryButton, StatusBox, StatusBoxQuery } from "./StatusBox";
 import { Switch } from "./ui/switch";
+
+export function PlotStatusWrapper({
+  children,
+  status: status_box
+}: {
+  children: React.ReactNode;
+  status: React.ReactNode;
+}) {
+  const overlay = status_box ? (
+    <div className="absolute left-0 top-0 h-full w-full">{status_box}</div>
+  ) : null;
+
+  return (
+    <div className="relative">
+      {children}
+      {overlay}
+    </div>
+  );
+}
 
 export function XAxisControl() {
   return (
@@ -52,102 +64,11 @@ export function YAxisControl() {
 
 export function LogCountControl() {
   return (
-    <div className="flex items-center gap-x-2">
-      <LogModeCheckbox plotControlkey="count" />
-      <Label>Count: Log Scale</Label>
-    </div>
-  );
-}
-
-export function StatusWrapper2({
-  children,
-  axes,
-  query,
-  noData: no_data = false,
-  message
-}: {
-  children: React.ReactNode;
-  axes?: Array<ReturnType<typeof useAxisConfig>>;
-  query: UseQueryResult;
-  noData?: boolean;
-  message?: string;
-}) {
-  // Status could be:
-  // - Need to choose a field
-  // - Log mode error
-  // - Empty response
-  // - Loading
-
-  let status_box: React.ReactNode = null;
-
-  const missing_axis = axes?.find(
-    (d) => typeof d.field_id === `undefined` || d.field_id === null
-  );
-
-  const log_error = axes?.find((d) => d.log_mode_error_message);
-
-  if (message) {
-    status_box = <StatusBox title={message} />;
-  } else if (missing_axis) {
-    status_box = (
-      <StatusBox title={`Choose a field for: ${missing_axis.key}`} />
-    );
-  } else if (log_error) {
-    status_box = (
-      <StatusBox
-        title="Log Scale Error"
-        description={log_error.log_mode_error_message}
-      />
-    );
-  } else if (query.isFetching) {
-    status_box = (
-      <StatusBox
-        title={`Loading...`}
-        description={<CancelQueryButton queryKey={[`plot-data`]} />}
-      />
-    );
-  } else if (no_data) {
-    status_box = (
-      <StatusBox
-        title={`No data`}
-        description={`The current filters result in an empty dataset`}
-      />
-    );
-  }
-
-  const overlay = status_box ? (
-    <div className="absolute left-0 top-0 h-full w-full">{status_box}</div>
-  ) : null;
-
-  return (
-    <div className="relative">
-      {children}
-      {overlay}
-    </div>
-  );
-}
-
-export function StatusWrapper({
-  children,
-  query,
-  title,
-  description
-}: {
-  children: React.ReactNode;
-  query?: UseQueryResult<any>;
-  title?: string;
-  description?: string;
-}) {
-  return (
-    <div className="relative">
-      {children}
-      <div className="absolute left-0 top-0 h-full w-full">
-        <StatusBoxQuery
-          query={query}
-          queryKey={[`plot-data`]}
-          title={title}
-          description={description}
-        />
+    <div>
+      <Label>Count</Label>
+      <div className="flex h-10 items-center gap-x-2">
+        <LogModeCheckbox plotControlkey="count" />
+        <Label>Count: Log Scale</Label>
       </div>
     </div>
   );
@@ -394,8 +315,9 @@ export function usePlotQuery<RequestType, ResponseType>({
   label: string;
   enabled: boolean;
 }) {
-  return useQuery({
-    queryKey: [`plot-data`, path, body],
+  const query_key = [`plot-data`, path, body];
+  const query = useQuery({
+    queryKey: query_key,
     queryFn: async ({ signal }): Promise<ResponseType> => {
       const response = await fetch_api_post<RequestType, ResponseType>(
         path,
@@ -409,4 +331,5 @@ export function usePlotQuery<RequestType, ResponseType>({
     },
     enabled
   });
+  return [query, query_key] as const;
 }

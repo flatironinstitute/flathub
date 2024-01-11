@@ -5,42 +5,56 @@ import {
 } from "@tanstack/react-query";
 import { Info } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
-import { cn } from "@/utils";
+import type { useAxisConfig } from "./PlotHelpers";
 
-export function StatusBoxQuery({
+// Status could be:
+// - Need to choose a field
+// - Log mode error
+// - Successful query, empty response
+// - Loading
+// - Some other custom message
+export function StatusBoxFromQuery({
   query,
   queryKey: query_key,
-  title,
-  description
+  axes,
+  noData: no_data = false,
+  message
 }: {
-  query?: UseQueryResult<any>;
-  queryKey?: UseQueryOptions[`queryKey`];
-  title?: string;
-  description?: string;
+  query: UseQueryResult;
+  queryKey: UseQueryOptions[`queryKey`];
+  axes?: Array<ReturnType<typeof useAxisConfig>>;
+  noData?: boolean;
+  message?: string;
 }) {
-  const query_client = useQueryClient();
-  const no_data = query?.isLoading && query?.data?.length === 0;
-  if (title) {
-    return <StatusBox title={title} description={description} />;
-  } else if (query?.isFetching) {
+  const missing_axis = axes?.find(
+    (d) => typeof d.field_id === `undefined` || d.field_id === null
+  );
+
+  const log_error = axes?.find((d) => d.log_mode_error_message);
+
+  if (message) {
+    return <StatusBox title={message} />;
+  } else if (missing_axis) {
+    return <StatusBox title={`Choose a field for: ${missing_axis.key}`} />;
+  } else if (log_error) {
+    return (
+      <StatusBox
+        title="Log Scale Error"
+        description={log_error.log_mode_error_message}
+      />
+    );
+  } else if (query.isFetching) {
     return (
       <StatusBox
         title={`Loading...`}
-        description={
-          <button
-            onClick={() => query_client.cancelQueries({ queryKey: query_key })}
-            className="cursor-pointer underline"
-          >
-            Cancel
-          </button>
-        }
+        description={<CancelQueryButton queryKey={query_key} />}
       />
     );
-  } else if (no_data) {
+  } else if (query.isSuccess && no_data) {
     return (
       <StatusBox
         title={`No data`}
-        description={`The current filters returned an empty dataset`}
+        description={`The current filters result in an empty dataset`}
       />
     );
   } else {
@@ -48,7 +62,7 @@ export function StatusBoxQuery({
   }
 }
 
-export function CancelQueryButton({
+function CancelQueryButton({
   queryKey: query_key
 }: {
   queryKey: UseQueryOptions[`queryKey`];
@@ -64,7 +78,7 @@ export function CancelQueryButton({
   );
 }
 
-export function StatusBox({
+function StatusBox({
   title,
   description
 }: {

@@ -61,7 +61,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { StatusBoxQuery } from "@/components/StatusBox";
+import { StatusBoxFromQuery } from "@/components/StatusBox";
 
 export function TableSection() {
   const matching_rows = useMatchingRowsText();
@@ -159,7 +159,7 @@ function TableParent() {
       />
     ) : (
       <div className="h-[400px]">
-        <StatusBoxQuery query={query} queryKey={query_key} />
+        <StatusBoxFromQuery query={query} queryKey={query_key} />
       </div>
     );
 
