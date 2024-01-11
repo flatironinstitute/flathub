@@ -19,9 +19,8 @@ import { AddFilterDropdown, FilterSection } from "@/components/FilterSection";
 import { TableSection } from "@/components/TableSection";
 import { PlotSection } from "@/components/PlotSection";
 import { AboutThisCatalog } from "./AboutThisCatalog";
-import { FloatingSection } from "./FloatingSection";
-import { useMediaQuery } from "@uidotdev/usehooks";
 import clsx from "clsx";
+import { RandomSampleControls } from "./RandomSampleControls";
 
 export function CatalogCell({ id: catalog_cell_id }: { id: CellID.Catalog }) {
   return (
@@ -61,7 +60,7 @@ function CatalogCellContents() {
         <CardTitle>Random Sample</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div>random</div>
+        <RandomSampleControls />
       </CardContent>
       <Separator />
     </>
