@@ -72,7 +72,7 @@ export function FilterSection() {
     return false;
   });
   return (
-    <div className="grid gap-4 @xl/cell:grid-cols-2 @4xl/cell:grid-cols-3">
+    <div className="grid gap-4 @xl/cell:grid-cols-2 @5xl/cell:grid-cols-1">
       {filter_nodes.map((node) => {
         const filter_id = catalog_metadata.get_id_from_node(node);
         return (

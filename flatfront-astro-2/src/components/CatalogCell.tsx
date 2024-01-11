@@ -47,14 +47,52 @@ function CatalogCellContents() {
 
   const result_section_ref = React.useRef<HTMLDivElement>(null);
 
-  const render_floating = useMediaQuery("(min-width : 1500px)");
+  const filters_section = (
+    <>
+      <CardHeader>
+        <CardTitle>Filters</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <AddFilterDropdown />
+        <FilterSection />
+      </CardContent>
+      <Separator />
+      <CardHeader>
+        <CardTitle>Random Sample</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div>random</div>
+      </CardContent>
+      <Separator />
+    </>
+  );
+
+  const results_section = (
+    <div ref={result_section_ref} className="grid @5xl:grid-cols-[400px_1fr]">
+      <div>{filters_section}</div>
+      <div>
+        <CardHeader>
+          <CardTitle>Results</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <TableSection />
+        </CardContent>
+        <Separator />
+        <CardHeader>
+          <CardTitle>Plots</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <PlotSection />
+        </CardContent>
+      </div>
+    </div>
+  );
 
   return (
     <>
       <Card
         className={clsx(
-          `w-[min(1000px,90dvw)] transform transition-transform duration-300 ease-in-out @container/cell`,
-          render_floating && `translate-x-[-200px]`
+          `w-[min(1500px,90dvw)] transform transition-transform duration-300 ease-in-out @container/cell`
         )}
       >
         <CardHeader className="grid items-center gap-4 space-y-0 @2xl:grid-cols-[1fr_min-content_min-content]">
@@ -72,36 +110,7 @@ function CatalogCellContents() {
           <FieldsBrowser key={catalog_id} />
         </CardContent>
         <Separator />
-        <CardHeader>
-          <CardTitle>Filters</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <AddFilterDropdown />
-          <FilterSection />
-        </CardContent>
-        <Separator />
-        <CardHeader>
-          <CardTitle>Random Sample</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>random</div>
-        </CardContent>
-        <Separator />
-        <div ref={result_section_ref}>
-          <CardHeader>
-            <CardTitle>Results</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <TableSection />
-          </CardContent>
-          <Separator />
-          <CardHeader>
-            <CardTitle>Plots</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <PlotSection />
-          </CardContent>
-        </div>
+        {results_section}
         <Separator />
         <CardHeader>
           <CardTitle>Download</CardTitle>
@@ -117,9 +126,6 @@ function CatalogCellContents() {
           <div>python</div>
         </CardContent>
       </Card>
-      {render_floating && (
-        <FloatingSection resultSectionRef={result_section_ref} />
-      )}
     </>
   );
 }

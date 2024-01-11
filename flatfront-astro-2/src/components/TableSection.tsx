@@ -67,7 +67,7 @@ export function TableSection() {
   const matching_rows = useMatchingRowsText();
   return (
     <SortProvider>
-      <div className="space-y-4">
+      <div className="space-y-4 @container/table">
         <div>{matching_rows}</div>
         <TableParent />
       </div>
@@ -217,12 +217,9 @@ function TableParent() {
 
   return (
     <>
-      <ScrollArea
-        className="w-full rounded-md border p-4"
-        orientation="horizontal"
-      >
+      <div className="relative max-w-[82dvw] overflow-x-scroll rounded-md border p-4">
         {content}
-      </ScrollArea>
+      </div>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-x-2">Show {rows_select} rows</div>
         <div>{info_text}</div>
