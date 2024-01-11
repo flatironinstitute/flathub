@@ -29,7 +29,9 @@ export function PlotStatusWrapper({
   status: React.ReactNode;
 }) {
   const overlay = status_box ? (
-    <div className="absolute left-0 top-0 h-full w-full">{status_box}</div>
+    <div className="pointer-events-none absolute left-0 top-0 h-full w-full">
+      {status_box}
+    </div>
   ) : null;
 
   return (

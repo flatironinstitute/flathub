@@ -74,7 +74,8 @@ export const Histogram: PlotWrapper = {
     const plot_options: Plot.PlotOptions = get_observable_options({
       x: {
         label: x_axis.field_id,
-        type: x_axis.log_mode ? `log` : `linear`
+        type: x_axis.log_mode ? `log` : `linear`,
+        tickFormat: x_axis.log_mode ? `.2~e` : undefined
       },
       y: {
         label: `Count`,
@@ -92,7 +93,8 @@ export const Histogram: PlotWrapper = {
         // }),
         Plot.dot(data_munged, {
           x: `x`,
-          y: `count`
+          y: `count`,
+          tip: true
         }),
         Plot.line(data_munged, {
           x: `x`,
