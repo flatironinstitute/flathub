@@ -1,5 +1,6 @@
 import React from "react";
 import { Trash2 } from "lucide-react";
+import clsx from "clsx";
 import type { CellID } from "@/types";
 import {
   CatalogIDProvider,
@@ -19,7 +20,6 @@ import { AddFilterDropdown, FilterSection } from "@/components/FilterSection";
 import { TableSection } from "@/components/TableSection";
 import { PlotSection } from "@/components/PlotSection";
 import { AboutThisCatalog } from "./AboutThisCatalog";
-import clsx from "clsx";
 import { RandomSampleControls } from "./RandomSampleControls";
 
 export function CatalogCell({ id: catalog_cell_id }: { id: CellID.Catalog }) {
@@ -110,13 +110,6 @@ function CatalogCellContents() {
         </CardContent>
         <Separator />
         {results_section}
-        <Separator />
-        <CardHeader>
-          <CardTitle>Download</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>download</div>
-        </CardContent>
         <Separator />
         <CardHeader>
           <CardTitle>Python</CardTitle>

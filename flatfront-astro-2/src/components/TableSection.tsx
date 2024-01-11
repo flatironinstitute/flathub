@@ -62,6 +62,8 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { StatusBoxFromQuery } from "@/components/StatusBox";
+import { SortProvider, useSetSort, useSort } from "./contexts/SortContext";
+import DownloadSection from "./DownloadSection";
 
 export function TableSection() {
   const matching_rows = useMatchingRowsText();
@@ -70,6 +72,7 @@ export function TableSection() {
       <div className="space-y-4 @container/table">
         <div>{matching_rows}</div>
         <TableParent />
+        <DownloadSection />
       </div>
     </SortProvider>
   );
@@ -444,33 +447,6 @@ function construct_table_columns({
   if (!("columns" in root)) throw new Error(`root.columns is not defined`);
   const columns = root?.columns ?? [];
   return columns;
-}
-
-type TableSort = { field: string; order: `asc` | `desc` };
-
-const SortContext = React.createContext<TableSort[]>([]);
-const SetSortContext =
-  React.createContext<React.Dispatch<React.SetStateAction<TableSort[]>>>(null);
-
-function SortProvider({ children }: { children: React.ReactNode }) {
-  const [sort, set_sort] = React.useState<TableSort[]>([]);
-  return (
-    <SortContext.Provider value={sort}>
-      <SetSortContext.Provider value={set_sort}>
-        {children}
-      </SetSortContext.Provider>
-    </SortContext.Provider>
-  );
-}
-
-function useSort(): TableSort[] {
-  const sort = React.useContext(SortContext);
-  return sort;
-}
-
-function useSetSort(): React.Dispatch<React.SetStateAction<TableSort[]>> {
-  const set_sort = React.useContext(SetSortContext);
-  return set_sort;
 }
 
 declare module "@tanstack/table-core" {
