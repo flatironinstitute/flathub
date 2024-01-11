@@ -4,8 +4,10 @@ import * as d3 from "d3";
 import {
   PlotIDProvider,
   useAddPlot,
+  usePlotID,
   usePlotType,
-  usePlotsArray
+  usePlotsArray,
+  useRemovePlot
 } from "@/components/contexts/PlotContext";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -42,13 +44,11 @@ function AddPlot() {
       </PopoverTrigger>
       <PopoverContent className="w-80" align="start" avoidCollisions={false}>
         <div className="grid gap-4">
-          {plot_wrappers.map(({ key, label }) => {
-            return (
-              <PopoverClose key={key} asChild>
-                <Button onClick={() => add_plot(key)}>{label}</Button>
-              </PopoverClose>
-            );
-          })}
+          {plot_wrappers.map(({ key, label }) => (
+            <PopoverClose key={key} asChild>
+              <Button onClick={() => add_plot(key)}>{label}</Button>
+            </PopoverClose>
+          ))}
         </div>
       </PopoverContent>
     </Popover>
@@ -71,9 +71,9 @@ function PlotsList() {
 }
 
 function PlotWrapper({ index }: { index: number }) {
-  const plot_key = usePlotType();
-  const label = plot_key_to_label.get(plot_key);
-  const wrapper = plot_wrappers.find(({ key }) => key === plot_key);
+  const plot_type = usePlotType();
+  const label = plot_key_to_label.get(plot_type);
+  const wrapper = plot_wrappers.find(({ key }) => key === plot_type);
   const { Plot, Controls } = wrapper;
   return (
     <>
@@ -81,15 +81,23 @@ function PlotWrapper({ index }: { index: number }) {
         <H4>
           Plot {index + 1}: {label}
         </H4>
-        <Button className="flex gap-x-2">
-          <Trash2 />
-          Remove
-        </Button>
+        <RemovePlotButton />
       </div>
-      <div className="grid @2xl:grid-cols-2 gap-x-4">
+      <div className="grid gap-x-4 @2xl:grid-cols-2">
         <Controls />
       </div>
       <Plot />
     </>
+  );
+}
+
+function RemovePlotButton() {
+  const plot_id = usePlotID();
+  const remove_plot = useRemovePlot();
+  return (
+    <Button className="flex gap-x-2" onClick={() => remove_plot(plot_id)}>
+      <Trash2 />
+      Remove
+    </Button>
   );
 }

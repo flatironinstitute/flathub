@@ -4,7 +4,8 @@ import React from "react";
 import * as d3 from "d3";
 import {
   useAppState,
-  useMergeState
+  useMergeState,
+  useSetAppState
 } from "@/components/contexts/AppStateContext";
 import { useCatalogCellID } from "@/components/contexts/CatalogIDContext";
 import { assert_catalog_cell_id } from "@/utils";
@@ -77,11 +78,13 @@ export function useAddPlot() {
 export function useRemovePlot() {
   const catalog_cell_id = useCatalogCellID();
   assert_catalog_cell_id(catalog_cell_id);
-  // const merge_state = useMergeState();
+  const set_app_state = useSetAppState();
   return (id: PlotID) => {
-    console.log("delete plot", id);
+    set_app_state((prev) => {
+      const catalog_plots = prev.plots[catalog_cell_id];
+      delete catalog_plots[id];
+    });
   };
-  // merge_state({ add_plot: { [catalog_cell_id]: { [id]: false } } });
 }
 
 export function usePlotsArray() {
