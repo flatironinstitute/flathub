@@ -99,6 +99,7 @@ export function LabelledPlotControl({
     return column_ids.has(id) && is_numeric;
   });
 
+  // TODO: Use hashed ID instead
   const items = plot_variable_options.map((d) => {
     // const id = catalog_metadata.get_id_from_node(d);
     const field_name = d.data.name;
@@ -268,6 +269,7 @@ function useGetIsLogAllowed(): (field_id: string) => boolean {
   };
 }
 
+// TODO: Move to utils, use field_id with hash
 function useGetCurrentMin(): (field_id: string) => number | null {
   const filters = useFilterValuesWithFieldNames();
   const catalog_metadata = useCatalogMetadata();
@@ -287,6 +289,7 @@ function useGetCurrentMin(): (field_id: string) => number | null {
   };
 }
 
+// TODO: Move to utils, use field_id with hash
 function useGetCurrentMax(): (field_id: string) => number | null {
   const filters = useFilterValuesWithFieldNames();
   const catalog_metadata = useCatalogMetadata();

@@ -21,6 +21,7 @@ import { TableSection } from "@/components/TableSection";
 import { PlotSection } from "@/components/PlotSection";
 import { AboutThisCatalog } from "./AboutThisCatalog";
 import { RandomSampleControls } from "./RandomSampleControls";
+import { PythonSection } from "./PythonSection";
 import { SortProvider } from "./contexts/SortContext";
 
 
@@ -119,7 +120,7 @@ function CatalogCellContents() {
           <CardTitle>Python</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>python</div>
+          <PythonSection />
         </CardContent>
       </Card>
     </>

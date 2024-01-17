@@ -241,6 +241,7 @@ function RangeFilterControl() {
 
   const { min, max } = metadata.stats;
 
+  // TODO: Replace with getCurrentFilterMin and getCurrentFilterMax
   const low =
     typeof filter_value_raw === `object` && `gte` in filter_value_raw
       ? filter_value_raw.gte
