@@ -138,3 +138,39 @@ export function useRemoveFilter() {
     });
   };
 }
+
+export function useGetCurrentFilterMin(): (field_id: string) => number {
+  const filters = useFilterValues();
+  const catalog_metadata = useCatalogMetadata();
+  return (field_id: string) => {
+    if (!field_id) return null;
+    if (!catalog_metadata) return null;
+    const filter_value = filters[field_id];
+    const node = catalog_metadata?.get_node_from_id(field_id);
+    const field_stats = node?.data?.stats;
+    if (typeof filter_value === `object` && `gte` in filter_value) {
+      return Number(filter_value.gte);
+    } else if (field_stats && "min" in field_stats) {
+      return Number(field_stats.min);
+    }
+    throw new Error(`Could not get min for ${field_id}`);
+  };
+}
+
+export function useGetCurrentFilterMax(): (field_id: string) => number {
+  const filters = useFilterValues();
+  const catalog_metadata = useCatalogMetadata();
+  return (field_id: string) => {
+    if (!field_id) return null;
+    if (!catalog_metadata) return null;
+    const filter_value = filters[field_id];
+    const node = catalog_metadata?.get_node_from_id(field_id);
+    const field_stats = node?.data?.stats;
+    if (typeof filter_value === `object` && `lte` in filter_value) {
+      return Number(filter_value.lte);
+    } else if (field_stats && "max" in field_stats) {
+      return Number(field_stats.max);
+    }
+    throw new Error(`Could not get max for ${field_id}`);
+  };
+}
