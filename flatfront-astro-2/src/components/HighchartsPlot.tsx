@@ -1,3 +1,5 @@
+import "@/highcharts.css";
+
 import Highcharts from "highcharts";
 import HighchartsMore from "highcharts/highcharts-more";
 import Highcharts3D from "highcharts/highcharts-3d";
@@ -7,6 +9,7 @@ import HighchartsHeatmap from "highcharts/modules/heatmap";
 import HighchartsBoost from "highcharts/modules/boost";
 import HighchartsReact from "highcharts-react-official";
 import HighchartsDraggable3D from "highcharts-draggable-3d";
+import { useIsDarkMode } from "./DarkModeToggle";
 
 declare module "highcharts" {
   interface Chart3dOptions {
@@ -33,5 +36,12 @@ HighchartsHeatmap(Highcharts);
 HighchartsBoost(Highcharts);
 
 export function HighchartsPlot({ options }: { options: Highcharts.Options }) {
-  return <HighchartsReact highcharts={Highcharts} options={options} />;
+  const dark_mode = useIsDarkMode();
+  return (
+    <HighchartsReact
+      highcharts={Highcharts}
+      options={options}
+      containerProps={{ className: dark_mode ? `highcharts-dark` : undefined }}
+    />
+  );
 }

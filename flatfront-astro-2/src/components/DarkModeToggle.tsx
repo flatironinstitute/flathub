@@ -9,6 +9,25 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 
+export function useIsDarkMode() {
+  const [isDarkMode, setIsDarkMode] = React.useState<boolean>(false);
+  React.useEffect(() => {
+    const do_it = () => {
+      setIsDarkMode(document.documentElement.classList.contains("dark"));
+    };
+    do_it();
+    // Add a mutation observer to the <html> element to detect changes to the
+    // "dark" class. This is necessary because the "dark" class is added
+    // asynchronously by the DarkModeToggle component.
+    const observer = new MutationObserver(do_it);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"]
+    });
+  }, []);
+  return isDarkMode;
+}
+
 export function DarkModeToggle() {
   const [theme, setThemeState] = React.useState<
     "theme-light" | "dark" | "system"
@@ -20,11 +39,11 @@ export function DarkModeToggle() {
   }, []);
 
   React.useEffect(() => {
-    const isDark =
+    const is_dark =
       theme === "dark" ||
       (theme === "system" &&
         window.matchMedia("(prefers-color-scheme: dark)").matches);
-    document.documentElement.classList[isDark ? "add" : "remove"]("dark");
+    document.documentElement.classList[is_dark ? "add" : "remove"]("dark");
   }, [theme]);
 
   return (
