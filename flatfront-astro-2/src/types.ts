@@ -128,6 +128,13 @@ export type HistogramField = Exclude<
   string
 >;
 
+export type NumericFilterValue = {
+  // gte?: schema.components["schemas"]["FieldValue"];
+  // lte?: schema.components["schemas"]["FieldValue"];
+  gte?: number;
+  lte?: number;
+};
+
 export type FilterValueRaw = Filters[string];
 
 export type Filters = schema.components[`schemas`][`Filters`];

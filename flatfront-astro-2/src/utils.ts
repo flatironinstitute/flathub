@@ -7,6 +7,7 @@ import type {
   FieldMetadata,
   FieldType,
   FilterValueRaw,
+  NumericFilterValue,
   PlotID
 } from "@/types";
 
@@ -252,4 +253,12 @@ export function assert_catalog_cell_id(
 
 export function assert_plot_id(id: string): asserts id is PlotID {
   if (!is_plot_id(id)) throw new Error(`${id} is not a plot id`);
+}
+
+export function is_numeric_filter_value(
+  value: FilterValueRaw
+): value is NumericFilterValue {
+  if (typeof value !== `object`) return false;
+  const has_gte_or_lte = `gte` in value || `lte` in value;
+  return has_gte_or_lte;
 }
