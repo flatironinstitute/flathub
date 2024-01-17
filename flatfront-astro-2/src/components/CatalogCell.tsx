@@ -21,6 +21,8 @@ import { TableSection } from "@/components/TableSection";
 import { PlotSection } from "@/components/PlotSection";
 import { AboutThisCatalog } from "./AboutThisCatalog";
 import { RandomSampleControls } from "./RandomSampleControls";
+import { SortProvider } from "./contexts/SortContext";
+
 
 export function CatalogCell({ id: catalog_cell_id }: { id: CellID.Catalog }) {
   return (
@@ -30,7 +32,9 @@ export function CatalogCell({ id: catalog_cell_id }: { id: CellID.Catalog }) {
           <FiltersProvider>
             <RandomProvider>
               <MatchingRowsProvider>
-                <CatalogCellContents />
+                <SortProvider>
+                  <CatalogCellContents />
+                </SortProvider>
               </MatchingRowsProvider>
             </RandomProvider>
           </FiltersProvider>

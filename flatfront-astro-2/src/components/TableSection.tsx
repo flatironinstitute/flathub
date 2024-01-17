@@ -42,7 +42,6 @@ import {
   useMatchingRowsText
 } from "@/components/contexts/MatchingRowsContext";
 
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Katex } from "@/components/ui/katex";
 import {
   Table,
@@ -62,19 +61,17 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { StatusBoxFromQuery } from "@/components/StatusBox";
-import { SortProvider, useSetSort, useSort } from "./contexts/SortContext";
+import { useSetSort, useSort } from "./contexts/SortContext";
 import DownloadSection from "./DownloadSection";
 
 export function TableSection() {
   const matching_rows = useMatchingRowsText();
   return (
-    <SortProvider>
-      <div className="space-y-4 @container/table">
-        <div>{matching_rows}</div>
-        <TableParent />
-        <DownloadSection />
-      </div>
-    </SortProvider>
+    <div className="space-y-4 @container/table">
+      <div>{matching_rows}</div>
+      <TableParent />
+      <DownloadSection />
+    </div>
   );
 }
 
@@ -349,7 +346,6 @@ function construct_table_columns({
   ): GroupColumnDef<DataRow> | AccessorColumnDef<DataRow> | null => {
     const field_id = catalog_metadata.get_id_from_node(node);
     const metadata = node.data;
-    const field_name = metadata.name;
     // Include this node if:
     // - It is a leaf node, and is one of the fields in field_ids_set
     // - It is the ancestor of one of the fields in field_ids_set
@@ -403,6 +399,7 @@ function construct_table_columns({
       const column: AccessorColumnDef<DataRow> = {
         ...column_base,
         accessorFn: (row) => {
+          const field_name = metadata.name;
           const value = row[field_name];
           const field_type = get_field_type(metadata);
           if (metadata.attachment && value === true) {
