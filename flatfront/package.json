@@ -1,50 +1,71 @@
 {
-  "name": "flatfront",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "@headlessui/react": "^1.6.6",
-    "@heroicons/react": "^1.0.6",
-    "@tailwindcss/forms": "^0.5.2",
-    "@tailwindcss/typography": "^0.5.3",
-    "@testing-library/jest-dom": "^5.16.4",
-    "@testing-library/react": "^13.3.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^27.5.2",
-    "@types/node": "^16.11.43",
-    "@types/react": "^18.0.15",
-    "@types/react-dom": "^18.0.6",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^6.3.0",
-    "react-scripts": "^5.0.1",
-    "tailwindcss": "^3.1.5",
-    "typescript": "^4.7.4",
-    "web-vitals": "^2.1.4"
-  },
+  "name": "",
+  "type": "module",
+  "version": "0.0.1",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "check": "astro check && tsc --noEmit",
+    "preview": "astro preview",
+    "astro": "astro",
+    "generate-types": "npx openapi-typescript https://flathub.flatironinstitute.org/openapi.json --output src/lib/flathub-schema.d.ts && npx prettier src/lib/flathub-schema.d.ts --write"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+  "dependencies": {
+    "@astrojs/check": "latest",
+    "@astrojs/react": "latest",
+    "@astrojs/tailwind": "latest",
+    "@observablehq/plot": "latest",
+    "@radix-ui/react-checkbox": "^1.0.4",
+    "@radix-ui/react-dialog": "^1.0.5",
+    "@radix-ui/react-dropdown-menu": "^2.0.6",
+    "@radix-ui/react-label": "^2.0.2",
+    "@radix-ui/react-popover": "^1.0.7",
+    "@radix-ui/react-scroll-area": "^1.0.5",
+    "@radix-ui/react-select": "^2.0.0",
+    "@radix-ui/react-separator": "^1.0.3",
+    "@radix-ui/react-slider": "^1.1.2",
+    "@radix-ui/react-slot": "^1.0.2",
+    "@radix-ui/react-switch": "^1.0.3",
+    "@tailwindcss/container-queries": "latest",
+    "@tanstack/react-query": "latest",
+    "@tanstack/react-table": "latest",
+    "@types/d3": "latest",
+    "@types/katex": "latest",
+    "@types/lodash": "latest",
+    "@types/lodash.merge": "latest",
+    "@types/lodash.set": "latest",
+    "@types/node": "latest",
+    "@types/react": "18",
+    "@types/react-dom": "18",
+    "@uidotdev/usehooks": "latest",
+    "astro": "4",
+    "class-variance-authority": "latest",
+    "clsx": "latest",
+    "cmdk": "^0.2.0",
+    "d3": "latest",
+    "highcharts": "latest",
+    "highcharts-draggable-3d": "latest",
+    "highcharts-react-official": "latest",
+    "immer": "latest",
+    "katex": "latest",
+    "lodash.merge": "latest",
+    "lucide-react": "latest",
+    "lz-string": "latest",
+    "prettier": "latest",
+    "prettier-plugin-tailwindcss": "latest",
+    "react": "18",
+    "react-dom": "18",
+    "tailwind-merge": "latest",
+    "tailwindcss": "latest",
+    "tailwindcss-animate": "latest",
+    "typescript": "5",
+    "use-immer": "latest"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
+  "prettier": {
+    "plugins": [
+      "prettier-plugin-tailwindcss"
     ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "homepage": "/v"
+    "trailingComma": "none"
+  }
 }
