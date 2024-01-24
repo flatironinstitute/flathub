@@ -36,14 +36,17 @@ import Global
 import Compression
 
 newtype FilePathComponent = FilePathComponent{ componentFilePath :: String }
-  deriving (IsString, Eq, Ord)
+  deriving (IsString, Eq, Ord, Show)
 
 instance R.Parameter R.PathString FilePathComponent where
   parseParameter p = do
     s <- R.parseParameter p
-    guard $ FP.isValid s && head s /= '.' && not (any FP.isPathSeparator s)
+    guard $ null s || (FP.isValid s && head s /= '.' && not (any FP.isPathSeparator s))
     return $ FilePathComponent s
   renderParameter (FilePathComponent s) = R.renderParameter s
+
+filePath :: String -> [FilePathComponent] -> FilePath
+filePath root = FP.joinPath . (root :) . filter (not . null) . map componentFilePath
 
 getMimeType :: Mime.FileName -> Mime.MimeType
 getMimeType = Mime.mimeByExt (Map.insert "ts" "text/typescript" Mime.defaultMimeMap) Mime.defaultMimeType
@@ -81,15 +84,15 @@ staticPath path q = do
 
 static :: Route [FilePathComponent]
 static = getPath ("web" R.*< R.manyI R.parameter) $ \paths ->
-  staticPath (FP.joinPath ("web" : map componentFilePath paths))
+  staticPath (filePath "web" paths)
 
 staticURI :: [FilePathComponent] -> H.AttributeValue
 staticURI p = WH.routeActionValue static p mempty
 
 staticFront :: Route [FilePathComponent]
 staticFront = getPath ("v2beta" R.*< R.manyI R.parameter) $ \paths q -> do
-  let path = FP.joinPath (base : map componentFilePath paths)
-  s <- liftIO $ if null paths then return False else doesFileExist path
+  let path = filePath base paths
+  s <- liftIO $ doesFileExist path
   staticPath (if s then path else base FP.</> "index.html") q
   where
   base = "flatfront/dist"
