@@ -87,10 +87,9 @@ staticURI :: [FilePathComponent] -> H.AttributeValue
 staticURI p = WH.routeActionValue static p mempty
 
 staticFront :: Route [FilePathComponent]
-staticFront = getPath ("v" R.*< R.manyI R.parameter) $ \paths q -> do
-  let path = FP.joinPath ("flatfront/build" : map componentFilePath paths)
-  case paths of
-    "static" : _ -> staticPath path q
-    _ -> do
-      s <- liftIO $ doesFileExist path
-      staticPath (if s then path else "flatfront/build/index.html") q
+staticFront = getPath ("v2beta" R.*< R.manyI R.parameter) $ \paths q -> do
+  let path = FP.joinPath (base : map componentFilePath paths)
+  s <- liftIO $ if null paths then return False else doesFileExist path
+  staticPath (if s then path else base FP.</> "index.html") q
+  where
+  base = "flatfront/dist"
