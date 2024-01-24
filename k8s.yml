@@ -11,6 +11,8 @@ spec:
     metadata:
       labels:
         name: flathub
+      annotations:
+        co.elastic.logs/pipeline: waimwork-access
     spec:
       containers:
       - image: flatironinstitute/flathub:latest
