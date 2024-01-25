@@ -11,7 +11,15 @@ import type {
   PlotID
 } from "@/types";
 
-export const FLATHUB_API_BASE_URL = `https://flathub.flatironinstitute.org`;
+/**
+ * Read the PUBLIC_FLATHUB_API_BASE_URL environment variable,
+ * and if it is not set, use the current window location.
+ */
+export const FLATHUB_API_BASE_URL = (() => {
+  const from_env = import.meta.env.PUBLIC_FLATHUB_API_BASE_URL;
+  if (!from_env) return window.location.origin;
+  return from_env;
+})();
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
