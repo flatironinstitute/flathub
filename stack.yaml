@@ -1,4 +1,4 @@
-resolver: lts-20.26
+resolver: lts-21.25
 packages:
 - '.'
 extra-deps:
@@ -10,10 +10,10 @@ extra-deps:
   - git: https://github.com/dylex/hs-hdf5
     commit: fef08a26f3c8add943beb8463ef7a0cc41245df5
   - git: https://github.com/ondrap/json-stream
-    commit: e51d810c8b8bf312da9cb8b81cfd83d0feecc3fa
+    commit: ee7f88de8dea4f3d78d33ef70ee28e2a2ef5db18
 flags:
   web-inv-route:
     snap: false
     happstack: false
-  aeson:
-    cffi: true
+# aeson:
+#   cffi: true

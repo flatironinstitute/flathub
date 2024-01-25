@@ -24,3 +24,6 @@
 /flatfront/node_modules/
 /flatfront/package-lock.json
 /flatfront/build/
+/.vscode
+/ignored
+/flatfront-astro-old
