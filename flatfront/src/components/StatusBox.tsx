@@ -27,7 +27,7 @@ export function StatusBoxFromQuery({
   message?: string;
 }) {
   const missing_axis = axes?.find(
-    (d) => typeof d.field_id === `undefined` || d.field_id === null
+    (d) => typeof d.field_name === `undefined` || d.field_name === null
   );
 
   const log_error = axes?.find((d) => d.log_mode_error_message);

@@ -34,7 +34,6 @@ export function PythonSection() {
     const negative = first.order === `desc` ? `-` : ``;
     sort = `,\n  sort = ["${negative}${first.field}"]`;
   }
-  // const filters_object = useFilterValuesWithFieldNames();
   let filters = ``;
   for (const [field_id, filter_value] of Object.entries(filters_object)) {
     const node = catalog_metadata?.get_node_from_id(field_id);
