@@ -25,8 +25,7 @@ export type { schema };
 // };
 
 export type AppState = {
-  cells?: Record<number, Cell.Any>;
-  catalog_ids?: Record<CellID.Catalog, CatalogID>;
+  cells?: Record<string, Cell.Catalog>;
   show_filters?: Record<CellID.Catalog, Record<FieldID, boolean>>;
   show_columns?: Record<CellID.Catalog, Record<FieldID, boolean>>;
   filter_values?: Record<CellID.Catalog, Filters>;
@@ -39,6 +38,7 @@ export namespace Cell {
   export type Catalog = {
     type: `catalog`;
     id: CellID.Catalog;
+    catalog_id: CatalogID;
   };
   export type Comparison = {
     type: `comparison`;

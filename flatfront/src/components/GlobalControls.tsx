@@ -77,9 +77,9 @@ export function CatalogSelect() {
 
   const cells_object = useAppState()?.cells ?? {};
   const number_of_cells = Object.keys(cells_object).length ?? 0;
-  const merge_state = useMergeState();
-
   const next_catalog_cell_id: CellID.Catalog = `catalog_cell_${number_of_cells}`;
+
+  const merge_state = useMergeState();
 
   const add_catalog_button = (
     <Button
@@ -88,13 +88,11 @@ export function CatalogSelect() {
       onClick={() =>
         merge_state({
           cells: {
-            [number_of_cells]: {
+            [next_catalog_cell_id]: {
               type: `catalog`,
-              id: next_catalog_cell_id
+              id: next_catalog_cell_id,
+              catalog_id
             }
-          },
-          catalog_ids: {
-            [next_catalog_cell_id]: catalog_id
           }
         })
       }
