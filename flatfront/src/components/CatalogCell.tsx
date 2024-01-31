@@ -4,6 +4,7 @@ import clsx from "clsx";
 import type { CellID } from "@/types";
 import {
   CatalogIDProvider,
+  useCatalogCellID,
   useCatalogID
 } from "@/components/contexts/CatalogIDContext";
 import { CatalogMetadataProvider } from "@/components/contexts/CatalogMetadataContext";
@@ -23,7 +24,7 @@ import { AboutThisCatalog } from "./AboutThisCatalog";
 import { RandomSampleControls } from "./RandomSampleControls";
 import { PythonSection } from "./PythonSection";
 import { SortProvider } from "./contexts/SortContext";
-
+import { useMergeState, useSetAppState } from "./contexts/AppStateContext";
 
 export function CatalogCell({ id: catalog_cell_id }: { id: CellID.Catalog }) {
   return (
@@ -102,9 +103,7 @@ function CatalogCellContents() {
         <CardHeader className="grid items-center gap-4 space-y-0 @2xl:grid-cols-[1fr_min-content_min-content]">
           <CardTitle>Catalog: {catalog_title}</CardTitle>
           <AboutThisCatalog catalog_id={catalog_id} />
-          <Button variant="outline" className="flex flex-row gap-x-2">
-            <Trash2 /> Delete
-          </Button>
+          <DeleteCatalogButton />
         </CardHeader>
         <Separator />
         <CardHeader>
@@ -124,5 +123,23 @@ function CatalogCellContents() {
         </CardContent>
       </Card>
     </>
+  );
+}
+
+function DeleteCatalogButton() {
+  const cell_id = useCatalogCellID();
+  const set_app_state = useSetAppState();
+  return (
+    <Button
+      variant="outline"
+      className="flex flex-row gap-x-2"
+      onClick={() =>
+        set_app_state((previous) => {
+          delete previous.cells[cell_id];
+        })
+      }
+    >
+      <Trash2 /> Delete
+    </Button>
   );
 }
