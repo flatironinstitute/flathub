@@ -24,7 +24,7 @@ import { AboutThisCatalog } from "./AboutThisCatalog";
 import { RandomSampleControls } from "./RandomSampleControls";
 import { PythonSection } from "./PythonSection";
 import { SortProvider } from "./contexts/SortContext";
-import { useMergeState, useSetAppState } from "./contexts/AppStateContext";
+import { useSetAppState } from "./contexts/AppStateContext";
 
 export function CatalogCell({ id: catalog_cell_id }: { id: CellID.Catalog }) {
   return (

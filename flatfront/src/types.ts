@@ -2,28 +2,6 @@ import type * as schema from "./flathub-schema";
 
 export type { schema };
 
-// export type AppState = {
-//   cells?: Record<number, Cell.Any>;
-//   show_filters?: Record<
-//     CellID.Catalog,
-//     Record<CatalogID, Record<FieldID, boolean>>
-//   >;
-//   filter_values?: Record<CellID.Catalog, Record<CatalogID, Filters>>;
-//   set_random_sample?: Record<
-//     CellID.Catalog,
-//     Record<CatalogID, { sample?: number; seed?: number }>
-//   >;
-//   set_catalog?: Record<CellID.Catalog, CatalogID>;
-//   plots?: Record<CellID.Catalog, Record<PlotID, PlotType>>;
-//   // add_plot?: Record<CellID.Catalog, Record<PlotID, boolean>>;
-//   // set_plot_type?: Record<PlotID, PlotType>;
-//   set_plot_control?: Record<PlotID, Record<CatalogID, Record<string, any>>>;
-//   show_columns?: Record<
-//     CellID.Catalog,
-//     Record<CatalogID, Record<FieldID, boolean>>
-//   >;
-// };
-
 export type AppState = {
   cells?: Record<string, Cell.Catalog>;
   show_filters?: Record<CellID.Catalog, Record<FieldID, boolean>>;

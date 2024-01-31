@@ -2,7 +2,7 @@ import React from "react";
 import * as d3 from "d3";
 import { useQuery } from "@tanstack/react-query";
 import type { CatalogID, CellID, TopResponse, TopResponseEntry } from "@/types";
-import { fetch_api_get, log } from "@/utils";
+import { fetch_api_get } from "@/utils";
 import {
   Select,
   SelectContent,
