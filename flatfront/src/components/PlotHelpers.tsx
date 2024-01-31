@@ -247,9 +247,9 @@ export function useAxisConfig(
   const log_mode_allowed = is_log_allowed(field_id);
   const log_mode_error = log_mode_requested && !log_mode_allowed;
   const log_mode = log_mode_requested && log_mode_allowed;
-  const ready_for_request = Boolean(field_id) && !log_mode_error;
+  const ready_for_request = Boolean(field_name) && !log_mode_error;
   const log_mode_error_message = log_mode_error
-    ? `Log mode not allowed because "${field_id}" values cross zero.`
+    ? `Log mode not allowed because "${field_name}" values cross zero.`
     : null;
   return {
     key,
