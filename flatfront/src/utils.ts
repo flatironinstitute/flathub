@@ -130,7 +130,7 @@ export function get_field_titles<T extends { title?: string }>(
 ): string[] {
   const titles: string[] = [];
   let current_node: d3.HierarchyNode<T> | null = node;
-  while (current_node !== null) {
+  while (current_node && current_node !== null) {
     if (current_node.data.title?.length ?? 0 > 0) {
       titles.push(current_node.data.title ?? `unknown`);
     }
