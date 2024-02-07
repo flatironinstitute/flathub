@@ -12,7 +12,10 @@ import { useCatalogMetadata } from "@/components/contexts/CatalogMetadataContext
 import { ColumnsProvider } from "@/components/contexts/ColumnsContext";
 import { FiltersProvider } from "@/components/contexts/FiltersContext";
 import { RandomProvider } from "@/components/contexts/RandomContext";
-import { MatchingRowsProvider } from "./contexts/MatchingRowsContext";
+import {
+  MatchingRowsProvider,
+  useMatchingRowsText
+} from "./contexts/MatchingRowsContext";
 import { CardContent, Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -49,6 +52,7 @@ export function CatalogCell({ id: catalog_cell_id }: { id: CellID.Catalog }) {
 function CatalogCellContents() {
   const catalog_id = useCatalogID();
   const catalog_title = useCatalogMetadata()?.response?.title ?? ``;
+  const matching_rows = useMatchingRowsText();
 
   const result_section_ref = React.useRef<HTMLDivElement>(null);
 
@@ -77,18 +81,19 @@ function CatalogCellContents() {
       <div>{filters_section}</div>
       <div>
         <CardHeader>
-          <CardTitle>Results</CardTitle>
+          <div>{matching_rows}</div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <PlotSection />
+        </CardContent>
+        <Separator />
+        <CardHeader>
+          <CardTitle>Table</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <TableSection />
         </CardContent>
         <Separator />
-        <CardHeader>
-          <CardTitle>Plots</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <PlotSection />
-        </CardContent>
       </div>
     </div>
   );
