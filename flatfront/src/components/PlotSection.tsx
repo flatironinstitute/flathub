@@ -42,11 +42,17 @@ function AddPlot() {
       <PopoverTrigger asChild>
         <Button>Add Plot</Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80" align="start" avoidCollisions={false}>
+      <PopoverContent className="w-40" align="start" avoidCollisions={false}>
         <div className="grid gap-4">
           {plot_wrappers.map(({ key, label }) => (
             <PopoverClose key={key} asChild>
-              <Button onClick={() => add_plot(key)}>{label}</Button>
+              <Button
+                variant="link"
+                className="h-5 cursor-pointer justify-start p-0"
+                onClick={() => add_plot(key)}
+              >
+                {label}
+              </Button>
             </PopoverClose>
           ))}
         </div>
