@@ -81,9 +81,10 @@ function CatalogCellContents() {
       <div>{filters_section}</div>
       <div>
         <CardHeader>
-          <div>{matching_rows}</div>
+          <CardTitle>Plots</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div>{matching_rows}</div>
           <PlotSection />
         </CardContent>
         <Separator />
@@ -111,12 +112,7 @@ function CatalogCellContents() {
           <DeleteCatalogButton />
         </CardHeader>
         <Separator />
-        <CardHeader>
-          <CardTitle>Fields</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <FieldsBrowser key={catalog_id} />
-        </CardContent>
+        <FieldsSection />
         <Separator />
         {results_section}
         <Separator />
@@ -127,6 +123,30 @@ function CatalogCellContents() {
           <PythonSection />
         </CardContent>
       </Card>
+    </>
+  );
+}
+
+function FieldsSection() {
+  const catalog_id = useCatalogID();
+
+  const [open, set_open] = React.useState<boolean>(true);
+
+  const text = open ? `Hide` : `Show`;
+
+  const contents = open ? (
+    <CardContent className="space-y-4">
+      <FieldsBrowser key={catalog_id} />
+    </CardContent>
+  ) : null;
+
+  return (
+    <>
+      <CardHeader className="flex flex-row items-center gap-x-4">
+        <CardTitle>Fields</CardTitle>
+        <Button onClick={() => set_open((d) => !d)}>{text}</Button>
+      </CardHeader>
+      {contents}
     </>
   );
 }

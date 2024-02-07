@@ -40,7 +40,7 @@ function AddPlot() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button>Add Plot</Button>
+        <Button variant="default" className="w-60">Add Plot</Button>
       </PopoverTrigger>
       <PopoverContent className="w-40" align="start" avoidCollisions={false}>
         <div className="grid gap-4">
