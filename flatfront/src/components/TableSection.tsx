@@ -220,7 +220,7 @@ function TableParent() {
       <div className="relative max-w-[82dvw] overflow-x-scroll rounded-md border p-4">
         {content}
       </div>
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-y-4 md:flex-row items-center justify-between">
         <div className="flex items-center gap-x-2">Show {rows_select} rows</div>
         <div>{info_text}</div>
         {prev_next}
