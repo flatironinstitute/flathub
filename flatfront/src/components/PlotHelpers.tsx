@@ -187,10 +187,10 @@ export function get_observable_options(
     },
     grid: true,
     x: {
-      // tickFormat: `.2~e`
+      tickFormat: `.2~g`
     },
     y: {
-      tickFormat: `.2~s`,
+      tickFormat: `.2~g`,
       ticks: 5
     }
   };
