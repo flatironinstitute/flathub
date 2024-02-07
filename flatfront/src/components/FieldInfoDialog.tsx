@@ -30,13 +30,13 @@ export function FieldInfoDialog({
 }) {
   const node = row.original;
   const metadata = node.data;
-  const title = <Katex>{metadata.title}</Katex>;
+  const title = <Katex>{metadata.title || metadata.name}</Katex>;
   const children_list = (() => {
     const has_children = "sub" in metadata && metadata.sub.length > 0;
     if (!has_children) return null;
     const children = metadata.sub.map((d, i) => [
       i > 0 && ", ",
-      <Katex key={d.name}>{d.title}</Katex>
+      <Katex key={d.name}>{d.title || d.name}</Katex>
     ]);
     return ["Children", children];
   })();
