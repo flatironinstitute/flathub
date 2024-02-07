@@ -74,8 +74,7 @@ export const Histogram: PlotWrapper = {
     const plot_options: Plot.PlotOptions = get_observable_options({
       x: {
         label: x_axis.field_name,
-        type: x_axis.log_mode ? `log` : `linear`,
-        tickFormat: x_axis.log_mode ? `.2~e` : undefined
+        type: x_axis.log_mode ? `log` : `linear`
       },
       y: {
         label: `Count`,
