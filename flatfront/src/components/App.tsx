@@ -38,8 +38,8 @@ function Main() {
     <main
       className={`mb-10 mt-10 flex flex-col items-center justify-center gap-y-10`}
     >
-      <Cells />
       <GlobalControls />
+      <Cells />
     </main>
   );
 }

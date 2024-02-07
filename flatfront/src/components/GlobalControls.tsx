@@ -1,30 +1,23 @@
-import React from "react";
 import * as d3 from "d3";
 import { useQuery } from "@tanstack/react-query";
-import type { CatalogID, CellID, TopResponse, TopResponseEntry } from "@/types";
+import type { CellID, TopResponse, TopResponseEntry } from "@/types";
 import { fetch_api_get } from "@/utils";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from "@/components/ui/select";
-
 import { CardContent, Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DarkModeToggle } from "./DarkModeToggle";
 import { useAppState, useMergeState } from "./contexts/AppStateContext";
-import { AboutThisCatalog } from "./AboutThisCatalog";
+import {
+  Popover,
+  PopoverClose,
+  PopoverContent,
+  PopoverTrigger
+} from "./ui/popover";
 
 export function GlobalControls() {
   return (
     <Card>
-      <CardContent className="flex flex-col items-center justify-center gap-4 p-4">
-        <div>
-          <CatalogSelect />
-        </div>
+      <CardContent className="grid gap-4 p-4 sm:grid-cols-2">
+        <CatalogSelect />
         <DarkModeToggle />
       </CardContent>
     </Card>
@@ -42,38 +35,6 @@ export function CatalogSelect() {
     catalog_list_unsorted,
     (d: TopResponseEntry) => d?.title
   );
-  const ready = catalog_list.length > 0;
-
-  const [catalog_id, set_catalog_id] = React.useState<CatalogID | undefined>(
-    undefined
-  );
-
-  const items = catalog_list.map(({ name, title }) => {
-    return (
-      <SelectItem key={name} value={name}>
-        {title}
-      </SelectItem>
-    );
-  });
-
-  const dropdown = (
-    <Select
-      disabled={!ready}
-      value={catalog_id}
-      onValueChange={(catalog_id) => set_catalog_id(catalog_id)}
-    >
-      <SelectTrigger className="max-w-[40ch] disabled:cursor-wait">
-        <SelectValue
-          placeholder={ready ? `Select a catalog...` : `Loading catalogs...`}
-        />
-      </SelectTrigger>
-      <SelectContent position="popper">
-        <SelectGroup>{items}</SelectGroup>
-      </SelectContent>
-    </Select>
-  );
-
-  const about_this_catalog = <AboutThisCatalog catalog_id={catalog_id} />;
 
   const cells_object = useAppState()?.cells ?? {};
   const number_of_cells = Object.keys(cells_object).length ?? 0;
@@ -81,31 +42,36 @@ export function CatalogSelect() {
 
   const merge_state = useMergeState();
 
-  const add_catalog_button = (
-    <Button
-      disabled={!catalog_id}
-      variant="outline"
-      onClick={() =>
-        merge_state({
-          cells: {
-            [next_catalog_cell_id]: {
-              type: `catalog`,
-              id: next_catalog_cell_id,
-              catalog_id
-            }
-          }
-        })
-      }
-    >
-      Add Catalog
-    </Button>
-  );
-
   return (
-    <div className="grid gap-4 md:grid-cols-3">
-      {dropdown}
-      {about_this_catalog}
-      {add_catalog_button}
-    </div>
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button>Add Catalog</Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80" align="start" avoidCollisions={false}>
+        <div className="grid gap-4">
+          {catalog_list.map(({ name, title }) => (
+            <PopoverClose key={name} asChild>
+              <Button
+                variant="link"
+                className="h-5 justify-start p-0"
+                onClick={() =>
+                  merge_state({
+                    cells: {
+                      [next_catalog_cell_id]: {
+                        type: `catalog`,
+                        id: next_catalog_cell_id,
+                        catalog_id: name
+                      }
+                    }
+                  })
+                }
+              >
+                {title}
+              </Button>
+            </PopoverClose>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }

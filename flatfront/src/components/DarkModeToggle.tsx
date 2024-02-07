@@ -46,13 +46,18 @@ export function DarkModeToggle() {
     document.documentElement.classList[is_dark ? "add" : "remove"]("dark");
   }, [theme]);
 
+  const sun = <Sun className="h-[1.2rem] w-[1.2rem]" />;
+
+  const moon = <Moon className="h-[1.2rem] w-[1.2rem]" />;
+
+  const icon = theme === "dark" ? moon : sun;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon">
-          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">Toggle theme</span>
+        <Button variant="outline" className="flex gap-x-1">
+          {icon}
+          <span>Toggle Theme</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
