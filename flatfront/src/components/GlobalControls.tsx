@@ -1,5 +1,6 @@
 import * as d3 from "d3";
 import { useQuery } from "@tanstack/react-query";
+import { RotateCw } from "lucide-react";
 import type { CellID, TopResponse, TopResponseEntry } from "@/types";
 import { fetch_api_get } from "@/utils";
 import { CardContent, Card } from "@/components/ui/card";
@@ -42,10 +43,21 @@ export function CatalogSelect() {
 
   const merge_state = useMergeState();
 
+  const loading = catalog_list_query.isLoading;
+
+  const loading_text = (
+    <>
+      <RotateCw className="mr-2 h-4 w-4 animate-spin" />
+      Loading
+    </>
+  );
+
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button>Add Catalog</Button>
+        <Button disabled={loading}>
+          {loading ? loading_text : `Add Catalog`}
+        </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80" align="start" avoidCollisions={false}>
         <div className="grid gap-4">
