@@ -13,3 +13,12 @@ Flatfront is a new frontend for FlatHUB, the Flathub client. It is built with [A
 - [TanStack Table](https://tanstack.com/table/latest): A React table component library
 - [D3](https://d3js.org/): A data visualization library
 - [Highcharts](https://www.highcharts.com/): Another data visualization library
+
+# Development
+
+Within the `flatfront` directory:
+
+```bash
+npm install
+npm run dev
+```
