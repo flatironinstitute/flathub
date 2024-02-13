@@ -69,7 +69,7 @@ export function YAxisControl() {
 
 export function LogCountControl() {
   return (
-    <div>
+    <div className="space-y-1">
       <Label>Count</Label>
       <div className="flex h-10 items-center gap-x-2">
         <LogModeCheckbox plotControlkey="count" />
@@ -130,7 +130,7 @@ export function LabelledPlotControl({
   }
 
   return (
-    <div>
+    <div className="space-y-1">
       <Label>{label}</Label>
       <div className="flex gap-x-2">
         <Select
