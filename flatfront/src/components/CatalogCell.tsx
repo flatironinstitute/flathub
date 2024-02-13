@@ -1,7 +1,7 @@
 import React from "react";
 import { Trash2 } from "lucide-react";
 import clsx from "clsx";
-import type { CellID } from "@/types";
+import type { CatalogCellID } from "@/types";
 import {
   CatalogIDProvider,
   useCatalogCellID,
@@ -29,7 +29,7 @@ import { PythonSection } from "./PythonSection";
 import { SortProvider } from "./contexts/SortContext";
 import { useSetAppState } from "./contexts/AppStateContext";
 
-export function CatalogCell({ id: catalog_cell_id }: { id: CellID.Catalog }) {
+export function CatalogCell({ id: catalog_cell_id }: { id: CatalogCellID }) {
   return (
     <CatalogIDProvider value={catalog_cell_id}>
       <CatalogMetadataProvider>

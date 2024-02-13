@@ -1,12 +1,12 @@
 import * as d3 from "d3";
 import { useQuery } from "@tanstack/react-query";
 import { RotateCw } from "lucide-react";
-import type { CellID, TopResponse, TopResponseEntry } from "@/types";
+import type { CatalogCellID, TopResponse, TopResponseEntry } from "@/types";
 import { fetch_api_get } from "@/utils";
 import { CardContent, Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DarkModeToggle } from "./DarkModeToggle";
-import { useAppState, useMergeState } from "./contexts/AppStateContext";
+import { useMergeState } from "./contexts/AppStateContext";
 import {
   Popover,
   PopoverClose,
@@ -37,9 +37,7 @@ export function CatalogSelect() {
     (d: TopResponseEntry) => d?.title
   );
 
-  const cells_object = useAppState()?.cells ?? {};
-  const number_of_cells = Object.keys(cells_object).length ?? 0;
-  const next_catalog_cell_id: CellID.Catalog = `catalog_cell_${number_of_cells}`;
+  const next_catalog_cell_id: CatalogCellID = `catalog_cell_${Date.now()}`;
 
   const merge_state = useMergeState();
 
@@ -70,7 +68,6 @@ export function CatalogSelect() {
                   merge_state({
                     cells: {
                       [next_catalog_cell_id]: {
-                        type: `catalog`,
                         id: next_catalog_cell_id,
                         catalog_id: name
                       }

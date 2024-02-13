@@ -1,9 +1,9 @@
-import type { CellID } from "@/types";
+import type { CatalogCellID } from "@/types";
 
 import React from "react";
 import { useAppState } from "./AppStateContext";
 
-const CatalogIDContext = React.createContext<CellID.Catalog | undefined>(
+const CatalogIDContext = React.createContext<CatalogCellID | undefined>(
   undefined
 );
 
@@ -12,7 +12,7 @@ export function CatalogIDProvider({
   value: catalog_cell_id
 }: {
   children: React.ReactNode;
-  value: CellID.Catalog;
+  value: CatalogCellID;
 }) {
   return (
     <CatalogIDContext.Provider value={catalog_cell_id}>
