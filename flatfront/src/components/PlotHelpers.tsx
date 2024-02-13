@@ -69,13 +69,10 @@ export function YAxisControl() {
 
 export function LogCountControl() {
   return (
-    <div className="space-y-1">
-      <Label>Count</Label>
-      <div className="flex h-10 items-center gap-x-2">
-        <LogModeCheckbox plotControlkey="count" />
-        <Label>Count: Log Scale</Label>
-      </div>
-    </div>
+    <LabelledThing label="Count">
+      <LogModeCheckbox plotControlkey="count" />
+      <Label>Count: Log Scale</Label>
+    </LabelledThing>
   );
 }
 
@@ -130,24 +127,36 @@ export function LabelledPlotControl({
   }
 
   return (
+    <LabelledThing label={label}>
+      <Select
+        value={selected_field_id}
+        onValueChange={(field_id) =>
+          set_plot_control(plot_control_key, field_id)
+        }
+      >
+        <SelectTrigger className="whitespace-nowrap text-[clamp(0.8rem,4.6cqi,1rem)]">
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent position="popper">
+          <SelectGroup>{items}</SelectGroup>
+        </SelectContent>
+      </Select>
+      {log_switch}
+    </LabelledThing>
+  );
+}
+
+function LabelledThing({
+  label,
+  children
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
     <div className="space-y-1">
       <Label>{label}</Label>
-      <div className="flex gap-x-2">
-        <Select
-          value={selected_field_id}
-          onValueChange={(field_id) =>
-            set_plot_control(plot_control_key, field_id)
-          }
-        >
-          <SelectTrigger className="whitespace-nowrap text-[clamp(0.8rem,4.6cqi,1rem)]">
-            <SelectValue placeholder={placeholder} />
-          </SelectTrigger>
-          <SelectContent position="popper">
-            <SelectGroup>{items}</SelectGroup>
-          </SelectContent>
-        </Select>
-        {log_switch}
-      </div>
+      <div className="flex h-10 items-center gap-x-2">{children}</div>
     </div>
   );
 }
