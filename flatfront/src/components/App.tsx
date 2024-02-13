@@ -9,6 +9,7 @@ import { CardContent, Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { log } from "@/utils";
 import { GlobalControls } from "./GlobalControls";
 import { Cells } from "./Cells";
+import { Comparisons } from "./Comparisons";
 
 const query_client = new QueryClient({
   defaultOptions: {
@@ -35,12 +36,14 @@ function Main() {
   React.useEffect(() => {
     log(`🌳 Current app state:`, app_state);
   }, [app_state]);
+  const has_cells = Object.keys(app_state?.cells ?? {}).length > 0;
   return (
     <main
       className={`mb-10 mt-10 flex flex-col items-center justify-center gap-y-10`}
     >
       <GlobalControls />
       <Cells />
+      {has_cells ? <Comparisons /> : null}
       <Examples />
     </main>
   );
