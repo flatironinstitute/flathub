@@ -61,7 +61,9 @@ export function FieldsBrowser() {
               <ColumnCheckbox row={row} />
               &ensp;
               <FieldInfoDialog row={row}>
-                <Katex className="cursor-pointer">{getValue()}</Katex>
+                <Katex className="cursor-pointer underline decoration-dotted">
+                  {getValue()}
+                </Katex>
               </FieldInfoDialog>
             </div>
           );
