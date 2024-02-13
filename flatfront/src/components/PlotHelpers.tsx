@@ -161,6 +161,19 @@ function LabelledThing({
   );
 }
 
+function LogSwitch({
+  plotControlkey: plot_control_key
+}: {
+  plotControlkey: string;
+}) {
+  return (
+    <div className="flex items-center gap-x-2">
+      <LogModeCheckbox plotControlkey={plot_control_key} />
+      <Label className="whitespace-nowrap">Log Scale</Label>
+    </div>
+  );
+}
+
 function LogModeCheckbox({
   plotControlkey: plot_control_key
 }: {
