@@ -1,6 +1,7 @@
 import React from "react";
 import { toPng } from "html-to-image";
 import { Button } from "./ui/button";
+import { useIsDarkMode } from "./DarkModeToggle";
 
 export function DownloadPlotButton({
   plotRef: ref,
@@ -9,6 +10,7 @@ export function DownloadPlotButton({
   plotRef: React.RefObject<HTMLDivElement>;
   imageName: string;
 }) {
+  const is_dark_mode = useIsDarkMode();
   const on_click = React.useCallback(() => {
     if (ref.current === null) {
       return;
@@ -16,7 +18,7 @@ export function DownloadPlotButton({
     toPng(ref.current, {
       pixelRatio: 2,
       cacheBust: true,
-      backgroundColor: `white`
+      backgroundColor: is_dark_mode ? `black` : `white`
     })
       .then((dataUrl) => {
         const link = document.createElement("a");
