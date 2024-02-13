@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import * as Plot from "@observablehq/plot";
+import { type ColorScheme } from "@observablehq/plot";
 import lodash_merge from "lodash.merge";
 import { log, fetch_api_post, get_field_type, get_field_titles } from "@/utils";
 import {
@@ -23,6 +24,7 @@ import {
   SelectValue
 } from "./ui/select";
 import { Switch } from "./ui/switch";
+import { Combobox } from "./Combobox";
 
 export function PlotStatusWrapper({
   children,
@@ -47,7 +49,7 @@ export function PlotStatusWrapper({
 
 export function XAxisControl() {
   return (
-    <LabelledPlotControl
+    <PlotVariableControl
       label="X-Axis"
       plotControlKey="x_axis"
       placeholder="Choose X-Axis..."
@@ -58,7 +60,7 @@ export function XAxisControl() {
 
 export function YAxisControl() {
   return (
-    <LabelledPlotControl
+    <PlotVariableControl
       label="Y-Axis"
       plotControlKey="y_axis"
       placeholder="Choose Y-Axis..."
@@ -76,7 +78,50 @@ export function LogCountControl() {
   );
 }
 
-export function LabelledPlotControl({
+export function ColorSchemeControl({
+  options,
+  defaultScheme,
+  showLogSwitch: show_log_switch = false
+}: {
+  options: ColorScheme[];
+  defaultScheme: ColorScheme;
+  showLogSwitch: boolean;
+}) {
+  const plot_state = usePlotState();
+  const set_plot_control = useSetPlotControl();
+
+  const label = `Color Scheme`;
+  const plot_control_key = `color`;
+
+  const color_value = plot_state?.[plot_control_key] ?? defaultScheme;
+
+  const items = options.map((id) => {
+    return (
+      <SelectItem value={id} key={id}>
+        {id}
+      </SelectItem>
+    );
+  });
+
+  return (
+    <LabelledThing label={label}>
+      <Select
+        value={color_value}
+        onValueChange={(value) => set_plot_control(plot_control_key, value)}
+      >
+        <SelectTrigger className="whitespace-nowrap text-[clamp(0.8rem,4.6cqi,1rem)]">
+          <SelectValue placeholder={defaultScheme} />
+        </SelectTrigger>
+        <SelectContent position="popper">
+          <SelectGroup>{items}</SelectGroup>
+        </SelectContent>
+      </Select>
+      {show_log_switch ? <LogSwitch plotControlkey={plot_control_key} /> : null}
+    </LabelledThing>
+  );
+}
+
+export function PlotVariableControl({
   label,
   plotControlKey: plot_control_key,
   placeholder,
@@ -101,13 +146,16 @@ export function LabelledPlotControl({
 
   const items = plot_variable_nodes.map((d) => {
     const field_id = catalog_metadata.get_id_from_node(d);
-    return (
-      <SelectItem value={field_id} key={field_id}>
+    return {
+      key: field_id,
+      value: get_field_titles(d).join(` `),
+      label: (
         <div className="flex gap-x-2">
           <FieldTitles titles={get_field_titles(d)} />
         </div>
-      </SelectItem>
-    );
+      ),
+      onSelect: () => set_plot_control(plot_control_key, field_id)
+    };
   });
 
   const plot_state = usePlotState();
@@ -115,33 +163,23 @@ export function LabelledPlotControl({
 
   const selected_field_id = plot_state?.[plot_control_key];
 
-  let log_switch = null;
-
-  if (show_log_switch) {
-    log_switch = (
-      <div className="flex items-center gap-x-2">
-        <LogModeCheckbox plotControlkey={plot_control_key} />
-        <Label className="whitespace-nowrap">Log Scale</Label>
-      </div>
-    );
-  }
-
   return (
     <LabelledThing label={label}>
-      <Select
-        value={selected_field_id}
-        onValueChange={(field_id) =>
-          set_plot_control(plot_control_key, field_id)
+      <Combobox
+        placeholder={placeholder}
+        autoClose={true}
+        value={
+          selected_field_id ? (
+            <FieldTitles
+              titles={get_field_titles(
+                catalog_metadata?.get_node_from_id(selected_field_id)
+              )}
+            />
+          ) : null
         }
-      >
-        <SelectTrigger className="whitespace-nowrap text-[clamp(0.8rem,4.6cqi,1rem)]">
-          <SelectValue placeholder={placeholder} />
-        </SelectTrigger>
-        <SelectContent position="popper">
-          <SelectGroup>{items}</SelectGroup>
-        </SelectContent>
-      </Select>
-      {log_switch}
+        items={items}
+      />
+      {show_log_switch ? <LogSwitch plotControlkey={plot_control_key} /> : null}
     </LabelledThing>
   );
 }

@@ -1,5 +1,6 @@
 import * as d3 from "d3";
 import * as Plot from "@observablehq/plot";
+import { type ColorScheme } from "@observablehq/plot";
 import type {
   DataPostRequestBody,
   DataResponse,
@@ -17,13 +18,14 @@ import { ObservablePlot } from "./ObservablePlot";
 import {
   get_highcharts_options,
   get_observable_options,
-  LabelledPlotControl,
+  PlotVariableControl,
   LogCountControl,
   PlotStatusWrapper,
   useAxisConfig,
   usePlotQuery,
   XAxisControl,
-  YAxisControl
+  YAxisControl,
+  ColorSchemeControl
 } from "./PlotHelpers";
 import { StatusBoxFromQuery } from "./StatusBox";
 import { useIsDarkMode } from "./DarkModeToggle";
@@ -122,7 +124,7 @@ export const Histogram: PlotWrapper = {
   Controls() {
     return (
       <>
-        <LabelledPlotControl
+        <PlotVariableControl
           label="X-Axis"
           plotControlKey="x_axis"
           placeholder="Choose field..."
@@ -133,6 +135,17 @@ export const Histogram: PlotWrapper = {
     );
   }
 };
+
+const heatmap_colors: ColorScheme[] = [
+  "Greys",
+  "Reds",
+  "Greens",
+  "Blues",
+  "Oranges",
+  "Purples"
+];
+
+const heatmap_default_color = `Greys`;
 
 export const Heatmap: PlotWrapper = {
   key: `heatmap`,
@@ -145,6 +158,7 @@ export const Heatmap: PlotWrapper = {
 
     const x_axis = useAxisConfig(`x_axis`);
     const y_axis = useAxisConfig(`y_axis`);
+    const color_scheme = usePlotState()?.color ?? heatmap_default_color;
 
     const enable_request =
       Boolean(catalog_id) &&
@@ -185,9 +199,8 @@ export const Heatmap: PlotWrapper = {
 
     const plot_options: Plot.PlotOptions = get_observable_options({
       color: {
-        type: `sequential`,
         label: `Count`,
-        scheme: `Greys`,
+        scheme: color_scheme,
         reverse: is_dark_mode,
         domain: d3.extent(data_munged, (d) => d.count)
       },
@@ -242,6 +255,11 @@ export const Heatmap: PlotWrapper = {
       <>
         <XAxisControl />
         <YAxisControl />
+        <ColorSchemeControl
+          showLogSwitch={false}
+          defaultScheme={heatmap_default_color}
+          options={heatmap_colors}
+        />
       </>
     );
   }
@@ -588,7 +606,7 @@ export const Scatterplot3D: PlotWrapper = {
       <>
         <XAxisControl />
         <YAxisControl />
-        <LabelledPlotControl
+        <PlotVariableControl
           label="Z-Axis"
           plotControlKey="z_axis"
           placeholder="Choose Z-Axis..."
