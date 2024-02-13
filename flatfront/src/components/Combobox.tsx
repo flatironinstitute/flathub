@@ -18,6 +18,7 @@ import {
 export function Combobox({
   placeholder,
   items,
+  value,
   autoClose: auto_close = false,
   searchText: search_text = "Search...",
   emptyText: empty_text = "No items found."
@@ -29,6 +30,7 @@ export function Combobox({
     label: React.ReactNode;
     onSelect: () => void;
   }[];
+  value?: React.ReactNode;
   autoClose?: boolean;
   searchText?: string;
   emptyText?: string;
@@ -44,7 +46,7 @@ export function Combobox({
           aria-expanded={open}
           className="w-[min(100%,40ch)] justify-between"
         >
-          {placeholder}
+          {value ?? placeholder}
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
