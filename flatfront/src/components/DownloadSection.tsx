@@ -74,8 +74,6 @@ function BulkDataDownload() {
     }
   }
 
-  console.log(url?.searchParams?.toString());
-
   const items = formats.map((format) => (
     <SelectItem key={format} value={format}>
       {format}
