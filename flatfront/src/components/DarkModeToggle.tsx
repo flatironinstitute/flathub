@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 
-export function useIsDarkMode() {
+export function useIsDarkMode(): boolean {
   const [isDarkMode, setIsDarkMode] = React.useState<boolean>(false);
   React.useEffect(() => {
     const do_it = () => {

@@ -26,6 +26,7 @@ import {
   YAxisControl
 } from "./PlotHelpers";
 import { StatusBoxFromQuery } from "./StatusBox";
+import { useIsDarkMode } from "./DarkModeToggle";
 
 export const Histogram: PlotWrapper = {
   key: `histogram`,
@@ -180,12 +181,14 @@ export const Heatmap: PlotWrapper = {
       });
     })();
 
+    const is_dark_mode = useIsDarkMode();
+
     const plot_options: Plot.PlotOptions = get_observable_options({
       color: {
         type: `sequential`,
         label: `Count`,
         scheme: `Greys`,
-        // reverse: is_dark_mode,
+        reverse: is_dark_mode,
         domain: d3.extent(data_munged, (d) => d.count)
       },
       x: {
