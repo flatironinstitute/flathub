@@ -19,6 +19,7 @@ import {
   PopoverTrigger
 } from "@/components/ui/popover";
 import * as Plots from "@/components/Plots";
+import { DownloadPlotButton } from "./DownloadPlotButton";
 
 const plot_wrappers = d3.sort(Object.values(Plots), (d) => d.order);
 
@@ -40,7 +41,9 @@ function AddPlot() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="default" className="w-60">Add Plot</Button>
+        <Button variant="default" className="w-60">
+          Add Plot
+        </Button>
       </PopoverTrigger>
       <PopoverContent className="w-40" align="start" avoidCollisions={false}>
         <div className="grid gap-4">
@@ -81,19 +84,29 @@ function PlotWrapper({ index }: { index: number }) {
   const label = plot_key_to_label.get(plot_type);
   const wrapper = plot_wrappers.find(({ key }) => key === plot_type);
   const { Plot, Controls } = wrapper;
+  const plot_image_ref = React.useRef<HTMLDivElement>(null);
   return (
-    <>
+    <div>
       <div className="flex items-center justify-between">
         <H4>
           Plot {index + 1}: {label}
         </H4>
-        <RemovePlotButton />
+        <div className="flex gap-x-4">
+          <DownloadPlotButton
+            plotRef={plot_image_ref}
+            imageName={label.toLowerCase()}
+          />
+          <RemovePlotButton />
+        </div>
       </div>
       <div className="grid gap-x-4 @2xl:grid-cols-2">
         <Controls />
       </div>
-      <Plot />
-    </>
+      <div className="h-4" />
+      <div ref={plot_image_ref}>
+        <Plot />
+      </div>
+    </div>
   );
 }
 

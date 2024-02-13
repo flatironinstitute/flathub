@@ -47,6 +47,7 @@
     "highcharts": "latest",
     "highcharts-draggable-3d": "latest",
     "highcharts-react-official": "latest",
+    "html-to-image": "latest",
     "immer": "latest",
     "katex": "latest",
     "lodash.merge": "latest",

@@ -187,6 +187,8 @@ export function get_observable_options(
   const width = 700;
   const height = width / aspect;
   const base: Plot.PlotOptions = {
+    marginLeft: 60,
+    marginBottom: 50,
     width,
     height,
     style: {
