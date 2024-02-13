@@ -1,7 +1,6 @@
 import clsx from "clsx";
-import type { CatalogID } from "@/types";
 import { format } from "@/utils";
-import { useCatalogQuery } from "@/components/contexts/CatalogMetadataContext";
+import { useCatalogMetadata } from "@/components/contexts/CatalogMetadataContext";
 import {
   Dialog,
   DialogContent,
@@ -12,12 +11,14 @@ import {
 import { Katex } from "@/components/ui/katex";
 import { Button } from "@/components/ui/button";
 
-export function AboutThisCatalog({ catalog_id }: { catalog_id: CatalogID }) {
-  const catalog_query = useCatalogQuery(catalog_id);
-  const { title, descr, count } = catalog_query?.data ?? {};
+export function AboutThisCatalog() {
+  const catalog_metadata = useCatalogMetadata();
+  const num_variables = catalog_metadata?.hierarchy?.leaves?.()?.length;
+  const response = catalog_metadata?.response;
+  const { title, descr, count } = response ?? {};
   return (
     <Dialog>
-      <DialogTrigger asChild disabled={!catalog_query.data}>
+      <DialogTrigger asChild disabled={!response}>
         <Button variant="outline">About This Catalog</Button>
       </DialogTrigger>
       <DialogContent className="max-h-[80dvh] overflow-y-scroll">
@@ -34,6 +35,7 @@ export function AboutThisCatalog({ catalog_id }: { catalog_id: CatalogID }) {
           {descr}
         </Katex>
         <p>Rows: {format.commas(count)}</p>
+        <p>Variables: {format.commas(num_variables)}</p>
       </DialogContent>
     </Dialog>
   );
