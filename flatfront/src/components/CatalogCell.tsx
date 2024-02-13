@@ -160,7 +160,16 @@ function DeleteCatalogButton() {
       className="flex flex-row gap-x-2"
       onClick={() =>
         set_app_state((previous) => {
+          const plots = previous.plots?.[cell_id];
+          if (plots) {
+            Object.keys(plots).forEach((plot_id) => {
+              delete previous.plot_controls?.[plot_id];
+            });
+          }
           delete previous.cells[cell_id];
+          delete previous.filter_values?.[cell_id];
+          delete previous.plots?.[cell_id];
+          delete previous.random_sample?.[cell_id];
         })
       }
     >
