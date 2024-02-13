@@ -87,7 +87,7 @@ function PlotWrapper({ index }: { index: number }) {
   const plot_image_ref = React.useRef<HTMLDivElement>(null);
   return (
     <div>
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-center">
         <H4>
           Plot {index + 1}: {label}
         </H4>
