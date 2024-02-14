@@ -3,7 +3,7 @@ import * as d3 from "d3";
 import { twMerge } from "tailwind-merge";
 import type {
   CatalogHierarchyNode,
-  CellID,
+  CatalogCellID,
   FieldMetadata,
   FieldType,
   FilterValueRaw,
@@ -130,7 +130,7 @@ export function get_field_titles<T extends { title?: string }>(
 ): string[] {
   const titles: string[] = [];
   let current_node: d3.HierarchyNode<T> | null = node;
-  while (current_node !== null) {
+  while (current_node && current_node !== null) {
     if (current_node.data.title?.length ?? 0 > 0) {
       titles.push(current_node.data.title ?? `unknown`);
     }
@@ -234,8 +234,8 @@ export function assert_numeric_field_stats(metadata: FieldMetadata) {
 }
 
 export function is_catalog_cell_id(
-  cell_id: CellID.Any | null
-): cell_id is CellID.Catalog {
+  cell_id: CatalogCellID | null
+): cell_id is CatalogCellID {
   return cell_id?.match(/^catalog_cell_/) ? true : false;
 }
 
@@ -252,8 +252,8 @@ export function assert_defined<T>(value: T | undefined): asserts value is T {
 }
 
 export function assert_catalog_cell_id(
-  cell_id: CellID.Any | undefined
-): asserts cell_id is CellID.Catalog {
+  cell_id: CatalogCellID | undefined
+): asserts cell_id is CatalogCellID {
   assert_defined(cell_id);
   if (!is_catalog_cell_id(cell_id))
     throw new Error(`${cell_id} is not a catalog cell id`);

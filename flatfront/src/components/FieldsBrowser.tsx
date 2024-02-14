@@ -11,15 +11,9 @@ import {
   getExpandedRowModel,
   flexRender,
   type Table as TableType,
-  getFilteredRowModel
+  getFilteredRowModel,
+  createColumnHelper
 } from "@tanstack/react-table";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Katex } from "@/components/ui/katex";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { useCatalogMetadata } from "@/components/contexts/CatalogMetadataContext";
 import {
   useAddColumn,
@@ -31,35 +25,51 @@ import {
   useFilterIDs,
   useRemoveFilter
 } from "@/components/contexts/FiltersContext";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Katex } from "@/components/ui/katex";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { FieldInfoDialog } from "./FieldInfoDialog";
+
+const column_helper = createColumnHelper<CatalogHierarchyNode>();
 
 export function FieldsBrowser() {
   const catalog_metadata = useCatalogMetadata();
   const root_node_children = catalog_metadata?.hierarchy?.children ?? [];
 
   const table_columns: ColumnDef<CatalogHierarchyNode, any>[] = [
-    {
-      header: `Field`,
-      accessorFn: (node: CatalogHierarchyNode) => node.data.title,
-      cell: ({ row, getValue }) => {
-        const style = {
-          "--depth": row.depth
-        } as React.CSSProperties;
-        return (
-          <div
-            style={style}
-            className={clsx(
-              `flex items-center whitespace-nowrap pl-[calc(var(--depth)*1rem)]`
-            )}
-          >
-            <RowExpandButton row={row} />
-            &ensp;
-            <ColumnCheckbox row={row} />
-            &ensp;
-            <Katex>{getValue()}</Katex>
-          </div>
-        );
+    column_helper.accessor(
+      (node: CatalogHierarchyNode) => node.data.title || node.data.name,
+      {
+        header: `Field`,
+        cell: ({ row, getValue }) => {
+          const style = {
+            "--depth": row.depth
+          } as React.CSSProperties;
+          return (
+            <div
+              style={style}
+              className={clsx(
+                `flex items-center whitespace-nowrap pl-[calc(var(--depth)*1rem)]`
+              )}
+            >
+              <RowExpandButton row={row} />
+              &ensp;
+              <ColumnCheckbox row={row} />
+              &ensp;
+              <FieldInfoDialog row={row}>
+                <Katex className="cursor-pointer underline decoration-dotted">
+                  {getValue()}
+                </Katex>
+              </FieldInfoDialog>
+            </div>
+          );
+        }
       }
-    },
+    ),
     {
       header: `Filter Toggle`,
       id: `filter-toggle`,
@@ -170,7 +180,7 @@ function TablePrimitive({ table }: { table: TableType<CatalogHierarchyNode> }) {
     <Table
       className="grid w-full gap-x-2"
       style={{
-        gridTemplateColumns: `min-content min-content minmax(0,1fr) min-content`
+        gridTemplateColumns: `repeat(2,min-content) minmax(0,1fr) min-content`
       }}
     >
       <TableBody className="contents">
@@ -187,24 +197,6 @@ function TablePrimitive({ table }: { table: TableType<CatalogHierarchyNode> }) {
     </Table>
   );
 }
-
-// function TablePrimitive({ table }: { table: TableType<CatalogHierarchyNode> }) {
-//   return (
-//     <Table>
-//       <TableBody>
-//         {table.getRowModel().rows.map((row) => (
-//           <TableRow key={row.id}>
-//             {row.getVisibleCells().map((cell) => (
-//               <TableCell key={cell.id} className="px-2 py-1">
-//                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
-//               </TableCell>
-//             ))}
-//           </TableRow>
-//         ))}
-//       </TableBody>
-//     </Table>
-//   );
-// }
 
 function RowExpandButton<T>({ row }: { row: Row<T> }) {
   const icon_class = `h-4 w-4`;

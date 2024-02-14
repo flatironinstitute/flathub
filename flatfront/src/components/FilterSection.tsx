@@ -1,7 +1,7 @@
 import type { CatalogHierarchyNode, FilterValueRaw } from "@/types";
 import React from "react";
 import { useDebounce } from "@uidotdev/usehooks";
-import { ChevronDown, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import * as d3 from "d3";
 import {
   assert_numeric_field_stats,
@@ -31,23 +31,11 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger
-} from "@/components/ui/popover";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList
-} from "@/components/ui/command";
 import { useColumnIDs } from "@/components/contexts/ColumnsContext";
 import { FieldTitles } from "./FieldTitles";
 import { Label } from "./ui/label";
 import { NumberInput } from "./NumberInput";
+import { Combobox } from "./Combobox";
 
 const FieldNodeContext = React.createContext(null);
 
@@ -90,14 +78,16 @@ export function AddFilterDropdown() {
   const column_ids = useColumnIDs();
   const filter_ids = useFilterIDs();
   const catalog_metadata = useCatalogMetadata();
-  const available_filters = [...column_ids]
-    .map((column_id) => {
+  const add_filter = useAddFilter();
+
+  const items = [...column_ids]
+    .map((field_id) => {
       if (!catalog_metadata) return null;
-      const is_active = filter_ids.has(column_id);
-      const node = catalog_metadata?.get_node_from_id(column_id);
+      const is_active = filter_ids.has(field_id);
+      const node = catalog_metadata?.get_node_from_id(field_id);
       const titles = get_field_titles(node);
       return {
-        column_id,
+        field_id,
         node,
         label: titles.join(` `),
         display_label: <FieldTitles titles={titles} />,
@@ -105,62 +95,21 @@ export function AddFilterDropdown() {
       };
     })
     .filter(Boolean)
-    .filter((d) => !d.is_active);
-
-  const [open, setOpen] = React.useState(false);
-
-  const add_filter = useAddFilter();
+    .filter((d) => !d.is_active)
+    .map((d) => ({
+      key: d.field_id,
+      value: d.label,
+      label: d.display_label,
+      onSelect: () => add_filter(d.node)
+    }));
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-[min(100%,40ch)] justify-between"
-        >
-          Add a filter...
-          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent
-        side="bottom"
-        align="start"
-        avoidCollisions={false}
-        className="p-0"
-      >
-        <Command
-          filter={(value, search) => {
-            if (value.includes(search.toLowerCase())) return 1;
-            return 0;
-          }}
-        >
-          <CommandInput placeholder="Search filters..." />
-          <CommandList>
-            <CommandEmpty>No filters found.</CommandEmpty>
-            <CommandGroup>
-              {available_filters.map(
-                ({ column_id, node, label, display_label }) => (
-                  <CommandItem
-                    key={column_id}
-                    value={label}
-                    data-label={label}
-                    onSelect={() => {
-                      add_filter(node);
-                      setOpen(false);
-                    }}
-                    className="flex gap-x-2"
-                  >
-                    {display_label}
-                  </CommandItem>
-                )
-              )}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+    <Combobox
+      placeholder="Add a filter..."
+      emptyText="No filters found."
+      items={items}
+      autoClose
+    />
   );
 }
 
@@ -331,8 +280,9 @@ function SelectFilterControl() {
     { text: `All`, value: null, value_as_string: String(null) },
     ...join_enums(metadata)
   ];
-  const value = options.find((d) => d.value === filter_value_raw)
-    ?.value_as_string;
+  const value = options.find(
+    (d) => d.value === filter_value_raw
+  )?.value_as_string;
 
   const set_filter_value = useSetFilterValue();
 
@@ -353,8 +303,9 @@ function SelectFilterControl() {
     <Select
       value={value}
       onValueChange={(value_as_string) => {
-        const value = options.find((d) => d.value_as_string === value_as_string)
-          ?.value;
+        const value = options.find(
+          (d) => d.value_as_string === value_as_string
+        )?.value;
         console.log({ value });
         set_filter_value(field_node, value);
       }}

@@ -19,6 +19,7 @@ import {
   PopoverTrigger
 } from "@/components/ui/popover";
 import * as Plots from "@/components/Plots";
+import { DownloadPlotButton } from "./DownloadPlotButton";
 
 const plot_wrappers = d3.sort(Object.values(Plots), (d) => d.order);
 
@@ -40,13 +41,21 @@ function AddPlot() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button>Add Plot</Button>
+        <Button variant="default" className="w-60">
+          Add Plot
+        </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80" align="start" avoidCollisions={false}>
+      <PopoverContent className="w-40" align="start" avoidCollisions={false}>
         <div className="grid gap-4">
           {plot_wrappers.map(({ key, label }) => (
             <PopoverClose key={key} asChild>
-              <Button onClick={() => add_plot(key)}>{label}</Button>
+              <Button
+                variant="link"
+                className="h-5 cursor-pointer justify-start p-0"
+                onClick={() => add_plot(key)}
+              >
+                {label}
+              </Button>
             </PopoverClose>
           ))}
         </div>
@@ -75,19 +84,29 @@ function PlotWrapper({ index }: { index: number }) {
   const label = plot_key_to_label.get(plot_type);
   const wrapper = plot_wrappers.find(({ key }) => key === plot_type);
   const { Plot, Controls } = wrapper;
+  const plot_image_ref = React.useRef<HTMLDivElement>(null);
   return (
-    <>
-      <div className="flex items-center justify-between">
+    <div>
+      <div className="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-center">
         <H4>
           Plot {index + 1}: {label}
         </H4>
-        <RemovePlotButton />
+        <div className="flex gap-x-4">
+          <DownloadPlotButton
+            plotRef={plot_image_ref}
+            imageName={label.toLowerCase()}
+          />
+          <RemovePlotButton />
+        </div>
       </div>
-      <div className="grid gap-x-4 @2xl:grid-cols-2">
+      <div className="grid gap-x-4 gap-y-2 @2xl:grid-cols-2">
         <Controls />
       </div>
-      <Plot />
-    </>
+      <div className="h-4" />
+      <div ref={plot_image_ref}>
+        <Plot />
+      </div>
+    </div>
   );
 }
 

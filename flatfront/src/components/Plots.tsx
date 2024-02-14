@@ -1,5 +1,6 @@
 import * as d3 from "d3";
 import * as Plot from "@observablehq/plot";
+import { type ColorScheme } from "@observablehq/plot";
 import type {
   DataPostRequestBody,
   DataResponse,
@@ -17,15 +18,17 @@ import { ObservablePlot } from "./ObservablePlot";
 import {
   get_highcharts_options,
   get_observable_options,
-  LabelledPlotControl,
+  PlotVariableControl,
   LogCountControl,
   PlotStatusWrapper,
   useAxisConfig,
   usePlotQuery,
   XAxisControl,
-  YAxisControl
+  YAxisControl,
+  ColorSchemeControl
 } from "./PlotHelpers";
 import { StatusBoxFromQuery } from "./StatusBox";
+import { useIsDarkMode } from "./DarkModeToggle";
 
 export const Histogram: PlotWrapper = {
   key: `histogram`,
@@ -47,7 +50,7 @@ export const Histogram: PlotWrapper = {
       body: {
         fields: [
           {
-            field: x_axis.field_id,
+            field: x_axis.field_name,
             size: 100,
             log: x_axis.log_mode
           }
@@ -73,9 +76,8 @@ export const Histogram: PlotWrapper = {
 
     const plot_options: Plot.PlotOptions = get_observable_options({
       x: {
-        label: x_axis.field_id,
-        type: x_axis.log_mode ? `log` : `linear`,
-        tickFormat: x_axis.log_mode ? `.2~e` : undefined
+        label: x_axis.field_name,
+        type: x_axis.log_mode ? `log` : `linear`
       },
       y: {
         label: `Count`,
@@ -107,7 +109,7 @@ export const Histogram: PlotWrapper = {
       <PlotStatusWrapper
         status={
           <StatusBoxFromQuery
-            message={!x_axis.field_id && `Choose a field`}
+            message={!x_axis.field_name && `Choose a field`}
             axes={[x_axis]}
             query={query}
             queryKey={query_key}
@@ -122,7 +124,7 @@ export const Histogram: PlotWrapper = {
   Controls() {
     return (
       <>
-        <LabelledPlotControl
+        <PlotVariableControl
           label="X-Axis"
           plotControlKey="x_axis"
           placeholder="Choose field..."
@@ -133,6 +135,17 @@ export const Histogram: PlotWrapper = {
     );
   }
 };
+
+const heatmap_colors: ColorScheme[] = [
+  "Greys",
+  "Reds",
+  "Greens",
+  "Blues",
+  "Oranges",
+  "Purples"
+];
+
+const heatmap_default_color = `Greys`;
 
 export const Heatmap: PlotWrapper = {
   key: `heatmap`,
@@ -145,6 +158,7 @@ export const Heatmap: PlotWrapper = {
 
     const x_axis = useAxisConfig(`x_axis`);
     const y_axis = useAxisConfig(`y_axis`);
+    const color_scheme = usePlotState()?.color ?? heatmap_default_color;
 
     const enable_request =
       Boolean(catalog_id) &&
@@ -158,8 +172,8 @@ export const Heatmap: PlotWrapper = {
       path: `/${catalog_id}/histogram`,
       body: {
         fields: [
-          { field: x_axis.field_id, size: 40, log: x_axis.log_mode },
-          { field: y_axis.field_id, size: 40, log: y_axis.log_mode }
+          { field: x_axis.field_name, size: 40, log: x_axis.log_mode },
+          { field: y_axis.field_name, size: 40, log: y_axis.log_mode }
         ] as any,
         ...filters,
         ...random_config
@@ -181,20 +195,21 @@ export const Heatmap: PlotWrapper = {
       });
     })();
 
+    const is_dark_mode = useIsDarkMode();
+
     const plot_options: Plot.PlotOptions = get_observable_options({
       color: {
-        type: `sequential`,
         label: `Count`,
-        scheme: `Greys`,
-        // reverse: is_dark_mode,
+        scheme: color_scheme,
+        reverse: is_dark_mode,
         domain: d3.extent(data_munged, (d) => d.count)
       },
       x: {
-        label: x_axis.field_id,
+        label: x_axis.field_name,
         type: x_axis.log_mode ? `log` : `linear`
       },
       y: {
-        label: y_axis.field_id,
+        label: y_axis.field_name,
         type: y_axis.log_mode ? `log` : `linear`
       },
       marks: [
@@ -240,6 +255,11 @@ export const Heatmap: PlotWrapper = {
       <>
         <XAxisControl />
         <YAxisControl />
+        <ColorSchemeControl
+          showLogSwitch={false}
+          defaultScheme={heatmap_default_color}
+          options={heatmap_colors}
+        />
       </>
     );
   }
@@ -269,9 +289,9 @@ export const BoxPlot: PlotWrapper = {
       path: `/${catalog_id}/histogram`,
       body: {
         fields: [
-          { field: x_axis.field_id, size: 60, log: x_axis.log_mode }
+          { field: x_axis.field_name, size: 60, log: x_axis.log_mode }
         ] as any,
-        quartiles: y_axis.field_id?.toString(),
+        quartiles: y_axis.field_name?.toString(),
         ...filters,
         ...random_config
       },
@@ -309,11 +329,11 @@ export const BoxPlot: PlotWrapper = {
       insetRight: 10,
       insetBottom: 20,
       x: {
-        label: x_axis.field_id,
+        label: x_axis.field_name,
         type: x_axis.log_mode ? `log` : `linear`
       },
       y: {
-        label: y_axis.field_id,
+        label: y_axis.field_name,
         type: y_axis.log_mode ? `log` : `linear`
       },
       marks: [
@@ -405,7 +425,7 @@ export const Scatterplot: PlotWrapper = {
       path: `/${catalog_id}/data`,
       body: {
         object: true,
-        fields: [x_axis.field_id, y_axis.field_id],
+        fields: [x_axis.field_name, y_axis.field_name],
         ...filters,
         count,
         sample
@@ -415,21 +435,21 @@ export const Scatterplot: PlotWrapper = {
     });
 
     const data_munged = (() => {
-      if (!x_axis.field_id) return [];
-      if (!y_axis.field_id) return [];
+      if (!x_axis.field_name) return [];
+      if (!y_axis.field_name) return [];
       if (!query.data) return [];
       return query.data.map((datum) => {
-        return { x: +datum[x_axis.field_id], y: +datum[y_axis.field_id] };
+        return { x: +datum[x_axis.field_name], y: +datum[y_axis.field_name] };
       });
     })();
 
     const plot_options: Plot.PlotOptions = get_observable_options({
       x: {
-        label: x_axis.field_id,
+        label: x_axis.field_name,
         type: x_axis.log_mode ? `log` : `linear`
       },
       y: {
-        label: y_axis.field_id,
+        label: y_axis.field_name,
         type: y_axis.log_mode ? `log` : `linear`
       },
       marks: [
@@ -500,7 +520,7 @@ export const Scatterplot3D: PlotWrapper = {
       path: `/${catalog_id}/data`,
       body: {
         object: true,
-        fields: [x_axis.field_id, y_axis.field_id, z_axis.field_id],
+        fields: [x_axis.field_name, y_axis.field_name, z_axis.field_name],
         ...filters,
         count,
         sample
@@ -510,15 +530,15 @@ export const Scatterplot3D: PlotWrapper = {
     });
 
     const data_munged = (() => {
-      if (!x_axis.field_id) return [];
-      if (!y_axis.field_id) return [];
-      if (!z_axis.field_id) return [];
+      if (!x_axis.field_name) return [];
+      if (!y_axis.field_name) return [];
+      if (!z_axis.field_name) return [];
       if (!query.data) return [];
       return query.data.map((datum) => {
         return [
-          +datum[x_axis.field_id],
-          +datum[y_axis.field_id],
-          +datum[z_axis.field_id]
+          +datum[x_axis.field_name],
+          +datum[y_axis.field_name],
+          +datum[z_axis.field_name]
         ];
       });
     })();
@@ -538,20 +558,20 @@ export const Scatterplot3D: PlotWrapper = {
       xAxis: {
         type: x_axis.log_mode ? `logarithmic` : `linear`,
         title: {
-          text: x_axis.field_id
+          text: x_axis.field_name
         },
         gridLineWidth: 1
       },
       yAxis: {
         type: y_axis.log_mode ? `logarithmic` : `linear`,
         title: {
-          text: y_axis.field_id
+          text: y_axis.field_name
         }
       },
       zAxis: {
         type: z_axis.log_mode ? `logarithmic` : `linear`,
         title: {
-          text: z_axis.field_id
+          text: z_axis.field_name
         }
       },
       series: [
@@ -586,7 +606,7 @@ export const Scatterplot3D: PlotWrapper = {
       <>
         <XAxisControl />
         <YAxisControl />
-        <LabelledPlotControl
+        <PlotVariableControl
           label="Z-Axis"
           plotControlKey="z_axis"
           placeholder="Choose Z-Axis..."
