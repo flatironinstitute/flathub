@@ -21,6 +21,8 @@ const query_client = new QueryClient({
 });
 
 export default function App() {
+  log(`App mode:`, import.meta.env.MODE);
+  log(`Build time:`, import.meta.env.BUILD_TIME);
   return (
     <QueryClientProvider client={query_client}>
       <AppStateProvider>
