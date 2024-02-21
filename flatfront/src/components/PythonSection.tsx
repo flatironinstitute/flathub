@@ -1,4 +1,4 @@
-import { FLATHUB_API_BASE_URL, is_numeric_filter_value } from "@/utils";
+import { FLATHUB_API_BASE_URL, get_field_type } from "@/utils";
 import { useCatalogID } from "./contexts/CatalogIDContext";
 import { useColumnNames } from "./contexts/ColumnsContext";
 import {
@@ -37,19 +37,25 @@ export function PythonSection() {
   let filters = ``;
   for (const [field_id, filter_value] of Object.entries(filters_object)) {
     const node = catalog_metadata?.get_node_from_id(field_id);
-    if (node) {
-      const name = node.data.name;
-      let string_value = ``;
-      if (is_numeric_filter_value(filter_value)) {
-        const min = get_current_min(field_id);
-        const max = get_current_max(field_id);
-        string_value = `(${min}, ${max})`;
-      } else {
-        // TODO: Is this right?
-        string_value = filter_value.toString();
-      }
-      filters += `,\n  ${name} = ${string_value}`;
+    if (!node) continue;
+    const field_type = get_field_type(node.data);
+    if (typeof filter_value === `undefined`) continue;
+    if (typeof filter_value === `string` && filter_value === ``) continue;
+    let string_value = ``;
+    if (field_type === `INTEGER` || field_type === `FLOAT`) {
+      const min = get_current_min(field_id);
+      const max = get_current_max(field_id);
+      string_value = `(${min}, ${max})`;
+    } else if (
+      field_type === `STRING` &&
+      typeof filter_value === `object` &&
+      "wildcard" in filter_value
+    ) {
+      string_value = JSON.stringify(filter_value?.wildcard);
     }
+    if (string_value === ``) continue;
+    const name = node.data.name;
+    filters += `,\n  ${name} = ${string_value}`;
   }
   const code = `import flathub
 ${catalog_name} = flathub.Catalog("${catalog_name}", endpoint = "${endpoint}")

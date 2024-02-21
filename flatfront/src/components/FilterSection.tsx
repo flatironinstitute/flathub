@@ -14,6 +14,7 @@ import {
 import { useCatalogMetadata } from "@/components/contexts/CatalogMetadataContext";
 import {
   useAddFilter,
+  useClearFilterValue,
   useFilterIDs,
   useFilterValues,
   useRemoveFilter,
@@ -36,6 +37,7 @@ import { FieldTitles } from "./FieldTitles";
 import { Label } from "./ui/label";
 import { NumberInput } from "./NumberInput";
 import { Combobox } from "./Combobox";
+import { Input } from "./ui/input";
 
 const FieldNodeContext = React.createContext(null);
 
@@ -146,6 +148,8 @@ function FilterCard() {
       case `LABELLED_ENUMERABLE_INTEGER`:
       case `LABELLED_ENUMERABLE_BOOLEAN`:
         return <SelectFilterControl />;
+      case `STRING`:
+        return <TextFilterControl />;
       default:
         return <div>not yet implemented: {field_type}</div>;
     }
@@ -306,7 +310,6 @@ function SelectFilterControl() {
         const value = options.find(
           (d) => d.value_as_string === value_as_string
         )?.value;
-        console.log({ value });
         set_filter_value(field_node, value);
       }}
     >
@@ -317,5 +320,43 @@ function SelectFilterControl() {
         <SelectGroup>{items}</SelectGroup>
       </SelectContent>
     </Select>
+  );
+}
+
+function TextFilterControl() {
+  const field_node = useFieldNode();
+  const field_id = useCatalogMetadata().get_id_from_node(field_node);
+  const filters = useFilterValues();
+  const filter_value_raw: FilterValueRaw = filters?.[field_id] ?? null;
+
+  const initial_value = (() => {
+    if (typeof filter_value_raw !== `object`) return undefined;
+    if (!(`wildcard` in filter_value_raw)) return undefined;
+    return filter_value_raw.wildcard;
+  })();
+
+  const [value, set_value] = React.useState<string>(initial_value);
+  const debounced = useDebounce(value, 500);
+
+  const set_filter_value = useSetFilterValue();
+  const clear_filter_value = useClearFilterValue();
+
+  React.useEffect(() => {
+    if (typeof debounced !== `string`) return;
+    if (debounced === ``) {
+      clear_filter_value(field_node);
+      return;
+    }
+    set_filter_value(field_node, {
+      wildcard: debounced
+    });
+  }, [debounced]);
+
+  return (
+    <Input
+      type="text"
+      value={value}
+      onInput={(event) => set_value(event.currentTarget.value)}
+    />
   );
 }
