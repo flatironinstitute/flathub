@@ -330,7 +330,8 @@ function TextFilterControl() {
   const filter_value_raw: FilterValueRaw = filters?.[field_id] ?? null;
 
   const initial_value = (() => {
-    if (typeof filter_value_raw !== `object`) return undefined;
+    if (typeof filter_value_raw !== `object` || filter_value_raw === null)
+      return undefined;
     if (!(`wildcard` in filter_value_raw)) return undefined;
     return filter_value_raw.wildcard;
   })();
