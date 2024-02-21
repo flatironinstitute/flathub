@@ -34,7 +34,7 @@ spec:
         co.elastic.logs/pipeline: waimwork-access
     spec:
       containers:
-      - image: docker-registry:25703/flathub
+      - image: flatironinstitute/flathub
         name: flathub
         args: ["-f","/home/flathub/config/config","+RTS","-N4"]
         resources:
