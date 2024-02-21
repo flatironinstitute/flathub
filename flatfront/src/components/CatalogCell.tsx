@@ -1,9 +1,10 @@
 import React from "react";
 import { Trash2 } from "lucide-react";
 import clsx from "clsx";
-import type { CellID } from "@/types";
+import type { CatalogCellID } from "@/types";
 import {
   CatalogIDProvider,
+  useCatalogCellID,
   useCatalogID
 } from "@/components/contexts/CatalogIDContext";
 import { CatalogMetadataProvider } from "@/components/contexts/CatalogMetadataContext";
@@ -11,7 +12,10 @@ import { useCatalogMetadata } from "@/components/contexts/CatalogMetadataContext
 import { ColumnsProvider } from "@/components/contexts/ColumnsContext";
 import { FiltersProvider } from "@/components/contexts/FiltersContext";
 import { RandomProvider } from "@/components/contexts/RandomContext";
-import { MatchingRowsProvider } from "./contexts/MatchingRowsContext";
+import {
+  MatchingRowsProvider,
+  useMatchingRowsText
+} from "./contexts/MatchingRowsContext";
 import { CardContent, Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -23,9 +27,9 @@ import { AboutThisCatalog } from "./AboutThisCatalog";
 import { RandomSampleControls } from "./RandomSampleControls";
 import { PythonSection } from "./PythonSection";
 import { SortProvider } from "./contexts/SortContext";
+import { useSetAppState } from "./contexts/AppStateContext";
 
-
-export function CatalogCell({ id: catalog_cell_id }: { id: CellID.Catalog }) {
+export function CatalogCell({ id: catalog_cell_id }: { id: CatalogCellID }) {
   return (
     <CatalogIDProvider value={catalog_cell_id}>
       <CatalogMetadataProvider>
@@ -48,6 +52,7 @@ export function CatalogCell({ id: catalog_cell_id }: { id: CellID.Catalog }) {
 function CatalogCellContents() {
   const catalog_id = useCatalogID();
   const catalog_title = useCatalogMetadata()?.response?.title ?? ``;
+  const matching_rows = useMatchingRowsText();
 
   const result_section_ref = React.useRef<HTMLDivElement>(null);
 
@@ -76,18 +81,20 @@ function CatalogCellContents() {
       <div>{filters_section}</div>
       <div>
         <CardHeader>
-          <CardTitle>Results</CardTitle>
+          <CardTitle>Plots</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>{matching_rows}</div>
+          <PlotSection />
+        </CardContent>
+        <Separator />
+        <CardHeader>
+          <CardTitle>Table</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <TableSection />
         </CardContent>
         <Separator />
-        <CardHeader>
-          <CardTitle>Plots</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <PlotSection />
-        </CardContent>
       </div>
     </div>
   );
@@ -102,17 +109,10 @@ function CatalogCellContents() {
         <CardHeader className="grid items-center gap-4 space-y-0 @2xl:grid-cols-[1fr_min-content_min-content]">
           <CardTitle>Catalog: {catalog_title}</CardTitle>
           <AboutThisCatalog catalog_id={catalog_id} />
-          <Button variant="outline" className="flex flex-row gap-x-2">
-            <Trash2 /> Delete
-          </Button>
+          <DeleteCatalogButton />
         </CardHeader>
         <Separator />
-        <CardHeader>
-          <CardTitle>Fields</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <FieldsBrowser key={catalog_id} />
-        </CardContent>
+        <FieldsSection />
         <Separator />
         {results_section}
         <Separator />
@@ -124,5 +124,56 @@ function CatalogCellContents() {
         </CardContent>
       </Card>
     </>
+  );
+}
+
+function FieldsSection() {
+  const catalog_id = useCatalogID();
+
+  const [open, set_open] = React.useState<boolean>(true);
+
+  const text = open ? `Hide` : `Show`;
+
+  const contents = open ? (
+    <CardContent className="space-y-4">
+      <FieldsBrowser key={catalog_id} />
+    </CardContent>
+  ) : null;
+
+  return (
+    <>
+      <CardHeader className="flex flex-row items-center gap-x-4">
+        <CardTitle>Fields</CardTitle>
+        <Button onClick={() => set_open((d) => !d)}>{text}</Button>
+      </CardHeader>
+      {contents}
+    </>
+  );
+}
+
+function DeleteCatalogButton() {
+  const cell_id = useCatalogCellID();
+  const set_app_state = useSetAppState();
+  return (
+    <Button
+      variant="outline"
+      className="flex flex-row gap-x-2"
+      onClick={() =>
+        set_app_state((previous) => {
+          const plots = previous.plots?.[cell_id];
+          if (plots) {
+            Object.keys(plots).forEach((plot_id) => {
+              delete previous.plot_controls?.[plot_id];
+            });
+          }
+          delete previous.cells[cell_id];
+          delete previous.filter_values?.[cell_id];
+          delete previous.plots?.[cell_id];
+          delete previous.random_sample?.[cell_id];
+        })
+      }
+    >
+      <Trash2 /> Delete
+    </Button>
   );
 }

@@ -1,6 +1,5 @@
 import type * as schema from "../flathub-schema";
 import React from "react";
-import clsx from "clsx";
 import { Label } from "@/components/ui/label";
 import { useCatalogID } from "@/components/contexts/CatalogIDContext";
 import { useFilterValuesWithFieldNames } from "./contexts/FiltersContext";
@@ -75,8 +74,6 @@ function BulkDataDownload() {
     }
   }
 
-  console.log(url?.searchParams?.toString());
-
   const items = formats.map((format) => (
     <SelectItem key={format} value={format}>
       {format}
@@ -84,7 +81,7 @@ function BulkDataDownload() {
   ));
 
   return (
-    <div className="flex gap-x-4 max-w-[500px]">
+    <div className="flex max-w-[500px] gap-x-4">
       <Select
         value={selected_format}
         onValueChange={(format) =>

@@ -2,56 +2,22 @@ import type * as schema from "./flathub-schema";
 
 export type { schema };
 
-// export type AppState = {
-//   cells?: Record<number, Cell.Any>;
-//   show_filters?: Record<
-//     CellID.Catalog,
-//     Record<CatalogID, Record<FieldID, boolean>>
-//   >;
-//   filter_values?: Record<CellID.Catalog, Record<CatalogID, Filters>>;
-//   set_random_sample?: Record<
-//     CellID.Catalog,
-//     Record<CatalogID, { sample?: number; seed?: number }>
-//   >;
-//   set_catalog?: Record<CellID.Catalog, CatalogID>;
-//   plots?: Record<CellID.Catalog, Record<PlotID, PlotType>>;
-//   // add_plot?: Record<CellID.Catalog, Record<PlotID, boolean>>;
-//   // set_plot_type?: Record<PlotID, PlotType>;
-//   set_plot_control?: Record<PlotID, Record<CatalogID, Record<string, any>>>;
-//   show_columns?: Record<
-//     CellID.Catalog,
-//     Record<CatalogID, Record<FieldID, boolean>>
-//   >;
-// };
-
 export type AppState = {
-  cells?: Record<number, Cell.Any>;
-  catalog_ids?: Record<CellID.Catalog, CatalogID>;
-  show_filters?: Record<CellID.Catalog, Record<FieldID, boolean>>;
-  show_columns?: Record<CellID.Catalog, Record<FieldID, boolean>>;
-  filter_values?: Record<CellID.Catalog, Filters>;
-  random_sample?: Record<CellID.Catalog, { sample?: number; seed?: number }>;
-  plots?: Record<CellID.Catalog, Record<PlotID, PlotType>>;
+  cells?: Record<CatalogCellID, CatalogCell>;
+  cells_order?: Array<CatalogCellID>;
+  show_filters?: Record<CatalogCellID, Record<FieldID, boolean>>;
+  show_columns?: Record<CatalogCellID, Record<FieldID, boolean>>;
+  filter_values?: Record<CatalogCellID, Filters>;
+  random_sample?: Record<CatalogCellID, { sample?: number; seed?: number }>;
+  plots?: Record<CatalogCellID, Record<PlotID, PlotType>>;
   plot_controls?: Record<PlotID, Record<string, any>>;
 };
 
-export namespace Cell {
-  export type Catalog = {
-    type: `catalog`;
-    id: CellID.Catalog;
-  };
-  export type Comparison = {
-    type: `comparison`;
-    id: CellID.Comparison;
-  };
-  export type Any = Catalog | Comparison;
-}
-
-export namespace CellID {
-  export type Catalog = `catalog_cell_${number}`;
-  export type Comparison = `comparison_cell_${number}`;
-  export type Any = Catalog | Comparison;
-}
+export type CatalogCell = {
+  id: CatalogCellID;
+  catalog_id: CatalogID;
+};
+export type CatalogCellID = `catalog_cell_${number}`;
 
 export type PlotWrapper = {
   key: PlotType;

@@ -1,5 +1,5 @@
 title: Gr8 Stars
-index: gr8.1
+index: gr8.2
 settings:
   index:
     number_of_shards: 1
@@ -355,66 +355,62 @@ fields:
       #     type: keyword
       #     descr: Which instrument spectrum was used to derive the spectral and isochrone properties
       #     terms: true
-      #   - name: ''
-      #     title: fies
-      #     sub:
-      #     - name: 'spectrum_fies'
-      #       title: 'download'
-      #       type: boolean
-      #       attachment:
-      #         path: gr8/spectra/${primary_name}_fies.fits
-      #         name: gr8_spectra_${primary_name}_fies.fits
-      #     - name: 'spectrum_fies_resolution'
-      #       title: 'resolution'
-      #       type: float
-      #       flag: hidden
-      #       descr: Spectral resolution
-      #     - name: 'spectrum_fies_snr'
-      #       title: 'snr'
-      #       type: float
-      #       flag: hidden
-      #       descr: Signal-to-noise per pixel at 600 nm
-      #     - name: 'spectrum_fies_date'
-      #       title: 'date'
-      #       type: float
-      #       units: 'BJD'
-      #       flag: hidden
-      #       descr: Date of observation (or effective average date if nobs > 1)
-      #     - name: 'spectrum_fies_nobs'
-      #       title: 'nobs'
-      #       type: int
-      #       flag: hidden
-      #       descr: Number of observations averaged to create the spectrum
-      #   - name: ''
-      #     title: feros
-      #     sub:
-      #     - name: 'spectrum_feros'
-      #       title: 'download'
-      #       type: boolean
-      #       attachment:
-      #         path: gr8/spectra/${primary_name}_feros.fits
-      #         name: gr8_spectra_${primary_name}_feros.fits
-      #     - name: 'spectrum_feros_resolution'
-      #       title: 'resolution'
-      #       type: float
-      #       flag: hidden
-      #       descr: Spectral resolution
-      #     - name: 'spectrum_feros_snr'
-      #       title: 'snr'
-      #       type: float
-      #       flag: hidden
-      #       descr: Signal-to-noise per pixel at 600 nm
-      #     - name: 'spectrum_feros_date'
-      #       title: 'date'
-      #       type: float
-      #       units: 'BJD'
-      #       flag: hidden
-      #       descr: Date of observation (or effective average date if nobs > 1)
-      #     - name: 'spectrum_feros_nobs'
-      #       title: 'nobs'
-      #       type: int
-      #       flag: hidden
-      #       descr: Number of observations averaged to create the spectrum
+      - name: 'feros'
+        title: feros
+        sub:
+          - name: ''
+            title: 'download'
+            sub:
+              - name: '1d'
+                title: '1D'
+                descr: Download 1D co-added FEROS spectrum
+                type: boolean
+                attachment:
+                  path: gr8/spectra/FEROS/${primary_name}_FEROS_S1D.fits
+                  name: gr8_spectra_${primary_name}_FEROS_S1D.fits
+                ingest: spectrum_feros
+              - name: '2d'
+                title: '2D'
+                type: boolean
+                descr: Download an archive of all FEROS spectra without epochs or orders combined
+                attachment:
+                  path: gr8/spectra/FEROS/${primary_name}_FEROS_S2D.tgz
+                  name: gr8_spectra_${primary_name}_FEROS_S2D.tgz
+                ingest: spectrum_feros
+          - name: 'snr'
+            title: 'snr'
+            type: float
+            flag: hidden
+            descr: Signal-to-noise per pixel at 600 nm
+          - name: 'nobs'
+            title: 'nobs'
+            type: int
+            flag: hidden
+            descr: Number of epoch spectra
+      - name: 'fies'
+        title: fies
+        sub:
+          - name: ''
+            title: 'download'
+            sub:
+              - name: '1d'
+                title: '1D'
+                type: boolean
+                descr: Download 1D FIES spectrum
+                attachment:
+                  path: gr8/spectra/FIES/${primary_name}_FIES_S1D.fits
+                  name: gr8_spectra_${primary_name}_FIES_S1D.fits
+                ingest: spectrum_fies
+          - name: 'snr'
+            title: 'snr'
+            type: float
+            flag: hidden
+            descr: Signal-to-noise per pixel at 600 nm
+          - name: 'nobs'
+            title: 'nobs'
+            type: int
+            flag: hidden
+            descr: Number of epoch spectra
       - name: 'harps'
         title: harps
         sub:
@@ -424,16 +420,18 @@ fields:
               - name: '1d'
                 title: '1D'
                 type: boolean
+                descr: Download 1D co-added HARPS spectrum
                 attachment:
-                  path: gr8/spectra/HARPS/${primary_name/ /}_HARPS_S1D.fits
-                  name: gr8_spectra_${primary_name/ /}_HARPS_S1D.fits
+                  path: gr8/spectra/HARPS/${primary_name}_HARPS_S1D.fits
+                  name: gr8_spectra_${primary_name}_HARPS_S1D.fits
                 ingest: spectrum_harps
               - name: '2d'
                 title: '2D'
                 type: boolean
+                descr: Download an archive of all HARPS spectra without epochs or orders combined
                 attachment:
-                  path: gr8/spectra/HARPS/${primary_name/ /}_HARPS_S2D.tgz
-                  name: gr8_spectra_${primary_name/ /}_HARPS_S2D.tgz
+                  path: gr8/spectra/HARPS/${primary_name}_HARPS_S2D.tgz
+                  name: gr8_spectra_${primary_name}_HARPS_S2D.tgz
                 ingest: spectrum_harps
           #     - name: 'resolution'
           #       title: 'resolution'
@@ -455,7 +453,7 @@ fields:
             title: 'nobs'
             type: int
             flag: hidden
-            descr: Number of observations averaged to create the spectrum
+            descr: Number of epoch spectra
       #   - name: ''
       #     title: harpsn
       #     sub:
@@ -486,6 +484,51 @@ fields:
       #       type: int
       #       flag: hidden
       #       descr: Number of observations averaged to create the spectrum
+      # TODO: no spectra (yet)
+      - name: 'hires'
+        title: hires
+        flag: hidden
+        sub:
+          - name: ''
+            title: 'download'
+            sub:
+              - name: '1d'
+                title: '1D'
+                type: boolean
+                descr: Download 1D co-added HIRES spectrum
+                attachment:
+                  path: gr8/spectra/${primary_name}_hires.fits
+                  name: gr8_spectra_${primary_name}_hires.fits
+                ingest: spectrum_hires_1d
+              - name: '2d'
+                title: '2D'
+                type: boolean
+                descr: Download an archive of all HIRES spectra without epochs or orders combined
+                attachment:
+                  path: gr8/spectra/${primary_name}_hires.fits
+                  name: gr8_spectra_${primary_name}_hires.fits
+                ingest: spectrum_hires_2d
+          - name: 'resolution'
+            title: 'resolution'
+            type: float
+            flag: hidden
+            descr: Spectral resolution
+          - name: 'snr'
+            title: 'snr'
+            type: float
+            flag: hidden
+            descr: Signal-to-noise per pixel at 600 nm
+          #     - name: 'date'
+          #       title: 'date'
+          #       type: float
+          #       units: 'BJD'
+          #       flag: hidden
+          #       descr: Date of observation (or effective average date if nobs > 1)
+          - name: 'nobs'
+            title: 'nobs'
+            type: int
+            flag: hidden
+            descr: Number of observations averaged to create the spectrum
       - name: 'hermes'
         title: hermes
         sub:
@@ -495,9 +538,10 @@ fields:
             - name: '1d'
               title: '1D'
               type: boolean
+              descr: Download 1D HERMES spectrum
               attachment:
-                path: gr8/spectra/HERMES/${primary_name/ /}_HERMES_S1D.fits
-                name: gr8_spectra_${primary_name/ /}_HERMES_S1D.fits
+                path: gr8/spectra/HERMES/${primary_name}_HERMES_S1D.fits
+                name: gr8_spectra_${primary_name}_HERMES_S1D.fits
               ingest: spectrum_hermes
       # - name: 'resolution'
       #   title: 'resolution'
@@ -520,49 +564,6 @@ fields:
           type: int
           flag: hidden
           descr: Number of observations averaged to create the spectrum
-      # TODO: check on hires, fies?
-      - name: 'hires'
-        title: hires
-        flag: hidden
-        sub:
-          - name: ''
-            title: 'download'
-            sub:
-              - name: '1d'
-                title: '1D'
-                type: boolean
-                attachment:
-                  path: gr8/spectra/${primary_name}_hires.fits
-                  name: gr8_spectra_${primary_name}_hires.fits
-                ingest: spectrum_hires
-              - name: '2d'
-                title: '2D'
-                type: boolean
-                attachment:
-                  path: gr8/spectra/${primary_name}_hires.fits
-                  name: gr8_spectra_${primary_name}_hires.fits
-                ingest: spectrum_hires
-          - name: 'resolution'
-            title: 'resolution'
-            type: float
-            flag: hidden
-            descr: Spectral resolution
-          - name: 'snr'
-            title: 'snr'
-            type: float
-            flag: hidden
-            descr: Signal-to-noise per pixel at 600 nm
-          #     - name: 'date'
-          #       title: 'date'
-          #       type: float
-          #       units: 'BJD'
-          #       flag: hidden
-          #       descr: Date of observation (or effective average date if nobs > 1)
-          - name: 'nobs'
-            title: 'nobs'
-            type: int
-            flag: hidden
-            descr: Number of observations averaged to create the spectrum
       - name: 'sophie'
         title: sophie
         sub:
@@ -572,65 +573,58 @@ fields:
               - name: '1d'
                 title: '1D'
                 type: boolean
+                descr: Download 1D co-added SOPHIE spectrum
                 attachment:
-                  path: gr8/spectra/SOPHIE/${primary_name/ /}_SOPHIE_S1D.fits
-                  name: gr8_spectra_${primary_name/ /}_SOPHIE_S1D.fits
+                  path: gr8/spectra/SOPHIE/${primary_name}_SOPHIE_S1D.fits
+                  name: gr8_spectra_${primary_name}_SOPHIE_S1D.fits
                 ingest: spectrum_sophie
               - name: '2d'
                 title: '2D'
                 type: boolean
+                descr: Download an archive of all SOPHIE spectra without epochs or orders combined
                 attachment:
-                  path: gr8/spectra/SOPHIE/${primary_name/ /}_SOPHIE_S2D.tgz
-                  name: gr8_spectra_${primary_name/ /}_SOPHIE_S2D.tgz
+                  path: gr8/spectra/SOPHIE/${primary_name}_SOPHIE_S2D.tgz
+                  name: gr8_spectra_${primary_name}_SOPHIE_S2D.tgz
                 ingest: spectrum_sophie
-          #     - name: 'resolution'
-          #       title: 'resolution'
-          #       type: float
-          #       flag: hidden
-          #       descr: Spectral resolution
           - name: 'snr'
             title: 'snr'
             type: float
             flag: hidden
             descr: Signal-to-noise per pixel at 600 nm
-          #     - name: 'date'
-          #       title: 'date'
-          #       type: float
-          #       units: 'BJD'
-          #       flag: hidden
-          #       descr: Date of observation (or effective average date if nobs > 1)
           - name: 'nobs'
             title: 'nobs'
             type: int
             flag: hidden
             descr: Number of observations averaged to create the spectrum
-#   - name: ''
-#     title: uves
-#     sub:
-#     - name: 'spectrum_uves'
-#       title: 'download'
-#       type: boolean
-#       attachment:
-#         path: gr8/spectra/${primary_name}_uves.fits
-#         name: gr8_spectra_${primary_name}_uves.fits
-#     - name: 'spectrum_uves_resolution'
-#       title: 'resolution'
-#       type: float
-#       flag: hidden
-#       descr: Spectral resolution
-#     - name: 'spectrum_uves_snr'
-#       title: 'snr'
-#       type: float
-#       flag: hidden
-#       descr: Signal-to-noise per pixel at 600 nm
-#     - name: 'spectrum_uves_date'
-#       title: 'date'
-#       type: float
-#       units: 'BJD'
-#       flag: hidden
-#       descr: Date of observation (or effective average date if nobs > 1)
-#     - name: 'spectrum_uves_nobs'
-#       title: 'nobs'
-#       type: int
-#       flag: hidden
-#       descr: Number of observations averaged to create the spectrum
+      - name: 'uves'
+        title: uves
+        sub:
+          - name: ''
+            title: 'download'
+            sub:
+              - name: '1d'
+                title: '1D'
+                type: boolean
+                descr: Download 1D co-added UVES spectrum
+                attachment:
+                  path: gr8/spectra/UVES/${primary_name}_UVES_S1D.fits
+                  name: gr8_spectra_${primary_name}_UVES_S1D.fits
+                ingest: spectrum_uves
+              - name: '2d'
+                title: '2D'
+                type: boolean
+                descr: Download an archive of all UVES spectra without epochs or orders combined
+                attachment:
+                  path: gr8/spectra/UVES/${primary_name}_UVES_S2D.tgz
+                  name: gr8_spectra_${primary_name}_UVES_S2D.tgz
+                ingest: spectrum_uves
+          - name: 'snr'
+            title: 'snr'
+            type: float
+            flag: hidden
+            descr: Signal-to-noise per pixel at 600 nm
+          - name: 'nobs'
+            title: 'nobs'
+            type: int
+            flag: hidden
+            descr: Number of epoch spectra

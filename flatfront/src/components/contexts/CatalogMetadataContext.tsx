@@ -18,6 +18,17 @@ const CatalogMetadataContext = React.createContext<
 
 export function CatalogMetadataProvider({ children }) {
   const catalog_id = useCatalogID();
+  const catalog_metadata = useCatalogMetadataFromQuery(catalog_id);
+  return (
+    <CatalogMetadataContext.Provider value={catalog_metadata}>
+      {children}
+    </CatalogMetadataContext.Provider>
+  );
+}
+
+export function useCatalogMetadataFromQuery(
+  catalog_id: CatalogID
+): CatalogMetadataWrapper {
   const catalog_query = useCatalogQuery(catalog_id);
   const wrapped = React.useMemo(
     () =>
@@ -26,12 +37,7 @@ export function CatalogMetadataProvider({ children }) {
         : undefined,
     [catalog_query.data]
   );
-
-  return (
-    <CatalogMetadataContext.Provider value={wrapped}>
-      {children}
-    </CatalogMetadataContext.Provider>
-  );
+  return wrapped;
 }
 
 export function useCatalogQuery(catalog_id: CatalogID) {
