@@ -6977,7 +6977,7 @@ gaiadr3:
     min: 1.5207137117992139e-6
 gr8:
   2mass:
-    others: 2779
+    others: 2767
     terms:
     - count: 1
       value: 00004167+6210331
@@ -6987,6 +6987,30 @@ gr8:
       value: 00014974+6527200
     - count: 1
       value: 00021014+2704570
+    - count: 1
+      value: 00032593+2039561
+    - count: 1
+      value: 00045634+2316106
+    - count: 1
+      value: 00045752+4540257
+    - count: 1
+      value: 00053115-0937028
+    - count: 1
+      value: 00055473+1814058
+    - count: 1
+      value: 00063674+2901175
+    - count: 1
+      value: 00075205+5534372
+    - count: 1
+      value: 00080023-0732409
+    - count: 1
+      value: 00081636-1449281
+    - count: 1
+      value: 00082573+0637004
+    - count: 1
+      value: 00084037+3637377
+    - count: 1
+      value: 00091574+2516550
   bp_rp:
     avg: 0.7677297293097094
     count: 2858
@@ -7069,7 +7093,7 @@ gr8:
     max: 7.999982833862305
     min: 3.0879220962524414
   hd:
-    others: 2832
+    others: 2820
     terms:
     - count: 1
       value: '100067'
@@ -7079,6 +7103,30 @@ gr8:
       value: '10008'
     - count: 1
       value: '10009'
+    - count: 1
+      value: '100167'
+    - count: 1
+      value: '100180'
+    - count: 1
+      value: '100203'
+    - count: 1
+      value: 100214A
+    - count: 1
+      value: '100269'
+    - count: 1
+      value: '100339'
+    - count: 1
+      value: '100360'
+    - count: 1
+      value: '100372'
+    - count: 1
+      value: '100446'
+    - count: 1
+      value: '100563'
+    - count: 1
+      value: '100667'
+    - count: 1
+      value: 100831A
   hip:
     avg: 57756.92727972297
     count: 2599
@@ -7115,16 +7163,40 @@ gr8:
     max: 0.8529999852180481
     min: 8.00000037997961e-3
   primary_name:
-    others: 2854
+    others: 2842
     terms:
     - count: 1
-      value: 1 Her
+      value: 101Tau
     - count: 1
-      value: 1 Hya
+      value: 104Tau
     - count: 1
-      value: 10 CVn
+      value: 10CVn
     - count: 1
-      value: 10 Tau
+      value: 10Tau
+    - count: 1
+      value: 111Tau
+    - count: 1
+      value: 111TauB
+    - count: 1
+      value: 112Psc
+    - count: 1
+      value: 11Aqr
+    - count: 1
+      value: 11LMi
+    - count: 1
+      value: 12Oph
+    - count: 1
+      value: 12Psc
+    - count: 1
+      value: 13Ori
+    - count: 1
+      value: 13Per
+    - count: 1
+      value: 14Her
+    - count: 1
+      value: 14UMi
+    - count: 1
+      value: 15Aur
   ra:
     avg: 176.94023388076215
     count: 2858
@@ -7155,24 +7227,59 @@ gr8:
     terms:
     - count: 2858
       value: J2016.0
+  spectrum_feros_1d:
+    others: 0
+    terms:
+    - count: 29
+      value: true
+  spectrum_feros_2d:
+    others: 0
+    terms:
+    - count: 29
+      value: true
+  spectrum_feros_nobs:
+    avg: 85.17241379310344
+    count: 29
+    max: 608.0
+    min: 38.0
+  spectrum_feros_snr:
+    avg: 314.10315020331024
+    count: 29
+    max: 822.9688720703125
+    min: 95.5582504272461
+  spectrum_fies_1d:
+    others: 0
+    terms:
+    - count: 146
+      value: true
+  spectrum_fies_nobs:
+    avg: 1.0
+    count: 146
+    max: 1.0
+    min: 1.0
+  spectrum_fies_snr:
+    avg: 94.60496613750719
+    count: 146
+    max: 218.7333526611328
+    min: 19.771642684936523
   spectrum_harps_1d:
     others: 0
     terms:
-    - count: 350
+    - count: 364
       value: true
   spectrum_harps_2d:
     others: 0
     terms:
-    - count: 350
+    - count: 364
       value: true
   spectrum_harps_nobs:
-    avg: 28.5
-    count: 350
+    avg: 28.20054945054945
+    count: 364
     max: 300.0
-    min: 0.0
+    min: 1.0
   spectrum_harps_snr:
-    avg: 365.8991433116368
-    count: 350
+    avg: 358.7942312104361
+    count: 364
     max: 2485.800048828125
     min: 17.100000381469727
   spectrum_hermes_1d:
@@ -7186,10 +7293,10 @@ gr8:
     max: 1.0
     min: 1.0
   spectrum_hermes_snr:
-    avg: 164.68766136889187
+    avg: 164.69433831268887
     count: 53
-    max: 207.37567138671875
-    min: 43.79353332519531
+    max: 207.39999389648438
+    min: 43.79999923706055
   spectrum_hires_1d:
     others: 0
     terms:
@@ -7218,30 +7325,50 @@ gr8:
   spectrum_sophie_1d:
     others: 0
     terms:
-    - count: 1270
+    - count: 1282
       value: true
   spectrum_sophie_2d:
     others: 0
     terms:
-    - count: 1270
+    - count: 1282
       value: true
   spectrum_sophie_nobs:
-    avg: 17.841732283464566
-    count: 1270
+    avg: 17.781591263650547
+    count: 1282
     max: 300.0
     min: 1.0
   spectrum_sophie_snr:
-    avg: 203.0470864465856
-    count: 1270
+    avg: 202.30093586900492
+    count: 1282
     max: 1245.300048828125
     min: 1.399999976158142
+  spectrum_uves_1d:
+    others: 0
+    terms:
+    - count: 42
+      value: true
+  spectrum_uves_2d:
+    others: 0
+    terms:
+    - count: 42
+      value: true
+  spectrum_uves_nobs:
+    avg: 13.904761904761905
+    count: 42
+    max: 56.0
+    min: 3.0
+  spectrum_uves_snr:
+    avg: 228.41525731767928
+    count: 42
+    max: 338.95281982421875
+    min: 13.210533142089844
   tic:
     avg: 2.8669776275508773e8
     count: 2850
     max: 2054321412
     min: 619444.0
   wisea:
-    others: 2545
+    others: 2533
     terms:
     - count: 1
       value: J000041.58+621032.9
@@ -7251,6 +7378,30 @@ gr8:
       value: J000149.74+652720.6
     - count: 1
       value: J000210.87+270444.6
+    - count: 1
+      value: J000325.97+203954.3
+    - count: 1
+      value: J000456.61+231610.6
+    - count: 1
+      value: J000457.52+454025.5
+    - count: 1
+      value: J000531.22-093703.7
+    - count: 1
+      value: J000554.64+181404.4
+    - count: 1
+      value: J000637.12+290115.4
+    - count: 1
+      value: J000752.33+553437.4
+    - count: 1
+      value: J000800.20-073240.5
+    - count: 1
+      value: J000816.36-144928.2
+    - count: 1
+      value: J000825.80+063700.5
+    - count: 1
+      value: J000840.83+363736.4
+    - count: 1
+      value: J000915.88+251653.4
 illustris:
   Group_BHMass:
     avg: 5.022992238747097e-3
