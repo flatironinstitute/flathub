@@ -15,8 +15,9 @@ export function Cells() {
   return (
     <>
       {cells_array.map((cell) => {
+        const id = cell.cell_id;
         const component = (() => {
-          return <CatalogCell key={cell.id} id={cell.id} />;
+          return <CatalogCell key={id} id={id} />;
         })();
         return component;
       })}

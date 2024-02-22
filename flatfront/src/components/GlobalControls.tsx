@@ -68,7 +68,7 @@ export function CatalogSelect() {
                   merge_state({
                     cells: {
                       [next_catalog_cell_id]: {
-                        id: next_catalog_cell_id,
+                        cell_id: next_catalog_cell_id,
                         catalog_id: name
                       }
                     }

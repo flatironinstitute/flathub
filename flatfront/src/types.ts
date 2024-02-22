@@ -11,7 +11,7 @@ export type AppState = {
 };
 
 export type CatalogCell = {
-  id?: CatalogCellID;
+  cell_id?: CatalogCellID;
   catalog_id?: CatalogID;
   show_columns?: Record<FieldID, boolean>;
   show_filters?: Record<FieldID, boolean>;
