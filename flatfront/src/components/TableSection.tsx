@@ -60,7 +60,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { StatusBoxFromQuery } from "@/components/StatusBox";
+import { StatusBox, useStatus } from "@/components/StatusBox";
 import { useSetSort, useSort } from "./contexts/SortContext";
 import DownloadSection from "./DownloadSection";
 
@@ -128,6 +128,11 @@ function TableParent() {
     enabled: enable_request
   });
 
+  const status = useStatus({
+    query,
+    query_key
+  });
+
   const content =
     query.data && query.data.length > 0 ? (
       <TablePrimitive
@@ -159,7 +164,7 @@ function TableParent() {
       />
     ) : (
       <div className="h-[400px]">
-        <StatusBoxFromQuery query={query} queryKey={query_key} />
+        <StatusBox {...status} />
       </div>
     );
 
@@ -220,7 +225,7 @@ function TableParent() {
       <div className="relative max-w-[82dvw] overflow-x-scroll rounded-md border p-4">
         {content}
       </div>
-      <div className="flex flex-col gap-y-4 md:flex-row items-center justify-between">
+      <div className="flex flex-col items-center justify-between gap-y-4 md:flex-row">
         <div className="flex items-center gap-x-2">Show {rows_select} rows</div>
         <div>{info_text}</div>
         {prev_next}

@@ -11,6 +11,7 @@ import lodash_merge from "lodash.merge";
 import { useCatalogCellID } from "@/components/contexts/CatalogIDContext";
 import { useCatalogMetadata } from "./CatalogMetadataContext";
 import { useAppState, useMergeState, useSetAppState } from "./AppStateContext";
+import { log } from "@/utils";
 
 const FilterIDsContext = React.createContext<Set<string>>(new Set());
 const FilterValuesContext = React.createContext(null);
@@ -62,6 +63,19 @@ export function useFilterValuesWithFieldNames(): Filters {
     }
   }
   return filter_values_with_field_names;
+}
+
+export function useSetMultipleFilterValues() {
+  const catalog_cell_id = useCatalogCellID();
+  const merge_state = useMergeState();
+  return (filter_values: Filters) => {
+    log(`Setting filter values`, filter_values);
+    merge_state({
+      filter_values: {
+        [catalog_cell_id]: filter_values
+      }
+    });
+  };
 }
 
 export function useSetFilterValue() {

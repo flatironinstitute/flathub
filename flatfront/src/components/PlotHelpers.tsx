@@ -27,17 +27,18 @@ import {
 } from "./ui/select";
 import { Switch } from "./ui/switch";
 import { Combobox } from "./Combobox";
+import { StatusBox, type StatusBoxProps } from "./StatusBox";
 
 export function PlotStatusWrapper({
   children,
-  status: status_box
+  status
 }: {
   children: React.ReactNode;
-  status: React.ReactNode;
+  status: StatusBoxProps;
 }) {
-  const overlay = status_box ? (
+  const overlay = status ? (
     <div className="pointer-events-none absolute left-0 top-0 h-full w-full">
-      {status_box}
+      <StatusBox {...status} />
     </div>
   ) : null;
 
@@ -318,6 +319,7 @@ export function useAxisConfig(
     : null;
   return {
     key,
+    field_id,
     field_name,
     log_mode,
     log_mode_error_message,

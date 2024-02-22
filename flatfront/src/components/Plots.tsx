@@ -10,7 +10,10 @@ import type {
 } from "@/types";
 import { useCatalogID } from "@/components/contexts/CatalogIDContext";
 import { useRandomConfig } from "@/components/contexts/RandomContext";
-import { useFilterValuesWithFieldNames } from "@/components/contexts/FiltersContext";
+import {
+  useFilterValuesWithFieldNames,
+  useSetMultipleFilterValues
+} from "@/components/contexts/FiltersContext";
 import { usePlotState } from "@/components/contexts/PlotContext";
 
 import { HighchartsPlot } from "./HighchartsPlot";
@@ -25,9 +28,10 @@ import {
   usePlotQuery,
   XAxisControl,
   YAxisControl,
-  ColorSchemeControl
+  ColorSchemeControl,
+  DragHandler
 } from "./PlotHelpers";
-import { StatusBoxFromQuery } from "./StatusBox";
+import { useStatus } from "./StatusBox";
 import { useIsDarkMode } from "./DarkModeToggle";
 
 export const Histogram: PlotWrapper = {
@@ -105,18 +109,16 @@ export const Histogram: PlotWrapper = {
       ]
     });
 
+    const status = useStatus({
+      message: !x_axis.field_name && `Choose a field`,
+      axes: [x_axis],
+      query,
+      query_key,
+      no_data: data_munged.length === 0
+    });
+
     return (
-      <PlotStatusWrapper
-        status={
-          <StatusBoxFromQuery
-            message={!x_axis.field_name && `Choose a field`}
-            axes={[x_axis]}
-            query={query}
-            queryKey={query_key}
-            noData={data_munged.length === 0}
-          />
-        }
-      >
+      <PlotStatusWrapper status={status}>
         <ObservablePlot plot={Plot.plot(plot_options)} />
       </PlotStatusWrapper>
     );
@@ -226,17 +228,15 @@ export const Heatmap: PlotWrapper = {
       ]
     });
 
+    const status = useStatus({
+      axes: [x_axis, y_axis],
+      query,
+      query_key,
+      no_data: data_munged.length === 0
+    });
+
     return (
-      <PlotStatusWrapper
-        status={
-          <StatusBoxFromQuery
-            axes={[x_axis, y_axis]}
-            query={query}
-            queryKey={query_key}
-            noData={data_munged.length === 0}
-          />
-        }
-      >
+      <PlotStatusWrapper status={status}>
         <ObservablePlot plot={Plot.plot(plot_options)} />
         <ObservablePlot
           className="flex justify-center"
@@ -375,17 +375,15 @@ export const BoxPlot: PlotWrapper = {
       ]
     });
 
+    const status = useStatus({
+      axes: [x_axis, y_axis],
+      query,
+      query_key,
+      no_data: data_munged.length === 0
+    });
+
     return (
-      <PlotStatusWrapper
-        status={
-          <StatusBoxFromQuery
-            axes={[x_axis, y_axis]}
-            query={query}
-            queryKey={query_key}
-            noData={data_munged.length === 0}
-          />
-        }
-      >
+      <PlotStatusWrapper status={status}>
         <ObservablePlot plot={Plot.plot(plot_options)} />
       </PlotStatusWrapper>
     );
@@ -465,18 +463,37 @@ export const Scatterplot: PlotWrapper = {
       ]
     });
 
+    const plot = Plot.plot(plot_options);
+
+    const status = useStatus({
+      query,
+      query_key,
+      axes: [x_axis, y_axis],
+      no_data: data_munged.length === 0
+    });
+
+    const set_filter_values = useSetMultipleFilterValues();
+
     return (
-      <PlotStatusWrapper
-        status={
-          <StatusBoxFromQuery
-            axes={[x_axis, y_axis]}
-            query={query}
-            queryKey={query_key}
-            noData={data_munged.length === 0}
-          />
-        }
-      >
-        <ObservablePlot plot={Plot.plot(plot_options)} />
+      <PlotStatusWrapper status={status}>
+        <ObservablePlot plot={plot} />
+        <DragHandler
+          disabled={!!status}
+          plot={plot}
+          onDragEnd={(bounds) => {
+            const valid = (n) => (Number.isFinite(n) ? n : undefined);
+            set_filter_values({
+              [x_axis.field_id]: {
+                gte: valid(bounds.x_min),
+                lte: valid(bounds.x_max)
+              },
+              [y_axis.field_id]: {
+                gte: valid(bounds.y_min),
+                lte: valid(bounds.y_max)
+              }
+            });
+          }}
+        />
       </PlotStatusWrapper>
     );
   },
@@ -586,17 +603,15 @@ export const Scatterplot3D: PlotWrapper = {
       ]
     });
 
+    const status = useStatus({
+      axes: [x_axis, y_axis, z_axis],
+      query,
+      query_key,
+      no_data: data_munged.length === 0
+    });
+
     return (
-      <PlotStatusWrapper
-        status={
-          <StatusBoxFromQuery
-            axes={[x_axis, y_axis, z_axis]}
-            query={query}
-            queryKey={query_key}
-            noData={data_munged.length === 0}
-          />
-        }
-      >
+      <PlotStatusWrapper status={status}>
         <HighchartsPlot options={options} />
       </PlotStatusWrapper>
     );
