@@ -6,6 +6,7 @@ import { type ColorScheme } from "@observablehq/plot";
 import lodash_merge from "lodash.merge";
 import { log, fetch_api_post, get_field_type, get_field_titles } from "@/utils";
 import {
+  useAddFilter,
   useGetCurrentFilterMax,
   useGetCurrentFilterMin
 } from "@/components/contexts/FiltersContext";
@@ -138,6 +139,7 @@ export function PlotVariableControl({
 }) {
   const catalog_metadata = useCatalogMetadata();
   const column_ids = useColumnIDs();
+  const add_filter = useAddFilter();
 
   const all_leaf_nodes = catalog_metadata?.hierarchy?.leaves() ?? [];
 
@@ -148,17 +150,20 @@ export function PlotVariableControl({
     return column_ids.has(id) && is_numeric;
   });
 
-  const items = plot_variable_nodes.map((d) => {
-    const field_id = catalog_metadata.get_id_from_node(d);
+  const items = plot_variable_nodes.map((node) => {
+    const field_id = catalog_metadata.get_id_from_node(node);
     return {
       key: field_id,
-      value: get_field_titles(d).join(` `),
+      value: get_field_titles(node).join(` `),
       label: (
         <div className="flex gap-x-2">
-          <FieldTitles titles={get_field_titles(d)} />
+          <FieldTitles titles={get_field_titles(node)} />
         </div>
       ),
-      onSelect: () => set_plot_control(plot_control_key, field_id)
+      onSelect: () => {
+        set_plot_control(plot_control_key, field_id);
+        add_filter(node);
+      }
     };
   });
 
