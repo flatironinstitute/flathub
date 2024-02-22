@@ -1,3 +1,5 @@
+import React from "react";
+import * as d3 from "d3";
 import { useQuery } from "@tanstack/react-query";
 import * as Plot from "@observablehq/plot";
 import { type ColorScheme } from "@observablehq/plot";
@@ -364,4 +366,69 @@ export function usePlotQuery<RequestType, ResponseType>({
     enabled
   });
   return [query, query_key] as const;
+}
+
+export function DragHandler({
+  plot,
+  onDragEnd: on_end,
+  disabled
+}: {
+  plot: ReturnType<typeof Plot.plot>;
+  onDragEnd: (position: {
+    x_min: number;
+    y_min: number;
+    x_max: number;
+    y_max: number;
+  }) => void;
+  disabled?: boolean;
+}) {
+  React.useEffect(() => {
+    if (disabled) return () => {};
+    d3.select(plot).call(
+      d3
+        .drag()
+        .container(plot)
+        .on("start", (start_event) => {
+          const drag_box = d3
+            .create("svg:rect")
+            .attr("fill", "currentColor")
+            .attr("fill-opacity", 0.1)
+            .attr("stroke", "currentColor")
+            .attr("x", start_event.x)
+            .attr("y", start_event.y)
+            .attr("width", 0)
+            .attr("height", 0);
+          plot.appendChild(drag_box.node());
+          start_event
+            .on("drag", (drag_event) => {
+              const x = Math.min(start_event.x, drag_event.x);
+              const y = Math.min(start_event.y, drag_event.y);
+              const width = Math.abs(drag_event.x - start_event.x);
+              const height = Math.abs(drag_event.y - start_event.y);
+              drag_box
+                .attr("x", x)
+                .attr("y", y)
+                .attr("width", width)
+                .attr("height", height);
+            })
+            .on("end", (end_event) => {
+              drag_box.remove();
+              const x_scale = plot.scale("x");
+              const y_scale = plot.scale("y");
+              const x_start = x_scale.invert(start_event.x);
+              const y_start = y_scale.invert(start_event.y);
+              const x_end = x_scale.invert(end_event.x);
+              const y_end = y_scale.invert(end_event.y);
+              on_end({
+                x_min: Math.min(x_start, x_end),
+                y_min: Math.min(y_start, y_end),
+                x_max: Math.max(x_start, x_end),
+                y_max: Math.max(y_start, y_end)
+              });
+            });
+        })
+    );
+    return () => {};
+  }, [plot]);
+  return null;
 }
