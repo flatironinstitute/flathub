@@ -88,15 +88,6 @@ export const Histogram: PlotWrapper = {
         type: count_axis.log_mode ? `log` : `linear`
       },
       marks: [
-        // Plot.rectY(data_munged, {
-        //   x1: `x1`,
-        //   x2: `x2`,
-        //   y1: 1,
-        //   y2: `count`,
-        //   insetRight: 1,
-        //   insetLeft: 1,
-        //   tip: true
-        // }),
         Plot.dot(data_munged, {
           x: `x`,
           y: `count`,
@@ -117,9 +108,27 @@ export const Histogram: PlotWrapper = {
       no_data: data_munged.length === 0
     });
 
+    const plot = Plot.plot(plot_options);
+
+    const set_filter_values = useSetMultipleFilterValues();
+
     return (
       <PlotStatusWrapper status={status}>
-        <ObservablePlot plot={Plot.plot(plot_options)} />
+        <ObservablePlot plot={plot} />
+        <DragHandler
+          dimensions={1}
+          disabled={!!status}
+          plot={plot}
+          onDragEnd={(bounds) => {
+            const valid = (n) => (Number.isFinite(n) ? n : undefined);
+            set_filter_values({
+              [x_axis.field_id]: {
+                gte: valid(bounds.x_min),
+                lte: valid(bounds.x_max)
+              }
+            });
+          }}
+        />
       </PlotStatusWrapper>
     );
   },
@@ -228,24 +237,44 @@ export const Heatmap: PlotWrapper = {
       ]
     });
 
+    const plot = Plot.plot(plot_options);
+
     const status = useStatus({
-      axes: [x_axis, y_axis],
       query,
       query_key,
+      axes: [x_axis, y_axis],
       no_data: data_munged.length === 0
     });
 
+    const set_filter_values = useSetMultipleFilterValues();
+
     return (
       <PlotStatusWrapper status={status}>
-        <ObservablePlot plot={Plot.plot(plot_options)} />
+        <ObservablePlot plot={plot} />
         <ObservablePlot
           className="flex justify-center"
-          plot={Plot.legend({
+          plot={plot.legend(`color`, {
             style: {
               background: `transparent`
-            },
-            color: plot_options.color
+            }
           })}
+        />
+        <DragHandler
+          disabled={!!status}
+          plot={plot}
+          onDragEnd={(bounds) => {
+            const valid = (n) => (Number.isFinite(n) ? n : undefined);
+            set_filter_values({
+              [x_axis.field_id]: {
+                gte: valid(bounds.x_min),
+                lte: valid(bounds.x_max)
+              },
+              [y_axis.field_id]: {
+                gte: valid(bounds.y_min),
+                lte: valid(bounds.y_max)
+              }
+            });
+          }}
         />
       </PlotStatusWrapper>
     );
@@ -362,29 +391,40 @@ export const BoxPlot: PlotWrapper = {
           x: `x`,
           y: `median`
         })
-        // Plot.rect(data_munged, {
-        //   x1: `x`,
-        //   x2: (d) => d.x + 1,
-        //   y1: `low`,
-        //   y2: `high`,
-        //   fill: `currentColor`,
-        //   stroke: `red`,
-        //   strokeOpacity: 0.2,
-        //   tip: true
-        // })
       ]
     });
 
+    const plot = Plot.plot(plot_options);
+
     const status = useStatus({
-      axes: [x_axis, y_axis],
       query,
       query_key,
+      axes: [x_axis, y_axis],
       no_data: data_munged.length === 0
     });
 
+    const set_filter_values = useSetMultipleFilterValues();
+
     return (
       <PlotStatusWrapper status={status}>
-        <ObservablePlot plot={Plot.plot(plot_options)} />
+        <ObservablePlot plot={plot} />
+        <DragHandler
+          disabled={!!status}
+          plot={plot}
+          onDragEnd={(bounds) => {
+            const valid = (n) => (Number.isFinite(n) ? n : undefined);
+            set_filter_values({
+              [x_axis.field_id]: {
+                gte: valid(bounds.x_min),
+                lte: valid(bounds.x_max)
+              },
+              [y_axis.field_id]: {
+                gte: valid(bounds.y_min),
+                lte: valid(bounds.y_max)
+              }
+            });
+          }}
+        />
       </PlotStatusWrapper>
     );
   },

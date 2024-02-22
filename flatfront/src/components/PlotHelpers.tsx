@@ -373,7 +373,8 @@ export function usePlotQuery<RequestType, ResponseType>({
 export function DragHandler({
   plot,
   onDragEnd: on_end,
-  disabled
+  disabled,
+  dimensions = 2
 }: {
   plot: ReturnType<typeof Plot.plot>;
   onDragEnd: (position: {
@@ -383,9 +384,17 @@ export function DragHandler({
     y_max: number;
   }) => void;
   disabled?: boolean;
+  dimensions?: 1 | 2;
 }) {
+  const one_dimensional = dimensions === 1;
   React.useEffect(() => {
     if (disabled) return () => {};
+    const x_scale = plot.scale("x");
+    const y_scale = plot.scale("y");
+    const y_range = y_scale.range;
+    const y_min = y_range[0];
+    const y_max = y_range[1];
+    const y_height = Math.abs(y_max - y_min);
     d3.select(plot).call(
       d3
         .drag()
@@ -395,11 +404,7 @@ export function DragHandler({
             .create("svg:rect")
             .attr("fill", "currentColor")
             .attr("fill-opacity", 0.1)
-            .attr("stroke", "currentColor")
-            .attr("x", start_event.x)
-            .attr("y", start_event.y)
-            .attr("width", 0)
-            .attr("height", 0);
+            .attr("stroke", "currentColor");
           plot.appendChild(drag_box.node());
           start_event
             .on("drag", (drag_event) => {
@@ -409,14 +414,12 @@ export function DragHandler({
               const height = Math.abs(drag_event.y - start_event.y);
               drag_box
                 .attr("x", x)
-                .attr("y", y)
+                .attr("y", one_dimensional ? y_max : y)
                 .attr("width", width)
-                .attr("height", height);
+                .attr("height", one_dimensional ? y_height : height);
             })
             .on("end", (end_event) => {
               drag_box.remove();
-              const x_scale = plot.scale("x");
-              const y_scale = plot.scale("y");
               const x_start = x_scale.invert(start_event.x);
               const y_start = y_scale.invert(start_event.y);
               const x_end = x_scale.invert(end_event.x);
