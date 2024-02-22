@@ -60,6 +60,7 @@ export function useSaveStateInURL() {
 function store_data_in_url<T>(data: T, key: string) {
   log(`Storing ${key} data in URL:`, data);
   const compressed = compress_data(data);
+  log(`Compressed app state:`, compressed);
   const url = new URL(window.location.href);
   url.searchParams.set(key, compressed);
   window.history.replaceState({}, ``, url.toString());
