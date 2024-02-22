@@ -33,9 +33,16 @@ export function FiltersProvider({ children }) {
   }
   const filter_state: Filters =
     app_state?.[catalog_cell_id]?.filter_values ?? {};
+  // Sanitize filter_state
+  const sanitized: Filters = {};
+  for (const [key, value] of Object.entries(filter_state)) {
+    if (value === null) continue;
+    if (typeof value === `undefined`) continue;
+    sanitized[key] = value;
+  }
   return (
     <FilterIDsContext.Provider value={filter_ids_set}>
-      <FilterValuesContext.Provider value={filter_state}>
+      <FilterValuesContext.Provider value={sanitized}>
         {children}
       </FilterValuesContext.Provider>
     </FilterIDsContext.Provider>
