@@ -6,7 +6,6 @@ export type AppState = {
   cells?: Record<CatalogCellID, CatalogCell>;
   cells_order?: Array<CatalogCellID>;
   filter_values?: Record<CatalogCellID, Filters>;
-  random_sample?: Record<CatalogCellID, { sample?: number; seed?: number }>;
   plots?: Record<CatalogCellID, Record<PlotID, PlotType>>;
   plot_controls?: Record<PlotID, Record<string, any>>;
 };
@@ -16,6 +15,7 @@ export type CatalogCell = {
   catalog_id?: CatalogID;
   show_columns?: Record<FieldID, boolean>;
   show_filters?: Record<FieldID, boolean>;
+  random_sample?: { sample?: number; seed?: number };
 };
 export type CatalogCellID = `catalog_cell_${number}`;
 
