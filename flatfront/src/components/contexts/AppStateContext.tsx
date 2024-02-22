@@ -44,7 +44,8 @@ export function useSetAppState() {
 
 export function useMergeState() {
   const set_app_state = useSetAppState();
-  return (next: AppState) => set_app_state((prev) => lodash_merge(prev, next));
+  return (next: Partial<AppState>) =>
+    set_app_state((prev: AppState) => lodash_merge(prev, next));
 }
 
 export function useSaveStateInURL() {

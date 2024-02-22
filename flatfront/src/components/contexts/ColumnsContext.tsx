@@ -12,7 +12,8 @@ export function ColumnsProvider({ children }) {
   const app_state = useAppState();
   const column_ids: Set<string> =
     catalog_metadata_wrapper?.initial_column_ids ?? new Set();
-  const user_selected_columns = app_state.show_columns?.[catalog_cell_id] ?? {};
+  const user_selected_columns =
+    app_state.cells?.[catalog_cell_id]?.show_columns ?? {};
   for (const [field_id, selected] of Object.entries(user_selected_columns)) {
     if (selected) {
       column_ids.add(field_id);
@@ -50,8 +51,10 @@ export function useSetColumns() {
   const merge_state = useMergeState();
   return (rows_object: RowSelectionState) => {
     merge_state({
-      show_columns: {
-        [catalog_cell_id]: rows_object
+      cells: {
+        [catalog_cell_id]: {
+          show_columns: rows_object
+        }
       }
     });
   };
