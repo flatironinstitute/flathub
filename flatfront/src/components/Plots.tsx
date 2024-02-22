@@ -34,6 +34,8 @@ import {
 import { useStatus } from "./StatusBox";
 import { useIsDarkMode } from "./DarkModeToggle";
 
+const valid = (n: number) => (Number.isFinite(n) ? n : undefined);
+
 export const Histogram: PlotWrapper = {
   key: `histogram`,
   label: `Histogram`,
@@ -120,7 +122,6 @@ export const Histogram: PlotWrapper = {
           disabled={!!status}
           plot={plot}
           onDragEnd={(bounds) => {
-            const valid = (n) => (Number.isFinite(n) ? n : undefined);
             set_filter_values({
               [x_axis.field_id]: {
                 gte: valid(bounds.x_min),
@@ -263,7 +264,6 @@ export const Heatmap: PlotWrapper = {
           disabled={!!status}
           plot={plot}
           onDragEnd={(bounds) => {
-            const valid = (n) => (Number.isFinite(n) ? n : undefined);
             set_filter_values({
               [x_axis.field_id]: {
                 gte: valid(bounds.x_min),
@@ -412,7 +412,6 @@ export const BoxPlot: PlotWrapper = {
           disabled={!!status}
           plot={plot}
           onDragEnd={(bounds) => {
-            const valid = (n) => (Number.isFinite(n) ? n : undefined);
             set_filter_values({
               [x_axis.field_id]: {
                 gte: valid(bounds.x_min),
@@ -521,7 +520,6 @@ export const Scatterplot: PlotWrapper = {
           disabled={!!status}
           plot={plot}
           onDragEnd={(bounds) => {
-            const valid = (n) => (Number.isFinite(n) ? n : undefined);
             set_filter_values({
               [x_axis.field_id]: {
                 gte: valid(bounds.x_min),

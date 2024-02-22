@@ -28,6 +28,7 @@ import {
 import { Switch } from "./ui/switch";
 import { Combobox } from "./Combobox";
 import { StatusBox, type StatusBoxProps } from "./StatusBox";
+import type { D3DragEvent } from "d3";
 
 export function PlotStatusWrapper({
   children,
@@ -399,7 +400,7 @@ export function DragHandler({
       d3
         .drag()
         .container(plot)
-        .on("start", (start_event) => {
+        .on("start", (start_event: D3DragEvent<any, any, any>) => {
           const drag_box = d3
             .create("svg:rect")
             .attr("fill", "currentColor")
@@ -407,7 +408,7 @@ export function DragHandler({
             .attr("stroke", "currentColor");
           plot.appendChild(drag_box.node());
           start_event
-            .on("drag", (drag_event) => {
+            .on("drag", (drag_event: D3DragEvent<any, any, any>) => {
               const x = Math.min(start_event.x, drag_event.x);
               const y = Math.min(start_event.y, drag_event.y);
               const width = Math.abs(drag_event.x - start_event.x);
@@ -418,7 +419,7 @@ export function DragHandler({
                 .attr("width", width)
                 .attr("height", one_dimensional ? y_height : height);
             })
-            .on("end", (end_event) => {
+            .on("end", (end_event: D3DragEvent<any, any, any>) => {
               drag_box.remove();
               const x_start = x_scale.invert(start_event.x);
               const y_start = y_scale.invert(start_event.y);

@@ -50,7 +50,6 @@ export function CatalogCell({ id: catalog_cell_id }: { id: CatalogCellID }) {
 }
 
 function CatalogCellContents() {
-  const catalog_id = useCatalogID();
   const catalog_title = useCatalogMetadata()?.response?.title ?? ``;
   const matching_rows = useMatchingRowsText();
 
@@ -108,7 +107,7 @@ function CatalogCellContents() {
       >
         <CardHeader className="grid items-center gap-4 space-y-0 @2xl:grid-cols-[1fr_min-content_min-content]">
           <CardTitle>Catalog: {catalog_title}</CardTitle>
-          <AboutThisCatalog catalog_id={catalog_id} />
+          <AboutThisCatalog />
           <DeleteCatalogButton />
         </CardHeader>
         <Separator />

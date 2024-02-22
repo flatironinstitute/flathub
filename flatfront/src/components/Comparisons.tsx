@@ -1,8 +1,8 @@
-import { useAppState } from "./contexts/AppStateContext";
+// import { useAppState } from "./contexts/AppStateContext";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 
 export function Comparisons() {
-  const app_state = useAppState();
+  // const app_state = useAppState();
   return (
     <Card>
       <CardHeader>
