@@ -139,6 +139,27 @@ export function useAddFilter() {
   };
 }
 
+export function useResetFilter() {
+  const catalog_cell_id = useCatalogCellID();
+  const set_app_state = useSetAppState();
+  const catalog_metadata = useCatalogMetadata();
+  return (node: CatalogHierarchyNode) => {
+    const field_id = catalog_metadata.get_id_from_node(node);
+    set_app_state((obj) => {
+      lodash_merge<AppState, AppState>(obj, {
+        cells: {
+          [catalog_cell_id]: {
+            filter_values: {
+              [field_id]: null
+            }
+          }
+        }
+      });
+      delete obj[catalog_cell_id].filter_values[field_id];
+    });
+  };
+}
+
 export function useRemoveFilter() {
   const catalog_cell_id = useCatalogCellID();
   const set_app_state = useSetAppState();

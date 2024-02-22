@@ -1,7 +1,7 @@
 import type { CatalogHierarchyNode, FilterValueRaw } from "@/types";
 import React from "react";
 import { useDebounce } from "@uidotdev/usehooks";
-import { Trash2 } from "lucide-react";
+import { RotateCcw, Trash2 } from "lucide-react";
 import * as d3 from "d3";
 import {
   assert_numeric_field_stats,
@@ -18,6 +18,7 @@ import {
   useFilterIDs,
   useFilterValues,
   useRemoveFilter,
+  useResetFilter,
   useSetFilterValue
 } from "@/components/contexts/FiltersContext";
 import { Card } from "@/components/ui/card";
@@ -134,7 +135,10 @@ function FilterCard() {
         {titles}
         {units}
       </Label>
-      <RemoveFilterButton node={field_node} />
+      <div className="flex gap-x-2">
+        <ResetFiltersButton node={field_node} />
+        <RemoveFilterButton node={field_node} />
+      </div>
     </div>
   );
 
@@ -159,6 +163,20 @@ function FilterCard() {
       {title_and_units}
       {filter_control}
     </Card>
+  );
+}
+
+function ResetFiltersButton({ node }) {
+  const reset_filter = useResetFilter();
+  return (
+    <Button
+      size="sm"
+      variant="ghost"
+      className="h-5 px-0"
+      onClick={() => reset_filter(node)}
+    >
+      <RotateCcw className="h-4 w-4" />
+    </Button>
   );
 }
 
