@@ -41,7 +41,9 @@ export function HighchartsPlot({ options }: { options: Highcharts.Options }) {
     <HighchartsReact
       highcharts={Highcharts}
       options={options}
-      containerProps={{ className: dark_mode ? `highcharts-dark` : undefined }}
+      containerProps={{
+        className: dark_mode ? `highcharts-dark` : `highcharts-light`
+      }}
     />
   );
 }
