@@ -51,6 +51,7 @@ export type CatalogMetadataWrapper = {
   get_node_from_id: (id: string) => CatalogHierarchyNode;
   initial_column_ids: Set<string>;
   initial_filter_ids: Set<string>;
+  initial_filter_values: Filters;
 };
 
 export type CatalogHierarchyNode = d3.HierarchyNode<FieldMetadata>;

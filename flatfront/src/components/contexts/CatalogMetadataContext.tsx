@@ -3,7 +3,8 @@ import type {
   CatalogResponse,
   FieldMetadata,
   CatalogHierarchyNode,
-  CatalogID
+  CatalogID,
+  Filters
 } from "@/types";
 
 import React from "react";
@@ -62,6 +63,7 @@ function wrap_catalog_response(catalog_response: CatalogResponse) {
   const depth_first: Array<CatalogHierarchyNode> = [];
   const initial_column_ids: Set<string> = new Set();
   const initial_filter_ids: Set<string> = new Set();
+  const initial_filter_values: Filters = {};
   hierarchy.eachBefore((node) => {
     const id = `${node.data.name}_${tiny_json_hash(node.data)}`;
     node_to_id.set(node, id);
@@ -71,6 +73,8 @@ function wrap_catalog_response(catalog_response: CatalogResponse) {
       initial_column_ids.add(id);
     if (node.height === 0 && `required` in node.data)
       initial_filter_ids.add(id);
+    if (node.height === 0 && `default` in node.data)
+      initial_filter_values[id] = node.data.default;
   });
   const wrapper: CatalogMetadataWrapper = {
     response: catalog_response,
@@ -79,7 +83,8 @@ function wrap_catalog_response(catalog_response: CatalogResponse) {
     get_id_from_node: (node) => node_to_id.get(node),
     get_node_from_id: (id) => id_to_node.get(id),
     initial_column_ids,
-    initial_filter_ids
+    initial_filter_ids,
+    initial_filter_values
   };
   return wrapper;
 }

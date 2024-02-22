@@ -31,11 +31,17 @@ export function FiltersProvider({ children }) {
       filter_ids_set.delete(key);
     }
   }
+  const initial_filter_values: Filters =
+    catalog_metadata?.initial_filter_values ?? {};
   const filter_state: Filters =
     app_state?.[catalog_cell_id]?.filter_values ?? {};
+  const combined = {
+    ...initial_filter_values,
+    ...filter_state
+  };
   // Sanitize filter_state
   const sanitized: Filters = {};
-  for (const [key, value] of Object.entries(filter_state)) {
+  for (const [key, value] of Object.entries(combined)) {
     if (value === null) continue;
     if (typeof value === `undefined`) continue;
     sanitized[key] = value;
