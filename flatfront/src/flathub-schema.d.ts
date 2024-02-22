@@ -344,12 +344,12 @@ export interface components {
     /** @description file containing all matching content in the selected format */
     download: {
       content: {
-        "application/fits": components["schemas"]["data"];
         "application/x-npy": components["schemas"]["data"];
         "text/x-ecsv": components["schemas"]["data"];
-        "application/x-ndjson": components["schemas"]["data"];
         "application/json": components["schemas"]["data"];
+        "application/fits": components["schemas"]["data"];
         "text/csv": components["schemas"]["data"];
+        "application/x-ndjson": components["schemas"]["data"];
         "application/gzip": components["schemas"]["data"];
       };
     };
@@ -396,16 +396,16 @@ export interface components {
     /** @description file containing all matching attachments in the selected format */
     attachments: {
       content: {
-        "text/uri-list": unknown;
         "application/zip": unknown;
+        "text/uri-list": unknown;
         "text/x-shellscript": unknown;
       };
     };
     /** @description file containing all matching attachments in the selected format */
     attachments1: {
       content: {
-        "text/uri-list": unknown;
         "application/zip": unknown;
+        "text/uri-list": unknown;
         "text/x-shellscript": unknown;
       };
     };
@@ -534,18 +534,18 @@ export interface operations {
         /** @description catalog name from list of catalogs */
         catalog: string;
         format:
-          | "fits"
-          | "fits.gz"
           | "npy"
           | "npy.gz"
           | "ecsv"
           | "ecsv.gz"
-          | "ndjson"
-          | "ndjson.gz"
           | "json"
           | "json.gz"
+          | "fits"
+          | "fits.gz"
           | "csv"
-          | "csv.gz";
+          | "csv.gz"
+          | "ndjson"
+          | "ndjson.gz";
       };
     };
     responses: {
@@ -559,18 +559,18 @@ export interface operations {
         /** @description catalog name from list of catalogs */
         catalog: string;
         format:
-          | "fits"
-          | "fits.gz"
           | "npy"
           | "npy.gz"
           | "ecsv"
           | "ecsv.gz"
-          | "ndjson"
-          | "ndjson.gz"
           | "json"
           | "json.gz"
+          | "fits"
+          | "fits.gz"
           | "csv"
-          | "csv.gz";
+          | "csv.gz"
+          | "ndjson"
+          | "ndjson.gz";
       };
     };
     requestBody?: {
@@ -717,7 +717,7 @@ export interface operations {
       path: {
         /** @description catalog name from list of catalogs */
         catalog: string;
-        format: "uris" | "zip" | "sh";
+        format: "zip" | "uris" | "sh";
       };
     };
     responses: {
@@ -730,7 +730,7 @@ export interface operations {
       path: {
         /** @description catalog name from list of catalogs */
         catalog: string;
-        format: "uris" | "zip" | "sh";
+        format: "zip" | "uris" | "sh";
       };
     };
     requestBody?: {
@@ -753,7 +753,7 @@ export interface operations {
       path: {
         /** @description catalog name from list of catalogs */
         catalog: string;
-        format: "uris" | "zip" | "sh";
+        format: "zip" | "uris" | "sh";
         field: components["schemas"]["FieldName"];
       };
     };
@@ -767,7 +767,7 @@ export interface operations {
       path: {
         /** @description catalog name from list of catalogs */
         catalog: string;
-        format: "uris" | "zip" | "sh";
+        format: "zip" | "uris" | "sh";
         field: components["schemas"]["FieldName"];
       };
     };

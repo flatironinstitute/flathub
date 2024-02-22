@@ -9,7 +9,7 @@
     "check": "astro check && tsc --noEmit",
     "preview": "astro preview",
     "astro": "astro",
-    "generate-types": "npx openapi-typescript https://flathub.flatironinstitute.org/openapi.json --output src/lib/flathub-schema.d.ts && npx prettier src/lib/flathub-schema.d.ts --write"
+    "generate-types": "npx openapi-typescript https://flathub.flatironinstitute.org/openapi.json --output src/flathub-schema.d.ts && npx prettier src/flathub-schema.d.ts --write"
   },
   "dependencies": {
     "@astrojs/check": "latest",
