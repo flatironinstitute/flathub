@@ -280,10 +280,19 @@ function SelectFilterControl() {
   const field_id = useCatalogMetadata().get_id_from_node(field_node);
   const filters = useFilterValues();
   const filter_value_raw: FilterValueRaw = filters[field_id] ?? null;
-  const options = [
-    { text: `All`, value: null, value_as_string: String(null) },
-    ...join_enums(metadata)
-  ];
+  const is_required = metadata.required === true;
+  const has_default = `default` in metadata;
+  // Only show "All" option if the field is not required and has no default
+  const all_option =
+    is_required && has_default
+      ? null
+      : {
+          text: `All`,
+          value: null,
+          count: null,
+          value_as_string: String(null)
+        };
+  const options = [all_option, ...join_enums(metadata)].filter(Boolean);
   const value = options.find(
     (d) => d.value === filter_value_raw
   )?.value_as_string;
