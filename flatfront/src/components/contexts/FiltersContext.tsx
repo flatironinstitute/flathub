@@ -32,7 +32,7 @@ export function FiltersProvider({ children }) {
     }
   }
   const filter_state: Filters =
-    app_state?.filter_values?.[catalog_cell_id] ?? {};
+    app_state?.[catalog_cell_id]?.filter_values ?? {};
   return (
     <FilterIDsContext.Provider value={filter_ids_set}>
       <FilterValuesContext.Provider value={filter_state}>
@@ -65,31 +65,26 @@ export function useFilterValuesWithFieldNames(): Filters {
   return filter_values_with_field_names;
 }
 
-export function useSetMultipleFilterValues() {
+export function useSetFilterValues() {
   const catalog_cell_id = useCatalogCellID();
   const merge_state = useMergeState();
   return (filter_values: Filters) => {
     log(`Setting filter values`, filter_values);
     merge_state({
-      filter_values: {
-        [catalog_cell_id]: filter_values
+      [catalog_cell_id]: {
+        filter_values: filter_values
       }
     });
   };
 }
 
 export function useSetFilterValue() {
-  const catalog_cell_id = useCatalogCellID();
-  const merge_state = useMergeState();
   const catalog_metadata = useCatalogMetadata();
+  const set_filter_values = useSetFilterValues();
   return (node: CatalogHierarchyNode, value: FilterValueRaw) => {
     const field_id = catalog_metadata.get_id_from_node(node);
-    merge_state({
-      filter_values: {
-        [catalog_cell_id]: {
-          [field_id]: value
-        }
-      }
+    set_filter_values({
+      [field_id]: value
     });
   };
 }
@@ -102,13 +97,13 @@ export function useClearFilterValue() {
     const field_id = catalog_metadata.get_id_from_node(node);
     set_app_state((obj) => {
       lodash_merge<AppState, AppState>(obj, {
-        filter_values: {
-          [catalog_cell_id]: {
+        [catalog_cell_id]: {
+          filter_values: {
             [field_id]: null
           }
         }
       });
-      delete obj.filter_values[catalog_cell_id][field_id];
+      delete obj[catalog_cell_id].filter_values[field_id];
     });
   };
 }
@@ -143,16 +138,14 @@ export function useRemoveFilter() {
           [catalog_cell_id]: {
             show_filters: {
               [field_id]: false
+            },
+            filter_values: {
+              [field_id]: null
             }
-          }
-        },
-        filter_values: {
-          [catalog_cell_id]: {
-            [field_id]: null
           }
         }
       });
-      delete obj.filter_values[catalog_cell_id][field_id];
+      delete obj[catalog_cell_id].filter_values[field_id];
     });
   };
 }

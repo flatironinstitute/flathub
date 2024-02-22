@@ -12,7 +12,7 @@ import { useCatalogID } from "@/components/contexts/CatalogIDContext";
 import { useRandomConfig } from "@/components/contexts/RandomContext";
 import {
   useFilterValuesWithFieldNames,
-  useSetMultipleFilterValues
+  useSetFilterValues
 } from "@/components/contexts/FiltersContext";
 import { usePlotState } from "@/components/contexts/PlotContext";
 
@@ -112,7 +112,7 @@ export const Histogram: PlotWrapper = {
 
     const plot = Plot.plot(plot_options);
 
-    const set_filter_values = useSetMultipleFilterValues();
+    const set_filter_values = useSetFilterValues();
 
     return (
       <PlotStatusWrapper status={status}>
@@ -247,7 +247,7 @@ export const Heatmap: PlotWrapper = {
       no_data: data_munged.length === 0
     });
 
-    const set_filter_values = useSetMultipleFilterValues();
+    const set_filter_values = useSetFilterValues();
 
     return (
       <PlotStatusWrapper status={status}>
@@ -403,7 +403,7 @@ export const BoxPlot: PlotWrapper = {
       no_data: data_munged.length === 0
     });
 
-    const set_filter_values = useSetMultipleFilterValues();
+    const set_filter_values = useSetFilterValues();
 
     return (
       <PlotStatusWrapper status={status}>
@@ -511,7 +511,7 @@ export const Scatterplot: PlotWrapper = {
       no_data: data_munged.length === 0
     });
 
-    const set_filter_values = useSetMultipleFilterValues();
+    const set_filter_values = useSetFilterValues();
 
     return (
       <PlotStatusWrapper status={status}>
