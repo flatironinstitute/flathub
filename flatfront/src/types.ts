@@ -5,7 +5,6 @@ export type { schema };
 export type AppState = {
   cells?: Record<CatalogCellID, CatalogCell>;
   cells_order?: Array<CatalogCellID>;
-  show_filters?: Record<CatalogCellID, Record<FieldID, boolean>>;
   filter_values?: Record<CatalogCellID, Filters>;
   random_sample?: Record<CatalogCellID, { sample?: number; seed?: number }>;
   plots?: Record<CatalogCellID, Record<PlotID, PlotType>>;
@@ -16,6 +15,7 @@ export type CatalogCell = {
   id?: CatalogCellID;
   catalog_id?: CatalogID;
   show_columns?: Record<FieldID, boolean>;
+  show_filters?: Record<FieldID, boolean>;
 };
 export type CatalogCellID = `catalog_cell_${number}`;
 

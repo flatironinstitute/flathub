@@ -23,7 +23,7 @@ export function FiltersProvider({ children }) {
   const filter_ids_set: Set<string> =
     catalog_metadata?.initial_filter_ids ?? new Set<string>();
   const show_filters_config: Record<FieldID, boolean> =
-    app_state?.show_filters?.[catalog_cell_id] ?? {};
+    app_state?.cells?.[catalog_cell_id]?.show_filters ?? {};
   for (const [key, value] of Object.entries(show_filters_config)) {
     if (value) {
       filter_ids_set.add(key);
@@ -120,9 +120,11 @@ export function useAddFilter() {
   return (node: CatalogHierarchyNode) => {
     const field_id = catalog_metadata.get_id_from_node(node);
     merge_state({
-      show_filters: {
+      cells: {
         [catalog_cell_id]: {
-          [field_id]: true
+          show_filters: {
+            [field_id]: true
+          }
         }
       }
     });
@@ -137,9 +139,11 @@ export function useRemoveFilter() {
     const field_id = catalog_metadata.get_id_from_node(node);
     set_app_state((obj) => {
       lodash_merge<AppState, AppState>(obj, {
-        show_filters: {
+        cells: {
           [catalog_cell_id]: {
-            [field_id]: false
+            show_filters: {
+              [field_id]: false
+            }
           }
         },
         filter_values: {
