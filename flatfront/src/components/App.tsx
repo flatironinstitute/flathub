@@ -5,11 +5,11 @@ import {
   useSaveStateInURL,
   useAppState
 } from "@/components/contexts/AppStateContext";
-import { CardContent, Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { log } from "@/utils";
 import { GlobalControls } from "./GlobalControls";
 import { Cells } from "./Cells";
 import { Comparisons } from "./Comparisons";
+import { Examples } from "./Examples";
 
 const query_client = new QueryClient({
   defaultOptions: {
@@ -50,34 +50,3 @@ function Main() {
     </main>
   );
 }
-
-function Examples() {
-  const links = Object.entries(examples).map(([name, state]) => {
-    const url = new URL(location.pathname, location.href);
-    const href = `${url.toString()}?app_state=${state}`;
-    return (
-      <a
-        key={name}
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="underline"
-      >
-        {name}
-      </a>
-    );
-  });
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Examples</CardTitle>
-      </CardHeader>
-      <CardContent>{links}</CardContent>
-    </Card>
-  );
-}
-
-const examples = {
-  // "SC-SAM Example": `N4IgxgpgNlDOIC5RgIYBcVQPYHMD6kMeADIqGgJ4AOEi46muIANCAJYAmdqG2%2BhUEi3q9ceTnVhhYKALYgAvgtYAnFADsOWWXhmyqUWkhGN%2B0QaWN6DRgIytYECFwTElrA1jTxjPUwXMhY080PFsAdmJwgGYAJnDbAA5I%2BMkeNAgVEOEQsMiY2MS4gE4ANltiugALCHRZFCoc7FCIqOjogBZEso6O6Oq2WDRcNXl3EFywLHU0FSw4MgnmvLb4pJTwxYAPPBQtwbpZIZQVPHCAIxRY23OAVgAzYQpd-Z8QFXOAVygcCDwOCDRc7RDjEWisHZ7QZ4Ph4WRYAGIWafCCsZ5Q2AwsTwxEIZEQZRLLwrApFWJlCrbF4HBAgI4YU4XK43B5PalvD7fX7-QHA0HgkDo15Y-A4oz4iHskVwhHilQowm5VoxTrdUq9frGSGvQ7HRmXa53R6SjHSsVI%2BWo8BYT4zM2yxD3TCOcawKpYADueHubCgGRUPmQDFhAiCoE5Pz%2BAKBILBFpRrDQsky3OK92iEFKpXCsUdzqtOEweEoNDw53uHVsYGitlK8atAC88OosDQwHgIB0UN2UOdKggnXArQBVPAqCBDMtcv7FYodWrRYpgPND8Y%2Bv2ZPAAN0wKMDJhDgUsoELghLf3LlertcWG8QsUJEe50b5ceMOAyiFsSiUQA`
-  "SC-SAM Example": `N4IgxgpgNlDOIC5RgIYBcVQPYHMD6kMeADIqGgJ4AOEi46muIANCAJYAmdqG2%2BhUEi3q9ceTnVhhYKALYgAvgtYAnFADsOWWXhmyqUWkhGN%2B0QaWN6DRgIytYECFwTElrA1jTxjPUwXMhY080PFsAdmJwgGYAJnDbAA5I%2BMkeNAgVEOEQsMiY2MS4gE4ANltiugALCHRZFCoc7FCIqOjogBZEso6O6Oq2WDRcNXkPZrziRNLY6Kip21s6ACMsAA9s8a9J6dniYujipLT0DKyJ6K53EFywLHU0FSw4MhuJ1oKE5OJU4zW8FBrQZ0WRDFAqPDhZYoWK2ZYAVgAZsIKACgT4QCplgBXKA4CB4DgQaLLS7EWisf6AwZ4Ph4WRYImIR7YiCsVHU2C0sQMpkIFkQZRvbYfOJFWJlCqvKnokFgiFQmFwpEotHAhCYnF4glEklkikgDno7n4XlGAWUtVculm5kqVlC3KizrdUq9fp-K1yjAK6GwhHIy2ck30xnm%2B1s8BYbEPEO2hCIzCOR3vSK7OZpxbSr0a0E%2ByF%2B5WBw05zW4-GE4mkjjkxRbFppmZzA5HRLZzne8EFpUB1UdjVY8s6qv64QAL1LsCobHUeER4UgsWIx2usCqWAA7nO2FAzj5kAw6QIgqBB9rK3qa%2BHWaw0LJMhXiojohBSqVwrFEIm4JGcJg8JQNB4MsiIdLYYDRLYpR2jeIATuoWA0GAeAQB0KDoSgyyVAmSaRgAqngKgQEMwFDngxTFB0tSHGAX64dciI7mceAAG6YKy%2B4mEegSWKAf6CIBBIgWBEFQa8u5GLEQpnhWurVrWxg4BkiC2EoShAA`
-};
