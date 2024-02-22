@@ -1,4 +1,4 @@
-import type { PlotID, PlotType } from "@/types";
+import type { PlotID, PlotInfo, PlotType } from "@/types";
 
 import React from "react";
 import * as d3 from "d3";
@@ -35,24 +35,34 @@ export function usePlotID() {
 export function usePlotType() {
   const catalog_cell_id = useCatalogCellID();
   const plot_id = usePlotID();
-  const plot_type = useAppState()?.plots?.[catalog_cell_id]?.[plot_id];
+  const plot_type =
+    useAppState()?.cells?.[catalog_cell_id]?.plots?.[plot_id]?.plot_type;
   return plot_type;
 }
 
 export function usePlotState() {
   const plot_id = usePlotID();
-  const plot_state = useAppState()?.plot_controls?.[plot_id];
+  const catalog_cell_id = useCatalogCellID();
+  const cell = useAppState()?.cells?.[catalog_cell_id];
+  const plot_state = cell?.plots?.[plot_id]?.plot_controls ?? undefined;
   return plot_state;
 }
 
 export function useSetPlotControl() {
   const plot_id = usePlotID();
+  const catalog_cell_id = useCatalogCellID();
   const merge_state = useMergeState();
   return (plot_control_key: string, value: any) => {
     merge_state({
-      plot_controls: {
-        [plot_id]: {
-          [plot_control_key]: value
+      cells: {
+        [catalog_cell_id]: {
+          plots: {
+            [plot_id]: {
+              plot_controls: {
+                [plot_control_key]: value
+              }
+            }
+          }
         }
       }
     });
@@ -66,9 +76,13 @@ export function useAddPlot() {
   const merge_state = useMergeState();
   return (plot_type: PlotType) => {
     merge_state({
-      plots: {
+      cells: {
         [catalog_cell_id]: {
-          [next_id]: plot_type
+          plots: {
+            [next_id]: {
+              plot_type
+            }
+          }
         }
       }
     });
@@ -81,7 +95,7 @@ export function useRemovePlot() {
   const set_app_state = useSetAppState();
   return (id: PlotID) => {
     set_app_state((prev) => {
-      const catalog_plots = prev.plots[catalog_cell_id];
+      const catalog_plots = prev.cells?.[catalog_cell_id]?.plots ?? {};
       delete catalog_plots[id];
     });
   };
@@ -90,13 +104,10 @@ export function useRemovePlot() {
 export function usePlotsArray() {
   const catalog_cell_id = useCatalogCellID();
   assert_catalog_cell_id(catalog_cell_id);
-  const plot_config = useAppState()?.plots?.[catalog_cell_id] ?? {};
+  const plot_config = useAppState()?.cells?.[catalog_cell_id]?.plots ?? {};
   const plot_ids_unsorted: { plot_id: PlotID; plot_type: PlotType }[] =
     Object.entries(plot_config).map(
-      ([plot_id, plot_type]: [PlotID, PlotType]) => ({
-        plot_id,
-        plot_type
-      })
+      ([plot_id, { plot_type }]: [PlotID, PlotInfo]) => ({ plot_id, plot_type })
     );
   const sorted = d3.sort(plot_ids_unsorted, (d) => d.plot_id);
   return sorted;

@@ -5,8 +5,6 @@ export type { schema };
 export type AppState = {
   cells?: Record<CatalogCellID, CatalogCell>;
   cells_order?: Array<CatalogCellID>;
-  plots?: Record<CatalogCellID, Record<PlotID, PlotType>>;
-  plot_controls?: Record<PlotID, Record<string, any>>;
 };
 
 export type CatalogCell = {
@@ -16,7 +14,15 @@ export type CatalogCell = {
   show_filters?: Record<FieldID, boolean>;
   filter_values?: Filters;
   random_sample?: { sample?: number; seed?: number };
+  plots?: Record<PlotID, PlotInfo>;
 };
+
+export type PlotInfo = {
+  plot_id?: PlotID;
+  plot_type?: PlotType;
+  plot_controls?: Record<string, any>;
+};
+
 export type CatalogCellID = `catalog_cell_${number}`;
 
 export type PlotWrapper = {
@@ -27,7 +33,12 @@ export type PlotWrapper = {
   Controls: React.FC;
 };
 
-export type PlotType = string;
+export type PlotType =
+  | `histogram`
+  | `scatterplot`
+  | `heatmap`
+  | `boxplot`
+  | `scatterplot_3d`;
 export type PlotID = `plot_${number}`;
 export type CatalogID = string;
 export type FieldID = string;
