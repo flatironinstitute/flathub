@@ -29,6 +29,10 @@ export function log(...args: any[]) {
   console.log(`🌔`, ...args);
 }
 
+export function clamp(number: number, min: number, max: number) {
+  return Math.min(Math.max(number, min), max);
+}
+
 export const format = {
   concise: (d: number) => {
     if (d < 1e4) return d3.format(`,.4~g`)(d);

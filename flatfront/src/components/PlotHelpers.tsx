@@ -4,7 +4,13 @@ import { useQuery } from "@tanstack/react-query";
 import * as Plot from "@observablehq/plot";
 import { type ColorScheme } from "@observablehq/plot";
 import lodash_merge from "lodash.merge";
-import { log, fetch_api_post, get_field_type, get_field_titles } from "@/utils";
+import {
+  log,
+  fetch_api_post,
+  get_field_type,
+  get_field_titles,
+  clamp
+} from "@/utils";
 import {
   useAddFilter,
   useGetCurrentFilterMax,
@@ -397,9 +403,8 @@ export function DragHandler({
     if (disabled) return () => {};
     const x_scale = plot.scale("x");
     const y_scale = plot.scale("y");
-    const y_range = y_scale.range;
-    const y_min = y_range[0];
-    const y_max = y_range[1];
+    const [x_min, x_max] = x_scale.range;
+    const [y_min, y_max] = y_scale.range;
     const y_height = Math.abs(y_max - y_min);
     d3.select(plot).call(
       d3
@@ -414,10 +419,12 @@ export function DragHandler({
           plot.appendChild(drag_box.node());
           start_event
             .on("drag", (drag_event: D3DragEvent<any, any, any>) => {
-              const x = Math.min(start_event.x, drag_event.x);
-              const y = Math.min(start_event.y, drag_event.y);
-              const width = Math.abs(drag_event.x - start_event.x);
-              const height = Math.abs(drag_event.y - start_event.y);
+              const x_clamped = clamp(drag_event.x, x_min, x_max);
+              const y_clamped = clamp(drag_event.y, y_max, y_min);
+              const x = Math.min(start_event.x, x_clamped);
+              const y = Math.min(start_event.y, y_clamped);
+              const width = Math.abs(x_clamped - start_event.x);
+              const height = Math.abs(y_clamped - start_event.y);
               drag_box
                 .attr("x", x)
                 .attr("y", one_dimensional ? y_max : y)
