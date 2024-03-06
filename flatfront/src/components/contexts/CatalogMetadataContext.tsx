@@ -64,17 +64,20 @@ function wrap_catalog_response(catalog_response: CatalogResponse) {
   const initial_column_ids: Set<string> = new Set();
   const initial_filter_ids: Set<string> = new Set();
   const initial_filter_values: Filters = {};
+  const attachment_field_ids: Set<string> = new Set();
   hierarchy.eachBefore((node) => {
-    const id = `${node.data.name}_${tiny_json_hash(node.data)}`;
+    const is_leaf = node.height === 0;
+    const id = is_leaf
+      ? node.data.name
+      : `${node.data.name}_${tiny_json_hash(node.data)}`;
     node_to_id.set(node, id);
     id_to_node.set(id, node);
     if (!is_root_node(node)) depth_first.push(node);
-    if (node.height === 0 && node.data.disp === true)
-      initial_column_ids.add(id);
-    if (node.height === 0 && `required` in node.data)
-      initial_filter_ids.add(id);
-    if (node.height === 0 && `default` in node.data)
+    if (is_leaf && node.data.disp === true) initial_column_ids.add(id);
+    if (is_leaf && `required` in node.data) initial_filter_ids.add(id);
+    if (is_leaf && `default` in node.data)
       initial_filter_values[id] = node.data.default;
+    if (is_leaf && `attachment` in node.data) attachment_field_ids.add(id);
   });
   const wrapper: CatalogMetadataWrapper = {
     response: catalog_response,
@@ -84,8 +87,10 @@ function wrap_catalog_response(catalog_response: CatalogResponse) {
     get_node_from_id: (id) => id_to_node.get(id),
     initial_column_ids,
     initial_filter_ids,
-    initial_filter_values
+    initial_filter_values,
+    attachment_field_ids
   };
+  log(`Metadata for ${catalog_response.name}:`, wrapper);
   return wrapper;
 }
 

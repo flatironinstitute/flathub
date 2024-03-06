@@ -52,6 +52,7 @@ export type CatalogMetadataWrapper = {
   initial_column_ids: Set<string>;
   initial_filter_ids: Set<string>;
   initial_filter_values: Filters;
+  attachment_field_ids: Set<string>;
 };
 
 export type CatalogHierarchyNode = d3.HierarchyNode<FieldMetadata>;
