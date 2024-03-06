@@ -34,7 +34,7 @@ export function FiltersProvider({ children }) {
   const initial_filter_values: Filters =
     catalog_metadata?.initial_filter_values ?? {};
   const filter_state: Filters =
-    app_state?.[catalog_cell_id]?.filter_values ?? {};
+    app_state?.cells?.[catalog_cell_id]?.filter_values ?? {};
   const combined = {
     ...initial_filter_values,
     ...filter_state
@@ -84,8 +84,10 @@ export function useSetFilterValues() {
   return (filter_values: Filters) => {
     log(`Setting filter values`, filter_values);
     merge_state({
-      [catalog_cell_id]: {
-        filter_values: filter_values
+      cells: {
+        [catalog_cell_id]: {
+          filter_values: filter_values
+        }
       }
     });
   };
@@ -110,13 +112,15 @@ export function useClearFilterValue() {
     const field_id = catalog_metadata.get_id_from_node(node);
     set_app_state((obj) => {
       lodash_merge<AppState, AppState>(obj, {
-        [catalog_cell_id]: {
-          filter_values: {
-            [field_id]: null
+        cells: {
+          [catalog_cell_id]: {
+            filter_values: {
+              [field_id]: null
+            }
           }
         }
       });
-      delete obj[catalog_cell_id].filter_values[field_id];
+      delete obj.cells[catalog_cell_id].filter_values[field_id];
     });
   };
 }

@@ -17,7 +17,7 @@ export function RandomProvider({ children }) {
   const catalog_cell_id = useCatalogCellID();
   const app_state = useAppState();
   const random_config =
-    app_state?.[catalog_cell_id]?.random_sample ?? undefined;
+    app_state?.cells?.[catalog_cell_id]?.random_sample ?? undefined;
   return (
     <RandomContext.Provider value={random_config}>
       {children}
@@ -37,9 +37,11 @@ export function useSetRandomConfig() {
   return (key: `sample` | `seed`, value: number) => {
     if (!catalog_id) return;
     merge_state({
-      [catalog_cell_id]: {
-        random_sample: {
-          [key]: value
+      cells: {
+        [catalog_cell_id]: {
+          random_sample: {
+            [key]: value
+          }
         }
       }
     });
