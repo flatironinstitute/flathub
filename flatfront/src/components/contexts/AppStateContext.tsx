@@ -17,6 +17,8 @@ export function AppStateProvider({ children }) {
     const initial_app_state: AppState = app_state_from_url ?? {};
     return initial_app_state;
   });
+  // @ts-ignore FIXME: HACKY HACK
+  window.set_app_state = set_app_state;
   return (
     <AppStateContext.Provider value={app_state}>
       <SetAppStateContext.Provider value={set_app_state}>
