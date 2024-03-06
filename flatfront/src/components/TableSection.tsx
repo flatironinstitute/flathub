@@ -26,7 +26,8 @@ import {
   format,
   get_field_type,
   is_leaf_node,
-  is_root_node
+  is_root_node,
+  log
 } from "@/utils";
 
 import { useCatalogID } from "@/components/contexts/CatalogIDContext";
@@ -393,7 +394,15 @@ function construct_table_columns({
 
     const column_base: ColumnDef<DataRow> = {
       id: column_id,
-      header: () => <Katex>{metadata.title ?? metadata.name}</Katex>,
+      header: () => {
+        let label = metadata.title ?? metadata.name;
+        if (label === ``) label = metadata.name;
+        return (
+          <Katex data-title={metadata.title} data-name={metadata.name}>
+            {label}
+          </Katex>
+        );
+      },
       meta: {
         node,
         name: metadata.name
