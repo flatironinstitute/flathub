@@ -1,5 +1,5 @@
 import React from "react";
-import { Trash2 } from "lucide-react";
+import { Trash2, CopyPlus } from "lucide-react";
 import clsx from "clsx";
 import type { CatalogCellID } from "@/types";
 import {
@@ -105,9 +105,10 @@ function CatalogCellContents() {
           `w-[min(1500px,90dvw)] transform transition-transform duration-300 ease-in-out @container/cell`
         )}
       >
-        <CardHeader className="grid items-center gap-4 space-y-0 @2xl:grid-cols-[1fr_min-content_min-content]">
+        <CardHeader className="grid items-center gap-4 space-y-0 @2xl:grid-cols-[1fr_repeat(3,min-content)]">
           <CardTitle>Catalog: {catalog_title}</CardTitle>
           <AboutThisCatalog />
+          <CopyCatalogButton />
           <DeleteCatalogButton />
         </CardHeader>
         <Separator />
@@ -128,17 +129,13 @@ function CatalogCellContents() {
 
 function FieldsSection() {
   const catalog_id = useCatalogID();
-
   const [open, set_open] = React.useState<boolean>(true);
-
   const text = open ? `Hide` : `Show`;
-
   const contents = open ? (
     <CardContent className="space-y-4">
       <FieldsBrowser key={catalog_id} />
     </CardContent>
   ) : null;
-
   return (
     <>
       <CardHeader className="flex flex-row items-center gap-x-4">
@@ -147,6 +144,29 @@ function FieldsSection() {
       </CardHeader>
       {contents}
     </>
+  );
+}
+
+function CopyCatalogButton() {
+  const cell_id = useCatalogCellID();
+  const set_app_state = useSetAppState();
+  return (
+    <Button
+      variant="outline"
+      className="flex flex-row gap-x-2"
+      onClick={() =>
+        set_app_state((previous) => {
+          const cell = previous.cells[cell_id];
+          const new_cell_id: CatalogCellID = `catalog_cell_${Date.now()}`;
+          previous.cells[new_cell_id] = {
+            ...cell,
+            cell_id: new_cell_id
+          };
+        })
+      }
+    >
+      <CopyPlus /> Duplicate
+    </Button>
   );
 }
 
