@@ -17,7 +17,13 @@ import {
 export function GlobalControls() {
   return (
     <Card>
-      <CardContent className="grid gap-4 p-4 sm:grid-cols-2">
+      <CardContent className="grid gap-4 p-4 sm:grid-cols-3 items-center">
+        <div className="flex items-center gap-4">
+          <img src="./icon.png" alt="FlatHUB" className="h-12 w-12" />
+          <h1 className="scroll-m-20 text-3xl font-semibold tracking-tight">
+            FlatHUB
+          </h1>
+        </div>
         <CatalogSelect />
         <DarkModeToggle />
       </CardContent>
