@@ -120,7 +120,7 @@ export function useClearFilterValue() {
           }
         }
       });
-      delete obj.cells[catalog_cell_id].filter_values[field_id];
+      delete obj.cells?.[catalog_cell_id].filter_values[field_id];
     });
   };
 }
@@ -159,7 +159,7 @@ export function useResetFilter() {
           }
         }
       });
-      delete obj[catalog_cell_id].filter_values[field_id];
+      delete obj.cells?.[catalog_cell_id].filter_values[field_id];
     });
   };
 }
@@ -183,7 +183,7 @@ export function useRemoveFilter() {
           }
         }
       });
-      delete obj[catalog_cell_id].filter_values[field_id];
+      delete obj.cells?.[catalog_cell_id].filter_values[field_id];
     });
   };
 }
