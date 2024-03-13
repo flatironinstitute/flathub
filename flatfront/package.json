@@ -42,7 +42,7 @@
     "astro": "4",
     "class-variance-authority": "latest",
     "clsx": "latest",
-    "cmdk": "^0.2.0",
+    "cmdk": "latest",
     "d3": "latest",
     "highcharts": "latest",
     "highcharts-draggable-3d": "latest",
