@@ -1,5 +1,6 @@
 import React from "react";
 import * as d3 from "d3";
+import type { D3DragEvent } from "d3";
 import { useQuery } from "@tanstack/react-query";
 import * as Plot from "@observablehq/plot";
 import { type ColorScheme } from "@observablehq/plot";
@@ -17,13 +18,12 @@ import {
   useGetCurrentFilterMin
 } from "@/components/contexts/FiltersContext";
 import { useCatalogMetadata } from "@/components/contexts/CatalogMetadataContext";
+import { useColumnIDs } from "./contexts/ColumnsContext";
 import {
   usePlotState,
   useSetPlotControl
 } from "@/components/contexts/PlotContext";
-import { FieldTitles } from "./FieldTitles";
 import { Label } from "./ui/label";
-import { useColumnIDs } from "./contexts/ColumnsContext";
 import {
   Select,
   SelectContent,
@@ -33,9 +33,10 @@ import {
   SelectValue
 } from "./ui/select";
 import { Switch } from "./ui/switch";
+import { Button } from "./ui/button";
+import { FieldTitles } from "./FieldTitles";
 import { Combobox } from "./Combobox";
 import { StatusBox, type StatusBoxProps } from "./StatusBox";
-import type { D3DragEvent } from "d3";
 
 export function PlotStatusWrapper({
   children,
@@ -80,11 +81,20 @@ export function YAxisControl() {
   );
 }
 
-export function LogCountControl() {
+export function CountControl({
+  label,
+  plotControlKey
+}: {
+  label: string;
+  plotControlKey: string;
+}) {
   return (
-    <LabelledThing label="Count">
-      <LogModeCheckbox plotControlkey="count" />
-      <Label>Count: Log Scale</Label>
+    <LabelledThing label={label}>
+      <Button className="w-[min(100%,40ch)] justify-start" disabled>
+        Count
+      </Button>
+      <LogModeCheckbox plotControlkey={plotControlKey} />
+      <Label className="whitespace-nowrap">Log Scale</Label>
     </LabelledThing>
   );
 }
@@ -102,7 +112,7 @@ export function ColorSchemeControl({
   const set_plot_control = useSetPlotControl();
 
   const label = `Color Scheme`;
-  const plot_control_key = `color`;
+  const plot_control_key = `color_scheme`;
 
   const color_value = plot_state?.[plot_control_key] ?? defaultScheme;
 
@@ -313,7 +323,7 @@ export function get_highcharts_options(
 }
 
 export function useAxisConfig(
-  key: `x_axis` | `y_axis` | `z_axis` | `count` | `field`
+  key: `x_axis` | `y_axis` | `z_axis` | `color` | `count` | `field`
 ) {
   const catalog_metadata = useCatalogMetadata();
   const plot_state = usePlotState();

@@ -22,14 +22,14 @@ import {
   get_highcharts_options,
   get_observable_options,
   PlotVariableControl,
-  LogCountControl,
   PlotStatusWrapper,
   useAxisConfig,
   usePlotQuery,
   XAxisControl,
   YAxisControl,
   ColorSchemeControl,
-  DragHandler
+  DragHandler,
+  CountControl
 } from "./PlotHelpers";
 import { useStatus } from "./StatusBox";
 import { useIsDarkMode } from "./DarkModeToggle";
@@ -46,7 +46,7 @@ export const Histogram: PlotWrapper = {
     const random_config = useRandomConfig();
 
     const x_axis = useAxisConfig(`x_axis`);
-    const count_axis = useAxisConfig(`count`);
+    const y_axis = useAxisConfig(`y_axis`);
 
     const [query, query_key] = usePlotQuery<
       HistogramPostRequestBody,
@@ -87,7 +87,7 @@ export const Histogram: PlotWrapper = {
       },
       y: {
         label: `Count`,
-        type: count_axis.log_mode ? `log` : `linear`
+        type: y_axis.log_mode ? `log` : `linear`
       },
       marks: [
         Plot.dot(data_munged, {
@@ -136,13 +136,8 @@ export const Histogram: PlotWrapper = {
   Controls() {
     return (
       <>
-        <PlotVariableControl
-          label="X-Axis"
-          plotControlKey="x_axis"
-          placeholder="Choose field..."
-          showLogSwitch
-        />
-        <LogCountControl />
+        <XAxisControl />
+        <CountControl label="Y-Axis" plotControlKey="y_axis" />
       </>
     );
   }
@@ -170,7 +165,8 @@ export const Heatmap: PlotWrapper = {
 
     const x_axis = useAxisConfig(`x_axis`);
     const y_axis = useAxisConfig(`y_axis`);
-    const color_scheme = usePlotState()?.color ?? heatmap_default_color;
+    const color_axis = useAxisConfig(`color`);
+    const color_scheme = usePlotState()?.color_scheme ?? heatmap_default_color;
 
     const enable_request =
       Boolean(catalog_id) &&
@@ -214,7 +210,7 @@ export const Heatmap: PlotWrapper = {
         label: `Count`,
         scheme: color_scheme,
         reverse: is_dark_mode,
-        domain: d3.extent(data_munged, (d) => d.count)
+        type: color_axis.log_mode ? `log` : `linear`
       },
       x: {
         label: x_axis.field_name,
@@ -284,6 +280,7 @@ export const Heatmap: PlotWrapper = {
       <>
         <XAxisControl />
         <YAxisControl />
+        <CountControl label="Color" plotControlKey="color" />
         <ColorSchemeControl
           showLogSwitch={false}
           defaultScheme={heatmap_default_color}
