@@ -46,7 +46,7 @@ export function Combobox({
           aria-expanded={open}
           className="w-[min(100%,40ch)] justify-between"
         >
-          {value ?? placeholder}
+          <div className="flex gap-x-2">{value ?? placeholder}</div>
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
