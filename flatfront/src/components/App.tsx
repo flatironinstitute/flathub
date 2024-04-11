@@ -10,6 +10,7 @@ import { GlobalControls } from "./GlobalControls";
 import { Cells } from "./Cells";
 import { Comparisons } from "./Comparisons";
 import { Examples } from "./Examples";
+import { PlotDataProvider } from "./contexts/PlotDataContext";
 
 const query_client = new QueryClient({
   defaultOptions: {
@@ -26,7 +27,9 @@ export default function App() {
   return (
     <QueryClientProvider client={query_client}>
       <AppStateProvider>
-        <Main />
+        <PlotDataProvider>
+          <Main />
+        </PlotDataProvider>
       </AppStateProvider>
     </QueryClientProvider>
   );

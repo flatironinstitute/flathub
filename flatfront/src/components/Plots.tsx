@@ -1,4 +1,3 @@
-import * as d3 from "d3";
 import * as Plot from "@observablehq/plot";
 import { type ColorScheme } from "@observablehq/plot";
 import type {
@@ -33,6 +32,7 @@ import {
 } from "./PlotHelpers";
 import { useStatus } from "./StatusBox";
 import { useIsDarkMode } from "./DarkModeToggle";
+import { useSetPlotData } from "./contexts/PlotDataContext";
 
 const valid = (n: number) => (Number.isFinite(n) ? n : undefined);
 
@@ -79,6 +79,8 @@ export const Histogram: PlotWrapper = {
         return { x1, x2, x: mid, count };
       });
     })();
+
+    useSetPlotData(data_munged);
 
     const plot_options: Plot.PlotOptions = get_observable_options({
       x: {
@@ -202,6 +204,8 @@ export const Heatmap: PlotWrapper = {
         return { x1, y1, x2, y2, count };
       });
     })();
+
+    useSetPlotData(data_munged);
 
     const is_dark_mode = useIsDarkMode();
 
@@ -342,6 +346,8 @@ export const BoxPlot: PlotWrapper = {
       });
     })();
 
+    useSetPlotData(data_munged);
+
     const rect_width = (() => {
       const [first, second] = data_munged;
       if (!first) return 0;
@@ -477,6 +483,8 @@ export const Scatterplot: PlotWrapper = {
       });
     })();
 
+    useSetPlotData(data_munged);
+
     const plot_options: Plot.PlotOptions = get_observable_options({
       x: {
         label: x_axis.field_name,
@@ -594,6 +602,8 @@ export const Scatterplot3D: PlotWrapper = {
         ];
       });
     })();
+
+    useSetPlotData(data_munged);
 
     const options = get_highcharts_options({
       chart: {
