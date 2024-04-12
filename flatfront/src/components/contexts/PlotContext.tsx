@@ -80,6 +80,7 @@ export function useAddPlot() {
         [catalog_cell_id]: {
           plots: {
             [next_id]: {
+              plot_id: next_id,
               plot_type
             }
           }

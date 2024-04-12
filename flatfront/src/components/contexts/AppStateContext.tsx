@@ -28,7 +28,7 @@ export function AppStateProvider({ children }) {
   );
 }
 
-export function useAppState() {
+export function useAppState(): AppState {
   const app_state = React.useContext(AppStateContext);
   if (app_state === undefined) {
     throw new Error(`useAppState must be used within a Provider`);
