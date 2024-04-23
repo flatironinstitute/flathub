@@ -25,6 +25,7 @@ function useAllPlots() {
   const app_state = useAppState();
   const plot_data = usePlotData();
   for (const cell of Object.values(app_state.cells)) {
+    if (!cell.plots) continue;
     for (const [plot_id, plot] of Object.entries(cell.plots)) {
       const data = plot_data[plot_id];
       plots.push({
