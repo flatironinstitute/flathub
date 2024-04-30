@@ -31,7 +31,6 @@ import { create_catalog_hierarchy } from "./contexts/CatalogMetadataContext";
 import { get_field_titles } from "@/utils";
 
 export function ComparisonsCard() {
-  const plots = useAllPlots();
   return (
     <Card className={clsx(`w-[min(1200px,90dvw)]`)}>
       <CardHeader>
