@@ -27,7 +27,7 @@ export function CatalogMetadataProvider({ children }) {
   );
 }
 
-export function useCatalogMetadataFromQuery(
+function useCatalogMetadataFromQuery(
   catalog_id: CatalogID
 ): CatalogMetadataWrapper {
   const catalog_query = useCatalogQuery(catalog_id);
@@ -51,13 +51,8 @@ export function useCatalogQuery(catalog_id: CatalogID) {
 
 function wrap_catalog_response(catalog_response: CatalogResponse) {
   log(`Creating metadata for ${catalog_response.name}...`);
-  const root = {
-    sub: catalog_response.fields
-  } as FieldMetadata;
-  const hierarchy: CatalogHierarchyNode = d3.hierarchy<FieldMetadata>(
-    root,
-    (d) => d?.sub ?? []
-  );
+  const hierarchy: CatalogHierarchyNode =
+    create_catalog_hierarchy(catalog_response);
   const node_to_id = new Map<CatalogHierarchyNode, string>();
   const id_to_node = new Map<string, CatalogHierarchyNode>();
   const depth_first: Array<CatalogHierarchyNode> = [];
@@ -92,6 +87,19 @@ function wrap_catalog_response(catalog_response: CatalogResponse) {
   };
   log(`Metadata for ${catalog_response.name}:`, wrapper);
   return wrapper;
+}
+
+export function create_catalog_hierarchy(
+  catalog_response: CatalogResponse
+): CatalogHierarchyNode {
+  const root = {
+    sub: catalog_response?.fields ?? []
+  } as FieldMetadata;
+  const hierarchy: CatalogHierarchyNode = d3.hierarchy<FieldMetadata>(
+    root,
+    (d) => d?.sub ?? []
+  );
+  return hierarchy;
 }
 
 function tiny_json_hash(object: any) {
