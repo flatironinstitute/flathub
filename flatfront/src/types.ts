@@ -5,6 +5,14 @@ export type { schema };
 export type AppState = {
   cells?: Record<CatalogCellID, CatalogCell>;
   cells_order?: Array<CatalogCellID>;
+  comparisons?: Record<string, Comparison>;
+};
+
+export type Comparison = {
+  comparison_id?: string;
+  comparison_type?: string;
+  index?: number;
+  plots?: Record<PlotID, boolean>;
 };
 
 export type CatalogCell = {
