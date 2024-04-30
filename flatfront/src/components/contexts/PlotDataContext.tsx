@@ -17,7 +17,6 @@ const SetPlotDataContext = React.createContext<Updater<PlotData> | undefined>(
 
 export function PlotDataProvider({ children }) {
   const [plot_data, set_plot_data] = useImmer<PlotData>({});
-  console.log(`PlotDataProvider:`, plot_data);
   return (
     <PlotDataContext.Provider value={plot_data}>
       <SetPlotDataContext.Provider value={set_plot_data}>

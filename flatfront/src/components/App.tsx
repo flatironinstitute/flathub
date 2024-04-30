@@ -1,5 +1,5 @@
 import React from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import {
   AppStateProvider,
   useSaveStateInURL,
@@ -8,18 +8,10 @@ import {
 import { log } from "@/utils";
 import { GlobalControls } from "./GlobalControls";
 import { Cells } from "./Cells";
-import { Comparisons } from "./Comparisons";
+import { ComparisonsCard } from "./Comparisons";
 import { Examples } from "./Examples";
 import { PlotDataProvider } from "./contexts/PlotDataContext";
-
-const query_client = new QueryClient({
-  defaultOptions: {
-    queries: {
-      structuralSharing: false,
-      staleTime: Infinity
-    }
-  }
-});
+import { query_client } from "../query_client";
 
 export default function App() {
   log(`App mode:`, import.meta.env.MODE);
@@ -48,7 +40,7 @@ function Main() {
     >
       <GlobalControls />
       <Cells />
-      {has_cells ? <Comparisons /> : null}
+      {has_cells ? <ComparisonsCard /> : null}
       <Examples />
     </main>
   );
