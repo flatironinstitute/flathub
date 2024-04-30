@@ -8,6 +8,7 @@ import type {
 } from "@/types";
 import type { QueryKey } from "@tanstack/react-query";
 import React from "react";
+import clsx from "clsx";
 import * as Plot from "@observablehq/plot";
 import { useAppState } from "./contexts/AppStateContext";
 import { usePlotData } from "./contexts/PlotDataContext";
@@ -32,7 +33,7 @@ import { get_field_titles } from "@/utils";
 export function ComparisonsCard() {
   const plots = useAllPlots();
   return (
-    <Card>
+    <Card className={clsx(`w-[min(1200px,90dvw)]`)}>
       <CardHeader>
         <CardTitle>Comparisons</CardTitle>
       </CardHeader>
@@ -206,7 +207,7 @@ function CombinedHistogram() {
       const node = plot_meta.catalog?.hierarchy?.find(
         (d) => d.data?.name === variable
       );
-      const variable_title = node?.data?.title || variable;
+      const variable_title = get_field_titles(node).join(` `);
       const source = `${catalog_title}: ${variable_title}`;
       return (
         plot_meta.data?.map((d) => {
