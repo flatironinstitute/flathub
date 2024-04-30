@@ -48,6 +48,11 @@ const comparison_types = [
   {
     key: "combined_histogram",
     title: "Combined Histogram"
+  },
+  {
+    key: `combined_scatterplot`,
+    title: `Combined Scatterplot`,
+    disabled: true
   }
 ];
 
@@ -61,11 +66,12 @@ function AddComparison() {
       </PopoverTrigger>
       <PopoverContent align="start" avoidCollisions={false}>
         <div className="grid gap-4">
-          {comparison_types.map(({ key, title }) => (
+          {comparison_types.map(({ key, title, disabled }) => (
             <PopoverClose key={key} asChild>
               <Button
+                disabled={disabled}
                 variant="link"
-                className="h-5 justify-start p-0"
+                className="h-5 justify-start p-0 disabled:cursor-not-allowed disabled:opacity-50"
                 onClick={() =>
                   merge_state({
                     comparisons: {
@@ -129,47 +135,61 @@ function Comparison() {
 }
 
 function ComparisonDataSelection() {
-  const { comparison_id, plots: comparison_plot_ids } = useComparison();
+  const {
+    comparison_type,
+    comparison_id,
+    plots: comparison_plot_ids
+  } = useComparison();
   const all_plots = useAllPlots();
   const merge_state = useMergeState();
   return (
     <>
       <h5>Data</h5>
       <div>
-        {all_plots.map((plot_meta) => {
-          // TODO: Handling variables for other plot types?
-          const variable = plot_meta.plot_controls?.x_axis;
-          const node = plot_meta.catalog?.hierarchy?.find(
-            (d) => d.data?.name === variable
-          );
-          const variable_title = get_field_titles(node).join(` `);
-          const plot_id = plot_meta.plot_id as PlotID;
-          const is_selected = comparison_plot_ids?.[plot_id];
-          const label = `${plot_meta.catalog?.title}: ${variable_title}`;
-          return (
-            <div
-              key={plot_meta.plot_id}
-              className="flex flex-row items-center space-x-3"
-            >
-              <Checkbox
-                checked={is_selected}
-                onCheckedChange={(checked) => {
-                  console.log(`checked`, checked);
-                  merge_state({
-                    comparisons: {
-                      [comparison_id]: {
-                        plots: {
-                          [plot_id]: !!checked
+        {all_plots
+          .filter((plot_meta) => {
+            if (
+              comparison_type === `combined_histogram` &&
+              plot_meta.plot_type === `histogram`
+            ) {
+              return true;
+            }
+            return false;
+          })
+          .map((plot_meta) => {
+            // TODO: Handling variables for other plot types?
+            const variable = plot_meta.plot_controls?.x_axis;
+            const node = plot_meta.catalog?.hierarchy?.find(
+              (d) => d.data?.name === variable
+            );
+            const variable_title = get_field_titles(node).join(` `);
+            const plot_id = plot_meta.plot_id as PlotID;
+            const is_selected = comparison_plot_ids?.[plot_id];
+            const label = `${plot_meta.catalog?.title}: ${variable_title}`;
+            return (
+              <div
+                key={plot_meta.plot_id}
+                className="flex flex-row items-center space-x-3"
+              >
+                <Checkbox
+                  checked={is_selected}
+                  onCheckedChange={(checked) => {
+                    console.log(`checked`, checked);
+                    merge_state({
+                      comparisons: {
+                        [comparison_id]: {
+                          plots: {
+                            [plot_id]: !!checked
+                          }
                         }
                       }
-                    }
-                  });
-                }}
-              />
-              <label>{label}</label>
-            </div>
-          );
-        })}
+                    });
+                  }}
+                />
+                <label>{label}</label>
+              </div>
+            );
+          })}
       </div>
     </>
   );
