@@ -23,7 +23,7 @@ import { DownloadPlotButton } from "./DownloadPlotButton";
 
 const plot_wrappers = d3.sort(Object.values(Plots), (d) => d.order);
 
-const plot_key_to_label = new Map(
+export const plot_key_to_label = new Map(
   plot_wrappers.map(({ key, label }) => [key, label])
 );
 
@@ -68,12 +68,10 @@ function PlotsList() {
   const plots_array = usePlotsArray();
   const plot_components = plots_array.map(({ plot_id }, index) => {
     return (
-      <React.Fragment key={plot_id}>
+      <PlotIDProvider value={plot_id} key={plot_id}>
         {index === 0 ? null : <Separator />}
-        <PlotIDProvider value={plot_id}>
-          <PlotWrapper index={index} />
-        </PlotIDProvider>
-      </React.Fragment>
+        <PlotWrapper index={index} />
+      </PlotIDProvider>
     );
   });
   return <>{plot_components}</>;
