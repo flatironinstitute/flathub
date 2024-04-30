@@ -11,7 +11,7 @@ descr: >
   <li><a href="https://gea.esac.esa.int/archive/documentation/GDR3/index.html">On-line documentation</a></li>
   <li><a href="https://archives.esac.esa.int/doi/html/data/astronomy/gaia/DR3.html">DOI</a></li>
   <li><a href="https://gea.esac.esa.int/archive/documentation/GDR3/Miscellaneous/sec_credit_and_citation_instructions/">Credit and citation instructions</a></li>
-  <li><a href="https://sdsc-users.flatironinstitute.org/~gaia/dr3/README">Bulk access through Flatiron Institute</a></li>
+  <li><a href="https://sdsc-users.flatironinstitute.org/~gaia/dr3/">Bulk access through Flatiron Institute</a></li>
   </ul>
 
   Preset field selections:
