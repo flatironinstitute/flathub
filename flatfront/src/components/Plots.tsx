@@ -85,7 +85,8 @@ export const Histogram: PlotWrapper = {
     const plot_options: Plot.PlotOptions = get_observable_options({
       x: {
         label: x_axis.field_name,
-        type: x_axis.log_mode ? `log` : `linear`
+        type: x_axis.log_mode ? `log` : `linear`,
+        reverse: x_axis.field_node?.data?.reversed
       },
       y: {
         label: `Count`,
@@ -218,7 +219,8 @@ export const Heatmap: PlotWrapper = {
       },
       x: {
         label: x_axis.field_name,
-        type: x_axis.log_mode ? `log` : `linear`
+        type: x_axis.log_mode ? `log` : `linear`,
+        reverse: x_axis.field_node?.data?.reversed
       },
       y: {
         label: y_axis.field_name,
@@ -362,7 +364,8 @@ export const BoxPlot: PlotWrapper = {
       insetBottom: 20,
       x: {
         label: x_axis.field_name,
-        type: x_axis.log_mode ? `log` : `linear`
+        type: x_axis.log_mode ? `log` : `linear`,
+        reverse: x_axis.field_node?.data?.reversed
       },
       y: {
         label: y_axis.field_name,
@@ -488,7 +491,8 @@ export const Scatterplot: PlotWrapper = {
     const plot_options: Plot.PlotOptions = get_observable_options({
       x: {
         label: x_axis.field_name,
-        type: x_axis.log_mode ? `log` : `linear`
+        type: x_axis.log_mode ? `log` : `linear`,
+        reverse: x_axis.field_node?.data?.reversed
       },
       y: {
         label: y_axis.field_name,

@@ -342,6 +342,7 @@ export function useAxisConfig(
   return {
     key,
     field_id,
+    field_node,
     field_name,
     log_mode,
     log_mode_error_message,
