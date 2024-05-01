@@ -33,6 +33,12 @@ function Main() {
   React.useEffect(() => {
     log(`🌳 Current app state:`, app_state);
   }, [app_state]);
+  // If current url does not end in a slash, redirect to the same url with a slash
+  React.useEffect(() => {
+    if (!location.pathname.endsWith("/")) {
+      location.replace(location.href + "/");
+    }
+  }, []);
   const has_cells = Object.keys(app_state?.cells ?? {}).length > 0;
   return (
     <main
