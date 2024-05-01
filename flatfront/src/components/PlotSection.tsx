@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/popover";
 import * as Plots from "@/components/Plots";
 import { DownloadPlotButton } from "./DownloadPlotButton";
+import { DownloadPlotCSV } from "./DownloadPlotCSV";
+import { usePlotData } from "./contexts/PlotDataContext";
 
 const plot_wrappers = d3.sort(Object.values(Plots), (d) => d.order);
 
@@ -78,11 +80,13 @@ function PlotsList() {
 }
 
 function PlotWrapper({ index }: { index: number }) {
+  const plot_id = usePlotID();
   const plot_type = usePlotType();
   const label = plot_key_to_label.get(plot_type);
   const wrapper = plot_wrappers.find(({ key }) => key === plot_type);
   const { Plot, Controls } = wrapper;
   const plot_image_ref = React.useRef<HTMLDivElement>(null);
+  const plot_data = usePlotData()?.[plot_id];
   return (
     <div>
       <div className="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-center">
@@ -90,6 +94,7 @@ function PlotWrapper({ index }: { index: number }) {
           Plot {index + 1}: {label}
         </H4>
         <div className="flex gap-x-4">
+          <DownloadPlotCSV data={plot_data} />
           <DownloadPlotButton
             plotRef={plot_image_ref}
             imageName={label.toLowerCase()}
