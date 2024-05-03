@@ -72,6 +72,20 @@ function wrap_catalog_response(catalog_response: CatalogResponse) {
     if (is_leaf && `required` in node.data) initial_filter_ids.add(id);
     if (is_leaf && `default` in node.data)
       initial_filter_values[id] = node.data.default;
+    if (is_leaf && node.data.required === true) {
+      if (`default` in node.data) {
+        initial_filter_values[id] = node.data.default;
+      } else {
+        const initial_value = node.data.stats?.terms?.[0]?.value;
+        console.warn(
+          `No default value for required filter ${id}. Using value: ${initial_value}`,
+          node.data
+        );
+        if (typeof initial_value !== `undefined`) {
+          initial_filter_values[id] = initial_value;
+        }
+      }
+    }
     if (is_leaf && `attachment` in node.data) attachment_field_ids.add(id);
   });
   const wrapper: CatalogMetadataWrapper = {
