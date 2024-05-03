@@ -58,7 +58,7 @@ export function Combobox({
       >
         <Command
           filter={(value, search) => {
-            if (value.includes(search.toLowerCase())) return 1;
+            if (value.toLowerCase().includes(search.toLowerCase())) return 1;
             return 0;
           }}
         >
