@@ -41,8 +41,9 @@ export function useSetPlotData(data: any) {
   }
   const plot_id = usePlotID();
   React.useEffect(() => {
+    console.log("Setting global plot data");
     set_plot_data((draft) => {
       draft[plot_id] = data;
     });
-  }, [data]);
+  }, [JSON.stringify(data)]);
 }
