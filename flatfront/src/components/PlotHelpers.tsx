@@ -81,6 +81,17 @@ export function YAxisControl() {
   );
 }
 
+export function ColorControl() {
+  return (
+    <PlotVariableControl
+      label="Color"
+      plotControlKey="color"
+      placeholder="Choose Color..."
+      showLogSwitch={true}
+    />
+  );
+}
+
 export function CountControl({
   label,
   plotControlKey
@@ -166,6 +177,11 @@ export function PlotVariableControl({
     return column_ids.has(id) && is_numeric;
   });
 
+  const plot_state = usePlotState();
+  const set_plot_control = useSetPlotControl();
+
+  const selected_field_id = plot_state?.[plot_control_key];
+
   const items = plot_variable_nodes.map((node) => {
     const field_id = catalog_metadata.get_id_from_node(node);
     return {
@@ -182,11 +198,6 @@ export function PlotVariableControl({
       }
     };
   });
-
-  const plot_state = usePlotState();
-  const set_plot_control = useSetPlotControl();
-
-  const selected_field_id = plot_state?.[plot_control_key];
 
   return (
     <LabelledThing label={label}>
