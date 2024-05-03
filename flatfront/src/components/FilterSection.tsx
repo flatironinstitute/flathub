@@ -299,17 +299,16 @@ function SelectFilterControl() {
   const filters = useFilterValues();
   const filter_value_raw: FilterValueRaw = filters[field_id] ?? null;
   const is_required = metadata.required === true;
-  const has_default = `default` in metadata;
-  // Only show "All" option if the field is not required and has no default
-  const all_option =
-    is_required && has_default
-      ? null
-      : {
-          text: `All`,
-          value: null,
-          count: null,
-          value_as_string: String(null)
-        };
+  // const has_default = `default` in metadata;
+  // Do not show "All" option if the filter is required
+  const all_option = is_required
+    ? null
+    : {
+        text: `All`,
+        value: null,
+        count: null,
+        value_as_string: String(null)
+      };
   const options = [all_option, ...join_enums(metadata)].filter(Boolean);
   const value = options.find(
     (d) => d.value === filter_value_raw
