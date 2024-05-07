@@ -57,6 +57,7 @@
     "prettier-plugin-tailwindcss": "latest",
     "react": "18",
     "react-dom": "18",
+    "react-textfit": "latest",
     "tailwind-merge": "latest",
     "tailwindcss": "latest",
     "tailwindcss-animate": "latest",
@@ -68,5 +69,8 @@
       "prettier-plugin-tailwindcss"
     ],
     "trailingComma": "none"
+  },
+  "devDependencies": {
+    "@types/react-textfit": "^1.1.4"
   }
 }

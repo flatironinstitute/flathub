@@ -29,6 +29,7 @@ import { PlotStatusWrapper, get_observable_options } from "./PlotHelpers";
 import { ObservablePlot } from "./ObservablePlot";
 import { create_catalog_hierarchy } from "./contexts/CatalogMetadataContext";
 import { get_field_titles } from "@/utils";
+import { Label } from "./ui/label";
 
 export function ComparisonsCard() {
   return (
@@ -145,7 +146,8 @@ function ComparisonDataSelection() {
   return (
     <>
       <h5>Data</h5>
-      <div>
+      <div className="h-2" />
+      <div className="space-y-1">
         {all_plots
           .filter((plot_meta) => {
             if (
@@ -167,7 +169,7 @@ function ComparisonDataSelection() {
             const is_selected = comparison_plot_ids?.[plot_id];
             const label = `${plot_meta.catalog?.title}: ${variable_title}`;
             return (
-              <div
+              <Label
                 key={plot_meta.plot_id}
                 className="flex flex-row items-center space-x-3"
               >
@@ -186,8 +188,8 @@ function ComparisonDataSelection() {
                     });
                   }}
                 />
-                <label>{label}</label>
-              </div>
+                <span>{label}</span>
+              </Label>
             );
           })}
       </div>

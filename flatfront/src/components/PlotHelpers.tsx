@@ -32,7 +32,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "./ui/select";
-import { Switch } from "./ui/switch";
+import { Checkbox } from "./ui/checkbox";
 import { Button } from "./ui/button";
 import { FieldTitles } from "./FieldTitles";
 import { Combobox } from "./Combobox";
@@ -104,8 +104,7 @@ export function CountControl({
       <Button className="w-[min(100%,40ch)] justify-start" disabled>
         Count
       </Button>
-      <LogModeCheckbox plotControlkey={plotControlKey} />
-      <Label className="whitespace-nowrap">Log Scale</Label>
+      <LogSwitch plotControlkey={plotControlKey} />
     </LabelledThing>
   );
 }
@@ -228,10 +227,10 @@ function LabelledThing({
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-1">
-      <Label>{label}</Label>
+    <Label className="block space-y-1">
+      <span>{label}</span>
       <div className="flex h-10 items-center gap-x-2">{children}</div>
-    </div>
+    </Label>
   );
 }
 
@@ -241,10 +240,10 @@ function LogSwitch({
   plotControlkey: string;
 }) {
   return (
-    <div className="flex items-center gap-x-2">
+    <Label className="flex items-center gap-x-2 whitespace-nowrap">
       <LogModeCheckbox plotControlkey={plot_control_key} />
-      <Label className="whitespace-nowrap">Log Scale</Label>
-    </div>
+      Log Scale
+    </Label>
   );
 }
 
@@ -258,7 +257,7 @@ function LogModeCheckbox({
   const is_log_mode = plot_config?.[log_mode_key] ?? false;
   const set_plot_control = useSetPlotControl();
   return (
-    <Switch
+    <Checkbox
       checked={is_log_mode}
       onCheckedChange={(checked) => {
         set_plot_control(log_mode_key, checked);

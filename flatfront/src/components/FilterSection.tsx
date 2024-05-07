@@ -35,10 +35,10 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useColumnIDs } from "@/components/contexts/ColumnsContext";
 import { FieldTitles } from "./FieldTitles";
-import { Label } from "./ui/label";
 import { NumberInput } from "./NumberInput";
 import { Combobox } from "./Combobox";
 import { Input } from "./ui/input";
+import { Textfit } from "react-textfit";
 
 const FieldNodeContext = React.createContext(null);
 
@@ -130,12 +130,14 @@ function FilterCard() {
   ) : null;
 
   const title_and_units = (
-    <div className="flex items-center justify-between whitespace-nowrap">
-      <Label className="flex gap-x-2 font-mono text-[clamp(0.7rem,5cqi,1rem)]">
-        {titles}
-        {units}
-      </Label>
-      <div className="flex gap-x-2">
+    <div className="grid grid-cols-[80%_1fr] items-center whitespace-nowrap">
+      <Textfit mode="single" max={15}>
+        <div className="flex gap-x-2 font-mono">
+          {titles}
+          {units}
+        </div>
+      </Textfit>
+      <div className="flex gap-x-2 justify-self-end">
         <ResetFiltersButton node={field_node} />
         <RemoveFilterButton node={field_node} />
       </div>

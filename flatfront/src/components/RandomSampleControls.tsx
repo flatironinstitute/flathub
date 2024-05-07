@@ -18,23 +18,29 @@ export function RandomSampleControls() {
   return (
     <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2 @5xl:grid-cols-1">
       <Card className="h-[min-content] space-y-4 bg-secondary p-4 @container/filter">
-        <Label className="flex gap-x-2 font-mono text-[1rem]">Sample</Label>
-        <SliderWithText
-          min={1e-9}
-          max={1}
-          value={random_config?.sample ?? 1}
-          debounce={500}
-          onValueChange={(new_value) => set_random_config(`sample`, new_value)}
-        />
+        <Label className="block space-y-3">
+          <span className="font-mono text-[15px]">Sample</span>
+          <SliderWithText
+            min={1e-9}
+            max={1}
+            value={random_config?.sample ?? 1}
+            debounce={500}
+            onValueChange={(new_value) =>
+              set_random_config(`sample`, new_value)
+            }
+          />
+        </Label>
       </Card>
-      <Card className="h-[min-content] space-y-4 bg-secondary p-4 @container/filter">
-        <Label className="flex gap-x-2 font-mono text-[1rem]">Seed</Label>
-        <NumberInput
-          value={seed}
-          min="0"
-          max="18446744073709552000"
-          onNumberInput={(new_value) => set_seed(new_value)}
-        />
+      <Card className="h-[min-content] bg-secondary p-4 @container/filter">
+        <Label className="block space-y-3">
+          <span className="font-mono text-[15px]">Seed</span>
+          <NumberInput
+            value={seed}
+            min="0"
+            max="18446744073709552000"
+            onNumberInput={(new_value) => set_seed(new_value)}
+          />
+        </Label>
       </Card>
     </div>
   );
