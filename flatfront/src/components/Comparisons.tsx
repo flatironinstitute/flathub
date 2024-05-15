@@ -1,6 +1,7 @@
 import type {
   CatalogCell,
   CatalogHierarchyNode,
+  CatalogMetadataWrapper,
   CatalogResponse,
   Comparison,
   PlotID,
@@ -283,9 +284,9 @@ function useAllPlots(): AllPlotsItem[] {
           queryKey: [`catalog`],
           exact: false
         })
-        .map(([key, response]: [QueryKey, CatalogResponse]) => [
+        .map(([key, wrapper]: [QueryKey, CatalogMetadataWrapper]) => [
           key[1],
-          { ...response, hierarchy: create_catalog_hierarchy(response) }
+          { ...wrapper?.response, hierarchy: wrapper?.hierarchy }
         ])
     );
   }, [plot_data]);

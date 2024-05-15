@@ -19,7 +19,7 @@ const CatalogMetadataContext = React.createContext<
 
 export function CatalogMetadataProvider({ children }) {
   const catalog_id = useCatalogID();
-  const catalog_metadata = useCatalogMetadataFromQuery(catalog_id);
+  const catalog_metadata = useCatalogQuery(catalog_id).data ?? undefined;
   return (
     <CatalogMetadataContext.Provider value={catalog_metadata}>
       {children}
@@ -27,29 +27,20 @@ export function CatalogMetadataProvider({ children }) {
   );
 }
 
-function useCatalogMetadataFromQuery(
-  catalog_id: CatalogID
-): CatalogMetadataWrapper {
-  const catalog_query = useCatalogQuery(catalog_id);
-  const wrapped = React.useMemo(
-    () =>
-      catalog_query.data
-        ? wrap_catalog_response(catalog_query.data)
-        : undefined,
-    [catalog_query.data]
-  );
-  return wrapped;
-}
-
-export function useCatalogQuery(catalog_id: CatalogID) {
+function useCatalogQuery(catalog_id: CatalogID) {
   return useQuery({
     queryKey: [`catalog`, catalog_id],
-    queryFn: (): Promise<CatalogResponse> => fetch_api_get(`/${catalog_id}`),
+    queryFn: (): Promise<CatalogMetadataWrapper> =>
+      fetch_api_get<CatalogResponse>(`/${catalog_id}`).then((response) =>
+        wrap_catalog_response(response)
+      ),
     enabled: !!catalog_id
   });
 }
 
-function wrap_catalog_response(catalog_response: CatalogResponse) {
+function wrap_catalog_response(
+  catalog_response: CatalogResponse
+): CatalogMetadataWrapper {
   log(`Creating metadata for ${catalog_response.name}...`);
   const hierarchy: CatalogHierarchyNode =
     create_catalog_hierarchy(catalog_response);
