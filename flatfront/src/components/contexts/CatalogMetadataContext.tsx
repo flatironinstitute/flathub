@@ -9,17 +9,38 @@ import type {
 
 import React from "react";
 import * as d3 from "d3";
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, type UseQueryResult } from "@tanstack/react-query";
 import { fetch_api_get, log, is_root_node } from "@/utils";
 import { useCatalogID } from "./CatalogIDContext";
+import { useAppState } from "./AppStateContext";
 
 const CatalogMetadataContext = React.createContext<
   CatalogMetadataWrapper | undefined
 >(undefined);
 
+const AllCatalogMetadataQueriesContext = React.createContext<
+  UseQueryResult<CatalogMetadataWrapper>[]
+>([]);
+
+export function useCatalogMetadata(): CatalogMetadataWrapper | undefined {
+  const catalog_metadata = React.useContext(CatalogMetadataContext);
+  return catalog_metadata;
+}
+
+export function useAllCatalogMetadataQueries() {
+  const catalog_metadata_queries = React.useContext<
+    UseQueryResult<CatalogMetadataWrapper>[]
+  >(AllCatalogMetadataQueriesContext);
+  return catalog_metadata_queries;
+}
+
 export function CatalogMetadataProvider({ children }) {
   const catalog_id = useCatalogID();
-  const catalog_metadata = useCatalogQuery(catalog_id).data ?? undefined;
+  const all_catalog_metadata_queries = useAllCatalogMetadataQueries();
+  const catalog_metadata =
+    all_catalog_metadata_queries.find(
+      (query) => query?.data?.response?.name === catalog_id
+    )?.data ?? undefined;
   return (
     <CatalogMetadataContext.Provider value={catalog_metadata}>
       {children}
@@ -27,15 +48,27 @@ export function CatalogMetadataProvider({ children }) {
   );
 }
 
-function useCatalogQuery(catalog_id: CatalogID) {
-  return useQuery({
-    queryKey: [`catalog`, catalog_id],
-    queryFn: (): Promise<CatalogMetadataWrapper> =>
-      fetch_api_get<CatalogResponse>(`/${catalog_id}`).then((response) =>
-        wrap_catalog_response(response)
-      ),
-    enabled: !!catalog_id
+export function AllCatalogMetadataQueriesProvider({ children }) {
+  const app_state = useAppState();
+  const cells = Object.values(app_state?.cells ?? {});
+  const catalog_ids = new Set<CatalogID>();
+  for (const cell of cells) {
+    catalog_ids.add(cell.catalog_id);
+  }
+  const catalog_metadata_queries = useQueries({
+    queries: [...catalog_ids].map((catalog_id) => ({
+      queryKey: [`catalog`, catalog_id],
+      queryFn: (): Promise<CatalogMetadataWrapper> =>
+        fetch_api_get<CatalogResponse>(`/${catalog_id}`).then((response) =>
+          wrap_catalog_response(response)
+        )
+    }))
   });
+  return (
+    <AllCatalogMetadataQueriesContext.Provider value={catalog_metadata_queries}>
+      {children}
+    </AllCatalogMetadataQueriesContext.Provider>
+  );
 }
 
 function wrap_catalog_response(
@@ -115,9 +148,4 @@ function tiny_json_hash(object: any) {
     hash = (hash * 33) ^ text.charCodeAt(--index);
   }
   return (hash >>> 0).toString(16);
-}
-
-export function useCatalogMetadata(): CatalogMetadataWrapper | undefined {
-  const catalog_metadata = React.useContext(CatalogMetadataContext);
-  return catalog_metadata;
 }
