@@ -5,6 +5,7 @@ import * as lzstring from "lz-string";
 import lodash_merge from "lodash.merge";
 import { useImmer, type Updater } from "use-immer";
 import { log } from "@/utils";
+import { get_new_catalog_cell } from "../GlobalControls";
 
 const AppStateContext = React.createContext<AppState>({});
 const SetAppStateContext = React.createContext<Updater<AppState> | undefined>(
@@ -13,8 +14,22 @@ const SetAppStateContext = React.createContext<Updater<AppState> | undefined>(
 
 export function AppStateProvider({ children }) {
   const [app_state, set_app_state] = useImmer<AppState>(() => {
-    const app_state_from_url = get_data_from_url<any>(`app_state`);
-    const initial_app_state: AppState = app_state_from_url ?? {};
+    let initial_app_state: AppState = {};
+    const url = new URL(window.location.href);
+    const compressed_app_state = url.searchParams.get(`app_state`);
+    if (compressed_app_state && compressed_app_state.length > 0) {
+      const data: AppState = decompress_data(compressed_app_state);
+      log(`Retrieved app_state data from URL:`, data);
+      initial_app_state = data;
+    }
+    const initial_catalog_id = url.searchParams.get(`init_catalog`);
+    if (initial_catalog_id && !compressed_app_state) {
+      log(`Retrieved initial catalog from URL:`, initial_catalog_id);
+      initial_app_state.cells ??= {};
+      const initial_catalog_cell = get_new_catalog_cell(initial_catalog_id);
+      initial_app_state.cells[initial_catalog_cell.cell_id] =
+        initial_catalog_cell;
+    }
     return initial_app_state;
   });
   // @ts-ignore FIXME: HACKY HACK
@@ -71,17 +86,6 @@ function store_data_in_url<T>(data: T, key: string) {
   if (url_length > 5000) {
     console.error(`URL is too long!`);
   }
-}
-
-function get_data_from_url<T>(key: string): T | undefined {
-  const url = new URL(window.location.href);
-  const compressed = url.searchParams.get(key);
-  if (compressed && compressed.length > 0) {
-    const data = decompress_data<T>(compressed);
-    log(`Retrieved ${key} data from URL:`, data);
-    return data;
-  }
-  return undefined;
 }
 
 function compress_data<T>(data: T): string {
