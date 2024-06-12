@@ -13,6 +13,7 @@ export type Comparison = {
   comparison_type?: string;
   index?: number;
   plots?: Record<PlotID, boolean>;
+  y_axis_log_mode?: boolean;
 };
 
 export type CatalogCell = {
