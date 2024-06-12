@@ -28,7 +28,6 @@ import { query_client } from "@/query_client";
 import { Checkbox } from "./ui/checkbox";
 import { PlotStatusWrapper, get_observable_options } from "./PlotHelpers";
 import { ObservablePlot } from "./ObservablePlot";
-import { create_catalog_hierarchy } from "./contexts/CatalogMetadataContext";
 import { get_field_titles } from "@/utils";
 import { Label } from "./ui/label";
 
