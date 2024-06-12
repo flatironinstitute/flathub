@@ -32,16 +32,20 @@ export default function DownloadSection() {
     }
     return (
       <div className="space-y-2">
-        <Label>Bulk Download Attachments</Label>
-        <BulkDownloadAttachments />
+        <Label>
+          Bulk Download Attachments
+          <BulkDownloadAttachments />
+        </Label>
       </div>
     );
   })();
   return (
     <>
       <div className="space-y-2">
-        <Label>Bulk Download Raw Data</Label>
-        <BulkDownloadData />
+        <Label>
+          Bulk Download Raw Data
+          <BulkDownloadData />
+        </Label>
       </div>
       {attachment_download}
     </>

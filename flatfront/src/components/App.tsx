@@ -12,6 +12,7 @@ import { ComparisonsCard } from "./Comparisons";
 import { Examples } from "./Examples";
 import { PlotDataProvider } from "./contexts/PlotDataContext";
 import { query_client } from "../query_client";
+import { AllCatalogMetadataQueriesProvider } from "./contexts/CatalogMetadataContext";
 
 export default function App() {
   log(`App mode:`, import.meta.env.MODE);
@@ -20,7 +21,9 @@ export default function App() {
     <QueryClientProvider client={query_client}>
       <AppStateProvider>
         <PlotDataProvider>
-          <Main />
+          <AllCatalogMetadataQueriesProvider>
+            <Main />
+          </AllCatalogMetadataQueriesProvider>
         </PlotDataProvider>
       </AppStateProvider>
     </QueryClientProvider>
