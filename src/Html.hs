@@ -340,6 +340,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
           <div .row>
               <h5>
                 <text>#{catalogTitle cat}
+                <a .btn .btn-lg href="/v2beta/?init_catalog=#{catalogName cat}" style="padding: 5px 10px; border-radius: 10px; outline: solid gray; text-decoration: none; margin-left: 2rem;">Explore in new beta mode</a>
 
       <div .catalog-tool-container>
         <div .container-fluid .catalog-tool>
