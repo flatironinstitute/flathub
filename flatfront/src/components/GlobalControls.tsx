@@ -24,12 +24,15 @@ export function GlobalControls() {
   return (
     <Card>
       <CardContent className="grid items-center gap-4 p-4 sm:grid-cols-3">
-        <div className="flex items-center gap-4">
+        <a
+          className="flex items-center gap-4"
+          href="https://flathub.flatironinstitute.org/"
+        >
           <img src="./icon.png" alt="FlatHUB" className="h-12 w-12" />
           <h1 className="scroll-m-20 text-3xl font-semibold tracking-tight">
             FlatHUB
           </h1>
-        </div>
+        </a>
         <CatalogSelect />
         <DarkModeToggle />
       </CardContent>
