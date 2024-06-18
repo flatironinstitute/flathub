@@ -13,6 +13,8 @@ import { Examples } from "./Examples";
 import { PlotDataProvider } from "./contexts/PlotDataContext";
 import { query_client } from "../query_client";
 import { AllCatalogMetadataQueriesProvider } from "./contexts/CatalogMetadataContext";
+import { TriangleAlert } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 
 export default function App() {
   log(`App mode:`, import.meta.env.MODE);
@@ -50,7 +52,29 @@ function Main() {
       <GlobalControls />
       <Cells />
       {has_cells ? <ComparisonsCard /> : null}
+      <BetaCard />
       <Examples />
     </main>
+  );
+}
+
+function BetaCard() {
+  return (
+    <Card className="max-w-[40vw]">
+      <CardHeader>
+        <CardTitle>
+          <TriangleAlert
+            size={35}
+            strokeWidth={1.75}
+            className="inline-block"
+          />{" "}
+          Work in Progress
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        The new FlatHUB interface is a work in progress. Not all features have
+        been implemented, and you may encounter bugs.
+      </CardContent>
+    </Card>
   );
 }
