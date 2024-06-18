@@ -128,7 +128,7 @@ function Comparison() {
       </CardHeader>
       <CardContent>
         <ComparisonDataSelection />
-        <div className="h-10" />
+        <div className="h-2" />
         <PlotComponent />
       </CardContent>
     </>
@@ -161,6 +161,7 @@ function ComparisonDataSelection() {
           .map((plot_meta) => {
             // TODO: Handling variables for other plot types?
             const variable = plot_meta.plot_controls?.x_axis;
+            const log_mode = plot_meta.plot_controls?.x_axis_log_mode;
             const node = plot_meta.catalog?.hierarchy?.find(
               (d) => d.data?.name === variable
             );
@@ -189,6 +190,7 @@ function ComparisonDataSelection() {
                   }}
                 />
                 <span>{label}</span>
+                <span>[{log_mode ? `log` : `linear`}]</span>
               </Label>
             );
           })}
@@ -198,10 +200,25 @@ function ComparisonDataSelection() {
 }
 
 function CombinedHistogram() {
-  const { plots: comparison_plot_ids } = useComparison();
+  const comparison = useComparison();
+  const { plots: comparison_plot_ids } = comparison;
   const all_plots = useAllPlots();
-  const combined_data = all_plots
-    .filter((d) => comparison_plot_ids?.[d.plot_id])
+  const selected_data = all_plots.filter(
+    (d) => comparison_plot_ids?.[d.plot_id]
+  );
+
+  const log_modes_array = selected_data.map(
+    (plot_meta) => plot_meta.plot_controls?.x_axis_log_mode
+  );
+
+  // Check if all items in log_modes_array are either all true or all false
+  const all_same_log_mode = log_modes_array.every(
+    (value, _, array) => value === array[0]
+  );
+
+  const x_axis_log_mode = log_modes_array.every((d) => d === true);
+
+  const combined_data = selected_data
     .map((plot_meta) => {
       const catalog_title = plot_meta.catalog?.title;
       const variable = plot_meta.plot_controls?.x_axis;
@@ -222,41 +239,84 @@ function CombinedHistogram() {
       );
     })
     .flat(1);
+
+  const status = (() => {
+    if (selected_data.length === 0) {
+      return { title: `No data selected` };
+    }
+    if (combined_data.length === 0) {
+      return { title: `No data` };
+    }
+    if (!all_same_log_mode) {
+      return {
+        title: `Log mode mismatch`,
+        description: `All selected variables must have the same log mode`
+      };
+    }
+    return null;
+  })();
+
+  const plot_marks = status
+    ? []
+    : [
+        Plot.dot(combined_data, {
+          x: `x`,
+          y: `count`,
+          stroke: `source`,
+          tip: true
+        }),
+        Plot.line(combined_data, {
+          x: `x`,
+          y: `count`,
+          z: `source`,
+          stroke: `source`
+        })
+      ];
+
   const plot_options: Plot.PlotOptions = get_observable_options({
     x: {
       label: `Value`,
-      type: `log`
-      // type: x_axis.log_mode ? `log` : `linear`
+      type: x_axis_log_mode ? `log` : `linear`
     },
     y: {
       label: `Count`,
-      type: `log`
-      // type: y_axis.log_mode ? `log` : `linear`
+      type: comparison?.y_axis_log_mode ? `log` : `linear`
     },
     color: {
       legend: true
     },
-    marks: [
-      Plot.dot(combined_data, {
-        x: `x`,
-        y: `count`,
-        stroke: `source`,
-        tip: true
-      }),
-      Plot.line(combined_data, {
-        x: `x`,
-        y: `count`,
-        z: `source`,
-        stroke: `source`
-      })
-    ]
+    marks: plot_marks
   });
 
   const plot = Plot.plot(plot_options);
+
+  const merge_state = useMergeState();
   return (
-    <PlotStatusWrapper status={{ title: null }}>
-      <ObservablePlot plot={plot} />
-    </PlotStatusWrapper>
+    <>
+      <h5>Controls</h5>
+      <div className="h-2" />
+      <Label className="flex flex-row items-center space-x-3">
+        <Checkbox
+          checked={comparison?.y_axis_log_mode}
+          onCheckedChange={(checked) => {
+            console.log(`checked`, checked);
+            console.log(`comparison`, comparison);
+            merge_state({
+              comparisons: {
+                [comparison.comparison_id]: {
+                  y_axis_log_mode: !!checked
+                }
+              }
+            });
+          }}
+        />
+        <span>Y Axis: Log Scale</span>
+      </Label>
+      <div className="h-2" />
+      <PlotStatusWrapper status={status}>
+        <ObservablePlot plot={plot} />
+      </PlotStatusWrapper>
+    </>
   );
 }
 

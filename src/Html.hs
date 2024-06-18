@@ -142,11 +142,6 @@ htmlResponse _req hdrs body = do
                     <text>#{catalogTitle cat}
             <li .header__link>
               <a href="@{staticHtml !:? ["about"]}">About
-      <!--
-      <div .subheader>
-        <div .subheader-content>
-          <p>Please note that this is a beta version. The website is still undergoing final testing before the official release.
-      -->
       <div .modal-container .hidden #browser-modal>
         <div .modal-background>
           <span>
@@ -340,7 +335,7 @@ catalogPage = getPath R.parameter $ \sim req -> do
           <div .row>
               <h5>
                 <text>#{catalogTitle cat}
-              <a .btn .btn-info href="/v2beta/?init_catalog=#{catalogName cat}">Explore in new beta mode
+                <a .btn .btn-lg href="/v2beta/?init_catalog=#{catalogName cat}" style="padding: 5px 10px; border-radius: 10px; outline: solid gray; text-decoration: none; margin-left: 2rem;">Explore in new beta mode
 
       <div .catalog-tool-container>
         <div .container-fluid .catalog-tool>
