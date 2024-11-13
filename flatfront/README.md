@@ -38,8 +38,26 @@ The `App` component is wrapped in several "context providers." Context providers
 
 ## Cells
 
-A major feature of `Flatfront` as compared to the existing FlatHUB UI is the ability to view data from multiple Catalogs on the same page. There are examples on the main page that illustrate this, for instance the example called `Comparison: Subhalo Mass` shows data from `Illustris`, `IllustrisTNG`, and `EAGLE` all on the same page. Each Catalog that the user loads is represented by a "Cell." The logic for rendering these is contained in [`Cells.tsx`](flatfront/src/components/Cells.tsx) and [`CatalogCell.tsx`](flatfront/src/components/CatalogCell.tsx). Note: An earlier version of Flatfront used several different types of Cells, but this was simplified to a single type of Cell, the `CatalogCell`.
+A major feature of `Flatfront` as compared to the existing FlatHUB UI is the ability to view data from multiple Catalogs on the same page. There are examples on the main page that illustrate this, for instance the example called `Comparison: Subhalo Mass` shows data from `Illustris`, `IllustrisTNG`, and `EAGLE` all on the same page. Each Catalog that the user loads is represented by a "Cell." The logic for rendering these is contained in [`Cells.tsx`](src/components/Cells.tsx) and [`CatalogCell.tsx`](src/components/CatalogCell.tsx). Note: An earlier version of Flatfront used several different types of Cells, but this was simplified to a single type of Cell, the `CatalogCell`.
 
 ## Catalog Cells
 
-The [`CatalogCell.tsx`](flatfront/src/components/CatalogCell.tsx) component is where "most of the action is" in Flatfront.
+The [`CatalogCell.tsx`](src/components/CatalogCell.tsx) component is where "most of the action is" in Flatfront. The `CatalogCell` component has a lot of context providers of its own, separate from the "global" context providers that wrap the entire App. These providers are responsible for fetching data from the server, as well as parsing and filtering this data. The providers allow for storing the data in a way that is accessible to the rest of the `CatalogCell` component.
+
+Each Catalog Cell has the following sections:
+
+- `Fields`: ([FieldsBrowser.tsx](src/components/FieldsBrowser.tsx)) FlatHUB datasets can have hundereds of variables, and the fields browser lets you select which fields to display. Selected fields will be shown in the various filter drop-down menus, as well as in the `Table` section.
+
+- `Filters`: ([FilterSection.tsx](src/components/FilterSection.tsx)) These are the various filter drop-down menus and inputs that allow you to filter the data. The filters are generated based on the fields that are selected in the `Fields` section.
+
+- `Random`: ([RandomSampleControls.tsx](src/components/RandomSampleControls.tsx)) This allows you to select a random subset of the data, as well as set a random seed.
+
+- `Plots`: ([PlotSection.tsx](src/components/PlotSection.tsx)) This is where you can add plots of various types. Another major feature of Flatfront is the ability to add multiple plots to the same page.
+
+- `Table`: ([TableSection.tsx](src/components/TableSection.tsx)) This is where the data is displayed in tabular form. The table is paginated and sortable. It uses the `TanStack Table` library.
+
+- `Python`: ([PythonSection.tsx](src/components/PythonSection.tsx)) This shows the Python code that can be used to query the current data (with filters) using the `flathub` Python client.
+
+## Comparisons
+
+The `Comparisons` section ([Comparisons.tsx](src/components/Comparisons.tsx)) is a special section that appears below the Catalog Cells whenever there is more than one catalog on the page. Comparisons allow you to create plots using data from multiple plots on the same page.
