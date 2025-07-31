@@ -4,6 +4,7 @@
     - gaiadr2
     - gaiadr3
     - ananke
+    - gr8
 - name: cosmo-hydro
   title: Cosmological Galaxy Formation Simulations
   children:
