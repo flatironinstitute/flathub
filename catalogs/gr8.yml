@@ -4,33 +4,85 @@ settings:
   index:
     number_of_shards: 1
 descr: >
-  The gr8stars catalog is an assembly of stellar properties and downloadable high-resolution spectra of bright Sun-like stars in the Northern hemisphere.<br>
-  gr8stars targets are uniformly selected from Gaia EDR3 to fulfill the following criteria:
-    <ul>
-      <li>Bright: Gaia G magnitude <= 8 </li>
-      <li>Observable from northern hemisphere facilities: Declination >= -15 degrees </li>
-      <li>Cool: Gaia B-R color >= 0.6 </li>
-      <li>Main-sequence: based on isochronal cuts in Gaia color-magnitude space </li>
-    </ul>
-  The resulting catalog of nearly 3,000 targets encompasses a prime sample for Northern-hemisphere radial velocity exoplanet surveys, precision stellar abundances, future direct imaging surveys, and more. Publications are currently in preparation.<br>
-  The gr8stars team is led by Annelies Mortier (University of Birmingham) and
-  Megan Bedell (Flatiron Institute) and includes the following scientists
-  from institutions worldwide: Vardan Adibekyan (Universidade do Porto), John
-  Brewer (San Francisco State University), Lars Buchhave (DTU Space), Ernst
-  De Mooij (Queen’s University Belfast), Elisa Delgado Mena (Universidade do
-  Porto), Alix Freckelton (University of Birmingham), Jonay González
-  Hernández (Instituto de Astrofísica de Canarias), Raphaelle Haywood
-  (University of Exeter), David Jackson (Queen's University Belfast),
-  Baptiste Klein (University of Oxford), Suvrath Mahadevan (Penn State
-  University), Sam Morrell (University of Exeter), Tim Naylor (University of
+  The gr8stars catalog is an assembly of stellar properties and downloadable high-resolution spectra of bright Sun-like stars in the Northern hemisphere.
+  More extensive information about the database, its contents, and the gr8stars team may be found <a href="https://github.com/megbedell/gr8stars/blob/main/README.md">on Github</a>.
+  Publications making use of these data should cite <a href="https://ui.adsabs.harvard.edu/abs/2025MNRAS.540.1786F/abstract">Freckelton et al 2024</a> and additionally follow the citation guidelines of Gaia and any additional observatories/PIs whose spectra were used in the publication.
+html: |
+  <h1 id="gr8stars">gr8stars</h1>
+  <p>The repository for the code to generate <a
+  href="https://flathub.flatironinstitute.org/gr8">the gr8stars
+  database</a> may be found <a
+  href="https://github.com/megbedell/gr8stars">on Github</a>.</p>
+  <h3 id="about-the-gr8stars-project">About the gr8stars project:</h3>
+  <p>The gr8stars catalog is an assembly of stellar properties and
+  downloadable high-resolution spectra of bright Sun-like stars in the
+  Northern hemisphere. gr8stars targets are uniformly selected from Gaia
+  EDR3 to fulfill the following criteria: - Bright: Gaia G magnitude &lt;=
+  8 - Observable from northern hemisphere facilities: Declination &gt;=
+  -15 degrees - Cool: Gaia B-R color &gt;= 0.6 - Main-sequence: based on
+  isochronal cuts in Gaia color-magnitude space</p>
+  <p>The resulting catalog of nearly 3,000 targets encompasses a prime
+  sample for Northern-hemisphere radial velocity exoplanet surveys,
+  precision stellar abundances, future direct imaging surveys, and
+  more.</p>
+  <p>More information about the project and its sample selection can be
+  found in the first gr8stars paper, <a
+  href="https://ui.adsabs.harvard.edu/abs/2025MNRAS.540.1786F/abstract">Freckelton
+  et al (2024)</a>.</p>
+  <h3 id="gr8stars-database-contents">gr8stars database contents:</h3>
+  <p>Interactive access to the database is hosted on <a
+  href="https://flathub.flatironinstitute.org/gr8">FlatHUB</a>.</p>
+  <p>For complete documentation of the Gaia parameters captured in the
+  database, please see <a
+  href="https://gea.esac.esa.int/archive/documentation/GDR3/Gaia_archive/chap_datamodel/">the
+  Gaia DR3 data model</a>. Please note that only a selection of Gaia
+  parameters are included in the gr8stars database; if more are needed,
+  they can be found by querying the Gaia archive using the DR3 (or DR2)
+  IDs provided in the database. For information about the stellar
+  parameters derived with PAWS and with SED fitting, see <a
+  href="https://ui.adsabs.harvard.edu/abs/2025MNRAS.540.1786F/abstract">Freckelton
+  et al (2024)</a>.</p>
+  <p>Further spectroscopic information will be added with the publication
+  of future gr8stars papers.</p>
+  <h3 id="citation-info">Citation info:</h3>
+  <p>If you make use of the gr8stars database, please cite <a
+  href="https://ui.adsabs.harvard.edu/abs/2025MNRAS.540.1786F/abstract">Freckelton
+  et al (2024)</a>. This is also the citation for use of the PAWS and SED
+  stellar parameters included in the database table.</p>
+  <p>Please additionally follow <a
+  href="https://www.cosmos.esa.int/web/gaia-users/credits">the Gaia team’s
+  citation instructions</a>. The current version of gr8stars includes data
+  from Gaia DR3 and includes information from both the
+  <code>gaia_source</code> and <code>astrophysical_parameters</code>
+  tables.</p>
+  <p><strong>IMPORTANT</strong>: The spectra hosted in the gr8stars
+  database are made available for convenience only and are not owned by
+  the gr8stars team. If you make use of these spectra, please be sure to
+  credit the instrument, observatory, and original PIs appropriately.</p>
+  <h3 id="collaboration-membership">Collaboration membership:</h3>
+  <p>The gr8stars team is led by Annelies Mortier (University of
+  Birmingham) and Megan Bedell (Flatiron Institute) and includes the
+  following scientists from institutions worldwide: Vardan Adibekyan
+  (Universidade do Porto), John Brewer (San Francisco State University),
+  Lars Buchhave (DTU Space), Michael Cretignier (University of Oxford),
+  Ernst De Mooij (Queen’s University Belfast), Elisa Delgado Mena
+  (Universidade do Porto), Alix Freckelton (University of Birmingham),
+  Jonay González Hernández (Instituto de Astrofísica de Canarias),
+  Raphaelle Haywood (University of Exeter), David Jackson (Queen’s
+  University Belfast), Baptiste Klein (University of Oxford), Jared
+  Kolecki (University of Notre Dame), Andreas Korn (Uppsala University),
+  Suvrath Mahadevan (Penn State University), Catherine Manea (University
+  of Utah), Sam Morrell (University of Exeter), Tim Naylor (University of
   Exeter), Belinda Nicholson (University of Oxford), Nikolai Piskunov
   (Uppsala University), Andreas Quirrenbach (University of Heidelberg),
   Ansgar Reiners (University of Göttingen), Arpita Roy (Space Telescope
   Science Institute), Nuno Santos (Universidade do Porto), Sérgio Sousa
   (Universidade do Porto), Alejandro Suárez Mascareño (Instituto de
   Astrofísica de Canarias), Sam Thompson (University of Cambridge), Maria
-  Tsantaki (Arcetri Observatory), Chris Watson (Queen's University Belfast),
-  Lily Zhao (Flatiron Institute).
+  Tsantaki (Arcetri Observatory), Chris Watson (Queen’s University
+  Belfast), Lily Zhao (University of Chicago).</p>
+  <p>Please contact Annelies and Megan if you are interested in joining
+  the team. We welcome new participants.</p>
 count: 2858
 key: gaiaedr3_source_id
 fields:
