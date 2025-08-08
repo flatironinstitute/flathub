@@ -21,19 +21,32 @@
               target="_blank"
               rel="noopener"
               href="https://fire.northwestern.edu"
-              >FIRE homepage.</a>
+              >FIRE homepage</a>.
             </p>
-            
+
             <p>
-            This is the main page for the public data release of the FIRE-2 simulations. For documentation see:
-            <li><a href="https://ui.adsabs.harvard.edu/abs/2023ApJS..265...44W/abstract" class="underline" target="_blank" rel="noopener">Wetzel et al. (2023)</a> for the description of Data Release 1 (DR1), explanations of the physical models that go into the FIRE-2 simulations, the contents of snapshots and halo/galaxy catalogs, and analysis tools
-            </li>
-            <li>
-            <li><a href="" class="underline" target="_blank" rel="noopener">Wetzel et al. (2025)</a> for the description of the new data products in Data Release 2 (DR2)
-            </li>
+            This is the main page for accessing publicly available FIRE-2 simulation data.
             </p>
-            <p>The simulations were run using the <a href="http://www.tapir.caltech.edu/~phopkins/Site/GIZMO.html" class="underline" target="_blank" rel="noopener">GIZMO</a> code (<a href="https://ui.adsabs.harvard.edu/abs/2015MNRAS.450...53H/abstract" class="underline" target="_blank" rel="noopener">Hopkins 2015</a>). For details about the snapshot format, please see <a class="underline" target="_blank" rel="noopener"  href="http://www.tapir.caltech.edu/~phopkins/Site/GIZMO_files/gizmo_documentation.html#snaps-snaps">this page</a>.</p>
-            <p>We release FIRE-2 data under the <a class="underline" target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">Creative Commons BY 4.0</a> license. If you use these data, we request that you cite as follows: “We use simulations from the FIRE-2 public data release (<a href="https://ui.adsabs.harvard.edu/abs/2023ApJS..265...44W/abstract" class="underline" target="_blank" rel="noopener">Wetzel et al. 2023</a>). The FIRE-2 cosmological zoom-in simulations of galaxy formation are part of the Feedback In Realistic Environments (FIRE) project, generated using the Gizmo code (<a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2015MNRAS.450...53H/abstract">Hopkins 2015</a>) and the FIRE-2 physics model <a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2018MNRAS.480..800H/abstract">(Hopkins et al. 2018a)</a>.</p>
+
+            <p>
+            <h4>Documentation</h4>
+            <li><a href="https://ui.adsabs.harvard.edu/abs/2023ApJS..265...44W/abstract" class="underline" target="_blank" rel="noopener">Wetzel et al. (2023)</a> is the primary documentation (and most appropriate citation) for FIRE-2 public data. It describes Data Release 1 (DR1), including explanations of the physical models that go into the FIRE-2 simulations, the contents of snapshots, the catalogs of (sub)halos and their galaxies, and various analysis tools</li>
+            <li><a href="" class="underline" target="_blank" rel="noopener">Wetzel et al. (2025)</a> describes the new data in Data Release 2 (DR2), including simulations with physics variations, and halo merger trees</li>
+            <li><a href="https://ui.adsabs.harvard.edu/abs/2018MNRAS.480..800H/abstract" class="underline" target="_blank" rel="noopener">Hopkins et al. (2018)</a> describes the FIRE-2 physics model used to generate these publicly available simulations</li>
+            <li><a href="https://ui.adsabs.harvard.edu/abs/2015MNRAS.450...53H/abstract" class="underline" target="_blank" rel="noopener">Hopkins 2015</a> and <a href="http://www.tapir.caltech.edu/~phopkins/Site/GIZMO.html" class="underline" target="_blank" rel="noopener">this website</a> describe the publicly-available Gizmo code used to generate the FIRE simulations</li>
+            <li><a class="underline" target="_blank" rel="noopener" href="http://www.tapir.caltech.edu/~phopkins/Site/GIZMO_files/gizmo_documentation.html#snaps-snaps">this page</a> provides more detailed documentation of the contents of Gizmo snapshots files</li>
+            </p>
+       
+            <h4>License and citing</h4>
+            <p>We release FIRE-2 data under the <a class="underline" target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">Creative Commons BY 4.0</a> license. 
+            </p>
+            <p>
+            If you use these data, we request that you cite as follows:
+            “We use the publicly-available FIRE-2 cosmological zoom-in simulations (<a href="https://ui.adsabs.harvard.edu/abs/2023ApJS..265...44W/abstract" class="underline" target="_blank" rel="noopener">Wetzel et al. 2023</a>, 2025), from the Feedback In Realistic Environments (FIRE) project, generated using the Gizmo code (<a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2015MNRAS.450...53H/abstract">Hopkins 2015</a>) and the FIRE-2 physics model <a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2018MNRAS.480..800H/abstract">(Hopkins et al. 2018a)</a>.
+            <p>
+            We also request users to cite the individual published article(s) that introduced each simulation used, as listed in Tables 1, 2, 3 in <a href="https://ui.adsabs.harvard.edu/abs/2023ApJS..265...44W/abstract" class="underline" target="_blank" rel="noopener">Wetzel et al. (2023)</a> for the simulations first released in Data Release 1, or as listed in Wetzel et al. (2025) for the simulations first released in Data Release 2.
+            </p>
+            </p>
           </div>
         </div>
       </div>
@@ -44,12 +57,13 @@
       <div class="row">
         <div class="col-md-6">
           <div class="body-copy" style="padding: .5em;">
-            <h4 style="text-decoration: underline;">Core suite to z = 0</h4>
-            <p>This suite comprises 20 simulations that zoom in on 14 Milky Way-mass galaxies, 5 SMC/LMC-mass galaxies, and 4 lower-mass galaxies including 1 ultrafaint. For each simulation, we release 39 snapshots (in HDF5 format) across z = 0 − 10.</p> 
-            <p>Any publication using these data should cite the relevant paper(s) below:</p>
+            <h4>Contents</h4>
+            <h5 style="text-decoration: underline;">Core suite to z = 0</h5>
+            <p>The Core suite comprises 20 simulations that zoom in on 14 Milky Way-mass galaxies, 5 SMC/LMC-mass galaxies, and 4 lower-mass galaxies, including 1 ultrafaint. For each simulation, we release 601 snapshots (in HDF5 format) across z = 0 − 99.</p>
+            <p>The following articles introduced each of these simulations. Anyone using a given simulation should cite that article.</p>
             <ul>
               <li>
-                m09_res30, m10q_res30, m10v_res30:
+                m09, m10q, m10v:
                 <a
                   class="underline"
                   target="_blank"
@@ -59,7 +73,7 @@
                   >
               </li>
               <li>
-                m11b_res2100:
+                m11b:
                 <a
                   class="underline"
                   target="_blank"
@@ -69,7 +83,7 @@
                   >
               </li>
               <li>
-                m11d_res7100, m11e_res7100, m11h_res7100, m11i_res7100:
+                m11d, m11e, m11h, m11i:
                 <a
                   class="underline"
                   target="_blank"
@@ -79,7 +93,7 @@
                   >
               </li>
               <li>
-                m11q_res880, m12m_res7100:
+                m11q, m12m:
                 <a
                   class="underline"
                   target="_blank"
@@ -89,7 +103,7 @@
                   >
               </li>
               <li>
-                m12z_res4200, m12b_res7100, m12c_res7100:
+                m12z, m12b, m12c:
                 <a
                   class="underline"
                   target="_blank"
@@ -99,7 +113,7 @@
                   >
               </li>
               <li>
-                m12f_res7100, m12_elvis_RomeoJuliet_res3500, m12_elvis_ThelmaLouise_res4000:
+                m12f, m12_elvis_RomeoJuliet, m12_elvis_ThelmaLouise:
                 <a
                   class="underline"
                   target="_blank"
@@ -109,7 +123,7 @@
                   >
               </li>
               <li>
-                m12i_res7100:
+                m12i:
                 <a
                   class="underline"
                   target="_blank"
@@ -119,7 +133,7 @@
                   >
               </li>
               <li>
-                m12r_res7100, m12w_res7100:
+                m12r, m12w:
                 <a
                   class="underline"
                   target="_blank"
@@ -129,7 +143,7 @@
                   >
               </li>
               <li>
-                m12_elvis_RomulusRemus_res3500:
+                m12_elvis_RomulusRemus:
                 <a
                   class="underline"
                   target="_blank"
@@ -141,17 +155,22 @@
             </ul>
           </div>
           <div class="body-copy" style="padding: .5em;">
-            <h4 style="text-decoration: underline;">Massive halos with black hole growth</h4>
-            <p>This suite comprises 4 massive galaxies from <a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2017MNRAS.472L.109A/abstract">Anglés-Alcázar et al. (2017)</a> simulated to z = 1. For each simulation, we release 19 snapshots across z = 1 - 10.
-             These halos are selected from the A-series of the FIRE-1 MassiveFIRE suite (Feldmann et al. <a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2016MNRAS.458L..14F/abstract">2016</a>, <a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2017MNRAS.470.1050F/abstract">2017</a>). Please refer to Feldmann et al. (<a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2016MNRAS.458L..14F/abstract">2016</a>, <a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2017MNRAS.470.1050F/abstract">2017</a>) for information about the general selection strategy and halo growth histories of the MassiveFIRE zoom-in simulations.
-              These halos have halo masses \(M_{\rm vir} = 10^{12-13.5} M_{\odot}\) and were simulated including massive black hole growth but no AGN feedback, resulting in overly massive galaxies with ultra-dense nuclear stellar distributions at late times (<a class="underline" target="_blank" rel="noopener" href="hhttps://ui.adsabs.harvard.edu/abs/2020MNRAS.497.4051W/abstract">Wellons et al. 2020</a>, <a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2021MNRAS.501.1591P/abstract">Parsotan et al. 2021</a>, <a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2021ApJ...917...53A/abstract">Anglés-Alcázar et al. 2021)</a>.</p>
-            <p>Any publication using these data should cite <a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2017MNRAS.472L.109A/abstract">Anglés-Alcázar et al. (2017)</a>.</p>
+            <h5 style="text-decoration: underline;">Massive Halo suite to z = 1</h5>
+            <p>The Massive Halo suite comprises 8 massive galaxies: A1, A2, A4, A8 from <a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2017MNRAS.472L.109A/abstract">Anglés-Alcázar et al. (2017)</a>, and B1, B2, C1, C2 from <a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2023MNRAS.518.5522C/abstract">Cochrane et al. (2023)</a>, all run to z = 1. For each simulation, we release 278 snapshots across z = 1 - 99. These halos have masses \(M_{\rm halo} = 10^{12-13.5} M_{\odot}\) at z = 1. 4 simulations (A1, A2, A4, A8) include massive black hole growth but no AGN feedback, resulting in overly massive galaxies with ultra-dense nuclear stellar distributions at late times.
+            <p>Anyone using these simulations should Anglés-Alcázar et al. (2017) and/or Cochrane et al. (2023).</p>
           </div>
         </div>
         <div class="col-md-6">
           <div class="body-copy" style="padding: .5em;">
-            <h4 style="text-decoration: underline;">High-z Suite</h4>
-            <p>This suite comprises 22 simulations from <a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2018MNRAS.478.1694M/abstract">Ma et al. (2018)</a>, <a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2019MNRAS.487.1844M/abstract">Ma et al. (2019)</a>, <a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2020MNRAS.493.4315M/abstract">Ma et al. (2020)</a> simulated to z = 5. For each simulation, we release 11 snapshots across z = 5 − 10.</p>
+            <h5 style="text-decoration: underline;">High Redshift suite to z = 5</h5>
+            <p>This suite comprises 34 simulations that target halos with \(M_{\rm halo} = 10^{9-12} M_{\odot}\) at z = 5 - 9, from <a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2018MNRAS.478.1694M/abstract">Ma et al. (2018)</a>, <a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2019MNRAS.487.1844M/abstract">Ma et al. (2019)</a>, <a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2020MNRAS.493.4315M/abstract">Ma et al. (2020)</a>.
+            22 of these simulations are run from z = 99 to z = 5 (with 68 snapshots), 6 are run to z = 7 (with 42 snaphots), and 6 are run to z = 9 (with 27 snasphots). Anyone using these simulations should the Ma et al. articles above.</p>
+          </div>
+        </div>
+      <div class="col-md-6">
+          <div class="body-copy" style="padding: .5em;">
+            <h5 style="text-decoration: underline;">Cosmological Boxes to z = 0</h5>
+            <p>This suite comprises 4 dark-matter-only cosmological boxes that we used to generate zoom-in initial conditions for many (but not all) of the FIRE simulations. These boxes have comoving side lengths of 86 Mpc, 108 Mpc, 136 Mpc, and 172 Mpc. Anyone using these cosmological boxes should cite Wetzel et al. (2025).</p>
           </div>
         </div>
       </div>
