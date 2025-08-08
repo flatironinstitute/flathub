@@ -16,14 +16,22 @@
           <div class="body-copy">
             <h4>Project summary</h4>
             <p>
-              The <a class="underline" target="_blank" rel="noopener" href="https://fire.northwestern.edu">FIRE (Feedback In Realistic Environments)</a> project seeks to develop and explore cosmological simulations of galaxy formation that directly resolve the interstellar medium of individual galaxies while capturing their cosmological environment. FIRE aims to improve the predictive power of simulations of galaxy formation simulations by implementing the major channels of stellar feedback as directly as possible from stellar evolution models. FIRE simulations typically zoom in on a region around a single primary galaxy or group of galaxies, to achieve parsec-scale resolution within a cosmological context.
-            <p>For more details about FIRE, please see the <a
+            The <a class="underline" target="_blank" rel="noopener" href="https://fire.northwestern.edu">FIRE (Feedback In Realistic Environments)</a> project (introduced in <a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2014MNRAS.445..581H/abstract">Hopkins et al. 2014</a>) seeks to develop and explore cosmological simulations of galaxy formation that resolve the interstellar medium of individual galaxies while capturing their cosmological environment. FIRE aims to improve the predictive power of simulations of galaxy formation simulations by implementing the major channels of stellar feedback as directly as possible from stellar evolution models. FIRE simulations typically zoom in on a region around a single primary galaxy or group of galaxies, to achieve parsec-scale resolution within a cosmological context. For more details about FIRE, see the <a
               class="underline"
               target="_blank"
               rel="noopener"
               href="https://fire.northwestern.edu"
-              >FIRE homepage.</a></p>
-            <p>For details about the public data release, see <a href="https://ui.adsabs.harvard.edu/abs/2023ApJS..265...44W/abstract" class="underline" target="_blank" rel="noopener">Wetzel et al. (2023)</a>.</p>
+              >FIRE homepage.</a>
+            </p>
+            
+            <p>
+            This is the main page for the public data release of the FIRE-2 simulations. For documentation see:
+            <li><a href="https://ui.adsabs.harvard.edu/abs/2023ApJS..265...44W/abstract" class="underline" target="_blank" rel="noopener">Wetzel et al. (2023)</a> for the description of Data Release 1 (DR1), explanations of the physical models that go into the FIRE-2 simulations, the contents of snapshots and halo/galaxy catalogs, and analysis tools
+            </li>
+            <li>
+            <li><a href="" class="underline" target="_blank" rel="noopener">Wetzel et al. (2025)</a> for the description of the new data products in Data Release 2 (DR2)
+            </li>
+            </p>
             <p>The simulations were run using the <a href="http://www.tapir.caltech.edu/~phopkins/Site/GIZMO.html" class="underline" target="_blank" rel="noopener">GIZMO</a> code (<a href="https://ui.adsabs.harvard.edu/abs/2015MNRAS.450...53H/abstract" class="underline" target="_blank" rel="noopener">Hopkins 2015</a>). For details about the snapshot format, please see <a class="underline" target="_blank" rel="noopener"  href="http://www.tapir.caltech.edu/~phopkins/Site/GIZMO_files/gizmo_documentation.html#snaps-snaps">this page</a>.</p>
             <p>We release FIRE-2 data under the <a class="underline" target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">Creative Commons BY 4.0</a> license. If you use these data, we request that you cite as follows: “We use simulations from the FIRE-2 public data release (<a href="https://ui.adsabs.harvard.edu/abs/2023ApJS..265...44W/abstract" class="underline" target="_blank" rel="noopener">Wetzel et al. 2023</a>). The FIRE-2 cosmological zoom-in simulations of galaxy formation are part of the Feedback In Realistic Environments (FIRE) project, generated using the Gizmo code (<a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2015MNRAS.450...53H/abstract">Hopkins 2015</a>) and the FIRE-2 physics model <a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2018MNRAS.480..800H/abstract">(Hopkins et al. 2018a)</a>.</p>
           </div>
@@ -151,9 +159,9 @@
         <div class="box">
           <div class="box-content">
             <div class="box-copy">
-              <div class="box-head">Analysis scripts</div>
-              <p class="box-desc"><a class="underline" href="https://bitbucket.org/awetzel/gizmo_analysis/src/master/">Scripts to read and analyze snapshots.</a></p>
-              <p class="box-desc"><a class="underline" href="https://bitbucket.org/awetzel/halo_analysis/src/master/">Scripts to read and analyze halo catalogs and merger trees.</a></p>
+              <div class="box-head">python analysis tools</div>
+              <p class="box-desc"><a class="underline" href="https://bitbucket.org/awetzel/gizmo_analysis/src/master/">GizmoAnalysis python package to read and analyze FIRE snapshots</a></p>
+              <p class="box-desc"><a class="underline" href="https://bitbucket.org/awetzel/halo_analysis/src/master/">HaloAnalysis python package to read and analyze catalogs of (sub)halos/galaxies and merger trees</a></p>
             </div>
           </div>
         </div>
@@ -161,9 +169,9 @@
           <div class="box-content">
             <div class="box-copy">
               <div class="box-head">Data</div>
-              <p class="box-desc">To download snapshots and metadata, please use the Globus ID or click the link to browse a directory.</p>
+              <p class="box-desc">To explore and download FIRE data, use this Globus ID, or click the "Browse" link to browse the avaiable data in your web browser.</p>
               <p class="box-desc">
-                <b>Globus ID:</b> d41e7ead-0fca-4715-bc72-24630cebe04b
+                <b>Globus ID:</b> <a class="button" href="https://app.globus.org/file-manager?origin_id=d41e7ead-0fca-4715-bc72-24630cebe04b&origin_path=%2F&two_pane=true">d41e7ead-0fca-4715-bc72-24630cebe04b</a>
                 <br/>
                 <b>Display Name:</b> FIRE2 Public Release
               </p>
