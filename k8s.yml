@@ -73,7 +73,7 @@ spec:
             name: flathub
         - name: tls
           secret:
-            secretName: astrosims-tls
+            secretName: flathub-tls
         - name: gr8
           hostPath:
             path: /mnt/sdceph/users/mbedell/gr8stars
@@ -100,6 +100,20 @@ spec:
   type: LoadBalancer
   loadBalancerIP: 132.249.246.21
   externalTrafficPolicy: Local
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: flathub-tls
+spec:
+  secretName: flathub-tls
+  dnsNames:
+    - flathub.flatironinstitute.org
+    - astrosims.flatironinstitute.org
+  issuerRef:
+    name: letsencrypt
+    kind: ClusterIssuer
+    group: cert-manager.io
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
