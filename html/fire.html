@@ -18,19 +18,19 @@
             <h4>Project summary</h4>
             <p>
               The <a class="underline" target="_blank" rel="noopener" href="https://fire.northwestern.edu">FIRE (Feedback In Realistic Environments)</a>
-              project, introduced in <a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2014MNRAS.445..581H/abstract">Hopkins et al. (2014)</a>,
-              seeks to improve the predictive power of simulations of galaxy formation, by developing
-              cosmological simulations that resolve the interstellar medium of individual galaxies, while implementing
+              project (introduced in <a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2014MNRAS.445..581H/abstract">Hopkins et al. 2014</a>),
+              seeks to improve the predictive power of simulations of galaxy formation. The goal is to develop
+              simulations that resolve the interstellar medium within individual galaxies, while implementing
               the major channels of stellar feedback as directly as possible from stellar evolution models, all in
               realistic cosmological environments. FIRE simulations typically zoom in on a region around a single
               primary galaxy or group of galaxies, to achieve parsec-scale resolution within a cosmological context. For
-              more details see the
+              more details, see the
               <a class="underline" target="_blank" rel="noopener" href="https://fire.northwestern.edu">FIRE homepage</a>.
             </p>
 
             <p>
               This is the main page for accessing publicly available FIRE-2 simulation data,
-              which currently comprises 119 different simulations. These data are in HDF5 file format.
+              which comprises 119 different simulations. These data are in HDF5 file format.
             </p>
 
             <p>
@@ -57,7 +57,7 @@
             </li>
             <li>
               <a class="underline" target="_blank" rel="noopener" href="http://www.tapir.caltech.edu/~phopkins/Site/GIZMO_files/gizmo_documentation.html#snaps-snaps">This page</a>
-                provides more detailed documentation of the contents of Gizmo snapshots files
+                provides more detailed documentation of the contents of Gizmo snapshot files
               </li>
             </p>
 
@@ -76,7 +76,7 @@
               <a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2018MNRAS.480..800H/abstract">(Hopkins et al. 2018)</a>."
             </p>
             <p>
-              We also request users to cite the individual published article(s) that introduced each simulation used, as listed in Tables 1, 2, 3 in
+              We also request that users cite the individual published article(s) that introduced each simulation used, as listed in Tables 1, 2, 3 in
               <a href="https://ui.adsabs.harvard.edu/abs/2023ApJS..265...44W/abstract" class="underline" target="_blank" rel="noopener">Wetzel et al. (2023)</a>
               for the simulations first released in Data Release 1, or as listed in
               <a href="https://arxiv.org/abs/2508.06608" class="underline" target="_blank" rel="noopener">Wetzel et al. (2025)</a>
@@ -87,6 +87,7 @@
 
             <img src="/web/assets/fire2-table.png" style="display: block; max-width: 100%; width: 1200px" />
 
+            <br><br>
             <h4>Core suite to z = 0</h4>
             <p>
               The Core suite comprises 20 simulations that zoom in on 14 Milky Way-mass galaxies, 5 SMC/LMC-mass
@@ -100,7 +101,7 @@
             </p>
 
             <p>
-              The following articles introduced each of these simulations. Anyone using a given simulation also should cite that article.
+              The following articles introduced each simulation. Anyone using a given simulation also should cite that article.
             </p>
 
             <li>
@@ -140,6 +141,7 @@
               <a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2020MNRAS.491.1471S/abstract">(Samuel et al. 2020)</a>
             </li>
 
+            <br>
             <p>
               For a subset of Core simulations to z = 0, we also include the following physics variations:
             </p>
@@ -167,6 +169,7 @@
               <a href="https://ui.adsabs.harvard.edu/abs/2020MNRAS.492.3465H/abstract" class="underline" target="_blank" rel="noopener">Hopkins et al. 2020</a>)
             </li>
 
+            <br>
             <h4>Massive Halo suite to z = 1</h4>
             <p>
               The Massive Halo suite comprises 8 massive galaxies: A1, A2, A4, A8 from
@@ -193,19 +196,26 @@
               <a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2019MNRAS.487.1844M/abstract">Ma et al. (2019)</a>,
               <a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2020MNRAS.493.4315M/abstract">Ma et al. (2020)</a>.
               All simulations start at z = 99.
-              22 of them are run to z = 5 (68 snapshots), 6 are run to z = 7 (42 snaphots),
-              and 6 are run to z = 9 (27 snasphots). In addition to the primary galaxy, there are many
+              22 of them are run to z = 5 (68 snapshots), 6 are run to z = 7 (42 snapshots),
+              and 6 are run to z = 9 (27 snapshots). In addition to the primary galaxy, there are many
               lower-mass galaxies within each zoom-in region, so the High Redshift suite contains thousands of resolved
-              galaxies at each snapshot. Anyone using these simulations should the Ma et al. articles above.
+              galaxies at each snapshot. Anyone using these simulations should cite the Ma et al. articles above.
             </p>
 
             <h4>Cosmological Boxes to z = 0</h4>
             <p>
               This suite comprises 4 dark-matter-only cosmological boxes that we used to generate zoom-in initial
               conditions for many (but not all) of the FIRE simulations. These boxes have comoving side lengths of 86
-              Mpc, 108 Mpc, 136 Mpc, and 172 Mpc, and each each one differs in mass resolution by a factor of 2.
+              Mpc, 108 Mpc, 136 Mpc, and 172 Mpc, and each one differs in mass resolution by a factor of 2.
               Anyone using these cosmological boxes should cite
               <a href="https://arxiv.org/abs/2508.06608" class="underline" target="_blank" rel="noopener">Wetzel et al. (2025)</a>.
+            </p>
+            
+            <h4>FIREbox catalog at z = 0</h4>
+            <p>
+              A catalog of halos and their galaxies (stellar-mass properties) at z = 0 from the FIREbox uniform-resolution cosmological volume simulation 
+              (<a class="underline" target="_blank" rel="noopener" href="https://ui.adsabs.harvard.edu/abs/2023MNRAS.522.3831F/abstract">Feldmann et al. 2023</a>) is 
+              available via Zenodo <a href="https://zenodo.org/records/22214967" class="underline" target="_blank" rel="noopener">here</a>.
             </p>
           </div>
         </div>
@@ -218,11 +228,11 @@
               <div class="box-head">Python analysis tools</div>
               <p class="box-desc"><a class="underline" target="_blank" rel="noopener"
                   href="https://bitbucket.org/awetzel/gizmo_analysis/src/master/">
-                  GizmoAnalysis python package to read and analyze FIRE snapshots</a>
+                  GizmoAnalysis Python package to read and analyze FIRE snapshots</a>
               </p>
               <p class="box-desc"><a class="underline" target="_blank" rel="noopener"
                   href="https://bitbucket.org/awetzel/halo_analysis/src/master/">
-                  HaloAnalysis python package to read and analyze catalogs of (sub)halos/galaxies and merger trees</a>
+                  HaloAnalysis Python package to read and analyze catalogs of (sub)halos/galaxies and merger trees</a>
               </p>
             </div>
           </div>
@@ -233,7 +243,7 @@
             <div class="box-copy">
               <div class="box-head">Accessing data</div>
               <p class="box-desc">To explore and download FIRE data, use this Globus ID, or click the "Browse" link to
-                browse the avaiable data in your web browser.</p>
+                browse the available data in your web browser.</p>
               <p class="box-desc">
                 <b>Globus ID:</b> <a class="underline" target="_blank" rel="noopener"
                   href="https://app.globus.org/file-manager?origin_id=d41e7ead-0fca-4715-bc72-24630cebe04b&origin_path=%2F&two_pane=true">d41e7ead-0fca-4715-bc72-24630cebe04b</a>
