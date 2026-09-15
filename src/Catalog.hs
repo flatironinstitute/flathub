@@ -295,11 +295,11 @@ instance Ord a => Monoid (Filter a) where
   mappend = (<>)
 
 instance J.ToJSON1 Filter where
-  liftToJSON f _ (FilterEQ x) = f x
-  liftToJSON f _ (FilterRange l u) = J.object $ catMaybes $
+  liftToJSON _ f _ (FilterEQ x) = f x
+  liftToJSON _ f _ (FilterRange l u) = J.object $ catMaybes $
     [("lb" J..=) . f <$> l, ("ub" J..=) . f <$> u]
-  liftToEncoding f _ (FilterEQ x) = f x
-  liftToEncoding f _ (FilterRange l u) = J.pairs $
+  liftToEncoding _ f _ (FilterEQ x) = f x
+  liftToEncoding _ f _ (FilterRange l u) = J.pairs $
     foldMap (JE.pair "lb" . f) l <> foldMap (JE.pair "ub" . f) u
 
 instance Functor Filter where

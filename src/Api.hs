@@ -36,6 +36,7 @@ import           Control.Monad.Except (withExceptT)
 import           Control.Monad.Reader (runReaderT, ask, asks)
 import qualified Data.Aeson as J
 import qualified Data.Aeson.Encoding as JE
+import qualified Data.Aeson.Parser as JP
 import qualified Data.Aeson.Types as J
 import qualified Data.Aeson.Key as JK
 import qualified Data.Aeson.KeyMap as JM
@@ -164,7 +165,7 @@ parseJSONBody :: Wai.Request -> (J.Value -> J.Parser a) -> M (Maybe a)
 parseJSONBody req parse = traverse (\c -> do
   unless (c == ct) $ raise unsupportedMediaType415 $ "expecting " ++ BSC.unpack ct
   grb <- liftIO $ getRequestBodyChunkLimit 131072 req
-  r <- liftIO $ AP.parseWith grb (J.json <* AP.endOfInput) BS.empty
+  r <- liftIO $ AP.parseWith grb (JP.json <* AP.endOfInput) BS.empty
   j <- either raise400 return $ AP.eitherResult r
   either (raise unprocessableEntity422) return $ J.parseEither parse j)
   $ lookup hContentType $ Wai.requestHeaders req

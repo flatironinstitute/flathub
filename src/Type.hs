@@ -316,10 +316,10 @@ isUnsafeJs _ = False
 
 instance {-# OVERLAPPABLE #-} J.ToJSON1 f => J.ToJSON (TypeValue f) where
   toJSON v
-    | isUnsafeJs v = unTypeValue (J.liftToJSON (J.toJSON . show) (J.toJSONList . map show)) v
+    | isUnsafeJs v = unTypeValue (J.liftToJSON (const False) (J.toJSON . show) (J.toJSONList . map show)) v
     | otherwise = unTypeValue J.toJSON1 v
   toEncoding v
-    | isUnsafeJs v = unTypeValue (J.liftToEncoding toEncodingString (JE.list toEncodingString)) v
+    | isUnsafeJs v = unTypeValue (J.liftToEncoding (const False) toEncodingString (JE.list toEncodingString)) v
     | otherwise = unTypeValue J.toEncoding1 v
     where
     toEncodingString :: Typed a => a -> J.Encoding
