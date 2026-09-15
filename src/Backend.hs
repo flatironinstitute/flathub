@@ -90,19 +90,19 @@ instance TypeTraversable FieldFilter where
   sequenceTypeValue (FieldWildcard w) = Void $ FieldWildcard w
 
 instance J.ToJSON1 FieldFilter where
-  liftToJSON tj _ (FieldEQ [x]) = tj x
-  liftToJSON _ tjl (FieldEQ l) = tjl l
-  liftToJSON tj _ (FieldRange g l) = J.object $ catMaybes
+  liftToJSON _ tj _ (FieldEQ [x]) = tj x
+  liftToJSON _ _ tjl (FieldEQ l) = tjl l
+  liftToJSON _ tj _ (FieldRange g l) = J.object $ catMaybes
     [ (("gte" J..=) . tj) <$> g
     , (("lte" J..=) . tj) <$> l
     ]
-  liftToJSON _ _ (FieldWildcard t) = J.object ["wildcard" J..= t]
-  liftToEncoding tj _ (FieldEQ [x]) = tj x
-  liftToEncoding _ tjl (FieldEQ l) = tjl l
-  liftToEncoding tj _ (FieldRange g l) = J.pairs
+  liftToJSON _ _ _ (FieldWildcard t) = J.object ["wildcard" J..= t]
+  liftToEncoding _ tj _ (FieldEQ [x]) = tj x
+  liftToEncoding _ _ tjl (FieldEQ l) = tjl l
+  liftToEncoding _ tj _ (FieldRange g l) = J.pairs
     $  foldMap (JE.pair "gte" . tj) g
     <> foldMap (JE.pair "lte" . tj) l
-  liftToEncoding _ _ (FieldWildcard t) = J.pairs $ "wildcard" J..= t
+  liftToEncoding _ _ _ (FieldWildcard t) = J.pairs $ "wildcard" J..= t
 
 data Filters = Filters
   { filterSample :: Double

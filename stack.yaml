@@ -1,12 +1,12 @@
-resolver: lts-21.25
+resolver: lts-24.59
 packages:
 - '.'
 extra-deps:
-  - bzlib-0.5.1.0
-  - web-inv-route-0.1.3.2
+  - bzlib-0.5.3.0
+  - web-inv-route-0.1.3.3
   - invertible-0.2.0.8
   - git: https://github.com/dylex/waimwork
-    commit: 8ccaa63ac6b80a4ebc9ad7d61ca38cbb009e8f3c
+    commit: f7d1b4cf8a4159c2f7abdccc410cfb5046c7ae8a
   - git: https://github.com/dylex/hs-hdf5
     commit: fef08a26f3c8add943beb8463ef7a0cc41245df5
   - git: https://github.com/ondrap/json-stream

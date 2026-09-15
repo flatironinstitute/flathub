@@ -369,7 +369,7 @@ parseValueForField _ s = readValue s
 parseFieldValue :: Field -> BS.ByteString -> Maybe FieldValue
 parseFieldValue f s = makeFieldValueM f (Identity <$> parseValueForField f s)
 
-fieldJValue :: J.KeyValue j => FieldValue -> j
+fieldJValue :: J.KeyValue e j => FieldValue -> j
 fieldJValue (FieldValue f v) = JK.fromText (fieldName f) J..= v
 
 fieldJValues :: [FieldValue] -> J.Series
@@ -386,25 +386,25 @@ instance Functor FieldStats where
   fmap f (FieldTerms b c) = FieldTerms (map (first f) b) c
 
 instance J.ToJSON1 FieldStats where
-  liftToJSON _ _ FieldStats{..} = J.object
+  liftToJSON _ _ _ FieldStats{..} = J.object
     [ "count" J..= statsCount
     , "min" J..= statsMin
     , "max" J..= statsMax
     , "avg" J..= statsAvg
     ]
-  liftToJSON tj _ FieldTerms{..} = J.object
+  liftToJSON _ tj _ FieldTerms{..} = J.object
     [ "terms" J..= map (\(v, c) -> J.object
       [ "value" J..= tj v
       , "count" J..= c
       ]) termsBuckets
     , "others" J..= termsCount
     ]
-  liftToEncoding _ _ FieldStats{..} = J.pairs
+  liftToEncoding _ _ _ FieldStats{..} = J.pairs
     $  "count" J..= statsCount
     <> "min" J..= statsMin
     <> "max" J..= statsMax
     <> "avg" J..= statsAvg
-  liftToEncoding te _ FieldTerms{..} = J.pairs
+  liftToEncoding _ te _ FieldTerms{..} = J.pairs
     $  "terms" `JE.pair` JE.list (\(v, c) -> J.pairs
       $  "value" `JE.pair` te v
       <> "count" J..= c
@@ -412,7 +412,7 @@ instance J.ToJSON1 FieldStats where
     <> "others" J..= termsCount
 
 instance J.FromJSON1 FieldStats where
-  liftParseJSON pj _ = J.withObject "FieldStats" $ \o ->
+  liftParseJSON _ pj _ = J.withObject "FieldStats" $ \o ->
     (FieldStats
       <$> o J..: "min"
       <*> o J..: "max"
