@@ -55,6 +55,7 @@ routes = R.routes (
   , R.routeNormCase csvSchema
   , R.routeNormCase attachment
   , R.routeNormCase openApi
+  , R.routeNormCase robotsTxt
   ] ++ apiRoutes)
 
 data Opts = Opts
