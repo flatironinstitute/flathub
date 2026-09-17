@@ -13,7 +13,7 @@ jobs:
           ghc-version: '9.10.3'
           enable-stack: true
       - run: sudo apt-get install libhdf5-dev
-      - uses: actions/cache@v1
+      - uses: actions/cache@v4
         with:
           path: ~/.stack
           key: ${{ runner.os }}-stack-${{ hashFiles('flathub.cabal') }}-${{ hashFiles('stack.yaml') }}
