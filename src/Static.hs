@@ -10,6 +10,7 @@ module Static
   , static
   , staticURI
   , staticFront
+  , robotsTxt
   ) where
 
 import           Control.Exception (handleJust)
@@ -30,6 +31,7 @@ import qualified System.FilePath as FP
 import           System.IO.Error (isDoesNotExistError)
 import qualified Text.Blaze.Html5 as H hiding (text, textValue)
 import qualified Waimwork.Blaze as WH
+import           Waimwork.Response (okResponse)
 import qualified Web.Route.Invertible as R
 
 import Global
@@ -96,3 +98,7 @@ staticFront = getPath ("v2beta" R.*< R.manyI R.parameter) $ \paths q -> do
   staticPath (if s then path else base FP.</> "index.html") q
   where
   base = "flatfront/dist"
+
+robotsTxt :: Route ()
+robotsTxt = getPath "robots.txt" $ \() _ ->
+  return $ okResponse [] ("User-agent: *\nDisallow: /\nAllow: /$\nAllow: /group\nAllow: /html\n" :: String)
