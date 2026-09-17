@@ -12,7 +12,7 @@ jobs:
         with:
           ghc-version: '9.10.3'
           enable-stack: true
-      - run: sudo apt-get install libhdf5-dev
+      - run: sudo apt-get install libbz2-dev libhdf5-dev
       - uses: actions/cache@v4
         with:
           path: ~/.stack
